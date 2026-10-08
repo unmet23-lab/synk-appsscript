@@ -26,7 +26,7 @@ function fixture({scope='mine',demo=false,role='admin',today='2026-09-30'}={}){
   });
   const run=code=>vm.runInContext(code,context);
   run(between('const METRICS =','const PLATFORMS ='));
-  run(lines(['const escape =','const validNumber =','const number =','function query(','function scopedChannels(','function scopeLabel(','function reportTabs(','function button(','function empty(']));
+  run(lines(['const escape =','const validNumber =','const numberFormatter =','const number =','function query(','function scopedChannels(','function scopeLabel(','function reportTabs(','function button(','function empty(']));
   for(const file of ['workspace.js','demo-ui.js','team-overview.js','growth-home.js'])run(read(file));
   run(between('async function loadReport()','function startPolling()'));
   run(between('function marketingScopeEmpty()','function contextBar('));

@@ -6,7 +6,7 @@ import vm from 'node:vm';
 const demoSource=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
 const workspaceSource=readFileSync(new URL('./public/workspace.js',import.meta.url),'utf8');
-const helpers=['const escape =','const number =','const validNumber ='].map(prefix=>appSource.split('\n').find(line=>line.startsWith(prefix))).join('\n');
+const helpers=['const escape =','const validNumber =','const numberFormatter =','const number ='].map(prefix=>appSource.split('\n').find(line=>line.startsWith(prefix))).join('\n');
 const initialUrl='http://localhost:4191/?tab=history&section=team&teamId=demo-team&demo=1&persona=crew-a&ownerId=demo-owner&connected=youtube#view=history&launch=old-token';
 function fixture(href=initialUrl){
   const address=new URL(href),navigations=[],handlers=[],notifications=[],renders=[],requests=[];let ordinaryActions=0,mounts=0,polls=0,reports=0;
@@ -100,7 +100,7 @@ test('messenger navigation outside demo mode keeps the normal app handler and cu
   const event=f.dispatch(f.target());assert.equal(event.stopped,false);assert.equal(event.defaultPrevented,false);assert.equal(f.ordinaryActions(),1);assert.equal(f.location.href,before);assert.equal(f.navigations.length,0);
 });
 
-test('desktop context stays visible and preserves manual collapse while the mobile menu closes on workspace entry',()=>{
+test('desktop context stays visible and preserves manual collapse around the menu-free messenger while the mobile menu closes on workspace entry',()=>{
   const initial=vm.runInNewContext(appSource.split('\n').find(line=>line.startsWith('const state ='))+'\nstate;', {dateToday:()=> '2026-09-30',shiftDate:()=> '2026-09-24'});
   assert.equal(initial.workspaceSidebarOpen,false);
   const f=fixture('http://localhost:4191/?tab=history'),dom=sidebarDom(f);f.state.workspaceSidebarOpen=initial.workspaceSidebarOpen;f.installShell();
@@ -110,22 +110,28 @@ test('desktop context stays visible and preserves manual collapse while the mobi
   f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'desktop collapse survives navigation');
   f.run('setWorkspaceSidebar(true)');assert.equal(f.renders.length,0);assert.equal(dom.get('workspace-sidebar-content').hidden,false);assert.equal(dom.get('workspace-sidebar-toggle').attrs['aria-expanded'],'true');
   f.run("shell('<p>갱신된 분석</p>')");assert.equal(f.state.workspaceSidebarOpen,true);assert.equal(dom.shell.attrs['data-sidebar-open'],'true');
-  f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.run('workspaceSidebarExpanded()'),true,'desktop navigation remains available');
-  f.context.window.matchMedia=()=>({matches:true});f.run('syncWorkspaceSidebar()');assert.equal(dom.get('workspace-sidebar-content').hidden,true,'mobile defaults to a closed drawer');
-  f.run("setWorkspaceSidebar(true);shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,true,'message or unread refreshes do not close the menu');
-  f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.state.tab,'history');
+  f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.run('workspaceSidebarExpanded()'),false,'the conversation list is the messenger menu, so no duplicated context menu exists');
+  assert.doesNotMatch(f.app.innerHTML,/id="workspace-sidebar/);assert.match(f.app.innerHTML,/<nav class="workspace-rail"[^>]*>(?:(?!<\/nav>)[\s\S])*data-tab="marketing"/,'desktop navigation remains available');assert.equal(dom.get('main').inert,false);
+  f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.tab,'history');assert.equal(f.run('workspaceSidebarExpanded()'),true,'the desktop context returns as the user left it');
+  f.run("setWorkspaceSidebar(false);selectWorkspaceView('messenger');shell(messengerWorkspacePage());selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.run('workspaceSidebarExpanded()'),false,'desktop collapse survives the messenger');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
+  f.run('setWorkspaceSidebar(true)');f.context.window.matchMedia=()=>({matches:true});f.run("selectWorkspaceView('workroom');shell('<p>작업실</p>')");assert.equal(dom.get('workspace-sidebar-content').hidden,true,'mobile defaults to a closed drawer');
+  f.run("setWorkspaceSidebar(true);shell('<p>작업실 갱신</p>')");assert.equal(f.state.workspaceSidebarOpen,true,'refreshing the same workspace does not close the menu');assert.equal(dom.get('main').inert,true);
+  f.run("selectWorkspaceView('messenger');shell(messengerWorkspacePage())");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(dom.get('main').inert,false,'entering the messenger closes the drawer and releases the page');
+  f.run("selectWorkspaceView('marketing');shell('<p>분석으로 복귀</p>')");assert.equal(f.state.workspaceSidebarOpen,false);assert.equal(f.state.tab,'history');assert.equal(dom.get('workspace-sidebar-content').hidden,true);
 });
 
-test('sidebar toggles retain the detached messenger frame and update its geometry and mobile access without rendering',()=>{
-  const f=fixture('http://localhost:4191/?tab=messenger'),dom=sidebarDom(f),messages=[];f.state.tab='messenger';
-  const host={style:{},inert:false},frame={src:'/messenger/',contentWindow:{postMessage:(message,origin)=>messages.push({message,origin})}},slot={getBoundingClientRect:()=>({left:f.state.workspaceSidebarOpen?220:40,top:90,width:f.state.workspaceSidebarOpen?980:1160,height:700})};
+test('sidebar toggles retain the hidden messenger frame without rendering and a stale open state never blocks the menu-free messenger',()=>{
+  const f=fixture('http://localhost:4191/?tab=history'),dom=sidebarDom(f),messages=[];f.state.tab='history';
+  const host={style:{},inert:true,hidden:true},frame={src:'/messenger/',contentWindow:{postMessage:(message,origin)=>messages.push({message,origin})}},slot={getBoundingClientRect:()=>({left:66,top:90,width:1134,height:700})};
   Object.assign(f.context,{persistedHost:host,persistedFrame:frame,persistedSlot:slot});f.run('Object.assign(workspaceModule,{host:persistedHost,frame:persistedFrame,slot:persistedSlot})');
-  f.run('setWorkspaceSidebar(true)');assert.equal(host.style.left,'220px');assert.equal(host.style.width,'980px');assert.equal(host.inert,false);assert.equal(dom.get('main').inert,false);
-  f.run('setWorkspaceSidebar(false)');assert.equal(host.style.left,'40px');assert.equal(host.style.width,'1160px');
-  f.run('setWorkspaceSidebar(true)');f.document.activeElement=frame;f.context.window.matchMedia=()=>({matches:true});f.run('syncWorkspaceSidebar()');assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'),'a desktop iframe focus moves inside the mobile menu before the frame becomes inert');assert.equal(host.inert,true);assert.equal(dom.get('main').inert,true);assert.equal(dom.get('workspace-sidebar-scrim').hidden,false);assert.equal(messages.at(-1).message.visible,false);
+  f.run('setWorkspaceSidebar(false)');assert.equal(dom.get('workspace-sidebar-content').hidden,true);assert.equal(host.inert,true);assert.deepEqual(host.style,{},'the hidden messenger frame keeps its place');assert.equal(dom.get('main').inert,false);
+  f.run('setWorkspaceSidebar(true)');assert.equal(dom.get('workspace-sidebar-content').hidden,false);assert.equal(host.inert,true);assert.deepEqual(host.style,{});assert.equal(messages.at(-1).message.visible,false);
+  f.document.activeElement={};f.context.window.matchMedia=()=>({matches:true});f.run('syncWorkspaceSidebar()');assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'),'page focus moves inside the mobile menu before the page becomes inert');assert.equal(dom.get('main').inert,true);assert.equal(dom.get('workspace-sidebar-scrim').hidden,false);assert.equal(host.inert,true);
   const modalInput={};dom.nodes.set('overlay',{children:[modalInput]});f.document.activeElement=modalInput;f.run('syncWorkspaceSidebar()');assert.equal(f.document.activeElement,modalInput,'an existing modal keeps its own focus');dom.nodes.delete('overlay');
-  f.run('setWorkspaceSidebar(false)');assert.equal(host.inert,false);assert.equal(dom.get('main').inert,false);assert.equal(messages.at(-1).message.visible,true);
-  assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(f.run('workspaceModule.host'),host);assert.equal(frame.src,'/messenger/');assert.equal(f.renders.length,0);assert.equal(f.mounts(),0);assert.equal(f.app.innerHTML,'');assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'));
+  f.run('setWorkspaceSidebar(false)');assert.equal(dom.get('main').inert,false);assert.equal(dom.get('workspace-sidebar-scrim').hidden,true);assert.equal(f.document.activeElement,dom.get('workspace-sidebar-toggle'));
+  f.state.tab='messenger';f.state.workspaceSidebarOpen=true;f.document.activeElement=frame;f.run('syncWorkspaceSidebar()');
+  assert.equal(f.run('workspaceSidebarBlocksContent()'),false,'a stale open state cannot cover the messenger');assert.equal(dom.get('main').inert,false);assert.equal(f.document.activeElement,frame,'typing in the messenger keeps its focus');assert.equal(host.style.left,'66px');assert.equal(host.style.width,'1134px');
+  assert.equal(f.run('workspaceModule.frame'),frame);assert.equal(f.run('workspaceModule.host'),host);assert.equal(frame.src,'/messenger/');assert.equal(f.renders.length,0);assert.equal(f.mounts(),0);assert.equal(f.app.innerHTML,'');
 });
 
 test('demo mode permits sidebar open and close actions without authorizing any API writes',()=>{

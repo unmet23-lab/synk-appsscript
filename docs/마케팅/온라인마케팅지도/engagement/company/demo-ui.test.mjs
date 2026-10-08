@@ -5,7 +5,7 @@ import vm from 'node:vm';
 
 const source=readFileSync(new URL('./public/demo-ui.js',import.meta.url),'utf8');
 const appSource=readFileSync(new URL('./public/app.js',import.meta.url),'utf8');
-const helpers=['const escape =','const number =','const validNumber ='].map(prefix=>appSource.split('\n').find(line=>line.startsWith(prefix))).join('\n');
+const helpers=['const escape =','const validNumber =','const numberFormatter =','const number ='].map(prefix=>appSource.split('\n').find(line=>line.startsWith(prefix))).join('\n');
 function fixture(search='?demo=1&persona=crew-a'){
   const handlers=[],notifications=[],address=new URL('http://localhost:4191/'+search);
   const location={get href(){return address.href;},set href(value){address.href=new URL(value,address).href;},get origin(){return address.origin;},get search(){return address.search;},get searchParams(){return address.searchParams;},toString(){return address.href;}};
