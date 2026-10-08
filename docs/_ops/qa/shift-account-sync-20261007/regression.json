@@ -1,0 +1,53 @@
+{
+  "finishedAt": "2026-10-06T20:46:06.9847534Z",
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=4",
+    "experiences/shift-workbench/model.test.mjs",
+    "experiences/shift-workbench/record-migration.test.mjs",
+    "experiences/shift-workbench/app.test.mjs",
+    "experiences/shift-workbench/server.test.mjs",
+    "tests/atlas-cross-product-boundaries.test.mjs",
+    "tests/atlas-personalization.test.js",
+    "tests/atlas-personalization-conflict.test.js",
+    "tests/atlas-outcomes.test.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+    "experiences/shift-workbench/recommendation.test.mjs",
+    "experiences/shift-workbench/retention.test.mjs",
+    "experiences/shift-workbench/storage-upgrade.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs"
+  ],
+  "exitCode": 0,
+  "files": [
+    "experiences/shift-workbench/model.test.mjs",
+    "experiences/shift-workbench/record-migration.test.mjs",
+    "experiences/shift-workbench/app.test.mjs",
+    "experiences/shift-workbench/server.test.mjs",
+    "tests/atlas-cross-product-boundaries.test.mjs",
+    "tests/atlas-personalization.test.js",
+    "tests/atlas-personalization-conflict.test.js",
+    "tests/atlas-outcomes.test.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+    "experiences/shift-workbench/recommendation.test.mjs",
+    "experiences/shift-workbench/retention.test.mjs",
+    "experiences/shift-workbench/storage-upgrade.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs"
+  ],
+  "startedAt": "2026-10-06T20:45:54.8067441Z",
+  "counts": {
+    "pass": 222,
+    "tests": 222,
+    "fail": 0,
+    "todo": 0,
+    "skipped": 0,
+    "cancelled": 0
+  }
+}

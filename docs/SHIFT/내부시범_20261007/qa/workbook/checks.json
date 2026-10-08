@@ -1,0 +1,226 @@
+[
+  {
+    "name": "기존 실제 AI 시행 집계",
+    "sheet": "요약",
+    "cell": "D8",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "개인화 실제 AI 시행 집계",
+    "sheet": "요약",
+    "cell": "E8",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "기존 과업 완료",
+    "sheet": "요약",
+    "cell": "D9",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "개인화 과업 완료",
+    "sheet": "요약",
+    "cell": "E9",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "기존 실제 경과시간",
+    "sheet": "요약",
+    "cell": "D10",
+    "expected": 1.65,
+    "actual": 1.65,
+    "passed": true
+  },
+  {
+    "name": "개인화 실제 경과시간",
+    "sheet": "요약",
+    "cell": "E10",
+    "expected": 1.2833333333333334,
+    "actual": 1.2833333333333334,
+    "passed": true
+  },
+  {
+    "name": "관찰 시간 차이 정확히 22초",
+    "sheet": "요약",
+    "cell": "F10",
+    "expected": -0.36666666666666664,
+    "actual": -0.3666666666666665,
+    "passed": true
+  },
+  {
+    "name": "검수 오류 또는 입력확인 없음",
+    "sheet": "요약",
+    "cell": "D11",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "검수 오류 또는 입력확인 없음",
+    "sheet": "요약",
+    "cell": "E11",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "검수 오류 또는 입력확인 없음",
+    "sheet": "요약",
+    "cell": "D17",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "검수 오류 또는 입력확인 없음",
+    "sheet": "요약",
+    "cell": "E17",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D12",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "E12",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "H8",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "I8",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D35",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D36",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D40",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "E40",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D41",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "D42",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "E45",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미측정 값을 0으로 바꾸지 않음",
+    "sheet": "요약",
+    "cell": "E48",
+    "expected": null,
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "원가 미완료 표시",
+    "sheet": "요약",
+    "cell": "D38",
+    "expected": "미완료",
+    "actual": "미완료",
+    "passed": true
+  },
+  {
+    "name": "실제 시행 집계 상태",
+    "sheet": "시행기록",
+    "cell": "N7",
+    "expected": "집계",
+    "actual": "집계",
+    "passed": true
+  },
+  {
+    "name": "사람 전환 원자료 공란",
+    "sheet": "시행기록",
+    "cell": "K7",
+    "expected": null,
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "실제 시행 집계 상태",
+    "sheet": "시행기록",
+    "cell": "N8",
+    "expected": "집계",
+    "actual": "집계",
+    "passed": true
+  },
+  {
+    "name": "사람 전환 원자료 공란",
+    "sheet": "시행기록",
+    "cell": "K8",
+    "expected": null,
+    "actual": null,
+    "passed": true
+  }
+]

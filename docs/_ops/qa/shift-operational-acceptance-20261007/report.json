@@ -1,0 +1,2160 @@
+{
+  "version": 1,
+  "createdAt": "2026-10-06T21:50:42.868Z",
+  "status": "local-operational-safeguards-and-pilot-measurement-prepared",
+  "request": {
+    "threeStagesAuthorized": true,
+    "operatingTarget": "unselected",
+    "firstCustomer": "unselected",
+    "secondCustomer": "unselected",
+    "basis": "User explicitly answered all are unselected."
+  },
+  "completed": {
+    "environmentInspection": true,
+    "missingOriginalKeyStartupProtection": true,
+    "offlineRestoreCandidateComparison": true,
+    "emptyFirstAndSecondCustomerMeasurementWorkbook": true,
+    "commonAtlasSourceChangedByThisFollowUp": false
+  },
+  "evidence": {
+    "environment": {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/environment-report.json",
+      "sha256": "cf86a5bd7c6652a4759c6a7f271e6d5274e5a0bf866a4ef123fc5c18d3449631"
+    },
+    "tests": {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/tests-report.json",
+      "sha256": "37fc55585b65b4b48cf4b5926197deecb405d8e0462fe3446c5d109befc6d950"
+    },
+    "key": {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/key-safety-report.json",
+      "sha256": "3ed214c7701522658653a44adf6f7db04a8854a83c518ce9ec29936915e692e2"
+    },
+    "recovery": {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/recovery-report.json",
+      "sha256": "6cdc9d7dd490b36b90f89746d2b7412e547d8145fc1cdff37592882677e12b1f"
+    },
+    "pilot": {
+      "path": "docs/SHIFT/실증_20261007/qa/report.json",
+      "sha256": "d129b2b6993bf72e5ca9171d039e587d83ef0f8e89317a0f09b22cbd6fffb4aa"
+    }
+  },
+  "verification": {
+    "hostTests": {
+      "total": 153,
+      "passed": 153,
+      "failed": 0,
+      "output": "tests.txt",
+      "sha256": "765410a6a3a74b4765a4675a3007b2ef75f6ee787d99503399e9333fa3e85162"
+    },
+    "stagedNodeHostChecks": 71,
+    "keyProtectionTests": {
+      "new": 5,
+      "includedInHost153": true
+    },
+    "restoreCandidateTests": {
+      "total": 14,
+      "includedInHost153": true
+    },
+    "workbook": {
+      "model": {
+        "passed": 73,
+        "total": 73,
+        "report": "qa/tests.json"
+      },
+      "nativeExcel": {
+        "passed": 52,
+        "total": 52,
+        "blankRealInputCells": 1797,
+        "formulaErrors": 0,
+        "clippedRows": 0,
+        "readOnly": true,
+        "saved": false,
+        "sourcePreservedByteForByte": true,
+        "report": "qa/native-excel.json"
+      },
+      "visual": {
+        "sheets": 6,
+        "ranges": 15,
+        "scale": 1
+      }
+    },
+    "sourceAndArtifactHashes": {
+      "checked": 290,
+      "passed": 290,
+      "failed": []
+    }
+  },
+  "delivery": {
+    "source": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-evidence-20261007/SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+    "path": "C:\\Users\\q1212\\OneDrive\\Desktop\\bm 설계표\\20261007_SHIFT_실증\\SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+    "bytes": 44798,
+    "sha256": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+    "actualInputBlank": true,
+    "previousDeliverablesOverwritten": false
+  },
+  "existingLocalHost": {
+    "latestCandidateRuntimeVerified": false,
+    "publicSyncScriptStatus": 404,
+    "operatingTargetSelected": false
+  },
+  "recoveryBoundary": {
+    "baselineLatestnessIndependentlyVerified": false,
+    "productionTrafficAllowed": false,
+    "automaticHistoricalDeletionReplay": false,
+    "preparationMarkerIsNetworkOrBootGate": false
+  },
+  "remaining": {
+    "dockerBuildAndRun": "environment-unselected-and-runtime-unavailable",
+    "requiredPublicReview": "not-executed",
+    "operatingBackupAndRecovery": "not-executed",
+    "serverDeployment": "not-executed",
+    "realAccountAndPhysicalDevices": "not-executed",
+    "firstCustomerComparison": "customer-and-workflow-unselected",
+    "secondCustomerSupply": "customer-and-workflow-unselected",
+    "effectAndProfitability": "not-measured"
+  },
+  "boundaries": {
+    "operatingDatabaseWrites": 0,
+    "operatingServerRestarts": 0,
+    "realCustomerTrials": 0,
+    "physicalDevicesTested": 0,
+    "publicDeployments": 0,
+    "paidAiCalls": 0,
+    "externalMessages": 0,
+    "installations": 0,
+    "commits": 0,
+    "pushes": 0
+  },
+  "sourceAndArtifactChecks": [
+    {
+      "path": "atlas/domain.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
+    },
+    {
+      "path": "atlas/engine.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b",
+      "actual": "10e702c122ad582044468e32369872f4b1686c3c251b5c4b5e157c7d4be1285b"
+    },
+    {
+      "path": "atlas/interpretation.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "actual": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e"
+    },
+    {
+      "path": "atlas/personalization.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "actual": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
+    },
+    {
+      "path": "atlas/temper-outcomes.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "actual": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763"
+    },
+    {
+      "path": "atlas/trail.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc",
+      "actual": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc"
+    },
+    {
+      "path": "atlas/work.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9ef22ff7a8e94cb7874d0f5e739b1c3d59f3243440196ce75bebed6ab78050d6",
+      "actual": "9ef22ff7a8e94cb7874d0f5e739b1c3d59f3243440196ce75bebed6ab78050d6"
+    },
+    {
+      "path": "docs/개인정보처리방침_초안_v1.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "a538c8070ad45eee4dae962aeece3043d96e2c12242a5ebebcf3f3fe9c4ace6f",
+      "actual": "a538c8070ad45eee4dae962aeece3043d96e2c12242a5ebebcf3f3fe9c4ace6f"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/felt-laptop.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "actual": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-lab.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b1e0ec28fa10cc446952afa82bc58cea3e58b3ddbf9a169e27cbcaec30695b0e",
+      "actual": "b1e0ec28fa10cc446952afa82bc58cea3e58b3ddbf9a169e27cbcaec30695b0e"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-pulse.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f8015d2993079020058bb9af7a6f3e4171b92de2b6509c8c75894dc6d06ae13d",
+      "actual": "f8015d2993079020058bb9af7a6f3e4171b92de2b6509c8c75894dc6d06ae13d"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-shift.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2682b927496f078ce406d73ead394fbfe3a13ac15efe44f28d51dfc8f22b2a6a",
+      "actual": "2682b927496f078ce406d73ead394fbfe3a13ac15efe44f28d51dfc8f22b2a6a"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-synk-paper.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f59209089f6ac049a4b3a61cfea750621bcbc85bffe3ff8b884992b6005399b2",
+      "actual": "f59209089f6ac049a4b3a61cfea750621bcbc85bffe3ff8b884992b6005399b2"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-까몽_본체.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9abae542b328c93c3e14471cbdb326730d31185dbac99a82a6aeb1a56cb5bc1a",
+      "actual": "9abae542b328c93c3e14471cbdb326730d31185dbac99a82a6aeb1a56cb5bc1a"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-마린_본체.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8db73d81ea016b384b5d8f3c4a93018a37dd2a987171254a78009511ae0d3bd8",
+      "actual": "8db73d81ea016b384b5d8f3c4a93018a37dd2a987171254a78009511ae0d3bd8"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-몽글_본체.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b05298d34c0c04af62ed6b894df3baef3448da155edc250a0fd28e44cc640929",
+      "actual": "b05298d34c0c04af62ed6b894df3baef3448da155edc250a0fd28e44cc640929"
+    },
+    {
+      "path": "docs/디자인/펠트부품/assets/ui/badge-check.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "actual": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645"
+    },
+    {
+      "path": "docs/디자인/펠트부품/assets/ui/slab-coral-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "actual": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "path": "docs/디자인/펠트스크랩북/README.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f24a8aef03f9b481cafe84a4cc18178e82b0e2922d1046076b52b5b853bd2218",
+      "actual": "f24a8aef03f9b481cafe84a4cc18178e82b0e2922d1046076b52b5b853bd2218"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+      "actual": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/rules.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0f8ff5199135a9d7527ae6eb6ee26e33f34667fedb4ca46085ec3fa41633d6fd",
+      "actual": "0f8ff5199135a9d7527ae6eb6ee26e33f34667fedb4ca46085ec3fa41633d6fd"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/analytics.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ed4ff3d808c1f319c72eb73905e2a4d06ff8678a76bc631731c09eab201dddad",
+      "actual": "ed4ff3d808c1f319c72eb73905e2a4d06ff8678a76bc631731c09eab201dddad"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "666b6edbdce9697005ef23bf4589f71de8915553d8d45cceb58eef14affb0f7b",
+      "actual": "666b6edbdce9697005ef23bf4589f71de8915553d8d45cceb58eef14affb0f7b"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e11efdbc70cf80b13da03a044276acfd4238c1673fb7ab1e0b48675903d98639",
+      "actual": "e11efdbc70cf80b13da03a044276acfd4238c1673fb7ab1e0b48675903d98639"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile.dockerignore",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ffdc7671f6827363d40e9d27574606cea56b8279dda680f46fbbe78617d592ce",
+      "actual": "ffdc7671f6827363d40e9d27574606cea56b8279dda680f46fbbe78617d592ce"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/admin.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "4a9e31bc806aabd812b667a1d15e5f0b5d5cccbd481367acb54d1e0c78ef1f69",
+      "actual": "4a9e31bc806aabd812b667a1d15e5f0b5d5cccbd481367acb54d1e0c78ef1f69"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/assistant-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "059eb67738a09909ae15bca76b255c4ced829ef8d300e130d01cba6185232d6f",
+      "actual": "059eb67738a09909ae15bca76b255c4ced829ef8d300e130d01cba6185232d6f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/backup.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ada3674455ff1044ed20c252576dec36856b0b29d9e49c30c2eac441ec78daa8",
+      "actual": "ada3674455ff1044ed20c252576dec36856b0b29d9e49c30c2eac441ec78daa8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53",
+      "actual": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "4f863a4f282bd6aafc092a5193cd8c9fce1261c5eb7c52d4c46b7f6474300b02",
+      "actual": "4f863a4f282bd6aafc092a5193cd8c9fce1261c5eb7c52d4c46b7f6474300b02"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/benchmarks.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "eeb97defa9bd37d1171fd19e464bd35843280303461b54608bf513b38800399a",
+      "actual": "eeb97defa9bd37d1171fd19e464bd35843280303461b54608bf513b38800399a"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/collection-policy.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "12fd644cfd62a6a1bcf5ec4876c3c633a6ec2ca9462e3854abafc0cbca85f81d",
+      "actual": "12fd644cfd62a6a1bcf5ec4876c3c633a6ec2ca9462e3854abafc0cbca85f81d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/collectors.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "23ec742a07483bfb5bd139d3732921db74a05da2becccdf8d086823748532c00",
+      "actual": "23ec742a07483bfb5bd139d3732921db74a05da2becccdf8d086823748532c00"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/company-guide.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5264d09f6c5344dac240e6ce97c4f256c25c6e57e9d1c09a7bb8f12b00ce30b2",
+      "actual": "5264d09f6c5344dac240e6ce97c4f256c25c6e57e9d1c09a7bb8f12b00ce30b2"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-runtime.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c1305920135e1a07e037eb59970836953145cef28070219d62d78275357a0b0d",
+      "actual": "c1305920135e1a07e037eb59970836953145cef28070219d62d78275357a0b0d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "27a7026fd70bf1a1322fcec201f6a6d867521853ac06317d487ddc997fa1f3a8",
+      "actual": "27a7026fd70bf1a1322fcec201f6a6d867521853ac06317d487ddc997fa1f3a8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/container-delivery.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "041ee1380c8cd73b5aba670f46a11ea05e540255dc23d4f707235db00d599c9d",
+      "actual": "041ee1380c8cd73b5aba670f46a11ea05e540255dc23d4f707235db00d599c9d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "638dcc6ff8ae833e361a1ce98d19e69b8c4f5812bbde1b559dc5aff2ac7ee04d",
+      "actual": "638dcc6ff8ae833e361a1ce98d19e69b8c4f5812bbde1b559dc5aff2ac7ee04d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-engine.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "52ba805f423c5600303d33190b0f75b9d0bd4a686131d848f7a840aee2853a9f",
+      "actual": "52ba805f423c5600303d33190b0f75b9d0bd4a686131d848f7a840aee2853a9f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-leaders.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "700534ad581f315c8aba37857813abae48e378a0e71c1da7719ff01616e712f0",
+      "actual": "700534ad581f315c8aba37857813abae48e378a0e71c1da7719ff01616e712f0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "30705a730be4c5e17a0ccec8428cc4f51dd4668731244601da4788f4a4bb8000",
+      "actual": "30705a730be4c5e17a0ccec8428cc4f51dd4668731244601da4788f4a4bb8000"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creative-research.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b18f8259fb03f624855a21d9bd8c0f255b72e51a2c225c2942957531c500c6b0",
+      "actual": "b18f8259fb03f624855a21d9bd8c0f255b72e51a2c225c2942957531c500c6b0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-reviews.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "acf0ee93615898defca3617ef19a4d5465d6456bf810cd0539de7a0dd85e9f55",
+      "actual": "acf0ee93615898defca3617ef19a4d5465d6456bf810cd0539de7a0dd85e9f55"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-sources.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "cc99e4dac5a95acb970ce91c5ecd235f9c182a8f7a1ac8ebe640b77dda87822e",
+      "actual": "cc99e4dac5a95acb970ce91c5ecd235f9c182a8f7a1ac8ebe640b77dda87822e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/crew-profile-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9a86d58bad64748f88d2a87ec7d19eb1803ec37dd0535377c9e0a8f8e3c83852",
+      "actual": "9a86d58bad64748f88d2a87ec7d19eb1803ec37dd0535377c9e0a8f8e3c83852"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/daily-trends-cli.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "98604b5b87795f1c961929800c269b0bfd8147890d7335d4092fa8fb5b609ef5",
+      "actual": "98604b5b87795f1c961929800c269b0bfd8147890d7335d4092fa8fb5b609ef5"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/daily-trends-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "7529d9b5720b24077e9b7ecb5dd35902daa1be223652ee6356db028dbc2d9a69",
+      "actual": "7529d9b5720b24077e9b7ecb5dd35902daa1be223652ee6356db028dbc2d9a69"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/demo-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "17658d1ae43980f64633c59652ba98164e858d06b7a66eddd36f566df6460069",
+      "actual": "17658d1ae43980f64633c59652ba98164e858d06b7a66eddd36f566df6460069"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/growth-history.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f6778c2ed088dc9d1ea9f51c33735bef34ec70b09e270eb643da0749d4066f54",
+      "actual": "f6778c2ed088dc9d1ea9f51c33735bef34ec70b09e270eb643da0749d4066f54"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/growth-summary.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8d1e0e680ea366b4d93c313f1a9ed263d1fba85ab7324b37563c4546b61813a0",
+      "actual": "8d1e0e680ea366b4d93c313f1a9ed263d1fba85ab7324b37563c4546b61813a0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/hype.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f5aa567b80d6dabbdaef28b7908b6bc70c126ab6de7ff770c68df365aacc8fb6",
+      "actual": "f5aa567b80d6dabbdaef28b7908b6bc70c126ab6de7ff770c68df365aacc8fb6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/launch.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "58930d32264911e99392ded791e44476d395a81cad25499b3af1c6c86f9cd725",
+      "actual": "58930d32264911e99392ded791e44476d395a81cad25499b3af1c6c86f9cd725"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/oauth.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e8ec44d6582d2e363fa5ddc47d6a57bf6d5059e7dd665f998be36565503cf562",
+      "actual": "e8ec44d6582d2e363fa5ddc47d6a57bf6d5059e7dd665f998be36565503cf562"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/organization.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0a9dfd997bb6c04f7d292502a228e3a6940fc3d60bbc84c8a888e6a0745f04d4",
+      "actual": "0a9dfd997bb6c04f7d292502a228e3a6940fc3d60bbc84c8a888e6a0745f04d4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/ownership-report.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "26c00b24f202124108db3c71015273fcffd8bf448afa726eb68c526e186f1daa",
+      "actual": "26c00b24f202124108db3c71015273fcffd8bf448afa726eb68c526e186f1daa"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8a0a0c392e2d41a0d275884e067c64986a6300ce5f85b2fea0bc754a6d962af4",
+      "actual": "8a0a0c392e2d41a0d275884e067c64986a6300ce5f85b2fea0bc754a6d962af4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/benchmark.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "21d2f58cf0c2415a37aa22223fcc5641a7e219495691deb133b9ab0805920891",
+      "actual": "21d2f58cf0c2415a37aa22223fcc5641a7e219495691deb133b9ab0805920891"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/benchmark.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "505a7a5d2694ca96c4036c4f5c67d6e4dc01e39061bb55a59131b592fe2c877a",
+      "actual": "505a7a5d2694ca96c4036c4f5c67d6e4dc01e39061bb55a59131b592fe2c877a"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/chart-hover.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2d1bc91cd35f14f9158f5225ed72a2f4c9b2175e948d72f59fe6caffba4aa3e9",
+      "actual": "2d1bc91cd35f14f9158f5225ed72a2f4c9b2175e948d72f59fe6caffba4aa3e9"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/chart-hover.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "14e84681457d428359d17211ebd481eccca4c195d4bf05bb4e60a8d1149fc9ed",
+      "actual": "14e84681457d428359d17211ebd481eccca4c195d4bf05bb4e60a8d1149fc9ed"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/company-guide.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2d9ef58e619f7d9523f50d7707ff2d467b153e411d1f466f4115626bdcd26e09",
+      "actual": "2d9ef58e619f7d9523f50d7707ff2d467b153e411d1f466f4115626bdcd26e09"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/company-guide.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6682acc815087261621557e2f829020d8b93c2443fc111959725641c4ff7bc19",
+      "actual": "6682acc815087261621557e2f829020d8b93c2443fc111959725641c4ff7bc19"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/comparison-charts.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ab046c8c3fedc9bc7fda4da1386b307a45ff3c8cd3e18097bc0bfcbf39d524ee",
+      "actual": "ab046c8c3fedc9bc7fda4da1386b307a45ff3c8cd3e18097bc0bfcbf39d524ee"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/comparison-charts.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "eec39bc2c88e574f7d986d3e4ceced64b3df61379a35de3ceb536d54ec466c04",
+      "actual": "eec39bc2c88e574f7d986d3e4ceced64b3df61379a35de3ceb536d54ec466c04"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/content.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "bc4020456b7d226c14590e76161af37418feb97cfaf8d9b39667bd7ae50b5095",
+      "actual": "bc4020456b7d226c14590e76161af37418feb97cfaf8d9b39667bd7ae50b5095"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/content.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ba57944e98edf5776eb8db5eef65dcadd37489e22dfc85c325ebce6615ab2825",
+      "actual": "ba57944e98edf5776eb8db5eef65dcadd37489e22dfc85c325ebce6615ab2825"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creative-research.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d1b67a355c60712df0ae41ebe6bdcc36e984bb7408214d1a4055ec104b6c8786",
+      "actual": "d1b67a355c60712df0ae41ebe6bdcc36e984bb7408214d1a4055ec104b6c8786"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creative-research.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "129af0b610dbbdf189f8e36b5b1a21e1114fa16f7ab95883887387fb3405d815",
+      "actual": "129af0b610dbbdf189f8e36b5b1a21e1114fa16f7ab95883887387fb3405d815"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creator-sources.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b0b8c730cfa311010a9e410fb6ec91d175622e5e2b201caa5cfffbf5a2f41459",
+      "actual": "b0b8c730cfa311010a9e410fb6ec91d175622e5e2b201caa5cfffbf5a2f41459"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creator-sources.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "23806acaa9a08cbb005c007b692c64560ad89b6ae14b54c29150f0c8289d3299",
+      "actual": "23806acaa9a08cbb005c007b692c64560ad89b6ae14b54c29150f0c8289d3299"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+      "actual": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/dialogs.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "20197f221b171547d95f89341c98a01b191febb17b0cbe4336ded5695c3c6fbf",
+      "actual": "20197f221b171547d95f89341c98a01b191febb17b0cbe4336ded5695c3c6fbf"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-history.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "68a40b6557d1efc4bc8df15a6bb917059be71509305fb03a5cd0285ab594a6de",
+      "actual": "68a40b6557d1efc4bc8df15a6bb917059be71509305fb03a5cd0285ab594a6de"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-history.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "874b4026d9a6ae9543964d16314ccddad3054eb56a4aa75fd2180759caa03919",
+      "actual": "874b4026d9a6ae9543964d16314ccddad3054eb56a4aa75fd2180759caa03919"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-home.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "af7b7045833f120e784410e7ed3fc47461baed69be04e66158bee7ba997b5440",
+      "actual": "af7b7045833f120e784410e7ed3fc47461baed69be04e66158bee7ba997b5440"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-home.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "92cd4b65703c35bc9de9390627255fbf58d8d853139e7fb92b0198084583a97d",
+      "actual": "92cd4b65703c35bc9de9390627255fbf58d8d853139e7fb92b0198084583a97d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f4c8b746fac6053bb3ec8c8e0dc5e2f634875fb261993e08d408ced4a6308b97",
+      "actual": "f4c8b746fac6053bb3ec8c8e0dc5e2f634875fb261993e08d408ced4a6308b97"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/maker-tools.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "34d0cc5fb78f9c1a05fadd03c306a3732093b914776ffddc2adc8eecbb11dd5e",
+      "actual": "34d0cc5fb78f9c1a05fadd03c306a3732093b914776ffddc2adc8eecbb11dd5e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/maker-tools.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "a274ef2f1ee3ef6852df4c9e0fb9ecd877d1b6635785dd748bd35ac2a6c11877",
+      "actual": "a274ef2f1ee3ef6852df4c9e0fb9ecd877d1b6635785dd748bd35ac2a6c11877"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/manifest.webmanifest",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b91bff23ea32b8acf6144b5b53722226b8353d169bf76f58e39c9170fd5cbbbd",
+      "actual": "b91bff23ea32b8acf6144b5b53722226b8353d169bf76f58e39c9170fd5cbbbd"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-home.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "072c8333be4805e0b687547e9290094a5cf4df4a1544b5f72185c4a2b469b4c0",
+      "actual": "072c8333be4805e0b687547e9290094a5cf4df4a1544b5f72185c4a2b469b4c0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-home.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "80bcc8d980940cf3da83a532b0709cdb34406ea20b4a25031ca32797d45f7586",
+      "actual": "80bcc8d980940cf3da83a532b0709cdb34406ea20b4a25031ca32797d45f7586"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-work.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f9e1d8fd774e940c261490119ba3c8370e51b71c7e87ffca89c24c1b790f7d37",
+      "actual": "f9e1d8fd774e940c261490119ba3c8370e51b71c7e87ffca89c24c1b790f7d37"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-work.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "78b54d5adbc5f7b3284420cb3b2e225f600414b3c6b453c4a878fc6e69db3c75",
+      "actual": "78b54d5adbc5f7b3284420cb3b2e225f600414b3c6b453c4a878fc6e69db3c75"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "1f2f19b0724bbfcba4ed5802ebd2fa21c07ccac19459b09bff2ae33e1b35f57a",
+      "actual": "1f2f19b0724bbfcba4ed5802ebd2fa21c07ccac19459b09bff2ae33e1b35f57a"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/messenger-icon.png",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423",
+      "actual": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/pages.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b400a5b2b292aad33eb5170cfb6c6aabfbf34fe0fcb3090b66d62e7bbeec8cb8",
+      "actual": "b400a5b2b292aad33eb5170cfb6c6aabfbf34fe0fcb3090b66d62e7bbeec8cb8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-check.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "32c2794e841d4c680e5321ddbaa21f99f535792093c85473bcdac5657a7711a3",
+      "actual": "32c2794e841d4c680e5321ddbaa21f99f535792093c85473bcdac5657a7711a3"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-rules.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e809465319dc048c5f2d69cf480bab2ae84d703ffbc63fff4c5d5f3fc22daab0",
+      "actual": "e809465319dc048c5f2d69cf480bab2ae84d703ffbc63fff4c5d5f3fc22daab0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-board.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f63cf5fb130dcd02e5294043b16bbdaf5173489375e4f0f73d1059534d3dc3a6",
+      "actual": "f63cf5fb130dcd02e5294043b16bbdaf5173489375e4f0f73d1059534d3dc3a6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-board.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b1ebf64881d2fc9ceba81f4d26d8fda20224d10b3d8dca974e6c3cbb7bd9cf62",
+      "actual": "b1ebf64881d2fc9ceba81f4d26d8fda20224d10b3d8dca974e6c3cbb7bd9cf62"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-review.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f5892e716567d59bb331d834736f9a2ab56d274a50493bd1dcef3dd21db79180",
+      "actual": "f5892e716567d59bb331d834736f9a2ab56d274a50493bd1dcef3dd21db79180"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-review.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "41117ea9263bea4e71f7954556fae06f324bb8b8f7fd81bf61e20e3497d6a61c",
+      "actual": "41117ea9263bea4e71f7954556fae06f324bb8b8f7fd81bf61e20e3497d6a61c"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "53f7a865d735ac8026ec4689967d22da8019c5a39011bc755c43aaa7415a6487",
+      "actual": "53f7a865d735ac8026ec4689967d22da8019c5a39011bc755c43aaa7415a6487"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "393b8efefafd61d38abbef0d7fe7917a990d885fd08cbe2a4ca41f2afb9b320a",
+      "actual": "393b8efefafd61d38abbef0d7fe7917a990d885fd08cbe2a4ca41f2afb9b320a"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/style.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d5d7221eb2769bc2ee98150be91868a9c5943191987e35cabc1e3fafb2be55a1",
+      "actual": "d5d7221eb2769bc2ee98150be91868a9c5943191987e35cabc1e3fafb2be55a1"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e747ccfc0caedc35442226d0e533da22200e3b44fec376eb2ce7afa01dfb3cc4",
+      "actual": "e747ccfc0caedc35442226d0e533da22200e3b44fec376eb2ce7afa01dfb3cc4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "85895d8faad11a861633769be7515e17d4af05120698febb7c638397c3c26a0f",
+      "actual": "85895d8faad11a861633769be7515e17d4af05120698febb7c638397c3c26a0f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/synk-id.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ad905f6eefc9ddbce39a9ff070172bdfc295e6cffa6ff5a0989a9886d75d0f7f",
+      "actual": "ad905f6eefc9ddbce39a9ff070172bdfc295e6cffa6ff5a0989a9886d75d0f7f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-overview.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2c12652d7454be5bf146efaea711be366c7790fe78f28307adb0949dd6e9a575",
+      "actual": "2c12652d7454be5bf146efaea711be366c7790fe78f28307adb0949dd6e9a575"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-trends.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "acd30904021f686c4ac45d194160f929fc65bcd2bcd2cf77c2124d2ab94f6072",
+      "actual": "acd30904021f686c4ac45d194160f929fc65bcd2bcd2cf77c2124d2ab94f6072"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-trends.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "dd132371c4898d03e52757bc419d5f4561d7923d03cbd0d39597bf6a34bc0c68",
+      "actual": "dd132371c4898d03e52757bc419d5f4561d7923d03cbd0d39597bf6a34bc0c68"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/wordmark.svg",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ccd830d0937d5b8b4eb48b4789ce37de7190ff988d0bfe15f004718865065750",
+      "actual": "ccd830d0937d5b8b4eb48b4789ce37de7190ff988d0bfe15f004718865065750"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice-sync.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8815287d3f89927fcd6ce793e92aec95ce6324077b07a3d248bbdae3c59385ab",
+      "actual": "8815287d3f89927fcd6ce793e92aec95ce6324077b07a3d248bbdae3c59385ab"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "df457e1783adbb630c22dfb6e1a2fcc085d270bdf9c30849df4b1530f638520d",
+      "actual": "df457e1783adbb630c22dfb6e1a2fcc085d270bdf9c30849df4b1530f638520d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+      "actual": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "98f4215153f1655ed5e261fac3ca2f098640781545558219b7374bc3b53145c6",
+      "actual": "98f4215153f1655ed5e261fac3ca2f098640781545558219b7374bc3b53145c6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "fd1f0a33c9406b26708dfd49a0b80515ab3004340cb1b0cb47461509af16cfe4",
+      "actual": "fd1f0a33c9406b26708dfd49a0b80515ab3004340cb1b0cb47461509af16cfe4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "1b6c0420244b558b3b0be3b31844bbd293b298b5fddcf24088d88730b33a14a6",
+      "actual": "1b6c0420244b558b3b0be3b31844bbd293b298b5fddcf24088d88730b33a14a6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "edd1a595f5284152f968239628fde5139d3aa49c5d0590b452f5ca4aa10adf0c",
+      "actual": "edd1a595f5284152f968239628fde5139d3aa49c5d0590b452f5ca4aa10adf0c"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-auth-race.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0",
+      "actual": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-messenger.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "49e4a60f3ee6937d3c73637cdc278947231c9e58dae411ee420ff3f845281a9e",
+      "actual": "49e4a60f3ee6937d3c73637cdc278947231c9e58dae411ee420ff3f845281a9e"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-readiness.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ef3415c6ec55ea0a7c6fd2b961eca629d65bf49c60746c86038688e8f803e523",
+      "actual": "ef3415c6ec55ea0a7c6fd2b961eca629d65bf49c60746c86038688e8f803e523"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-synk-identity.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "081f800362d19a1e71afd123821397b12922b392c636b532dd9cbc2e5a54dd58",
+      "actual": "081f800362d19a1e71afd123821397b12922b392c636b532dd9cbc2e5a54dd58"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b10a5864f94d95641efabd382a4b2ecfd4ed149796be82fe6126ff3d8d9b7db3",
+      "actual": "b10a5864f94d95641efabd382a4b2ecfd4ed149796be82fe6126ff3d8d9b7db3"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "209e79cf48872f61a3adebb61a960ba82690511ebad06f0e8412cc94d063ef98",
+      "actual": "209e79cf48872f61a3adebb61a960ba82690511ebad06f0e8412cc94d063ef98"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/static-response.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "78988e5deb8d8b83a662132cccc5b106c99bff387f8fa9ba02067de82bef02ad",
+      "actual": "78988e5deb8d8b83a662132cccc5b106c99bff387f8fa9ba02067de82bef02ad"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-performance.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b66f3e3a68f10e85002eaed793eb1be133373c34461316f2b64a64151eee8e4d",
+      "actual": "b66f3e3a68f10e85002eaed793eb1be133373c34461316f2b64a64151eee8e4d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-recovery-key.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907",
+      "actual": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef",
+      "actual": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/studio-media.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "3f7b9f7373a1a32b37d29403242eb9cabcf7fe28b974a4e9021a7826e76aca8a",
+      "actual": "3f7b9f7373a1a32b37d29403242eb9cabcf7fe28b974a4e9021a7826e76aca8a"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/studio-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "821952e6e6363d837533566d1c84b3e917f2eb2aa7c7dd376f87a1e872c83847",
+      "actual": "821952e6e6363d837533566d1c84b3e917f2eb2aa7c7dd376f87a1e872c83847"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-identity.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "858ea49fbfb59fcaec632daf669e3a5369a423462511e184c5da8b1ea3071b90",
+      "actual": "858ea49fbfb59fcaec632daf669e3a5369a423462511e184c5da8b1ea3071b90"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/team-trends.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "104fd469e485e3176967bbb76fd1c7372e9dc85af55d78c127e3b0854ddf68a4",
+      "actual": "104fd469e485e3176967bbb76fd1c7372e9dc85af55d78c127e3b0854ddf68a4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/trend-collectors.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0f3230d0ba656f6a4e9ea27d2b93a76642eeb9cdccf5f8f85c33c3e3a4bd65f4",
+      "actual": "0f3230d0ba656f6a4e9ea27d2b93a76642eeb9cdccf5f8f85c33c3e3a4bd65f4"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d89c0a6f65aa459ec1c2402a37fe1e01a75d6fd4e825dc9ad07f4f9e01c9a8fc",
+      "actual": "d89c0a6f65aa459ec1c2402a37fe1e01a75d6fd4e825dc9ad07f4f9e01c9a8fc"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0a89e4e2516321de9c84240f2539a9c45246a9f6d7850079212410775b507bdd",
+      "actual": "0a89e4e2516321de9c84240f2539a9c45246a9f6d7850079212410775b507bdd"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-backup.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5a6667de68db7ddeada15b0238f26220bf211da0eea6c6c953874d585b5703af",
+      "actual": "5a6667de68db7ddeada15b0238f26220bf211da0eea6c6c953874d585b5703af"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "960710e800607faf589838731968e53582d4fe976c2166038137ce3dac60df70",
+      "actual": "960710e800607faf589838731968e53582d4fe976c2166038137ce3dac60df70"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "15630358490678ce35ed53c048d3166bd2864c6fc5c0d82426bd93715aa78492",
+      "actual": "15630358490678ce35ed53c048d3166bd2864c6fc5c0d82426bd93715aa78492"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+      "actual": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "09b6e909d57225f29f8775da271175e9be8dcdd4c01448e635edabacec1484d1",
+      "actual": "09b6e909d57225f29f8775da271175e9be8dcdd4c01448e635edabacec1484d1"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8",
+      "actual": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468",
+      "actual": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-navigation.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "176bdc4639ae1cc442d54a42d93bb021c51a8fd3b517247fa7f9dd9f2322d7dc",
+      "actual": "176bdc4639ae1cc442d54a42d93bb021c51a8fd3b517247fa7f9dd9f2322d7dc"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "616a01208285a94b07eb449bf8fbefe9e2c9e2a696f28142068789e64656c2a6",
+      "actual": "616a01208285a94b07eb449bf8fbefe9e2c9e2a696f28142068789e64656c2a6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.test.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "85f4d29112bd02d176b2b05302ebe9e4afe702e694171da838d2d7ac35589b2f",
+      "actual": "85f4d29112bd02d176b2b05302ebe9e4afe702e694171da838d2d7ac35589b2f"
+    },
+    {
+      "path": "docs/마케팅/제작양식/AI_소식_도구추천.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "50a1f3891845f3aba2d55f14be752dc53061b9740be14a72237c5f316104cd1d",
+      "actual": "50a1f3891845f3aba2d55f14be752dc53061b9740be14a72237c5f316104cd1d"
+    },
+    {
+      "path": "docs/마케팅/제작양식/AI_활용법.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2186af45c1273b6ac4fa80f90544e82d92d4eb72167afcbfe3ee2a8f42441e53",
+      "actual": "2186af45c1273b6ac4fa80f90544e82d92d4eb72167afcbfe3ee2a8f42441e53"
+    },
+    {
+      "path": "docs/마케팅/제작양식/LAB_상황극.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d8cd5ec78d2c0fbd23389ea73de3b6e601f260458bc41a3a670dafd068e792a6",
+      "actual": "d8cd5ec78d2c0fbd23389ea73de3b6e601f260458bc41a3a670dafd068e792a6"
+    },
+    {
+      "path": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "33910cb2c19a720d8913ad1ce1cdf16c0cea7280fe8d9754a2284d2498463248",
+      "actual": "33910cb2c19a720d8913ad1ce1cdf16c0cea7280fe8d9754a2284d2498463248"
+    },
+    {
+      "path": "docs/마케팅/제작양식/글_뉴스레터.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "41bf6a23ce75b67cc932bd9b22bc52fa62f0dce664d933101e95adc623d1e224",
+      "actual": "41bf6a23ce75b67cc932bd9b22bc52fa62f0dce664d933101e95adc623d1e224"
+    },
+    {
+      "path": "docs/마케팅/제작양식/인물클립.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d7538253fdff2a0586d4cce2339771c20804eda8eab157bf49a12079d4507f0f",
+      "actual": "d7538253fdff2a0586d4cce2339771c20804eda8eab157bf49a12079d4507f0f"
+    },
+    {
+      "path": "docs/마케팅/제작양식/인터뷰.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "576194eae63ac3685ca8038f827aa337e0e5cce0d8e16e824b5582093d381a27",
+      "actual": "576194eae63ac3685ca8038f827aa337e0e5cce0d8e16e824b5582093d381a27"
+    },
+    {
+      "path": "docs/마케팅/제작양식/제작여정_쇼츠.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "3dd5646be44080402a38abadc2742ebb617f703db320c1eb604e276e890b57e1",
+      "actual": "3dd5646be44080402a38abadc2742ebb617f703db320c1eb604e276e890b57e1"
+    },
+    {
+      "path": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2d08cde1ace8c5ad193057b233227dd62970bf8cd95d2dae0d45809c5ef77621",
+      "actual": "2d08cde1ace8c5ad193057b233227dd62970bf8cd95d2dae0d45809c5ef77621"
+    },
+    {
+      "path": "docs/마케팅/채널과_발행.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "91c09e4e8bd94cfa54075b43751feb1a31c26be636d4daff78680a43259749a8",
+      "actual": "91c09e4e8bd94cfa54075b43751feb1a31c26be636d4daff78680a43259749a8"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5ffb587523f85000988f6386e4d8ede62211ef6f8abd183f818088f6a7ff3f3a",
+      "actual": "5ffb587523f85000988f6386e4d8ede62211ef6f8abd183f818088f6a7ff3f3a"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_제작양식.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "ba5588492824b4088e34ada99594703eb6241af287763fd3d854c71494070e46",
+      "actual": "ba5588492824b4088e34ada99594703eb6241af287763fd3d854c71494070e46"
+    },
+    {
+      "path": "docs/명품_기준_v1.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6753d1dc38abcf1c5c33b957140fcb675b5ec5b174c02c3fedf19a8f623989b9",
+      "actual": "6753d1dc38abcf1c5c33b957140fcb675b5ec5b174c02c3fedf19a8f623989b9"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "actual": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "55b4c98f123daebb3ed27947ba47b2af00554fc6284d639a540bcef5e6258ad2",
+      "actual": "55b4c98f123daebb3ed27947ba47b2af00554fc6284d639a540bcef5e6258ad2"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "actual": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "actual": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Regular.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
+      "actual": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c",
+      "actual": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "actual": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "actual": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "actual": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "docs/수강약관_초안_v1.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "629bb78954324676c9d110d4f5abb128b578901362dfd52e52f40643a011cdd3",
+      "actual": "629bb78954324676c9d110d4f5abb128b578901362dfd52e52f40643a011cdd3"
+    },
+    {
+      "path": "docs/자주묻는질문_정본.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0ab7e84c44ddc4bc4c06bd232ebfbe6fa2d8b2511e6d8f50085d359426e9e3be",
+      "actual": "0ab7e84c44ddc4bc4c06bd232ebfbe6fa2d8b2511e6d8f50085d359426e9e3be"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "cb236fe0dab8abe3944acc918b2648b28c58b0294a383819bffc1dbda014dc4c",
+      "actual": "cb236fe0dab8abe3944acc918b2648b28c58b0294a383819bffc1dbda014dc4c"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "16f292b6ab229b9004830cdf565a4a01d07887df18d306c965cd1d642f65b97e",
+      "actual": "16f292b6ab229b9004830cdf565a4a01d07887df18d306c965cd1d642f65b97e"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c7cbda52cb4263b1d0236f1bb7205ac82de1b5b11d68b7430a77f71051665f28",
+      "actual": "c7cbda52cb4263b1d0236f1bb7205ac82de1b5b11d68b7430a77f71051665f28"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "47b982cae7a371dda35c5e3133f789a2f0da16232b1843cd0f7db43c869dfaa0",
+      "actual": "47b982cae7a371dda35c5e3133f789a2f0da16232b1843cd0f7db43c869dfaa0"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0f0b41ca701d126e15cc0e74439c949cf185f6044ec8f0efc199fadd8bdd02b1",
+      "actual": "0f0b41ca701d126e15cc0e74439c949cf185f6044ec8f0efc199fadd8bdd02b1"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "1662a02ecbbd92aaff16e24af2a7acb44446de325ff86499cb78e8b4c21e5f36",
+      "actual": "1662a02ecbbd92aaff16e24af2a7acb44446de325ff86499cb78e8b4c21e5f36"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8b9f80714498269d62c59758d2501dbaea407e01c0efd1422a843050dbfc8cdc",
+      "actual": "8b9f80714498269d62c59758d2501dbaea407e01c0efd1422a843050dbfc8cdc"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8343a8a323bed3613da47d7bd5dd90e3b3dc9bca2cf8dadaac3c8cf6b6dd503e",
+      "actual": "8343a8a323bed3613da47d7bd5dd90e3b3dc9bca2cf8dadaac3c8cf6b6dd503e"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6c5905069f50c7d84a910ed17333539cc853393c03ac8384ab5dd03e11e56858",
+      "actual": "6c5905069f50c7d84a910ed17333539cc853393c03ac8384ab5dd03e11e56858"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "728d1c40ffce0b0ff911f2cd9c19fccc4f382d22d5c87f8c678bac47b0116491",
+      "actual": "728d1c40ffce0b0ff911f2cd9c19fccc4f382d22d5c87f8c678bac47b0116491"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "44561a320527f2510b0b5e7fd08edcf3f60d35971d67c7d0a12a76dcb76b8ee4",
+      "actual": "44561a320527f2510b0b5e7fd08edcf3f60d35971d67c7d0a12a76dcb76b8ee4"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK FAQ.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6f86072cadfeafc08eda79c552ea99f80fea688640495ad5d74f37325c6ae6d0",
+      "actual": "6f86072cadfeafc08eda79c552ea99f80fea688640495ad5d74f37325c6ae6d0"
+    },
+    {
+      "path": "docs/커리큘럼_정본_v1.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "825d8b8d038f27a271ee5a9679d27dc99927fc7eb4b5c3c9d2f3b47153b7893e",
+      "actual": "825d8b8d038f27a271ee5a9679d27dc99927fc7eb4b5c3c9d2f3b47153b7893e"
+    },
+    {
+      "path": "docs/포토부스_설계.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f6e01875e816c054a6a3f3485559cfe8856e49fa978fff2c4cc7b371f94ac497",
+      "actual": "f6e01875e816c054a6a3f3485559cfe8856e49fa978fff2c4cc7b371f94ac497"
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "actual": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89",
+      "actual": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89"
+    },
+    {
+      "path": "experiences/atlas-lab/consultation.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "1395c2bd702822811787a7790323c50c49a28bc12993822bd0e296b643a5138b",
+      "actual": "1395c2bd702822811787a7790323c50c49a28bc12993822bd0e296b643a5138b"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-ui.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "6d688246b8c460f0bf450839980a6671d9e396385d7459341e470118266e34f2",
+      "actual": "6d688246b8c460f0bf450839980a6671d9e396385d7459341e470118266e34f2"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "769d228848b87c53141bcb7e8487b2b4f4830b08ded398a2926687dd122a5815",
+      "actual": "769d228848b87c53141bcb7e8487b2b4f4830b08ded398a2926687dd122a5815"
+    },
+    {
+      "path": "experiences/atlas-lab/index.html",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "7f27a30e6fd8c2dc6bea888183ff9a367cd898f2b80fc7c7604085c7ba2be679",
+      "actual": "7f27a30e6fd8c2dc6bea888183ff9a367cd898f2b80fc7c7604085c7ba2be679"
+    },
+    {
+      "path": "experiences/atlas-lab/interpretation.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+      "actual": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9"
+    },
+    {
+      "path": "experiences/atlas-lab/journey-memory.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "77ce2f2551a0dd9aa25d8cf6021668d81712361f59952ec878a808bb66e2f73e",
+      "actual": "77ce2f2551a0dd9aa25d8cf6021668d81712361f59952ec878a808bb66e2f73e"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "3b314c30d0eaf1661818c5988d39c0f07b5f2227303ee51d05ffd430179e6341",
+      "actual": "3b314c30d0eaf1661818c5988d39c0f07b5f2227303ee51d05ffd430179e6341"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "94a12261cb9af6fabe7f3ff1fec262c3565e2a7d9eab59141cfd06cfd9a42eab",
+      "actual": "94a12261cb9af6fabe7f3ff1fec262c3565e2a7d9eab59141cfd06cfd9a42eab"
+    },
+    {
+      "path": "experiences/atlas-lab/matching-ui.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "bb1db7c559f26d5a7cf9850d221cf7dec2c0387b4490a0b406e8bee4243dd964",
+      "actual": "bb1db7c559f26d5a7cf9850d221cf7dec2c0387b4490a0b406e8bee4243dd964"
+    },
+    {
+      "path": "experiences/atlas-lab/matching.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9c11fa3548030a35d6643fcd7c89675cfe32c6af4cdbc226b7e90c22703c21c8",
+      "actual": "9c11fa3548030a35d6643fcd7c89675cfe32c6af4cdbc226b7e90c22703c21c8"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-ui.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "7936e09ed6fd692b0232ac3949cfb1630ce756eb28fcf0df1ae32743232d491a",
+      "actual": "7936e09ed6fd692b0232ac3949cfb1630ce756eb28fcf0df1ae32743232d491a"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "a982600cc52159bffedf5d26be6c8aed873995b937514a6f21b8815fc2c1ca14",
+      "actual": "a982600cc52159bffedf5d26be6c8aed873995b937514a6f21b8815fc2c1ca14"
+    },
+    {
+      "path": "experiences/atlas-lab/model-extraction.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+      "actual": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266"
+    },
+    {
+      "path": "experiences/atlas-lab/model-host.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "29cf31e3173d51fe40c9d68d9e9d2ed6c62892ab4e116e896efdb6bee45dc2fa",
+      "actual": "29cf31e3173d51fe40c9d68d9e9d2ed6c62892ab4e116e896efdb6bee45dc2fa"
+    },
+    {
+      "path": "experiences/atlas-lab/participant-launcher.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e719d70f462b1b65ebf138611a176185c74646b8f31c630d6555130ed3f8fc86",
+      "actual": "e719d70f462b1b65ebf138611a176185c74646b8f31c630d6555130ed3f8fc86"
+    },
+    {
+      "path": "experiences/atlas-lab/reconnect.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "7d1653284ef14fb0a386de944180a4132f8f7e765ed0987eb331cfd7d67a6ba6",
+      "actual": "7d1653284ef14fb0a386de944180a4132f8f7e765ed0987eb331cfd7d67a6ba6"
+    },
+    {
+      "path": "experiences/korean-rhythm/core.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "943553227c21b22e79a17f26bc3cb5a6bda4acf98d32433d7ce63be9d1b891f6",
+      "actual": "943553227c21b22e79a17f26bc3cb5a6bda4acf98d32433d7ce63be9d1b891f6"
+    },
+    {
+      "path": "experiences/korean-rhythm/listening.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5c6c50924fa03868409b5e25d4dd823cf3961d0850b9c9f7be06ff11f4c46559",
+      "actual": "5c6c50924fa03868409b5e25d4dd823cf3961d0850b9c9f7be06ff11f4c46559"
+    },
+    {
+      "path": "experiences/korean-rhythm/narration.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "518fa72de1413c99ea315b422de4604044b5842e493a0c9d307b4de911fb20a1",
+      "actual": "518fa72de1413c99ea315b422de4604044b5842e493a0c9d307b4de911fb20a1"
+    },
+    {
+      "path": "experiences/korean-rhythm/personalization.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c36d73dfb966a59578494cbb6fe04eadd0a9f5cf58f2c92d7dff205222b3bfd3",
+      "actual": "c36d73dfb966a59578494cbb6fe04eadd0a9f5cf58f2c92d7dff205222b3bfd3"
+    },
+    {
+      "path": "experiences/korean-rhythm/suno-tracks.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8c3a2698adcc0fbfded6bccd7feaa4c620d29c027f61331ead11685a891d8e2e",
+      "actual": "8c3a2698adcc0fbfded6bccd7feaa4c620d29c027f61331ead11685a891d8e2e"
+    },
+    {
+      "path": "experiences/learning-hub/assets/InterTight-700.woff2",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+      "actual": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+    },
+    {
+      "path": "experiences/learning-hub/assets/SUIT-Variable.woff2",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "actual": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "experiences/learning-hub/assets/scrapbook.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
+      "actual": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572"
+    },
+    {
+      "path": "experiences/learning-hub/assets/slab-blush-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0e165b76ebb8605e9472555a77c01281e1344fab590cab79d55563fe71f5caa6",
+      "actual": "0e165b76ebb8605e9472555a77c01281e1344fab590cab79d55563fe71f5caa6"
+    },
+    {
+      "path": "experiences/learning-hub/assets/slab-cream-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9",
+      "actual": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9"
+    },
+    {
+      "path": "experiences/learning-hub/assets/sticker-book.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+      "actual": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e"
+    },
+    {
+      "path": "experiences/learning-hub/atlas-learning.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "eedc898a72fc417464f5d81682995e9ba159472d45580b55dff659ead42dda82",
+      "actual": "eedc898a72fc417464f5d81682995e9ba159472d45580b55dff659ead42dda82"
+    },
+    {
+      "path": "experiences/order-rush/learning.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "f91edcae954303b0c820e45c2f7271694e5582b1c3c15dbcb662054b4c6d88d2",
+      "actual": "f91edcae954303b0c820e45c2f7271694e5582b1c3c15dbcb662054b4c6d88d2"
+    },
+    {
+      "path": "experiences/shift-workbench/model.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+      "actual": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da"
+    },
+    {
+      "path": "experiences/shift-workbench/storage-upgrade.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490",
+      "actual": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490"
+    },
+    {
+      "path": "tools/company-messenger/collaboration-service.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e0b02bc58998d517fd15c62c6dae341a69e478fff2b142c242fc3827ba27cedf",
+      "actual": "e0b02bc58998d517fd15c62c6dae341a69e478fff2b142c242fc3827ba27cedf"
+    },
+    {
+      "path": "tools/company-messenger/company-integration.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b5f62f4476735bc44774e975f11031e0b7c675f66ceb6779ad5d2fb01cef20d4",
+      "actual": "b5f62f4476735bc44774e975f11031e0b7c675f66ceb6779ad5d2fb01cef20d4"
+    },
+    {
+      "path": "tools/company-messenger/drive-storage.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5365c830e8ea1cdd878c8dc787db22dcc891c7a0c5b8df5ff7a052e95882cced",
+      "actual": "5365c830e8ea1cdd878c8dc787db22dcc891c7a0c5b8df5ff7a052e95882cced"
+    },
+    {
+      "path": "tools/company-messenger/platform-navigation.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "eb0fee0b5c5a06ab968f3030ff03e0f3dc079619a6b432f272d5a6e904fa1830",
+      "actual": "eb0fee0b5c5a06ab968f3030ff03e0f3dc079619a6b432f272d5a6e904fa1830"
+    },
+    {
+      "path": "tools/company-messenger/public/app.js",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "40c2a81d0a1d149c391f0d208b5705c834b53c3cfe304eb30b782b17f06c5a1e",
+      "actual": "40c2a81d0a1d149c391f0d208b5705c834b53c3cfe304eb30b782b17f06c5a1e"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/DMMono-Medium.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "actual": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/DMMono-OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "actual": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-Bold.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "actual": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-Medium.ttf",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "actual": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "actual": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SOURCES.md",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "84fe1a2b36a31b409134549bcdc3eb01d125c1dee92bb1aa316c082b12eba272",
+      "actual": "84fe1a2b36a31b409134549bcdc3eb01d125c1dee92bb1aa316c082b12eba272"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SUIT-OFL.txt",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "actual": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SUIT-Variable.woff2",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "actual": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-paper.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d0be834422228b7c6e25f693dfc0609ab844de1572131ecb986cd9e2e8b2aefe",
+      "actual": "d0be834422228b7c6e25f693dfc0609ab844de1572131ecb986cd9e2e8b2aefe"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-check.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "actual": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-coral.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "34780a6d00da5afa0c71ef86f9bb8cd975e9adda2cf389585dcdc1d4079a2eec",
+      "actual": "34780a6d00da5afa0c71ef86f9bb8cd975e9adda2cf389585dcdc1d4079a2eec"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-cream.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "actual": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/chip-blush-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457",
+      "actual": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/lapis-fabric.png",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "31093f90018a94f0c7e2bd2eb546678752aa83559b3cb309ae3a8a5623e220d1",
+      "actual": "31093f90018a94f0c7e2bd2eb546678752aa83559b3cb309ae3a8a5623e220d1"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-blush-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "actual": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-blush.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f",
+      "actual": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-coral-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "actual": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-cream-long.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "actual": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/tex-blush.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c22e6bae8603eba21f09fc9d53ea857290bffd53ec9112183e44e81c9a638831",
+      "actual": "c22e6bae8603eba21f09fc9d53ea857290bffd53ec9112183e44e81c9a638831"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/tex-coral.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1",
+      "actual": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/laptop-felt.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "actual": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/logo-felt.png",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+      "actual": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/logo.svg",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "actual": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/marin-smile.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "368ed95b62514b54de5eb49999ad3e7360e78ce30f5ecd1e8a3e2bf714b32ec8",
+      "actual": "368ed95b62514b54de5eb49999ad3e7360e78ce30f5ecd1e8a3e2bf714b32ec8"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-adapt.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0da074945f8f9089f58d0f5ba8b6e9a2c30fa3d766885fbde1cf8a5f6dcb7c52",
+      "actual": "0da074945f8f9089f58d0f5ba8b6e9a2c30fa3d766885fbde1cf8a5f6dcb7c52"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-book.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+      "actual": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-check.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "255e2696f9c008a1d6e220d0452b03b7fe5aaf649c78095ec0c6ef738f6620b0",
+      "actual": "255e2696f9c008a1d6e220d0452b03b7fe5aaf649c78095ec0c6ef738f6620b0"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-envelope.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "e157638a16caacb08a98131c50c6aa7024192f1b2d058b64d10e7c252504cf7f",
+      "actual": "e157638a16caacb08a98131c50c6aa7024192f1b2d058b64d10e7c252504cf7f"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-person.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+      "actual": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-search.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "d08fd73c271ca539a9f5c754c067bd7b438875a136732989e5efe78cb6cb85c8",
+      "actual": "d08fd73c271ca539a9f5c754c067bd7b438875a136732989e5efe78cb6cb85c8"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-time.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "c8b0931c96f1bf654e9f05136a768ea75b96687421e701f826625db3a9906c22",
+      "actual": "c8b0931c96f1bf654e9f05136a768ea75b96687421e701f826625db3a9906c22"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/synk-ko.svg",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "20bd52caae7177d9915159b5f075e52fc89f5525403926c8a99f67b4750b6465",
+      "actual": "20bd52caae7177d9915159b5f075e52fc89f5525403926c8a99f67b4750b6465"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/thread-shift.webp",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
+      "actual": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483"
+    },
+    {
+      "path": "tools/company-messenger/public/index.html",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0fcabfbd6b146d816c850d06b35935235c58d84d2663ef5a4f37373318ec71cc",
+      "actual": "0fcabfbd6b146d816c850d06b35935235c58d84d2663ef5a4f37373318ec71cc"
+    },
+    {
+      "path": "tools/company-messenger/public/messenger-design.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "b18f0bb5e05f76a66b5a176a774863c554dfaff5395a2340b1f2a07a6dc3989f",
+      "actual": "b18f0bb5e05f76a66b5a176a774863c554dfaff5395a2340b1f2a07a6dc3989f"
+    },
+    {
+      "path": "tools/company-messenger/public/styles.css",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "02a5513a3d005224b3b609e028c6463734fd9a092b556da067d15902a8f90bba",
+      "actual": "02a5513a3d005224b3b609e028c6463734fd9a092b556da067d15902a8f90bba"
+    },
+    {
+      "path": "tools/company-messenger/server.mjs",
+      "kind": "current-host-source",
+      "passed": true,
+      "expected": "0695600da0d55155532b00e10d85b1078b495fc2cf1eaaa8294ed96e17316394",
+      "actual": "0695600da0d55155532b00e10d85b1078b495fc2cf1eaaa8294ed96e17316394"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef",
+      "actual": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-recovery-key.test.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907",
+      "actual": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-performance.test.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "b66f3e3a68f10e85002eaed793eb1be133373c34461316f2b64a64151eee8e4d",
+      "actual": "b66f3e3a68f10e85002eaed793eb1be133373c34461316f2b64a64151eee8e4d"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-auth-race.test.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0",
+      "actual": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53",
+      "actual": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs",
+      "kind": "key-source",
+      "passed": true,
+      "expected": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468",
+      "actual": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "616a01208285a94b07eb449bf8fbefe9e2c9e2a696f28142068789e64656c2a6",
+      "actual": "616a01208285a94b07eb449bf8fbefe9e2c9e2a696f28142068789e64656c2a6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.test.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "85f4d29112bd02d176b2b05302ebe9e4afe702e694171da838d2d7ac35589b2f",
+      "actual": "85f4d29112bd02d176b2b05302ebe9e4afe702e694171da838d2d7ac35589b2f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8",
+      "actual": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+      "actual": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef",
+      "actual": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef"
+    },
+    {
+      "path": "tools/company-messenger/server.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "0695600da0d55155532b00e10d85b1078b495fc2cf1eaaa8294ed96e17316394",
+      "actual": "0695600da0d55155532b00e10d85b1078b495fc2cf1eaaa8294ed96e17316394"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/recovery-verify.mjs",
+      "kind": "recovery-source",
+      "passed": true,
+      "expected": "edc46e05265b86a8230bdff5e045aecf00daf080b93fa10bdc18c78de3b246c4",
+      "actual": "edc46e05265b86a8230bdff5e045aecf00daf080b93fa10bdc18c78de3b246c4"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/build.mjs",
+      "kind": "pilot-source",
+      "passed": true,
+      "expected": "72e50ae29dfb5fa1fc3d15d884e5b5e97a914a02b1d0d9f9c2d279084df370f2",
+      "actual": "72e50ae29dfb5fa1fc3d15d884e5b5e97a914a02b1d0d9f9c2d279084df370f2"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/verify-native.ps1",
+      "kind": "pilot-source",
+      "passed": true,
+      "expected": "be3b7f304ce88e820c075d0a4c747390aad3fdfe2fde2ebdb47fa3b3be7efa23",
+      "actual": "be3b7f304ce88e820c075d0a4c747390aad3fdfe2fde2ebdb47fa3b3be7efa23"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/README.md",
+      "kind": "pilot-source",
+      "passed": true,
+      "expected": "36847b6d0da49c59f1f7b27170da2e157f7e3efb65c6ec18b4b1bce3ce502b0f",
+      "actual": "36847b6d0da49c59f1f7b27170da2e157f7e3efb65c6ec18b4b1bce3ce502b0f"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/finalize.mjs",
+      "kind": "pilot-source",
+      "passed": true,
+      "expected": "b5e4b986642827e29c9915a680f00d438ab6e7c29d9bfab37841c30f8a68d875",
+      "actual": "b5e4b986642827e29c9915a680f00d438ab6e7c29d9bfab37841c30f8a68d875"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/manifest.json",
+      "kind": "pilot-evidence",
+      "passed": true,
+      "expected": "19d8a8b47aa562c08cacbb4f921a2c78b7b5c1f04a62a4e7bfcedde7b355200a",
+      "actual": "19d8a8b47aa562c08cacbb4f921a2c78b7b5c1f04a62a4e7bfcedde7b355200a"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/tests.json",
+      "kind": "pilot-evidence",
+      "passed": true,
+      "expected": "c3070a66d93c9c2d18cde1ffcf996951809048b8678d7bc003e39e45377111ab",
+      "actual": "c3070a66d93c9c2d18cde1ffcf996951809048b8678d7bc003e39e45377111ab"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/native-excel.json",
+      "kind": "pilot-evidence",
+      "passed": true,
+      "expected": "fdc3b5b03b6b79325c590b4d8b3f4201587b8c8c9c849ed9b0aac75c98305baf",
+      "actual": "fdc3b5b03b6b79325c590b4d8b3f4201587b8c8c9c849ed9b0aac75c98305baf"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/errors.ndjson",
+      "kind": "pilot-evidence",
+      "passed": true,
+      "expected": "acc0111e19cf44d2753fc9ecd164bf1b27fbd65597463a25cf48bd1c65e90146",
+      "actual": "acc0111e19cf44d2753fc9ecd164bf1b27fbd65597463a25cf48bd1c65e90146"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/summary-inspect.ndjson",
+      "kind": "pilot-evidence",
+      "passed": true,
+      "expected": "ce39143bac291e5b8814ad1ce7d95c28cb841815078a52bb3f1740f801ff2d58",
+      "actual": "ce39143bac291e5b8814ad1ce7d95c28cb841815078a52bb3f1740f801ff2d58"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/요약-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "b17ceff4838dc396b50949f40234bb814692a3c8386348f61fa1bd4e6a09cb1e",
+      "actual": "b17ceff4838dc396b50949f40234bb814692a3c8386348f61fa1bd4e6a09cb1e"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/요약-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "1a645adcbce5afcd5f94e99fd8b26346226bcec34274aa3c8e0bd5f00cbd86bb",
+      "actual": "1a645adcbce5afcd5f94e99fd8b26346226bcec34274aa3c8e0bd5f00cbd86bb"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/요약-3.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "cf9baa04c5a23bed9bd63cea36aa1da2a4cc73ec18c6c84800fcc5c7af641e87",
+      "actual": "cf9baa04c5a23bed9bd63cea36aa1da2a4cc73ec18c6c84800fcc5c7af641e87"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/업무범위-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "59ce0c79042871284ac4ec04845a74b4de17401ad3e96b1c5d571fec7a90c9e8",
+      "actual": "59ce0c79042871284ac4ec04845a74b4de17401ad3e96b1c5d571fec7a90c9e8"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/업무범위-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "7a255c86c05bae20a9f5a972c7105bc087d041767639ae117342db4ec1a7b170",
+      "actual": "7a255c86c05bae20a9f5a972c7105bc087d041767639ae117342db4ec1a7b170"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/시행기록-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "084afa5ccddc282c265c06060a0568095e01a2805c9af0ab7910bed0bdb2ff3b",
+      "actual": "084afa5ccddc282c265c06060a0568095e01a2805c9af0ab7910bed0bdb2ff3b"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/시행기록-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "0685ca329786e6ffd2a75fb7a3a39b0d88954759a276f16c69cbcaa3f69e13e4",
+      "actual": "0685ca329786e6ffd2a75fb7a3a39b0d88954759a276f16c69cbcaa3f69e13e4"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/시행기록-3.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "c2b2ff2e5abe477649fd29ada081ea616e0eb1fb97cef3114e041b699c56b1c8",
+      "actual": "c2b2ff2e5abe477649fd29ada081ea616e0eb1fb97cef3114e041b699c56b1c8"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/원가기록-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "87e8852aacf1514ff616a4459ee3fd79fac05e75958645b7fb32217140507095",
+      "actual": "87e8852aacf1514ff616a4459ee3fd79fac05e75958645b7fb32217140507095"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/원가기록-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018",
+      "actual": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/원가기록-3.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "9501c0063545616f81d6957e8990f98f415a10830210dcd4d166e882be651415",
+      "actual": "9501c0063545616f81d6957e8990f98f415a10830210dcd4d166e882be651415"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/재사용기록-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "df9f8f0a3e7c357cae76c9696ac66dfe374de456cf07397f4b1f478445cfbf02",
+      "actual": "df9f8f0a3e7c357cae76c9696ac66dfe374de456cf07397f4b1f478445cfbf02"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/재사용기록-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e",
+      "actual": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/판단기록-1.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "2ce00ee2ee933e45a1ec3c2beca6fd2159918710022918b424ddc4ab0a275e35",
+      "actual": "2ce00ee2ee933e45a1ec3c2beca6fd2159918710022918b424ddc4ab0a275e35"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/qa/판단기록-2.png",
+      "kind": "pilot-render",
+      "passed": true,
+      "expected": "bcd89e3545d8ad298ca3fd48e3ec70b04f481a263a72115e80c231b65b56e335",
+      "actual": "bcd89e3545d8ad298ca3fd48e3ec70b04f481a263a72115e80c231b65b56e335"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/tests.txt",
+      "kind": "host-test-output",
+      "passed": true,
+      "expected": "765410a6a3a74b4765a4675a3007b2ef75f6ee787d99503399e9333fa3e85162",
+      "actual": "765410a6a3a74b4765a4675a3007b2ef75f6ee787d99503399e9333fa3e85162"
+    },
+    {
+      "path": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-evidence-20261007/SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+      "kind": "workbook",
+      "passed": true,
+      "expected": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+      "actual": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156"
+    },
+    {
+      "path": "../../OneDrive/Desktop/bm 설계표/20261007_SHIFT_실증/SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+      "kind": "desktop-delivery",
+      "passed": true,
+      "expected": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+      "actual": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156"
+    }
+  ]
+}

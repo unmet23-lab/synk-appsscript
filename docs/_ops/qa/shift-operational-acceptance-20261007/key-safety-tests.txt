@@ -1,0 +1,94 @@
+TAP version 13
+# Subtest: backup includes immutable review files from its database snapshot and excludes incomplete uploads
+ok 1 - backup includes immutable review files from its database snapshot and excludes incomplete uploads
+  ---
+  duration_ms: 212.474
+  type: 'test'
+  ...
+# Subtest: deactivation during an unfinished password request cannot reactivate the employee
+ok 2 - deactivation during an unfinished password request cannot reactivate the employee
+  ---
+  duration_ms: 362.3621
+  type: 'test'
+  ...
+# Subtest: logout during OAuth code exchange prevents saving the new connection
+ok 3 - logout during OAuth code exchange prevents saving the new connection
+  ---
+  duration_ms: 219.6995
+  type: 'test'
+  ...
+# Subtest: repeated document operations compile each SQL statement once and never reuse returned data
+ok 4 - repeated document operations compile each SQL statement once and never reuse returned data
+  ---
+  duration_ms: 137.3579
+  type: 'test'
+  ...
+# Subtest: prepared document statements see committed changes and transaction rollback immediately
+ok 5 - prepared document statements see committed changes and transaction rollback immediately
+  ---
+  duration_ms: 71.8992
+  type: 'test'
+  ...
+# Subtest: prepared session lookups still enforce expiry, revocation and single-use consumption
+ok 6 - prepared session lookups still enforce expiry, revocation and single-use consumption
+  ---
+  duration_ms: 47.1718
+  type: 'test'
+  ...
+# Subtest: prepared credential statements retain encryption and fresh update/delete behavior
+ok 7 - prepared credential statements retain encryption and fresh update/delete behavior
+  ---
+  duration_ms: 52.2156
+  type: 'test'
+  ...
+# Subtest: role changes and deactivation remain visible on every user read
+ok 8 - role changes and deactivation remain visible on every user read
+  ---
+  duration_ms: 41.5792
+  type: 'test'
+  ...
+# Subtest: new company storage initializes normally with a new nested directory
+ok 9 - new company storage initializes normally with a new nested directory
+  ---
+  duration_ms: 65.6869
+  type: 'test'
+  ...
+# Subtest: new company storage initializes normally with an existing empty directory
+ok 10 - new company storage initializes normally with an existing empty directory
+  ---
+  duration_ms: 64.2686
+  type: 'test'
+  ...
+# Subtest: an existing company DB without its key refuses repeated starts without recreating a key or changing any DB files
+ok 11 - an existing company DB without its key refuses repeated starts without recreating a key or changing any DB files
+  ---
+  duration_ms: 77.8043
+  type: 'test'
+  ...
+# Subtest: restoring the original key after a refused start preserves and decrypts the existing company data
+ok 12 - restoring the original key after a refused start preserves and decrypts the existing company data
+  ---
+  duration_ms: 60.8906
+  type: 'test'
+  ...
+# Subtest: even an empty existing company DB file requires its original key before SQLite can initialize it
+ok 13 - even an empty existing company DB file requires its original key before SQLite can initialize it
+  ---
+  duration_ms: 9.9016
+  type: 'test'
+  ...
+# Subtest: workspace backup preserves identities, local attachments, media and Drive registry without original absolute paths
+ok 14 - workspace backup preserves identities, local attachments, media and Drive registry without original absolute paths
+  ---
+  duration_ms: 295.8742
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1004.3192

@@ -1,0 +1,69 @@
+{
+  "checkedAt": "2026-10-06T15:04:03.374Z",
+  "links": 12,
+  "columns": 4,
+  "trackBytes": 505,
+  "errors": [],
+  "checked": [
+    {
+      "file": "experiences/shift-workbench/README.md",
+      "link": "../../docs/_ops/qa/shift-record-migration-20261006/report.json",
+      "ok": true
+    },
+    {
+      "file": "experiences/shift-workbench/README.md",
+      "link": "../../docs/_ops/qa/shift-record-migration-20261006/browser/report.json",
+      "ok": true
+    },
+    {
+      "file": "docs/엔진8종_상향설계_v3.md",
+      "link": "../experiences/shift-workbench/README.md#record-migration",
+      "ok": true
+    },
+    {
+      "file": "docs/엔진8종_상향설계_v3.md",
+      "link": "./_ops/qa/shift-record-migration-20261006/report.json",
+      "ok": true
+    },
+    {
+      "file": "docs/엔진8종_상향설계_v3.md",
+      "link": "./_ops/qa/atlas-responsibilities-20261006/existing-shift-generation-boundary.txt",
+      "ok": true
+    },
+    {
+      "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "link": "../experiences/shift-workbench/README.md#record-migration",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/qa/atlas-review-20261006/README.md",
+      "link": "../shift-record-migration-20261006/report.json",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "link": "../../experiences/shift-workbench/README.md#record-migration",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "link": "qa/shift-record-migration-20261006/report.json",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/트랙.md",
+      "link": "qa/atlas-review-20261006/README.md#shift",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/결정.md",
+      "link": "../../experiences/shift-workbench/README.md#record-migration",
+      "ok": true
+    },
+    {
+      "file": "docs/_ops/결정.md",
+      "link": "qa/shift-record-migration-20261006/report.json",
+      "ok": true
+    }
+  ]
+}

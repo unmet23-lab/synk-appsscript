@@ -1,0 +1,195 @@
+{
+  "schema": "synk-shift-record-migration-1",
+  "status": "local-code-and-browser-verified",
+  "requestDate": "2026-10-06",
+  "completedDate": "2026-10-07",
+  "scope": "SHIFT profile generation changes on reconsent, deleted setting and retired settings; authored work retained without analytical fields",
+  "changes": [
+    "제품 모델이 이전 세대의 사건·평가와 작성물을 분리. 공통 Atlas 코드 수정 없음",
+    "이전 완료 요약과 작성 중 초안의 요청문·본문·업무·시각만 saved-work로 보존; 추천·점수·답안·도움·피드백 근거는 제외",
+    "복원과 새 시작 모두 원소유·계보·옛 추천의 범위를 확인. 미래 세대·외부 계정·잘못된 후보·계약·변조값·정정 주입 거부",
+    "현재 세대의 정상 진행과 revision-only 수정, opt-in 저장·저장 실패·전체 초기화 동작 유지",
+    "구형 audio/experience 설정 복원 때 generation 이행. 이전 프로필값 자동 부활 없음",
+    "두 실제 UI가 분석 제외와 원문/초안을 표시. 보관 작성물 수를 추천 근거 사용으로 표시하지 않음"
+  ],
+  "verification": {
+    "automated": {
+      "startedAt": "2026-10-06T14:59:52.595Z",
+      "finishedAt": "2026-10-06T14:59:53.832Z",
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-concurrency=4",
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs"
+      ],
+      "files": [
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs"
+      ],
+      "exitCode": 0,
+      "counts": {
+        "tests": 142,
+        "pass": 142,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "todo": 0
+      }
+    },
+    "automatedLog": "regression.txt",
+    "originalReproduction": {
+      "beforeExceptions": 8,
+      "afterExceptions": 0,
+      "before": "before.txt",
+      "after": "after-repro.txt"
+    },
+    "browser": {
+      "log": "browser/report.json",
+      "checks": 29,
+      "ok": true,
+      "pageErrors": [],
+      "assetErrors": [],
+      "externalRequests": [],
+      "browserHashMismatches": []
+    },
+    "independentReview": "Fixed and rechecked both findings: later exclusion breaking historical evaluation and direct new-start bypassing old exposure/cached-scope validation. Added regression cases.",
+    "visualReview": [
+      "browser/standalone-history-390.png",
+      "browser/company-saved-work-0-390.png"
+    ],
+    "diff": {
+      "exitCode": 0,
+      "output": ""
+    },
+    "documents": {
+      "log": "document-check.json",
+      "links": 12,
+      "errors": 0,
+      "columns": 4,
+      "trackBytes": 505
+    }
+  },
+  "files": {
+    "runtime": [
+      {
+        "file": "experiences/shift-workbench/model.mjs",
+        "sha256": "31a0e5333055c8a167592445996b148c27749419e9c6ce4136c6487d9923b263",
+        "bytes": 42686,
+        "modifiedAt": "2026-10-06T14:58:16.736Z"
+      },
+      {
+        "file": "experiences/shift-workbench/app.mjs",
+        "sha256": "45910bc83766c7a78ebad3e0beffc93ae1aa2aef4726d420545104d559455131",
+        "bytes": 15431,
+        "modifiedAt": "2026-10-06T14:46:55.595Z"
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js",
+        "sha256": "0114458b4f7a20e0e15a76ba25ee834c9010cbf9f859a21a27e8a872e0ac5e39",
+        "bytes": 19903,
+        "modifiedAt": "2026-10-06T14:46:56.343Z"
+      }
+    ],
+    "tests": [
+      {
+        "file": "experiences/shift-workbench/record-migration.test.mjs",
+        "sha256": "8ed33ab90f919f514a4c26321fcc08603c87c33101710e41993453b7c55bb320",
+        "bytes": 9193,
+        "modifiedAt": "2026-10-06T14:58:16.763Z"
+      },
+      {
+        "file": "experiences/shift-workbench/app.test.mjs",
+        "sha256": "393e2cd01e837ab6d044347f2952cc3aaceeba8bb33539c82e3cba3ad48a4960",
+        "bytes": 4749,
+        "modifiedAt": "2026-10-06T14:48:09.928Z"
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "sha256": "db7a9bd0a2538bf4a6eb5ae5facb2cb541f48b344685b3b122e730c70b3bc395",
+        "bytes": 12465,
+        "modifiedAt": "2026-10-06T14:48:09.928Z"
+      }
+    ],
+    "documents": [
+      {
+        "file": "experiences/shift-workbench/README.md",
+        "sha256": "37b986d5efdb3f906de046010b7fad4fee40efd96840e15b85e3eb748287d383",
+        "bytes": 11323,
+        "modifiedAt": "2026-10-06T15:03:09.410Z"
+      },
+      {
+        "file": "docs/엔진8종_상향설계_v3.md",
+        "sha256": "ebcf728d1a6c919b816fbe1a9afa1f70d85de3e4a696eb0c37d35c28e89ab664",
+        "bytes": 107310,
+        "modifiedAt": "2026-10-06T15:02:05.721Z"
+      },
+      {
+        "file": "docs/아틀라스_공통능력_고도화_20261005.md",
+        "sha256": "bf29aa56fa3d901ac50671114215eb543102754bbf0bd40f9e48b3a59385efdc",
+        "bytes": 119916,
+        "modifiedAt": "2026-10-06T15:02:05.725Z"
+      },
+      {
+        "file": "docs/_ops/qa/atlas-review-20261006/README.md",
+        "sha256": "c2dea7636823c09dc7cebd6e61cd299dd799521c2050d185b67e34ea39c0fdef",
+        "bytes": 17403,
+        "modifiedAt": "2026-10-06T15:02:05.727Z"
+      },
+      {
+        "file": "docs/_ops/트랙.md",
+        "sha256": "12a584abe3be468276d0b8de401cd876153fe9d1008629f7ae148aa36022fc82",
+        "bytes": 84014,
+        "modifiedAt": "2026-10-06T15:02:05.731Z"
+      },
+      {
+        "file": "docs/_ops/결정.md",
+        "sha256": "b6c084b8b2d87012e5b320eed696014178ad9bd2dfffd1368ff0a776816ccacb",
+        "bytes": 150488,
+        "modifiedAt": "2026-10-06T15:02:05.736Z"
+      }
+    ],
+    "browserScript": [
+      {
+        "file": "docs/_ops/qa/shift-record-migration-20261006/browser/verify.mjs",
+        "sha256": "058f16e12ea80861bfd31d9e7cbf1a7f6ed265c03f16778bf9db8371a127beff",
+        "bytes": 12327,
+        "modifiedAt": "2026-10-06T14:58:22.947Z"
+      }
+    ]
+  },
+  "limitations": [
+    "현재 두 화면에 새 동의 변경 조작을 추가한 작업은 아님; 호스트가 바꾼 프로필과 구형 저장을 공유 모델에서 이행",
+    "원결정·완료 계보가 이미 사라진 손상 데이터는 분석 기록으로 인증하거나 자동 복구하지 않음",
+    "미래 계약·정책·문항 판본 전체의 저장 이행, 최근 오답·독립 문항 단위·동점 선택 문제는 별도 제품 후속",
+    "로컬 파일·합성계정·임시DB 검증이며 실제 고객 성과·운영 SSO·다른 기기 동기화의 증거가 아님"
+  ],
+  "notPerformed": [
+    "public deployment",
+    "production DB write or migration",
+    "paid AI calls",
+    "common Atlas engine changes",
+    "commit or push"
+  ],
+  "workspace": "Unrelated uncommitted changes preserved. Hashes describe the full current files, including work completed before this request.",
+  "createdAt": "2026-10-06T15:03:12.052Z"
+}

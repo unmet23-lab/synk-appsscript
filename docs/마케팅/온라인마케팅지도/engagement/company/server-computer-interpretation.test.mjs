@@ -182,7 +182,8 @@ test('session revoked during provider I/O cannot receive the result, while alrea
 test('Lab static allowlist serves browser dependencies and never exposes model server code, fixtures or storage', async t => {
   const f = await fixture(t, { env: {} });
   for (const path of ['/atlas-lab/', '/atlas-lab/lab.js', '/atlas-lab/lab.css', '/atlas-lab/interpretation.mjs', '/atlas-lab/consultation.mjs',
-    '/consult/core/domain.js', '/consult/core/interpretation.js', '/consult/computer/content.js', '/consult/computer/rules.js',
+    '/consult/core/domain.js', '/consult/core/engine.js', '/consult/core/personalization.js', '/consult/core/interpretation.js', '/consult/computer/content.js', '/consult/computer/rules.js',
+    '/atlas-lab/meeting.mjs', '/atlas-lab/meeting-ui.mjs', '/atlas-lab/discovery.mjs', '/atlas-lab/discovery-ui.mjs',
     '/learning-hub/atlas-learning.js', '/learning-hub/assets/SUIT-Variable.woff2', '/learning-hub/assets/slab-cream-long.webp',
     '/order-rush/learning.mjs', '/korean-rhythm/personalization.mjs', '/korean-rhythm/core.mjs?v=20261002-flow', '/korean-rhythm/suno-tracks.mjs', '/korean-rhythm/listening.mjs', '/korean-rhythm/narration.mjs']) {
     assert.equal((await f.request(path, { user: null })).status, 200, path);

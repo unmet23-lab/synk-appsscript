@@ -1,0 +1,176 @@
+{
+  "schema": "synk-shift-account-sync-1",
+  "status": "local-code-and-browser-verified",
+  "completedDate": "2026-10-07",
+  "recordedAt": "2026-10-06T20:47:06.791Z",
+  "scope": "Approved next steps: SHIFT public BM focus and private practice continuity on the existing company account",
+  "changes": [
+    "홈페이지 한영 원본·회사/창업자 소개·공개 답변을 한 업무 도입·운영→반복 공급 검증→API·라이선스 확장으로 정리. 네 분야는 적용 후보, 기존 넓은 업무는 도입 지원으로 표시",
+    "회사 계정의 선택 동기화는 기본 꺼짐이며 기기 저장과 독립. 현재 회사 인증·SYNK ID 세션 검증·CSRF와 본인 scope를 재사용",
+    "private GET/POST /api/workroom-practice/state에서 공유 SHIFT 모델로 소유권·원계보 검증. 기존 저장소 암호화로 본문 보관",
+    "SQLite transaction revision 비교로 동시 쓰기 거절. 양쪽 초안 확인 후 사용자가 선택하고 자동 문장/사건 병합 없음",
+    "삭제는 본문 없는 revision tombstone을 남겨 오래된 자동 업로드 차단. 현재revision을 확인한 새 사용자 선택만 재활성화 허용",
+    "오프라인·권한 만료·대기 중 입력·한글 조합·로그아웃/계정 변경의 늦은 응답에 작성물과 소유 경계 유지",
+    "요청문·결과·첫답안·완료이력·명시피드백·다음 실습이 두 격리 브라우저에서 왕복. 새 sync선택 부품은 기존 실제 펠트 자산 사용"
+  ],
+  "ownership": {
+    "genericAtlasFilesChanged": [],
+    "productHost": "existing authenticated company application",
+    "recordScope": {
+      "productId": "company",
+      "contextId": "workroom-practice",
+      "domain": "SHIFT"
+    },
+    "privateOwner": "The active company session supplies personId; admins cannot select another employee record through this API.",
+    "centralIdentity": "Existing configured SYNK ID company sessions pass through the existing session validator. No new login provider, product token or organization workspace was created."
+  },
+  "verification": {
+    "automated": {
+      "finishedAt": "2026-10-06T20:46:06.9847534Z",
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-concurrency=4",
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs",
+        "experiences/shift-workbench/retention.test.mjs",
+        "experiences/shift-workbench/storage-upgrade.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs"
+      ],
+      "exitCode": 0,
+      "files": [
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs",
+        "experiences/shift-workbench/retention.test.mjs",
+        "experiences/shift-workbench/storage-upgrade.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs"
+      ],
+      "startedAt": "2026-10-06T20:45:54.8067441Z",
+      "counts": {
+        "pass": 222,
+        "tests": 222,
+        "fail": 0,
+        "todo": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    },
+    "automatedLog": "regression.txt",
+    "serverHttpTests": 13,
+    "clientStateMachineTests": 19,
+    "existingClientTests": 15,
+    "browser": {
+      "report": "browser/report.json",
+      "command": [
+        "node",
+        "docs/_ops/qa/shift-account-sync-20261007/browser/verify.mjs"
+      ],
+      "checks": 31,
+      "ok": true,
+      "errors": [],
+      "assetErrors": [],
+      "externalRequests": [],
+      "sourceHashMismatches": [],
+      "filesModifiedAfterTestStart": [],
+      "temporaryDatabaseRemoved": true
+    },
+    "website": {
+      "report": "C:/Users/q1212/Documents/SYNK-website/qa/bm-focus-20261007/report.json",
+      "readme": "C:/Users/q1212/Documents/SYNK-website/qa/bm-focus-20261007/README.md",
+      "regression": {
+        "command": "npm run check",
+        "groups": [
+          {
+            "tests": 277,
+            "passed": 277,
+            "failed": 0
+          },
+          {
+            "tests": 141,
+            "passed": 141,
+            "failed": 0
+          }
+        ],
+        "tests": 418,
+        "passed": 418,
+        "failed": 0,
+        "log": "check-final.txt"
+      },
+      "browserChecks": 61,
+      "widths": [
+        320,
+        390,
+        1440
+      ],
+      "languages": [
+        "ko",
+        "en"
+      ],
+      "sourceHashMismatches": []
+    },
+    "targetedReview": "Independent server tests checked HTTP identity/CSRF/origin/revocation/CAS/tombstone/size and at-rest plaintext absence. Root review found and rechecked input races during hashing, remote selection and delete acknowledgement; busy delete UI and permanent validation notices were repaired."
+  },
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice-sync.js": "8815287d3f89927fcd6ce793e92aec95ce6324077b07a3d248bbdae3c59385ab",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.css": "df457e1783adbb630c22dfb6e1a2fcc085d270bdf9c30849df4b1530f638520d",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html": "f4c8b746fac6053bb3ec8c8e0dc5e2f634875fb261993e08d408ced4a6308b97",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "194de4359cbddb63d65747f400d8ee9aa3585a6f1e624c76b4c023813d20b45f",
+    "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs": "9542f62714b1b146d8347f17f44ef83a189031aa8a11926674f2a13105353a0f",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync.test.mjs": "09b6e909d57225f29f8775da271175e9be8dcdd4c01448e635edabacec1484d1",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-client.test.mjs": "15630358490678ce35ed53c048d3166bd2864c6fc5c0d82426bd93715aa78492",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs": "960710e800607faf589838731968e53582d4fe976c2166038137ce3dac60df70",
+    "experiences/shift-workbench/README.md": "9b44a8f9317bec2f8accbcf98c7f0cb3f183bcf55cdfa7ae932fecc897781c40",
+    "docs/SYNK_플랫폼_계정과_연결_설계.md": "74581af102c793daef072294cc72be9a8e1c142ede003015dbb590c2a002b35a",
+    "docs/_ops/트랙.md": "bc0a3e6dc4471277351ccab35b455386e1a33ae38bab49e673beeb4c3c229383",
+    "docs/_ops/결정.md": "7f5c96205206a7dada38596350cc0be897e5dc7ff4db05ba357ff07c50fd815a",
+    "docs/_ops/qa/shift-account-sync-20261007/browser/verify.mjs": "f4e370ebf93e055bd30f8cf9cb68206a8871bba1adeb324029120ba8c143e4ae"
+  },
+  "boundaries": {
+    "storageMaxUtf16": 1000000,
+    "storageMaxUtf8Bytes": 3000000,
+    "localStateSavingSeparate": true,
+    "cloudSavingDefault": false,
+    "wholeDocumentConflictResolution": "The chosen record replaces the other in this view; preserve needed text with export before choosing.",
+    "offlineDrafts": "Remain in this window. Browser restart persistence requires local saving; opting into account saving alone does not preserve unsent text when closed.",
+    "deployed": false,
+    "productionDatabaseWrites": 0,
+    "paidAiCalls": 0,
+    "physicalDevicesTested": 0,
+    "isolatedBrowserContexts": 2,
+    "realCompanyAccountsTested": false,
+    "realCustomerEffectsOrProfitabilityVerified": false,
+    "legacyExcelPdfWordRegenerated": false
+  },
+  "remaining": [
+    "사용자 요청에 따른 운영 서버/공개 홈페이지 반영과 배포 검증",
+    "실제 계정 및 물리 두 기기의 왕복·운영 백업 검증",
+    "첫 고객 한 업무의 비교·인수·운영비·성과 검증",
+    "기존 Excel/PDF/Word 대외 자료 재생성"
+  ]
+}

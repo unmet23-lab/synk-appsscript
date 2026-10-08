@@ -1,0 +1,88 @@
+TAP version 13
+# Subtest: backup includes immutable review files from its database snapshot and excludes incomplete uploads
+ok 1 - backup includes immutable review files from its database snapshot and excludes incomplete uploads
+  ---
+  duration_ms: 256.9078
+  type: 'test'
+  ...
+# Subtest: stopped workspace backup restores completed source lineage and a content-free deletion into new directories through real HTTP login
+ok 2 - stopped workspace backup restores completed source lineage and a content-free deletion into new directories through real HTTP login
+  ---
+  duration_ms: 1547.9759
+  type: 'test'
+  ...
+# Subtest: restored current revisions reject stale saves, accept a fresh owned save and preserve deletion after another restart
+ok 3 - restored current revisions reject stale saves, accept a fresh owned save and preserve deletion after another restart
+  ---
+  duration_ms: 1932.8813
+  type: 'test'
+  ...
+# Subtest: restored private practice is isolated from the other account and an administrator cannot choose its owner
+ok 4 - restored private practice is isolated from the other account and an administrator cannot choose its owner
+  ---
+  duration_ms: 2467.2774
+  type: 'test'
+  ...
+# Subtest: missing restored encryption key fails private content reads without exposing authored text or ciphertext
+ok 5 - missing restored encryption key fails private content reads without exposing authored text or ciphertext
+  ---
+  duration_ms: 2575.018
+  type: 'test'
+  ...
+# Subtest: wrong restored encryption key fails private content reads without exposing authored text or ciphertext
+ok 6 - wrong restored encryption key fails private content reads without exposing authored text or ciphertext
+  ---
+  duration_ms: 1344.0284
+  type: 'test'
+  ...
+# Subtest: a snapshot from before deletion can revive its old payload and revision; latest-DB restoration retains the tombstone
+ok 7 - a snapshot from before deletion can revive its old payload and revision; latest-DB restoration retains the tombstone
+  ---
+  duration_ms: 2283.6146
+  type: 'test'
+  ...
+# Subtest: backupWorkspace refuses a source DB missing its key instead of producing a COMPLETE backup
+ok 8 - backupWorkspace refuses a source DB missing its key instead of producing a COMPLETE backup
+  ---
+  duration_ms: 1255.0872
+  type: 'test'
+  ...
+# Subtest: company host and backupWorkspace select the same messenger database: integration-before-environment
+ok 9 - company host and backupWorkspace select the same messenger database: integration-before-environment
+  ---
+  duration_ms: 1205.4057
+  type: 'test'
+  ...
+# Subtest: company host and backupWorkspace select the same messenger database: explicit-option-before-integration-and-environment
+ok 10 - company host and backupWorkspace select the same messenger database: explicit-option-before-integration-and-environment
+  ---
+  duration_ms: 2123.0984
+  type: 'test'
+  ...
+# Subtest: company host and backupWorkspace select the same messenger database: environment-without-integration
+ok 11 - company host and backupWorkspace select the same messenger database: environment-without-integration
+  ---
+  duration_ms: 941.3102
+  type: 'test'
+  ...
+# Subtest: company host and backupWorkspace select the same messenger database: fallback-without-integration-or-environment
+ok 12 - company host and backupWorkspace select the same messenger database: fallback-without-integration-or-environment
+  ---
+  duration_ms: 932.5403
+  type: 'test'
+  ...
+# Subtest: workspace backup preserves identities, local attachments, media and Drive registry without original absolute paths
+ok 13 - workspace backup preserves identities, local attachments, media and Drive registry without original absolute paths
+  ---
+  duration_ms: 708.8907
+  type: 'test'
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 13
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 18984.6297

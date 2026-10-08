@@ -1,0 +1,87 @@
+{
+  "id": "SHIFT-INTERNAL-COPY-20261007",
+  "frozenAt": "2026-10-06T22:01:40.412Z",
+  "kind": "AI-performed internal workflow comparison",
+  "realHumanTrial": false,
+  "customerTrial": false,
+  "paidProviderCalls": 0,
+  "repeatCount": 1,
+  "subjects": "동일 공식 Codex 하네스의 독립 AI 작업자 두 명. 요청별 추론과 서비스 지연이 달라 인과효과·성능 비교로 일반화하지 않음.",
+  "commonInput": "두 방식에 같은 원고·정본·완료 기준·출력 구조 제공. 개인화는 현재 대화의 명시 우선사항과 Core의 순서·이유만 추가.",
+  "timing": "각 작업자의 첫 시각 확인 도구부터 결과 파일 저장 직전의 실제 UTC까지 경과시간. 입력 읽기·추론·도구 지연 포함. 배정 전 대기·root 준비/후검증은 제외. 사람 작업시간·사용 시간 아님.",
+  "errors": "원문 검수에서 적중한 오류 수가 아니라, 완료된 검수 결과가 사전 R1..R6과 완료조건을 위반한 실질 오류 수를 root가 확인한다.",
+  "helpRequests": "AI 검수 작업자가 외부 도움을 요청해 검수가 중단됐는지 관측한다. 인간 고객응대 전환 여부는 관측 대상이 없어 공란.",
+  "cost": "모델 청구·대표 시간단가·준비/검증 총시간 미측정. 수익과 원가 잔액 계산 불가.",
+  "source": [
+    {
+      "path": "C:/Users/q1212/Documents/SYNK-website/public-brand-stories.json",
+      "sha256": "83f0564f56ace251fa9ecdd58f3f677f83ca525d5d1fbdfa6592c8084ac532d0"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\SHIFT.md",
+      "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c"
+    },
+    {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\atlas\\domain.js",
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
+    }
+  ],
+  "input": [
+    {
+      "file": "input/source.json",
+      "sha256": "83f0564f56ace251fa9ecdd58f3f677f83ca525d5d1fbdfa6592c8084ac532d0"
+    },
+    {
+      "file": "input/canonical.md",
+      "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c"
+    },
+    {
+      "file": "input/common.json",
+      "sha256": "a720acd24e03171604daf055c7ece412706665183f1ee386477f7fac4bf5b353"
+    },
+    {
+      "file": "input/atlas-decision.json",
+      "sha256": "8697d6e8664bb336942f93526d49bef07fc9d4d924811e56cfe68b2d6a20873f"
+    },
+    {
+      "file": "input/baseline.json",
+      "sha256": "2636fa70d55a83906d1e38bbac0f505586d8e9c909c2fa90b90f008ee29b1e7d"
+    },
+    {
+      "file": "input/personalized.json",
+      "sha256": "3dcf23c9b46c1a07f30aecf56b4967772335ef88191e11c5c02bea044c2b7e74"
+    }
+  ],
+  "fixedRubric": [
+    [
+      "R1",
+      "현재 사업 단위를 고객사 한 곳의 한 업무 도입·운영으로 다룬다."
+    ],
+    [
+      "R2",
+      "네 적용 후보를 준비 중인 후보로 다루고 출시·계약 가능으로 확정하지 않는다."
+    ],
+    [
+      "R3",
+      "교육·컨설팅·자동화·브랜딩을 개인화 도입의 지원 범위로 다룬다."
+    ],
+    [
+      "R4",
+      "반복 공급과 실측 뒤 API·라이선스로 진행하는 순서를 지킨다."
+    ],
+    [
+      "R5",
+      "기존 8개 엔진의 공통 능력·전문 모듈·SHIFT 도입·제품 운영의 책임을 구분한다."
+    ],
+    [
+      "R6",
+      "실고객 성과·가격·일정·운영·동의를 확정하지 않고 note를 포함한 전체 문맥으로 판단한다."
+    ]
+  ],
+  "protocolAmendments": [
+    {
+      "at": "2026-10-06T22:03:35.756Z",
+      "reason": "실행 지시의 작업자 자체 시각 기록과 시간 경계를 일치시킴. 원고·정본·rubric·오류·완료 기준은 변경하지 않음."
+    }
+  ]
+}

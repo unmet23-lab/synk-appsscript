@@ -1,0 +1,49 @@
+{
+  "files": [
+    "experiences/shift-workbench/model.test.mjs",
+    "experiences/shift-workbench/record-migration.test.mjs",
+    "experiences/shift-workbench/app.test.mjs",
+    "experiences/shift-workbench/server.test.mjs",
+    "tests/atlas-cross-product-boundaries.test.mjs",
+    "tests/atlas-personalization.test.js",
+    "tests/atlas-personalization-conflict.test.js",
+    "tests/atlas-outcomes.test.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+    "experiences/shift-workbench/recommendation.test.mjs",
+    "experiences/shift-workbench/retention.test.mjs",
+    "experiences/shift-workbench/storage-upgrade.test.mjs"
+  ],
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=4",
+    "experiences/shift-workbench/model.test.mjs",
+    "experiences/shift-workbench/record-migration.test.mjs",
+    "experiences/shift-workbench/app.test.mjs",
+    "experiences/shift-workbench/server.test.mjs",
+    "tests/atlas-cross-product-boundaries.test.mjs",
+    "tests/atlas-personalization.test.js",
+    "tests/atlas-personalization-conflict.test.js",
+    "tests/atlas-outcomes.test.js",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+    "experiences/shift-workbench/recommendation.test.mjs",
+    "experiences/shift-workbench/retention.test.mjs",
+    "experiences/shift-workbench/storage-upgrade.test.mjs"
+  ],
+  "finishedAt": "2026-10-06T20:17:40.5371092Z",
+  "counts": {
+    "fail": 0,
+    "pass": 188,
+    "cancelled": 0,
+    "tests": 188,
+    "skipped": 0,
+    "todo": 0
+  },
+  "exitCode": 0,
+  "startedAt": "2026-10-06T20:17:31.4996399Z"
+}

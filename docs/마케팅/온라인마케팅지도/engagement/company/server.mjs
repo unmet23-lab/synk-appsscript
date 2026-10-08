@@ -34,6 +34,10 @@ import { createMessenger } from '../../../../../tools/company-messenger/server.m
 import { resolvePlatformUrl } from '../../../../../tools/company-messenger/platform-navigation.mjs';
 import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
 
+// This service also loads Domain. Wait until the interpretation runtime has
+// observed its source through the static service dependency before sharing it.
+const { createPracticeSyncService } = await import('./workroom-practice-sync-service.mjs');
+
 const here=dirname(fileURLToPath(import.meta.url));
 const metricKeys=['views','likes','comments','shares','saves','reach'];
 const HYPE_RECENT_MS=7*86400000,HYPE_RETENTION_MS=8*86400000;
@@ -58,7 +62,7 @@ export function createCompanyApp(options={}) {
   if(existsSync(integrationFile)){
     try{integrationConfig=JSON.parse(readFileSync(integrationFile,'utf8'));}catch{throw new Error('사내 앱 통합 설정을 읽을 수 없습니다.');}
   }
-  const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
+  const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
   let messenger;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked()});
   messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,integration:{
@@ -91,6 +95,7 @@ export function createCompanyApp(options={}) {
   const creatorSources=createCreatorSourcesService({store});
   const studio=createStudioService({store,clock});
   const crewProfiles=createCrewProfileService({store,clock});
+  const practiceSync=createPracticeSyncService({store,clock});
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
   const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query)});
@@ -314,12 +319,12 @@ export function createCompanyApp(options={}) {
   const respondStatic=createStaticResponder();
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
   function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
-  async function body(req){
+  async function body(req,{maxBytes=768000,maxChars=256000}={}){
     if(!req.headers['content-type']?.startsWith('application/json'))throw httpError('JSON 입력이 필요합니다.');
     const chunks=[];let bytes=0;
-    for await(const part of req.iterator({destroyOnReturn:false})){bytes+=part.length;if(bytes>768000){req.resume();throw httpError('입력이 너무 큽니다. 내용이나 항목 수를 줄여 주세요.',413);}chunks.push(part);}
+    for await(const part of req.iterator({destroyOnReturn:false})){bytes+=part.length;if(bytes>maxBytes){req.resume();throw httpError('입력이 너무 큽니다. 내용이나 항목 수를 줄여 주세요.',413);}chunks.push(part);}
     let raw;try{raw=new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks));}catch{throw httpError('UTF-8 JSON 입력을 확인해 주세요.');}
-    if(raw.length>256000)throw httpError('입력이 너무 큽니다. 내용이나 항목 수를 줄여 주세요.',413);
+    if(raw.length>maxChars)throw httpError('입력이 너무 큽니다. 내용이나 항목 수를 줄여 주세요.',413);
     try{return JSON.parse(raw);}catch{throw httpError('입력 형식을 확인해 주세요.');}
   }
   const server=createServer(async(req,res)=>{try{
@@ -365,9 +370,14 @@ export function createCompanyApp(options={}) {
           upload=null;audit(latest.user,'studio-media-uploaded',studioUpload[1]);return send(res,201,result);
         }catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
-      const input=await body(req);
+      const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:undefined);
       // Receiving a request body yields control. Revalidate revoked sessions and current roles afterward.
       if(!unauth.includes(path)){auth=identityControl?rawSession(req):session(req);user=auth?.user;if(!user||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);}
+      if(path==='/api/workroom-practice/state'){
+        if(url.search)throw httpError('본인의 실습 계정 저장 주소만 사용할 수 있어요.');
+        try{return send(res,200,practiceSync.mutate(user,input));}
+        catch(error){if(error.status===409&&error.code?.startsWith('PRACTICE_'))return send(res,409,{error:safeError(error.message),code:error.code,current:error.current});throw error;}
+      }
       if(path==='/api/daily-trends/settings'){admin(user);const result=dailyTrends.configure(input);audit(user,'daily-trends-settings','daily-trends',{settings:result.settings});return send(res,200,result);}
       if(path==='/api/daily-trends/collect'){
         admin(user);if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>key!=='force')||input.force!==undefined&&typeof input.force!=='boolean')throw httpError('다시 수집 여부를 확인해 주세요.');
@@ -532,6 +542,10 @@ export function createCompanyApp(options={}) {
     const studioMediaRoute=path.match(/^\/api\/studio-media\/([^/]+)$/);
     if(['GET','HEAD'].includes(method)&&studioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,studio.readableMedia(user,studioMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);studio.readableMedia(latest.user,studioMediaRoute[1]);});}
     if(method==='GET'&&path.startsWith('/api/')){if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/workroom-practice/state'){
+        if(url.search||req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('본인의 실습 계정 저장 주소만 사용할 수 있어요.');
+        return send(res,200,practiceSync.read(user));
+      }
       if(path==='/api/computer-interpretation/privacy'){
         if(url.search)throw httpError('본인의 서버 응답 인용만 조회할 수 있어요.');
         return send(res,200,computerInterpretation.privacy(user));
@@ -604,10 +618,10 @@ export function createCompanyApp(options={}) {
     // directories are intentionally absent from this public asset map.
     if(path==='/atlas-lab'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/atlas-lab/'});return res.end();}
     files['/atlas-lab/']=['../../../../../experiences/atlas-lab/index.html','text/html; charset=utf-8'];
-    for(const file of ['lab.js','lab.css','consultation.mjs','interpretation.mjs','model-host.mjs','matching.mjs','matching-ui.mjs'])files['/atlas-lab/'+file]=['../../../../../experiences/atlas-lab/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['lab.js','lab.css','consultation.mjs','interpretation.mjs','model-host.mjs','matching.mjs','matching-ui.mjs','meeting.mjs','meeting-ui.mjs','reconnect.mjs','discovery.mjs','discovery-ui.mjs','journey-memory.mjs','participant-launcher.mjs'])files['/atlas-lab/'+file]=['../../../../../experiences/atlas-lab/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     for(const file of ['atlas-learning.js'])files['/learning-hub/'+file]=['../../../../../experiences/learning-hub/'+file,'text/javascript; charset=utf-8'];
     for(const file of ['scrapbook.css','SUIT-Variable.woff2','InterTight-700.woff2','sticker-book.webp','slab-cream-long.webp','slab-blush-long.webp'])files['/learning-hub/assets/'+file]=['../../../../../experiences/learning-hub/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':'image/webp'];
-    for(const file of ['domain.js','interpretation.js','temper-outcomes.js'])files['/consult/core/'+file]=['../../../../../atlas/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['engine.js','personalization.js','domain.js','interpretation.js','temper-outcomes.js'])files['/consult/core/'+file]=['../../../../../atlas/'+file,'text/javascript; charset=utf-8'];
     for(const file of ['content.js','rules.js'])files['/consult/computer/'+file]=['../../../맞춤도구/computer/'+file,'text/javascript; charset=utf-8'];
     files['/order-rush/learning.mjs']=['../../../../../experiences/order-rush/learning.mjs','text/javascript; charset=utf-8'];
     for(const file of ['personalization.mjs','core.mjs','suno-tracks.mjs','listening.mjs','narration.mjs'])files['/korean-rhythm/'+file]=['../../../../../experiences/korean-rhythm/'+file,'text/javascript; charset=utf-8'];
@@ -619,12 +633,14 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/marin-home.js':['public/marin-home.js','text/javascript; charset=utf-8'],'/marin-home.css':['public/marin-home.css','text/css; charset=utf-8'],'/marin.webp':['public/marin.webp','image/webp']});
     Object.assign(files,{'/marin-work.js':['public/marin-work.js','text/javascript; charset=utf-8'],'/marin-work.css':['public/marin-work.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workroom.js':['public/workroom.js','text/javascript; charset=utf-8'],'/workroom.css':['public/workroom.css','text/css; charset=utf-8']});
-    // Shared practice code and fictional examples only. Employee drafts remain in
-    // the account-scoped workroom client; this does not expose a directory or API.
+    // Fictional practice assets are public. Account records use the authenticated
+    // private endpoint above; the source directory is never exposed.
     Object.assign(files,{
       '/workroom-practice.js':['public/workroom-practice.js','text/javascript; charset=utf-8'],
+      '/workroom-practice-sync.js':['public/workroom-practice-sync.js','text/javascript; charset=utf-8'],
       '/workroom-practice.css':['public/workroom-practice.css','text/css; charset=utf-8'],
       '/workroom-practice/model.mjs':['../../../../../experiences/shift-workbench/model.mjs','text/javascript; charset=utf-8'],
+      '/workroom-practice/storage-upgrade.mjs':['../../../../../experiences/shift-workbench/storage-upgrade.mjs','text/javascript; charset=utf-8'],
       '/workroom-practice/core.js':['../../../../../atlas/engine.js','text/javascript; charset=utf-8'],
       '/workroom-practice/domain.js':['../../../../../atlas/domain.js','text/javascript; charset=utf-8'],
       '/workroom-practice/temper-outcomes.js':['../../../../../atlas/temper-outcomes.js','text/javascript; charset=utf-8'],

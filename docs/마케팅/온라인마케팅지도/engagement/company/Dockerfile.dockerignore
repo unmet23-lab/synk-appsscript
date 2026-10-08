@@ -1,0 +1,158 @@
+# Only the Docker COPY payload may enter the build context.
+**
+!docs/
+!docs/마케팅/
+!docs/마케팅/온라인마케팅지도/
+!docs/마케팅/온라인마케팅지도/engagement/
+!docs/마케팅/온라인마케팅지도/engagement/analytics.mjs
+!docs/마케팅/온라인마케팅지도/engagement/company/
+!docs/마케팅/온라인마케팅지도/engagement/company/*.mjs
+!docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json
+!docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json
+!docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json
+!docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md
+!docs/마케팅/온라인마케팅지도/engagement/company/public
+!docs/마케팅/온라인마케팅지도/engagement/company/public/**
+!tools/
+!tools/company-messenger/
+!tools/company-messenger/server.mjs
+!tools/company-messenger/drive-storage.mjs
+!tools/company-messenger/company-integration.mjs
+!tools/company-messenger/collaboration-service.mjs
+!tools/company-messenger/platform-navigation.mjs
+!tools/company-messenger/public
+!tools/company-messenger/public/**
+!atlas/
+!atlas/engine.js
+!atlas/trail.js
+!atlas/personalization.js
+!atlas/domain.js
+!atlas/temper-outcomes.js
+!atlas/interpretation.js
+!atlas/work.js
+!experiences/
+!experiences/shift-workbench/
+!experiences/shift-workbench/model.mjs
+!experiences/shift-workbench/storage-upgrade.mjs
+!experiences/atlas-lab/
+!experiences/atlas-lab/consultation.mjs
+!experiences/atlas-lab/interpretation.mjs
+!experiences/atlas-lab/model-extraction.mjs
+!experiences/atlas-lab/model-host.mjs
+!experiences/atlas-lab/matching.mjs
+!experiences/atlas-lab/matching-ui.mjs
+!experiences/atlas-lab/meeting.mjs
+!experiences/atlas-lab/meeting-ui.mjs
+!experiences/atlas-lab/reconnect.mjs
+!experiences/atlas-lab/discovery.mjs
+!experiences/atlas-lab/discovery-ui.mjs
+!experiences/atlas-lab/journey-memory.mjs
+!experiences/atlas-lab/participant-launcher.mjs
+!experiences/atlas-lab/index.html
+!experiences/atlas-lab/lab.js
+!experiences/atlas-lab/lab.css
+!experiences/learning-hub/
+!experiences/learning-hub/atlas-learning.js
+!experiences/learning-hub/assets/
+!experiences/learning-hub/assets/scrapbook.css
+!experiences/learning-hub/assets/SUIT-Variable.woff2
+!experiences/learning-hub/assets/InterTight-700.woff2
+!experiences/learning-hub/assets/sticker-book.webp
+!experiences/learning-hub/assets/slab-cream-long.webp
+!experiences/learning-hub/assets/slab-blush-long.webp
+!experiences/korean-rhythm/
+!experiences/korean-rhythm/personalization.mjs
+!experiences/korean-rhythm/core.mjs
+!experiences/korean-rhythm/suno-tracks.mjs
+!experiences/korean-rhythm/listening.mjs
+!experiences/korean-rhythm/narration.mjs
+!experiences/order-rush/
+!experiences/order-rush/learning.mjs
+!docs/마케팅/맞춤도구/
+!docs/마케팅/맞춤도구/computer/
+!docs/마케팅/맞춤도구/computer/content.js
+!docs/마케팅/맞춤도구/computer/rules.js
+!docs/브랜드_폰트/
+!docs/브랜드_폰트/SUIT/
+!docs/브랜드_폰트/SUIT/SUIT-Variable.woff2
+!docs/브랜드_폰트/SUIT/LICENSE_OFL.txt
+!docs/브랜드_폰트/InterTight/
+!docs/브랜드_폰트/InterTight/InterTight-Regular.ttf
+!docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf
+!docs/브랜드_폰트/InterTight/OFL.txt
+!docs/브랜드_폰트/DM_Mono/
+!docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf
+!docs/브랜드_폰트/DM_Mono/OFL.txt
+!docs/홍보물/
+!docs/홍보물/마케팅실행_20260909/
+!docs/홍보물/마케팅실행_20260909/브랜드킷/
+!docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg
+!docs/정본/
+!docs/정본/SYNK LAB/
+!docs/정본/SYNK LAB/About Syestem/
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt
+!docs/개인정보처리방침_초안_v1.md
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt
+!docs/포토부스_설계.md
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt
+!docs/수강약관_초안_v1.md
+!docs/커리큘럼_정본_v1.md
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt
+!docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt
+!docs/정본/SYNK/
+!docs/정본/SYNK/SYNK FAQ.txt
+!docs/자주묻는질문_정본.md
+!docs/마케팅/콘텐츠_제작양식.md
+!docs/마케팅/콘텐츠_운영체계_20260927.md
+!docs/명품_기준_v1.md
+!docs/디자인/
+!docs/디자인/펠트스크랩북/
+!docs/디자인/펠트스크랩북/README.md
+!docs/마케팅/제작양식/
+!docs/마케팅/제작양식/AI_소식_도구추천.md
+!docs/마케팅/제작양식/AI_활용법.md
+!docs/마케팅/채널과_발행.md
+!docs/마케팅/제작양식/제작여정_쇼츠.md
+!docs/마케팅/제작양식/LAB_상황극.md
+!docs/마케팅/제작양식/LAB_표현소개.md
+!docs/마케팅/제작양식/인물클립.md
+!docs/마케팅/제작양식/인터뷰.md
+!docs/마케팅/제작양식/회사소개_작업물.md
+!docs/마케팅/제작양식/글_뉴스레터.md
+!docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg
+!docs/디자인/SNS키트/
+!docs/디자인/SNS키트/assets/
+!docs/디자인/SNS키트/assets/logo-synk-paper.webp
+!docs/디자인/SNS키트/assets/logo-lab.webp
+!docs/디자인/SNS키트/assets/logo-shift.webp
+!docs/디자인/SNS키트/assets/logo-pulse.webp
+!docs/디자인/SNS키트/assets/mascot-몽글_본체.webp
+!docs/디자인/SNS키트/assets/mascot-까몽_본체.webp
+!docs/디자인/SNS키트/assets/mascot-마린_본체.webp
+!docs/브랜드_폰트/InterTight/InterTight-Medium.ttf
+!docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf
+!docs/디자인/펠트부품/
+!docs/디자인/펠트부품/assets/
+!docs/디자인/펠트부품/assets/ui/
+!docs/디자인/펠트부품/assets/ui/slab-coral-long.webp
+!docs/디자인/펠트부품/assets/ui/badge-check.webp
+!docs/디자인/SNS키트/assets/felt-laptop.webp
+# Keep validation programs out of the runtime image.
+docs/마케팅/온라인마케팅지도/engagement/company/*.test.mjs
+docs/마케팅/온라인마케팅지도/engagement/company/verify-*.mjs
+docs/마케팅/온라인마케팅지도/engagement/company/*-check.mjs
+**/.env
+**/.env.*
+**/*.sqlite
+**/*.sqlite-*
+**/*.key
+**/data
+**/node_modules
+**/.git

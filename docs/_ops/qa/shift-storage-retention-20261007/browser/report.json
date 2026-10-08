@@ -1,0 +1,101 @@
+{
+  "at": "2026-10-06T20:17:46.225Z",
+  "checks": [
+    "standalone explains recovered work and excluded analysis",
+    "standalone preserves completed writing and the removed-task draft",
+    "standalone keeps the removed task name",
+    "standalone shows both literal requests and drafts",
+    "standalone archive shows no old review score",
+    "standalone stored markup is never executed",
+    "standalone recovered history fits 390",
+    "standalone recovered history fits 320",
+    "standalone new practice excludes every old analytical event",
+    "standalone preserves the two archives while saving the current manifest",
+    "standalone new recommendation does not use recovered work",
+    "standalone can complete a new practice after recovery",
+    "standalone save and reload preserve both archives alongside the new completion",
+    "standalone repeat recovery never duplicates writing",
+    "company explains recovered work and excluded analysis",
+    "company preserves completed writing and the removed-task draft",
+    "company keeps the removed task name",
+    "company shows both literal requests and drafts",
+    "company archive shows no old review score",
+    "company stored markup is never executed",
+    "company recovered history fits 390",
+    "company recovered history fits 320",
+    "company new practice excludes every old analytical event",
+    "company preserves the two archives while saving the current manifest",
+    "company new recommendation does not use recovered work",
+    "company can complete a new practice after recovery",
+    "company save and reload preserve both archives alongside the new completion",
+    "company repeat recovery never duplicates writing",
+    "no page exceptions",
+    "all assets and modules load",
+    "no external requests"
+  ],
+  "errors": [],
+  "assetErrors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "standalone-recovered-390.png",
+    "standalone-recovered-320.png",
+    "company-recovered-390.png",
+    "company-recovered-320.png"
+  ],
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+    "experiences/shift-workbench/storage-upgrade.mjs": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490",
+    "experiences/shift-workbench/app.mjs": "08de24bf4bf47c884e8da47c576d91297ef020f6c7c88f36dac7cfa7879d8d63",
+    "experiences/shift-workbench/server.mjs": "e113f6519258d6f6addb3b0effc2b4e39e12cab5a9fe9424d22840be9357c59c",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "3bd8c1cd61eab65c0c86d9599c154095ec5ca369130747ff19816ce3591a91fb",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "d8f76267e8a8ffb078ebe7e1e778a782a2c596ba78664755187a505ce29c72f7"
+  },
+  "cases": [
+    {
+      "surface": "standalone",
+      "sourceManifest": {
+        "format": 1,
+        "content": "e249d1ce",
+        "reviewVersion": "1",
+        "outcomeVersion": "1",
+        "orderVersion": "2"
+      },
+      "currentManifest": {
+        "format": 1,
+        "content": "a39422a3",
+        "reviewVersion": "1",
+        "outcomeVersion": "1",
+        "orderVersion": "2"
+      },
+      "archives": 2,
+      "newCompleted": 1
+    },
+    {
+      "surface": "company",
+      "sourceManifest": {
+        "format": 1,
+        "content": "e249d1ce",
+        "reviewVersion": "1",
+        "outcomeVersion": "1",
+        "orderVersion": "2"
+      },
+      "currentManifest": {
+        "format": 1,
+        "content": "a39422a3",
+        "reviewVersion": "1",
+        "outcomeVersion": "1",
+        "orderVersion": "2"
+      },
+      "archives": 2,
+      "newCompleted": 1
+    }
+  ],
+  "boundaries": {
+    "syntheticOnly": true,
+    "paidCalls": 0,
+    "productionWrites": 0
+  },
+  "browser": "154.0.8037.98",
+  "ok": true,
+  "temporaryDatabaseRemoved": true
+}

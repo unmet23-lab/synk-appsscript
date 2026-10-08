@@ -30,7 +30,10 @@ export class Store {
     mkdirSync(directory,{recursive:true,mode:0o700});
     this.directory=directory;
     const keyFile=join(directory,'encryption.key');
-    if (!existsSync(keyFile)) writeFileSync(keyFile,randomBytes(32),{flag:'wx',mode:0o600});
+    if (!existsSync(keyFile)) {
+      if (existsSync(join(directory,'company.sqlite'))) throw Object.assign(new Error('기존 회사 데이터의 암호화 키가 없습니다. 백업의 원래 키를 함께 복구해 주세요.'),{code:'SYNK_ENCRYPTION_KEY_MISSING'});
+      writeFileSync(keyFile,randomBytes(32),{flag:'wx',mode:0o600});
+    }
     this.key=readFileSync(keyFile);
     if(this.key.length!==32) throw new Error('암호화 키 파일을 확인해 주세요.');
     this.db=new DatabaseSync(join(directory,'company.sqlite'));

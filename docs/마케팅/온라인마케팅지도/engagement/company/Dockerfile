@@ -1,16 +1,72 @@
 FROM node:24-bookworm-slim
-ENV NODE_ENV=production SYNK_COMPANY_HOST=0.0.0.0 SYNK_COMPANY_PORT=4191 SYNK_COMPANY_DATA=/data
+ENV NODE_ENV=production SYNK_COMPANY_HOST=0.0.0.0 SYNK_COMPANY_PORT=4191 SYNK_COMPANY_DATA=/data MESSENGER_DATA_DIR=/data/messenger
 WORKDIR /workspace
-COPY docs/마케팅/온라인마케팅지도/engagement/analytics.mjs /workspace/docs/마케팅/온라인마케팅지도/engagement/analytics.mjs
-COPY docs/마케팅/온라인마케팅지도/engagement/company/*.mjs /workspace/docs/마케팅/온라인마케팅지도/engagement/company/
-COPY docs/마케팅/온라인마케팅지도/engagement/company/public /workspace/docs/마케팅/온라인마케팅지도/engagement/company/public
-COPY docs/브랜드_폰트/SUIT/SUIT-Variable.woff2 /workspace/docs/브랜드_폰트/SUIT/SUIT-Variable.woff2
-COPY docs/브랜드_폰트/InterTight/InterTight-Regular.ttf docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf /workspace/docs/브랜드_폰트/InterTight/
-COPY docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf /workspace/docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf
-COPY docs/브랜드_폰트/InterTight/OFL.txt /workspace/docs/브랜드_폰트/InterTight/OFL.txt
-COPY docs/브랜드_폰트/DM_Mono/OFL.txt /workspace/docs/브랜드_폰트/DM_Mono/OFL.txt
-COPY docs/브랜드_폰트/SUIT/LICENSE_OFL.txt /workspace/docs/브랜드_폰트/SUIT/LICENSE_OFL.txt
-COPY docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg /workspace/docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg
+# Runtime sources and current authenticated guides only. Private data stays on /data.
+COPY ["docs/마케팅/온라인마케팅지도/engagement/analytics.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/analytics.mjs"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/*.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json","docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json","docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md"]
+COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public"]
+COPY ["tools/company-messenger/server.mjs","tools/company-messenger/drive-storage.mjs","tools/company-messenger/company-integration.mjs","tools/company-messenger/collaboration-service.mjs","tools/company-messenger/platform-navigation.mjs","/workspace/tools/company-messenger/"]
+COPY ["tools/company-messenger/public","/workspace/tools/company-messenger/public"]
+COPY ["atlas/engine.js","atlas/trail.js","atlas/personalization.js","atlas/domain.js","atlas/temper-outcomes.js","atlas/interpretation.js","atlas/work.js","/workspace/atlas/"]
+COPY ["experiences/shift-workbench/model.mjs","experiences/shift-workbench/storage-upgrade.mjs","/workspace/experiences/shift-workbench/"]
+COPY ["experiences/atlas-lab/consultation.mjs","experiences/atlas-lab/interpretation.mjs","experiences/atlas-lab/model-extraction.mjs","experiences/atlas-lab/model-host.mjs","experiences/atlas-lab/matching.mjs","experiences/atlas-lab/matching-ui.mjs","experiences/atlas-lab/meeting.mjs","experiences/atlas-lab/meeting-ui.mjs","experiences/atlas-lab/reconnect.mjs","experiences/atlas-lab/discovery.mjs","experiences/atlas-lab/discovery-ui.mjs","experiences/atlas-lab/journey-memory.mjs","experiences/atlas-lab/participant-launcher.mjs","/workspace/experiences/atlas-lab/"]
+COPY ["experiences/atlas-lab/index.html","experiences/atlas-lab/lab.js","experiences/atlas-lab/lab.css","/workspace/experiences/atlas-lab/"]
+COPY ["experiences/learning-hub/atlas-learning.js","/workspace/experiences/learning-hub/atlas-learning.js"]
+COPY ["experiences/learning-hub/assets/scrapbook.css","experiences/learning-hub/assets/SUIT-Variable.woff2","experiences/learning-hub/assets/InterTight-700.woff2","experiences/learning-hub/assets/sticker-book.webp","experiences/learning-hub/assets/slab-cream-long.webp","experiences/learning-hub/assets/slab-blush-long.webp","/workspace/experiences/learning-hub/assets/"]
+COPY ["experiences/korean-rhythm/personalization.mjs","experiences/korean-rhythm/core.mjs","experiences/korean-rhythm/suno-tracks.mjs","experiences/korean-rhythm/listening.mjs","experiences/korean-rhythm/narration.mjs","/workspace/experiences/korean-rhythm/"]
+COPY ["experiences/order-rush/learning.mjs","/workspace/experiences/order-rush/learning.mjs"]
+COPY ["docs/마케팅/맞춤도구/computer/content.js","docs/마케팅/맞춤도구/computer/rules.js","/workspace/docs/마케팅/맞춤도구/computer/"]
+COPY ["docs/브랜드_폰트/SUIT/SUIT-Variable.woff2","/workspace/docs/브랜드_폰트/SUIT/SUIT-Variable.woff2"]
+COPY ["docs/브랜드_폰트/SUIT/LICENSE_OFL.txt","/workspace/docs/브랜드_폰트/SUIT/LICENSE_OFL.txt"]
+COPY ["docs/브랜드_폰트/InterTight/InterTight-Regular.ttf","docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf","docs/브랜드_폰트/InterTight/OFL.txt","/workspace/docs/브랜드_폰트/InterTight/"]
+COPY ["docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf","docs/브랜드_폰트/DM_Mono/OFL.txt","/workspace/docs/브랜드_폰트/DM_Mono/"]
+COPY ["docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg","/workspace/docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt"]
+COPY ["docs/개인정보처리방침_초안_v1.md","/workspace/docs/개인정보처리방침_초안_v1.md"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt"]
+COPY ["docs/포토부스_설계.md","/workspace/docs/포토부스_설계.md"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt"]
+COPY ["docs/수강약관_초안_v1.md","/workspace/docs/수강약관_초안_v1.md"]
+COPY ["docs/커리큘럼_정본_v1.md","/workspace/docs/커리큘럼_정본_v1.md"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt"]
+COPY ["docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt","/workspace/docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt"]
+COPY ["docs/정본/SYNK/SYNK FAQ.txt","/workspace/docs/정본/SYNK/SYNK FAQ.txt"]
+COPY ["docs/자주묻는질문_정본.md","/workspace/docs/자주묻는질문_정본.md"]
+COPY ["docs/마케팅/콘텐츠_제작양식.md","/workspace/docs/마케팅/콘텐츠_제작양식.md"]
+COPY ["docs/마케팅/콘텐츠_운영체계_20260927.md","/workspace/docs/마케팅/콘텐츠_운영체계_20260927.md"]
+COPY ["docs/명품_기준_v1.md","/workspace/docs/명품_기준_v1.md"]
+COPY ["docs/디자인/펠트스크랩북/README.md","/workspace/docs/디자인/펠트스크랩북/README.md"]
+COPY ["docs/마케팅/제작양식/AI_소식_도구추천.md","/workspace/docs/마케팅/제작양식/AI_소식_도구추천.md"]
+COPY ["docs/마케팅/제작양식/AI_활용법.md","/workspace/docs/마케팅/제작양식/AI_활용법.md"]
+COPY ["docs/마케팅/채널과_발행.md","/workspace/docs/마케팅/채널과_발행.md"]
+COPY ["docs/마케팅/제작양식/제작여정_쇼츠.md","/workspace/docs/마케팅/제작양식/제작여정_쇼츠.md"]
+COPY ["docs/마케팅/제작양식/LAB_상황극.md","/workspace/docs/마케팅/제작양식/LAB_상황극.md"]
+COPY ["docs/마케팅/제작양식/LAB_표현소개.md","/workspace/docs/마케팅/제작양식/LAB_표현소개.md"]
+COPY ["docs/마케팅/제작양식/인물클립.md","/workspace/docs/마케팅/제작양식/인물클립.md"]
+COPY ["docs/마케팅/제작양식/인터뷰.md","/workspace/docs/마케팅/제작양식/인터뷰.md"]
+COPY ["docs/마케팅/제작양식/회사소개_작업물.md","/workspace/docs/마케팅/제작양식/회사소개_작업물.md"]
+COPY ["docs/마케팅/제작양식/글_뉴스레터.md","/workspace/docs/마케팅/제작양식/글_뉴스레터.md"]
+COPY ["docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg","/workspace/docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg"]
+COPY ["docs/디자인/SNS키트/assets/logo-synk-paper.webp","/workspace/docs/디자인/SNS키트/assets/logo-synk-paper.webp"]
+COPY ["docs/디자인/SNS키트/assets/logo-lab.webp","/workspace/docs/디자인/SNS키트/assets/logo-lab.webp"]
+COPY ["docs/디자인/SNS키트/assets/logo-shift.webp","/workspace/docs/디자인/SNS키트/assets/logo-shift.webp"]
+COPY ["docs/디자인/SNS키트/assets/logo-pulse.webp","/workspace/docs/디자인/SNS키트/assets/logo-pulse.webp"]
+COPY ["docs/디자인/SNS키트/assets/mascot-몽글_본체.webp","/workspace/docs/디자인/SNS키트/assets/mascot-몽글_본체.webp"]
+COPY ["docs/디자인/SNS키트/assets/mascot-까몽_본체.webp","/workspace/docs/디자인/SNS키트/assets/mascot-까몽_본체.webp"]
+COPY ["docs/디자인/SNS키트/assets/mascot-마린_본체.webp","/workspace/docs/디자인/SNS키트/assets/mascot-마린_본체.webp"]
+COPY ["docs/브랜드_폰트/InterTight/InterTight-Medium.ttf","/workspace/docs/브랜드_폰트/InterTight/InterTight-Medium.ttf"]
+COPY ["docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf","/workspace/docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf"]
+COPY ["docs/디자인/펠트부품/assets/ui/slab-coral-long.webp","/workspace/docs/디자인/펠트부품/assets/ui/slab-coral-long.webp"]
+COPY ["docs/디자인/펠트부품/assets/ui/badge-check.webp","/workspace/docs/디자인/펠트부품/assets/ui/badge-check.webp"]
+COPY ["docs/디자인/SNS키트/assets/felt-laptop.webp","/workspace/docs/디자인/SNS키트/assets/felt-laptop.webp"]
 RUN mkdir /data && chown node:node /data
 USER node
 EXPOSE 4191

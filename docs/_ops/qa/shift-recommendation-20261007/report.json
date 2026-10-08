@@ -1,0 +1,110 @@
+{
+  "schema": "synk-shift-recommendation-1",
+  "status": "local-code-and-browser-verified",
+  "completedDate": "2026-10-07",
+  "recordedAt": "2026-10-06T19:37:17.561Z",
+  "scope": "Approved follow-up 1 and 2: recent unresolved question practice and unseen/least-recent task ties",
+  "changes": [
+    "업무·문항·판본을 독립 단위로 하여 문항별 최신 결과만 투영; 반복 횟수로 독립 근거를 늘리지 않음",
+    "Domain의 전체 해석은 보존하고 SHIFT practicePlan@2가 최근 30일 이내 미해결 문항을 복습 우선순위로 사용",
+    "같은 우선순위의 다음 실습은 실제 노출·완료 기록에서 미경험, 가장 오래전 경험, 등록 순서로 결정",
+    "문항별 근거·실제 첫 문항·Temper 선택/노출의 일치; 구 evidence-check-order@1은 검증·보존하고 현행 @2 평가에서 분리",
+    "제외된 최신 정정으로 이전 오답을 부활시키지 않음; 발생·기록 시각과 정확히 30일 만료 경계를 적용",
+    "회사·독립 화면에 같은 선택 이유와 실제 문항 근거 표시; 사용자 업무 선택과 opt-in 저장 유지"
+  ],
+  "ownership": {
+    "genericAtlasFilesChanged": [],
+    "productFiles": [
+      "experiences/shift-workbench/model.mjs",
+      "experiences/shift-workbench/app.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js"
+    ],
+    "domainResult": "The original Domain ranked/selected/understanding remains diagnostic. Product practicePlan.selectedId is the actual displayed choice and matches the Temper event."
+  },
+  "verification": {
+    "automated": {
+      "exitCode": 0,
+      "files": [
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs"
+      ],
+      "finishedAt": "2026-10-06T19:35:40.2976770Z",
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-concurrency=4",
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs"
+      ],
+      "counts": {
+        "todo": 0,
+        "pass": 165,
+        "cancelled": 0,
+        "tests": 165,
+        "fail": 0,
+        "skipped": 0
+      },
+      "startedAt": "2026-10-06T19:35:39.2204921Z"
+    },
+    "automatedLog": "regression.txt",
+    "newRegressionTests": 23,
+    "browser": {
+      "log": "browser/report.json",
+      "command": [
+        "node",
+        "docs/_ops/qa/shift-recommendation-20261007/browser/verify.mjs"
+      ],
+      "checks": 67,
+      "ok": true,
+      "sourceHashMismatches": [],
+      "pageErrors": [],
+      "assetErrors": [],
+      "externalRequests": [],
+      "temporaryDatabaseRemoved": true
+    },
+    "independentReview": "Added and passed regressions for wrong-field/correct-answer evidence injection, valid-but-different selected check, policy mismatch, full question order/count, future exclusions in asOf reads, and exact lifetime boundary."
+  },
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "803ea6b0d0da40d57fc8facf504474fd1ad721cfa6444e3cb19e033fe2be086c",
+    "experiences/shift-workbench/model.test.mjs": "417f34fa2db8c8b63e17e79dd7b20ee32ac9a27659b822034721a27db9bd86f4",
+    "experiences/shift-workbench/recommendation.test.mjs": "758d00e581cc8f9715fdbdcba8111fae5cbb6afbb84b7106adf7e8c5bf61f85c",
+    "experiences/shift-workbench/app.mjs": "0c418f8233b6434ba33f56f45552f4f24016df3e0caeb5aa1bbea82ab0709c63",
+    "experiences/shift-workbench/README.md": "9985de2fa97464317c026ee11d9aa907c0a9d461951c6592cc070e5b1fbe9dc0",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "15d7a5c89f8ec0a9ee46a3d0cbed636834f4504e8ce7379fd6210f120821f51f",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs": "2cf335159d082365293eeac1a4f01a3354253dfc2b6abe70f61864623eba701b",
+    "docs/_ops/qa/shift-recommendation-20261007/browser/verify.mjs": "f32a605432b365f2c1c906e9e4991909806121e3ec4993f837162425dd9119b9"
+  },
+  "remaining": [
+    "미래 계약·정책·문항 판본 전체의 범용 저장 이행",
+    "완료20개와 중도포기199개 평가 체인의 보관 범위 차이"
+  ],
+  "boundaries": {
+    "deployment": false,
+    "productionDatabaseWrites": 0,
+    "paidAiCalls": 0,
+    "realUserLearningOrProductivityEffectVerified": false,
+    "taskExposureHistory": "Only retained, consented current-scope events; unseen does not claim lifetime novelty.",
+    "practiceEvidence": "Fixed fictional review questions, not general workplace ability."
+  }
+}

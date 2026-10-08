@@ -1,0 +1,80 @@
+{
+  "sections": [
+    {
+      "id": "C3",
+      "decision": "유지",
+      "rubricIds": [
+        "R1",
+        "R5",
+        "R6"
+      ],
+      "evidence": "common.json sections[id=C3], locator shift.sections[0].atlas: '아틀라스는 SYNK가 발전시키는 여덟 공통 엔진의 이름', 기업마다 공통 엔진을 새로 만들지 않고 전문 모듈을 조합, SHIFT는 고객사 자료·규칙·시스템을 연결해 완료 기준과 운영 방법을 정한다고 설명한다. note는 목적·동의 범위를 실제 도입에서 정하고 로컬 검증을 고객사 성과로 소개하지 않는다고 명시한다. common.json canonical.file=docs/마케팅/SHIFT.md의 §4, '재사용과 고객사 적용의 경계', 'Atlas가 기업에 주는 가치'와 부합한다. atlas-decision.json D1의 공통 능력과 전문 기능 구분 및 D2의 한 업무 도입·운영 우선사항을 적용했다.",
+      "issue": null,
+      "optionalImprovement": "정본의 제품 호스트 책임까지 이 구간에서 더 쉽게 찾게 하려면 인증·권한·자료와 기록 관리는 제품 호스트가 맡는다는 설명을 보완할 수 있다. 현재 문장이 그 책임을 다른 곳에 부여하거나 구현 완료를 약속하지는 않으므로 선택적 설명 보완이다."
+    },
+    {
+      "id": "C5",
+      "decision": "유지",
+      "rubricIds": [
+        "R1",
+        "R4",
+        "R6"
+      ],
+      "evidence": "common.json sections[id=C5], locator shift.sections[id=shift-expansion]: 한 고객사의 실제 업무에서 도움과 공급·지원 비용을 먼저 확인하고, 반복 제공 범위 확인 뒤 API·엔진 라이선스 상품을 검토한다. items는 한 업무 도입·운영→반복 공급 검증→API·엔진 라이선스 순서이고, note는 이후 확장 방향이며 지금 판매하는 상품이 아니라고 명시한다. 출시 시기·요금·제공 조건도 미정이다. 정본 docs/마케팅/SHIFT.md '2026-10-06 확정 — 도입·운영부터 반복 공급하고 API·라이선스로 확장한다' 및 단계표와 부합한다. atlas-decision.json D2·D3의 명시 우선사항과 일치한다.",
+      "issue": null,
+      "optionalImprovement": null
+    },
+    {
+      "id": "C1",
+      "decision": "유지",
+      "rubricIds": [
+        "R1",
+        "R2",
+        "R5",
+        "R6"
+      ],
+      "evidence": "common.json sections[id=C1], locator shift.lead / shift.hero: 제목 '한 업무부터', 누가 어떤 일을 마칠지 정한다는 본문, 도입 뒤 실제 사용과 운영 부담을 확인한다는 page.body로 현재 사업 단위를 설명한다. hero.label은 '개인화 서비스 도입·운영 · 준비 중', servicesLabel은 '개인화 적용 후보'여서 출시 확정이나 운영 실적을 주장하지 않는다. 공통 Atlas·전문 모듈 연결 표현은 C3의 책임 설명 및 정본 docs/마케팅/SHIFT.md §4와 '현재 사업 단위'에 맞는다. D2의 범위 집중 우선사항을 확인했다.",
+      "issue": null,
+      "optionalImprovement": null
+    },
+    {
+      "id": "C2",
+      "decision": "유지",
+      "rubricIds": [
+        "R1",
+        "R2",
+        "R6"
+      ],
+      "evidence": "common.json sections[id=C2], locator shift.sections[0] (atlas 제외): '개인화 서비스 적용 후보 · 준비 중'과 '도입할 한 업무를 함께 고릅니다'를 앞세워 구매·사용 지원과 코칭·훈련의 네 후보를 소개한다. items와 offers는 대상·받는 결과물·도입 목표를 설명하며, note와 page.note는 제공 기능·시스템 연결·책임·지원·일정·가격을 건별로 정하고 실고객 운영·효과·수익성을 미검증 상태로 명시한다. 따라서 '달라지는 점'과 benefit을 note와 함께 보면 도입 뒤 확인할 목표이며 확인된 성과가 아니다. 정본 docs/마케팅/SHIFT.md '2026-10-05 개발 대상으로 확정한 두 제품군'과 '네 가지 적용 후보', D2의 한 업무 집중 기준에 부합한다.",
+      "issue": null,
+      "optionalImprovement": null
+    },
+    {
+      "id": "C4",
+      "decision": "유지",
+      "rubricIds": [
+        "R1",
+        "R3",
+        "R6"
+      ],
+      "evidence": "common.json sections[id=C4], locator shift.sections[id=shift-services]: intro와 page.intro가 교육·컨설팅·자동화·브랜딩을 개인화 서비스 도입·활용에 필요한 지원으로 제한한다. items는 담당자 활용·예외 처리, 사람이 확인할 단계, 서비스 설명·화면을 다루고 note와 page.note는 지원 범위와 결과물을 도입할 업무에 맞춰 정한다고 설명한다. 독립 신규 주력 상품이나 전체 업무의 자동화를 약속하지 않는다. 정본 docs/마케팅/SHIFT.md '지원 업무와 이전 사업의 처리' 및 네 적용 후보 뒤 홈페이지 설명 기준과 부합하고 D2의 범위 집중을 유지한다.",
+      "issue": null,
+      "optionalImprovement": null
+    }
+  ],
+  "criticalDefects": [],
+  "proposedPatch": [],
+  "conclusion": "개인화 순서로 5구간을 검수했으며 모두 유지 권고다. 정본과 사전 rubric에 근거한 실질 불일치는 없고 C3의 책임 설명 보완만 선택적 개선으로 구분했다. 이 결과는 AI가 수행한 내부 원고 검수이며 인간의 업무 효과나 개인화의 효과를 검증한 결과가 아니다.",
+  "reviewOrder": [
+    "C3",
+    "C5",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "decisionBasis": "personalized.json의 순서를 적용했다. atlas-decision.json의 현재 사용자 명시 요청 D1(공통 능력·전문 기능 구분), D2(한 업무 도입·운영 집중), D3(반복 공급 확인 뒤 API·라이선스 확장)을 해당 구간의 근거에 반영했다. 중요도 2/1/1과 후보 점수는 검토 순서를 정하는 제품 정책값이며 능력·선호 강도·확률·효과 측정값이 아니다. 검토 순서와 관계없이 5구간에 같은 판정 기준을 적용했다.",
+  "startedAt": "2026-10-06T22:02:15Z",
+  "helpRequested": false,
+  "comparisonKind": "AI-performed internal review",
+  "endedAt": "2026-10-06T22:03:32Z"
+}

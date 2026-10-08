@@ -56,7 +56,7 @@ test('unobserved focus survives another successful task and the shown reason ref
   assert.equal(nextTaskSuggestion(s).focus,'completeness');assert.notEqual(nextTaskSuggestion(s).task,'research');
   s=startRun(s,{task:'planning',goal:'clarity',minutes:5,support:'step'},engine,'2026-10-02T00:03:00.000Z');
   assert.equal(s.run.checkIds[0],'criteria');assert.equal(s.run.focusDecision.selected.id,'criteria');
-  assert.deepEqual(s.run.focusDecision.selected.reasons.find(r=>r.field==='completeness').evidence,[`${missed}.completeness`]);
+  assert.deepEqual(s.run.focusDecision.selected.reasons.find(r=>r.field==='completeness').evidence,[`${missed}.missing`]);
   assert.equal(decisionEvidence(s,s.run.focusDecision)[0].task,'meeting');
   assert.match(practiceBasis(s)[0],/회의를 실행으로.*누락.*안내 사용/);
   assert.match(s.run.reason,/업무 능력 평가는 아닙니다/);
@@ -67,7 +67,7 @@ test('conflicting checks stay unresolved rather than becoming a fixed weakness o
   s=startRun(s,{task:'meeting',goal:'work',minutes:10,support:'step'},engine,'2026-10-02T00:03:00.000Z');
   const field=s.run.focusDecision.understanding.fields.find(f=>f.id==='completeness');
   assert.equal(field.status,'conflicted');assert.equal(field.usable,false);assert.equal(field.evidence.length,2);
-  assert.deepEqual(s.run.checkIds,['deadline','approval','missing']);assert.match(practiceBasis(s).join(' '),/결과가 엇갈려/);
+  assert.deepEqual(s.run.checkIds,['missing','deadline','approval']);assert.match(practiceBasis(s).join(' '),/전체 판단은 보류/);
 });
 test('legacy missed summaries do not invent unpresented successes and expire after their declared lifetime',()=>{
   let s=finishPractice(newState(),'meeting',['missing'],at,later);delete s.history[0].review;delete s.history[0].completionId;
@@ -189,4 +189,35 @@ test('a missing review module gives the prepared Korean notice instead of an int
   const saved=globalThis.SynkAtlasDomain;delete globalThis.SynkAtlasDomain;
   try{assert.throws(()=>startRun(newState(),{task:'meeting',goal:'clarity',minutes:5,support:'step'},absent,at),/검토 기록 모듈을 불러오지 못했어요/);}
   finally{if(saved!==undefined)globalThis.SynkAtlasDomain=saved;}
+});
+
+test('actual review delivery and results bind their outcome definition while old saves remain readable',()=>{
+  const s=completeRun(recordPracticeExposure(filled(),at),engine,later),contract={id:'shift-first-check-result',version:'1'};
+  assert.deepEqual(s.evaluation.exposures[0].contract,contract);
+  assert.deepEqual(s.evaluation.outcomes[0].contract,contract);
+  for(const field of ['exposures','outcomes']){
+    const wrong=structuredClone(s);wrong.evaluation[field][0].contract.version='foreign-definition';
+    assert.throws(()=>practiceEvaluation(wrong,temper,'2026-10-03T00:01:00.000Z'),/contract/);
+  }
+  const legacy=structuredClone(s);legacy.save=true;
+  delete legacy.evaluation.exposures[0].contract;delete legacy.evaluation.outcomes[0].contract;
+  const before=structuredClone(legacy);
+  const report=practiceEvaluation(legacy,temper,'2026-10-03T00:01:00.000Z');
+  assert.equal(report.byPolicy[0].mean,1);assert.equal(report.provenance.chains[0].status,'observed');
+  assert.deepEqual(legacy,before,'contract binding is an evaluation projection, not a mutation of old source records');
+  assert.equal(restore(JSON.stringify(legacy),engine,SCOPE,temper).evaluation.outcomes[0].contract,undefined);
+});
+
+test('a review withdrawal retains the actual source chain and cannot be injected as a saved revision',()=>{
+  const s=completeRun(recordPracticeExposure(filled(),at),engine,later);
+  const session=core.createSession({scope:engine.coreScope(s.profile),events:s.events,clock:()=> '2026-10-02T00:00:02.000Z',id:()=> 'withdraw-review-source'});
+  session.exclude(s.run.completionId);s.events=session.events();
+  const before=structuredClone(s.evaluation),report=practiceEvaluation(s,temper,'2026-10-03T00:01:00.000Z');
+  assert.equal(report.byPolicy[0].mean,null);assert.equal(report.byPolicy[0].counts.observed,0);
+  const chain=report.provenance.chains[0];
+  assert.equal(chain.status,'withdrawn');assert.equal(chain.outcomeId,s.evaluation.outcomes[0].id);
+  assert.equal(chain.effectiveOutcomeId,null);assert.equal(chain.revisions[0].sourceRef,'withdraw-review-source');
+  assert.deepEqual(s.evaluation,before,'the original completion and observed review remain intact');
+  const injected=structuredClone(s);injected.evaluation.revisions=chain.revisions;
+  assert.throws(()=>practiceEvaluation(injected,temper,'2026-10-03T00:01:00.000Z'),/완료 근거/);
 });

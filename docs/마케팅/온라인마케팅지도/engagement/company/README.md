@@ -127,6 +127,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "docs/마케팅/온라인마
 | `SYNK_COMPANY_HOST` | 기본은 `127.0.0.1`. 컨테이너 내부에서는 `0.0.0.0`을 사용합니다. |
 | `SYNK_COMPANY_PORT` | 기본 `4191`. 내부 서버 포트입니다. |
 | `SYNK_COMPANY_DATA` | 데이터 저장 폴더. 기본은 이 폴더의 `data`, Docker에서는 `/data`입니다. |
+| `MESSENGER_DATA_DIR` | 통합 메신저 데이터 폴더. 준비한 Docker 구성은 `/data/messenger`로 지정해 회사 DB와 같은 영구 볼륨에 보관합니다. 명시적 실행 옵션·기존 통합 설정이 있으면 그 설정이 우선합니다. |
 
 외부에서 접속할 수 있게 실행할 때는 HTTPS 회사 주소를 지정해야 합니다. 리버스 프록시는 요청의 **Host를 회사 주소 그대로 보존**해야 합니다. 브라우저 주소, 서버의 `SYNK_COMPANY_ORIGIN`, 플랫폼에 등록한 OAuth 콜백 주소가 일치해야 로그인·계정 연결이 동작합니다.
 
@@ -141,6 +142,10 @@ docker run -d --name synk-company-sns --restart unless-stopped -p 127.0.0.1:4191
 ```
 
 `/data`는 반드시 영구 볼륨에 연결합니다. 컨테이너를 바꿔도 계정·채널·기록과 암호화 키가 같은 볼륨에 남아 있어야 합니다. 이 예시는 같은 서버의 HTTPS 프록시가 `127.0.0.1:4191`으로 전달하는 구성입니다.
+
+2026-10-07 현재 메신저·SHIFT·Atlas 실행 의존성과 인증된 안내 원문이 들어가도록 배포 파일을 보완했습니다. 실제 COPY 파일로 격리 서버를 실행한 검사는 통과했지만 Linux Docker 빌드·실행과 운영 반영은 아직입니다. [반영 준비·백업·실물 두 기기 검증 순서](../../../../_ops/qa/shift-release-preparation-20261007/README.md)를 따릅니다.
+
+같은 날 [운영 인수 후속](../../../../_ops/qa/shift-operational-acceptance-20261007/README.md)에서는 기존 회사 DB에 원래 암호화 키가 없으면 새 키 생성·DB 변경 전에 시작을 거부하도록 보완했습니다. `workspace-restore-acceptance.mjs`는 기존 완성 백업을 선언한 별도 최신 기준과 읽기 전용 대조해 수정·삭제·두 DB·키·계정 연결·등록 파일이 다른 복구 후보를 거절합니다. 도구 결과만으로 실제 최신성이나 공개 접속 허용을 증명하지 않습니다. 대상 서버와 실제 고객은 아직 미정입니다.
 
 Nginx를 사용하는 경우, 인증서가 설정된 회사 HTTPS 서버 블록의 전달 설정은 다음과 같습니다.
 

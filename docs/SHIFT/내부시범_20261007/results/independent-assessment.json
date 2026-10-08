@@ -1,0 +1,94 @@
+{
+  "schemaVersion": 1,
+  "assessmentKind": "Independent assessment of AI-performed internal copy reviews",
+  "status": "completed",
+  "assessmentBasis": "input/common.json에 사전 고정된 R1~R6와 5구간 완료 조건만 적용했다. baseline.json과 personalized.json을 직접 읽고, 같은 common.json의 전체 문맥과 정본 근거로 실질 불일치·오탐·누락을 확인했다. 출력 형식 보완이나 추가 체크리스트를 새 합격 조건으로 적용하지 않았다.",
+  "reviewedFiles": [
+    {
+      "path": "input/common.json",
+      "sha256": "a720acd24e03171604daf055c7ece412706665183f1ee386477f7fac4bf5b353"
+    },
+    {
+      "path": "results/baseline.json",
+      "sha256": "6d7170f1766f87bd5d0ce4f8092f912c1f0dc93ab51c291a9f4fea801b74546f"
+    },
+    {
+      "path": "results/personalized.json",
+      "sha256": "6fb3cb067065ee13b93d95897ff85f0980f47edd59f94fc9794e283f03e35618"
+    }
+  ],
+  "completionAssessment": {
+    "baseline": {
+      "completed": true,
+      "reviewedSectionCount": 5,
+      "reviewOrder": ["C1", "C2", "C3", "C4", "C5"],
+      "substantiveResultErrorCount": 0,
+      "confirmedCopyMismatchCount": 0,
+      "humanHandoff": null,
+      "evidence": "C1~C5 모두 유지 판정과 현재 원고·정본 근거를 남겼다. C3의 제품 호스트 책임 문장 보완은 optionalImprovement로 구분하고 issue·criticalDefects·proposedPatch는 비워 두었다. 실질 불일치가 없으면 유지 권고한다는 완료 조건을 충족한다."
+    },
+    "personalized": {
+      "completed": true,
+      "reviewedSectionCount": 5,
+      "reviewOrder": ["C3", "C5", "C1", "C2", "C4"],
+      "substantiveResultErrorCount": 0,
+      "confirmedCopyMismatchCount": 0,
+      "humanHandoff": null,
+      "evidence": "검수 순서만 달라졌으며 C1~C5 모두 유지 판정과 현재 원고·정본 근거를 남겼다. C3 설명 보완을 선택 사항으로 구분하고 issue·criticalDefects·proposedPatch는 비워 두었다. 같은 사전 기준에서 실질 불일치가 없으면 유지 권고한다는 완료 조건을 충족한다."
+    }
+  },
+  "rubricAssessment": [
+    {
+      "id": "R1",
+      "criterion": "현재 사업 단위를 고객사 한 곳의 한 업무 도입·운영으로 다룬다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C1 lead.body/page.body의 한 업무·완료 결과와 C5 items[0]의 한 업무 도입·운영. 정본 docs/마케팅/SHIFT.md:18,22. 양쪽 결과 모두 이 범위를 확인했으며 모든 기업의 모든 업무나 별도 주력 사업으로 확대하지 않았다."
+    },
+    {
+      "id": "R2",
+      "criterion": "네 적용 후보를 준비 중인 후보로 다루고 출시·계약 가능으로 확정하지 않는다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C1 hero.label/servicesLabel, C2 label·intro·note/page.note. 정본 docs/마케팅/SHIFT.md:3,11,52,63. 양쪽 결과는 네 분야를 후보로 판정하고 건별 확정·미검증 안내를 함께 읽었다. 동시 출시·판매 준비나 계약 가능 범위를 새로 확정하지 않았다."
+    },
+    {
+      "id": "R3",
+      "criterion": "교육·컨설팅·자동화·브랜딩을 개인화 도입의 지원 범위로 다룬다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C4 intro/page.intro·items·note/page.note는 개인화 서비스 도입·활용에 필요한 지원으로 한정한다. 정본 docs/마케팅/SHIFT.md:44,67. 양쪽 결과가 같은 제한을 확인했고 교육·자동화·브랜딩을 독립 신규 주력 상품으로 재해석하지 않았다."
+    },
+    {
+      "id": "R4",
+      "criterion": "반복 공급과 실측 뒤 API·라이선스로 진행하는 순서를 지킨다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C5 intro·items·note의 한 업무 도입·운영, 실제 도움·비용 확인, 반복 공급, 이후 상품화 순서. 정본 docs/마케팅/SHIFT.md:22-26. 양쪽 결과가 같은 순서를 유지했고 API·라이선스의 판매·출시 시기나 둘 사이의 선후를 추가로 확정하지 않았다."
+    },
+    {
+      "id": "R5",
+      "criterion": "기존 8개 엔진의 공통 능력·전문 모듈·SHIFT 도입·제품 운영의 책임을 구분한다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C3 body는 SYNK의 여덟 공통 엔진·전문 모듈·SHIFT의 자료·규칙·시스템 연결과 완료 기준·운영 방법을 구분한다. C2 note는 실제 운영 책임을 도입 건별로 정한다고 명시한다. 정본 docs/마케팅/SHIFT.md:9,30-32,65. 제품 호스트의 인증·권한·자료/기록 관리를 C3에 상세 열거하지 않은 것은 그 책임을 Atlas로 옮기는 주장이 아니다. 양쪽의 선택적 설명 보완 구분은 타당하며 원고 오류로 세지 않는다."
+    },
+    {
+      "id": "R6",
+      "criterion": "실고객 성과·가격·일정·운영·동의를 확정하지 않고 note를 포함한 전체 문맥으로 판단한다.",
+      "baselineErrorCount": 0,
+      "personalizedErrorCount": 0,
+      "sourceEvidence": "common.json C2 note/page.note는 실고객 운영·효과·수익성 미검증과 건별 기능·책임·일정·가격을 명시한다. C3 note는 실제 목적·동의 범위와 로컬 검증/고객 성과 구분을, C5 items[2]/note는 미정 조건과 현재 미판매를 명시한다. 정본 docs/마케팅/SHIFT.md:32,42,46,63,65. 양쪽 결과는 benefit과 steps만 떼어 확정 성과로 채점하지 않고 이 전체 문맥을 근거로 유지 판정했다."
+    }
+  ],
+  "sectionAssessment": [
+    {"id": "C1", "baselineCompleted": true, "personalizedCompleted": true, "supportedDecision": "유지", "copyMismatchCount": 0, "evidence": "한 업무·사용자 완료 결과와 준비 중 표기를 함께 읽으면 R1·R2·R5·R6에 부합한다."},
+    {"id": "C2", "baselineCompleted": true, "personalizedCompleted": true, "supportedDecision": "유지", "copyMismatchCount": 0, "evidence": "네 적용 후보의 도입 목표와 준비/미검증 note를 함께 읽으면 R1·R2·R6에 부합한다."},
+    {"id": "C3", "baselineCompleted": true, "personalizedCompleted": true, "supportedDecision": "유지", "copyMismatchCount": 0, "evidence": "공통 엔진·전문 모듈·SHIFT 연결/운영 기준과 목적·동의 note가 R5·R6에 부합한다. 제품 호스트 세부 설명의 추가는 선택적 보완이다."},
+    {"id": "C4", "baselineCompleted": true, "personalizedCompleted": true, "supportedDecision": "유지", "copyMismatchCount": 0, "evidence": "교육·컨설팅·자동화·브랜딩을 해당 개인화 도입의 지원으로 제한하므로 R1·R3·R6에 부합한다."},
+    {"id": "C5", "baselineCompleted": true, "personalizedCompleted": true, "supportedDecision": "유지", "copyMismatchCount": 0, "evidence": "도입·운영 실측과 반복 공급 확인 뒤 상품화를 검토하며 미판매/미정 note가 있으므로 R1·R4·R6에 부합한다."}
+  ],
+  "defects": [],
+  "recommendation": "현 원고 5구간 유지. 실제 불일치가 없어 필수 수정안은 없다. 양쪽 검수에서 제시한 C3의 제품 호스트 책임 설명은 선택 사항으로 남긴다.",
+  "limits": "이 판정은 같은 사전 기준으로 두 AI 내부 검수 결과의 완료와 실질 정확성을 확인한 것이다. 공개 사이트 현행·가격·고객 운영·배포·인간 사용성 연구는 범위 밖이다. 사람 전환은 관찰하지 않아 공란(null)이며 helpRequested=false를 사람 전환 0으로 바꾸지 않았다. 개인화의 업무 개선이나 고객 성과·인과효과·모델 승패를 판정하지 않는다."
+}
