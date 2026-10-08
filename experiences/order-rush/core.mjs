@@ -6,10 +6,10 @@ export const ORDERS=[
  {id:'o05',text:'따뜻한 커피 한 잔 주세요. 설탕도 넣어 주세요.',skill:'추가 요청',cups:[{base:'coffee',milk:false,temp:'hot',ice:false,sugar:true}]},
  {id:'o06',text:'아이스커피 두 잔 주세요. 한 잔은 얼음 빼 주세요.',skill:'수량 · 서로 다른 조건',cups:[{base:'coffee',milk:false,temp:'cold',ice:true},{base:'coffee',milk:false,temp:'cold',ice:false}]},
  {id:'o07',text:'따뜻한 라테 한 잔 주세요. 설탕 없이요.',skill:'부정 표현',cups:[{base:'coffee',milk:true,temp:'hot',ice:false,sugar:false}]},
- {id:'o08',text:'차 두 잔 차갑게 주세요. 둘 다 설탕은 빼 주세요.',skill:'둘 다 · 조건',cups:[{base:'tea',milk:false,temp:'cold',sugar:false},{base:'tea',milk:false,temp:'cold',sugar:false}]},
- {id:'o09',text:'따뜻한 커피 대신 차 한 잔 주세요.',skill:'대신 · 변경',cups:[{base:'tea',milk:false,temp:'hot',ice:false}]},
+ {id:'o08',text:'차가운 차 두 잔 주세요. 둘 다 설탕은 빼 주세요.',skill:'둘 다 · 조건',cups:[{base:'tea',milk:false,temp:'cold',sugar:false},{base:'tea',milk:false,temp:'cold',sugar:false}]},
+ {id:'o09',text:'커피 대신 따뜻한 차 한 잔 주세요.',skill:'대신 · 변경',cups:[{base:'tea',milk:false,temp:'hot',ice:false}]},
  {id:'o10',text:'라테 한 잔하고 커피 한 잔 주세요. 둘 다 아이스로요.',skill:'음료 구별 · 둘 다',cups:[{base:'coffee',milk:true,temp:'cold',ice:true},{base:'coffee',milk:false,temp:'cold',ice:true}]},
- {id:'o11',text:'차 한 잔에 얼음 넣어 주세요. 설탕은 넣지 마세요.',skill:'추가 · 금지',cups:[{base:'tea',milk:false,temp:'cold',ice:true,sugar:false}]},
+ {id:'o11',text:'차 한 잔 주세요. 얼음은 넣어 주세요. 설탕은 넣지 마세요.',skill:'추가 · 금지',cups:[{base:'tea',milk:false,temp:'cold',ice:true,sugar:false}]},
  {id:'o12',text:'커피 두 잔 주세요. 하나는 따뜻하게, 다른 하나는 차갑게요.',skill:'하나 · 다른 하나',cups:[{base:'coffee',milk:false,temp:'hot',ice:false},{base:'coffee',milk:false,temp:'cold'}]}
 ];
 export const REVIEW=[
@@ -30,17 +30,17 @@ export function editCup(cup,action){
 export function describeCup(c){if(!c.base)return '빈 컵';return `${c.temp==='hot'?'따뜻한':'차가운'} ${c.base==='tea'?(c.milk?'우유를 넣은 차':'차'):c.milk?'라테':'커피'} · ${c.ice?'얼음 있음':'얼음 없음'} · ${c.sugar?'설탕 있음':'설탕 없음'}`;}
 const match=(c,e)=>Object.entries(e).every(([k,v])=>c[k]===v);
 export function judgeOrder(order,cups){
- if(cups.length!==order.cups.length)return {correct:false,feedback:`${order.cups.length===1?'한':'두'} 잔을 부탁했어요. 컵 수를 다시 확인해 주세요.`,kind:'quantity'};
+ if(cups.length!==order.cups.length)return {correct:false,feedback:`저는 ${order.cups.length===1?'한':'두'} 잔 주문했어요. 컵 수를 확인해 주세요.`,kind:'quantity'};
  const targets=order.cups;
- if(targets.every((e,i)=>match(cups[i],e))||(cups.length===2&&targets.every((e,i)=>match(cups[1-i],e))))return {correct:true,feedback:'주문대로 만들었어요. 고맙습니다!',kind:'correct'};
+ if(targets.every((e,i)=>match(cups[i],e))||(cups.length===2&&targets.every((e,i)=>match(cups[1-i],e))))return {correct:true,feedback:'네, 이거 맞아요. 고맙습니다!',kind:'correct'};
  const closest=targets.map(e=>({e,c:cups.reduce((a,b)=>Object.keys(e).filter(k=>a[k]!==e[k]).length<=Object.keys(e).filter(k=>b[k]!==e[k]).length?a:b)})).find(({e,c})=>!match(c,e))||{e:targets[0],c:cups[0]};
  const {e,c}=closest;
- if(c.base!==e.base)return {correct:false,feedback:e.base==='tea'?'커피가 아니라 차를 부탁했어요.':'커피를 부탁했어요. 음료를 다시 확인해 주세요.',kind:'drink'};
- if(c.milk!==e.milk)return {correct:false,feedback:e.milk?'라테에는 우유가 들어가요.':'우유가 없는 음료를 부탁했어요.',kind:'milk'};
- if(c.temp!==e.temp)return {correct:false,feedback:e.temp==='hot'?'따뜻하게 부탁했어요.':'차갑게 부탁했어요.',kind:'temperature'};
- if('ice'in e&&c.ice!==e.ice)return {correct:false,feedback:e.ice?'얼음이 들어간 음료를 부탁했어요.':'얼음은 빼 달라고 했어요.',kind:'ice'};
- if('sugar'in e&&c.sugar!==e.sugar)return {correct:false,feedback:e.sugar?'설탕을 넣어 달라고 했어요.':'설탕은 빼 달라고 했어요.',kind:'sugar'};
- return {correct:false,feedback:'두 잔의 조건이 달라요. 주문을 다시 들어보세요.',kind:'combination'};
+ if(c.base!==e.base)return {correct:false,feedback:e.base==='tea'?(c.base==='coffee'?'커피 말고 차를 주문했어요.':'저는 차를 주문했어요.'):'저는 커피를 주문했어요.',kind:'drink'};
+ if(c.milk!==e.milk)return {correct:false,feedback:e.milk?'라테에는 우유가 들어가요.':'우유는 빼 주세요.',kind:'milk'};
+ if(c.temp!==e.temp)return {correct:false,feedback:e.temp==='hot'?'따뜻하게 해 주세요.':'차갑게 해 주세요.',kind:'temperature'};
+ if('ice'in e&&c.ice!==e.ice)return {correct:false,feedback:e.ice?'얼음을 넣어 주세요.':'얼음은 빼 주세요.',kind:'ice'};
+ if('sugar'in e&&c.sugar!==e.sugar)return {correct:false,feedback:e.sugar?'설탕도 넣어 주세요.':'설탕은 빼 주세요.',kind:'sugar'};
+ return {correct:false,feedback:'두 잔이 주문과 조금 달라요. 주문을 다시 들어 보세요.',kind:'combination'};
 }
 // Default rush settings. Atlas may tune patience, spawn interval and queue size per person (learning.mjs FLOW_RUSH).
 export const DEFAULT_TUNING=Object.freeze({patience:42,spawnEvery:10,queueMax:3,duration:90});

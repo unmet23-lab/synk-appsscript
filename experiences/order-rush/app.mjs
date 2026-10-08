@@ -36,7 +36,7 @@ function renderFlowChoice() {
   const auto = flowMode() === 'auto', b = $('#flow-toggle');
   b.setAttribute('aria-pressed', String(auto));
   b.textContent = auto ? '나에게 맞춘 속도 켜짐' : '나에게 맞춘 속도 꺼짐';
-  $('#flow-note').textContent = auto ? '하는 걸 보고 손님 속도와 주문이 바뀌어요.' : '정해진 속도로 늘 같게 영업해요.';
+  $('#flow-note').textContent = auto ? '내가 하는 걸 보고 손님 속도와 주문이 달라져요.' : '늘 같은 속도로 영업해요.';
 }
 /** 순간 맞춤이 바꾼 것을 카페 말로 한 줄(컵 작업대 위, 잠깐). */
 function flowLine(line) {
@@ -73,8 +73,8 @@ function learningCopy() {
   const target = assignment();
   if (target) return orderTargetLabel(target);
   const s = learn('summary');
-  if (!coach || learningFailed || s?.storage?.available === false) return '학습 기록을 저장할 수 없어 이번에는 기본 주문으로 연습해요.';
-  return `${nextPlan?.reason || '아직 확인하지 않은 주문 표현부터 만나 봐요.'} ${hosted ? 'WORLD 계정의 연습 기록을 사용해요.' : '이 브라우저의 연습 기록을 사용해요.'}`;
+  if (!coach || learningFailed || s?.storage?.available === false) return '학습 기록을 저장할 수 없어서 이번에는 기본 주문으로 연습해요.';
+  return `${nextPlan?.reason || '아직 안 들어 본 주문 표현부터 들어 봐요.'} ${hosted ? 'WORLD 계정의 연습 기록을 보고 골랐어요.' : '이 브라우저에 남은 연습 기록을 보고 골랐어요.'}`;
 }
 function updateLearning() { const text = learningCopy(); for (const id of ['#learning-reason', '#game-learning', '#result-learning']) $(id).textContent = text; }
 function selectOrder(orders) {
@@ -181,7 +181,7 @@ function renderLobby() {
   $('#l-title').innerHTML = target ? `목표 주문 <b>${n}개</b>` : state.mode === 'rush' ? '점심 러시 <b>90초</b>' : '주문 <b>8개</b>';
   renderFlowChoice();
   $('#sound-note').hidden = audio.isOn();
-  const warn = !coach ? '학습 기록을 쓸 수 없어 기본 순서로 진행해요.' : null;
+  const warn = !coach ? '학습 기록을 쓸 수 없어서 기본 순서로 진행해요.' : null;
   $('#storage-note').hidden = !warn;
   $('#storage-note').textContent = warn || '';
 }
@@ -208,7 +208,7 @@ function initStage() {
 
 function start(isReview = false) {
   const target = assignment(), targetDeck = target ? assignmentOrders([...ORDERS, ...REVIEW], target) : null;
-  if (target && !targetDeck.length) { $('#learning-reason').textContent = '지정 주문을 준비하지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
+  if (target && !targetDeck.length) { $('#learning-reason').textContent = '과제 주문을 불러오지 못했어요. WORLD에서 다시 열어 주세요.'; return; }
   if (target) { state.mode = 'practice'; isReview = false; }
   audio.stop();
   clearTimeout(celebrationTimer); clearTimeout(leaveTimer);
@@ -575,7 +575,7 @@ function awardCoins(s) {
   const round = state.coinRound, total = s.records.length, correct = s.records.filter((r) => r.first === true).length;
   state.coinRound = null;
   $('#r-coins').textContent = '';
-  if (!round || !total) { if (state.review && globalThis.SynkPlayCollection) $('#r-coins').textContent = '새 주문 연습은 코인 없이 연습해요.'; return; }
+  if (!round || !total) { if (state.review && globalThis.SynkPlayCollection) $('#r-coins').textContent = '새 주문 연습에서는 코인을 받지 않아요.'; return; }
   globalThis.SynkPlayCollection?.award({ game: 'order-rush', total, correct, completed: true, automatic: false, roundId: round })
     .then((result) => { $('#r-coins').textContent = globalThis.SynkPlayCollection.rewardText(result); });
 }
@@ -601,12 +601,12 @@ function renderResults(s, stats) {
   $('#r-mongle').src = stars >= 2 ? 'kit/brand/mongle-cheer.webp' : 'kit/brand/mongle-smile.webp';
   const notes = [`서빙 점수 ${s.score}점`, `최고 콤보 ${s.best}`, `서빙 완료 ${stats.served}개`];
   if (stats.help) notes.push(`글로 확인한 주문 ${stats.help}개`);
-  if (stats.unanswered) notes.push(`미응답 ${stats.unanswered}개`);
+  if (stats.unanswered) notes.push(`답하지 않은 주문 ${stats.unanswered}개`);
   $('#r-note').innerHTML = notes.map((n) => `<span class="nb">${esc(n)}</span>`).join(' · ');   // 항목 안에서는 줄을 바꾸지 않는다
   renderLog(s);
   const entries = [['서빙 점수', `${s.score}점`], ['최고 콤보', String(s.best)], ['서빙 완료', `${stats.served}개 주문`],
-    ['첫 제출 정확도', stats.answered ? `${Math.round(stats.firstCorrect / stats.answered * 100)}%` : '—'],
-    ['글로 확인한 주문', `${stats.help} / ${stats.answered}`], ['미응답 주문', `${stats.unanswered}`]];
+    ['첫 서빙 정확도', stats.answered ? `${Math.round(stats.firstCorrect / stats.answered * 100)}%` : '—'],
+    ['글로 확인한 주문', `${stats.help} / ${stats.answered}`], ['답하지 않은 주문', `${stats.unanswered}`]];
   $('#result-metrics').replaceChildren(...entries.flatMap(([label, value]) => [el('dt', '', label), el('dd', '', value)]));
   // 다음: 영업 뒤에는 시간 제한 없는 새 주문 3개, 새 주문 연습 뒤에는 다시 영업
   $('#review-start').hidden = state.review;
@@ -614,14 +614,14 @@ function renderResults(s, stats) {
   replay.className = state.review ? 'felt-cta coral' : 'chip-btn';
   replay.innerHTML = state.review ? '<span>다시 영업하기</span><i class="disc" aria-hidden="true"></i>' : '다시 영업하기';
   $('#r-next-reason').textContent = state.review
-    ? '처음 듣는 문장도 만들어 봤어요. 다시 영업하며 오늘 주문을 이어서 연습해요.'
-    : '이번에는 시간 제한 없이, 처음 듣는 주문 3개를 만들어 봐요. 새 문장도 이해했는지 확인해요.';
+    ? '처음 듣는 주문도 만들어 봤어요. 다시 영업하면서 오늘 주문을 이어서 연습해 봐요.'
+    : '이번에는 시간 제한 없이 처음 듣는 주문 3개를 만들어 봐요. 새 문장도 알아듣는지 확인해요.';
 }
 
 /** 이번 영업의 주문: 들은 주문은 문장·결과·다시 듣기·주문대로 만든 컵, 듣기 전에 떠난 손님은 문장 없이. */
 function renderLog(s) {
   const log = $('#r-log');
-  if (!s.records.length) { log.replaceChildren(el('li', 'empty', '이번 영업에는 제출한 주문이 없어요.')); return; }
+  if (!s.records.length) { log.replaceChildren(el('li', 'empty', '이번 영업에서는 서빙한 주문이 없어요.')); return; }
   log.replaceChildren(...s.records.map((r) => {
     if (!r.presentationId) {
       const li = el('li', 'skip');
@@ -631,13 +631,13 @@ function renderLog(s) {
     }
     const ok = r.first === true, fixed = r.first === false && r.outcome === 'served';
     const li = el('li', ok ? 'ok' : r.first === false ? 'ko' : 'skip');
-    const status = r.first === null ? `미응답${r.outcome === 'missed' ? ' · 기다리다 떠난 손님' : ''}`
-      : ok ? '첫 서빙에 맞힘' : fixed ? '고쳐서 서빙' : '조건을 다시 확인 · 서빙 미완료';
+    const status = r.first === null ? `답하지 않음${r.outcome === 'missed' ? ' · 기다리다 떠난 손님' : ''}`
+      : ok ? '첫 서빙에 맞힘' : fixed ? '고쳐서 서빙' : '주문과 달랐어요 · 서빙하지 못함';
     const mark = ok ? '<img src="kit/felt/badge-check.webp" alt="">' : fixed ? '고침' : '–';
     const info = `${customerName(r.order.id)} · ${status}${r.help ? ' · 글로 확인' : ''} · 연습: ${r.order.skill.replaceAll(' · ', '·')}`;
     // 주문대로 만든 컵(펼치면 정답 보기 도움으로 남긴다). 말하지 않은 얼음·설탕은 채점하지 않는다
     const skipped = r.order.cups.some((c) => !('sugar' in c) || !('ice' in c));
-    const recipe = r.order.cups.map((c) => describeCup({ ...makeCup(), ...c })).join(' / ') + (skipped ? ' (말하지 않은 재료 조건은 채점에서 제외했어요.)' : '');
+    const recipe = r.order.cups.map((c) => describeCup({ ...makeCup(), ...c })).join(' / ') + (skipped ? ' (손님이 말하지 않은 재료는 채점하지 않았어요.)' : '');
     li.innerHTML = `<span class="mark" aria-label="${esc(status)}">${mark}</span>
       <span class="body"><span class="sent">“${esc(r.order.text)}”</span><small>${esc(info)}</small>
       <details class="recipe"><summary>주문대로 만든 컵</summary><p>${esc(recipe)}</p></details></span>`
@@ -709,8 +709,8 @@ window.addEventListener('resize', () => { clearTimeout(fitTimer); fitTimer = set
 // 학습 기록 지우기: WORLD 계정이면 계정 설정에서 하므로 숨긴다
 $('#learning-reset').hidden = hosted;
 if (hosted) {
-  $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
-  $('#result-scope').textContent = '한국어 주문 음성은 합성 음성이에요. 학습 효과는 학생 검증 전이에요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 관리해요.';
+  $('#learning-scope').textContent = '연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
+  $('#result-scope').textContent = '주문 음성은 합성 음성이에요. 학습 효과는 아직 학생들과 확인하지 않았어요. 연습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.';
 }
 $('#learning-reset').addEventListener('click', () => {
   if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 공통 코인은 그대로 남아요.')) return;
