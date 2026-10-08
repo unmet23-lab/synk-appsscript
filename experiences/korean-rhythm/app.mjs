@@ -545,6 +545,7 @@ for (const b of document.querySelectorAll('[data-offset]')) b.addEventListener('
 document.addEventListener('visibilitychange', () => { if (document.hidden) pause(); });
 window.addEventListener('blur', () => pause());
 $('reset-learning').addEventListener('click', () => {
+  if (!window.confirm('같은 주소에서 연 모든 SYNK 게임의 학습 기록을 지울까요? 공통 코인과 소리·박자 설정은 그대로 남아요.')) return;
   let message = '학습 기록을 지우지 못했어요. 다시 시도해 주세요.';
   try {
     const result = coach?.reset();
