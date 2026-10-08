@@ -1,18 +1,13 @@
 // 말 랠리 꾸미기(2026-10-07): 공통 코인으로 산 라켓·공의 색. 값·사기·장착·저장 규칙은 공통 지갑(collection.js — 원본 korean-racing/garage-core.js)이
 // 맡고, 여기서는 입구의 꾸미기 판을 그리고 장착한 색을 3D 무대에 넘긴다. 견본은 크림 펠트 원(실제 펠트 사진)을 그 색으로 물들인 것이다.
 // collection.js를 읽지 못하면 판을 숨기고 원래 모습(코랄 라켓·크림 공)으로 친다.
+import { josa } from './kit/josa.mjs';
+
 export const GEAR_KINDS = [{ kind: 'racket', label: '라켓' }, { kind: 'ball', label: '공' }];
 export const DEFAULT_GEAR = Object.freeze({ racket: '#d63c2a', ball: '#fff1c9' });
 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const coins = (n) => Math.max(0, Number(n) || 0).toLocaleString('ko-KR');
-/** 받침 고르기: 받침이 있으면 a, 없으면 b(‘라켓을’·‘공으로’ — ㄹ 받침은 ‘으로’ 대신 ‘로’). */
-function josa(word, withBatchim, without, rieulAsWithout = false) {
-  const c = String(word).trim().slice(-1).charCodeAt(0) - 0xac00;
-  if (c < 0 || c > 11171) return withBatchim;
-  const jong = c % 28;
-  return jong === 0 || (rieulAsWithout && jong === 8) ? without : withBatchim;
-}
 
 /** 장착한 라켓·공의 색. 지갑·목록이 없거나 이상하면 원래 색. */
 export function gearColors(garage, catalog) {
@@ -89,7 +84,7 @@ export function createGearPanel({ root, api = globalThis.SynkPlayCollection, onG
       } else {
         const worn = await api.equip(item.id);
         await refresh({ keepNote: true });
-        say(worn?.ok ? `${item.name}${josa(item.name, '으로', '로', true)} 바꿨어요.` : failText(worn, item), worn?.ok ? 'info' : 'error');
+        say(worn?.ok ? `${item.name}${josa(item.name, '으로', '로')} 바꿨어요.` : failText(worn, item), worn?.ok ? 'info' : 'error');
       }
       act.querySelector('[data-action]')?.focus({ preventScroll: true });
     } finally { busy = false; }

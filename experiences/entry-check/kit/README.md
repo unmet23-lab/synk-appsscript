@@ -16,6 +16,9 @@
   - 멈춤 `dialog.lab-dialog`: 이어 하기 `felt-cta` · 소리·천천히 칩 · 처음으로
   - 공통 코인 줄 `.synk-collection-line`(입구 잔액 `data-collection-balance` · 결과 `#r-coins` · 공통 차고 링크 `data-collection-garage`)
 - `lab.mjs`: `$`·`$$`·`el`·`esc`, `preloadImages(urls)`, `fitText(글상자)`(쉼표 뒤 줄바꿈·매인 말 붙이기·긴 낱말만 줄이기), `bindSoundToggles({isOn,setOn})`.
+- `josa.mjs`: `josa(낱말, 받침 있을 때, 없을 때)`·`finalOf(낱말)` — 받침에 맞는 조사(을/를·이/가·은/는·이에요/예요·으로/로, ‘으로’는 ㄹ 받침에 ‘로’).
+  한글 음절은 받침, 낱자는 이름(ㄱ 기역·ㅏ 아), 숫자는 한국어 소리로 읽고 끝의 문장부호·따옴표·로마자는 건너뛴다. 게임마다 따로 두던 받침 도우미를
+  2026-10-08 여기로 모았다(유호님 「공통 키트로 받침 도우미 모아줘」). 키트 화면을 안 쓰는 한글 단계·운세에도 이 파일 하나만 복사한다(`build-kit.mjs`의 `JOSA_ONLY_GAMES`).
 
 ## 펠트 부품(`felt/`)
 

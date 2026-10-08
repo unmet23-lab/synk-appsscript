@@ -1,18 +1,10 @@
 import { WESTERN_ZODIAC, getFortune, seoulDateKey, validateDateKey } from './core.mjs';
 import { getSaju, SAJU_MIN_DATE, SAJU_MAX_DATE } from './saju-core.mjs';
+import { josa } from './kit/josa.mjs';
 
 function deepFreeze(value) {
   for (const child of Object.values(value)) if (child && typeof child === 'object') deepFreeze(child);
   return Object.freeze(value);
-}
-
-// 받침에 맞는 조사(괄호 안 한글 기준): 받침이 있으면 앞의 것, 없으면 뒤의 것(을축이에요·갑자예요, 갑은·무는).
-// ‘으로/로’는 ㄹ 받침도 뒤의 것을 쓴다(목으로·화로·물로).
-function josa(word, withBatchim, without, rieulAsWithout = false) {
-  const code = String(word).charCodeAt(String(word).length - 1) - 0xac00;
-  if (code < 0 || code > 11171) return without;
-  const final = code % 28;
-  return final === 0 || (rieulAsWithout && final === 8) ? without : withBatchim;
 }
 
 export const INSIGHT_SOURCES = deepFreeze([
@@ -174,7 +166,7 @@ export function getSajuGuide(result) {
       const guide = pillarGuide[item.id];
       return { id: item.id, label: item.label, title: guide.title, description: guide.description, known: item.known,
         reading: item.known
-          ? `${item.hanja}(${item.hangul})${josa(item.hangul, '이에요', '예요')}. 천간 ${item.stem.hanja}(${item.stem.hangul})${josa(item.stem.hangul, '은', '는')} ${item.stem.element}, 지지 ${item.branch.hanja}(${item.branch.hangul})${josa(item.branch.hangul, '은', '는')} 대표 오행 ${item.branch.element}${josa(item.branch.element, '으로', '로', true)} 셌어요.`
+          ? `${item.hanja}(${item.hangul})${josa(item.hangul, '이에요', '예요')}. 천간 ${item.stem.hanja}(${item.stem.hangul})${josa(item.stem.hangul, '은', '는')} ${item.stem.element}, 지지 ${item.branch.hanja}(${item.branch.hangul})${josa(item.branch.hangul, '은', '는')} 대표 오행 ${item.branch.element}${josa(item.branch.element, '으로', '로')} 셌어요.`
           : `아직 확정하지 않았어요. ${item.reason || '추가 출생 정보가 필요해요.'}` };
     }),
     dayMaster: { ...result.dayMaster, title: `${result.dayMaster.hanja}(${result.dayMaster.hangul}) · ${result.dayMaster.element} 일간`,

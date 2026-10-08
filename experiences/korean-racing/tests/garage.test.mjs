@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {CAMPAIGN} from '../campaign.js';
 import {FINALES} from '../finales.js';
-import {STAGES,WORDS,emptyProgress,makeQuestions,recordRound,josa} from '../learning.js';
+import {STAGES,WORDS,emptyProgress,makeQuestions,recordRound} from '../learning.js';
+import {josa} from '../kit/josa.mjs';
 import {GARAGE_KEY,SHOP_ITEMS,VEHICLES,RACKETS,BALLS,FINALE_REWARDS,emptyGarage,loadGarage,saveGarage,buyItem,equipItem,setWish,awardRace,awardMiniGame,dailyMission,seoulDate} from '../garage.js';
 
 const now=Date.parse('2026-10-02T04:00:00Z');

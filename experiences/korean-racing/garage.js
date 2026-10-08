@@ -1,4 +1,5 @@
-import { WORDS, STAGES, WORD_BY_ID, josa } from './learning.js';
+import { WORDS, STAGES, WORD_BY_ID } from './learning.js';
+import { josa } from './kit/josa.mjs';
 import { CAMPAIGN, CHALLENGE_BY_ID } from './campaign.js';
 import { FINALE_QUESTION_BY_ID } from './finales.js';
 import {FINALE_REWARDS,REWARDS,integer,object,safeKey,validTime,seoulDate,normalizeGarage,loadGarage as loadLedger,saveGarage as saveLedger} from './garage-core.js';
