@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "status": "synthetic-backup-restore-http-verified",
+  "startedAt": "2026-10-06T21:15:23.3704846Z",
+  "finishedAt": "2026-10-06T21:15:42.5741867Z",
+  "nodeVersion": "v24.18.0",
+  "command": "node --test --test-reporter=tap docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-backup.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs",
+  "exitCode": 0,
+  "tests": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "newRestoreTests": 7,
+    "existingBackupTests": 2,
+    "messengerPathPriorityTests": 4
+  },
+  "evidence": "backup-tests.txt",
+  "evidenceSha256": "05be15936274a424be20940cc30b78d549d208d5f7ac9dc2dce64f8444dcfe22",
+  "sourceHashes": {
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-backup.test.mjs": "4406c07c90e897da0384fe9d6c0f78fdbe6c2562c6228566adcf3e4f68e635df",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468",
+    "docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8",
+    "docs/마케팅/온라인마케팅지도/engagement/company/backup.mjs": "ada3674455ff1044ed20c252576dec36856b0b29d9e49c30c2eac441ec78daa8",
+    "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs": "9542f62714b1b146d8347f17f44ef83a189031aa8a11926674f2a13105353a0f",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "b10a5864f94d95641efabd382a4b2ecfd4ed149796be82fe6126ff3d8d9b7db3",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+    "experiences/shift-workbench/model.mjs": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+    "experiences/shift-workbench/storage-upgrade.mjs": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490",
+    "atlas/personalization.js": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+    "atlas/domain.js": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+    "atlas/temper-outcomes.js": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763"
+  },
+  "verified": [
+    "Both source hosts stopped before company and messenger snapshots.",
+    "Backup COMPLETE, matching encryption key, company/messenger SQLite integrity_check=ok.",
+    "New-directory restore plus actual HTTP password login for synthetic accounts.",
+    "Active revision 2 authored text, original decisions/completions, recent outcome, timestamps and ciphertext preserved.",
+    "Deleted revision 2 has no state and no ciphertext field in its current document.",
+    "Stale revision 1 save/activation rejected with HTTP 409 in latest restore.",
+    "Fresh owned save advances revision to 3; delete to 4 remains deleted after restored server restart.",
+    "Other user and administrator cannot select another owner through query/body or foreign model scope.",
+    "Missing or incorrect 32-byte key causes active private read HTTP 500 with a generic content-free error; plaintext and ciphertext absent from response/logs.",
+    "Backup refuses source key omission before creating a destination snapshot.",
+    "Deleting before the latest snapshot persists a tombstone; restoring a pre-deletion snapshot revives old revision 1 and can accept its old client write.",
+    "Explicit option, integration config, environment path and fallback priority each select the same actual messenger DB in a started HTTP company host and its stopped backup."
+  ],
+  "keyOmissionBehavior": "Store creates a new random 32-byte key when missing. Startup/login can still succeed, but that replacement does not decrypt original active practice. A successful login is not proof of content recovery.",
+  "rollback": {
+    "codeRollback": "Keep the latest DB and its matching key while rolling back compatible code; this rehearsal verifies latest-DB restore only, not arbitrary old-code compatibility.",
+    "historicalDataRestore": "A snapshot from before deletion does not contain the later tombstone. Offline recovery and reconciliation of subsequent deletions/current revisions are required before traffic resumes; a COMPLETE snapshot alone cannot prove that later deletion was preserved."
+  },
+  "boundaries": {
+    "productionDatabaseWrites": 0,
+    "operatingServerChanges": 0,
+    "realCompanyAccountsTested": 0,
+    "physicalDevicesTested": 0,
+    "externalDeployments": 0,
+    "paidAiCalls": 0,
+    "commits": 0,
+    "pushes": 0,
+    "temporaryDataRemoved": true,
+    "encryptionKeysOrCiphertextPrinted": false
+  },
+  "remaining": [
+    "운영 데이터 백업과 실제 복구 검증은 별도 요청에 따라 수행.",
+    "실제 계정 및 물리적 두 기기 검증은 미실행.",
+    "과거 코드 버전과 최신 스키마의 호환성은 이번 시험 범위가 아님.",
+    "오래된 스냅샷으로 복구할 때 이후 삭제·수정 기록을 자동 재적용하는 기능은 없음."
+  ],
+  "sourceChangesDuringRun": [],
+  "resolvedFinding": {
+    "priority": "P1",
+    "file": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs",
+    "line": 16,
+    "trigger": "Existing integration path and MESSENGER_DATA_DIR both set to distinct messenger databases.",
+    "reproducedBefore": "Company host selected integration database; backup selected environment database and produced COMPLETE with the wrong messenger contents.",
+    "change": "One line aligns backup precedence with server: explicit option, integration config, environment, fallback.",
+    "regressionTests": 4,
+    "operatingDataChanged": false
+  }
+}

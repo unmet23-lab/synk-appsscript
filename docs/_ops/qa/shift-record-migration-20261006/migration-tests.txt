@@ -1,0 +1,298 @@
+TAP version 13
+# Subtest: Core limits a short session and only receives actual declared settings
+ok 1 - Core limits a short session and only receives actual declared settings
+  ---
+  duration_ms: 25.8545
+  type: 'test'
+  ...
+# Subtest: different purpose and time change the actual practice scope
+ok 2 - different purpose and time change the actual practice scope
+  ---
+  duration_ms: 1.6911
+  type: 'test'
+  ...
+# Subtest: more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+ok 3 - more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+  ---
+  duration_ms: 10.2427
+  type: 'test'
+  ...
+# Subtest: wrong source is not credited even when the judgment matches
+ok 4 - wrong source is not credited even when the judgment matches
+  ---
+  duration_ms: 1.4757
+  type: 'test'
+  ...
+# Subtest: incomplete answers cannot complete the practice
+ok 5 - incomplete answers cannot complete the practice
+  ---
+  duration_ms: 2.62
+  type: 'test'
+  ...
+# Subtest: unchanged sample and unconfirmed edits cannot masquerade as completion
+ok 6 - unchanged sample and unconfirmed edits cannot masquerade as completion
+  ---
+  duration_ms: 1.2394
+  type: 'test'
+  ...
+# Subtest: completion and explicit feedback use existing Core events exactly once
+ok 7 - completion and explicit feedback use existing Core events exactly once
+  ---
+  duration_ms: 2.5285
+  type: 'test'
+  ...
+# Subtest: missed evidence controls the next check order without declaring an ability
+ok 8 - missed evidence controls the next check order without declaring an ability
+  ---
+  duration_ms: 2.7242
+  type: 'test'
+  ...
+# Subtest: a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+ok 9 - a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+  ---
+  duration_ms: 6.6728
+  type: 'test'
+  ...
+# Subtest: storage is opt in, failure is visible, and restart preserves only this scope
+ok 10 - storage is opt in, failure is visible, and restart preserves only this scope
+  ---
+  duration_ms: 6.0607
+  type: 'test'
+  ...
+# Subtest: tampered and oversized stored sessions are rejected
+ok 11 - tampered and oversized stored sessions are rejected
+  ---
+  duration_ms: 2.4252
+  type: 'test'
+  ...
+# Subtest: text output preserves literal user text while HTML rendering escapes it
+ok 12 - text output preserves literal user text while HTML rendering escapes it
+  ---
+  duration_ms: 1.007
+  type: 'test'
+  ...
+# Subtest: company hosts use an explicit member scope for selection, completion, feedback and restore
+ok 13 - company hosts use an explicit member scope for selection, completion, feedback and restore
+  ---
+  duration_ms: 6.7633
+  type: 'test'
+  ...
+# Subtest: unobserved focus survives another successful task and the shown reason refers to its actual completion
+ok 14 - unobserved focus survives another successful task and the shown reason refers to its actual completion
+  ---
+  duration_ms: 18.6986
+  type: 'test'
+  ...
+# Subtest: conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+ok 15 - conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+  ---
+  duration_ms: 5.0908
+  type: 'test'
+  ...
+# Subtest: legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+ok 16 - legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+  ---
+  duration_ms: 2.8236
+  type: 'test'
+  ...
+# Subtest: decision, displayed practice and result are separate; no display or unanswered display is not failure
+ok 17 - decision, displayed practice and result are separate; no display or unanswered display is not failure
+  ---
+  duration_ms: 5.7773
+  type: 'test'
+  ...
+# Subtest: restoring outcome records rejects another purpose and keeps the declared storage boundary
+ok 18 - restoring outcome records rejects another purpose and keeps the declared storage boundary
+  ---
+  duration_ms: 2.8338
+  type: 'test'
+  ...
+# Subtest: restoring a summary verifies its actual completion, decision, task, time and presented checks
+ok 19 - restoring a summary verifies its actual completion, decision, task, time and presented checks
+  ---
+  duration_ms: 12.3566
+  type: 'test'
+  ...
+# Subtest: restoring outcome values and times agrees with the actual completed review
+ok 20 - restoring outcome values and times agrees with the actual completed review
+  ---
+  duration_ms: 6.3411
+  type: 'test'
+  ...
+# Subtest: 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+ok 21 - 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+  ---
+  duration_ms: 340.7446
+  type: 'test'
+  ...
+# Subtest: malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+ok 22 - malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+  ---
+  duration_ms: 4.159
+  type: 'test'
+  ...
+# Subtest: the ordering policy measures all initially reviewed checks, not only its first selected check
+ok 23 - the ordering policy measures all initially reviewed checks, not only its first selected check
+  ---
+  duration_ms: 2.7647
+  type: 'test'
+  ...
+# Subtest: excluding a completion removes its observations, cached explanation and next recommendation
+ok 24 - excluding a completion removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 4.4092
+  type: 'test'
+  ...
+# Subtest: excluding a decision removes its observations, cached explanation and next recommendation
+ok 25 - excluding a decision removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 2.3298
+  type: 'test'
+  ...
+# Subtest: excluding a completion also removes its result from descriptive outcome accounting
+ok 26 - excluding a completion also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 2.0694
+  type: 'test'
+  ...
+# Subtest: excluding a decision also removes its result from descriptive outcome accounting
+ok 27 - excluding a decision also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 1.4347
+  type: 'test'
+  ...
+# Subtest: an already prepared screen stops explaining its order with subsequently excluded evidence
+ok 28 - an already prepared screen stops explaining its order with subsequently excluded evidence
+  ---
+  duration_ms: 2.1952
+  type: 'test'
+  ...
+# Subtest: a missing review module gives the prepared Korean notice instead of an internal adapter error
+ok 29 - a missing review module gives the prepared Korean notice instead of an internal adapter error
+  ---
+  duration_ms: 0.6999
+  type: 'test'
+  ...
+# Subtest: actual review delivery and results bind their outcome definition while old saves remain readable
+ok 30 - actual review delivery and results bind their outcome definition while old saves remain readable
+  ---
+  duration_ms: 5.4784
+  type: 'test'
+  ...
+# Subtest: a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+ok 31 - a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+  ---
+  duration_ms: 3.3466
+  type: 'test'
+  ...
+# Subtest: disable: old authored work survives; old analysis never joins the next generation
+ok 32 - disable: old authored work survives; old analysis never joins the next generation
+  ---
+  duration_ms: 53.789
+  type: 'test'
+  ...
+# Subtest: delete: old authored work survives; old analysis never joins the next generation
+ok 33 - delete: old authored work survives; old analysis never joins the next generation
+  ---
+  duration_ms: 11.9989
+  type: 'test'
+  ...
+# Subtest: skip: old authored work survives; old analysis never joins the next generation
+ok 34 - skip: old authored work survives; old analysis never joins the next generation
+  ---
+  duration_ms: 11.6445
+  type: 'test'
+  ...
+# Subtest: reconsent: old authored work survives; old analysis never joins the next generation
+ok 35 - reconsent: old authored work survives; old analysis never joins the next generation
+  ---
+  duration_ms: 12.5718
+  type: 'test'
+  ...
+# Subtest: forget: old authored work survives; old analysis never joins the next generation
+ok 36 - forget: old authored work survives; old analysis never joins the next generation
+  ---
+  duration_ms: 12.2504
+  type: 'test'
+  ...
+# Subtest: ordinary profile revisions keep current generation records and ongoing drafts
+ok 37 - ordinary profile revisions keep current generation records and ongoing drafts
+  ---
+  duration_ms: 7.6199
+  type: 'test'
+  ...
+# Subtest: retired audio/experience settings migrate on restore and direct next start
+ok 38 - retired audio/experience settings migrate on restore and direct next start
+  ---
+  duration_ms: 7.7268
+  type: 'test'
+  ...
+# Subtest: migration validates old records before dropping analysis, including while consent is disabled
+ok 39 - migration validates old records before dropping analysis, including while consent is disabled
+  ---
+  duration_ms: 86.2906
+  type: 'test'
+  ...
+# Subtest: saved work stays outside analytics and cannot import foreign ownership or analysis fields
+ok 40 - saved work stays outside analytics and cannot import foreign ownership or analysis fields
+  ---
+  duration_ms: 6.6743
+  type: 'test'
+  ...
+# Subtest: save opt-in and write failures remain independent of profile migration
+ok 41 - save opt-in and write failures remain independent of profile migration
+  ---
+  duration_ms: 2.6277
+  type: 'test'
+  ...
+# Subtest: a stale in-progress run cannot become a new-generation completion or feedback
+ok 42 - a stale in-progress run cannot become a new-generation completion or feedback
+  ---
+  duration_ms: 2.3748
+  type: 'test'
+  ...
+# Subtest: a later exclusion does not invalidate an earlier evaluation date
+ok 43 - a later exclusion does not invalidate an earlier evaluation date
+  ---
+  duration_ms: 2.2215
+  type: 'test'
+  ...
+# Subtest: direct next start cannot sanitize malformed old exposure or foreign cached recommendation
+ok 44 - direct next start cannot sanitize malformed old exposure or foreign cached recommendation
+  ---
+  duration_ms: 10.5727
+  type: 'test'
+  ...
+# Subtest: actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+ok 45 - actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+  ---
+  duration_ms: 49.1008
+  type: 'test'
+  ...
+# Subtest: actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+ok 46 - actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+  ---
+  duration_ms: 7.3912
+  type: 'test'
+  ...
+# Subtest: withdrawal removes analytical use in each product without rewriting what was shown or answered
+ok 47 - withdrawal removes analytical use in each product without rewriting what was shown or answered
+  ---
+  duration_ms: 17.5385
+  type: 'test'
+  ...
+# Subtest: the existing generated LAB browser consumer executes its real item adapter
+ok 48 - the existing generated LAB browser consumer executes its real item adapter
+  ---
+  duration_ms: 50.4012
+  type: 'test'
+  ...
+1..48
+# tests 48
+# suites 0
+# pass 48
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 729.8603

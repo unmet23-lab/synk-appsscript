@@ -1,0 +1,191 @@
+{
+  "status": "ai-internal-review-comparison-completed",
+  "checkedAt": "2026-10-06T22:06:28.232Z",
+  "checks": [
+    {
+      "name": "Frozen input input/source.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen input input/canonical.md",
+      "passed": true
+    },
+    {
+      "name": "Frozen input input/common.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen input input/atlas-decision.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen input input/baseline.json",
+      "passed": true
+    },
+    {
+      "name": "Frozen input input/personalized.json",
+      "passed": true
+    },
+    {
+      "name": "Current source unchanged: public-brand-stories.json",
+      "passed": true
+    },
+    {
+      "name": "Current source unchanged: SHIFT.md",
+      "passed": true
+    },
+    {
+      "name": "Current source unchanged: domain.js",
+      "passed": true
+    },
+    {
+      "name": "Recorded Core decision replays without mutation",
+      "passed": true
+    },
+    {
+      "name": "No declarations falls back without invented personal facts",
+      "passed": true
+    },
+    {
+      "name": "baseline: shared common packet and five sections",
+      "passed": true
+    },
+    {
+      "name": "baseline: evidence and fixed rubric references",
+      "passed": true
+    },
+    {
+      "name": "baseline: observed times and recorded metric",
+      "passed": true
+    },
+    {
+      "name": "baseline: no human metric or inferred cost",
+      "passed": true
+    },
+    {
+      "name": "personalized: shared common packet and five sections",
+      "passed": true
+    },
+    {
+      "name": "personalized: evidence and fixed rubric references",
+      "passed": true
+    },
+    {
+      "name": "personalized: observed times and recorded metric",
+      "passed": true
+    },
+    {
+      "name": "personalized: no human metric or inferred cost",
+      "passed": true
+    },
+    {
+      "name": "Independent assessment source input/common.json",
+      "passed": true
+    },
+    {
+      "name": "Independent assessment source results/baseline.json",
+      "passed": true
+    },
+    {
+      "name": "Independent assessment source results/personalized.json",
+      "passed": true
+    },
+    {
+      "name": "Independent outcome assessment",
+      "passed": true
+    }
+  ],
+  "protocol": "SHIFT-INTERNAL-COPY-20261007",
+  "kind": "AI-performed internal workflow comparison",
+  "repeatCount": 1,
+  "conclusions": {
+    "reviewedSectionsPerArm": 5,
+    "baseline": {
+      "completed": true,
+      "resultErrors": 0,
+      "elapsedSeconds": 99
+    },
+    "personalized": {
+      "completed": true,
+      "resultErrors": 0,
+      "elapsedSeconds": 77
+    },
+    "requiredSourcePatches": 0,
+    "qualityImprovementObserved": false,
+    "elapsedDifferenceSeconds": -22,
+    "humanProductivityEffect": null,
+    "realCustomerEffect": null,
+    "profitability": null,
+    "next": "Keep current source; test an actual human workflow before claiming a business effect."
+  },
+  "boundaries": {
+    "currentSourceUnchanged": true,
+    "coreSourceUnchanged": true,
+    "newAtlasEngine": false,
+    "domainPolicyLocation": "SHIFT internal pilot",
+    "realHumanTrial": false,
+    "realCustomerTrial": false,
+    "sourceNotesIncluded": true,
+    "companyServerChanged": false,
+    "productionDataChanged": false,
+    "accountDataSaved": false,
+    "deployed": false,
+    "paidProviderCalls": 0,
+    "officialAgentBillingCost": null
+  },
+  "timingLimitation": "Agent tool timestamps at second resolution, one run per arm, no randomization. Clarification during execution aligned the protocol to each agent instruction. Timing includes tool/service delay; preparation and final verification excluded.",
+  "manifest": [
+    {
+      "file": "protocol.json",
+      "sha256": "54cda91dec282b08cacb4c95edd87ebcd7867c49065fd86a8b484088c6e759a9"
+    },
+    {
+      "file": "workbook-input.json",
+      "sha256": "d3f01e1febf509afdd15f7ffbc95d9cf828c90664cd1362c18fcd75ded93ccfa"
+    },
+    {
+      "file": "prepare.mjs",
+      "sha256": "a24e915ae5bd8135a8354fd40822c71ed450c6653e8aad9a7e9651fce97c8a33"
+    },
+    {
+      "file": "verify.mjs",
+      "sha256": "eb89254d3d38912f8f270f95ee48fe3587194223a066bed51f2552409e571025"
+    },
+    {
+      "file": "results/baseline.json",
+      "sha256": "6d7170f1766f87bd5d0ce4f8092f912c1f0dc93ab51c291a9f4fea801b74546f"
+    },
+    {
+      "file": "results/personalized.json",
+      "sha256": "6fb3cb067065ee13b93d95897ff85f0980f47edd59f94fc9794e283f03e35618"
+    },
+    {
+      "file": "results/independent-assessment.json",
+      "sha256": "b48057d428fa99a902694c70b60d94e4eb8778f47ee643a32824195e3d85dc61"
+    },
+    {
+      "file": "input/source.json",
+      "sha256": "83f0564f56ace251fa9ecdd58f3f677f83ca525d5d1fbdfa6592c8084ac532d0"
+    },
+    {
+      "file": "input/canonical.md",
+      "sha256": "23f1d9af453174fe57154062a214d8c6b4d1401c7ee19158dab95ba14b22175c"
+    },
+    {
+      "file": "input/common.json",
+      "sha256": "a720acd24e03171604daf055c7ece412706665183f1ee386477f7fac4bf5b353"
+    },
+    {
+      "file": "input/atlas-decision.json",
+      "sha256": "8697d6e8664bb336942f93526d49bef07fc9d4d924811e56cfe68b2d6a20873f"
+    },
+    {
+      "file": "input/baseline.json",
+      "sha256": "2636fa70d55a83906d1e38bbac0f505586d8e9c909c2fa90b90f008ee29b1e7d"
+    },
+    {
+      "file": "input/personalized.json",
+      "sha256": "3dcf23c9b46c1a07f30aecf56b4967772335ef88191e11c5c02bea044c2b7e74"
+    }
+  ]
+}

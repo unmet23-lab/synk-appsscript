@@ -1,0 +1,586 @@
+[
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "D8",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "D9",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E8",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "H8",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "D35",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E35",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "D40",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E40",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "D41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E45",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "미입력 실적은 공란",
+    "sheet": "요약",
+    "cell": "E48",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "전체 원가 미확인",
+    "sheet": "요약",
+    "cell": "D38",
+    "expected": "미확인",
+    "actual": "미확인",
+    "passed": true
+  },
+  {
+    "name": "완료와 실패를 분모에 포함",
+    "sheet": "요약",
+    "cell": "D8",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "실패를 성공으로 계산하지 않음",
+    "sheet": "요약",
+    "cell": "D9",
+    "expected": 0.5,
+    "actual": 0.5,
+    "passed": true
+  },
+  {
+    "name": "중단을 분모에 포함",
+    "sheet": "요약",
+    "cell": "E8",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "중단을 성공으로 계산하지 않음",
+    "sheet": "요약",
+    "cell": "E9",
+    "expected": 0.5,
+    "actual": 0.5,
+    "passed": true
+  },
+  {
+    "name": "중단 건수",
+    "sheet": "요약",
+    "cell": "E14",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "미측정 건수",
+    "sheet": "요약",
+    "cell": "E15",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "제외 건수",
+    "sheet": "요약",
+    "cell": "E16",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "시간 누락 시 측정 분모",
+    "sheet": "요약",
+    "cell": "E18",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "시간 누락을 0분으로 계산하지 않음",
+    "sheet": "요약",
+    "cell": "E10",
+    "expected": 6,
+    "actual": 6,
+    "passed": true
+  },
+  {
+    "name": "관찰 시간 차이",
+    "sheet": "요약",
+    "cell": "F10",
+    "expected": -9,
+    "actual": -9,
+    "passed": true
+  },
+  {
+    "name": "오류의 개별 측정 분모",
+    "sheet": "요약",
+    "cell": "E11",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "사람 전환 비율",
+    "sheet": "요약",
+    "cell": "D12",
+    "expected": 0.5,
+    "actual": 0.5,
+    "passed": true
+  },
+  {
+    "name": "중복 ID 검출",
+    "sheet": "시행기록",
+    "cell": "N9",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "중복은 집계에서 제외",
+    "sheet": "요약",
+    "cell": "E8",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "다른 버전을 혼합하지 않음",
+    "sheet": "시행기록",
+    "cell": "N9",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "측정 기간 밖은 집계하지 않음",
+    "sheet": "시행기록",
+    "cell": "N9",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "시행 ID 미입력 오류 표시",
+    "sheet": "요약",
+    "cell": "E17",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "음수 작업시간은 집계하지 않음",
+    "sheet": "요약",
+    "cell": "E18",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "음수 시간 때문에 평균이 0이 되지 않음",
+    "sheet": "요약",
+    "cell": "E10",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "마지막 시행 행의 측정된 0분 보존",
+    "sheet": "요약",
+    "cell": "H10",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "고객 간 집계 분리",
+    "sheet": "요약",
+    "cell": "D8",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "대표 시간단가 공란을 0으로 계산하지 않음",
+    "sheet": "원가기록",
+    "cell": "P7",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "불완전 원가를 0원으로 계산하지 않음",
+    "sheet": "요약",
+    "cell": "D35",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "시간 가치와 노동 현금을 이중 계산하지 않음",
+    "sheet": "요약",
+    "cell": "D35",
+    "expected": 185000,
+    "actual": 185000,
+    "passed": true
+  },
+  {
+    "name": "현금 원가",
+    "sheet": "요약",
+    "cell": "D36",
+    "expected": 55000,
+    "actual": 55000,
+    "passed": true
+  },
+  {
+    "name": "대표를 포함한 전체 시간",
+    "sheet": "요약",
+    "cell": "D27",
+    "expected": 6,
+    "actual": 6,
+    "passed": true
+  },
+  {
+    "name": "Atlas 공통 변경 분류",
+    "sheet": "요약",
+    "cell": "D28",
+    "expected": 4,
+    "actual": 4,
+    "passed": true
+  },
+  {
+    "name": "영업·지원 분류",
+    "sheet": "요약",
+    "cell": "D32",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "원가 미확인 시 잔액 미계산",
+    "sheet": "요약",
+    "cell": "D41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "확인 후 경제 잔액",
+    "sheet": "요약",
+    "cell": "D41",
+    "expected": 115000,
+    "actual": 115000,
+    "passed": true
+  },
+  {
+    "name": "확인 후 현금 잔액",
+    "sheet": "요약",
+    "cell": "D42",
+    "expected": 245000,
+    "actual": 245000,
+    "passed": true
+  },
+  {
+    "name": "고객2 경제 원가",
+    "sheet": "요약",
+    "cell": "E35",
+    "expected": 90000,
+    "actual": 90000,
+    "passed": true
+  },
+  {
+    "name": "확인된 실제 매출 0원 보존",
+    "sheet": "요약",
+    "cell": "E40",
+    "expected": 0,
+    "actual": 0,
+    "passed": true
+  },
+  {
+    "name": "매출 없음이 흑자로 계산되지 않음",
+    "sheet": "요약",
+    "cell": "E41",
+    "expected": -90000,
+    "actual": -90000,
+    "passed": true
+  },
+  {
+    "name": "고객2 도입시간 차이",
+    "sheet": "요약",
+    "cell": "F25",
+    "expected": -1,
+    "actual": -1,
+    "passed": true
+  },
+  {
+    "name": "마지막 원가 행의 시간",
+    "sheet": "요약",
+    "cell": "E30",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "재사용 대상 기록 건수",
+    "sheet": "요약",
+    "cell": "E45",
+    "expected": 2,
+    "actual": 2,
+    "passed": true
+  },
+  {
+    "name": "재사용 기록 비율",
+    "sheet": "요약",
+    "cell": "E48",
+    "expected": 0.5,
+    "actual": 0.5,
+    "passed": true
+  },
+  {
+    "name": "신규 개발 건수",
+    "sheet": "요약",
+    "cell": "E47",
+    "expected": 1,
+    "actual": 1,
+    "passed": true
+  },
+  {
+    "name": "다른 고객의 원가 연결 거부",
+    "sheet": "재사용기록",
+    "cell": "J7",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "연결한 재사용 원가의 누락 표시",
+    "sheet": "재사용기록",
+    "cell": "J7",
+    "expected": "입력확인",
+    "actual": "입력확인",
+    "passed": true
+  },
+  {
+    "name": "원가 완료 선언만으로 완료 판정하지 않음",
+    "sheet": "요약",
+    "cell": "E38",
+    "expected": "미완료",
+    "actual": "미완료",
+    "passed": true
+  },
+  {
+    "name": "불완전 원가는 잔액 공란",
+    "sheet": "요약",
+    "cell": "E41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "합성 입력을 전달본에서 제거",
+    "sheet": "업무범위",
+    "cell": "B7",
+    "expected": "",
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "합성 입력을 전달본에서 제거",
+    "sheet": "시행기록",
+    "cell": "A7",
+    "expected": "",
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "합성 입력을 전달본에서 제거",
+    "sheet": "원가기록",
+    "cell": "A7",
+    "expected": "",
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "합성 입력을 전달본에서 제거",
+    "sheet": "재사용기록",
+    "cell": "A7",
+    "expected": "",
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "합성 입력을 전달본에서 제거",
+    "sheet": "판단기록",
+    "cell": "B7",
+    "expected": "",
+    "actual": null,
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "D8",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "D9",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E8",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "H10",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "D35",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E35",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "D40",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E40",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "D41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E41",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E45",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  },
+  {
+    "name": "복원 후 실적 공란",
+    "sheet": "요약",
+    "cell": "E48",
+    "expected": "",
+    "actual": "",
+    "passed": true
+  }
+]

@@ -13,7 +13,7 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
   let config = {};
   try { config = JSON.parse(await readFile(join(company, 'workspace-integration.json'), 'utf8')); }
   catch (error) { if (error.code !== 'ENOENT') throw error; }
-  const messenger = resolve(messengerDataDir || process.env.MESSENGER_DATA_DIR || config.messengerDataDir || (companyDataDir || process.env.SYNK_COMPANY_DATA ? join(company, 'messenger') : join(here, '../../../../../tools/company-messenger/data')));
+  const messenger = resolve(messengerDataDir || config.messengerDataDir || process.env.MESSENGER_DATA_DIR || (companyDataDir || process.env.SYNK_COMPANY_DATA ? join(company, 'messenger') : join(here, '../../../../../tools/company-messenger/data')));
   await access(join(company, 'company.sqlite'));
   await access(join(company, 'encryption.key'));
   await access(join(messenger, 'messenger.sqlite'));

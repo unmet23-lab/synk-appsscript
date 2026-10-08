@@ -1,0 +1,221 @@
+{
+  "status": "ai-internal-observations-workbook-verified-human-customer-effects-unmeasured",
+  "verifiedAt": "2026-10-06T22:10:57.172Z",
+  "output": {
+    "path": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-internal-pilot-20261007/SHIFT_내부시범_소개원고검수_20261007.xlsx",
+    "bytes": 47325,
+    "sha256": "78fba4ec122fbf58e49436732946aebb59ab149233658a6c613ec06f1bf57636"
+  },
+  "template": {
+    "path": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-evidence-20261007/SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+    "sha256": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+    "preserved": true
+  },
+  "modelChecks": {
+    "passed": 28,
+    "total": 28
+  },
+  "nativeExcel": {
+    "passed": 44,
+    "total": 44,
+    "readOnly": true,
+    "saved": false,
+    "formulaErrors": 0,
+    "clippedRows": 0,
+    "unmeasuredInputCells": 1735,
+    "sourcePreserved": true
+  },
+  "preservation": {
+    "status": "saved-xlsx-formulas-values-styles-and-native-features-preserved",
+    "checks": 8239,
+    "passed": 8239,
+    "preservedFormulaCells": 858,
+    "preservedValues": 3221,
+    "preservedCellStyles": 4128,
+    "authorizedStyleExceptions": [
+      "시행기록!A7",
+      "시행기록!A8",
+      "시행기록!B7",
+      "시행기록!B8",
+      "시행기록!C7",
+      "시행기록!C8",
+      "시행기록!D7",
+      "시행기록!D8",
+      "시행기록!E7",
+      "시행기록!E8",
+      "시행기록!F7",
+      "시행기록!F8",
+      "시행기록!G7",
+      "시행기록!G8",
+      "시행기록!H7",
+      "시행기록!H8",
+      "시행기록!I7",
+      "시행기록!I8",
+      "시행기록!J7",
+      "시행기록!J8",
+      "시행기록!K7",
+      "시행기록!K8",
+      "시행기록!L7",
+      "시행기록!L8",
+      "시행기록!M7",
+      "시행기록!M8",
+      "시행기록!P7",
+      "시행기록!P8",
+      "요약!D10",
+      "요약!D11",
+      "요약!E10",
+      "요약!E11",
+      "요약!F10",
+      "요약!F11",
+      "요약!F9"
+    ],
+    "changedValueCells": 84,
+    "sheets": [
+      "요약",
+      "업무범위",
+      "시행기록",
+      "원가기록",
+      "재사용기록",
+      "판단기록"
+    ],
+    "templateSha256": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+    "outputSha256": "78fba4ec122fbf58e49436732946aebb59ab149233658a6c613ec06f1bf57636"
+  },
+  "visual": {
+    "sheets": 6,
+    "ranges": 14,
+    "scale": 1,
+    "complete": true,
+    "views": [
+      {
+        "sheet": "요약",
+        "range": "A1:J21",
+        "file": "요약-1.png",
+        "scale": 1,
+        "sha256": "9986b2312e25b910befa356505dd8afe41182352549ba2762f2a063258b3509e"
+      },
+      {
+        "sheet": "요약",
+        "range": "A23:F49",
+        "file": "요약-2.png",
+        "scale": 1,
+        "sha256": "38beabdf9a06cd2d5cce82ef342e6aa5f8c3fbcb3ca76830899e4e8d5b48ce27"
+      },
+      {
+        "sheet": "요약",
+        "range": "A52:J65",
+        "file": "요약-3.png",
+        "scale": 1,
+        "sha256": "e9ed4ec594f4354b464cc5a84ee9e0a4d78032136f05cacd1727eb85eff59198"
+      },
+      {
+        "sheet": "업무범위",
+        "range": "A1:E15",
+        "file": "업무범위-1.png",
+        "scale": 1,
+        "sha256": "e36de03fb89e627107dd4e827f94114eebcfaa21496a0fd047597e77225308a0"
+      },
+      {
+        "sheet": "업무범위",
+        "range": "A16:E30",
+        "file": "업무범위-2.png",
+        "scale": 1,
+        "sha256": "8c4a111e754f4e74cd030ea08e9d1ec831b9d0a8c0122f3a656aa9a8bae81c33"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "A1:F13",
+        "file": "시행기록-1.png",
+        "scale": 1,
+        "sha256": "3aac38765e20c9ec87a5b916a508c572274a212bb1aa9623f11ceee78bb372fc"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "G6:N13",
+        "file": "시행기록-2.png",
+        "scale": 1,
+        "sha256": "973589044b8fc89f1738211b2e40130937472c6aac3a2f8a9e244072fcdd0b9b"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "N6:U13",
+        "file": "시행기록-3.png",
+        "scale": 1,
+        "sha256": "55f2bccff3487a9a5493f85ac564cc16952820e74bdf144b76627462d8c29f03"
+      },
+      {
+        "sheet": "원가기록",
+        "range": "A1:F13",
+        "file": "원가기록-1.png",
+        "scale": 1,
+        "sha256": "29bc12064ab66dbc29af86a10b6a96d9ddb5e782ce2cea1a04f7c53b05c36779"
+      },
+      {
+        "sheet": "원가기록",
+        "range": "G6:P13",
+        "file": "원가기록-2.png",
+        "scale": 1,
+        "sha256": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018"
+      },
+      {
+        "sheet": "재사용기록",
+        "range": "A1:E11",
+        "file": "재사용기록-1.png",
+        "scale": 1,
+        "sha256": "2bd0601372180b61da564765fc21ccd81f71769ea99cc1cf27f1a49f757b6d0c"
+      },
+      {
+        "sheet": "재사용기록",
+        "range": "F6:J11",
+        "file": "재사용기록-2.png",
+        "scale": 1,
+        "sha256": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e"
+      },
+      {
+        "sheet": "판단기록",
+        "range": "A1:E12",
+        "file": "판단기록-1.png",
+        "scale": 1,
+        "sha256": "9b3d8005b086effb85fd4695509706737aa8304a5af9086bcb5c41449469422d"
+      },
+      {
+        "sheet": "판단기록",
+        "range": "A13:E19",
+        "file": "판단기록-2.png",
+        "scale": 1,
+        "sha256": "af65096f7a303320d56a5042979021034e32560e8eb04c50954598c0cebe8d38"
+      }
+    ]
+  },
+  "semantics": {
+    "aiRuns": 2,
+    "existingSeconds": 99,
+    "personalizedSeconds": 77,
+    "differenceSeconds": -22,
+    "humanTimeMeasured": false,
+    "humanHandoffMeasured": false,
+    "satisfactionMeasured": false,
+    "costsMeasured": false,
+    "revenueMeasured": false,
+    "customer2Applied": false,
+    "causalEffectProven": false
+  },
+  "sources": [
+    {
+      "path": "docs/SHIFT/내부시범_20261007/workbook-build.mjs",
+      "sha256": "1a5a69a8552e78656769749068547fff6342ca72f9911f9db7f14d8d25bfb835"
+    },
+    {
+      "path": "docs/SHIFT/내부시범_20261007/workbook-input.json",
+      "sha256": "d3f01e1febf509afdd15f7ffbc95d9cf828c90664cd1362c18fcd75ded93ccfa"
+    },
+    {
+      "path": "docs/SHIFT/내부시범_20261007/qa/workbook/verify-native.ps1",
+      "sha256": "be642b43e56c96455680ca56de1105513969bf4883dfa1422206f3398c7cf5d0"
+    },
+    {
+      "path": "docs/SHIFT/내부시범_20261007/qa/workbook/verify-preservation.py",
+      "sha256": "1a62661c1a927f229c46efeb10ed5901916eda9081ba8b7bfbd9243a8d9dfe59"
+    }
+  ]
+}

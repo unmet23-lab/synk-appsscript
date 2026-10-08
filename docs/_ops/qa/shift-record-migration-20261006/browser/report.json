@@ -1,0 +1,62 @@
+{
+  "at": "2026-10-06T14:58:24.684Z",
+  "checks": [
+    "standalone returns to setup after personal conditions were cleared",
+    "standalone restores completed and in-progress authored records",
+    "standalone labels both records as excluded from recommendations and evaluation",
+    "standalone preserves both original requests and drafts",
+    "standalone does not fabricate scores from archived writing",
+    "standalone displays injected HTML as literal text",
+    "standalone expanded history fits 390",
+    "standalone expanded history fits 320",
+    "standalone starts a new practice without claiming old evidence",
+    "standalone saves only a new analysis generation while preserving authored work",
+    "standalone new practice survives another reload",
+    "standalone new practice fits 390",
+    "standalone new practice fits 320",
+    "company returns to setup after personal conditions were cleared",
+    "company restores completed and in-progress authored records",
+    "company labels both records as excluded from recommendations and evaluation",
+    "company preserves both original requests and drafts",
+    "company does not fabricate scores from archived writing",
+    "company displays injected HTML as literal text",
+    "company expanded history fits 390",
+    "company expanded history fits 320",
+    "company starts a new practice without claiming old evidence",
+    "company saves only a new analysis generation while preserving authored work",
+    "company new practice survives another reload",
+    "company new practice fits 390",
+    "company new practice fits 320",
+    "no page exceptions",
+    "all rendered assets load",
+    "no external requests or paid calls"
+  ],
+  "errors": [],
+  "assetErrors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "standalone-history-390.png",
+    "standalone-history-320.png",
+    "standalone-new-practice-320.png",
+    "company-history-390.png",
+    "company-saved-work-0-390.png",
+    "company-saved-work-1-390.png",
+    "company-history-320.png",
+    "company-new-practice-320.png"
+  ],
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "31a0e5333055c8a167592445996b148c27749419e9c6ce4136c6487d9923b263",
+    "experiences/shift-workbench/app.mjs": "45910bc83766c7a78ebad3e0beffc93ae1aa2aef4726d420545104d559455131",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "0114458b4f7a20e0e15a76ba25ee834c9010cbf9f859a21a27e8a872e0ac5e39"
+  },
+  "boundaries": {
+    "syntheticOnly": true,
+    "temporaryCompanyDatabase": true,
+    "freshBrowserContexts": true,
+    "paidCalls": 0,
+    "productionWrites": 0
+  },
+  "browser": "154.0.8037.98",
+  "ok": true,
+  "temporaryDatabaseRemoved": true
+}

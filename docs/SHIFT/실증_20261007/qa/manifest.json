@@ -1,0 +1,115 @@
+{
+  "status": "prepared-real-customer-trial-not-run",
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\outputs\\01a10c3d-cfe1-7c40-a1db-eea42c604fd6\\shift-evidence-20261007\\SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+  "outputBytes": 44798,
+  "outputSha256": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156",
+  "sheets": [
+    "요약",
+    "업무범위",
+    "시행기록",
+    "원가기록",
+    "재사용기록",
+    "판단기록"
+  ],
+  "checks": 73,
+  "views": [
+    {
+      "sheet": "요약",
+      "range": "A1:J21",
+      "file": "요약-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "요약",
+      "range": "A23:F49",
+      "file": "요약-2.png",
+      "scale": 1
+    },
+    {
+      "sheet": "요약",
+      "range": "A52:J65",
+      "file": "요약-3.png",
+      "scale": 1
+    },
+    {
+      "sheet": "업무범위",
+      "range": "A1:E15",
+      "file": "업무범위-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "업무범위",
+      "range": "A16:E30",
+      "file": "업무범위-2.png",
+      "scale": 1
+    },
+    {
+      "sheet": "시행기록",
+      "range": "A1:F13",
+      "file": "시행기록-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "시행기록",
+      "range": "G6:N13",
+      "file": "시행기록-2.png",
+      "scale": 1
+    },
+    {
+      "sheet": "시행기록",
+      "range": "N6:U13",
+      "file": "시행기록-3.png",
+      "scale": 1
+    },
+    {
+      "sheet": "원가기록",
+      "range": "A1:F13",
+      "file": "원가기록-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "원가기록",
+      "range": "G6:P13",
+      "file": "원가기록-2.png",
+      "scale": 1
+    },
+    {
+      "sheet": "원가기록",
+      "range": "A69:P72",
+      "file": "원가기록-3.png",
+      "scale": 1
+    },
+    {
+      "sheet": "재사용기록",
+      "range": "A1:E11",
+      "file": "재사용기록-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "재사용기록",
+      "range": "F6:J11",
+      "file": "재사용기록-2.png",
+      "scale": 1
+    },
+    {
+      "sheet": "판단기록",
+      "range": "A1:E12",
+      "file": "판단기록-1.png",
+      "scale": 1
+    },
+    {
+      "sheet": "판단기록",
+      "range": "A13:E19",
+      "file": "판단기록-2.png",
+      "scale": 1
+    }
+  ],
+  "syntheticQAOnly": true,
+  "actualCustomerInputBlank": true,
+  "actualResultsMeasured": false,
+  "nativeExcelPending": false,
+  "nativeExcelVerified": true,
+  "nativeExcelChecks": 52,
+  "realInputCellsVerifiedBlank": 1797,
+  "qaLabelLanguage": "ko"
+}

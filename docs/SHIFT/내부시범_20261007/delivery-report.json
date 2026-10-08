@@ -1,0 +1,228 @@
+{
+  "status": "ai-internal-pilot-and-workbook-delivered-human-customer-validation-pending",
+  "finalizedAt": "2026-10-06T22:12:07.342Z",
+  "trial": {
+    "file": "report.json",
+    "checks": 23,
+    "sections": 5,
+    "arms": 2,
+    "completion": [
+      true,
+      true
+    ],
+    "substantiveErrors": [
+      0,
+      0
+    ],
+    "requiredCopyPatches": 0,
+    "additionalQualityBenefitObserved": false,
+    "elapsedSeconds": [
+      99,
+      77
+    ],
+    "humanProductivity": null,
+    "customerOutcomes": null,
+    "profitability": null
+  },
+  "workbook": {
+    "path": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-internal-pilot-20261007/SHIFT_내부시범_소개원고검수_20261007.xlsx",
+    "sha256": "78fba4ec122fbf58e49436732946aebb59ab149233658a6c613ec06f1bf57636",
+    "bytes": 47325,
+    "modelChecks": 28,
+    "nativeExcelChecks": 44,
+    "preservationChecks": 8239,
+    "preservedSheets": 6,
+    "unmeasuredInputCells": 1735,
+    "formulaErrors": 0,
+    "clippedRows": 0,
+    "views": [
+      {
+        "sheet": "요약",
+        "range": "A1:J21",
+        "file": "요약-1.png",
+        "scale": 1,
+        "sha256": "9986b2312e25b910befa356505dd8afe41182352549ba2762f2a063258b3509e",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "요약",
+        "range": "A23:F49",
+        "file": "요약-2.png",
+        "scale": 1,
+        "sha256": "38beabdf9a06cd2d5cce82ef342e6aa5f8c3fbcb3ca76830899e4e8d5b48ce27",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "요약",
+        "range": "A52:J65",
+        "file": "요약-3.png",
+        "scale": 1,
+        "sha256": "e9ed4ec594f4354b464cc5a84ee9e0a4d78032136f05cacd1727eb85eff59198",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "업무범위",
+        "range": "A1:E15",
+        "file": "업무범위-1.png",
+        "scale": 1,
+        "sha256": "e36de03fb89e627107dd4e827f94114eebcfaa21496a0fd047597e77225308a0",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "업무범위",
+        "range": "A16:E30",
+        "file": "업무범위-2.png",
+        "scale": 1,
+        "sha256": "8c4a111e754f4e74cd030ea08e9d1ec831b9d0a8c0122f3a656aa9a8bae81c33",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "A1:F13",
+        "file": "시행기록-1.png",
+        "scale": 1,
+        "sha256": "3aac38765e20c9ec87a5b916a508c572274a212bb1aa9623f11ceee78bb372fc",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "G6:N13",
+        "file": "시행기록-2.png",
+        "scale": 1,
+        "sha256": "973589044b8fc89f1738211b2e40130937472c6aac3a2f8a9e244072fcdd0b9b",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "시행기록",
+        "range": "N6:U13",
+        "file": "시행기록-3.png",
+        "scale": 1,
+        "sha256": "55f2bccff3487a9a5493f85ac564cc16952820e74bdf144b76627462d8c29f03",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "원가기록",
+        "range": "A1:F13",
+        "file": "원가기록-1.png",
+        "scale": 1,
+        "sha256": "29bc12064ab66dbc29af86a10b6a96d9ddb5e782ce2cea1a04f7c53b05c36779",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "원가기록",
+        "range": "G6:P13",
+        "file": "원가기록-2.png",
+        "scale": 1,
+        "sha256": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "재사용기록",
+        "range": "A1:E11",
+        "file": "재사용기록-1.png",
+        "scale": 1,
+        "sha256": "2bd0601372180b61da564765fc21ccd81f71769ea99cc1cf27f1a49f757b6d0c",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "재사용기록",
+        "range": "F6:J11",
+        "file": "재사용기록-2.png",
+        "scale": 1,
+        "sha256": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "판단기록",
+        "range": "A1:E12",
+        "file": "판단기록-1.png",
+        "scale": 1,
+        "sha256": "9b3d8005b086effb85fd4695509706737aa8304a5af9086bcb5c41449469422d",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      },
+      {
+        "sheet": "판단기록",
+        "range": "A13:E19",
+        "file": "판단기록-2.png",
+        "scale": 1,
+        "sha256": "af65096f7a303320d56a5042979021034e32560e8eb04c50954598c0cebe8d38",
+        "visualReview": "reviewed-by-workbook-agent; summary-and-judgment-also-reviewed-by-root"
+      }
+    ]
+  },
+  "delivery": {
+    "desktop": "C:\\Users\\q1212\\OneDrive\\Desktop\\bm 설계표\\20261007_SHIFT_내부시범\\SHIFT_내부시범_소개원고검수_20261007.xlsx",
+    "sha256": "78fba4ec122fbf58e49436732946aebb59ab149233658a6c613ec06f1bf57636",
+    "existingBlankTemplatePreserved": true,
+    "existingBMArtifactsOverwritten": false
+  },
+  "boundaries": {
+    "currentSourceUnchanged": true,
+    "coreSourceUnchanged": true,
+    "newAtlasEngine": false,
+    "domainPolicyLocation": "SHIFT internal pilot",
+    "realHumanTrial": false,
+    "realCustomerTrial": false,
+    "sourceNotesIncluded": true,
+    "companyServerChanged": false,
+    "productionDataChanged": false,
+    "accountDataSaved": false,
+    "deployed": false,
+    "paidProviderCalls": 0,
+    "officialAgentBillingCost": null
+  },
+  "evidence": [
+    {
+      "file": "qa/workbook/manifest.json",
+      "sha256": "4b3dd9b886e39025ef3aaa987396e5deee29c754210bcf9b4084781b2d93fa28"
+    },
+    {
+      "file": "qa/workbook/checks.json",
+      "sha256": "85a6195779ae42d3ae6d2d42660fcd845cf72b9529e56bcfe710cbb0fc3a2b44"
+    },
+    {
+      "file": "qa/workbook/native-excel.json",
+      "sha256": "68137296d90d427f50b3267ec871f3058721ad7506a67f705166ddcde4feb011"
+    },
+    {
+      "file": "qa/workbook/preservation.json",
+      "sha256": "cafa907ed39a8a3f9100bb1ffe5d5c75b73539d2b0bc3363ced9db5c70fee6f7"
+    },
+    {
+      "file": "qa/workbook/saved-preservation.json",
+      "sha256": "8539f3d08f76166beb29c0789609495bfa32b924c0d35f1e5066caeee4e5f8af"
+    },
+    {
+      "file": "qa/workbook/changes.json",
+      "sha256": "d4927736c329635b23eef9f6d963a714138410783ff24a76bbcb227c490e0545"
+    },
+    {
+      "file": "qa/workbook/verify-native.ps1",
+      "sha256": "be642b43e56c96455680ca56de1105513969bf4883dfa1422206f3398c7cf5d0"
+    },
+    {
+      "file": "qa/workbook/verify-preservation.py",
+      "sha256": "1a62661c1a927f229c46efeb10ed5901916eda9081ba8b7bfbd9243a8d9dfe59"
+    },
+    {
+      "file": "qa/workbook/report.json",
+      "sha256": "462b8c5fdf2c5fecaad7910bd55fa029bec4bf9e0fbbed12cc0dab18539f2631"
+    },
+    {
+      "file": "README.md",
+      "sha256": "d571c2520ee2f0299c400c9001394552ea00030bf8ac7a7f8a1e71084f61f8c1"
+    },
+    {
+      "file": "workbook-build.mjs",
+      "sha256": "1a5a69a8552e78656769749068547fff6342ca72f9911f9db7f14d8d25bfb835"
+    },
+    {
+      "file": "finalize.mjs",
+      "sha256": "a238fc193023bb4ad6e39abb9455ecb68b000003d7f496b136706f46b0f37d4c"
+    },
+    {
+      "file": "report.json",
+      "sha256": "bb489f659d1237bca7eaaa4ed905daaac1361cd47c772381486da7d81f5e4e0c"
+    }
+  ]
+}

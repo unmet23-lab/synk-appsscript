@@ -2,35 +2,74 @@
 
 // The company session owns identity; the shared SHIFT model owns practice decisions.
 // No standalone visitor state or company document is imported into this exercise.
-const wp={userId:null,model:null,value:null,loading:false,request:0,mode:'practice',error:'',storageMessage:'',confirmClear:false,composing:false};
+const wp={userId:null,model:null,value:null,loading:false,request:0,mode:'practice',error:'',storageMessage:'',confirmClear:false,composing:false,sync:null,syncCurrent:null};
 const wpKey=id=>`synk-workroom:ai-practice:v1:${id}`;
+const wpSyncKey=id=>`synk-workroom:ai-practice-sync:v1:${id}`;
 const wpScope=id=>({personId:id,productId:'company',contextId:'workroom-practice',domain:'SHIFT'});
 const wpEngine=()=>globalThis.SynkAtlasPersonalization;
 function wpSyncIdentity(){
-  const id=state.user?.id||null;if(id===wp.userId)return;
-  Object.assign(wp,{userId:id,value:null,loading:false,request:wp.request+1,mode:'practice',error:'',storageMessage:'',confirmClear:false,composing:false});
+  const id=state.user?.id||null;if(id===wp.userId){if(wp.sync&&!wp.syncCurrent()){wp.sync.dispose();wp.sync=null;}return;}
+  wp.sync?.dispose();
+  Object.assign(wp,{userId:id,value:null,loading:false,request:wp.request+1,mode:'practice',error:'',storageMessage:'',confirmClear:false,composing:false,sync:null,syncCurrent:null});
 }
+function wpCloudEnsure(){
+  if(!wp.value||!wp.userId||wp.sync||!globalThis.SynkShiftPracticeSync||typeof isDemoMode==='function'&&isDemoMode())return;
+  const id=wp.userId,csrf=state.csrf,stamp=typeof companyAuthSnapshot==='function'?companyAuthSnapshot():null;
+  const current=()=>state.user?.id===id&&wp.userId===id&&(stamp?companyAuthCurrent(stamp):state.csrf===csrf);
+  wp.syncCurrent=current;
+  wp.sync=globalThis.SynkShiftPracticeSync.create({read:()=>wp.value,current,
+    loadMeta:()=>{try{return JSON.parse(localStorage.getItem(wpSyncKey(id))||'null');}catch{return null;}},
+    saveMeta:meta=>localStorage.setItem(wpSyncKey(id),JSON.stringify(meta)),
+    request:async body=>{
+      if(!current())throw Object.assign(new Error('로그인 상태가 바뀌었습니다.'),{code:'SESSION_CHANGED'});
+      const response=await fetch('/api/workroom-practice/state',{method:body?'POST':'GET',credentials:'same-origin',cache:'no-store',headers:{...(body?{'Content-Type':'application/json','X-CSRF-Token':csrf}:{})},...(body?{body:JSON.stringify(body)}:{})});
+      const data=await response.json();if(!current())throw Object.assign(new Error('로그인 상태가 바뀌었습니다.'),{code:'SESSION_CHANGED'});
+      if(!response.ok)throw Object.assign(new Error(data.error||'계정 기록을 확인하지 못했어요.'),{status:response.status,current:data.current});
+      if(!Number.isSafeInteger(data.revision)||data.revision<0||!['empty','active','deleted'].includes(data.status)||data.status==='active'&&!data.state)throw new Error('계정 기록 형식을 확인하지 못했어요.');return data;
+    },
+    canApply:()=>!wp.composing&&!document.activeElement?.matches?.('[data-wp-field="prompt"],[data-wp-field="draft"]'),
+    apply:saved=>{if(!current())return;const localSave=wp.value.save;wp.value=wp.model.restore(JSON.stringify({...saved,save:true}),wpEngine(),wpScope(id),globalThis.SynkTemperOutcomes);wp.value.save=localSave;wp.mode='practice';wp.error='';wpSave(false);if(state.tab==='workroom'&&wr.view==='practice')render();},
+    onChange:()=>wpCloudStatus()
+  });
+  void wp.sync.resume();
+}
+function wpCloudPanel(){
+  if(typeof isDemoMode==='function'&&isDemoMode())return '<p class="wp-note">체험 화면의 실습은 계정에 동기화하지 않습니다.</p>';
+  const sync=wp.sync?.view();return `<div class="wp-cloud"><label><input type="checkbox" data-wp-field="sync" ${sync?.enabled?'checked':''}> 회사 계정에 저장하고 다른 기기에서 이어가기</label><p class="wp-note">기기 저장과 별도 선택입니다. 실습 조건·요청문·수정한 결과·검토 기록을 이 회사 계정에 보관합니다. 회사 공유 자료에는 추가되지 않습니다.</p><div id="wp-sync-status">${wpCloudContents()}</div></div>`;
+}
+function wpCloudContents(){
+  const sync=wp.sync?.view(),conflict=sync?.conflict,remote=conflict?.remote?.state;
+  let html=`<p role="status">${escape(sync?.message||'기본은 동기화 꺼짐입니다. 켜면 이 회사 계정으로 다른 기기에서 이어갑니다.')}</p>`;
+  if(conflict){
+    const preview=(value,label)=>`<details class="wp-sync-preview"><summary>${label}</summary>${value?.run?`<p>${escape(wp.model.TASKS[value.run.task]?.name||value.run.taskName||'저장된 실습')}</p><h4>요청문</h4><pre class="wp-sample">${escape(value.run.prompt)}</pre><h4>직접 작성한 내용</h4><pre class="wp-sample">${escape(value.run.draft)}</pre>`:'<p>진행 중인 실습이 없습니다.</p>'}<p>보관한 작성물 ${value?.history?.length||0}개</p></details>`;
+    html+=preview(wp.value,'이 기기의 작성물 보기');if(remote)html+=preview(remote,'계정에 저장된 작성물 보기');
+    html+=`<div class="wp-actions">${wpButton(conflict.type==='deleted'?'이 기기 내용을 계정에 새로 저장':'이 기기 내용으로 이어가기','sync-local',sync.busy?'disabled':'','small wp-sync-primary')}${remote?wpButton('계정에 저장된 내용으로 이어가기','sync-remote',sync.busy?'disabled':'','small quiet'):''}${wp.value?.run?wpButton('이 기기 작성물 TXT 내려받기','export','','small quiet'):''}</div><p class="wp-note">선택하지 않은 진행 기록은 이 화면에서 대체됩니다. 필요한 작성물은 먼저 내려받아 주세요.</p>`;
+  }else if(sync?.enabled)html+=`<div class="wp-actions">${wpButton('계정 기록 다시 확인','sync-refresh',sync.busy?'disabled':'','small quiet')}</div>`;
+  return html;
+}
+function wpCloudStatus(){if(!wp.syncCurrent?.())return;const node=document.getElementById('wp-sync-status');if(node)node.innerHTML=wpCloudContents();const box=document.querySelector('[data-wp-field="sync"]');if(box)box.checked=wp.sync.view().enabled;const clear=document.querySelector('[data-action="practice-clear"]');if(clear)clear.disabled=wp.sync.view().busy;}
 function wpRestore(){
   wp.value=wp.model.newState();
-  try{const saved=localStorage.getItem(wpKey(wp.userId));if(saved)wp.value=wp.model.restore(saved,wpEngine(),wpScope(wp.userId),globalThis.SynkTemperOutcomes);}
+  try{const saved=localStorage.getItem(wpKey(wp.userId));if(saved){wp.value=wp.model.restore(saved,wpEngine(),wpScope(wp.userId),globalThis.SynkTemperOutcomes);wp.storageMessage=wp.model.storageRecoveryNotice(wp.value);}}
   catch(error){wp.storageMessage='저장된 실습을 불러오지 못했어요. 이 창에서 새로 시작합니다.';}
 }
 async function wpEnsure(){
-  wpSyncIdentity();if(!wp.userId||state.tab!=='workroom'||wr.view!=='practice'||wp.loading||wp.value||wp.error)return;
+  wpSyncIdentity();wpCloudEnsure();if(!wp.userId||state.tab!=='workroom'||wr.view!=='practice'||wp.loading||wp.value||wp.error)return;
   const id=wp.userId,request=++wp.request;wp.loading=true;wp.error='';
   try{
     const model=wp.model||await import(`/workroom-practice/model.mjs?attempt=${request}`);
     if(request!==wp.request||state.user?.id!==id)return;
     if(!wpEngine())throw new Error('맞춤 실습을 불러오지 못했어요.');
-    wp.model=model;wpRestore();
+    wp.model=model;wpRestore();wpCloudEnsure();
   }catch(error){if(request===wp.request&&state.user?.id===id)wp.error='실습을 불러오지 못했어요. 다시 불러와 주세요.';}
   finally{if(request===wp.request&&state.user?.id===id){wp.loading=false;if(state.tab==='workroom'&&wr.view==='practice')render();}}
 }
-function wpSave(){
+function wpSave(cloud=true){
   if(!wp.value||state.user?.id!==wp.userId||!wp.value.profile)return;
   const result=wp.model.persist({setItem:(...args)=>localStorage.setItem(...args)},wp.value,wpKey(wp.userId));
-  wp.storageMessage=result.ok?(result.saved?'이 계정의 실습을 이 브라우저에 저장했어요.':'이 창에서만 진행합니다. 창을 닫으면 기록이 사라져요.'):result.message;
+  wp.storageMessage=result.ok?(result.saved?'이 계정의 실습을 이 브라우저에 저장했어요.':wp.sync?.view().enabled?'이 기기에는 저장하지 않습니다. 계정 동기화 상태는 아래에서 확인해 주세요.':'이 창에서만 진행합니다. 창을 닫으면 기록이 사라져요.'):result.message;
   wpStatus();
+  if(cloud)wp.sync?.changed();
 }
 function wpStatus(){const node=document.getElementById('wp-storage-status');if(node)node.textContent=wp.storageMessage||'기본은 미저장입니다. 저장을 선택하면 이 계정으로 같은 브라우저에서 이어갑니다.';}
 const wpButton=(label,action,attrs='',classes='')=>button(label,'practice-'+action,'',classes,attrs);
@@ -38,7 +77,7 @@ function wpPanel(){
   wpSyncIdentity();
   if(!wp.value)return `<section class="wp-practice" data-workroom-practice="loading"><h1>AI 업무 연습</h1><p role="status">${wp.error?escape(wp.error):'실습 자료를 준비하고 있어요.'}</p>${wp.error?wpButton('다시 불러오기','retry','','primary'):''}</section>`;
   const value=wp.value,run=value.run;
-  return `<section class="wp-practice" data-workroom-practice="ready"><header class="wp-heading"><div><span class="wr-kicker">내 작업실 · AI 업무 연습</span><h1>AI 결과를, 내가 확인할 수 있도록.</h1><p>가상 자료로 요청하고, 근거와 비교하고, 직접 고쳐 보세요.</p></div>${wpButton(wp.mode==='history'?'실습으로 돌아가기':`내 실습 기록 ${value.history.length}`,wp.mode==='history'?'back':'history','','small quiet')}</header><p class="wp-disclosure">가상 업무 실습 · 실제 AI 호출 없음 · 회사 공유 자료에 자동으로 저장되지 않습니다.</p><div class="wp-storage"><label><input type="checkbox" data-wp-field="save" ${value.save?'checked':''}> 이 계정의 실습을 이 기기에 저장</label><p id="wp-storage-status" role="status">${escape(wp.storageMessage||'기본은 미저장입니다. 저장을 선택하면 이 계정으로 같은 브라우저에서 이어갑니다.')}</p></div>${wp.error?`<p class="wp-error" role="alert">${escape(wp.error)}</p>`:''}${wp.mode==='history'?wpHistory():wp.mode==='setup'||!run?wpSetup():run.step==='result'?wpResult():wpExercise()}<footer class="wp-footer">${wpButton('제작 데스크','desk','','quiet')}${wpButton('게시 전 점검','publish','','quiet')}${wp.confirmClear?`<span>이 계정의 실습과 저장 기록을 비울까요?</span>${wpButton('실습 기록 비우기','clear','','small')}${wpButton('취소','cancel-clear','','small quiet')}`:wpButton('내 실습 기록 비우기','ask-clear','','small quiet')}</footer></section>`;
+  return `<section class="wp-practice" data-workroom-practice="ready"><header class="wp-heading"><div><span class="wr-kicker">내 작업실 · AI 업무 연습</span><h1>AI 결과를, 내가 확인할 수 있도록.</h1><p>가상 자료로 요청하고, 근거와 비교하고, 직접 고쳐 보세요.</p></div>${wpButton(wp.mode==='history'?'실습으로 돌아가기':`내 실습 기록 ${value.history.length}`,wp.mode==='history'?'back':'history','','small quiet')}</header><p class="wp-disclosure">가상 업무 실습 · 실제 AI 호출 없음 · 회사 공유 자료에 자동으로 저장되지 않습니다.</p><div class="wp-storage"><label><input type="checkbox" data-wp-field="save" ${value.save?'checked':''}> 이 계정의 실습을 이 기기에 저장</label><p id="wp-storage-status" role="status">${escape(wp.storageMessage||'기본은 미저장입니다. 저장을 선택하면 이 계정으로 같은 브라우저에서 이어갑니다.')}</p></div>${wpCloudPanel()}${wp.error?`<p class="wp-error" role="alert">${escape(wp.error)}</p>`:''}${wp.mode==='history'?wpHistory():wp.mode==='setup'||!run?wpSetup():run.step==='result'?wpResult():wpExercise()}<footer class="wp-footer">${wpButton('제작 데스크','desk','','quiet')}${wpButton('게시 전 점검','publish','','quiet')}${wp.confirmClear?`<span>${wp.sync?.view().enabled?'이 기기와 회사 계정의 실습 기록을 모두 비울까요?':'이 기기의 실습과 저장 기록을 비울까요?'}</span>${wpButton('실습 기록 비우기','clear',wp.sync?.view().busy?'disabled':'','small')}${wpButton('취소','cancel-clear','','small quiet')}`:wpButton('내 실습 기록 비우기','ask-clear','','small quiet')}</footer></section>`;
 }
 function wpSelect(name,label,options,value){return `<label class="wp-field">${label}<select data-wp-field="${name}">${Object.entries(options).map(([id,text])=>`<option value="${id}" ${String(value)===id?'selected':''}>${escape(text)}</option>`).join('')}</select></label>`;}
 function wpSetup(){
@@ -47,14 +86,17 @@ function wpSetup(){
 }
 function wpExercise(){
   const run=wp.value.run,task=wp.model.TASKS[run.task];
-  return `<div class="wp-section-head" data-review-decision-id="${escape(run.reviewDecisionId||'')}"><h2>${escape(task.name)}</h2><p>${escape(wp.model.practiceReason(wp.value))}</p>${wp.model.practiceBasis(wp.value).length?`<details><summary>최근 확인한 항목</summary><ul>${wp.model.practiceBasis(wp.value).map(line=>`<li>${escape(line)}</li>`).join('')}</ul></details>`:''}<p class="wp-note">목표: ${escape(wp.model.GOALS[run.goal])} · ${wp.value.history.length?'직접 선택한 조건과 이 계정의 이전 검토·피드백을 사용했어요.':'지금 직접 선택한 조건만 사용했어요. 이전 검토 기록은 아직 없어요.'}</p></div><div class="wp-grid"><section class="wp-pane"><h3>근거가 되는 자료</h3><p class="wp-note">이름·수치·일정은 모두 가상 자료입니다.</p><ul class="wp-sources">${task.sources.map(s=>`<li><b>${s.id}</b><span>${escape(s.text)}</span></li>`).join('')}</ul><label class="wp-field">AI에게 부탁할 요청문<textarea data-wp-field="prompt" maxlength="5000" rows="7" placeholder="만들 결과물, 쓸 자료, 지켜야 할 조건을 적어 보세요.">${escape(run.prompt)}</textarea></label><p class="wp-note">회사 자료나 개인정보는 쓰지 마세요. 요청문은 AI에 전송되지 않습니다.</p>${run.support==='step'?wpButton('예시 요청문 가져오기','template','','small quiet'):''}<ul id="wp-prompt-guide" class="wp-prompt-guide">${wpPromptGuide()}</ul><p class="wp-note">요청문의 단어 포함 여부를 보는 작성 보조입니다. 의미나 품질을 자동 평가하지 않습니다.</p></section><section class="wp-pane"><h3>예시 AI 결과, 그대로 써도 될까요?</h3><p class="wp-note">미리 준비한 예시이며 내 요청문에 따라 생성된 결과가 아닙니다.</p><pre class="wp-sample">${escape(task.sample)}</pre><h3>판단과 근거를 함께 골라 주세요</h3>${run.checkIds.map((id,i)=>{const c=task.checks.find(c=>c.id===id),a=run.answers[id]||{},result=run.result?.find(c=>c.id===id);return `<fieldset class="wp-check"><legend>${i+1}. ${escape(c.label)}</legend><div class="wp-picks"><label class="wp-field">내 판단<select data-wp-check="${id}" data-wp-part="kind" ${run.result?'disabled':''}><option value="">판단 선택</option>${Object.entries(wp.model.ANSWERS).map(([v,l])=>`<option value="${v}" ${a.kind===v?'selected':''}>${escape(l)}</option>`).join('')}</select></label><label class="wp-field">근거 자료<select data-wp-check="${id}" data-wp-part="source" ${run.result?'disabled':''}><option value="">자료 선택</option>${task.sources.map(s=>`<option value="${s.id}" ${a.source===s.id?'selected':''}>${s.id}</option>`).join('')}</select></label></div>${result?`<p class="wp-answer"><strong>${result.correct?'판단과 근거가 맞아요.':'근거를 다시 살펴보세요.'}</strong><br>${escape(result.why)}<br>기준: ${escape(wp.model.ANSWERS[c.answer])} · ${c.source}</p>`:''}</fieldset>`;}).join('')}${run.result?'<p class="wp-note">첫 검토 결과를 유지합니다. 아래에서 직접 수정하며 다시 확인하세요.</p>':wpButton('근거와 대조하기','check','','primary')}</section></div>${run.result?`<section class="wp-editor"><h2 tabindex="-1" id="wp-edit-title">이제 쓸 수 있는 결과로 수정해 보세요</h2><p>숫자·기한을 고치고, 확인되지 않은 주장을 구분하고, 빠진 내용을 보완하세요.</p><label class="wp-field">내가 직접 수정한 결과<textarea data-wp-field="draft" maxlength="10000" rows="8">${escape(run.draft)}</textarea></label><label class="wp-checkline"><input type="checkbox" data-wp-field="reviewed" ${run.reviewed?'checked':''}> 제공된 자료와 수정한 결과를 직접 대조했습니다.</label><p class="wp-note">자유 문장의 정확성은 자동 평가하지 않습니다.</p><div class="wp-actions">${wpButton('실습 마무리','complete','','primary')}${wpButton('작성 중 결과 TXT 내려받기','export','','quiet')}</div></section>`:''}<div class="wp-actions">${wpButton('업무·조건 다시 선택','setup','','quiet')}</div>`;
+  return `<div class="wp-section-head" data-review-decision-id="${escape(run.reviewDecisionId||'')}"><h2>${escape(task.name)}</h2><p>${escape(wp.model.practiceReason(wp.value))}</p>${wp.model.practiceBasis(wp.value).length?`<details><summary>최근 확인한 항목</summary><ul>${wp.model.practiceBasis(wp.value).map(line=>`<li>${escape(line)}</li>`).join('')}</ul></details>`:''}<p class="wp-note">목표: ${escape(wp.model.GOALS[run.goal])} · ${wp.model.practiceHistoryUsed(wp.value)?'직접 선택한 조건과 이 계정의 이전 검토·피드백을 사용했어요.':'지금 직접 선택한 조건만 사용했어요. 현재 추천에 사용할 이전 검토·피드백은 없어요.'}</p></div><div class="wp-grid"><section class="wp-pane"><h3>근거가 되는 자료</h3><p class="wp-note">이름·수치·일정은 모두 가상 자료입니다.</p><ul class="wp-sources">${task.sources.map(s=>`<li><b>${s.id}</b><span>${escape(s.text)}</span></li>`).join('')}</ul><label class="wp-field">AI에게 부탁할 요청문<textarea data-wp-field="prompt" maxlength="5000" rows="7" placeholder="만들 결과물, 쓸 자료, 지켜야 할 조건을 적어 보세요.">${escape(run.prompt)}</textarea></label><p class="wp-note">회사 자료나 개인정보는 쓰지 마세요. 요청문은 AI에 전송되지 않습니다.</p>${run.support==='step'?wpButton('예시 요청문 가져오기','template','','small quiet'):''}<ul id="wp-prompt-guide" class="wp-prompt-guide">${wpPromptGuide()}</ul><p class="wp-note">요청문의 단어 포함 여부를 보는 작성 보조입니다. 의미나 품질을 자동 평가하지 않습니다.</p></section><section class="wp-pane"><h3>예시 AI 결과, 그대로 써도 될까요?</h3><p class="wp-note">미리 준비한 예시이며 내 요청문에 따라 생성된 결과가 아닙니다.</p><pre class="wp-sample">${escape(task.sample)}</pre><h3>판단과 근거를 함께 골라 주세요</h3>${run.checkIds.map((id,i)=>{const c=task.checks.find(c=>c.id===id),a=run.answers[id]||{},result=run.result?.find(c=>c.id===id);return `<fieldset class="wp-check"><legend>${i+1}. ${escape(c.label)}</legend><div class="wp-picks"><label class="wp-field">내 판단<select data-wp-check="${id}" data-wp-part="kind" ${run.result?'disabled':''}><option value="">판단 선택</option>${Object.entries(wp.model.ANSWERS).map(([v,l])=>`<option value="${v}" ${a.kind===v?'selected':''}>${escape(l)}</option>`).join('')}</select></label><label class="wp-field">근거 자료<select data-wp-check="${id}" data-wp-part="source" ${run.result?'disabled':''}><option value="">자료 선택</option>${task.sources.map(s=>`<option value="${s.id}" ${a.source===s.id?'selected':''}>${s.id}</option>`).join('')}</select></label></div>${result?`<p class="wp-answer"><strong>${result.correct?'판단과 근거가 맞아요.':'근거를 다시 살펴보세요.'}</strong><br>${escape(result.why)}<br>기준: ${escape(wp.model.ANSWERS[c.answer])} · ${c.source}</p>`:''}</fieldset>`;}).join('')}${run.result?'<p class="wp-note">첫 검토 결과를 유지합니다. 아래에서 직접 수정하며 다시 확인하세요.</p>':wpButton('근거와 대조하기','check','','primary')}</section></div>${run.result?`<section class="wp-editor"><h2 tabindex="-1" id="wp-edit-title">이제 쓸 수 있는 결과로 수정해 보세요</h2><p>숫자·기한을 고치고, 확인되지 않은 주장을 구분하고, 빠진 내용을 보완하세요.</p><label class="wp-field">내가 직접 수정한 결과<textarea data-wp-field="draft" maxlength="10000" rows="8">${escape(run.draft)}</textarea></label><label class="wp-checkline"><input type="checkbox" data-wp-field="reviewed" ${run.reviewed?'checked':''}> 제공된 자료와 수정한 결과를 직접 대조했습니다.</label><p class="wp-note">자유 문장의 정확성은 자동 평가하지 않습니다.</p><div class="wp-actions">${wpButton('실습 마무리','complete','','primary')}${wpButton('작성 중 결과 TXT 내려받기','export','','quiet')}</div></section>`:''}<div class="wp-actions">${wpButton('업무·조건 다시 선택','setup','','quiet')}</div>`;
 }
 function wpPromptGuide(){return wp.model.checkPrompt(wp.value.run.prompt).map(c=>`<li>${c.met?'✓ 단서 있음':'○ 더 적어보기'} · ${escape(c.label)}</li>`).join('');}
 function wpResult(){
   const run=wp.value.run,result=run.result,next=wp.model.nextTaskSuggestion(wp.value);
-  return `<div class="wp-section-head"><h2>검토하고, 직접 고쳤어요.</h2><p>${escape(wp.model.TASKS[run.task].name)} · 첫 근거 확인 ${result.filter(c=>c.correct).length}/${result.length}</p><p class="wp-note">정해진 확인 항목의 결과입니다. 자유 문장의 정확성이나 실제 업무 능력·효율 향상을 측정한 점수가 아닙니다.</p></div><label class="wp-field">내가 수정한 결과<textarea data-wp-field="finished" readonly rows="7">${escape(run.draft)}</textarea></label><div class="wp-actions">${wpButton('결과 TXT 내려받기','export','','primary')}</div><section class="wp-next"><h3>다음에는 ${next.focus?escape(wp.model.FOCUS[next.focus]):'다른 업무의 근거 확인'}</h3><p>${next.focus?`최근 실습에서 다시 확인이 필요했던 유형을 「${escape(wp.model.TASKS[next.task].name)}」 실습에서 먼저 확인하도록 제안합니다. 선택한 업무에 그 유형이 있을 때 우선 제시하며, 업무와 조건은 직접 바꿀 수 있어요. 반복 정답만으로 능력 향상을 판단하지 않습니다.`:'새로운 자료에서도 근거를 구분할 수 있는지 다른 업무로 확인해 보세요.'}</p>${wpButton('다음 실습 고르기','next','','quiet')}</section><section class="wp-feedback"><h3>이번 구성은 어땠나요?</h3><p class="wp-note">직접 고른 피드백을 다음 분량 추천에 사용합니다.</p><div class="wp-actions">${Object.entries({helpful:'도움이 됐어요',too_much:'분량이 많아요',want_more:'더 해보고 싶어요',not_fit:'잘 맞지 않아요'}).map(([id,label])=>wpButton(label,'feedback',`data-id="${id}" aria-pressed="${run.feedback===id}" ${run.feedback?'disabled':''}`,'small quiet')).join('')}</div></section>`;
+  return `<div class="wp-section-head"><h2>검토하고, 직접 고쳤어요.</h2><p>${escape(wp.model.TASKS[run.task].name)} · 첫 근거 확인 ${result.filter(c=>c.correct).length}/${result.length}</p><p class="wp-note">정해진 확인 항목의 결과입니다. 자유 문장의 정확성이나 실제 업무 능력·효율 향상을 측정한 점수가 아닙니다.</p></div><label class="wp-field">내가 수정한 결과<textarea data-wp-field="finished" readonly rows="7">${escape(run.draft)}</textarea></label><div class="wp-actions">${wpButton('결과 TXT 내려받기','export','','primary')}</div><section class="wp-next"><h3>다음에는 ${next.focus?escape(wp.model.FOCUS[next.focus]):'다른 업무의 근거 확인'}</h3><p>${escape(wp.model.nextTaskReason(wp.value))}</p><p class="wp-note">선택한 업무에 다시 확인할 유형이 있으면 먼저 제시합니다. 업무와 조건은 직접 바꿀 수 있어요. 같은 문항의 반복 정답만으로 능력 향상을 판단하지 않습니다.</p>${wpButton('다음 실습 고르기','next','','quiet')}</section><section class="wp-feedback"><h3>이번 구성은 어땠나요?</h3><p class="wp-note">직접 고른 피드백을 다음 분량 추천에 사용합니다.</p><div class="wp-actions">${Object.entries({helpful:'도움이 됐어요',too_much:'분량이 많아요',want_more:'더 해보고 싶어요',not_fit:'잘 맞지 않아요'}).map(([id,label])=>wpButton(label,'feedback',`data-id="${id}" aria-pressed="${run.feedback===id}" ${run.feedback?'disabled':''}`,'small quiet')).join('')}</div></section>`;
 }
-function wpHistory(){return `<div class="wp-section-head"><h2>내 실습 기록</h2><p>완료한 실습을 최대 20개까지 보관합니다. 이 계정·이 브라우저에서만 확인합니다.</p></div>${wp.value.history.length?[...wp.value.history].reverse().map(h=>`<article class="wp-history"><h3>${escape(wp.model.TASKS[h.task].name)}</h3><p>${escape(new Date(h.at).toLocaleString('ko-KR'))} · 첫 근거 확인 ${Number(h.correct)}/${Number(h.total)}</p><details><summary>직접 수정한 결과 보기</summary><pre class="wp-sample">${escape(h.draft)}</pre></details></article>`).join(''):'<p>아직 완료한 실습이 없어요.</p>'}`;}
+function wpHistory(){return `<div class="wp-section-head"><h2>내 실습 기록</h2><p>완료한 실습과 이전 작성물을 합해 최대 20개까지 보관합니다. 기기 저장 또는 계정 동기화를 선택한 범위에서 이어서 확인합니다.</p></div>${wp.value.history.length?[...wp.value.history].reverse().map(h=>{
+  const saved=wp.model.isSavedWork(h);
+  return `<article class="wp-history"><h3>${escape(wp.model.historyLabel(h))}</h3><p>${escape(new Date(h.at).toLocaleString('ko-KR'))}${saved?'':' · 첫 근거 확인 '+Number(h.correct)+'/'+Number(h.total)}</p>${saved?`<p>${h.kind==='recovered-work'?'업데이트 전 작성한 내용':'이전 조건에서 작성한 내용'} · 추천·평가에 사용하지 않음</p><p>${h.status==='completed'?'완료한 실습의 작성물':'작성 중이던 내용'}</p><details><summary>작성한 요청문과 결과 보기</summary><h4>내 요청문</h4><pre class="wp-sample">${escape(h.prompt)}</pre><h4>직접 작성한 내용</h4><pre class="wp-sample">${escape(h.draft)}</pre></details>`:`<details><summary>직접 수정한 결과 보기</summary><pre class="wp-sample">${escape(h.draft)}</pre></details>`}</article>`;
+}).join(''):'<p>아직 보관한 작성물이나 완료한 실습이 없어요.</p>'}`;}
 function wpDownload(){const text=wp.model.exportText(wp.value).replace('SYNK SHIFT · 가상 업무 로컬 실습','SYNK 내 작업실 · AI 업무 연습'),blob=new Blob([text],{type:'text/plain;charset=utf-8'});if(blob.size>65536)throw new Error('내보낼 내용은 64 KB 이내로 줄여 주세요.');const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='synk-shift-practice.txt';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);}
 function wpActive(){return !!state.user&&state.user.id===wp.userId&&state.tab==='workroom'&&wr.view==='practice'&&!!wp.value;}
 function wpRecordExposure(){if(!wpActive()||wp.mode!=='practice'||wp.value.run?.step!=='practice')return;const id=wp.value.run.reviewDecisionId;if(!id||!document.querySelector('[data-review-decision-id="'+CSS.escape(id)+'"]'))return;const next=wp.model.recordPracticeExposure(wp.value,new Date().toISOString(),wpScope(wp.userId));if(next!==wp.value){wp.value=next;wpSave();}}
@@ -69,6 +111,7 @@ document.addEventListener('input',event=>{
 });
 document.addEventListener('change',event=>{
   if(!wpActive())return;const el=event.target,field=el.dataset.wpField,run=wp.value.run;
+  if(field==='sync'){wpCloudEnsure();if(el.checked)void wp.sync?.enable();else wp.sync?.disable();return;}
   if(field==='save'){
     if(!el.checked)try{localStorage.removeItem(wpKey(wp.userId));}catch{el.checked=wp.value.save;wp.error='저장 기록을 지우지 못했어요. 브라우저의 사이트 저장소 설정을 확인해 주세요.';render();return;}
     wp.value.save=el.checked;if(wp.value.profile)wpSave();else{wp.storageMessage=el.checked?'첫 실습을 시작하면 이 계정의 기록을 저장합니다.':'이 창에서만 진행합니다.';wpStatus();}return;
@@ -84,6 +127,9 @@ document.addEventListener('submit',event=>{
 document.addEventListener('click',event=>{
   const el=event.target.closest?.('[data-action^="practice-"]');if(!el||el.disabled||!state.user)return;const action=el.dataset.action.slice(9);
   if(action==='retry'){if(!wpEngine()){location.reload();return;}wp.error='';void wpEnsure();return;}if(!wpActive())return;wp.error='';
+  if(action==='sync-refresh'){void wp.sync?.refresh();return;}
+  if(action==='sync-local'||action==='sync-remote'){void wp.sync?.choose(action==='sync-local'?'local':'remote');return;}
+  if(action==='clear'&&wp.sync?.view().enabled){void wpCloudClear();return;}
   try{
     if(action==='template'){wp.value.run.prompt=wp.model.TASKS[wp.value.run.task].template;wpSave();}
     else if(action==='check'){if(wp.value.run.prompt.trim().length<20)throw new Error('요청문을 20자 이상 작성해 주세요.');const result=wp.model.evaluate(wp.value.run);if(result.some(c=>!c.answered))throw new Error('모든 항목의 판단과 자료 번호를 골라 주세요.');wp.value.run.result=result;wpSave();}
@@ -101,3 +147,12 @@ document.addEventListener('click',event=>{
     render();if(action==='check')document.getElementById('wp-edit-title')?.focus({preventScroll:false});
   }catch(error){wp.error=error.message;render();}
 });
+async function wpCloudClear(){
+  const id=wp.userId,sync=wp.sync;if(!await sync.remove()||!wpActive()||wp.userId!==id||wp.sync!==sync)return;
+  try{localStorage.removeItem(wpKey(id));}catch{wp.error='계정 기록은 지웠어요. 이 기기의 저장 기록은 브라우저의 사이트 저장소에서 지워 주세요.';render();return;}
+  wp.value=wp.model.newState();wp.mode='practice';wp.confirmClear=false;wp.storageMessage='이 기기와 회사 계정의 실습 기록을 비웠어요.';render();
+}
+if(typeof window!=='undefined'){
+  window.addEventListener('online',()=>{if(wpActive())void wp.sync?.refresh();});
+  window.addEventListener('focus',()=>{if(wpActive())void wp.sync?.refresh();});
+}

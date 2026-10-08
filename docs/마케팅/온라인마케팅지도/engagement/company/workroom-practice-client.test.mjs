@@ -2,13 +2,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
+import {webcrypto} from 'node:crypto';
 
 const root=new URL('../../../../../',import.meta.url);
 const shared=readFileSync(new URL('experiences/shift-workbench/model.mjs',root),'utf8');
 const modelNames=[...shared.matchAll(/export (?:const|function) (\w+)/g)].map(m=>m[1]);
-function fixture(){
+function fixture({crypto=webcrypto}={}){
   const storage=new Map(),reads=[],writes=[],handlers=new Map(),nodes=new Map();let renders=0,selected=null;
-  const context=vm.createContext({console,URL,Blob,setTimeout,clearTimeout,Date,location:{reload(){}},state:{user:{id:'member-A'},tab:'workroom'},wr:{view:'practice'},CSS:{escape:String},
+  const context=vm.createContext({console,URL,Blob,setTimeout,clearTimeout,Date,crypto,TextEncoder,location:{reload(){}},state:{user:{id:'member-A'},tab:'workroom'},wr:{view:'practice'},CSS:{escape:String},
     localStorage:{getItem(key){reads.push(key);return storage.get(key)||null;},setItem(key,value){writes.push(key);storage.set(key,value);},removeItem:key=>storage.delete(key)},
     document:{activeElement:null,addEventListener(type,handler){if(!handlers.has(type))handlers.set(type,[]);handlers.get(type).push(handler);},getElementById:id=>nodes.get(id)||null,querySelector:()=>selected},
     render(){renders++;},escape:value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),button:(label,action)=>`<button data-action="${action}">${label}</button>`});
@@ -16,7 +17,9 @@ function fixture(){
   vm.runInContext(readFileSync(new URL('atlas/domain.js',root),'utf8'),context);
   vm.runInContext(readFileSync(new URL('atlas/temper-outcomes.js',root),'utf8'),context);
   vm.runInContext(readFileSync(new URL('atlas/personalization.js',root),'utf8'),context);
-  vm.runInContext(`(()=>{${shared.replaceAll('export ','')} globalThis.practiceModel={${modelNames.join(',')}};})()`,context);
+  const upgrade=readFileSync(new URL('experiences/shift-workbench/storage-upgrade.mjs',root),'utf8').replaceAll('export ','');
+  vm.runInContext(`(()=>{${upgrade}\n${shared.replace(/^import [^\n]+\n/,'').replaceAll('export ','')} globalThis.practiceModel={${modelNames.join(',')}};})()`,context);
+  vm.runInContext(readFileSync(new URL('./public/workroom-practice-sync.js',import.meta.url),'utf8'),context);
   vm.runInContext(readFileSync(new URL('./public/workroom-practice.js',import.meta.url),'utf8'),context);
   const evaluate=code=>vm.runInContext(code,context);evaluate('wp.model=practiceModel;wpSyncIdentity();wpRestore()');
   const emit=(type,target)=>{for(const handler of handlers.get(type)||[])handler({target,preventDefault(){}});};
@@ -83,7 +86,76 @@ test('practice navigation reuses existing desk and publishing tools without a co
 test('next practice offers an applicable missed focus and keeps the employee free to choose a different task',()=>{
   const f=fixture();f.emit('change',{dataset:{wpField:'minutes'},value:'10'});f.emit('change',{dataset:{wpField:'goal'},value:'work'});f.start();
   f.evaluate(`wp.value.run.prompt=practiceModel.TASKS.meeting.template;wp.value.run.draft='지안은 10월 8일까지 안내 초안을 작성합니다. 예산 승인은 대기 중이며 도윤은 10월 6일까지 접근성 항목을 전달합니다.';wp.value.run.reviewed=true;for(const c of practiceModel.TASKS.meeting.checks)wp.value.run.answers[c.id]={kind:c.id==='missing'?'match':c.answer,source:c.source};wp.value.run.result=practiceModel.evaluate(wp.value.run)`);
-  f.action('complete');assert.equal(f.wp.value.run.step,'result');const html=f.evaluate('wpResult()');assert.match(html,/최근 실습에서 다시 확인이 필요했던 유형을 「기획을 검증하기」 실습에서 먼저 확인하도록 제안합니다/);assert.match(html,/선택한 업무에 그 유형이 있을 때/);
+  f.action('complete');assert.equal(f.wp.value.run.step,'result');const html=f.evaluate('wpResult()');assert.ok(html.includes(f.evaluate('wp.model.nextTaskReason(wp.value)')));assert.match(html,/누락·성공 기준 확인 항목을 「기획을 검증하기」에서/);assert.match(html,/선택한 업무에 다시 확인할 유형이 있으면/);
   f.action('next');assert.equal(f.wp.value.settings.task,'planning');assert.equal(f.wp.mode,'setup');
   f.emit('change',{dataset:{wpField:'task'},value:'research'});f.start();assert.equal(f.wp.value.run.task,'research');assert.doesNotMatch(f.wp.value.run.reason,/누락·성공 기준/);
+});
+
+const savedWork=`({kind:'saved-work',scope:wpScope(wp.userId),sourceGeneration:0,task:'meeting',at:'2026-10-02T00:00:00.000Z',
+  prompt:'<img src=x onerror=alert(1)> 이전 요청문',draft:'</pre><script>evil()</script> 이전 초안',status:'in-progress'})`;
+
+test('saved work keeps requests and drafts readable without scores or an analytical reuse claim',()=>{
+  const f=fixture();f.start();f.evaluate(`wp.value.history=[${savedWork},{...${savedWork},status:'completed'}]`);
+  const practice=f.evaluate('wpExercise()');
+  assert.match(practice,/현재 추천에 사용할 이전 검토·피드백은 없어요/);
+  assert.doesNotMatch(practice,/이전 검토·피드백을 사용했어요/);
+  f.action('history');const html=f.evaluate('wpPanel()');
+  assert.equal((html.match(/추천·평가에 사용하지 않음/g)||[]).length,2);
+  assert.match(html,/작성 중이던 내용/);assert.match(html,/완료한 실습의 작성물/);
+  assert.match(html,/내 요청문/);assert.match(html,/직접 작성한 내용/);
+  assert.match(html,/&lt;img src=x/);assert.match(html,/&lt;\/pre&gt;&lt;script&gt;/);
+  assert.doesNotMatch(html,/<img src=x|<script>|undefined|NaN|첫 근거 확인/);
+  f.evaluate(`wp.value.history.push({task:'research',at:'2026-10-03T00:00:00.000Z',correct:1,total:3,draft:'일반 완료 결과'})`);
+  assert.match(f.evaluate('wpHistory()'),/첫 근거 확인 1\/3/);
+});
+
+test('turning storage off preserves in-memory saved work and clear erases it only for the current account',()=>{
+  const f=fixture();f.emit('change',{dataset:{wpField:'save'},checked:true});f.start();
+  f.evaluate(`wp.value.history=[${savedWork}];wp.value.run.prompt='현재 작성 중 내용';wpSave()`);
+  const key='synk-workroom:ai-practice:v1:member-A',other='synk-workroom:ai-practice:v1:member-B';
+  f.storage.set(other,'other-account');assert.ok(f.storage.has(key));
+  f.emit('change',{dataset:{wpField:'save'},checked:false});
+  assert.equal(f.storage.has(key),false);assert.equal(f.wp.value.history.length,1);assert.equal(f.wp.value.run.prompt,'현재 작성 중 내용');
+  f.emit('change',{dataset:{wpField:'save'},checked:true});assert.ok(f.storage.has(key));
+  f.action('clear');assert.equal(f.storage.has(key),false);assert.equal(f.wp.value.history.length,0);assert.equal(f.wp.value.run,null);
+  assert.equal(f.storage.get(other),'other-account');
+});
+
+function syncTransport(f){
+  let current={revision:0,status:'empty',updatedAt:null,state:null};const requests=[];
+  f.context.fetch=async(path,options)=>{requests.push({path,...options});if(options.body){const body=JSON.parse(options.body);current={revision:current.revision+1,status:'active',updatedAt:new Date().toISOString(),state:body.state};}return {ok:true,status:200,json:async()=>JSON.parse(JSON.stringify(current))};};
+  return {requests,get remote(){return current;}};
+}
+function enableSync(f){
+  // The UI intentionally discards enable's Promise. Observe that same operation
+  // without estimating WebCrypto completion from event-loop iteration counts.
+  const sync=f.wp.sync,enable=sync.enable;let pending;
+  sync.enable=(...args)=>pending=enable(...args);
+  try{f.emit('change',{dataset:{wpField:'sync'},checked:true});assert.ok(pending&&typeof pending.then==='function');return pending;}
+  finally{sync.enable=enable;}
+}
+test('account sync opt-in is independent of device storage and does not upload before an actual profile',{timeout:10000},async()=>{
+  const f=fixture(),transport=syncTransport(f);f.evaluate('wpCloudEnsure()');assert.equal(transport.requests.length,0);
+  assert.match(f.evaluate('wpPanel()'),/회사 계정에 저장하고 다른 기기에서 이어가기/);await enableSync(f);
+  assert.equal(f.wp.value.save,false);assert.equal(transport.remote.status,'empty');assert.equal(f.wp.sync.view().phase,'waiting');f.start();await f.evaluate('wp.sync.refresh()');
+  assert.equal(transport.remote.state.profile.scope.personId,'member-A');assert.equal(transport.remote.state.save,true);assert.equal(f.storage.has('synk-workroom:ai-practice:v1:member-A'),false);
+  assert.equal(JSON.parse(f.storage.get('synk-workroom:ai-practice-sync:v1:member-A')).enabled,true);f.wp.sync.dispose();
+});
+test('turning device storage off keeps account sync on, while turning sync off stops later uploads',{timeout:10000},async()=>{
+  const f=fixture(),transport=syncTransport(f);f.start();f.evaluate('wpCloudEnsure()');await enableSync(f);
+  f.emit('change',{dataset:{wpField:'save'},checked:true});f.emit('change',{dataset:{wpField:'save'},checked:false});assert.equal(f.wp.sync.view().enabled,true);assert.equal(f.wp.value.save,false);
+  await f.evaluate('wp.sync.refresh()');const revision=transport.remote.revision;f.emit('change',{dataset:{wpField:'sync'},checked:false});f.emit('input',{dataset:{wpField:'prompt'},value:'이후에는 이 창에서만 수정하는 요청문입니다.'});await f.evaluate('wp.sync.refresh()');
+  assert.equal(transport.remote.revision,revision);assert.equal(f.wp.value.run.prompt,'이후에는 이 창에서만 수정하는 요청문입니다.');assert.equal(f.storage.has('synk-workroom:ai-practice:v1:member-A'),false);f.wp.sync.dispose();
+});
+
+test('the sync UI test waits for the actual hash completion even after many immediate turns',{timeout:10000},async t=>{
+  let release,started;
+  const gate=new Promise(resolve=>release=resolve),ready=new Promise(resolve=>started=resolve);
+  const f=fixture({crypto:{subtle:{async digest(...args){started();await gate;return webcrypto.subtle.digest(...args);}}}}),transport=syncTransport(f);
+  t.after(()=>{release();f.wp.sync?.dispose();});f.evaluate('wpCloudEnsure()');
+  let settled=false;const pending=enableSync(f).then(()=>{settled=true;});await ready;
+  for(let n=0;n<100;n++)await new Promise(resolve=>setImmediate(resolve));
+  assert.equal(settled,false);assert.equal(f.wp.sync.view().busy,true);assert.equal(transport.remote.status,'empty');
+  release();await pending;
+  assert.equal(f.wp.sync.view().busy,false);assert.equal(f.wp.sync.view().phase,'waiting');assert.equal(transport.requests.length,1);
 });

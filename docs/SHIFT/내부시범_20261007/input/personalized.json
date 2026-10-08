@@ -1,0 +1,12 @@
+{
+  "common": "common.json",
+  "order": [
+    "C3",
+    "C5",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "method": "Core.domain이 현재 요청의 명시 우선사항을 반영한 검토 순서. 모든 구간의 동일 판정 기준 유지.",
+  "decision": "atlas-decision.json"
+}

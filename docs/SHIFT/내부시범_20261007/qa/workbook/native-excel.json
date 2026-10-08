@@ -1,0 +1,380 @@
+{
+  "formulaErrors": [],
+  "unmeasuredInputCells": 1735,
+  "readOnly": true,
+  "checks": [
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "D8",
+      "expected": 1,
+      "name": "기존 실제 AI 시행"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "E8",
+      "expected": 1,
+      "name": "개인화 실제 AI 시행"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "D9",
+      "expected": 1,
+      "name": "기존 AI 과업 완료"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "E9",
+      "expected": 1,
+      "name": "개인화 AI 과업 완료"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.65,
+      "cell": "D10",
+      "expected": 1.65,
+      "name": "기존 AI 경과시간 99초"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.2833333333333334,
+      "cell": "E10",
+      "expected": 1.2833333333333334,
+      "name": "개인화 AI 경과시간 77초"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": -0.3666666666666665,
+      "cell": "F10",
+      "expected": -0.36666666666666664,
+      "name": "관찰 차이 정확히 22초"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "D11",
+      "expected": 0,
+      "name": "검수 오류 또는 입력확인 없음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E11",
+      "expected": 0,
+      "name": "검수 오류 또는 입력확인 없음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "D17",
+      "expected": 0,
+      "name": "검수 오류 또는 입력확인 없음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E17",
+      "expected": 0,
+      "name": "검수 오류 또는 입력확인 없음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D12",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E12",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "H8",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "I8",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D35",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D36",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D40",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E40",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D41",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "D42",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E45",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E48",
+      "expected": null,
+      "name": "미측정 결과 공란 유지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "미완료",
+      "cell": "D38",
+      "expected": "미완료",
+      "name": "원가 미측정 표시"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "집계",
+      "cell": "N7",
+      "expected": "집계",
+      "name": "실제 시행 집계 상태"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": null,
+      "cell": "K7",
+      "expected": null,
+      "name": "사람 전환 원자료 공란"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "집계",
+      "cell": "N8",
+      "expected": "집계",
+      "name": "실제 시행 집계 상태"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": null,
+      "cell": "K8",
+      "expected": null,
+      "name": "사람 전환 원자료 공란"
+    },
+    {
+      "sheet": "업무범위",
+      "passed": true,
+      "actual": null,
+      "cell": "B25",
+      "expected": null,
+      "name": "비용 한도 미확정"
+    },
+    {
+      "sheet": "업무범위",
+      "passed": true,
+      "actual": null,
+      "cell": "B26",
+      "expected": null,
+      "name": "실제 매출 미측정"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E18",
+      "expected": 0,
+      "name": "AI 시간 누락의 측정 분모"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E10",
+      "expected": null,
+      "name": "누락 시간이 0분으로 바뀌지 않음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "E18",
+      "expected": 1,
+      "name": "명시적 0분의 측정 분모"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E10",
+      "expected": 0,
+      "name": "명시적 0분 보존"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E19",
+      "expected": 0,
+      "name": "오류 누락의 별도 측정 분모"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": "",
+      "cell": "E11",
+      "expected": null,
+      "name": "오류 미측정은 오류 0이 아님"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "입력확인",
+      "cell": "N8",
+      "expected": "입력확인",
+      "name": "서로 다른 원고 버전 혼합 방지"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E8",
+      "expected": 0,
+      "name": "버전 불일치 시행 집계 제외"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "입력확인",
+      "cell": "N7",
+      "expected": "입력확인",
+      "name": "중복 시행 ID 첫 기록 표시"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "입력확인",
+      "cell": "N8",
+      "expected": "입력확인",
+      "name": "중복 시행 ID 둘째 기록 표시"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.0,
+      "cell": "E8",
+      "expected": 1,
+      "name": "실패는 시행 분모에 포함"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 0.0,
+      "cell": "E9",
+      "expected": 0,
+      "name": "실패는 완료로 계산하지 않음"
+    },
+    {
+      "sheet": "요약",
+      "passed": true,
+      "actual": 1.2833333333333334,
+      "cell": "E10",
+      "expected": 1.2833333333333334,
+      "name": "처음 실측값 복원 후 재계산"
+    },
+    {
+      "sheet": "시행기록",
+      "passed": true,
+      "actual": "집계",
+      "cell": "N8",
+      "expected": "집계",
+      "name": "복원한 시행은 정상 집계"
+    }
+  ],
+  "sourceSha256": "78fba4ec122fbf58e49436732946aebb59ab149233658a6c613ec06f1bf57636",
+  "sheets": [
+    "요약",
+    "업무범위",
+    "시행기록",
+    "원가기록",
+    "재사용기록",
+    "판단기록"
+  ],
+  "application": "Microsoft Excel",
+  "saved": false,
+  "humanTrialRun": false,
+  "clippedRows": [],
+  "status": "real-ai-run-values-and-in-memory-perturbations-verified",
+  "realCustomerTrialRun": false,
+  "validations": {
+    "costClassification": "Atlas 공통,전문 모듈,고객 설정·연결,제품 호스트,영업·지원,공통비 배분",
+    "trialResult": "완료,실패,중단,미측정",
+    "trialCustomer": "고객1,고객2",
+    "reuse": "그대로 재사용,수정하여 재사용,신규 개발"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "group":"SHIFT-INTERNAL-COPY-20261007",
+  "version":"copy-review-v1:83f0564f",
+  "date":"2026-10-07",
+  "customer1":"SYNK 내부 시범 · AI 수행",
+  "customer2":null,
+  "workflow":"현재 SHIFT 소개 원고 5구간의 사업 범위·준비 상태·성과 표현 검수",
+  "completedOutput":"5구간별 유지/수정 판정·정본 근거·필수 수정 여부가 있는 검수 결과",
+  "comparison":"같은 고정 원고·정본·6개 판정 기준·출력 구조. 기존은 원고 순서, 개인화는 Core.domain의 현재 명시 요청에 따른 검토 순서와 근거를 추가.",
+  "conditions":"같은 공식 Codex 하네스의 독립 AI 작업자 2명, 방식별 1회. 개인화는 추가 입력과 순서가 다름. 무작위 배정·동일 인간 반복시험이 아니며 추론/서비스 지연이 달라짐.",
+  "timing":"AI 첫 시각 확인 도구~결과 저장 직전 UTC. 입력 읽기·추론·도구 지연 포함. 배정 전 대기·대표 준비·후검증 제외. 사람 업무시간 아님.",
+  "errorDefinition":"사전 R1~R6 및 5구간 완료조건을 위반한 검수 결과의 실질 오류 수. 원고에서 찾은 문제 수가 아님. 사람 전환은 관측 대상 없음.",
+  "trials":[
+    {"id":"RUN-BASE-01","method":"기존","subject":"AI-BASE","startedAt":"2026-10-06T22:02:06Z","endedAt":"2026-10-06T22:03:45Z","minutes":1.65,"result":"완료","errorCount":0,"humanHandoff":null,"evidence":"RUN-BASE-01 · 고정 입력 5구간/6기준 검수 결과"},
+    {"id":"RUN-PERS-01","method":"개인화","subject":"AI-PERS","startedAt":"2026-10-06T22:02:15Z","endedAt":"2026-10-06T22:03:32Z","minutes":1.2833333333333334,"result":"완료","errorCount":0,"humanHandoff":null,"evidence":"RUN-PERS-01 · 고정 입력 5구간/6기준 검수 결과"}
+  ],
+  "qualityConclusion":"두 방식 모두 5구간 유지·완료, 검수 결과의 실질 오류 0. 추가적인 품질 이득은 이번 1회에서 관측하지 못함.",
+  "timeConclusion":"99초와 77초는 AI 경과시간 기록. 22초 차이를 인간 시간 절감·개인화 인과효과·모델 성능 우위로 일반화하지 않음.",
+  "scopeAcceptance":"AI 결과 검수 완료. 대표 인수·인간 사용성 확인·고객 합격 기준은 미확정.",
+  "support":"이번 내부 원고 검수 기록까지. 고객 운영·시스템 지원은 제공하지 않음.",
+  "rights":"현재 로컬 소개 원고와 정본만 사용. 학생/고객 기록·운영 DB·계정 정보 없음. 계정 저장·외부 게시 없음.",
+  "owner":"SYNK 내부 시범. 실행과 후검수는 Codex 작업자. 대표의 인수 확인은 미완료.",
+  "stop":"고정 입력의 한 번 비교로 종료. 가격·고객·실운영·배포는 확정하지 않음.",
+  "costStatus":"미완료",
+  "costConclusion":"모델 실제 청구액·대표 준비/검증 시간·시간단가 미측정. 원가와 매출 공란, 경제적 효과 판단 보류. 별도 유료 공급자 API 호출 없음.",
+  "reuseConclusion":"Core.domain 원본을 수정 없이 사용. 검수의 의미·후보·우선순위 정책은 SHIFT 내부 시범에 둠. 두 번째 고객 적용/재사용율 미측정.",
+  "nextDecision":"현재 소개 원고 유지. 이번 결과만으로 공통 Atlas 기능 추가·우월성·API 상품화를 정당화하지 않음. 사람의 실제 업무 시범은 별도로 필요.",
+  "evidenceMap":"SYNK 내부 시범 README의 RUN-BASE-01/RUN-PERS-01, 사전 protocol, 결과 검수표를 참조. 고객2/사람시간/만족도/비용은 미측정."
+}

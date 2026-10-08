@@ -1,0 +1,63 @@
+{
+  "at": "2026-10-06T20:42:59.747Z",
+  "checks": [
+    "device 1 sync and local saving start off",
+    "device 2 sync and local saving start off",
+    "opening practice with sync off makes no account-state requests",
+    "opt-in before first practice does not create a stored document",
+    "first practice activates account persistence without local draft storage",
+    "device B pulls device A request",
+    "device B keeps local save off after pulling account data",
+    "device B edit returns to device A",
+    "sync status updates preserve the active textarea and Korean composition",
+    "local save can be opted in independently of account sync",
+    "offline writing remains in the editor and opted-in local storage",
+    "concurrent offline edits create a choice without replacing either draft",
+    "conflict previews show both drafts and render stored markup as text",
+    "conflict controls and writing fit 390",
+    "conflict controls and writing fit 320",
+    "explicit local choice saves the offered local writing",
+    "chosen local writing reaches the other device",
+    "explicit remote choice loads the offered account writing",
+    "HTTP 409 exposes a fresh explicit choice and preserves the unsent local draft",
+    "completed writing and review results continue on the other device",
+    "explicit feedback returns to the first device",
+    "a new task continues with the prior completion and profile in the same account",
+    "deletion removes the remote body and clears the requesting device",
+    "stale device sees deletion and stops sync instead of resurrecting the record",
+    "a stale locally saved draft can reload without re-uploading the deleted account record",
+    "a fresh explicit opt-in may activate a new account revision",
+    "late old-session response cannot populate a different account",
+    "new account has its own empty remote state",
+    "no script or UI exceptions",
+    "all required assets load",
+    "no external service or paid AI requests"
+  ],
+  "errors": [],
+  "assetErrors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "company-sync-conflict-390.png",
+    "company-sync-conflict-320.png"
+  ],
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice-sync.js": "8815287d3f89927fcd6ce793e92aec95ce6324077b07a3d248bbdae3c59385ab",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.css": "df457e1783adbb630c22dfb6e1a2fcc085d270bdf9c30849df4b1530f638520d",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html": "f4c8b746fac6053bb3ec8c8e0dc5e2f634875fb261993e08d408ced4a6308b97",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "194de4359cbddb63d65747f400d8ee9aa3585a6f1e624c76b4c023813d20b45f",
+    "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs": "9542f62714b1b146d8347f17f44ef83a189031aa8a11926674f2a13105353a0f"
+  },
+  "boundaries": {
+    "syntheticOnly": true,
+    "paidCalls": 0,
+    "productionWrites": 0,
+    "isolatedBrowserContexts": 2,
+    "physicalDevices": 0
+  },
+  "browser": "154.0.8037.98",
+  "ok": true,
+  "temporaryDatabaseRemoved": true
+}

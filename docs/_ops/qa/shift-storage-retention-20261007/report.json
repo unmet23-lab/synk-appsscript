@@ -1,0 +1,125 @@
+{
+  "schema": "synk-shift-storage-retention-1",
+  "status": "local-code-and-browser-verified",
+  "completedDate": "2026-10-07",
+  "recordedAt": "2026-10-06T20:19:02.363Z",
+  "scope": "The two approved remaining SHIFT tasks: authored-work recovery after product version changes and unbiased retention of practice evaluation chains",
+  "changes": [
+    "제품 manifest 내용 지문과 검토/결과/순서 판본으로 저장 호환을 판별. 같은 판본의 엄격한 복원 검사는 유지",
+    "구형 문항/규칙의 원소유·모든 Core 세대·결정/완료/노출/결과 시간·수치 연결을 확인하고 작성물만 recovered-work로 복구",
+    "삭제된 업무 이름과 완료·작성중 본문을 보존. 구형 점수·답안·추천·피드백·평가·경험 기록은 현행 분석에 재사용하지 않음",
+    "정상 완료 최근20개와 분석 제외 보관본 최근21개를 독립 보관. 기존 완료20개+진행초안과 다음 새 실습까지 유지",
+    "원결정 시각순 최근20시도를 완료/중단/미노출 모두에 적용하고 전체 결정→노출→결과 체인을 함께 보관. 이후 정책판 필터",
+    "구판의 완료 평가 체인이 이미 누락됐으면 작성물을 유지하고 legacy-incomplete 범위를 안내해 새 실습부터 집계. 결과값 추정 없음",
+    "업무별 마지막 실제 노출 visits를 별도 유지. 평가 범위 밖 경험 유지, 미노출 제외, 원결정 제외/세대변경 반영",
+    "양쪽 UI에 복구 안내·삭제 업무 제목·원문 안전 표시·새 실습 저장/재복원 연결"
+  ],
+  "ownership": {
+    "genericAtlasFilesChanged": [],
+    "productCompatibilityModule": "experiences/shift-workbench/storage-upgrade.mjs",
+    "sharedStateOwner": "experiences/shift-workbench/model.mjs"
+  },
+  "verification": {
+    "automated": {
+      "files": [
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs",
+        "experiences/shift-workbench/retention.test.mjs",
+        "experiences/shift-workbench/storage-upgrade.test.mjs"
+      ],
+      "command": [
+        "node",
+        "--test",
+        "--test-reporter=tap",
+        "--test-concurrency=4",
+        "experiences/shift-workbench/model.test.mjs",
+        "experiences/shift-workbench/record-migration.test.mjs",
+        "experiences/shift-workbench/app.test.mjs",
+        "experiences/shift-workbench/server.test.mjs",
+        "tests/atlas-cross-product-boundaries.test.mjs",
+        "tests/atlas-personalization.test.js",
+        "tests/atlas-personalization-conflict.test.js",
+        "tests/atlas-outcomes.test.js",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-client.test.mjs",
+        "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice.test.mjs",
+        "experiences/shift-workbench/recommendation.test.mjs",
+        "experiences/shift-workbench/retention.test.mjs",
+        "experiences/shift-workbench/storage-upgrade.test.mjs"
+      ],
+      "finishedAt": "2026-10-06T20:17:40.5371092Z",
+      "counts": {
+        "fail": 0,
+        "pass": 188,
+        "cancelled": 0,
+        "tests": 188,
+        "skipped": 0,
+        "todo": 0
+      },
+      "exitCode": 0,
+      "startedAt": "2026-10-06T20:17:31.4996399Z"
+    },
+    "automatedLog": "regression.txt",
+    "newRegressionTests": 23,
+    "browser": {
+      "log": "browser/report.json",
+      "command": [
+        "node",
+        "docs/_ops/qa/shift-storage-retention-20261007/browser/verify.mjs"
+      ],
+      "checks": 31,
+      "ok": true,
+      "sourceHashMismatches": [],
+      "pageErrors": [],
+      "assetErrors": [],
+      "externalRequests": [],
+      "temporaryDatabaseRemoved": true
+    },
+    "targetedReview": "Read-only delegated design and baseline tests were preserved; their later implementation turns hit account limits. Root implemented and reviewed the final modules. Tests verify actual old/new module roundtrips, marker key ordering, source boundaries, removed tasks, unchanged legacy samples, whole attempted cohorts, legacy gaps, and visit ownership/time."
+  },
+  "sources": {
+    "experiences/shift-workbench/model.mjs": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+    "experiences/shift-workbench/storage-upgrade.mjs": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490",
+    "experiences/shift-workbench/storage-upgrade.test.mjs": "11fc9b9aaf433033cca98f17ca2c970028f52a6dae2b818a3579f54194d81719",
+    "experiences/shift-workbench/retention.test.mjs": "a8109e0dcb03ac025cbc671c1beeea4d85a033cb0b445ef0f4f7dded7a79c4d0",
+    "experiences/shift-workbench/app.mjs": "08de24bf4bf47c884e8da47c576d91297ef020f6c7c88f36dac7cfa7879d8d63",
+    "experiences/shift-workbench/app.test.mjs": "c9bc78491cc3bda2f9ca09cb8e97bcd3f09c2809c93f8e7960a6de436c36903c",
+    "experiences/shift-workbench/server.mjs": "e113f6519258d6f6addb3b0effc2b4e39e12cab5a9fe9424d22840be9357c59c",
+    "experiences/shift-workbench/README.md": "783d33c0302043b0df90c6092ad2e951e88a85e02324c143392bd4c9406eedf3",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js": "3bd8c1cd61eab65c0c86d9599c154095ec5ca369130747ff19816ce3591a91fb",
+    "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-client.test.mjs": "1527ed421b6c9fb3bf7ddaa59c79593c84af210bd6f2cbae8f0b827e9b9c80fa",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "d8f76267e8a8ffb078ebe7e1e778a782a2c596ba78664755187a505ce29c72f7",
+    "docs/_ops/qa/shift-storage-retention-20261007/browser/verify.mjs": "71d61d99dfc220bd737cb915b9c51e0f55e18a28ee72b9b3023eeea2e8b289c3"
+  },
+  "boundaries": {
+    "supportedStorageEnvelope": 1,
+    "supportedManifestFormat": 1,
+    "coreLogs": "Only event versions supported by the current official Core API; unsupported outer envelopes and broken source logs are rejected.",
+    "manifestAuthentication": false,
+    "documentLimits": {
+      "normalCompletions": 20,
+      "excludedWriting": 21
+    },
+    "evaluationLimit": 20,
+    "historicalEvaluation": "Current retained cohort only; records already lost in legacy saves are not reconstructed.",
+    "experience": "Only last verified display per task in the current personalization generation, with Core links.",
+    "deployment": false,
+    "productionDatabaseWrites": 0,
+    "paidAiCalls": 0,
+    "realUserLearningOrProductivityEffectVerified": false
+  },
+  "remaining": [
+    "실제 사용자 재방문/완료/새 자료 적용 효과 검증",
+    "사용자 요청에 따른 운영 적용과 공개 배포 검증"
+  ]
+}

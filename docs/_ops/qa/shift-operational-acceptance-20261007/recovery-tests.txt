@@ -1,0 +1,95 @@
+TAP version 13
+# Subtest: latest stopped workspace backup prepares only a new isolated copy and keeps originals byte-for-byte unchanged
+ok 1 - latest stopped workspace backup prepares only a new isolated copy and keeps originals byte-for-byte unchanged
+  ---
+  duration_ms: 4397.5309
+  type: 'test'
+  ...
+# Subtest: pre-deletion backup is rejected for deleted content, later edits and both DB changes before any copy
+ok 2 - pre-deletion backup is rejected for deleted content, later edits and both DB changes before any copy
+  ---
+  duration_ms: 1678.2085
+  type: 'test'
+  ...
+# Subtest: a matching pair of old snapshots establishes equality only and never independently proves latestness or allows traffic
+ok 3 - a matching pair of old snapshots establishes equality only and never independently proves latestness or allows traffic
+  ---
+  duration_ms: 2083.4911
+  type: 'test'
+  ...
+# Subtest: latest stopped baseline evidence is mandatory, identifies the exact snapshot and does not expose operator data
+ok 4 - latest stopped baseline evidence is mandatory, identifies the exact snapshot and does not expose operator data
+  ---
+  duration_ms: 967.7707
+  type: 'test'
+  ...
+# Subtest: missing and replaced keys reject before Store can create a replacement; no sensitive error reaches reports
+ok 5 - missing and replaced keys reject before Store can create a replacement; no sensitive error reaches reports
+  ---
+  duration_ms: 1003.7988
+  type: 'test'
+  ...
+# Subtest: deleted tombstone containing private payload is rejected even when both declared snapshots match
+ok 6 - deleted tombstone containing private payload is rejected even when both declared snapshots match
+  ---
+  duration_ms: 771.7628
+  type: 'test'
+  ...
+# Subtest: dangling and duplicated company/messenger identity relations reject complete snapshots
+ok 7 - dangling and duplicated company/messenger identity relations reject complete snapshots
+  ---
+  duration_ms: 1147.1753
+  type: 'test'
+  ...
+# Subtest: mixing the latest company DB with an older messenger DB is rejected
+ok 8 - mixing the latest company DB with an older messenger DB is rejected
+  ---
+  duration_ms: 1473.7893
+  type: 'test'
+  ...
+# Subtest: same physical snapshot cannot serve as its own independent restoration candidate
+ok 9 - same physical snapshot cannot serve as its own independent restoration candidate
+  ---
+  duration_ms: 839.7153
+  type: 'test'
+  ...
+# Subtest: altered attachment and media bytes reject despite matching database rows and file names
+ok 10 - altered attachment and media bytes reject despite matching database rows and file names
+  ---
+  duration_ms: 2785.9231
+  type: 'test'
+  ...
+# Subtest: foreign owner and changed revisions cannot pass with a complete backup marker
+ok 11 - foreign owner and changed revisions cannot pass with a complete backup marker
+  ---
+  duration_ms: 2524.0168
+  type: 'test'
+  ...
+# Subtest: incomplete marker, corrupt DB and missing local files cannot pass acceptance
+ok 12 - incomplete marker, corrupt DB and missing local files cannot pass acceptance
+  ---
+  duration_ms: 2925.5288
+  type: 'test'
+  ...
+# Subtest: existing and overlapping target paths reject without overwrite
+ok 13 - existing and overlapping target paths reject without overwrite
+  ---
+  duration_ms: 2906.5092
+  type: 'test'
+  ...
+# Subtest: CLI rejects stale restoration with exit 2 and only sanitized JSON, while preserving source hashes
+ok 14 - CLI rejects stale restoration with exit 2 and only sanitized JSON, while preserving source hashes
+  ---
+  duration_ms: 1449.213
+  type: 'test'
+  ...
+1..14
+# tests 14
+# suites 0
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 29167.7294
+

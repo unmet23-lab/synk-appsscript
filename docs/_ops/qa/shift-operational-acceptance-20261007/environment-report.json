@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "checkedAt": "2026-10-07",
+  "lastPublicHttpCheckUTC": "2026-10-06T21:37:31.971Z",
+  "status": "local-environment-inspected-operating-target-unselected",
+  "scope": "read-only environment and public HTTP metadata; no restart, login, deployment, installation, customer record read, paid AI call or environment change",
+  "userConfirmed": {
+    "operatingTarget": "unselected",
+    "firstCustomer": "unselected",
+    "secondCustomer": "unselected"
+  },
+  "runtimeAvailability": {
+    "node": { "available": true, "version": "24.18.0" },
+    "docker": {
+      "available": false,
+      "basis": "not found on PATH; standard Docker Desktop CLI path absent; Docker Windows service absent",
+      "actualImageBuildAndRun": "not-executed"
+    },
+    "podman": {
+      "available": false,
+      "basis": "not found on PATH; checked standard installation path and service absent"
+    },
+    "wsl": {
+      "available": true,
+      "version": "2.7.13.0",
+      "defaultGeneration": 2,
+      "installedDistributions": 0,
+      "runningDistributions": 0,
+      "linuxExecutionAvailable": false
+    },
+    "ssh": {
+      "available": true,
+      "version": "OpenSSH_for_Windows_9.5p2",
+      "localClientConfigExists": false,
+      "knownHostsExists": true,
+      "assignedOperationalDestination": false,
+      "remoteConnectionAttempted": false
+    },
+    "claudeCode": {
+      "available": true,
+      "version": "2.1.291",
+      "verification": "version command only",
+      "authenticationAndRequiredReviewModelAvailability": "not-checked",
+      "requiredReleaseReview": "claude-opus-5-5 with effort max",
+      "reviewInvoked": false,
+      "paidCallInvoked": false
+    }
+  },
+  "existingLocalHost": {
+    "kind": "existing personal local company workspace",
+    "companyUrl": "http://127.0.0.1:4191/",
+    "listenerHost": "127.0.0.1",
+    "processUsesCanonicalCompanyServerEntry": true,
+    "processCreatedAtLocal": "2026-10-06T21:20:24.462729+09:00",
+    "launcherPidMarkerMatchesListener": true,
+    "health": {
+      "httpStatus": 200,
+      "app": "synk-company",
+      "ok": true,
+      "ready": true,
+      "workspaceIntegration": true,
+      "version": 1
+    },
+    "legacyMessenger": {
+      "url": "http://127.0.0.1:4197/",
+      "sameListenerProcess": true,
+      "rootHttpStatus": 302,
+      "redirectLocation": "http://127.0.0.1:4191/?tab=messenger",
+      "healthService": "synk-workspace-redirect"
+    },
+    "previousPreviewPort4299": "no listener and no reachable health response",
+    "latestCandidateRuntimeVerified": false,
+    "publicHttpChecks": [
+      { "checkedAtUTC": "2026-10-06T21:37:31.901Z", "url": "http://127.0.0.1:4191/api/health", "status": 200 },
+      { "checkedAtUTC": "2026-10-06T21:37:31.957Z", "url": "http://127.0.0.1:4191/api/workroom-practice/state", "status": 401, "interpretation": "general anonymous API protection; does not prove latest route is loaded; response body not read" },
+      { "checkedAtUTC": "2026-10-06T21:37:31.962Z", "url": "http://127.0.0.1:4191/workroom-practice-sync.js", "status": 404, "interpretation": "observed missing response; does not establish executing backend version" },
+      {
+        "checkedAtUTC": "2026-10-06T21:37:31.971Z",
+        "url": "http://127.0.0.1:4191/workroom-practice.js",
+        "status": 200,
+        "httpBytes": 26406,
+        "httpSha256": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+        "candidateSource": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js",
+        "candidateSha256": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+        "currentStaticSourceMatches": true,
+        "interpretation": "read-only public script hash match; dynamic backend and complete deployment version are not established"
+      }
+    ],
+    "runtimeVersionCaveat": "process creation time and static-file hash do not prove the executing backend matches the prepared candidate; no backend version marker is available from the observed health response",
+    "physicalSecondDeviceAccessVerified": false,
+    "publicHttpsHostVerified": false
+  },
+  "localDataConfiguration": {
+    "companyDirectory": "docs/마케팅/온라인마케팅지도/engagement/company/data",
+    "companyDirectoryBasis": "official launcher fixes this directory; canonical entry and matching launcher PID marker confirmed; live process environment not inspected",
+    "companyDatabaseExists": true,
+    "companyEncryptionKeyExists": true,
+    "companyEncryptionKeyBytes": 32,
+    "integrationConfigExists": true,
+    "configuredMessengerDirectory": "tools/company-messenger/data",
+    "identityLinksCount": 1,
+    "legacyMessengerPort": 4197,
+    "priority": "explicit options -> existing integration configuration -> environment -> default",
+    "runtimeDirectoryCaveat": "configuration and launcher agreement were checked; no runtime DB handle or process environment proof was attempted",
+    "databaseContentsRead": false,
+    "keyContentsReadOrPublished": false,
+    "accountIdsOrCustomerInformationPublished": false
+  },
+  "operatingTarget": {
+    "selectionStatus": "unselected",
+    "httpsUrl": null,
+    "server": null,
+    "persistentDataLocation": null,
+    "requiredInputs": [
+      "operating server or current PC hosting decision",
+      "real HTTPS company address and proxy configuration",
+      "persistent company and messenger data locations",
+      "operational owner and maintenance time window",
+      "actual PC and phone for same-account acceptance"
+    ]
+  },
+  "canProceedWithoutTarget": [
+    "isolated packaged-source runtime regression",
+    "synthetic-account backup and restore rehearsal",
+    "business pilot comparison and actual cost measurement forms",
+    "second-customer reuse evidence contract and gate",
+    "read-only local readiness and deployment candidate checks"
+  ],
+  "notPerformed": [
+    "Docker or Linux image execution",
+    "runtime or cloud installation",
+    "live process restart or code deployment",
+    "real account login or mutation",
+    "operating database backup or recovery",
+    "physical PC/phone synchronization",
+    "new cloud, server, domain or paid AI selection",
+    "actual customer results or profitability measurement"
+  ],
+  "sourceDocuments": [
+    "docs/AI_운영원칙.md",
+    "docs/마케팅/온라인마케팅지도/engagement/company/README.md",
+    "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+    "docs/마케팅/온라인마케팅지도/engagement/company/start-company.ps1",
+    "docs/마케팅/온라인마케팅지도/engagement/company/launch.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+    "docs/_ops/qa/shift-release-preparation-20261007/README.md"
+  ]
+}

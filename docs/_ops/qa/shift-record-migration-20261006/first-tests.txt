@@ -1,0 +1,284 @@
+TAP version 13
+# Subtest: Core limits a short session and only receives actual declared settings
+ok 1 - Core limits a short session and only receives actual declared settings
+  ---
+  duration_ms: 17.1555
+  type: 'test'
+  ...
+# Subtest: different purpose and time change the actual practice scope
+ok 2 - different purpose and time change the actual practice scope
+  ---
+  duration_ms: 1.8394
+  type: 'test'
+  ...
+# Subtest: more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+ok 3 - more-practice feedback selects a deeper feasible practice, without forcing it just because time is available
+  ---
+  duration_ms: 7.7953
+  type: 'test'
+  ...
+# Subtest: wrong source is not credited even when the judgment matches
+ok 4 - wrong source is not credited even when the judgment matches
+  ---
+  duration_ms: 1.0563
+  type: 'test'
+  ...
+# Subtest: incomplete answers cannot complete the practice
+ok 5 - incomplete answers cannot complete the practice
+  ---
+  duration_ms: 2.0091
+  type: 'test'
+  ...
+# Subtest: unchanged sample and unconfirmed edits cannot masquerade as completion
+ok 6 - unchanged sample and unconfirmed edits cannot masquerade as completion
+  ---
+  duration_ms: 1.5739
+  type: 'test'
+  ...
+# Subtest: completion and explicit feedback use existing Core events exactly once
+ok 7 - completion and explicit feedback use existing Core events exactly once
+  ---
+  duration_ms: 2.3086
+  type: 'test'
+  ...
+# Subtest: missed evidence controls the next check order without declaring an ability
+ok 8 - missed evidence controls the next check order without declaring an ability
+  ---
+  duration_ms: 3.1366
+  type: 'test'
+  ...
+# Subtest: a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+ok 9 - a missed completeness check suggests a matching new task but never claims an absent focus in an explicitly chosen task
+  ---
+  duration_ms: 4.4184
+  type: 'test'
+  ...
+# Subtest: storage is opt in, failure is visible, and restart preserves only this scope
+ok 10 - storage is opt in, failure is visible, and restart preserves only this scope
+  ---
+  duration_ms: 6.3778
+  type: 'test'
+  ...
+# Subtest: tampered and oversized stored sessions are rejected
+ok 11 - tampered and oversized stored sessions are rejected
+  ---
+  duration_ms: 1.5702
+  type: 'test'
+  ...
+# Subtest: text output preserves literal user text while HTML rendering escapes it
+ok 12 - text output preserves literal user text while HTML rendering escapes it
+  ---
+  duration_ms: 1.0313
+  type: 'test'
+  ...
+# Subtest: company hosts use an explicit member scope for selection, completion, feedback and restore
+ok 13 - company hosts use an explicit member scope for selection, completion, feedback and restore
+  ---
+  duration_ms: 4.4813
+  type: 'test'
+  ...
+# Subtest: unobserved focus survives another successful task and the shown reason refers to its actual completion
+ok 14 - unobserved focus survives another successful task and the shown reason refers to its actual completion
+  ---
+  duration_ms: 9.7531
+  type: 'test'
+  ...
+# Subtest: conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+ok 15 - conflicting checks stay unresolved rather than becoming a fixed weakness or silently erased
+  ---
+  duration_ms: 4.8754
+  type: 'test'
+  ...
+# Subtest: legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+ok 16 - legacy missed summaries do not invent unpresented successes and expire after their declared lifetime
+  ---
+  duration_ms: 2.941
+  type: 'test'
+  ...
+# Subtest: decision, displayed practice and result are separate; no display or unanswered display is not failure
+ok 17 - decision, displayed practice and result are separate; no display or unanswered display is not failure
+  ---
+  duration_ms: 3.639
+  type: 'test'
+  ...
+# Subtest: restoring outcome records rejects another purpose and keeps the declared storage boundary
+not ok 18 - restoring outcome records rejects another purpose and keeps the declared storage boundary
+  ---
+  duration_ms: 5.4761
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\shift-workbench\\model.test.mjs:90:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /outside authorized/. Input:
+    
+    'Error: 다른 실습 또는 이후 개인화 세대의 기록이에요.'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: '다른 실습 또는 이후 개인화 세대의 기록이에요.'
+  stack: |-
+    generationOf (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:55:156)
+    checkRecordOwners (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:79:5)
+    validateEvaluationGenerations (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:119:3)
+    restore (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:382:3)
+    file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.test.mjs:94:21
+    getActual (node:assert:611:5)
+    strict.throws (node:assert:759:24)
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.test.mjs:94:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1325:25)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.test.mjs:94:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1325:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+    Test.postRun (node:internal/test_runner/test:1465:19)
+    Test.run (node:internal/test_runner/test:1390:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Subtest: restoring a summary verifies its actual completion, decision, task, time and presented checks
+ok 19 - restoring a summary verifies its actual completion, decision, task, time and presented checks
+  ---
+  duration_ms: 9.2652
+  type: 'test'
+  ...
+# Subtest: restoring outcome values and times agrees with the actual completed review
+ok 20 - restoring outcome values and times agrees with the actual completed review
+  ---
+  duration_ms: 5.8736
+  type: 'test'
+  ...
+# Subtest: 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+ok 21 - 25 practice roundtrips retain complete evaluable chains only while their review summaries remain
+  ---
+  duration_ms: 188.7478
+  type: 'test'
+  ...
+# Subtest: malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+ok 22 - malformed stored recommendation cannot select a nonexistent task or render foreign evidence
+  ---
+  duration_ms: 2.6478
+  type: 'test'
+  ...
+# Subtest: the ordering policy measures all initially reviewed checks, not only its first selected check
+ok 23 - the ordering policy measures all initially reviewed checks, not only its first selected check
+  ---
+  duration_ms: 1.9343
+  type: 'test'
+  ...
+# Subtest: excluding a completion removes its observations, cached explanation and next recommendation
+ok 24 - excluding a completion removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 7.7588
+  type: 'test'
+  ...
+# Subtest: excluding a decision removes its observations, cached explanation and next recommendation
+ok 25 - excluding a decision removes its observations, cached explanation and next recommendation
+  ---
+  duration_ms: 1.7937
+  type: 'test'
+  ...
+# Subtest: excluding a completion also removes its result from descriptive outcome accounting
+ok 26 - excluding a completion also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 1.4903
+  type: 'test'
+  ...
+# Subtest: excluding a decision also removes its result from descriptive outcome accounting
+ok 27 - excluding a decision also removes its result from descriptive outcome accounting
+  ---
+  duration_ms: 0.9588
+  type: 'test'
+  ...
+# Subtest: an already prepared screen stops explaining its order with subsequently excluded evidence
+ok 28 - an already prepared screen stops explaining its order with subsequently excluded evidence
+  ---
+  duration_ms: 1.7318
+  type: 'test'
+  ...
+# Subtest: a missing review module gives the prepared Korean notice instead of an internal adapter error
+ok 29 - a missing review module gives the prepared Korean notice instead of an internal adapter error
+  ---
+  duration_ms: 0.5398
+  type: 'test'
+  ...
+# Subtest: actual review delivery and results bind their outcome definition while old saves remain readable
+ok 30 - actual review delivery and results bind their outcome definition while old saves remain readable
+  ---
+  duration_ms: 2.902
+  type: 'test'
+  ...
+# Subtest: a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+ok 31 - a review withdrawal retains the actual source chain and cannot be injected as a saved revision
+  ---
+  duration_ms: 1.4679
+  type: 'test'
+  ...
+# Subtest: actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+ok 32 - actual LAB entry checks and SHIFT workroom reuse Core with distinct evidence and success contracts
+  ---
+  duration_ms: 31.5789
+  type: 'test'
+  ...
+# Subtest: actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+not ok 33 - actual products preserve host identity boundaries instead of merging the same synthetic person across brands
+  ---
+  duration_ms: 5.4712
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-cross-product-boundaries.test.mjs:64:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /authorized/. Input:
+    
+    'Error: 다른 실습 또는 이후 개인화 세대의 기록이에요.'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: '다른 실습 또는 이후 개인화 세대의 기록이에요.'
+  stack: |-
+    generationOf (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:55:156)
+    checkRecordOwners (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:79:5)
+    validateEvaluationGenerations (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:119:3)
+    practiceEvaluation (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/shift-workbench/model.mjs:128:3)
+    file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-cross-product-boundaries.test.mjs:76:21
+    getActual (node:assert:611:5)
+    strict.throws (node:assert:759:24)
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-cross-product-boundaries.test.mjs:76:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1325:25)
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-cross-product-boundaries.test.mjs:76:10)
+    Test.runInAsyncScope (node:async_hooks:227:14)
+    Test.run (node:internal/test_runner/test:1325:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+    Test.postRun (node:internal/test_runner/test:1465:19)
+    Test.run (node:internal/test_runner/test:1390:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+  ...
+# Subtest: withdrawal removes analytical use in each product without rewriting what was shown or answered
+ok 34 - withdrawal removes analytical use in each product without rewriting what was shown or answered
+  ---
+  duration_ms: 7.5679
+  type: 'test'
+  ...
+# Subtest: the existing generated LAB browser consumer executes its real item adapter
+ok 35 - the existing generated LAB browser consumer executes its real item adapter
+  ---
+  duration_ms: 28.1953
+  type: 'test'
+  ...
+1..35
+# tests 35
+# suites 0
+# pass 33
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 441.9508

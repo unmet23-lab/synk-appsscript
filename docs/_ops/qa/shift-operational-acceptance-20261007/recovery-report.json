@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "checkedAt": "2026-10-06T21:42:38.665Z",
+  "status": "synthetic-offline-recovery-acceptance-verified",
+  "scope": "synthetic backups created by existing backupWorkspace; no operating account or server touched",
+  "tests": {
+    "tests": 14,
+    "pass": 14,
+    "fail": 0,
+    "skipped": 0
+  },
+  "sources": [
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.mjs",
+      "sha256": "616a01208285a94b07eb449bf8fbefe9e2c9e2a696f28142068789e64656c2a6"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.test.mjs",
+      "sha256": "85f4d29112bd02d176b2b05302ebe9e4afe702e694171da838d2d7ac35589b2f"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs",
+      "sha256": "8a2bc547b9cf4b9733a99631dae68a4dacba361def5100fd96bc771c07b1eab8"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs",
+      "sha256": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "sha256": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef"
+    },
+    {
+      "path": "tools/company-messenger/server.mjs",
+      "sha256": "0695600da0d55155532b00e10d85b1078b495fc2cf1eaaa8294ed96e17316394"
+    },
+    {
+      "path": "docs/_ops/qa/shift-operational-acceptance-20261007/recovery-verify.mjs",
+      "sha256": "edc46e05265b86a8230bdff5e045aecf00daf080b93fa10bdc18c78de3b246c4"
+    }
+  ],
+  "sourceChangesDuringRun": [],
+  "testLog": {
+    "path": "recovery-tests.txt",
+    "sha256": "5a77d963af16b8171c4ee39106e30867c3411f490dfdcd0bc88008a1d74b7a15"
+  },
+  "verified": [
+    "latest complete stopped synthetic backup copied to a new directory only after acceptance",
+    "stale pre-deletion backup rejected with later edit/deletion and messenger changes",
+    "two independent identical historical copies report equality only, never independently verified latestness",
+    "exact same physical snapshot rejected",
+    "missing/incorrect key does not generate or overwrite a key",
+    "SQLite immutable read-only input preserves source files including WAL/SHM",
+    "complete markers, both DB logical rows, key readability and equality, identity links and local file bytes checked",
+    "reports and CLI errors omit account IDs, body, ciphertext, credentials and key hashes",
+    "existing/overlapping destinations rejected and no host auto-started"
+  ],
+  "notExecuted": [
+    "actual production deployment environment",
+    "actual live snapshot and stop evidence",
+    "physical PC/phone account verification",
+    "opening operating traffic"
+  ],
+  "boundaries": {
+    "latestnessIsExternalOperatorEvidence": true,
+    "latestnessIndependentlyVerified": false,
+    "productionTrafficAllowed": false,
+    "markerIsAdvisoryAndNotServerEnforced": true,
+    "serverAutoStarted": false,
+    "automaticDeletionReplayOrHistoricalMerge": false,
+    "atlasCommonEngineChanged": false
+  }
+}

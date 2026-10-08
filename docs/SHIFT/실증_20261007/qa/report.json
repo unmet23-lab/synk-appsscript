@@ -1,0 +1,230 @@
+{
+  "status": "local-measurement-workbook-verified-real-trials-not-run",
+  "verifiedAt": "2026-10-06T21:49:10.452Z",
+  "output": {
+    "path": "outputs/01a10c3d-cfe1-7c40-a1db-eea42c604fd6/shift-evidence-20261007/SHIFT_한업무_실증과_반복공급_20261007.xlsx",
+    "bytes": 44798,
+    "sha256": "a00eac64c7bcd08a5e981981d746fe89f98846ea9ceab900f33a59354ca59156"
+  },
+  "businessScope": {
+    "canonical": "docs/마케팅/SHIFT.md#shift-bm",
+    "sourceDate": "2026-10-06",
+    "actualCustomer1": null,
+    "actualWorkflow1": null,
+    "actualCustomer2": null,
+    "actualWorkflow2": null,
+    "actualMeasurements": null,
+    "contractPricingPeriodAcceptanceThresholds": "not-assumed"
+  },
+  "checks": {
+    "model": {
+      "passed": 73,
+      "total": 73,
+      "report": "qa/tests.json"
+    },
+    "nativeExcel": {
+      "passed": 52,
+      "total": 52,
+      "blankRealInputCells": 1797,
+      "formulaErrors": 0,
+      "clippedRows": 0,
+      "readOnly": true,
+      "saved": false,
+      "sourcePreservedByteForByte": true,
+      "report": "qa/native-excel.json"
+    },
+    "visual": {
+      "sheets": 6,
+      "ranges": 15,
+      "scale": 1,
+      "review": "complete",
+      "images": [
+        {
+          "sheet": "요약",
+          "range": "A1:J21",
+          "file": "요약-1.png",
+          "scale": 1,
+          "sha256": "b17ceff4838dc396b50949f40234bb814692a3c8386348f61fa1bd4e6a09cb1e",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "요약",
+          "range": "A23:F49",
+          "file": "요약-2.png",
+          "scale": 1,
+          "sha256": "1a645adcbce5afcd5f94e99fd8b26346226bcec34274aa3c8e0bd5f00cbd86bb",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "요약",
+          "range": "A52:J65",
+          "file": "요약-3.png",
+          "scale": 1,
+          "sha256": "cf9baa04c5a23bed9bd63cea36aa1da2a4cc73ec18c6c84800fcc5c7af641e87",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "업무범위",
+          "range": "A1:E15",
+          "file": "업무범위-1.png",
+          "scale": 1,
+          "sha256": "59ce0c79042871284ac4ec04845a74b4de17401ad3e96b1c5d571fec7a90c9e8",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "업무범위",
+          "range": "A16:E30",
+          "file": "업무범위-2.png",
+          "scale": 1,
+          "sha256": "7a255c86c05bae20a9f5a972c7105bc087d041767639ae117342db4ec1a7b170",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "시행기록",
+          "range": "A1:F13",
+          "file": "시행기록-1.png",
+          "scale": 1,
+          "sha256": "084afa5ccddc282c265c06060a0568095e01a2805c9af0ab7910bed0bdb2ff3b",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "시행기록",
+          "range": "G6:N13",
+          "file": "시행기록-2.png",
+          "scale": 1,
+          "sha256": "0685ca329786e6ffd2a75fb7a3a39b0d88954759a276f16c69cbcaa3f69e13e4",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "시행기록",
+          "range": "N6:U13",
+          "file": "시행기록-3.png",
+          "scale": 1,
+          "sha256": "c2b2ff2e5abe477649fd29ada081ea616e0eb1fb97cef3114e041b699c56b1c8",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "원가기록",
+          "range": "A1:F13",
+          "file": "원가기록-1.png",
+          "scale": 1,
+          "sha256": "87e8852aacf1514ff616a4459ee3fd79fac05e75958645b7fb32217140507095",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "원가기록",
+          "range": "G6:P13",
+          "file": "원가기록-2.png",
+          "scale": 1,
+          "sha256": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "원가기록",
+          "range": "A69:P72",
+          "file": "원가기록-3.png",
+          "scale": 1,
+          "sha256": "9501c0063545616f81d6957e8990f98f415a10830210dcd4d166e882be651415",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "재사용기록",
+          "range": "A1:E11",
+          "file": "재사용기록-1.png",
+          "scale": 1,
+          "sha256": "df9f8f0a3e7c357cae76c9696ac66dfe374de456cf07397f4b1f478445cfbf02",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "재사용기록",
+          "range": "F6:J11",
+          "file": "재사용기록-2.png",
+          "scale": 1,
+          "sha256": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "판단기록",
+          "range": "A1:E12",
+          "file": "판단기록-1.png",
+          "scale": 1,
+          "sha256": "2ce00ee2ee933e45a1ec3c2beca6fd2159918710022918b424ddc4ab0a275e35",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        },
+        {
+          "sheet": "판단기록",
+          "range": "A13:E19",
+          "file": "판단기록-2.png",
+          "scale": 1,
+          "sha256": "bcd89e3545d8ad298ca3fd48e3ec70b04f481a263a72115e80c231b65b56e335",
+          "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+        }
+      ]
+    }
+  },
+  "semantics": {
+    "failureAndAbortInCompletionDenominator": true,
+    "unmeasuredExcludedAndInvalidSeparate": true,
+    "metricSpecificMissingnessDenominators": true,
+    "explicitZeroDistinctFromMissing": true,
+    "comparisonPeriodAndVersionMatched": true,
+    "observationalDifferenceNotCausalEffect": true,
+    "missingFounderHourlyValueDoesNotBecomeZero": true,
+    "costCompletenessRequiredForBalances": true,
+    "economicAndCashLaborNotDoubleCounted": true,
+    "reuseCostReferenceCustomerAndResponsibilityScoped": true,
+    "reuseItemRatioNotCostOrComplexitySaving": true
+  },
+  "boundaries": {
+    "atlasCommonCodeChanged": false,
+    "existingBMArtifactsOverwritten": false,
+    "realCustomerTrialsRun": false,
+    "realEffectOrProfitabilityProven": false,
+    "productionOperationsRun": false,
+    "deployed": false,
+    "paidAIUsed": false,
+    "externalContact": false
+  },
+  "qaLabelLanguage": "ko",
+  "deliveryPreservedAfterLabelCorrection": true,
+  "qaFiles": [
+    {
+      "path": "qa/manifest.json",
+      "sha256": "19d8a8b47aa562c08cacbb4f921a2c78b7b5c1f04a62a4e7bfcedde7b355200a"
+    },
+    {
+      "path": "qa/tests.json",
+      "sha256": "c3070a66d93c9c2d18cde1ffcf996951809048b8678d7bc003e39e45377111ab"
+    },
+    {
+      "path": "qa/native-excel.json",
+      "sha256": "fdc3b5b03b6b79325c590b4d8b3f4201587b8c8c9c849ed9b0aac75c98305baf"
+    },
+    {
+      "path": "qa/errors.ndjson",
+      "sha256": "acc0111e19cf44d2753fc9ecd164bf1b27fbd65597463a25cf48bd1c65e90146"
+    },
+    {
+      "path": "qa/summary-inspect.ndjson",
+      "sha256": "ce39143bac291e5b8814ad1ce7d95c28cb841815078a52bb3f1740f801ff2d58"
+    }
+  ],
+  "sources": [
+    {
+      "path": "docs/SHIFT/실증_20261007/build.mjs",
+      "sha256": "72e50ae29dfb5fa1fc3d15d884e5b5e97a914a02b1d0d9f9c2d279084df370f2"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/verify-native.ps1",
+      "sha256": "be3b7f304ce88e820c075d0a4c747390aad3fdfe2fde2ebdb47fa3b3be7efa23"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/README.md",
+      "sha256": "36847b6d0da49c59f1f7b27170da2e157f7e3efb65c6ec18b4b1bce3ce502b0f"
+    },
+    {
+      "path": "docs/SHIFT/실증_20261007/finalize.mjs",
+      "sha256": "b5e4b986642827e29c9915a680f00d438ab6e7c29d9bfab37841c30f8a68d875"
+    }
+  ]
+}

@@ -1,0 +1,134 @@
+{
+  "reviewedAt": "2026-10-06T21:49:10.452Z",
+  "allSheets": [
+    "요약",
+    "업무범위",
+    "시행기록",
+    "원가기록",
+    "재사용기록",
+    "판단기록"
+  ],
+  "views": [
+    {
+      "sheet": "요약",
+      "range": "A1:J21",
+      "file": "요약-1.png",
+      "scale": 1,
+      "sha256": "b17ceff4838dc396b50949f40234bb814692a3c8386348f61fa1bd4e6a09cb1e",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "요약",
+      "range": "A23:F49",
+      "file": "요약-2.png",
+      "scale": 1,
+      "sha256": "1a645adcbce5afcd5f94e99fd8b26346226bcec34274aa3c8e0bd5f00cbd86bb",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "요약",
+      "range": "A52:J65",
+      "file": "요약-3.png",
+      "scale": 1,
+      "sha256": "cf9baa04c5a23bed9bd63cea36aa1da2a4cc73ec18c6c84800fcc5c7af641e87",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "업무범위",
+      "range": "A1:E15",
+      "file": "업무범위-1.png",
+      "scale": 1,
+      "sha256": "59ce0c79042871284ac4ec04845a74b4de17401ad3e96b1c5d571fec7a90c9e8",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "업무범위",
+      "range": "A16:E30",
+      "file": "업무범위-2.png",
+      "scale": 1,
+      "sha256": "7a255c86c05bae20a9f5a972c7105bc087d041767639ae117342db4ec1a7b170",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "시행기록",
+      "range": "A1:F13",
+      "file": "시행기록-1.png",
+      "scale": 1,
+      "sha256": "084afa5ccddc282c265c06060a0568095e01a2805c9af0ab7910bed0bdb2ff3b",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "시행기록",
+      "range": "G6:N13",
+      "file": "시행기록-2.png",
+      "scale": 1,
+      "sha256": "0685ca329786e6ffd2a75fb7a3a39b0d88954759a276f16c69cbcaa3f69e13e4",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "시행기록",
+      "range": "N6:U13",
+      "file": "시행기록-3.png",
+      "scale": 1,
+      "sha256": "c2b2ff2e5abe477649fd29ada081ea616e0eb1fb97cef3114e041b699c56b1c8",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "원가기록",
+      "range": "A1:F13",
+      "file": "원가기록-1.png",
+      "scale": 1,
+      "sha256": "87e8852aacf1514ff616a4459ee3fd79fac05e75958645b7fb32217140507095",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "원가기록",
+      "range": "G6:P13",
+      "file": "원가기록-2.png",
+      "scale": 1,
+      "sha256": "4c98ce6f132f7b625caad542401350e7407cd57c5cda0b508f40245e4128e018",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "원가기록",
+      "range": "A69:P72",
+      "file": "원가기록-3.png",
+      "scale": 1,
+      "sha256": "9501c0063545616f81d6957e8990f98f415a10830210dcd4d166e882be651415",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "재사용기록",
+      "range": "A1:E11",
+      "file": "재사용기록-1.png",
+      "scale": 1,
+      "sha256": "df9f8f0a3e7c357cae76c9696ac66dfe374de456cf07397f4b1f478445cfbf02",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "재사용기록",
+      "range": "F6:J11",
+      "file": "재사용기록-2.png",
+      "scale": 1,
+      "sha256": "c1e4f8bd3408fd7732c766906712087af618a807be113b69a09ecce4d6efde4e",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "판단기록",
+      "range": "A1:E12",
+      "file": "판단기록-1.png",
+      "scale": 1,
+      "sha256": "2ce00ee2ee933e45a1ec3c2beca6fd2159918710022918b424ddc4ab0a275e35",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    },
+    {
+      "sheet": "판단기록",
+      "range": "A13:E19",
+      "file": "판단기록-2.png",
+      "scale": 1,
+      "sha256": "bcd89e3545d8ad298ca3fd48e3ec70b04f481a263a72115e80c231b65b56e335",
+      "visualReview": "readable-inputs-and-headings-no-clipped-required-content"
+    }
+  ],
+  "scope": "Every worksheet, including input explanations and formulas. No real performance was measured."
+}

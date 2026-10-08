@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "startedAtUTC": "2026-10-06T21:41:23.449Z",
+  "finishedAtUTC": "2026-10-06T21:41:24.548Z",
+  "status": "local-missing-key-fail-closed-verified",
+  "tests": {
+    "total": 14,
+    "passed": 14,
+    "failed": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "files": [
+      "docs/마케팅/온라인마케팅지도/engagement/company/store-recovery-key.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/store-performance.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/server-auth-race.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs",
+      "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs"
+    ]
+  },
+  "sources": [
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "sha256": "093c954ef52d25905f637844d80c05ad1fd02405d241de5ea2c02532e4f2bbef",
+      "unchangedDuringRun": true
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-recovery-key.test.mjs",
+      "sha256": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907",
+      "unchangedDuringRun": true
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-performance.test.mjs",
+      "sha256": "b66f3e3a68f10e85002eaed793eb1be133373c34461316f2b64a64151eee8e4d",
+      "unchangedDuringRun": true
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-auth-race.test.mjs",
+      "sha256": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0",
+      "unchangedDuringRun": true
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/backup.test.mjs",
+      "sha256": "9b6eccb0481862bb78713c48f663b1d15de3852aacbfcb316d37e522b2230e53",
+      "unchangedDuringRun": true
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.test.mjs",
+      "sha256": "19de5cc4756e1726b5140575aefac6daf4dedb2c4ac068d21e88f53181f09468",
+      "unchangedDuringRun": true
+    }
+  ],
+  "scope": {
+    "companyStoreOnly": true,
+    "existingDatabaseRequiresOriginalKey": true,
+    "newEmptyDirectoryInitializationPreserved": true,
+    "missingKeyErrorCode": "SYNK_ENCRYPTION_KEY_MISSING",
+    "wrongBut32ByteKeyDetection": false,
+    "operatingDatabaseReadOrModified": false,
+    "liveRestart": false,
+    "paidCall": false
+  },
+  "meaningfulCases": [
+    "new nested directory initialization and reopen with original key",
+    "existing empty directory initialization and reopen",
+    "existing nonempty DB and missing key: repeated 3 starts refuse, no key created, DB/WAL/file hashes and mtimes unchanged",
+    "restoring original key after refusal reads original authored record and encrypted secret",
+    "even 0-byte existing DB refuses initialization without original key"
+  ],
+  "relatedRegressions": [
+    "prepared statements, encryption update/delete and token behavior",
+    "HTTP authentication revocation races using synthetic accounts",
+    "company and workspace backup preservation"
+  ],
+  "followup": {
+    "existingBackupMissingKeyCase": "root will update expected startup rejection; no generated replacement key and no HTTP login",
+    "existingBackupWrongKeyCase": "remains generic private read failure without plaintext or ciphertext"
+  },
+  "output": {
+    "path": "docs/_ops/qa/shift-operational-acceptance-20261007/key-safety-tests.txt",
+    "sha256": "ac0d4ed51ca8e05a916ae16124f83c0d096228b14e269f4783c389eab52b6060"
+  }
+}

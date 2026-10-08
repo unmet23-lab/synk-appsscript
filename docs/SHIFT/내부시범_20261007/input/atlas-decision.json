@@ -1,0 +1,430 @@
+{
+  "declarations": [
+    {
+      "id": "D1",
+      "field": "commonBoundary",
+      "value": true,
+      "text": "아틀라스엔진(초개인화 공동적용) + 앱이나 기능마다 기능 추가",
+      "meaning": "공통 개인화 능력과 전문 기능의 책임을 구분한다."
+    },
+    {
+      "id": "D2",
+      "field": "narrowScope",
+      "value": true,
+      "text": "shift의 사업 범위도 (bm) 이걸로 좁혀주고 추 후 api나 엔진 라이선스 상품으로 넓히는 순서로 가자.",
+      "meaning": "한 업무의 도입·운영에 집중한다."
+    },
+    {
+      "id": "D3",
+      "field": "laterLicensing",
+      "value": true,
+      "text": "shift의 사업 범위도 (bm) 이걸로 좁혀주고 추 후 api나 엔진 라이선스 상품으로 넓히는 순서로 가자.",
+      "meaning": "반복 공급 확인 뒤 API·라이선스로 확장한다."
+    }
+  ],
+  "policy": "중요도 2/1/1은 이번 검수의 제품 정책이며 사용자 능력·선호 강도·확률·효과를 측정한 값이 아니다. 현재 대화의 명시 요청만 사용하며 행동 이력·동의 프로필을 만들지 않는다.",
+  "decision": {
+    "version": "core-domain-1",
+    "contract": {
+      "id": "shift.internal-copy-review",
+      "version": "1",
+      "purpose": "review-order"
+    },
+    "scope": {
+      "domain": "SHIFT",
+      "workspace": "internal-copy-pilot-20261007",
+      "subject": "internal-requester"
+    },
+    "at": "2026-10-06T22:01:40.412Z",
+    "status": "ready",
+    "selected": {
+      "id": "C3",
+      "score": 3,
+      "reasons": [
+        {
+          "criterion": "common-boundary-first",
+          "field": "commonBoundary",
+          "value": true,
+          "candidateValue": true,
+          "contribution": 2,
+          "evidence": [
+            "D1"
+          ],
+          "status": "declared"
+        },
+        {
+          "criterion": "focused-service",
+          "field": "narrowScope",
+          "value": true,
+          "candidateValue": true,
+          "contribution": 1,
+          "evidence": [
+            "D2"
+          ],
+          "status": "declared"
+        },
+        {
+          "criterion": "stage-order",
+          "field": "laterLicensing",
+          "value": true,
+          "candidateValue": false,
+          "contribution": 0,
+          "evidence": [
+            "D3"
+          ],
+          "status": "declared"
+        }
+      ]
+    },
+    "ranked": [
+      {
+        "id": "C3",
+        "score": 3,
+        "reasons": [
+          {
+            "criterion": "common-boundary-first",
+            "field": "commonBoundary",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 2,
+            "evidence": [
+              "D1"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "focused-service",
+            "field": "narrowScope",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D2"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "stage-order",
+            "field": "laterLicensing",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D3"
+            ],
+            "status": "declared"
+          }
+        ]
+      },
+      {
+        "id": "C5",
+        "score": 2,
+        "reasons": [
+          {
+            "criterion": "common-boundary-first",
+            "field": "commonBoundary",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D1"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "focused-service",
+            "field": "narrowScope",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D2"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "stage-order",
+            "field": "laterLicensing",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D3"
+            ],
+            "status": "declared"
+          }
+        ]
+      },
+      {
+        "id": "C1",
+        "score": 1,
+        "reasons": [
+          {
+            "criterion": "common-boundary-first",
+            "field": "commonBoundary",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D1"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "focused-service",
+            "field": "narrowScope",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D2"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "stage-order",
+            "field": "laterLicensing",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D3"
+            ],
+            "status": "declared"
+          }
+        ]
+      },
+      {
+        "id": "C2",
+        "score": 1,
+        "reasons": [
+          {
+            "criterion": "common-boundary-first",
+            "field": "commonBoundary",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D1"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "focused-service",
+            "field": "narrowScope",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D2"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "stage-order",
+            "field": "laterLicensing",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D3"
+            ],
+            "status": "declared"
+          }
+        ]
+      },
+      {
+        "id": "C4",
+        "score": 1,
+        "reasons": [
+          {
+            "criterion": "common-boundary-first",
+            "field": "commonBoundary",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D1"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "focused-service",
+            "field": "narrowScope",
+            "value": true,
+            "candidateValue": true,
+            "contribution": 1,
+            "evidence": [
+              "D2"
+            ],
+            "status": "declared"
+          },
+          {
+            "criterion": "stage-order",
+            "field": "laterLicensing",
+            "value": true,
+            "candidateValue": false,
+            "contribution": 0,
+            "evidence": [
+              "D3"
+            ],
+            "status": "declared"
+          }
+        ]
+      }
+    ],
+    "excluded": [],
+    "understanding": {
+      "version": "core-domain-1",
+      "contract": {
+        "id": "shift.internal-copy-review",
+        "version": "1",
+        "purpose": "review-order"
+      },
+      "scope": {
+        "domain": "SHIFT",
+        "workspace": "internal-copy-pilot-20261007",
+        "subject": "internal-requester"
+      },
+      "at": "2026-10-06T22:01:40.412Z",
+      "fields": [
+        {
+          "id": "commonBoundary",
+          "status": "declared",
+          "value": true,
+          "usable": true,
+          "evidence": [
+            "D1"
+          ],
+          "independent": 0,
+          "agreement": null,
+          "alternatives": [],
+          "proposals": [],
+          "excluded": []
+        },
+        {
+          "id": "narrowScope",
+          "status": "declared",
+          "value": true,
+          "usable": true,
+          "evidence": [
+            "D2"
+          ],
+          "independent": 0,
+          "agreement": null,
+          "alternatives": [],
+          "proposals": [],
+          "excluded": []
+        },
+        {
+          "id": "laterLicensing",
+          "status": "declared",
+          "value": true,
+          "usable": true,
+          "evidence": [
+            "D3"
+          ],
+          "independent": 0,
+          "agreement": null,
+          "alternatives": [],
+          "proposals": [],
+          "excluded": []
+        }
+      ],
+      "needsCheck": [],
+      "calibrated": false
+    },
+    "snapshot": {
+      "candidates": [
+        {
+          "id": "C1",
+          "features": {
+            "commonBoundary": false,
+            "narrowScope": true,
+            "laterLicensing": false
+          }
+        },
+        {
+          "id": "C2",
+          "features": {
+            "commonBoundary": false,
+            "narrowScope": true,
+            "laterLicensing": false
+          }
+        },
+        {
+          "id": "C3",
+          "features": {
+            "commonBoundary": true,
+            "narrowScope": true,
+            "laterLicensing": false
+          }
+        },
+        {
+          "id": "C4",
+          "features": {
+            "commonBoundary": false,
+            "narrowScope": true,
+            "laterLicensing": false
+          }
+        },
+        {
+          "id": "C5",
+          "features": {
+            "commonBoundary": false,
+            "narrowScope": true,
+            "laterLicensing": true
+          }
+        }
+      ],
+      "contract": {
+        "id": "shift.internal-copy-review",
+        "version": "1",
+        "purpose": "review-order",
+        "fields": [
+          {
+            "id": "commonBoundary",
+            "kind": "boolean",
+            "maxAgeDays": 1
+          },
+          {
+            "id": "narrowScope",
+            "kind": "boolean",
+            "maxAgeDays": 1
+          },
+          {
+            "id": "laterLicensing",
+            "kind": "boolean",
+            "maxAgeDays": 1
+          }
+        ],
+        "criteria": [
+          {
+            "id": "common-boundary-first",
+            "field": "commonBoundary",
+            "feature": "commonBoundary",
+            "weight": 2
+          },
+          {
+            "id": "focused-service",
+            "field": "narrowScope",
+            "feature": "narrowScope",
+            "weight": 1
+          },
+          {
+            "id": "stage-order",
+            "field": "laterLicensing",
+            "feature": "laterLicensing",
+            "weight": 1
+          }
+        ]
+      },
+      "observations": [
+        "D1",
+        "D2",
+        "D3"
+      ]
+    },
+    "calibrated": false
+  }
+}

@@ -1,3 +1,4 @@
+import {productManifest,recoverProductUpgrade,validateRecoveredWork,workLabel} from './storage-upgrade.mjs';
 export const STORAGE_KEY = 'synk.shift.workbench.v1';
 export const SCOPE = Object.freeze({personId:'local-learner',productId:'shift',contextId:'workbench',domain:'SHIFT'});
 export const TASKS = Object.freeze({
@@ -41,42 +42,192 @@ export const PRACTICE_CONTRACT = Object.freeze({
 export const GOALS = {clarity:'핵심을 3줄 이내로 정리하기',work:'담당·할 일·확인 사항을 포함한 실행 초안 만들기',prepare:'초안과 함께 실제 사용 전 확인할 항목 적기'};
 export const escapeHTML = value => String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const now = () => new Date().toISOString();
-export function newState(){return {version:1,save:false,settings:{task:'meeting',goal:'clarity',minutes:5,support:'step'},profile:null,events:[],run:null,history:[],evaluation:{decisions:[],exposures:[],outcomes:[]}};}
+export function newState(){return {version:1,save:false,manifest:{...PRODUCT_MANIFEST},settings:{task:'meeting',goal:'clarity',minutes:5,support:'step'},profile:null,events:[],run:null,history:[],visits:[],retention:{version:'attempts-20-1',from:null,resetReason:null},evaluation:{decisions:[],exposures:[],outcomes:[]}};}
 const evaluationScope=(state,scope)=>({domain:scope.domain,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`,purpose:PRACTICE_CONTRACT.purpose});
-export const PRACTICE_POLICIES=Object.freeze([{id:'fixed-check-order',version:'1'},{id:'evidence-check-order',version:'1'}]);
+export const PRACTICE_POLICIES=Object.freeze([{id:'fixed-check-order',version:'1'},{id:'evidence-check-order',version:'2'}]);
+export const PRODUCT_MANIFEST=Object.freeze(productManifest(TASKS,{reviewVersion:PRACTICE_CONTRACT.version,outcomeVersion:'1',orderVersion:PRACTICE_POLICIES[1].version}));
+const LEGACY_POLICIES=[PRACTICE_POLICIES[0],{id:'evidence-check-order',version:'1'}];
+const knownPolicy=policy=>[...PRACTICE_POLICIES,...LEGACY_POLICIES].some(p=>p.id===policy?.id&&p.version===policy?.version);
+function evaluationForPolicies(evaluation,policies){
+  const decisions=evaluation.decisions.filter(d=>policies.some(p=>p.id===d.policy.id&&p.version===d.policy.version)),ids=new Set(decisions.map(d=>d.id));
+  const exposures=evaluation.exposures.filter(e=>ids.has(e.decisionId)),seen=new Set(exposures.map(e=>e.id));
+  return {decisions,exposures,outcomes:evaluation.outcomes.filter(o=>seen.has(o.exposureId))};
+}
 // The policy selects the first check in a practice. Its downstream outcome is the
 // fraction of all presented checks matched on their initial review, before hints.
 export function outcomeContract(state,scope=SCOPE){return {id:'shift-first-check-result',version:'1',scope:evaluationScope(state,scope),outcome:{id:'initial-review-match-ratio',kind:'numeric',range:[0,1],direction:'higher',windowMs:86400000}};}
+const savedWork=row=>['saved-work','recovered-work'].includes(row?.kind);
+export const isSavedWork=savedWork;
+export const historyLabel=row=>workLabel(row,TASKS);
+function keepHistory(rows){const keep=new Set([...rows.filter(savedWork).slice(-21),...rows.filter(row=>!savedWork(row)).slice(-20)]);return rows.filter(row=>keep.has(row));}
+const emptyEvaluation=()=>({decisions:[],exposures:[],outcomes:[]});
+function generationOf(owner,profile,scope,purpose=false){
+  const prefix=`p.${scope.productId}:c.${scope.contextId}:g.`,suffix=owner?.workspace?.slice(prefix.length);
+  if(!owner||owner.domain!==scope.domain||(purpose?owner.purpose!==PRACTICE_CONTRACT.purpose:owner.subject!==scope.personId)
+    ||!owner.workspace?.startsWith(prefix)||!/^(0|[1-9]\d*)$/.test(suffix)||!Number.isSafeInteger(Number(suffix))||Number(suffix)>profile.generation)throw new Error(purpose?'Temper outcomes: record outside authorized subject, workspace or purpose':'다른 실습 또는 이후 개인화 세대의 기록이에요.');
+  return Number(suffix);
+}
+function checkSavedWork(row,profile,scope){
+  if(row?.kind==='recovered-work')return validateRecoveredWork(row,profile,scope,now());
+  const keys=['kind','scope','sourceGeneration','task','at','prompt','draft','status'];
+  if(!row||Object.keys(row).length!==keys.length||keys.some(k=>!Object.hasOwn(row,k))||!savedWork(row)
+    ||!row.scope||Object.keys(row.scope).length!==4||Object.keys(scope).some(k=>row.scope[k]!==scope[k])
+    ||!Number.isSafeInteger(row.sourceGeneration)||row.sourceGeneration<0||row.sourceGeneration>=profile.generation
+    ||!Object.hasOwn(TASKS,row.task)||!['completed','in-progress'].includes(row.status)
+    ||!Number.isFinite(Date.parse(row.at))||Date.parse(row.at)>Date.parse(profile.updatedAt)
+    ||typeof row.prompt!=='string'||row.prompt.length>5000||typeof row.draft!=='string'||row.draft.length>10000)brokenHistory();
+}
+function checkRecordOwners(state,scope,at){
+  const profile=state.profile;
+  if(!profile||Object.keys(scope).some(k=>profile.scope?.[k]!==scope[k]))throw new Error('다른 실습의 기록이에요.');
+  const cutoff=Date.parse(at),evaluation=state.evaluation||emptyEvaluation();
+  if(!Number.isFinite(cutoff)||!Array.isArray(state.events)||!Array.isArray(state.history)
+    ||Object.keys(evaluation).some(k=>!['decisions','exposures','outcomes'].includes(k))
+    ||Object.values(evaluation).some(rows=>!Array.isArray(rows)))brokenHistory();
+  for(const event of state.events){
+    generationOf(event.scope,profile,scope);
+    // An analytical asOf may precede a later exclusion. Ownership validation
+    // must not reject that history; each reader applies its own time cutoff.
+    if(!Number.isFinite(Date.parse(event.at))||!Number.isFinite(Date.parse(event.recordedAt))||Date.parse(event.recordedAt)<Date.parse(event.at))brokenHistory();
+  }
+  for(const rows of Object.values(evaluation))for(const row of rows){
+    generationOf(row.scope,profile,scope,true);
+    if(row.subject!==scope.personId)throw new Error('다른 실습의 평가 기록이에요.');
+    if(row.contract&&(row.contract.id!=='shift-first-check-result'||row.contract.version!=='1'))throw new Error('실습 결과 contract가 일치하지 않아요.');
+  }
+  for(const row of state.history)if(savedWork(row))checkSavedWork(row,profile,scope);
+  checkVisits(state,scope);
+  if(state.retention&&(state.retention.version!=='attempts-20-1'||!(state.retention.from===null||Number.isFinite(Date.parse(state.retention.from)))||![null,'legacy-incomplete'].includes(state.retention.resetReason)))brokenHistory();
+}
+function checkVisits(state,scope){
+  if(state.visits===undefined)return;
+  if(!Array.isArray(state.visits)||state.visits.length>Object.keys(TASKS).length||new Set(state.visits.map(v=>v.task)).size!==state.visits.length)brokenHistory();
+  for(const visit of state.visits){
+    const decision=state.events.find(e=>e.id===visit.decisionId&&e.type==='decision.made');
+    generationOf(visit.scope,state.profile,scope);
+    if(!Object.hasOwn(TASKS,visit.task)||!decision||decision.variant?.split('.')[0]!==visit.task||decision.scope.workspace!==visit.scope.workspace
+      ||Object.keys(visit).length!==6||!Number.isFinite(Date.parse(visit.at))||Date.parse(visit.at)<Date.parse(decision.at)
+      ||!Number.isFinite(Date.parse(visit.recordedAt))||Date.parse(visit.recordedAt)<Date.parse(visit.at)||visit.kind!=='displayed')brokenHistory();
+    const exposure=state.evaluation?.exposures.find(e=>e.decisionId===`review.${visit.decisionId}`);
+    if(exposure&&(exposure.at!==visit.at||(exposure.recordedAt??exposure.at)!==visit.recordedAt))brokenHistory();
+  }
+}
+// Keep authored work independently of analytical permission. Never rebind an old
+// decision/result to a new generation or relax the live lineage checks to keep it.
+export function reconcileRecords(state,scope=state.profile?.scope||SCOPE,at=now()){
+  if(!state.profile)return state;
+  checkRecordOwners(state,scope,at);
+  checkEvaluationLineage(state);
+  if(state.run){
+    const decision=state.events.find(e=>e.type==='decision.made'&&e.id===state.run.decisionId);
+    if(!decision||!Object.hasOwn(TASKS,state.run.task))brokenHistory();
+    const profile={...state.profile,generation:generationOf(decision.scope,state.profile,scope)};
+    checkSavedDecision(state.run.focusDecision,TASKS[state.run.task].checks.map(c=>c.id),profile,scope);
+    checkSavedDecision(state.run.nextDecision,Object.keys(TASKS).filter(id=>id!==state.run.task),profile,scope);
+    const plan=state.run.focusDecision?.practicePlan,first=TASKS[state.run.task].checks.find(c=>c.id===state.run.checkIds[0]);
+    if(plan&&(plan.selectedId!==first?.id||(plan.focus&&plan.focus!==first.focus)))brokenHistory();
+    const metric=state.evaluation?.decisions.find(d=>d.id===state.run.reviewDecisionId),expectedPolicy=PRACTICE_POLICIES[plan?.focus?1:0];
+    if(plan&&metric&&(metric.policy.id!==expectedPolicy.id||metric.policy.version!==expectedPolicy.version))brokenHistory();
+    if(plan){
+      const checks=plan.focus?orderChecks(TASKS[state.run.task].checks,plan.selectedId,plan.focus):TASKS[state.run.task].checks;
+      if(!sameList(state.run.checkIds,checks.slice(0,state.run.variant==='quick'?2:3).map(c=>c.id)))brokenHistory();
+    }
+    for(const cached of [state.run.focusDecision,state.run.nextDecision]){
+      const cachedPlan=cached?.practicePlan;if(!cachedPlan?.focus)continue;
+      for(const h of state.history.filter(h=>!savedWork(h)&&h.review)){
+        const {completion}=historyLineage(state,h),check=h.review.find(c=>cachedPlan.evidence.includes(`${completion.id}.${c.id}`));
+        if(check&&(check.correct||check.focus!==cachedPlan.focus||Date.parse(completion.at)>Date.parse(cachedPlan.at)))brokenHistory();
+      }
+    }
+  }
+  const active=event=>state.profile.consent&&generationOf(event.scope,state.profile,scope)===state.profile.generation;
+  const events=state.events.filter(active),ids=new Set(events.map(e=>e.id));
+  const archive=(row,status,decision)=>({kind:'saved-work',scope:{...scope},sourceGeneration:generationOf(decision.scope,state.profile,scope),task:row.task,at:status==='completed'?row.at:row.startedAt,prompt:row.prompt,draft:row.draft,status});
+  const visits=(state.visits||[]).filter(v=>state.profile.consent&&generationOf(v.scope,state.profile,scope)===state.profile.generation&&!events.some(e=>e.type==='record.excluded'&&e.targetId===v.decisionId));
+  let changed=events.length!==state.events.length||visits.length!==(state.visits||[]).length;
+  const history=state.history.map(row=>{
+    if(savedWork(row))return row;
+    const {completion,decision}=historyLineage(state,row);
+    if(ids.has(completion.id))return row;
+    changed=true;const copy=archive(row,'completed',decision);checkSavedWork(copy,state.profile,scope);return copy;
+  });
+  let run=state.run;
+  if(run&&!ids.has(run.decisionId)){
+    const decision=state.events.find(e=>e.type==='decision.made'&&e.id===run.decisionId);
+    if(!decision||decision.experienceId!=='shift-workbench'||decision.variant!==`${run.task}.${run.variant}`)brokenHistory();
+    if(run.step==='practice'&&(run.prompt||run.draft!==TASKS[run.task]?.sample)){
+      const copy=archive(run,'in-progress',decision);checkSavedWork(copy,state.profile,scope);history.push(copy);
+    }
+    run=null;changed=true;
+  }
+  const evaluation=state.evaluation||emptyEvaluation(),decisions=evaluation.decisions.filter(row=>state.profile.consent&&generationOf(row.scope,state.profile,scope,true)===state.profile.generation),kept=new Set(decisions.map(row=>row.id));
+  const exposures=evaluation.exposures.filter(row=>kept.has(row.decisionId)),seen=new Set(exposures.map(row=>row.id));
+  const outcomes=evaluation.outcomes.filter(row=>seen.has(row.exposureId));
+  changed||=decisions.length!==evaluation.decisions.length||exposures.length!==evaluation.exposures.length||outcomes.length!==evaluation.outcomes.length;
+  if(!changed)return state;
+  const defaults=newState().settings,settings={task:state.settings.task,...Object.fromEntries(['goal','minutes','support'].map(k=>[k,state.profile.values[k]??defaults[k]]))};
+  return {...state,settings,events,visits,history:keepHistory(history),run,evaluation:{decisions,exposures,outcomes}};
+}
+function validateEvaluationGenerations(state,temper,at,scope){
+  checkRecordOwners(state,scope,at);checkEvaluationLineage(state);
+  const evaluation=state.evaluation||emptyEvaluation(),groups=new Set(Object.values(evaluation).flat().map(row=>row.scope.workspace));
+  for(const workspace of groups){
+    const contract=outcomeContract(state,scope);contract.scope.workspace=workspace;
+    const group=Object.fromEntries(Object.entries(evaluation).map(([key,rows])=>[key,rows.filter(row=>row.scope.workspace===workspace)]));
+    for(const policies of [LEGACY_POLICIES,PRACTICE_POLICIES])temper.evaluateOutcomes({contract,...evaluationForPolicies(group,policies),policies,subjects:[scope.personId],asOf:at});
+  }
+}
 export function practiceEvaluation(state,temper,at=now(),scope=SCOPE){
   if(!state.profile||!temper?.evaluateOutcomes)return null;
-  const input={contract:outcomeContract(state,scope),...(state.evaluation||{decisions:[],exposures:[],outcomes:[]}),policies:PRACTICE_POLICIES,subjects:[scope.personId],asOf:at};
+  validateEvaluationGenerations(state,temper,at,scope);
+  state=reconcileRecords(state,scope,at);
+  state=upgradeRetention(state,at,scope);
+  const evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
+  // Product-owned source events are the only source of withdrawals. Stored
+  // arbitrary evaluator revisions must not override the actual reviewed work.
+  if(Object.keys(evaluation).some(key=>!['decisions','exposures','outcomes'].includes(key)))brokenHistory();
+  const input={contract:outcomeContract(state,scope),...evaluationForPolicies(evaluation,PRACTICE_POLICIES),policies:PRACTICE_POLICIES,subjects:[scope.personId],asOf:at};
   // Validate every supplied record before excluding analytical descendants; a
   // withdrawal must not hide malformed or foreign records from boundary checks.
-  const report=temper.evaluateOutcomes(input);checkEvaluationLineage(state);
-  const retained=retainedEvaluation(state);
-  const events=ownedEvents(state,scope),excluded=new Set(events.filter(e=>e.type==='record.excluded').map(e=>e.targetId));
-  if(!excluded.size&&retained.decisions.length===input.decisions.length)return report;
+  temper.evaluateOutcomes(input);checkEvaluationLineage(state);
+  const retained=evaluationForPolicies(retainedEvaluation(state,at),PRACTICE_POLICIES);
+  const events=ownedEvents(state,scope).filter(e=>Date.parse(e.at)<=Date.parse(at)&&Date.parse(e.recordedAt)<=Date.parse(at));
+  const exclusions=events.filter(e=>e.type==='record.excluded'),excluded=new Set(exclusions.map(e=>e.targetId));
   const removedDecisions=new Set(events.filter(e=>e.type==='decision.made'&&excluded.has(e.id)).map(e=>`review.${e.id}`));
-  const removedResults=new Set(events.filter(e=>e.type==='experience.completed'&&excluded.has(e.id)).map(e=>`review.${e.decisionId}`));
   const decisions=retained.decisions.filter(row=>!removedDecisions.has(row.id)),ids=new Set(decisions.map(row=>row.id));
-  const exposures=retained.exposures.filter(row=>ids.has(row.decisionId)),validResults=new Set(exposures.filter(row=>!removedResults.has(row.decisionId)).map(row=>row.id));
-  const outcomes=retained.outcomes.filter(row=>validResults.has(row.exposureId));
-  return temper.evaluateOutcomes({...input,decisions,exposures,outcomes});
+  // Older saves lack record-level contract references. Only after their scope,
+  // decision and completed review have been checked, bind the evaluation copy.
+  // The original saved records and occurrence times remain unchanged.
+  const contract={id:input.contract.id,version:input.contract.version};
+  const exposures=retained.exposures.filter(row=>ids.has(row.decisionId)).map(row=>({...row,contract:row.contract||{...contract}})),seen=new Map(exposures.map(row=>[row.id,row]));
+  const outcomes=retained.outcomes.filter(row=>seen.has(row.exposureId)).map(row=>({...row,contract:row.contract||{...contract}}));
+  const revisions=[];
+  for(const outcome of outcomes){
+    const decisionId=seen.get(outcome.exposureId).decisionId;
+    const completion=events.find(e=>e.type==='experience.completed'&&`review.${e.decisionId}`===decisionId);
+    const source=exclusions.find(e=>e.targetId===completion?.id);
+    if(source)revisions.push({id:`withdraw.${source.id}`,subject:outcome.subject,scope:{...outcome.scope},contract:{...contract},at:source.at,recordedAt:source.recordedAt,targetId:outcome.id,action:'withdraw',sourceRef:source.id});
+  }
+  const report=temper.evaluateOutcomes({...input,decisions,exposures,outcomes,revisions,strictProvenance:true});
+  return {...report,coverage:{version:'attempts-20-1',limit:20,selection:'decision-time',from:state.retention?.from||null,resetReason:state.retention?.resetReason||null,oldest:retained.decisions[0]?.at||null,newest:retained.decisions.at(-1)?.at||null,historicalScope:'retained-window-only'}};
 }
 export function recordPracticeExposure(state,at=now(),scope=SCOPE){
+  state=reconcileRecords(state,scope,at);
   if(!state.run||state.run.step!=='practice')return state;
   const evaluation=state.evaluation,decision=evaluation?.decisions.find(d=>d.id===state.run.reviewDecisionId);
   if(!decision||evaluation.exposures.some(e=>e.decisionId===decision.id))return state;
   if(decision.subject!==scope.personId||JSON.stringify(decision.scope)!==JSON.stringify(evaluationScope(state,scope))||Date.parse(at)<Date.parse(decision.at))throw new Error('다른 실습의 화면 기록이에요.');
-  return {...state,evaluation:{...evaluation,exposures:[...evaluation.exposures,{id:`seen.${decision.id}`,subject:scope.personId,scope:{...decision.scope},at,decisionId:decision.id,candidateId:decision.selectedId}]}};
+  const visit={kind:'displayed',task:state.run.task,decisionId:state.run.decisionId,scope:{...state.events.find(e=>e.id===state.run.decisionId).scope},at,recordedAt:at};
+  return {...state,visits:[...(state.visits||[]).filter(v=>v.task!==visit.task),visit],evaluation:{...evaluation,exposures:[...evaluation.exposures,{id:`seen.${decision.id}`,subject:scope.personId,scope:{...decision.scope},contract:{...decision.contract},at,decisionId:decision.id,candidateId:decision.selectedId}]}};
 }
 function ownedEvents(state,scope){
   if(!state.profile?.consent)return [];
   const owned={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`};
   return state.events.filter(e=>Object.keys(owned).every(key=>e.scope?.[key]===owned[key]));
 }
-function effectiveCompletions(state,scope){
-  const events=ownedEvents(state,scope);
+const recordedBy=(event,at)=>Date.parse(event.at)<=Date.parse(at)&&Date.parse(event.recordedAt??event.at)<=Date.parse(at);
+function effectiveCompletions(state,scope,at=now()){
+  const events=ownedEvents(state,scope).filter(e=>recordedBy(e,at));
   const excluded=new Set(events.filter(e=>e.type==='record.excluded').map(e=>e.targetId));
   const decisions=new Set(events.filter(e=>e.type==='decision.made'&&!excluded.has(e.id)).map(e=>e.id));
   return events.filter(e=>e.type==='experience.completed'&&!excluded.has(e.id)&&decisions.has(e.decisionId));
@@ -94,7 +245,7 @@ function historyLineage(state,h){
     const metric=state.evaluation?.decisions.find(d=>d.id===`review.${decision.id}`);
     if(metric){
       const first=task.checks.find(c=>c.id===metric.selectedId);if(!first)brokenHistory();
-      const checks=[...task.checks];if(metric.policy.id==='evidence-check-order')checks.sort((a,b)=>Number(b.focus===first.focus)-Number(a.focus===first.focus));
+      let checks=[...task.checks];if(metric.policy.id==='evidence-check-order')checks=metric.policy.version==='1'?checks.sort((a,b)=>Number(b.focus===first.focus)-Number(a.focus===first.focus)):orderChecks(checks,first.id,first.focus);
       if(!sameList(h.review.map(c=>c.id),checks.slice(0,count).map(c=>c.id)))brokenHistory();
     }
     if(state.run?.decisionId===decision.id){const checked=evaluate(state.run);if(!sameList(h.review.map(c=>c.id),state.run.checkIds)||h.review.some((c,i)=>c.correct!==checked[i].correct))brokenHistory();}
@@ -102,15 +253,22 @@ function historyLineage(state,h){
   return {summary:h,completion,decision};
 }
 function checkEvaluationLineage(state){
-  const lineage=state.history.map(h=>historyLineage(state,h)),evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
+  const lineage=state.history.filter(h=>!savedWork(h)).map(h=>historyLineage(state,h)),evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
   const decisions=new Map();
   for(const metric of evaluation.decisions){
     const decision=state.events.find(e=>e.type==='decision.made'&&`review.${e.id}`===metric.id),task=TASKS[String(decision?.variant||'').split('.')[0]];
-    if(!decision||decision.experienceId!=='shift-workbench'||!task||metric.at!==decision.at||!sameList(metric.candidateIds,task.checks.map(c=>c.id)))brokenHistory();
+    if(!decision||decision.experienceId!=='shift-workbench'||!task||metric.at!==decision.at||!sameList(metric.candidateIds,task.checks.map(c=>c.id))
+      ||!task.checks.some(c=>c.id===metric.selectedId)||!knownPolicy(metric.policy))brokenHistory();
     const summary=lineage.find(row=>row.decision.id===decision.id)?.summary;
     if(summary?.review&&metric.selectedId!==summary.review[0].id)brokenHistory();
     if(state.run?.decisionId===decision.id&&metric.selectedId!==state.run.checkIds[0])brokenHistory();
     decisions.set(metric.id,decision);
+  }
+  for(const exposure of evaluation.exposures){
+    const parent=evaluation.decisions.find(row=>row.id===exposure.decisionId);
+    if(!parent||exposure.candidateId!==parent.selectedId||exposure.subject!==parent.subject||exposure.scope?.workspace!==parent.scope?.workspace
+      ||!Number.isFinite(Date.parse(exposure.at))||Date.parse(exposure.at)<Date.parse(parent.at)
+      ||Date.parse(exposure.recordedAt??exposure.at)<Date.parse(parent.recordedAt??parent.at))brokenHistory();
   }
   for(const outcome of evaluation.outcomes){
     const exposure=evaluation.exposures.find(e=>e.id===outcome.exposureId),decision=decisions.get(exposure?.decisionId);
@@ -122,70 +280,126 @@ function checkEvaluationLineage(state){
     if(summary&&outcome.value!==summary.correct/summary.total)brokenHistory();
   }
 }
-function retainedEvaluation(state){
+function retainedEvaluation(state,at=now()){
   const evaluation=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
   const completed=new Set(state.events.filter(e=>e.type==='experience.completed').map(e=>`review.${e.decisionId}`));
-  const summarized=new Set(state.history.map(h=>`review.${historyLineage(state,h).decision.id}`));
-  // A completed result leaves with its detailed summary. Keep its entire
-  // analytical chain together so deletion cannot turn it into a missing result.
-  const decisions=evaluation.decisions.filter(row=>!completed.has(row.id)||summarized.has(row.id)),ids=new Set(decisions.map(row=>row.id));
+  const summarized=new Set(state.history.filter(h=>!savedWork(h)).map(h=>`review.${historyLineage(state,h).decision.id}`));
+  // Select one outcome-independent cohort before filtering policy versions.
+  // A decision and all its analytical descendants enter and leave together.
+  const attempts=state.events.filter(e=>e.type==='decision.made'&&e.experienceId==='shift-workbench'&&recordedBy(e,at)&&(!state.retention?.from||Date.parse(e.at)>=Date.parse(state.retention.from)))
+    .sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||Date.parse(a.recordedAt)-Date.parse(b.recordedAt)||a.id.localeCompare(b.id)).slice(-20);
+  const cohort=new Set(attempts.map(e=>`review.${e.id}`));
+  const decisions=evaluation.decisions.filter(row=>cohort.has(row.id)&&(!completed.has(row.id)||summarized.has(row.id))).sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||a.id.localeCompare(b.id)),ids=new Set(decisions.map(row=>row.id));
   const exposures=evaluation.exposures.filter(row=>ids.has(row.decisionId)),seen=new Set(exposures.map(row=>row.id));
   return {decisions,exposures,outcomes:evaluation.outcomes.filter(row=>seen.has(row.exposureId))};
 }
-export function practiceObservations(state,scope=SCOPE){
+function upgradeRetention(state,at,scope){
+  if(state.retention)return state;
+  const visits=[];
+  for(const exposure of state.evaluation.exposures){
+    const decision=state.events.find(e=>`review.${e.id}`===exposure.decisionId),task=decision.variant.split('.')[0];
+    const visit={kind:'displayed',task,decisionId:decision.id,scope:{...decision.scope},at:exposure.at,recordedAt:exposure.recordedAt??exposure.at};
+    const index=visits.findIndex(v=>v.task===task);if(index<0)visits.push(visit);else if(Date.parse(visits[index].at)<Date.parse(visit.at))visits[index]=visit;
+  }
+  const attempts=ownedEvents(state,scope).filter(e=>e.type==='decision.made'&&e.experienceId==='shift-workbench').sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||a.id.localeCompare(b.id)).slice(-20);
+  const complete=new Set(state.history.filter(h=>!savedWork(h)).map(h=>historyLineage(state,h).decision.id));
+  const incomplete=attempts.some(e=>!state.evaluation.decisions.some(d=>d.id===`review.${e.id}`)||(state.events.some(c=>c.type==='experience.completed'&&c.decisionId===e.id)&&!complete.has(e.id)));
+  return {...state,visits,retention:{version:'attempts-20-1',from:incomplete?at:null,resetReason:incomplete?'legacy-incomplete':null},evaluation:incomplete?emptyEvaluation():state.evaluation};
+}
+export function practiceObservations(state,scope=SCOPE,at=now()){
   if(!state.profile?.consent)return [];
   const owned={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`};
-  const completions=effectiveCompletions(state,scope);
-  return state.history.flatMap(h=>{
-    const completion=completions.find(e=>h.completionId?e.id===h.completionId:e.at===h.at&&e.variant?.startsWith(`${h.task}.`));
-    if(!completion)return [];
-    historyLineage(state,h);
+  const completions=effectiveCompletions(state,scope,at);
+  const rows=state.history.flatMap(h=>{
+    if(savedWork(h))return [];
+    const {completion}=historyLineage(state,h);
+    if(Date.parse(completion.at)>Date.parse(at)||Date.parse(completion.recordedAt)>Date.parse(at))return [];
     // Old records only identify missed checks. An unmentioned focus is unknown,
     // because a short exercise may never have presented it.
-    const fields=h.review?[...new Set(h.review.map(c=>c.focus))]:h.missed;
-    return fields.map(field=>{
-      const reviewed=h.review?.filter(c=>c.focus===field);
-      return {id:`${completion.id}.${field}`,scope:{...owned},contract:{id:PRACTICE_CONTRACT.id,version:PRACTICE_CONTRACT.version,purpose:PRACTICE_CONTRACT.purpose},field,value:reviewed?.every(c=>c.correct)?'correct':'incorrect',source:'observed',
-        independentKey:`${completion.id}.${field}`,at:completion.at,recordedAt:completion.recordedAt,
-        refs:[completion.id,...(reviewed||[]).map(c=>`${h.task}.${c.id}`)]};
+    return (h.review||h.missed.map(focus=>({focus,correct:false}))).map(check=>{
+      return {id:`${completion.id}.${check.id||check.focus}`,scope:{...owned},contract:{id:PRACTICE_CONTRACT.id,version:PRACTICE_CONTRACT.version,purpose:PRACTICE_CONTRACT.purpose},field:check.focus,value:check.correct?'correct':'incorrect',source:'observed',
+        independentKey:`${h.task}.${check.id||`legacy-${check.focus}`}.v1`,at:completion.at,recordedAt:completion.recordedAt,
+        refs:[completion.id,...(check.id?[`${h.task}.${check.id}`]:[])]};
     });
   });
+  // Select the last result before removing excluded records. Withdrawing the
+  // last correction must not resurrect an older answer to the same question.
+  const latest=new Map();
+  for(const row of rows.sort((a,b)=>Date.parse(a.at)-Date.parse(b.at)||Date.parse(a.recordedAt)-Date.parse(b.recordedAt)))latest.set(row.independentKey,row);
+  return [...latest.values()].filter(row=>completions.some(c=>c.id===row.refs[0])&&!(!row.refs[1]&&rows.some(detail=>detail.refs[1]?.startsWith(`${row.independentKey.split('.')[0]}.`)&&detail.field===row.field&&Date.parse(detail.at)>=Date.parse(row.at))));
 }
-function reviewDecision(state,candidates,engine,at,scope){
+const freshObservation=(row,at)=>Date.parse(row.at)<=Date.parse(at)&&Date.parse(row.recordedAt)<=Date.parse(at)&&Date.parse(at)-Date.parse(row.at)<30*86400000;
+function taskSeenAt(state,task,at,scope){
+  const events=ownedEvents(state,scope).filter(e=>recordedBy(e,at)),excluded=new Set(events.filter(e=>e.type==='record.excluded').map(e=>e.targetId));
+  const decisions=new Set(events.filter(e=>e.type==='decision.made'&&e.variant?.startsWith(`${task}.`)&&!excluded.has(e.id)).map(e=>e.id));
+  const times=effectiveCompletions(state,scope,at).filter(e=>decisions.has(e.decisionId)).map(e=>e.at);
+  for(const visit of state.visits||[])if(recordedBy(visit,at)&&decisions.has(visit.decisionId))times.push(visit.at);
+  for(const exposure of state.evaluation?.exposures||[])if(recordedBy(exposure,at)&&[...decisions].some(id=>exposure.decisionId===`review.${id}`))times.push(exposure.at);
+  return Math.max(-Infinity,...times.map(Date.parse).filter(time=>time<=Date.parse(at)));
+}
+function reviewPlan(state,candidates,at,scope,task=null){
+  const observations=practiceObservations(state,scope,at);
+  // This is a SHIFT practice choice, not a change to Domain's aggregate belief.
+  // Only a known question's most recent answer can create a recheck priority.
+  const missed=observations.filter(row=>row.refs[1]&&row.value==='incorrect'&&freshObservation(row,at)&&candidates.some(c=>c.features[row.field]==='incorrect'))
+    .sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)||Date.parse(b.recordedAt)-Date.parse(a.recordedAt)||Object.keys(FOCUS).indexOf(a.field)-Object.keys(FOCUS).indexOf(b.field)||a.independentKey.localeCompare(b.independentKey));
+  const focus=missed[0]?.field||null;
+  let eligible=candidates.filter(c=>!focus||c.features[focus]==='incorrect');
+  if(task){
+    const exact=missed.find(row=>row.field===focus&&row.refs[1].startsWith(`${task}.`)&&eligible.some(c=>`${task}.${c.id}`===row.refs[1]));
+    if(exact)eligible=[...eligible].sort((a,b)=>Number(`${task}.${b.id}`===exact.refs[1])-Number(`${task}.${a.id}`===exact.refs[1]));
+  }else eligible=[...eligible].sort((a,b)=>taskSeenAt(state,a.id,at,scope)-taskSeenAt(state,b.id,at,scope)||Object.keys(TASKS).indexOf(a.id)-Object.keys(TASKS).indexOf(b.id));
+  const selectedId=eligible[0]?.id||null;
+  const exact=task?missed.find(row=>row.field===focus&&row.refs[1]===`${task}.${selectedId}`):null;
+  return {policy:'shift-review-order',version:'2',at,selectedId,focus,evidence:focus?[(exact||missed[0]).id]:[],tieBreak:task?'question-order':taskSeenAt(state,selectedId,at,scope)===-Infinity?'unseen':'least-recent'};
+}
+function orderChecks(checks,firstId,focus){return [...checks].sort((a,b)=>Number(b.id===firstId)-Number(a.id===firstId)||Number(b.focus===focus)-Number(a.focus===focus));}
+function reviewDecision(state,candidates,engine,at,scope,task=null){
   // The adapter's optional capability getter throws while the module is absent.
   let domain=null;try{domain=engine?.domain;}catch{}domain||=globalThis.SynkAtlasDomain;
   if(!domain?.decide)throw new Error('검토 기록 모듈을 불러오지 못했어요. 새로고침해 주세요.');
-  return domain.decide({contract:PRACTICE_CONTRACT,scope:{domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`},observations:practiceObservations(state,scope),at,candidates});
+  const decision=domain.decide({contract:PRACTICE_CONTRACT,scope:{domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${state.profile.generation}`},observations:practiceObservations(state,scope,at),at,candidates});
+  return {...decision,practicePlan:reviewPlan(state,candidates,at,scope,task)};
 }
 const reviewReason=ranked=>ranked?.reasons?.find(reason=>reason.value==='incorrect'&&reason.candidateValue==='incorrect'&&reason.contribution>0);
-function currentReviewReason(state,ranked){
-  const reason=reviewReason(ranked),valid=new Set(practiceObservations(state,state.profile?.scope||SCOPE).map(row=>row.id));
+function currentReviewReason(state,decision,at=now()){
+  const plan=decision?.practicePlan,reason=plan?(plan.focus?{field:plan.focus,evidence:plan.evidence}:null):reviewReason(decision?.selected),valid=new Set(practiceObservations(state,state.profile?.scope||SCOPE,at).filter(row=>freshObservation(row,at)&&(!plan||(row.value==='incorrect'&&row.field===plan.focus))).map(row=>row.id));
   return reason?.evidence.length&&reason.evidence.every(id=>valid.has(id))?reason:null;
 }
-export function decisionEvidence(state,decision){
-  const reason=currentReviewReason(state,decision?.selected);
+export function decisionEvidence(state,decision,at=now()){
+  const reason=currentReviewReason(state,decision,at);
   if(!reason)return [];
-  const completions=effectiveCompletions(state,state.profile.scope);
+  const observations=practiceObservations(state,state.profile.scope,at);
   return reason.evidence.flatMap(id=>{
-    const summary=state.history.find(h=>completions.some(e=>(h.completionId?e.id===h.completionId:e.at===h.at&&e.variant?.startsWith(`${h.task}.`))&&id===`${e.id}.${reason.field}`));
-    return summary?[{id,task:summary.task,at:summary.at,focus:reason.field,correct:summary.review?.filter(c=>c.focus===reason.field).every(c=>c.correct)??!summary.missed.includes(reason.field),assisted:summary.assisted}]:[];
+    const row=observations.find(o=>o.id===id),summary=state.history.find(h=>!savedWork(h)&&historyLineage(state,h).completion.id===row?.refs[0]);
+    return summary?[{id,task:summary.task,at:summary.at,focus:reason.field,checkId:row.refs[1]?.split('.')[1]||null,correct:row.value==='correct',assisted:summary.assisted}]:[];
   });
 }
-export function practiceBasis(state){
-  const records=decisionEvidence(state,state.run?.focusDecision),lines=records.map(r=>`${new Date(r.at).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})} · ${TASKS[r.task].name} · ${FOCUS[r.focus]}: ${r.correct?'판단과 근거 일치':'다시 확인'} (${r.assisted?'안내 사용':'스스로 검토'})`);
+export function practiceBasis(state,at=now()){
+  if(state.run&&!ownedEvents(state,state.profile?.scope||SCOPE).some(e=>e.id===state.run.decisionId))return [];
+  const records=decisionEvidence(state,state.run?.focusDecision,at),lines=records.map(r=>`${new Date(r.at).toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul'})} · ${TASKS[r.task].name} · ${FOCUS[r.focus]}${r.checkId?' · '+TASKS[r.task].checks.find(c=>c.id===r.checkId).label:''}: ${r.correct?'판단과 근거 일치':'다시 확인'} (${r.assisted?'안내 사용':'스스로 검토'})`);
   const uncertain=(state.run?.focusDecision?.understanding?.needsCheck||[]).filter(f=>TASKS[state.run.task].checks.some(c=>c.focus===f));
-  if(uncertain.length)lines.push(`${uncertain.map(f=>FOCUS[f]).join(', ')}: 기록이 충분하지 않거나 결과가 엇갈려 순서에 반영하지 않았어요.`);
+  if(uncertain.length)lines.push(`${uncertain.map(f=>FOCUS[f]).join(', ')}: 기록이 충분하지 않거나 결과가 엇갈려 전체 판단은 보류했어요.${records.length?' 다시 확인할 문항의 마지막 결과만 복습 순서에 사용했어요.':''}`);
   return lines;
 }
-export function practiceReason(state){
+export function practiceReason(state,at=now()){
   const run=state.run;
   if(!run)return '';
+  if(!ownedEvents(state,state.profile?.scope||SCOPE).some(e=>e.id===run.decisionId))return '개인화 조건이 변경됐어요. 작성한 내용은 보관하고 새 조건으로 실습을 시작해 주세요.';
   // A cached presentation may outlive the evidence it cited. Keep its original
   // time/support explanation, but stop presenting a withdrawn review as current.
-  return run.focusDecision&&!currentReviewReason(state,run.focusDecision.selected)?run.reason.split(' 지난 실습의 ')[0]:run.reason;
+  return run.focusDecision&&!currentReviewReason(state,run.focusDecision,at)?run.reason.split(' 지난 실습의 ')[0]:run.reason;
+}
+export function practiceHistoryUsed(state,at=now()){
+  const scope=state.profile?.scope||SCOPE;
+  const events=ownedEvents(state,scope),decision=events.find(e=>e.id===state.run?.decisionId);
+  if(!decision)return false;
+  return !!currentReviewReason(state,state.run?.focusDecision,at)
+    ||events.some(e=>e.type==='feedback.given'&&decision.evidence?.includes(e.id));
 }
 export function startRun(state,settings,engine,at=now(),scope=SCOPE){
   if(!Object.hasOwn(TASKS,settings.task)||!['clarity','work','prepare'].includes(settings.goal)||![5,10,15].includes(settings.minutes)||!['step','independent'].includes(settings.support))throw new Error('실습 조건을 다시 선택해 주세요.');
+  if(state.profile){const recovered=recoverProductUpgrade(state,{manifest:PRODUCT_MANIFEST,tasks:TASKS,scope,engine,at}).state;state={...recovered,history:keepHistory(recovered.history)};}
   let profile = state.profile || engine.createProfile({scope,at});
   const retired=Object.fromEntries(['audio','experience'].filter(key=>Object.hasOwn(profile.values,key)).map(key=>[key,null]));
   if(Object.keys(retired).length)profile=engine.updateProfile(profile,{values:retired},at);
@@ -194,29 +408,35 @@ export function startRun(state,settings,engine,at=now(),scope=SCOPE){
     {id:`${settings.task}.full`,minutes:10,pace:'standard',goals:['work'],supports:['step','independent']},
     {id:`${settings.task}.deep`,minutes:15,pace:'deep',goals:['prepare'],supports:['step','independent']}];
   const selection=engine.selectPersonalization({profile,scope,candidates,experienceId:'shift-workbench',events:state.events,at});
+  // Selection validates the original event log before returning current events.
+  state=reconcileRecords({...state,profile},scope,at);
+  state=upgradeRetention(state,at,scope);
   if(selection.plan.status!=='ready')throw new Error('지금 조건에 맞는 실습을 선택하지 못했어요.');
   const variant=selection.plan.selected.id.split('.').at(-1);
   let checks=[...TASKS[settings.task].checks];
-  const focusDecision=reviewDecision({...state,profile:selection.profile,events:selection.events},checks.map(c=>({id:c.id,features:{[c.focus]:'incorrect'}})),engine,at,scope);
-  const focus=reviewReason(focusDecision.selected)?.field;
-  if(focus)checks.sort((a,b)=>Number(b.focus===focus)-Number(a.focus===focus));
+  const focusDecision=reviewDecision({...state,profile:selection.profile,events:selection.events},checks.map(c=>({id:c.id,features:{[c.focus]:'incorrect'}})),engine,at,scope,settings.task);
+  const focus=focusDecision.practicePlan.focus;
+  if(focus)checks=orderChecks(checks,focusDecision.practicePlan.selectedId,focus);
   checks=checks.slice(0,variant==='quick'?2:3);
-  const next={...state,settings:{...settings},profile:selection.profile,events:selection.events,run:{task:settings.task,goal:settings.goal,variant,checkIds:checks.map(c=>c.id),decisionId:selection.plan.id,focusDecision,reviewDecisionId:`review.${selection.plan.id}`,startedAt:at,step:'practice',prompt:'',answers:{},result:null,draft:TASKS[settings.task].sample,reviewed:false,feedback:null,reason:`${settings.minutes}분 안에서 ${variant==='quick'?'핵심 2개':'전체 3개'} 항목을 ${selection.presentation.support==='step'?'안내와 함께':'스스로'} 확인합니다.${variant==='deep'?' 검토 후 실제 업무에 적용할 확인 항목도 정리해요.':''}${focus?' 지난 실습의 '+FOCUS[focus]+' 항목부터 살펴봐요. 가상 자료의 확인 기록이며 업무 능력 평가는 아닙니다.':''}`,support:selection.presentation.support}};
+  const next={...state,manifest:{...PRODUCT_MANIFEST},settings:{...settings},profile:selection.profile,events:selection.events,run:{task:settings.task,taskName:TASKS[settings.task].name,initialDraft:TASKS[settings.task].sample,goal:settings.goal,variant,checkIds:checks.map(c=>c.id),decisionId:selection.plan.id,focusDecision,reviewDecisionId:`review.${selection.plan.id}`,startedAt:at,step:'practice',prompt:'',answers:{},result:null,draft:TASKS[settings.task].sample,reviewed:false,feedback:null,reason:`${settings.minutes}분 안에서 ${variant==='quick'?'핵심 2개':'전체 3개'} 항목을 ${selection.presentation.support==='step'?'안내와 함께':'스스로'} 확인합니다.${variant==='deep'?' 검토 후 실제 업무에 적용할 확인 항목도 정리해요.':''}${focus?' 지난 실습의 '+FOCUS[focus]+' 항목부터 살펴봐요. 가상 자료의 확인 기록이며 업무 능력 평가는 아닙니다.':''}`,support:selection.presentation.support}};
   const boundary=evaluationScope(next,scope),prior=state.evaluation||{decisions:[],exposures:[],outcomes:[]};
-  const decisions=prior.decisions.filter(row=>row.subject===scope.personId&&JSON.stringify(row.scope)===JSON.stringify(boundary)).slice(-199),ids=new Set(decisions.map(row=>row.id));
+  const decisions=prior.decisions.filter(row=>row.subject===scope.personId&&JSON.stringify(row.scope)===JSON.stringify(boundary)),ids=new Set(decisions.map(row=>row.id));
   const exposures=prior.exposures.filter(row=>ids.has(row.decisionId)),seen=new Set(exposures.map(row=>row.id));
   next.evaluation={decisions,exposures,outcomes:prior.outcomes.filter(row=>seen.has(row.exposureId))};
   next.evaluation.decisions.push({id:next.run.reviewDecisionId,subject:scope.personId,scope:boundary,contract:{id:'shift-first-check-result',version:'1'},at,policy:{...PRACTICE_POLICIES[focus?1:0]},candidateIds:TASKS[settings.task].checks.map(c=>c.id),selectedId:checks[0].id});
+  next.evaluation=retainedEvaluation(next,at);
   return next;
 }
-export function nextTaskSuggestion(state){
-  const ids=Object.keys(TASKS),current=state.run?.task,index=ids.indexOf(current);
-  if(index<0)return {task:ids[0],focus:null};
-  const ordered=ids.slice(index+1).concat(ids.slice(0,index));
-  if(state.run?.nextDecision){const selected=state.run.nextDecision.selected,reason=currentReviewReason(state,selected);return {task:reason?selected.id:ordered[0]||ids[0],focus:reason?.field||null};}
-  const missed=[...new Set((state.run?.result||[]).filter(check=>!check.correct).map(check=>check.focus))];
-  for(const focus of missed){const task=ordered.find(id=>TASKS[id].checks.some(check=>check.focus===focus));if(task)return {task,focus};}
-  return {task:ordered[0]||ids[0],focus:null};
+function nextPracticePlan(state,at){
+  const ids=Object.keys(TASKS).filter(id=>id!==state.run?.task),scope=state.profile?.scope||SCOPE;
+  return reviewPlan(state,ids.map(id=>({id,features:Object.fromEntries(TASKS[id].checks.map(c=>[c.focus,'incorrect']))})),at,scope);
+}
+export function nextTaskSuggestion(state,at=now()){
+  const plan=nextPracticePlan(state,at);return {task:plan.selectedId,focus:plan.focus};
+}
+export function nextTaskReason(state,at=now()){
+  const plan=nextPracticePlan(state,at),name=TASKS[plan.selectedId].name;
+  return `${plan.focus?`마지막 검토에서 아직 다시 확인할 문항이 있는 ${FOCUS[plan.focus]} 항목을 「${name}」에서 연습해 보세요.`:`다른 자료를 확인하는 「${name}」 실습을 제안합니다.`} ${plan.tieBreak==='unseen'?'같은 조건의 후보 중 현재 기록에 아직 경험한 이력이 없는 실습을 먼저 골랐어요.':'같은 조건의 후보 중 현재 기록에서 가장 오래전에 경험한 실습을 먼저 골랐어요.'}`;
 }
 export function evaluate(run){
   const task=TASKS[run?.task];if(!task)throw new Error('실습을 먼저 시작해 주세요.');
@@ -224,6 +444,8 @@ export function evaluate(run){
 }
 export function checkPrompt(text){return [{label:'어떤 결과물이 필요한지',met:/(목록|요약|기획|운영안|실행안|표|정리|보고)/.test(text)},{label:'제공된 자료를 근거로 쓸지',met:/(자료|원문|M[1-3]|R[1-3]|P[1-3]|근거)/i.test(text)},{label:'빠뜨리거나 추측하지 않을 조건',met:/(기한|담당|승인|추측|한계|측정|예산|성공|제약|확인|금지|만들지)/.test(text)}];}
 export function completeRun(state,engine,at=now(),scope=SCOPE){
+  const priorRun=state.run;state=reconcileRecords(state,scope,at);
+  if(priorRun&&!state.run)throw new Error('개인화 조건이 변경됐어요. 작성한 내용은 보관하고 새 조건으로 실습을 시작해 주세요.');
   if(!state.run||state.run.step==='result')throw new Error('진행 중인 실습이 없어요.');
   const run=state.run,checks=evaluate(run);
   if(run.prompt.trim().length<20)throw new Error('요청문을 20자 이상 작성해 주세요.');
@@ -233,16 +455,17 @@ export function completeRun(state,engine,at=now(),scope=SCOPE){
   if(!run.reviewed)throw new Error('수정한 결과를 직접 읽고 확인해 주세요.');
   const events=engine.recordCompletion({profile:state.profile,scope,events:state.events,decisionId:run.decisionId,at});
   const completion=events.find(e=>e.type==='experience.completed'&&e.decisionId===run.decisionId);
-  const summary={task:run.task,at,completionId:completion.id,decisionId:run.decisionId,correct:run.result.filter(c=>c.correct).length,total:run.result.length,missed:[...new Set(run.result.filter(c=>!c.correct).map(c=>c.focus))],review:run.result.map(c=>({id:c.id,focus:c.focus,correct:c.correct})),prompt:run.prompt,draft:run.draft,assisted:run.support==='step'};
-  const next={...state,events,run:{...run,step:'result',completionId:completion.id,completedAt:at},history:[...state.history,summary].slice(-20)};
+  const summary={task:run.task,taskName:TASKS[run.task].name,at,completionId:completion.id,decisionId:run.decisionId,correct:run.result.filter(c=>c.correct).length,total:run.result.length,missed:[...new Set(run.result.filter(c=>!c.correct).map(c=>c.focus))],review:run.result.map(c=>({id:c.id,focus:c.focus,correct:c.correct})),prompt:run.prompt,draft:run.draft,assisted:run.support==='step'};
+  const next={...state,events,run:{...run,step:'result',completionId:completion.id,completedAt:at},history:keepHistory([...state.history,summary])};
   const ids=Object.keys(TASKS),index=ids.indexOf(run.task),ordered=ids.slice(index+1).concat(ids.slice(0,index));
   next.run.nextDecision=reviewDecision(next,ordered.map(id=>({id,features:Object.fromEntries(TASKS[id].checks.map(c=>[c.focus,'incorrect']))})),engine,at,scope);
   const exposure=next.evaluation?.exposures.find(e=>e.decisionId===run.reviewDecisionId);
-  if(exposure)next.evaluation={...next.evaluation,outcomes:[...next.evaluation.outcomes,{id:`result.${run.reviewDecisionId}`,subject:scope.personId,scope:{...exposure.scope},at,exposureId:exposure.id,value:summary.correct/summary.total}]};
+  if(exposure)next.evaluation={...next.evaluation,outcomes:[...next.evaluation.outcomes,{id:`result.${run.reviewDecisionId}`,subject:scope.personId,scope:{...exposure.scope},contract:{id:'shift-first-check-result',version:'1'},at,exposureId:exposure.id,value:summary.correct/summary.total}]};
   next.evaluation=retainedEvaluation(next);
   return next;
 }
 export function giveFeedback(state,value,engine,at=now(),scope=SCOPE){
+  state=reconcileRecords(state,scope,at);
   if(!state.run?.completionId||state.run.feedback)throw new Error('완료한 실습에 한 번만 피드백할 수 있어요.');
   const events=engine.recordFeedback({profile:state.profile,scope,events:state.events,completionId:state.run.completionId,value,at});
   return {...state,events,run:{...state.run,feedback:value}};
@@ -252,27 +475,50 @@ function checkSavedDecision(decision,ids,profile,scope){
   const owner={domain:scope.domain,subject:scope.personId,workspace:`p.${scope.productId}:c.${scope.contextId}:g.${profile.generation}`};
   const ranking=rank=>rank&&ids.includes(rank.id)&&Number.isFinite(rank.score)&&Array.isArray(rank.reasons)&&rank.reasons.length<=3&&rank.reasons.every(reason=>Object.hasOwn(FOCUS,reason.field)&&['correct','incorrect'].includes(reason.value)&&['correct','incorrect'].includes(reason.candidateValue)&&Number.isFinite(reason.contribution)&&Array.isArray(reason.evidence)&&reason.evidence.length<=60&&reason.evidence.every(id=>typeof id==='string'&&id.length<=120));
   if(decision.version!=='core-domain-1'||Object.keys(owner).some(key=>decision.scope?.[key]!==owner[key])||['id','version','purpose'].some(key=>decision.contract?.[key]!==PRACTICE_CONTRACT[key])||!Array.isArray(decision.ranked)||decision.ranked.length>ids.length||decision.ranked.some(rank=>!ranking(rank))||(decision.selected&&!ranking(decision.selected))||!Array.isArray(decision.understanding?.needsCheck)||decision.understanding.needsCheck.some(f=>!Object.hasOwn(FOCUS,f)))throw new Error('저장된 추천 근거를 확인할 수 없어요.');
+  const plan=decision.practicePlan;
+  if(plan&&(plan.policy!=='shift-review-order'||plan.version!=='2'||!ids.includes(plan.selectedId)||!Number.isFinite(Date.parse(plan.at))||plan.at!==decision.at
+    ||!(plan.focus===null||Object.hasOwn(FOCUS,plan.focus))||!Array.isArray(plan.evidence)||plan.evidence.length!==(plan.focus?1:0)||plan.evidence.some(id=>typeof id!=='string'||id.length>120)
+    ||!['question-order','unseen','least-recent'].includes(plan.tieBreak)))throw new Error('저장된 추천 근거를 확인할 수 없어요.');
+  if(plan?.focus&&TASKS[plan.selectedId]&&!TASKS[plan.selectedId].checks.some(c=>c.focus===plan.focus))throw new Error('저장된 추천 근거를 확인할 수 없어요.');
 }
 export function restore(text,engine,scope=SCOPE,temper){
   if(typeof text!=='string'||text.length>1000000)throw new Error('저장된 실습을 읽을 수 없어요.');
-  const value=JSON.parse(text);
-  if(value?.version!==1||value.save!==true||!Array.isArray(value.events)||value.events.length>5000||!Array.isArray(value.history)||value.history.length>20)throw new Error('지원하지 않는 저장 형식이에요.');
+  let value=JSON.parse(text);
+  if(value?.version!==1||value.save!==true||!Array.isArray(value.events)||value.events.length>5000||!Array.isArray(value.history)||value.history.length>41||value.history.filter(savedWork).length>21||value.history.filter(h=>!savedWork(h)).length>20)throw new Error('지원하지 않는 저장 형식이에요.');
   if(!value.profile||['personId','productId','contextId','domain'].some(key=>value.profile.scope?.[key]!==scope[key]))throw new Error('다른 실습의 기록이에요.');
   engine.validateProfile(value.profile);
-  if(Object.keys(value.profile.values).some(key=>!['goal','minutes','support'].includes(key)))throw new Error('이전 시험판의 맞춤 조건입니다. 초기화한 뒤 직접 선택해 주세요.');
+  if(Object.keys(value.profile.values).some(key=>!['goal','minutes','support','audio','experience'].includes(key)))throw new Error('이전 시험판의 맞춤 조건입니다. 초기화한 뒤 직접 선택해 주세요.');
+  const at=now(),recovery=recoverProductUpgrade(value,{manifest:PRODUCT_MANIFEST,tasks:TASKS,scope,engine,at});
+  if(recovery.recovered){
+    if(!temper?.evaluateOutcomes)throw new Error('실습 기록 검증 모듈을 불러오지 못했어요.');
+    recovery.state.history=keepHistory(recovery.state.history);
+    const retired=Object.fromEntries(['audio','experience'].filter(key=>Object.hasOwn(recovery.state.profile.values,key)).map(key=>[key,null]));
+    if(Object.keys(retired).length)recovery.state.profile=engine.updateProfile(recovery.state.profile,{values:retired},at);
+    return recovery.state;
+  }
+  const retired=Object.fromEntries(['audio','experience'].filter(key=>Object.hasOwn(value.profile.values,key)).map(key=>[key,null]));
+  if(Object.keys(retired).length)value.profile=engine.updateProfile(value.profile,{values:retired},at);
   engine.selectPersonalization({profile:value.profile,scope,candidates:[{id:'validate',minutes:1,pace:'short'}],experienceId:'validate',events:value.events,at:now()});
+  if(value.visits?.some(visit=>!recordedBy(visit,at)))brokenHistory();
   if(!Object.hasOwn(TASKS,value.settings?.task))throw new Error('실습 종류를 확인할 수 없어요.');
   if(value.run){const r=value.run,task=TASKS[r.task];if(!task||!['practice','result'].includes(r.step)||!Array.isArray(r.checkIds)||r.checkIds.length<1||r.checkIds.length>3||new Set(r.checkIds).size!==r.checkIds.length||r.checkIds.some(id=>!task.checks.some(c=>c.id===id))||typeof r.prompt!=='string'||r.prompt.length>5000||typeof r.draft!=='string'||r.draft.length>10000||!r.answers||typeof r.answers!=='object'||Array.isArray(r.answers)||!value.events.some(e=>e.type==='decision.made'&&e.id===r.decisionId))throw new Error('저장된 진행 내용을 확인할 수 없어요.');
     if(r.result)r.result=evaluate(r);
     if(r.step==='result'&&!value.events.some(e=>e.type==='experience.completed'&&e.id===r.completionId&&e.decisionId===r.decisionId))throw new Error('완료 기록을 확인할 수 없어요.');}
-  if(value.history.some(h=>!Object.hasOwn(TASKS,h?.task)||!Array.isArray(h.missed)||h.missed.some(f=>!Object.hasOwn(FOCUS,f))||typeof h.draft!=='string'||typeof h.prompt!=='string'||!Number.isInteger(h.correct)||!Number.isInteger(h.total)))throw new Error('이전 실습 기록을 확인할 수 없어요.');
-  if(value.history.some(h=>h.review&&(!Array.isArray(h.review)||h.review.length>3||h.review.some(c=>typeof c.correct!=='boolean'||!TASKS[h.task].checks.some(check=>check.id===c.id&&check.focus===c.focus)))))throw new Error('이전 검토 근거를 확인할 수 없어요.');
-  if(value.run){checkSavedDecision(value.run.focusDecision,TASKS[value.run.task].checks.map(c=>c.id),value.profile,scope);checkSavedDecision(value.run.nextDecision,Object.keys(TASKS).filter(id=>id!==value.run.task),value.profile,scope);}
+  if(value.history.some(h=>!savedWork(h)&&(!Object.hasOwn(TASKS,h?.task)||!Array.isArray(h.missed)||h.missed.some(f=>!Object.hasOwn(FOCUS,f))||typeof h.draft!=='string'||h.draft.length>10000||typeof h.prompt!=='string'||h.prompt.length>5000||!Number.isInteger(h.correct)||!Number.isInteger(h.total))))throw new Error('이전 실습 기록을 확인할 수 없어요.');
+  if(value.history.some(h=>!savedWork(h)&&h.review&&(!Array.isArray(h.review)||h.review.length>3||h.review.some(c=>typeof c.correct!=='boolean'||!TASKS[h.task].checks.some(check=>check.id===c.id&&check.focus===c.focus)))))throw new Error('이전 검토 근거를 확인할 수 없어요.');
+  if(value.run){const decision=value.events.find(e=>e.type==='decision.made'&&e.id===value.run.decisionId),profile={...value.profile,generation:generationOf(decision.scope,value.profile,scope)};
+    checkSavedDecision(value.run.focusDecision,TASKS[value.run.task].checks.map(c=>c.id),profile,scope);checkSavedDecision(value.run.nextDecision,Object.keys(TASKS).filter(id=>id!==value.run.task),profile,scope);}
   value.evaluation??={decisions:[],exposures:[],outcomes:[]};
   if(!temper?.evaluateOutcomes)throw new Error('실습 기록 검증 모듈을 불러오지 못했어요.');
-  practiceEvaluation(value,temper,now(),scope);
+  validateEvaluationGenerations(value,temper,at,scope);
+  value=reconcileRecords(value,scope,at);
+  value=upgradeRetention(value,at,scope);
+  practiceEvaluation(value,temper,at,scope);
   value.evaluation=retainedEvaluation(value);
+  value.manifest={...PRODUCT_MANIFEST};
   return value;
 }
-export function persist(storage,state,key=STORAGE_KEY){if(!state.save)return {ok:true,saved:false};try{storage.setItem(key,JSON.stringify(state));return {ok:true,saved:true};}catch{return {ok:false,saved:false,message:'이 기기에 저장하지 못했어요. 창을 닫기 전에 결과를 내려받아 주세요.'};}}
+export function persist(storage,state,key=STORAGE_KEY){if(!state.save)return {ok:true,saved:false};try{storage.setItem(key,JSON.stringify(reconcileRecords(state)));return {ok:true,saved:true};}catch{return {ok:false,saved:false,message:'이 기기에 저장하지 못했어요. 창을 닫기 전에 결과를 내려받아 주세요.'};}}
+export function exportSavedWork(state,index){const row=state.history[index];checkSavedWork(row,state.profile,state.profile.scope);return `SYNK SHIFT · ${row.kind==='recovered-work'?'업데이트 전 작성한 내용':'이전 조건에서 작성한 내용'}\n${historyLabel(row)}\n추천·평가에 사용하지 않는 작성물입니다.\n\n[내 요청문]\n${row.prompt}\n\n[직접 작성한 결과]\n${row.draft}\n`;}
+export function storageRecoveryNotice(state){return state.history.some(row=>row.kind==='recovered-work')?'업데이트 전 작성한 내용은 기록에 보관했어요. 이전 답안·점수는 현재 추천에 사용하지 않습니다.':state.retention?.resetReason==='legacy-incomplete'?'작성물은 유지했어요. 이전 평가 기록의 범위가 달라 평가 집계는 새 실습부터 시작합니다.':'';}
 export function exportText(state){if(!state.run)throw new Error('실습을 먼저 시작해 주세요.');const r=state.run;return `SYNK SHIFT · 가상 업무 로컬 실습\n${TASKS[r.task].name}\n상태: ${r.step==='result'?'실습 완료':'작성 중'}\n실제 AI 호출·업무 효과 검증 없음\n\n[내 요청문]\n${r.prompt}\n\n[직접 수정한 결과]\n${r.draft}\n\n[검토]\n${r.result?r.result.map(c=>`${c.label}: ${c.correct?'근거 확인 일치':'다시 확인'} — ${c.why}`).join('\n'):'검토 전'}\n\n결과 문장의 정확성은 자동 평가하지 않았습니다. 업무 사용 전 사람이 확인하세요.\n`;}
