@@ -40,7 +40,19 @@
 
 push가 거절되면 `origin/main`이 또 움직인 것이니 `prepare-public-push.cjs`를 다시 돌린다(GPT [재개 기록](../../../../.tmp/atlas-eight-deploy-20261008/PUBLIC-RELEASE-RESUME.md)은 git 밖). 2단계가 끝나기 전에는 3단계를 하지 않는다.
 
-## 5. 이 세션이 저장소에 한 것
+## 5. 10-08 17:3x 실행 결과
+
+유호님 「리허설부터 운영까지 순서대로 배포 진행해줘」로 §4의 ①②를 Claude가 실행했다(분류기가 이번에는 허용).
+
+| 단계 | 결과 |
+|---|---|
+| ① 리허설 | synk-account v31 · synk-learning v27 (17:36). 배포대조 바이트 10/10·9/9(본체 index.ts는 도구가 못 재는 축), 익명 OPTIONS 204·GET 401 |
+| ② 운영 | synk-account v42 · synk-learning v38 (17:39). 같은 대조·응답 통과. 판 대조 c16 일치, 마이그레이션 없음 |
+| ③ synk.im | 아직. 공개 후보 `17122d771`(main `bb7225c` 위) 준비 상태. 유호님 지시 뒤 `prepare-public-push.cjs` → push → `verify-public-live.cjs` |
+
+장부 도장 네 줄은 Talk 후보 작업본 커밋으로 `origin/master`에 올리고 메인 작업본 장부에도 더했다.
+
+## 6. 이 세션이 저장소에 한 것
 
 - SYNK-appsscript `origin/master`에 GPT 릴리스 `001d225cf`·증거 `0b4b41de2`와 이 기록을 올렸다(기본 가지 병합). 로컬 공용 master에는 다른 세션의 미푸시 커밋을 그대로 두고 병합 커밋으로 얹었다.
 - SYNK-talk `origin/master`에 후보 `1d6daa8`을 올렸다(운영 반영은 아직).
