@@ -93,7 +93,7 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .tile.mastered{background-image:url(assets/kit/badge-coral.webp);color:#fff;text-shadow:0 1px 1px rgba(120,30,20,.4)}
 .tile.mastered::after{content:"";position:absolute;right:-2px;top:-2px;width:38%;height:38%;background:url(assets/kit/badge-check.webp) center/contain no-repeat}
 .tile:not(.unmet):active{transform:translateY(2px)}
-.tile.final:not(.unmet)::before,.chip.final::before,.final-piece::before{content:"";position:absolute;left:30%;right:30%;bottom:16%;height:3px;border-radius:2px;background:currentColor;opacity:.55}
+.tile.final:not(.unmet)::before,.chip.final::before,.final-piece::before,.song-tile.final::before{content:"";position:absolute;left:30%;right:30%;bottom:16%;height:3px;border-radius:2px;background:currentColor;opacity:.55}
 .legend{list-style:none;display:flex;flex-wrap:wrap;gap:14px;margin:12px 0 0;padding:0;font:600 12.5px/1 var(--sans);color:var(--muted)}
 .legend li{display:flex;align-items:center;gap:6px}
 .legend .dot{width:18px;height:18px;background:url(assets/kit/badge-cream.webp) center/contain no-repeat}
@@ -274,6 +274,7 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .song-tile{display:grid;place-items:center;width:64px;height:64px;font:900 30px/1 var(--sans);background:url(assets/kit/badge-cream.webp) center/contain no-repeat;color:var(--ink);transition:transform .12s var(--ease)}
 .song-tile.big{width:150px;height:150px;font-size:84px}
 .song-tile.result{width:78px;height:78px;font-size:40px}
+.song-tile.final{position:relative} /* 받침 노래: 받침 칸은 받침 표시(아래 짧은 줄) */
 .song-tile.on,[data-i].on>.song-tile{background-image:url(assets/kit/badge-coral.webp);color:#fff;text-shadow:0 1px 1px rgba(120,30,20,.4);transform:scale(1.06)}
 .song-tile.done,[data-i].done>.song-tile{color:var(--coral-deep)}
 .song-vowel{display:flex;align-items:center;gap:18px}

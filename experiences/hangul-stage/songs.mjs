@@ -5,7 +5,8 @@
 // 시각은 받아쓰기(faster-whisper 낱말 시각, 10-05)에서 줄의 시작을 잡고, 후렴은 줄 안에서 고르게 나눴다. 노래 받아쓰기는 거칠어
 // ±0.2초쯤 어긋날 수 있다 — 귀로 듣고 이 표의 숫자만 고치면 된다.
 //
-// 신호(cue) 꼴: line(가사 한 줄), vowel(모음 하나 — 동작과 함께), sweep(글자 여럿을 차례로), blend(자음 + 모음 = 음절, 세 걸음).
+// 신호(cue) 꼴: line(가사 한 줄), vowel(모음 하나 — 동작과 함께), sweep(글자 여럿을 차례로), blend(자음 + 모음 = 음절, 세 걸음),
+// batchim(바탕 음절 + 받침 = 음절, 세 걸음 — 10-08 받침 노래).
 
 const MOVE = { 'v-a': 'right', 'v-eo': 'left', 'v-o': 'up', 'v-u': 'down', 'v-eu': 'wide', 'v-i': 'tall',
   'v-ya': 'right2', 'v-yeo': 'left2', 'v-yo': 'up2', 'v-yu': 'down2' };
@@ -21,6 +22,24 @@ const vowel = (t, end, letter, at, text) => ({ kind: 'vowel', t, end, letter, at
 // 합치기: 자음 소리 → 아 → 음절. 세 걸음은 줄 길이를 셋으로 나눈다.
 const blend = (t, end, consonant, text, vowelId = 'v-a') => ({ kind: 'blend', t, end, consonant, vowel: vowelId, at: spread(t, end, 3), text });
 const line = (t, end, text) => ({ kind: 'line', t, end, text });
+// 받침 노래의 음절: 첫소리(ㅇ은 null — 소리 없는 자리라 글자로 세지 않는다) · 모음 · 받침. 낱말이면 그림(결과 칸 위).
+const FS = {
+  '아': [null, 'v-a'], '사': ['c-s', 'v-a'], '무': ['c-m', 'v-u'], '바': ['c-b', 'v-a'], '가': ['c-g', 'v-a'], '마': ['c-m', 'v-a'],
+  '소': ['c-s', 'v-o'], '누': ['c-n', 'v-u'], '벼': ['c-b', 'v-yeo'], '고': ['c-g', 'v-o'], '모': ['c-m', 'v-o'],
+  '안': [null, 'v-a', 'f-n'], '알': [null, 'v-a', 'f-r'], '암': [null, 'v-a', 'f-m'], '앙': [null, 'v-a', 'f-ng'],
+  '산': ['c-s', 'v-a', 'f-n'], '물': ['c-m', 'v-u', 'f-r'], '밤': ['c-b', 'v-a', 'f-m'], '강': ['c-g', 'v-a', 'f-ng'],
+  '손': ['c-s', 'v-o', 'f-n'], '눈': ['c-n', 'v-u', 'f-n'], '별': ['c-b', 'v-yeo', 'f-r'], '말': ['c-m', 'v-a', 'f-r'],
+  '곰': ['c-g', 'v-o', 'f-m'], '몸': ['c-m', 'v-o', 'f-m'], '공': ['c-g', 'v-o', 'f-ng'], '방': ['c-b', 'v-a', 'f-ng'],
+};
+const FPIC = { '산': 'assets/mnemonic/c-s.webp', '손': 'assets/mnemonic/f-n.webp', '별': 'assets/mnemonic/f-r.webp', '곰': 'assets/mnemonic/f-m.webp',
+  '공': 'assets/mnemonic/f-ng.webp', '물': 'assets/words/mul.webp', '밤': 'assets/words/bam.webp', '강': 'assets/words/gang.webp',
+  '눈': 'assets/words/nun.webp', '말': 'assets/words/mal.webp', '몸': 'assets/words/mom.webp', '방': 'assets/words/bang.webp' };
+const BAT_SOUND = { 'f-n': '은', 'f-r': '을', 'f-m': '음', 'f-ng': '응' };
+// 받침 합치기: 바탕 음절 → 받침 소리(은·을·음·응) → 결과 음절. at은 세 걸음의 시각.
+const batchim = (t, end, base, made, at) => ({ kind: 'batchim', t, end, base, final: FS[made][2], made, at,
+  text: `${base} ${BAT_SOUND[FS[made][2]]} ${made}!`, ...(FPIC[made] ? { pic: FPIC[made] } : {}) });
+// 받침 음절 줄(후렴): 칸마다 음절 글자와 그 글자들(tiles).
+const bsweep = (t, end, sylls, at, text) => ({ kind: 'sweep', t, end, letters: [...sylls], texts: [...sylls], tiles: sylls.map(s => FS[s].filter(Boolean)), at, text });
 
 export const SONGS = Object.freeze([
   {
@@ -96,6 +115,33 @@ export const SONGS = Object.freeze([
       return out;
     })(),
   },
+  {
+    // 10-08 받침 노래(Suno c3610361, 유호님 「A로 가자」): 받침 하나(ㄴ·ㄹ·ㅁ·ㅇ, 6단원). 받침 소리는 「은·을·음·응」으로 부른다(아 + 은 → 안).
+    // 시각은 노래에서 목소리만 떼어 쟀다(102.48 BPM, 첫 박 0.388초 — 마스코트 영상 v1과 같은 표). 합치기 줄은 바탕 +0 · 받침 소리 +½ · 결과 +1박,
+    // 후렴은 「안 알 암 앙」 반 박씩 · 「산물 밤강」 둘씩 / 「손눈 별말」 둘씩 · 「곰 몸 공 방」 반 박씩 부른다.
+    id: 'batchim', title: '받침 노래', src: 'assets/songs/batchim.mp3', duration: 61.2, bpm: 102.5,
+    suno: 'c3610361-6e52-41f7-a758-feea28b4ec09', teaches: ['f-n', 'f-r', 'f-m', 'f-ng'],
+    review: [10.7, 38.9], // 회차 끝 30초 장단: 1절 합치기 여덟 줄 → 「밑에 오면 받침이야!」·「위에선 쉿! 밑에선 응!」 → 후렴 네 줄
+    cues: (() => {
+      const g = k => +(0.388 + (60 / 102.48) * k).toFixed(3);
+      const on = k => +(g(k) - 0.15).toFixed(3); // 줄 신호는 첫 소리보다 조금 먼저 켠다
+      const O1 = [0, 0.5, 1, 1.5, 1.92, 2.22, 2.71, 3], O2 = [0, 0.27, 0.73, 1, 1.46, 2, 2.49, 3];
+      const C1 = ['안', '알', '암', '앙', '산', '물', '밤', '강'], C2 = ['손', '눈', '별', '말', '곰', '몸', '공', '방'];
+      const chorus = starts => starts.map((L, n) => (n % 2
+        ? bsweep(on(L), on(L + 4), C2, O2.map(o => g(L + o)), '손 눈 별 말 곰 몸 공 방!')
+        : bsweep(on(L), on(L + 4), C1, O1.map(o => g(L + o)), '안 알 암 앙 산 물 밤 강!')));
+      const verse = (L0, pairs) => pairs.map(([base, made], k) => batchim(on(L0 + 2 * k), on(L0 + 2 * k + 2), base, made, [g(L0 + 2 * k), g(L0 + 2 * k + 0.5), g(L0 + 2 * k + 1)]));
+      const out = [line(0, 3.3, 'Ready? 받침!'), batchim(3.3, on(18), '아', '안', [3.86, 4.48, 5.04])];
+      out.push(...verse(18, [['아', '안'], ['아', '알'], ['아', '암'], ['아', '앙'], ['사', '산'], ['무', '물'], ['바', '밤'], ['가', '강']]));
+      // 연결: 「받침이야~」의 「야」를 b(40.7)까지 끌고, 「쉿!」(24.88) 뒤 25.08~26.43초는 노래가 멈춘다. 「응!」 뒤 「응~」 군소리
+      out.push(line(on(34), on(40.8), '밑에 오면 받침이야!'), line(on(40.8), +(g(44.5) - 0.12).toFixed(3), '위에선 쉿!'), line(+(g(44.5) - 0.12).toFixed(3), on(50), '밑에선 응!'));
+      out.push(...chorus([50, 54, 58, 62]));
+      out.push(...verse(66, [['소', '손'], ['누', '눈'], ['벼', '별'], ['마', '말'], ['고', '곰'], ['모', '몸'], ['고', '공'], ['바', '방']]));
+      out.push(...chorus([82, 86, 90, 94]));
+      out.push(batchim(on(98), 59.1, '아', '안', [57.76, g(99), g(100)]), line(59.1, 61.2, '안녕!')); // 안녕 59.23 · 녕 59.58
+      return out;
+    })(),
+  },
 ]);
 
 // 배우는 길에 없는 자음이 노래에 나올 때 쓰는 글자 모양과 유니코드 첫소리 번호(10-05 거센소리 U5가 길에 들어와 지금은 대비용).
@@ -106,6 +152,8 @@ export const songById = id => SONGS.find(s => s.id === id) || null;
 export function tileLetters(cue, i) {
   if (cue.kind === 'vowel') return [cue.letter];
   if (cue.kind === 'blend') return i === 0 ? [cue.consonant] : i === 1 ? [cue.vowel] : [cue.consonant, cue.vowel];
+  if (cue.kind === 'batchim') { const base = FS[cue.base].filter(Boolean); return i === 0 ? base : i === 1 ? [cue.final] : [...base, cue.final]; }
+  if (cue.kind === 'sweep' && cue.tiles) return cue.tiles[i];
   if (cue.kind === 'sweep') { const id = cue.letters[i]; return cue.syllables ? [id, 'v-a'] : cue.consonant ? [cue.consonant, id] : [id]; }
   return [];
 }
@@ -114,7 +162,7 @@ export function lettersIn(song, from, to) {
   const out = new Set();
   for (const cue of song.cues) {
     if (cue.end <= from || cue.t >= to) continue;
-    const n = cue.kind === 'vowel' ? 1 : cue.kind === 'blend' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
+    const n = cue.kind === 'vowel' ? 1 : cue.kind === 'blend' || cue.kind === 'batchim' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
     for (let i = 0; i < n; i += 1) for (const id of tileLetters(cue, i)) out.add(id);
   }
   return out;
