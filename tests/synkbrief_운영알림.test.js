@@ -46,6 +46,62 @@ test('정상 큐와 한도 대기는 해시를 바꾸거나 메일을 보내지 
   assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,0);assert.equal(f.values.get('SYNKBRIEF_OPS_NOTICE'),before);
 });
 
+test('발송 ON 계정의 토큰 소실은 다른 정상 계정이 있어도 경보가 된다',()=>{
+  const f=fixture();f.payload.accounts[0].dm_enabled=true;f.payload.accounts[0].issue_codes=[];
+  f.payload.accounts.push({username:'other',connected:true,health:'ok',dm_enabled:false,issue_codes:[]});
+  f.run();f.payload.accounts[0].connected=false;
+  f.payload.accounts[0].issue_codes=['token-missing'];f.payload.healthy=false;
+  assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).body,/@yuhobuilds \| token-missing/);
+  assert.equal(f.run().state,'unchanged');
+  f.payload.accounts[0].connected=true;f.payload.accounts[0].issue_codes=[];f.payload.healthy=true;
+  f.run();assert.equal(f.emails.length,2);assert.match(f.emails.at(-1).subject,/복구/);
+});
+
+test('캠페인 만료·비활성과 토큰 소실은 기존 발송 오류 중에도 각각 알린다',()=>{
+  const f=fixture();breakAccount(f,'send-failed');f.payload.accounts[0].dm_enabled=true;
+  f.payload.accounts[0].issue_codes=[];f.run();
+  for(const code of ['campaign-expired','campaign-inactive','token-missing']){
+    f.payload.accounts[0].issue_codes=[code];assert.equal(f.run().state,'sent');
+    assert.match(f.emails.at(-1).body,new RegExp('@yuhobuilds \\| '+code));
+    assert.match(f.emails.at(-1).body,/send-failed/);assert.equal(f.run().state,'unchanged');
+  }
+  assert.equal(f.emails.length,4);
+});
+
+test('의도적으로 꺼 둔 미연결 계정은 무경보이고 ON 연결 소실은 서버 전체 정상이어도 숨기지 않는다',()=>{
+  const f=fixture();Object.assign(f.payload.accounts[1],{dm_enabled:false,issue_codes:[]});
+  assert.equal(f.run().state,'baseline');assert.equal(f.emails.length,0);
+  f.payload.accounts[1].dm_enabled=true;f.payload.accounts[1].health='ok';
+  assert.equal(f.run().state,'sent');assert.match(f.emails[0].body,/@unconfigured \| token-missing/);
+});
+
+test('기한을 넘긴 미전달 큐는 알리되 건수 변화와 같은 장애는 재발송하지 않는다',()=>{
+  const f=fixture();breakAccount(f,'send-failed');f.run();
+  f.payload.queue.issue_counts.recent_expired=0;assert.equal(f.run().state,'unchanged');
+  f.payload.queue.issue_counts.recent_expired=1;f.payload.queue.healthy=false;
+  assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).body,/synkbrief-queue \| recent_expired/);
+  f.payload.queue.issue_counts.recent_expired=25;assert.equal(f.run().state,'unchanged');
+  f.payload.queue.issue_counts.recent_expired=0;f.payload.queue.healthy=true;
+  assert.equal(f.run().state,'sent');assert.doesNotMatch(f.emails.at(-1).body,/recent_expired/);
+  assert.equal(f.emails.length,3);
+});
+
+test('확장 계정·만료 경보 계약의 손상과 비밀 원문은 고정 형식 오류로만 알린다',()=>{
+  const changes=[f=>{f.payload.accounts[0].dm_enabled='SECRET';},
+    f=>{f.payload.accounts[0].issue_codes=['SECRET '+KEY];},
+    f=>{f.payload.accounts[0].issue_codes='token-missing';},
+    f=>{Object.assign(f.payload.accounts[0],{dm_enabled:true,issue_codes:['token-missing','token-missing']});},
+    f=>{Object.assign(f.payload.accounts[0],{dm_enabled:false,issue_codes:['campaign-inactive']});},
+    f=>{f.payload.queue.issue_counts.recent_expired='SECRET';},
+    f=>{f.payload.queue.issue_counts.recent_expired=-1;},
+    f=>{f.payload.queue.issue_counts.recent_expired=1;},
+  ];
+  for(const change of changes){const f=fixture();change(f);f.run();
+    assert.match(f.emails[0].body,/ops-status \| invalid_response/);
+    assert.doesNotMatch(JSON.stringify(f.emails)+JSON.stringify([...f.values]),/SECRET/);
+  }
+});
+
 test('고정 운영 서버의 큐 필드 누락은 기존 계정 오류 중에도 별도 경보가 된다',()=>{
   for(const existingFailure of [false,true]){
     const f=fixture();if(existingFailure)breakAccount(f,'send-failed');f.run();const before=f.emails.length;

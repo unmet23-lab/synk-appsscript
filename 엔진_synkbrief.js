@@ -510,14 +510,25 @@ function synkbrief_운영상태읽기_(key) {
     const rows = [];
     let healthy = body.healthy;
     const seen = Object.create(null);
+    const accountIssueCodes = ['token-missing', 'campaign-expired', 'campaign-inactive'];
     body.accounts.forEach(account => {
       if (!account || typeof account.username !== 'string' || !/^[a-zA-Z0-9._]{1,30}$/.test(account.username) || typeof account.connected !== 'boolean' || typeof account.health !== 'string' || !optionalTime(account.token_expires_at) || !optionalTime(account.last_failure_at) || !optionalHttp(account.http_status)) throw new Error('shape');
-      if (!account.connected) return;
+      if (account.dm_enabled !== undefined && typeof account.dm_enabled !== 'boolean') throw new Error('shape');
+      const accountIssues = account.issue_codes === undefined ? [] : account.issue_codes;
+      if (!Array.isArray(accountIssues) || accountIssues.length > accountIssueCodes.length
+        || accountIssues.some((code, index) => accountIssueCodes.indexOf(code) < 0 || accountIssues.indexOf(code) !== index)
+        || (accountIssues.length > 0 && account.dm_enabled !== true)) throw new Error('shape');
+      if (!account.connected && account.dm_enabled !== true) return;
       if (seen[account.username]) throw new Error('shape');
       seen[account.username] = true;
       const health = safeHealth(account.health);
       if (health !== 'ok' && health !== 'healthy') healthy = false;
       rows.push({ name: '@' + account.username, health: health, http: safeHttp(account.http_status), at: safeTime(account.last_failure_at || account.token_expires_at) });
+      // 발송 ON 계정의 연결 소실과 캠페인 종료는 기존 계정 오류와 별개로 알린다.
+      const activeIssues = accountIssues.slice();
+      if (!account.connected && activeIssues.indexOf('token-missing') < 0) activeIssues.push('token-missing');
+      if (activeIssues.length) healthy = false;
+      activeIssues.forEach(code => rows.push({ name: '@' + account.username, health: code, http: 200, at: new Date(checked).toISOString() }));
     });
     ['synkbrief-refresh', 'synkbrief-retention'].forEach(name => {
       const matches = body.jobs.filter(job => job && job.jobname === name);
@@ -532,6 +543,8 @@ function synkbrief_운영상태읽기_(key) {
       const queue = body.queue;
       const codes = ['stalled_ready', 'stalled_retries', 'stale_leases', 'expiry_overdue', 'recent_errors',
         'cron_missing', 'cron_disabled', 'cron_duplicate', 'cron_failed', 'cron_stale'];
+      // 서버·감시 순차 배포 중에는 이전 계약도 허용한다. 새 필드가 있으면 동일하게 검증한다.
+      if (queue && queue.issue_counts && Object.prototype.hasOwnProperty.call(queue.issue_counts, 'recent_expired')) codes.push('recent_expired');
       if (!queue || typeof queue !== 'object' || Array.isArray(queue) || typeof queue.healthy !== 'boolean'
         || typeof queue.key_configured !== 'boolean' || !queue.issue_counts || typeof queue.issue_counts !== 'object'
         || Array.isArray(queue.issue_counts) || Object.keys(queue.issue_counts).length !== codes.length
