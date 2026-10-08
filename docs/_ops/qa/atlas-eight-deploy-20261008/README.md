@@ -31,3 +31,7 @@ Hangul은 현재 공개 경로가 없으므로 새로 공개하지 않았다. PA
 - private website: `C:/Users/q1212/Documents/SYNK-appsscript/.tmp/atlas-eight-deploy-20261008/website-candidate`
 - 이번 원본 로그·검사 스크립트: `.tmp/atlas-eight-deploy-20261008/`
 - Talk 배포 명령·대조: [배포 계획](talk-deploy-plan.json), [원격 사전 대조](talk-deploy-before.json), [진입점](talk-entrypoint-comparison.json), [익명 입구](talk-anonymous-ingress.json)
+
+## 2026-10-08 Claude 최종 검수 결과
+
+위 「최종 검수 대기」는 같은 날 10:2x~11:0x에 Claude(Fable 5.1)가 별도 작업본에서 끝냈다. **배포를 막는 문제 없음.** 검수 범위·수치·라이브 반영 순서는 [claude-review-20261008.md](claude-review-20261008.md)에 있다. 라이브 반영(Talk 리허설→운영→synk.im)은 자동 모드 분류기가 막아 유호님 실행으로 넘겼다.
