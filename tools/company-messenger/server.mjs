@@ -39,6 +39,16 @@ class AppError extends Error {
   constructor(status, message) { super(message); this.status = status; }
 }
 function assert(test, status, message) { if (!test) throw new AppError(status, message); }
+function requestId(value, label) {
+  assert(typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value), 400, `${label} 식별자를 확인해 주세요.`);
+  return value.toLowerCase();
+}
+function recoveryError(code, message, details = {}) { return Object.assign(new AppError(409, message), { code, ...details }); }
+function canonical(value) {
+  if (Array.isArray(value)) return value.map(canonical);
+  if (value && typeof value === 'object') return Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])]));
+  return value;
+}
 function textField(value, label, max, min = 0) {
   assert(typeof value === 'string', 400, `${label}을(를) 입력해 주세요.`);
   const text = value.trim();
@@ -112,6 +122,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     CREATE TABLE IF NOT EXISTS reactions (message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, emoji TEXT NOT NULL, PRIMARY KEY(message_id,user_id,emoji));
     CREATE TABLE IF NOT EXISTS message_pins (message_id INTEGER PRIMARY KEY REFERENCES messages(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id), created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS drive_delete_outbox (file_id TEXT PRIMARY KEY, connection_id TEXT NOT NULL, remote_id TEXT NOT NULL, created_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, last_attempt_at TEXT, last_error TEXT);
+    CREATE TABLE IF NOT EXISTS message_send_requests (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, channel_id TEXT NOT NULL REFERENCES channels(id) ON DELETE CASCADE, request_id TEXT NOT NULL, payload_hash TEXT NOT NULL, message_id INTEGER REFERENCES messages(id) ON DELETE SET NULL, state TEXT NOT NULL DEFAULT 'sent' CHECK(state IN ('sent','cancelled')), created_at TEXT NOT NULL, PRIMARY KEY(user_id,channel_id,request_id));
+    CREATE TABLE IF NOT EXISTS file_upload_requests (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, channel_id TEXT NOT NULL REFERENCES channels(id) ON DELETE CASCADE, request_id TEXT NOT NULL, payload_hash TEXT NOT NULL, state TEXT NOT NULL CHECK(state IN ('pending','failed','complete','cancelled')), file_id TEXT REFERENCES files(id) ON DELETE SET NULL, created_at TEXT NOT NULL, PRIMARY KEY(user_id,channel_id,request_id));
+    CREATE TABLE IF NOT EXISTS file_deletion_receipts (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, file_id TEXT NOT NULL, channel_id TEXT NOT NULL REFERENCES channels(id) ON DELETE CASCADE, deleted_at TEXT NOT NULL, PRIMARY KEY(user_id,file_id));
   `);
   const existingFileColumns = new Set(db.prepare('PRAGMA table_info(files)').all().map(column => column.name));
   for (const [name, type] of [['storage_provider', "TEXT NOT NULL DEFAULT 'local'"], ['storage_connection_id', 'TEXT'], ['storage_remote_id', 'TEXT'], ['md5', 'TEXT']]) {
@@ -159,6 +172,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   let deletionTimer = null;
   let reminderTimer = null;
   const activeDownloads = new Set();
+  const activeUploadRequests = new Set();
   const collaboration = createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, fileTypeSql: FILE_TYPE_SQL, integrated: Boolean(integration), origin: () => integration?.origin || `http://${host}:${listeningPort}`, resolveLink: resolveWorkspaceLink, backgroundJobsEnabled, workNotificationsEnabled,
     externalNotifications: integration?.notifications ? {
       list: userId => integration.notifications.list(bridge.companyUserId(userId)),
@@ -186,6 +200,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function queueFileDeletion(file) {
     if (file.storage_provider === 'google-drive') enqueueDriveDeletion({ fileId: file.id, connectionId: file.storage_connection_id, remoteId: file.storage_remote_id });
+  }
+  function recordFileCancellation(file, userId) {
+    run('INSERT OR IGNORE INTO file_deletion_receipts(user_id,file_id,channel_id,deleted_at) VALUES(?,?,?,?)', userId, file.id, file.channel_id, now());
   }
   function retryDriveDeletions() {
     if (deletionTask) return deletionTask;
@@ -304,7 +321,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   async function bootstrap(user, identity) {
     const active = await drive.active();
     syncDirectory();
-    const basic = { needsSetup: !hasSetup(), workspace: { name: workspaceName() }, storage: { provider: active ? 'google-drive' : 'local' }, platformUrl: platformEntryUrl };
+    const basic = { needsSetup: !hasSetup(), workspace: { name: workspaceName() }, storage: { provider: active ? 'google-drive' : 'local' }, platformUrl: platformEntryUrl, sendRecovery: { messages: true, uploads: true } };
     if (!user) return basic;
     return { ...basic, user: publicUser(user), channels: channelsFor(user.id), members: members(), teams: bridge?.teamsFor(user.id) || [], notificationUnread: collaboration.unreadCount(user.id), scheduledNotifications: { enabled: workNotificationsEnabled }, limits: { fileBytes: FILE_LIMIT }, ...(identity ? { integrated: { csrfToken: identity.csrfToken, companyUserId: identity.companyUserId, role: identity.role, canWrite: identity.canWrite, canManage: identity.canManage, parentOrigin: identity.parentOrigin } } : {}) };
   }
@@ -416,15 +433,45 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     if (req.headers.origin) assert(req.headers.origin === `http://${req.headers.host}`, 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
     assert(req.headers['sec-fetch-site'] !== 'cross-site', 403, '다른 사이트에서 보낸 요청은 허용되지 않습니다.');
   }
+  function sentRequestResult(receipt, userId) {
+    if (receipt.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '취소한 전송입니다. 같은 식별자로 다시 보내지 않습니다.');
+    const message = receipt.message_id && one('SELECT * FROM messages WHERE id=?', receipt.message_id);
+    if (!message) throw recoveryError('MESSAGE_DELETED', '이미 전송된 메시지가 삭제되었습니다. 다시 전송하지 않습니다.');
+    if (message.workspace_link) {
+      try { resolveWorkspaceLink({ userId, channelId: message.channel_id, workspaceLink: JSON.parse(message.workspace_link) }); }
+      catch (error) {
+        // The receipt already belongs to this authenticated author and accessible channel.
+        // Confirm only completion when the linked plan was removed or its access changed.
+        if (error.status === 403 || error.status === 404) return { status: 'sent', unavailable: true };
+        throw error;
+      }
+    }
+    return { status: 'sent', message: messageShape(message, userId) };
+  }
+  function uploadedRequestFile(receipt, key) {
+    if (receipt.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '취소한 파일 전송입니다. 같은 식별자로 다시 올리지 않습니다.');
+    if (receipt.state === 'pending') {
+      const active = activeUploadRequests.has(key);
+      throw recoveryError(active ? 'UPLOAD_IN_PROGRESS' : 'UPLOAD_UNCERTAIN', active ? '파일 저장이 진행 중입니다. 잠시 후 전송 결과를 확인해 주세요.' : '이전 파일 저장 결과를 확인할 수 없어 중복 업로드를 중단했습니다.', { recoveryStatus: active ? 'pending' : 'uncertain', retryable: false });
+    }
+    if (receipt.state !== 'complete') return null;
+    const file = receipt.file_id && one('SELECT * FROM files WHERE id=?', receipt.file_id);
+    if (!file) throw recoveryError('UPLOAD_DELETED', '이미 삭제한 첨부파일입니다. 다시 올리지 않습니다.');
+    if (file.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일입니다. 해당 메시지의 전송 결과를 확인해 주세요.');
+    return file;
+  }
   async function upload(req, res, user, channelId, revalidate = () => {}) {
     const lifecycleVersion = requirePosting(user.id, channelId).lifecycle_version;
     const membershipVersion = departureVersion(channelId, user.id);
+    const uploadId = req.headers['x-upload-id'] === undefined ? null : requestId(req.headers['x-upload-id'], '파일 전송');
     const validateUpload = () => {
       revalidate();
       assert(requirePosting(user.id, channelId).lifecycle_version === lifecycleVersion, 409, '대화방이 삭제 또는 복원되어 업로드가 취소되었습니다. 다시 파일을 선택해 주세요.');
       assert(departureVersion(channelId, user.id) === membershipVersion, 409, '프로젝트 참여 상태가 변경되어 업로드가 취소되었습니다. 다시 파일을 선택해 주세요.');
+      if (uploadId && one('SELECT state FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, uploadId)?.state === 'cancelled') throw recoveryError('UPLOAD_CANCELLED', '취소한 파일 전송입니다. 같은 식별자로 다시 올리지 않습니다.');
     };
-    // Resolve exactly once: switching accounts while bytes arrive affects only future uploads.
+    const uploadKey = JSON.stringify([user.id, channelId, uploadId]);
+    // Capture storage once, preserving the existing account-switch semantics.
     const activeConnection = await drive.active();
     validateUpload();
     let original;
@@ -437,14 +484,16 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       if (Number(contentLength) > FILE_LIMIT) { req.resume(); throw new AppError(413, '파일은 하나당 100MB까지 올릴 수 있습니다.'); }
     }
     const id = randomUUID(); const diskName = `${id}.bin`; const diskPath = path.join(uploadDir, diskName);
-    let handle; let size = 0; let saved = false; let remote = null;
+    let handle; let size = 0; let saved = false; let remote = null; let claimed = false;
     const digest = createHash('md5');
+    const payloadDigest = createHash('sha256');
     try {
       handle = await open(diskPath, 'wx', 0o600);
       for await (const chunk of req) {
         size += chunk.length;
         if (size <= FILE_LIMIT) {
           digest.update(chunk);
+          payloadDigest.update(chunk);
           let offset = 0;
           while (offset < chunk.length) {
             const { bytesWritten } = await handle.write(chunk, offset, chunk.length - offset);
@@ -459,17 +508,34 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       assert(!res.destroyed, 499, '파일 업로드가 취소되었습니다.');
       validateUpload();
       const md5 = digest.digest('hex');
+      if (uploadId) {
+        const fingerprint = hash(JSON.stringify([original, size, payloadDigest.digest('hex')]));
+        const existing = transaction(() => {
+          const prior = one('SELECT * FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, uploadId);
+          if (prior && prior.payload_hash !== fingerprint) throw recoveryError('UPLOAD_REQUEST_CONFLICT', '같은 전송 식별자로 다른 파일을 올릴 수 없습니다.');
+          const complete = prior && uploadedRequestFile(prior, uploadKey);
+          if (complete) return complete;
+          if (prior) run("UPDATE file_upload_requests SET state='pending' WHERE user_id=? AND channel_id=? AND request_id=?", user.id, channelId, uploadId);
+          else run("INSERT INTO file_upload_requests(user_id,channel_id,request_id,payload_hash,state,created_at) VALUES(?,?,?,?,'pending',?)", user.id, channelId, uploadId, fingerprint, now());
+          return null;
+        });
+        if (existing) return fileShape(existing);
+        claimed = true;
+        activeUploadRequests.add(uploadKey);
+      }
       if (activeConnection) {
         remote = await drive.upload({ connectionId: activeConnection.id, localPath: diskPath, name: original, size, md5, fileId: id });
         assert(remote?.connectionId === activeConnection.id && typeof remote.remoteId === 'string' && remote.remoteId && typeof remote.md5 === 'string' && remote.md5.toLowerCase() === md5, 502, 'Drive에 저장된 파일을 검증하지 못했습니다. 다시 시도해 주세요.');
         // Survives a failed SQLite insert or a crash before the file record is committed.
         enqueueDriveDeletion({ fileId: id, connectionId: activeConnection.id, remoteId: remote.remoteId });
       }
-      assert(!res.destroyed, 499, '파일 업로드가 취소되었습니다.');
+      // A completed keyed upload remains discoverable even when only the response was lost.
+      if (!uploadId) assert(!res.destroyed, 499, '파일 업로드가 취소되었습니다.');
       validateUpload();
       // MIME intentionally inert. Any extension may be downloaded, never executed or rendered inline.
       transaction(() => {
         run('INSERT INTO files(id,channel_id,uploader_id,name,size,mime,disk_name,created_at,storage_provider,storage_connection_id,storage_remote_id,md5) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)', id, channelId, user.id, original, size, 'application/octet-stream', diskName, now(), activeConnection ? 'google-drive' : 'local', activeConnection?.id ?? null, remote?.remoteId ?? null, md5);
+        if (uploadId) run("UPDATE file_upload_requests SET state='complete',file_id=? WHERE user_id=? AND channel_id=? AND request_id=?", id, user.id, channelId, uploadId);
         if (remote) run('DELETE FROM drive_delete_outbox WHERE file_id=?', id);
       });
       saved = true;
@@ -485,8 +551,12 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           await drive.trash(cleanup).catch(() => {});
         }
       }
+      // Known failures can retry. A durable pending row after process interruption is never
+      // blindly replayed into Drive, where its previous write may already have succeeded.
+      if (claimed && !saved && (!cleanup || !one('SELECT 1 FROM drive_delete_outbox WHERE file_id=?', id))) run("UPDATE file_upload_requests SET state='failed' WHERE user_id=? AND channel_id=? AND request_id=? AND state='pending'", user.id, channelId, uploadId);
       throw error;
     } finally {
+      if (claimed) activeUploadRequests.delete(uploadKey);
       if (handle) await handle.close().catch(() => {});
       if (!saved || activeConnection) await removeDiskFile(diskName).catch(error => console.error('[messenger] Upload staging cleanup:', error.code || error.name));
     }
@@ -739,7 +809,41 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           if (!existing) publish('channel', channel.id);
           return respond(existing ? 200 : 201, { channel: channelShape(channel, user.id) });
         }
-        let match = p.match(/^\/api\/channels\/([^/]+)\/(messages|read|files|pins)$/);
+        let match = p.match(/^\/api\/channels\/([^/]+)\/(messages|files)\/requests\/([^/]+)$/);
+        if (match && ['GET', 'DELETE'].includes(method)) {
+          const [, channelId, action, rawId] = match;
+          requirePosting(user.id, channelId);
+          const id = requestId(rawId, '전송');
+          if (method === 'DELETE' && action === 'files') {
+            const file = transaction(() => {
+              const existing = one('SELECT * FROM file_upload_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, id);
+              const savedFile = existing?.file_id && one('SELECT * FROM files WHERE id=?', existing.file_id);
+              if (savedFile && savedFile.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 메시지에 첨부한 파일은 전송 취소로 삭제할 수 없습니다.');
+              if (savedFile) { recordFileCancellation(savedFile, user.id); queueFileDeletion(savedFile); run('DELETE FROM files WHERE id=?', savedFile.id); }
+              // Pending means no file record was committed. Stop future commits and leave
+              // any remote-cleanup outbox intact; cancellation does not promise Drive deletion.
+              if (existing) run("UPDATE file_upload_requests SET state='cancelled' WHERE user_id=? AND channel_id=? AND request_id=?", user.id, channelId, id);
+              else run("INSERT INTO file_upload_requests(user_id,channel_id,request_id,payload_hash,state,created_at) VALUES(?,?,?,?,'cancelled',?)", user.id, channelId, id, '', now());
+              return savedFile;
+            });
+            if (file?.storage_provider === 'local') await removeDiskFile(file.disk_name);
+            if (file) await retryDriveDeletions();
+            return respond(200, { status: 'cancelled' });
+          }
+          const receipt = method === 'DELETE' ? transaction(() => {
+            const existing = one('SELECT * FROM message_send_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, id);
+            if (existing) return existing;
+            run("INSERT INTO message_send_requests(user_id,channel_id,request_id,payload_hash,state,created_at) VALUES(?,?,?,?,'cancelled',?)", user.id, channelId, id, '', now());
+            return { state: 'cancelled' };
+          }) : one(`SELECT * FROM ${action === 'messages' ? 'message_send_requests' : 'file_upload_requests'} WHERE user_id=? AND channel_id=? AND request_id=?`, user.id, channelId, id);
+          if (method === 'DELETE' && receipt.state === 'cancelled') return respond(200, { status: 'cancelled' });
+          assert(receipt, 404, '저장된 전송 결과가 없습니다. 같은 내용으로 다시 시도할 수 있습니다.');
+          if (action === 'messages') return respond(200, sentRequestResult(receipt, user.id));
+          const file = uploadedRequestFile(receipt, JSON.stringify([user.id, channelId, id]));
+          if (!file) throw Object.assign(new AppError(404, '파일 저장이 완료되지 않았습니다. 같은 파일로 다시 시도해 주세요.'), { code: 'UPLOAD_NOT_COMPLETE' });
+          return respond(200, { status: 'uploaded', file: fileShape(file) });
+        }
+        match = p.match(/^\/api\/channels\/([^/]+)\/(messages|read|files|pins)$/);
         if (match) {
           const channelId = match[1]; const action = match[2];
           requireChannel(user.id, channelId);
@@ -776,20 +880,33 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             const body = await readBody();
             const channel = requirePosting(user.id, channelId);
             const content = textField(body.body ?? '', '메시지', 8000);
-            const extras = collaboration.prepareMessage(body, channel, user.id, null, integration?.origin || `http://${req.headers.host}`);
             const fileIds = body.fileIds ?? [];
             assert(Array.isArray(fileIds) && fileIds.length <= 5 && fileIds.every(id => typeof id === 'string') && new Set(fileIds).size === fileIds.length, 400, '파일은 메시지당 최대 5개까지 첨부할 수 있습니다.');
-            assert(content || fileIds.length || extras.workspaceLink, 400, '메시지를 입력하거나 파일 또는 화면 링크를 첨부해 주세요.');
+            const mentionIds = body.mentionIds ?? [];
+            assert(Array.isArray(mentionIds) && mentionIds.length <= 30 && mentionIds.every(id => typeof id === 'string') && new Set(mentionIds).size === mentionIds.length, 400, '멘션할 크루를 최대 30명까지 선택해 주세요.');
             const replyToId = body.replyToId ?? null;
             if (replyToId !== null) {
               assert(typeof replyToId === 'string' && /^[1-9]\d*$/.test(replyToId) && Number.isSafeInteger(Number(replyToId)), 400, '답글을 달 메시지를 확인해 주세요.');
-              assert(one('SELECT id FROM messages WHERE id=? AND channel_id=?', replyToId, channelId), 404, '이 대화방에서 답글을 달 메시지를 찾을 수 없습니다.');
             }
+            const clientMessageId = body.clientMessageId === undefined ? null : requestId(body.clientMessageId, '메시지 전송');
+            const fingerprint = clientMessageId ? hash(JSON.stringify(canonical({ content, fileIds: [...fileIds].sort(), replyToId, mentionIds: [...mentionIds].sort(), workspaceLink: body.workspaceLink ?? null, ackRequired: body.ackRequired ?? (channel.system_key === 'announcements') }))) : null;
+            // Resolve retries before consumed-file or deleted-parent checks. The receipt and
+            // original message are committed together; a deleted original retains a tombstone.
+            const prior = clientMessageId && one('SELECT * FROM message_send_requests WHERE user_id=? AND channel_id=? AND request_id=?', user.id, channelId, clientMessageId);
+            if (prior) {
+              if (prior.state === 'cancelled') throw recoveryError('MESSAGE_CANCELLED', '취소한 전송입니다. 같은 식별자로 다시 보내지 않습니다.');
+              if (prior.payload_hash !== fingerprint) throw recoveryError('MESSAGE_REQUEST_CONFLICT', '같은 전송 식별자로 다른 메시지를 보낼 수 없습니다.');
+              return respond(200, { ...sentRequestResult(prior, user.id), replayed: true });
+            }
+            const extras = collaboration.prepareMessage(body, channel, user.id, null, integration?.origin || `http://${req.headers.host}`);
+            assert(content || fileIds.length || extras.workspaceLink, 400, '메시지를 입력하거나 파일 또는 화면 링크를 첨부해 주세요.');
+            if (replyToId !== null) assert(one('SELECT id FROM messages WHERE id=? AND channel_id=?', replyToId, channelId), 404, '이 대화방에서 답글을 달 메시지를 찾을 수 없습니다.');
             const created = transaction(() => {
               for (const id of fileIds) assert(one('SELECT 1 FROM files WHERE id=? AND channel_id=? AND uploader_id=? AND message_id IS NULL', id, channelId, user.id), 400, '첨부할 수 없는 파일이 있습니다. 파일을 다시 올려 주세요.');
               const id = Number(run('INSERT INTO messages(channel_id,user_id,body,created_at,reply_to_id) VALUES(?,?,?,?,?)', channelId, user.id, content, now(), replyToId === null ? null : Number(replyToId)).lastInsertRowid);
               for (const fileId of fileIds) run('UPDATE files SET message_id=? WHERE id=?', id, fileId);
               collaboration.applyMessage(id, extras);
+              if (clientMessageId) run('INSERT INTO message_send_requests(user_id,channel_id,request_id,payload_hash,message_id,created_at) VALUES(?,?,?,?,?,?)', user.id, channelId, clientMessageId, fingerprint, id, now());
               return one('SELECT * FROM messages WHERE id=?', id);
             });
             collaboration.notifyMessage(created);
@@ -878,13 +995,21 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
         match = p.match(/^\/api\/files\/([^/]+)$/);
         if (match) {
           const f = one('SELECT * FROM files WHERE id=?', match[1]);
+          if (!f && method === 'DELETE') {
+            const receipt = one('SELECT channel_id FROM file_deletion_receipts WHERE user_id=? AND file_id=?', user.id, match[1]);
+            if (receipt) {
+              requireChannel(user.id, receipt.channel_id);
+              throw Object.assign(new AppError(404, '이미 취소한 첨부파일입니다.'), { code: 'UPLOAD_DELETED' });
+            }
+          }
           assert(f, 404, '파일을 찾을 수 없습니다.');
           const lifecycleVersion = requireChannel(user.id, f.channel_id).lifecycle_version;
           const membershipVersion = departureVersion(f.channel_id, user.id);
           assert(f.message_id !== null || f.uploader_id === user.id, 404, '파일을 찾을 수 없습니다.');
           if (method === 'DELETE') {
-            assert(f.uploader_id === user.id && f.message_id === null, 403, '아직 전송하지 않은 내 파일만 취소할 수 있습니다.');
-            transaction(() => { queueFileDeletion(f); run('DELETE FROM files WHERE id=?', f.id); });
+            assert(f.uploader_id === user.id, 403, '아직 전송하지 않은 내 파일만 취소할 수 있습니다.');
+            if (f.message_id !== null) throw recoveryError('UPLOAD_CONSUMED', '이미 전송된 첨부파일은 대화에 그대로 남겨 둡니다.');
+            transaction(() => { recordFileCancellation(f, user.id); queueFileDeletion(f); run('DELETE FROM files WHERE id=?', f.id); });
             if (f.storage_provider === 'local') await removeDiskFile(f.disk_name);
             await retryDriveDeletions();
             return respond(200, { ok: true });
@@ -971,7 +1096,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       if (res.headersSent) { if (!res.writableEnded) res.end(); return; }
       if (!(error instanceof AppError) && !error.publicMessage) console.error('[messenger] Request failed:', error.code || error.name);
       const status = Number.isInteger(error.status) && error.status >= 400 && error.status <= 599 ? error.status : 500;
-      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' ? { code: error.code } : {}) });
+      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' || /^(MESSAGE_|UPLOAD_)/.test(error.code || '') ? { code: error.code } : {}), ...(error.recoveryStatus ? { status: error.recoveryStatus, retryable: error.retryable } : {}) });
     }
   };
   const server = http.createServer(handler);

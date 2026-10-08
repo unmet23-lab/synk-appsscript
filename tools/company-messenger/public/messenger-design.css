@@ -506,3 +506,13 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(
   .workday-item h3,.workday-item h4{font-size:14px}.workflow-form .modal-actions .button{width:100%;min-height:48px}
   .reviewer-recovery{padding:12px}.reviewer-recovery>.button{width:100%}.notification-toolbar>span{font-size:11px}.deadline-digest-list{max-height:48vh}
 }
+.send-recovery{margin:12px;padding:12px 16px;background:#fffaf4;border:1px solid #dccab4;border-radius:12px;min-width:0;color:#49372c}
+.send-recovery>strong{display:block;font-size:14px;line-height:1.5}
+.send-recovery p{margin:8px 0;font-size:12px;line-height:1.6;word-break:keep-all;overflow-wrap:anywhere}
+.send-recovery .send-recovery-preview{max-height:4.8em;overflow:auto;white-space:pre-wrap;color:#675044}
+.send-recovery-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.send-recovery-actions .button,.upload-retry{min-height:44px;padding:8px 16px;max-width:100%;white-space:normal;font-size:12px;line-height:1.5;background:transparent url(assets/felt-ui/slab-cream-long.webp) center/100% 100% no-repeat;border:0;box-shadow:none;color:#49372c}
+.send-recovery-actions .button.primary{background-image:url(assets/felt-ui/slab-coral-long.webp);color:#000}
+.upload-chip{max-width:100%;min-width:0;gap:8px}
+.upload-chip .upload-chip-copy{min-width:0}.upload-chip small{font-size:11px;line-height:1.5;overflow-wrap:anywhere;word-break:keep-all}.upload-chip .upload-retry{flex:none;max-width:112px;padding:8px 12px}.upload-chip .icon-button{flex:none;min-width:36px;min-height:44px}
+@media(max-width:400px){.send-recovery{margin:8px;padding:12px}.send-recovery-actions .button{flex:1 1 100%;width:100%}.upload-chip{flex-wrap:wrap}.upload-chip .upload-chip-copy{flex:1 1 calc(100% - 80px)}.upload-chip .upload-retry{order:3;max-width:100%;flex-basis:100%;width:100%}.upload-chip>.icon-button{margin-left:auto}}

@@ -68,6 +68,7 @@ const chatCategories=[['personal','개인채팅','chat'],['team','팀채팅','us
 const systemRoomMeta={announcements:{icon:'announcement',description:'회사 일정·결정·필수 안내',intro:'회사 일정과 결정, 꼭 알아야 할 안내를 확인하세요.'},info:{icon:'note',description:'업무 자료와 정보 공유',intro:'업무에 필요한 자료, 링크와 유용한 정보를 함께 나누세요.'},social:{icon:'chat',description:'가벼운 이야기와 일상',intro:'가벼운 안부부터 오늘의 이야기까지 편하게 나누세요.'}};
 Object.assign(state,{mentionIds:[],workspaceLink:null,ackRequired:false,mentionPicker:null,personalTab:'workday',savedView:'saved',taskFilter:'all',taskScope:'mine',shareSeq:0,personalSeq:0,personalItems:[],notificationCount:0,searchMessages:[],searchOffset:0,decisionQuery:'',decisionCurrent:true,decisionKind:'all',customerWork:[],catchUp:null});
 Object.assign(state,{scheduledNotifications:{enabled:null},workNotificationSession:0,workNotificationRevision:0,deadlineSettings:undefined,deadlineSettingsUser:null});
+Object.assign(state,{transferSession:0,sendAttempts:new Map(),transferFocusRevision:0});
 function sortedPublicChannels(channels){const order=Object.keys(systemRoomMeta);return channels.map((channel,index)=>({channel,index,rank:order.includes(channel.systemKey)?order.indexOf(channel.systemKey):order.length})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(item=>item.channel);}
 function channelCategory(channel){return channel?.kind==='self'||channel?.kind==='dm'?'personal':channel?.scope==='team'?'team':'all';}
 function selectedConversation(){const channel=currentChannel();return channel&&channelCategory(channel)===state.chatCategory?channel:null;}
@@ -84,10 +85,13 @@ function toast(message, error = false){
 }
 async function api(path, options = {}){
   const opts = {...options,credentials:'same-origin',headers:{...options.headers}};
+  const recoveryContext=opts.recoveryContext;delete opts.recoveryContext;
   if(options.body !== undefined && typeof options.body !== 'string'){opts.body = JSON.stringify(options.body);opts.headers['Content-Type']='application/json';}
   if(state.integrated?.csrfToken&&opts.method&&opts.method!=='GET')opts.headers['X-CSRF-Token']=state.integrated.csrfToken;
-  const response = await fetch(moduleUrl(path),opts);
-  const data = await response.json().catch(() => ({}));
+  const controller=recoveryContext&&typeof AbortController==='function'?new AbortController():null;
+  if(controller)opts.signal=controller.signal;const timeout=controller?setTimeout(()=>controller.abort(),30000):null;
+  let response,data;try{response=await fetch(moduleUrl(path),opts);data=await response.json().catch(()=>({}));}finally{if(controller)clearTimeout(timeout);}
+  if(recoveryContext&&!transferContextCurrent(recoveryContext))throw new Error('로그인이 바뀌어 이전 요청을 종료했어요.');
   if(!response.ok){
     if(response.status===401&&moduleBase){returnToCompanyLogin();throw new Error('회사 계정으로 다시 로그인해 주세요.');}
     if(response.status===401 && state.user){state.events?.close();state.user=null;state.queues.forEach(q=>q.forEach(f=>f.xhr?.abort()));state.queues.clear();if(modal.open)modal.close();renderAuth('login');}
@@ -106,7 +110,10 @@ function queue(channelId = state.channelId){
     let restored=[];
     if(state.user&&channelId)try{
       const saved=JSON.parse(localStorage.getItem(attachmentKey(channelId))||'[]');
-      if(Array.isArray(saved))restored=saved.filter(item=>item?.file&&typeof item.file.id==='string'&&item.file.channelId===channelId&&item.file.uploaderId===state.user.id).slice(0,5).map(item=>({key:item.key||crypto.randomUUID(),name:item.file.name,size:item.file.size,status:'done',progress:100,cancelled:false,file:{...item.file,url:moduleUrl(`/api/files/${id(item.file.id)}`)}}));
+      if(Array.isArray(saved))restored=saved.flatMap(item=>{
+        if(item?.file&&typeof item.file.id==='string'&&item.file.channelId===channelId&&item.file.uploaderId===state.user.id)return[{key:item.key||crypto.randomUUID(),name:item.file.name,size:item.file.size,status:item.cancelPending?'error':'done',progress:100,cancelled:Boolean(item.cancelPending),cancelPending:Boolean(item.cancelPending),errorCode:item.errorCode||null,file:{...item.file,url:moduleUrl(`/api/files/${id(item.file.id)}`)}}];
+        if(item?.userId===state.user.id&&item.channelId===channelId&&typeof item.key==='string'&&/^[0-9a-f-]{36}$/i.test(item.key)&&typeof item.name==='string'&&Number.isFinite(item.size))return[{key:item.key,name:item.name,size:item.size,status:'error',progress:0,cancelled:Boolean(item.cancelPending),cancelPending:Boolean(item.cancelPending),rawFile:null,errorCode:item.errorCode||null}];return[];
+      }).slice(0,5);
     }catch{}
     state.queues.set(channelId,restored);
   }
@@ -114,7 +121,7 @@ function queue(channelId = state.channelId){
 }
 function persistQueue(channelId=state.channelId){
   if(!state.user||!channelId||state.unavailableChannels.has(channelId))return;
-  const completed=(state.queues.get(channelId)||[]).filter(item=>item.status==='done'&&!item.cancelled).map(item=>({key:item.key,file:item.file}));
+  const completed=(state.queues.get(channelId)||[]).filter(item=>!item.cancelled||item.cancelPending).map(item=>item.status==='done'&&!item.cancelPending?{key:item.key,file:item.file}:{key:item.key,name:item.name,size:item.size,userId:state.user.id,channelId,cancelPending:Boolean(item.cancelPending),errorCode:item.errorCode||null,...(item.file?{file:item.file}:{})});
   try{if(completed.length)localStorage.setItem(attachmentKey(channelId),JSON.stringify(completed));else localStorage.removeItem(attachmentKey(channelId));}catch{toast('첨부 파일의 임시 기록을 보관하지 못했어요. 새로고침 전에 전송해 주세요.',true);}
 }
 function channelIcon(channel){return systemRoomMeta[channel.systemKey]?.icon||(channel.kind==='self'?'note':channel.kind==='dm'?'chat':channel.category==='project'?'project':'hash');}
@@ -147,6 +154,7 @@ async function boot(){
   catch(error){app.innerHTML=`<div class="boot"><div class="page-error"><h2>연결을 기다리고 있어요</h2><p class="muted">메신저 서버가 실행 중인지 확인한 후 다시 열어 주세요.</p><p class="tiny muted">${esc(error.message)}</p><button class="button primary" id="retry-boot">다시 연결</button></div></div>`;$('#retry-boot').onclick=boot;}
 }
 function renderAuth(mode='login'){
+  resetTransfers();
   resetWorkNotificationState();
   if(moduleBase){returnToCompanyLogin();return;}
   const setup=mode==='setup',join=mode==='join';
@@ -158,6 +166,7 @@ function renderAuth(mode='login'){
   $('#switch-auth')?.addEventListener('click',()=>renderAuth(join?'login':'join'));
 }
 function enterWorkspace(data){
+  resetTransfers();state.sendRecovery={messages:data.sendRecovery?.messages===true,uploads:data.sendRecovery?.uploads===true};
   resetWorkNotificationState();setWorkNotificationStatus(data.scheduledNotifications?.enabled);
   document.body.classList.toggle('integrated-module',Boolean(data.integrated));
   document.body.classList.toggle('viewer-mode',data.integrated?.canWrite===false);
@@ -187,7 +196,7 @@ function renderShell(){
   $('#composer-input').addEventListener('keydown',event=>{if(mentionKeyboard(event))return;if(event.key==='Enter'&&!event.shiftKey&&!event.isComposing&&!composition&&event.keyCode!==229){event.preventDefault();if(!$('#send-message').disabled)$('#composer-form').requestSubmit();}});
   $('#attach-file').onclick=()=>$('#file-input').click();$('#file-input').onchange=event=>{addFiles([...event.target.files]);event.target.value='';};
   $('#composer-emoji').onclick=()=>reactionDialog(null);
-  $('#upload-queue').onclick=event=>{const btn=event.target.closest('[data-upload-remove]');if(btn)removeUpload(btn.dataset.uploadRemove);};
+  $('#upload-queue').onclick=event=>{const retry=event.target.closest('[data-upload-retry]');if(retry)return retryUpload(retry.dataset.uploadRetry);const btn=event.target.closest('[data-upload-remove]');if(btn)removeUpload(btn.dataset.uploadRemove);};
   $('#message-list').onclick=handleMessageAction;
   $('#jump-latest').onclick=()=>scrollToBottom();
   $('#message-scroll').onscroll=()=>{const box=$('#message-scroll');$('#jump-latest').classList.toggle('hidden',box.scrollHeight-box.scrollTop-box.clientHeight<200);};
@@ -387,26 +396,180 @@ async function refreshMessages(){
 }
 async function loadEarlier(button){if(!state.messages.length)return;button.disabled=true;const seq=state.loadSeq,box=$('#message-scroll'),oldHeight=box.scrollHeight;try{const result=await api(`/api/channels/${id(state.channelId)}/messages?before=${id(state.messages[0].id)}`);if(seq!==state.loadSeq)return;state.messages=[...result.messages,...state.messages];state.hasMore=result.hasMore;renderMessages();box.scrollTop=box.scrollHeight-oldHeight;}catch(error){toast(error.message,true);button.disabled=false;}}
 function resizeComposer(){const box=$('#composer-input');if(!box)return;box.style.height='auto';box.style.height=`${Math.min(box.scrollHeight,190)}px`;}
-function updateSend(){const box=$('#composer-input'),button=$('#send-message');$$('[data-upload-remove]').forEach(item=>item.disabled=state.sending);if(!box||!button)return;const uploads=queue();button.disabled=!canPostToChannel()||state.sending||!selectedConversation()||uploads.some(f=>f.status!=='done')||(!box.value.trim()&&!uploads.length&&!state.workspaceLink);$('#composer-status').textContent=!selectedConversation()?'대화방을 선택한 뒤 메시지를 보낼 수 있어요.':!canPostToChannel()?'이 대화방은 읽기 전용입니다.':uploads.some(f=>f.status==='uploading')?'파일을 올리고 있어요. 완료 후 전송할 수 있어요.':uploads.some(f=>f.status==='error')?'실패한 파일을 제거하고 다시 올려 주세요.':state.sending?'메시지를 보내고 있어요.':`파일을 끌어다 놓아 보세요. ${uploadDestination()}.`;}
-async function sendMessage(event){
-  event.preventDefault();if(!canPostToChannel()||!selectedConversation()||$('#send-message').disabled)return;
-  const channelId=state.channelId,box=$('#composer-input'),body=box.value,uploads=[...queue()],fileIds=uploads.map(f=>f.file.id),replyToId=state.replyTarget?.id||null;
-  const extras=composePayload(),extrasSnapshot=JSON.stringify(extras),savedExtrasSnapshot=JSON.stringify({mentionIds:state.mentionIds,workspaceLink:state.workspaceLink,ackRequired:state.ackRequired});state.sending=true;updateSend();
-  try{
-    const result=await api(`/api/channels/${id(channelId)}/messages`,{method:'POST',body:{body,fileIds,replyToId,...extras}});
-    if(state.unavailableChannels.has(channelId))return;
-    state.queues.set(channelId,queue(channelId).filter(f=>!uploads.includes(f)));persistQueue(channelId);
-    if(state.channelId===channelId){
-      if(box.value===body){const extrasUnchanged=JSON.stringify(composePayload())===extrasSnapshot;box.value='';if(extrasUnchanged){state.mentionIds=[];state.workspaceLink=null;state.ackRequired=currentChannel()?.systemKey==='announcements';}saveDraft();resizeComposer();renderComposeExtras();closeMentionPicker();}
-      if(state.replyTarget?.id===replyToId)clearReply();if(!state.messages.some(m=>m.id===result.message.id))state.messages.push(result.message);renderMessages();renderQueue();scrollToBottom();box.focus();
-    }else{try{if(localStorage.getItem(draftKey(channelId))===body){localStorage.removeItem(draftKey(channelId));if(localStorage.getItem(composeExtrasKey(channelId))===savedExtrasSnapshot)localStorage.removeItem(composeExtrasKey(channelId));}const saved=JSON.parse(localStorage.getItem(replyDraftKey(channelId))||'null');if(saved?.id===replyToId)localStorage.removeItem(replyDraftKey(channelId));}catch{}}
-    await refreshChannels();await markRead(channelId);
-  }catch(error){toast(error.message,true);}finally{state.sending=false;updateSend();}
+function transferContext(){return{userId:state.user?.id,session:state.transferSession};}
+function transferContextCurrent(context){return Boolean(context.userId&&context.userId===state.user?.id&&context.session===state.transferSession);}
+function resetTransfers(){
+  state.transferSession++;state.sending=false;state.sendAttempts.clear();
+  for(const uploads of state.queues.values())for(const upload of uploads){upload.cancelled=true;upload.rawFile=null;upload.xhr?.abort();}
+  state.queues.clear();
 }
-function addFiles(files){if(!canPostToChannel()||!selectedConversation())return;const channelId=state.channelId;const selected=queue(channelId);for(const file of files){if(selected.length>=5){toast('한 메시지에는 파일을 최대 5개까지 첨부할 수 있어요.',true);break;}if(file.size===0||file.size>state.fileBytes){toast(`${file.name}: 0 B보다 크고 ${bytes(state.fileBytes)} 이하인 파일을 골라 주세요.`,true);continue;}const upload={key:crypto.randomUUID(),name:file.name,size:file.size,status:'uploading',progress:0,xhr:null,cancelled:false};selected.push(upload);uploadFile(upload,file,channelId);}renderQueue();updateSend();}
-function uploadFile(upload,file,channelId){const xhr=new XMLHttpRequest();upload.xhr=xhr;xhr.open('POST',moduleUrl(`/api/channels/${id(channelId)}/files`));if(state.integrated?.csrfToken)xhr.setRequestHeader('X-CSRF-Token',state.integrated.csrfToken);xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.upload.onprogress=event=>{if(upload.channelUnavailable)return;if(event.lengthComputable){upload.progress=Math.round(event.loaded/event.total*100);if(channelId===state.channelId)renderQueue();}};xhr.onload=()=>{if(upload.channelUnavailable)return;let data;try{data=JSON.parse(xhr.responseText);}catch{data={};}if(xhr.status>=200&&xhr.status<300&&data.file){upload.file=data.file;upload.status='done';if(!upload.cancelled)persistQueue(channelId);if(upload.cancelled)api(`/api/files/${id(data.file.id)}`,{method:'DELETE'}).catch(()=>{});}else{upload.status='error';upload.error=data.error||'업로드하지 못했어요.';if(!upload.cancelled)toast(`${file.name}: ${upload.error}`,true);}if(channelId===state.channelId){renderQueue();updateSend();}};xhr.onerror=()=>{if(upload.channelUnavailable)return;upload.status='error';upload.error='서버 연결이 끊겼어요.';if(channelId===state.channelId){renderQueue();updateSend();}toast('파일을 올리지 못했어요. 연결 후 다시 시도해 주세요.',true);};xhr.onabort=()=>{};xhr.send(file);}
-function renderQueue(){const wrap=$('#upload-queue');if(!wrap)return;const uploads=queue();wrap.classList.toggle('hidden',!uploads.length);wrap.innerHTML=uploads.map(file=>`<div class="upload-chip${file.status==='error'?' error':''}">${icon('file')}<div><strong title="${esc(file.name)}">${esc(file.name)}</strong><small>${file.status==='uploading'?`${file.progress===100?'처리 중':`${file.progress}% 업로드`}`:file.status==='error'?'업로드 실패':bytes(file.size)}</small></div><button type="button" class="icon-button" data-upload-remove="${file.key}" aria-label="${esc(file.name)} 첨부 취소">${icon('close')}</button>${file.status==='uploading'?`<progress class="upload-progress" max="100" value="${file.progress}" aria-label="업로드 진행률"></progress>`:''}</div>`).join('');}
-async function removeUpload(key){if(state.sending)return;const uploads=queue();const file=uploads.find(f=>f.key===key);if(!file)return;file.cancelled=true;file.xhr?.abort();state.queues.set(state.channelId,uploads.filter(f=>f.key!==key));persistQueue();renderQueue();updateSend();if(file.file)try{await api(`/api/files/${id(file.file.id)}`,{method:'DELETE'});}catch(error){toast(error.message,true);}}
+function sendAttemptKey(channelId,userId=state.user?.id){return `synk-messenger:send:${userId}:${channelId}`;}
+function sendAttempt(channelId=state.channelId){
+  if(!channelId||!state.user||state.unavailableChannels.has(channelId))return null;
+  const key=sendAttemptKey(channelId);if(state.sendAttempts.has(key))return state.sendAttempts.get(key);
+  let attempt=null;try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.userId===state.user.id&&saved.channelId===channelId&&typeof saved.clientMessageId==='string'&&/^[0-9a-f-]{36}$/i.test(saved.clientMessageId)&&typeof saved.payload?.body==='string'&&Array.isArray(saved.payload.fileIds))attempt={...saved,busy:false,status:'unknown'};}catch{}
+  state.sendAttempts.set(key,attempt);return attempt;
+}
+function persistSendAttempt(attempt){
+  const {busy,status,...saved}=attempt;
+  try{localStorage.setItem(sendAttemptKey(attempt.channelId,attempt.userId),JSON.stringify(saved));return true;}
+  catch{return false;}
+}
+function forgetSendAttempt(attempt){
+  const key=sendAttemptKey(attempt.channelId,attempt.userId);
+  if(state.sendAttempts.get(key)===attempt)state.sendAttempts.set(key,null);
+  try{const saved=JSON.parse(localStorage.getItem(key)||'null');if(saved?.clientMessageId===attempt.clientMessageId)localStorage.removeItem(key);}catch{}
+}
+function currentComposeSnapshot(){return{body:$('#composer-input')?.value||'',replyToId:state.replyTarget?.id||null,fileIds:queue().filter(item=>item.file&&!item.cancelled).map(item=>item.file.id),...composePayload()};}
+function beginTransferFocus(selector){
+  const focused=document.activeElement;if(!focused?.matches?.(selector))return null;
+  return{...transferContext(),channelId:state.channelId,navigation:state.navigationSeq,revision:state.transferFocusRevision,selector};
+}
+function finishTransferFocus(saved){
+  if(!saved||!transferContextCurrent(saved)||saved.channelId!==state.channelId||saved.navigation!==state.navigationSeq||saved.revision!==state.transferFocusRevision)return;
+  const focused=document.activeElement;if(focused&&focused!==document.body&&focused!==document.documentElement&&focused.isConnected!==false)return;
+  const action=document.querySelector(saved.selector),target=action&&!action.disabled?action:$('#composer-input');if(target&&!target.disabled)target.focus({preventScroll:true});
+}
+document.addEventListener('focusin',event=>{if(event.target!==document.body&&event.target!==document.documentElement)state.transferFocusRevision++;});
+document.addEventListener('pointerdown',()=>{state.transferFocusRevision++;});
+window.addEventListener('blur',()=>{state.transferFocusRevision++;});
+document.addEventListener('keydown',event=>{if(event.key==='Tab')state.transferFocusRevision++;});
+function renderSendRecovery(){
+  const form=$('#composer-form');if(!form)return;
+  let wrap=$('#send-recovery');if(!wrap){form.insertAdjacentHTML('afterbegin','<section id="send-recovery" class="send-recovery hidden" aria-label="메시지 전송 확인" aria-live="polite"></section>');wrap=$('#send-recovery');}if(!wrap)return;
+  const focused=document.activeElement,focusAction=['data-send-check','data-send-retry','data-send-cancel'].find(action=>focused?.hasAttribute?.(action)&&wrap.contains(focused));
+  const attempt=sendAttempt();wrap.classList.toggle('hidden',!attempt);if(!attempt){if(wrap.innerHTML)wrap.innerHTML='';delete wrap.dataset.recoveryContent;return;}
+  const changed=JSON.stringify(currentComposeSnapshot())!==JSON.stringify(attempt.payload);
+  const heading=attempt.busy?(attempt.status==='checking'?'전송 결과를 확인하고 있어요':'메시지를 보내고 있어요'):'전송 결과를 확인해 주세요';
+  const preview=attempt.payload.body||`${attempt.payload.fileIds.length?`첨부파일 ${attempt.payload.fileIds.length}개`:''}${attempt.payload.workspaceLink?' 공유 카드':''}`;
+  const content=`<strong>${heading}</strong><p class="send-recovery-preview">${esc(preview.slice(0,160))}${preview.length>160?'…':''}</p><p>${changed?'수정한 초안은 그대로 남겨 둘게요. 위 내용의 전송 결과를 먼저 확인하거나 전송을 취소해 주세요.':'연결이 끊겨도 이미 보내졌을 수 있어요. 같은 내용으로 다시 시도해도 한 번만 보내요.'}</p>${attempt.notice?`<p class="send-recovery-notice">${esc(attempt.notice)}</p>`:''}<div class="send-recovery-actions"><button type="button" class="button" data-send-check ${attempt.busy?'disabled':''}>전송 확인</button><button type="button" class="button primary" data-send-retry ${attempt.busy||!canPostToChannel()?'disabled':''}>같은 내용 다시 보내기</button><button type="button" class="button" data-send-cancel ${attempt.busy?'disabled':''}>전송 취소</button></div>`;
+  if(wrap.dataset.recoveryContent!==content){wrap.innerHTML=content;wrap.dataset.recoveryContent=content;}
+  wrap.onclick=event=>{if(event.target.closest('[data-send-check]'))checkSendAttempt();else if(event.target.closest('[data-send-retry]'))retrySendAttempt();else if(event.target.closest('[data-send-cancel]'))cancelSendAttempt();};
+  const focusTarget=focusAction?wrap.querySelector(`[${focusAction}]`):null;if(focusTarget&&!focusTarget.disabled)focusTarget.focus({preventScroll:true});
+}
+function updateSend(){
+  const box=$('#composer-input'),button=$('#send-message');if(!box||!button)return;
+  const allUploads=queue(),uploads=allUploads.filter(item=>!item.cancelled),attempt=sendAttempt(),busy=Boolean(attempt?.busy);
+  $$('[data-upload-remove]').forEach(item=>item.disabled=busy||Boolean(allUploads.find(file=>file.key===item.dataset.uploadRemove)?.checking)||Boolean(attempt?.payload.fileIds.includes(uploads.find(file=>file.key===item.dataset.uploadRemove)?.file?.id)));
+  button.disabled=!canPostToChannel()||Boolean(attempt)||!selectedConversation()||uploads.some(f=>f.status!=='done')||(!box.value.trim()&&!uploads.length&&!state.workspaceLink);
+  $('#composer-status').textContent=!selectedConversation()?'대화방을 선택한 뒤 메시지를 보낼 수 있어요.':!canPostToChannel()?'이 대화방은 읽기 전용입니다.':attempt?'앞선 메시지의 전송 결과를 확인해 주세요.':uploads.some(f=>f.status==='uploading')?'파일을 올리고 있어요. 완료 후 전송할 수 있어요.':uploads.some(f=>f.status==='error')?'실패한 파일에서 다시 시도를 눌러 주세요.':`파일을 끌어다 놓아 보세요. ${uploadDestination()}.`;
+  renderSendRecovery();
+}
+async function sendMessage(event){
+  event.preventDefault();if(!canPostToChannel()||!selectedConversation()||$('#send-message').disabled||sendAttempt())return;
+  if(state.sendRecovery?.messages!==true){toast('전송 정보를 확인하지 못했어요. 새로고침한 뒤 다시 보내 주세요.',true);return;}
+  saveDraft();saveReply();
+  const attempt={...transferContext(),channelId:state.channelId,clientMessageId:crypto.randomUUID(),payload:currentComposeSnapshot(),savedExtras:{mentionIds:[...state.mentionIds],workspaceLink:state.workspaceLink,ackRequired:state.ackRequired},busy:false,status:'unknown'};
+  if(!persistSendAttempt(attempt)){toast('전송 기록을 보관하지 못했어요. 브라우저 저장 공간을 확인한 뒤 다시 보내 주세요.',true);return;}
+  state.sendAttempts.set(sendAttemptKey(attempt.channelId),attempt);await postSendAttempt(attempt);
+}
+function attemptCurrent(attempt,context){return transferContextCurrent(context)&&!state.unavailableChannels.has(attempt.channelId)&&state.sendAttempts.get(sendAttemptKey(attempt.channelId,attempt.userId))===attempt;}
+function completeSendAttempt(attempt,result,{deleted=false}={}){
+  const channelId=attempt.channelId,payload=attempt.payload,active=state.channelId===channelId;
+  const uploads=state.queues.get(channelId)||[];
+  const sameFiles=JSON.stringify(uploads.filter(upload=>!upload.cancelled).map(upload=>upload.file?.id||null))===JSON.stringify(payload.fileIds);
+  const unchanged=active&&sameFiles&&JSON.stringify(currentComposeSnapshot())===JSON.stringify(payload);
+  for(const upload of uploads)if(payload.fileIds.includes(upload.file?.id))upload.rawFile=null;
+  state.queues.set(channelId,uploads.filter(upload=>!payload.fileIds.includes(upload.file?.id)));persistQueue(channelId);
+  forgetSendAttempt(attempt);
+  if(active){
+    if(unchanged){$('#composer-input').value='';state.mentionIds=[];state.workspaceLink=null;state.ackRequired=currentChannel()?.systemKey==='announcements';clearReply();saveDraft();resizeComposer();renderComposeExtras();closeMentionPicker();}
+    if(result?.message&&!state.messages.some(message=>message.id===result.message.id)){state.messages.push(result.message);state.messages.sort((a,b)=>Number(a.id)-Number(b.id));}
+    renderMessages({preserve:true});renderQueue();updateSend();
+  }else{
+    try{const sameBody=localStorage.getItem(draftKey(channelId))===payload.body,sameExtras=localStorage.getItem(composeExtrasKey(channelId))===JSON.stringify(attempt.savedExtras),reply=JSON.parse(localStorage.getItem(replyDraftKey(channelId))||'null');if(sameBody&&sameExtras&&sameFiles&&(reply?.id||null)===payload.replyToId){localStorage.removeItem(draftKey(channelId));localStorage.removeItem(composeExtrasKey(channelId));localStorage.removeItem(replyDraftKey(channelId));}}catch{}
+  }
+  if(deleted)toast('앞선 메시지는 전송된 뒤 삭제됐어요. 다시 보내지 않았어요.');else if(result?.unavailable===true)toast('전송은 완료됐어요. 공유 자료를 더 이상 확인할 수 없어요.');
+}
+async function postSendAttempt(attempt){
+  if(attempt.busy)return;const context=transferContext();if(!attemptCurrent(attempt,context))return;
+  const focusReturn=beginTransferFocus('[data-send-retry]');attempt.busy=true;attempt.status='sending';attempt.notice='';state.sending=true;updateSend();
+  try{
+    const result=await api(`/api/channels/${id(attempt.channelId)}/messages`,{method:'POST',body:{...attempt.payload,clientMessageId:attempt.clientMessageId},recoveryContext:context});
+    if(!attemptCurrent(attempt,context))return;
+    if(!result.message&&!(result.status==='sent'&&result.unavailable===true))throw new Error('전송 결과를 확인하지 못했어요.');
+    completeSendAttempt(attempt,result);refreshChannels().catch(()=>{});if(state.channelId===attempt.channelId)markRead(attempt.channelId).catch(()=>{});
+  }catch(error){
+    if(!attemptCurrent(attempt,context))return;
+    if(error.code==='MESSAGE_DELETED')completeSendAttempt(attempt,null,{deleted:true});
+    else if(error.code==='MESSAGE_CANCELLED'){forgetSendAttempt(attempt);toast('전송이 취소됐어요. 작성 중인 초안은 남겨 뒀어요.');}
+    else{attempt.status='unknown';attempt.notice=error.code==='MESSAGE_REQUEST_CONFLICT'?'이 전송 기록의 내용을 확인할 수 없어요. 전송 확인을 눌러 주세요.':'연결을 확인한 뒤 전송 확인 또는 같은 내용 다시 보내기를 눌러 주세요.';}
+  }finally{if(transferContextCurrent(context)){attempt.busy=false;state.sending=false;updateSend();finishTransferFocus(focusReturn);}}
+}
+async function checkSendAttempt(){
+  const attempt=sendAttempt();if(!attempt||attempt.busy)return;const context=transferContext(),focusReturn=beginTransferFocus('[data-send-check]');attempt.busy=true;attempt.status='checking';attempt.notice='';updateSend();
+  try{const result=await api(`/api/channels/${id(attempt.channelId)}/messages/requests/${id(attempt.clientMessageId)}`,{recoveryContext:context});if(attemptCurrent(attempt,context)){if(!result.message&&!(result.status==='sent'&&result.unavailable===true))throw new Error('전송 결과를 확인하지 못했어요.');completeSendAttempt(attempt,result);}}
+  catch(error){if(attemptCurrent(attempt,context)){if(error.code==='MESSAGE_DELETED')completeSendAttempt(attempt,null,{deleted:true});else if(error.code==='MESSAGE_CANCELLED'){forgetSendAttempt(attempt);toast('전송이 취소됐어요. 작성 중인 초안은 남겨 뒀어요.');}else attempt.notice=error.status===404?'아직 전송 완료를 확인하지 못했어요. 같은 내용 다시 보내기나 전송 취소로 이어갈 수 있어요.':'전송 결과를 확인하지 못했어요. 연결이 돌아오면 다시 확인해 주세요.';}}
+  finally{if(transferContextCurrent(context)){attempt.busy=false;attempt.status='unknown';updateSend();finishTransferFocus(focusReturn);}}
+}
+async function retrySendAttempt(){const attempt=sendAttempt();if(!attempt||attempt.busy||!canPostToChannel()||state.sendRecovery?.messages!==true)return;await postSendAttempt(attempt);}
+async function cancelSendAttempt(){
+  const attempt=sendAttempt();if(!attempt||attempt.busy||state.sendRecovery?.messages!==true)return;const context=transferContext(),focusReturn=beginTransferFocus('[data-send-cancel]');attempt.busy=true;attempt.status='checking';attempt.notice='';updateSend();
+  try{const result=await api(`/api/channels/${id(attempt.channelId)}/messages/requests/${id(attempt.clientMessageId)}`,{method:'DELETE',recoveryContext:context});if(!attemptCurrent(attempt,context))return;if(result.status==='cancelled'){forgetSendAttempt(attempt);toast('전송이 취소됐어요. 작성 중인 초안은 남겨 뒀어요.');}else if(result.status==='sent'&&(result.message||result.unavailable===true)){completeSendAttempt(attempt,result);if(!result.unavailable)toast('이미 전송된 메시지예요. 대화에서 확인할 수 있어요.');}else throw new Error('취소 결과를 확인하지 못했어요.');}
+  catch(error){if(attemptCurrent(attempt,context)){if(error.code==='MESSAGE_DELETED')completeSendAttempt(attempt,null,{deleted:true});else if(error.code==='MESSAGE_CANCELLED'){forgetSendAttempt(attempt);toast('전송이 취소됐어요. 작성 중인 초안은 남겨 뒀어요.');}else attempt.notice='취소 여부를 확인하지 못했어요. 연결이 돌아오면 다시 확인해 주세요.';}}
+  finally{if(transferContextCurrent(context)){attempt.busy=false;attempt.status='unknown';updateSend();finishTransferFocus(focusReturn);}}
+}
+function addFiles(files){
+  if(!canPostToChannel()||!selectedConversation())return;const channelId=state.channelId,selected=queue(channelId);
+  for(const file of files){if(selected.length>=5){toast('한 메시지에는 파일을 최대 5개까지 첨부할 수 있어요.',true);break;}if(file.size===0||file.size>state.fileBytes){toast(`${file.name}: 0 B보다 크고 ${bytes(state.fileBytes)} 이하인 파일을 골라 주세요.`,true);continue;}
+    const upload={key:crypto.randomUUID(),name:file.name,size:file.size,status:'error',progress:0,xhr:null,cancelled:false,rawFile:file,...transferContext()};selected.push(upload);uploadFile(upload,file,channelId);
+  }persistQueue(channelId);renderQueue();updateSend();
+}
+function uploadCurrent(upload,channelId,context){return transferContextCurrent(context)&&!upload.cancelled&&!upload.channelUnavailable&&!state.unavailableChannels.has(channelId)&&(state.queues.get(channelId)||[]).includes(upload);}
+function uploadFailure(upload,error,code){upload.status='error';upload.error=error;upload.errorCode=code||null;upload.checking=false;}
+function uploadFile(upload,file,channelId){
+  if(upload.status==='uploading'||upload.checking||upload.cancelled)return;const context=transferContext();if(!uploadCurrent(upload,channelId,context))return;
+  upload.status='uploading';upload.progress=0;upload.error=null;upload.errorCode=null;upload.rawFile=file;
+  const xhr=new XMLHttpRequest();upload.xhr=xhr;xhr.open('POST',moduleUrl(`/api/channels/${id(channelId)}/files`));xhr.timeout=0;
+  if(state.integrated?.csrfToken)xhr.setRequestHeader('X-CSRF-Token',state.integrated.csrfToken);xhr.setRequestHeader('Content-Type','application/octet-stream');xhr.setRequestHeader('X-File-Name',encodeURIComponent(file.name));xhr.setRequestHeader('X-Upload-Id',upload.key);
+  const active=()=>upload.xhr===xhr&&uploadCurrent(upload,channelId,context);
+  let inactivityTimer=null,lastLoaded=0;const clearInactivity=()=>{clearTimeout(inactivityTimer);inactivityTimer=null;};
+  const repaint=()=>{persistQueue(channelId);if(channelId===state.channelId){renderQueue();updateSend();}finishTransferFocus(upload.focusReturn);upload.focusReturn=null;};
+  const armInactivity=delay=>{clearInactivity();inactivityTimer=setTimeout(()=>{if(!active())return;upload.xhr=null;xhr.abort();uploadFailure(upload,'업로드가 멈췄어요. 연결을 확인한 뒤 다시 시도해 주세요.');repaint();},delay);};
+  xhr.upload.onprogress=event=>{if(!active())return;if(event.loaded>lastLoaded){lastLoaded=event.loaded;armInactivity(120000);}if(event.lengthComputable){upload.progress=Math.round(event.loaded/event.total*100);if(channelId===state.channelId)renderQueue();}};
+  xhr.upload.onload=()=>{if(active())armInactivity(300000);};
+  xhr.onload=()=>{
+    clearInactivity();
+    let data;try{data=JSON.parse(xhr.responseText);}catch{data={};}
+    if(!active())return;
+    upload.xhr=null;if(xhr.status>=200&&xhr.status<300&&data.file){upload.file=data.file;upload.status='done';upload.progress=100;upload.rawFile=null;}
+    else uploadFailure(upload,data.error||'업로드하지 못했어요.',data.code);repaint();
+  };
+  const failed=()=>{clearInactivity();if(!active())return;upload.xhr=null;uploadFailure(upload,'연결이 끊겼어요. 같은 파일로 다시 시도할 수 있어요.');repaint();};
+  xhr.onerror=failed;xhr.ontimeout=failed;xhr.onabort=clearInactivity;
+  try{armInactivity(120000);xhr.send(file);}catch{failed();}
+}
+async function retryUpload(key){
+  const channelId=state.channelId,upload=queue(channelId).find(item=>item.key===key);if(!upload||upload.status!=='error'||upload.checking||upload.cancelled||!canPostToChannel()||state.sendRecovery?.uploads!==true)return;
+  const context=transferContext();upload.focusReturn=beginTransferFocus(`[data-upload-retry="${CSS.escape(key)}"]`);upload.checking=true;renderQueue();updateSend();
+  try{const result=await api(`/api/channels/${id(channelId)}/files/requests/${id(upload.key)}`,{recoveryContext:context});if(!uploadCurrent(upload,channelId,context))return;if(!result.file)throw new Error('파일을 확인하지 못했어요.');upload.file=result.file;upload.status='done';upload.progress=100;upload.rawFile=null;}
+  catch(error){
+    if(!uploadCurrent(upload,channelId,context))return;
+    upload.checking=false;
+    if(error.status===404&&upload.rawFile){uploadFile(upload,upload.rawFile,channelId);}
+    else if(error.status===404)uploadFailure(upload,'이 창에 파일 원본이 없어요. 첨부를 취소하고 파일을 다시 골라 주세요.','FILE_NOT_AVAILABLE');
+    else uploadFailure(upload,error.message,error.code);
+  }finally{if(uploadCurrent(upload,channelId,context)){upload.checking=false;persistQueue(channelId);if(channelId===state.channelId){renderQueue();updateSend();}if(upload.status!=='uploading'){finishTransferFocus(upload.focusReturn);upload.focusReturn=null;}}}
+}
+function renderQueue(){
+  const wrap=$('#upload-queue');if(!wrap)return;const uploads=queue(),attempt=sendAttempt();wrap.classList.toggle('hidden',!uploads.length);
+  const focused=document.activeElement,focusAction=['uploadRetry','uploadRemove'].find(action=>focused?.dataset?.[action]&&wrap.contains(focused)),focusKey=focusAction?focused.dataset[focusAction]:null;
+  wrap.innerHTML=uploads.map(file=>{
+    const terminal=['UPLOAD_CONSUMED','UPLOAD_DELETED','UPLOAD_CANCELLED','UPLOAD_REQUEST_CONFLICT','UPLOAD_UNCERTAIN'].includes(file.errorCode),missing=file.status==='error'&&!file.rawFile;
+    const status=file.cancelPending?(file.checking?'첨부 취소 확인 중':file.errorCode==='UPLOAD_UNCERTAIN'?'취소 여부를 확인할 수 없어요. 관리자에게 파일 확인을 요청해 주세요.':'첨부 취소를 확인하지 못했어요. 취소 확인을 눌러 주세요.'):file.checking?'업로드 결과 확인 중':file.status==='uploading'?(file.progress===100?'처리 중':`${file.progress}% 업로드`):file.status==='error'?(file.errorCode==='UPLOAD_UNCERTAIN'?'이전 업로드 결과를 확인할 수 없어요. 첨부를 취소하고 다시 골라 주세요.':terminal?'다시 올릴 수 없는 파일이에요. 첨부를 취소해 주세요.':file.errorCode==='FILE_NOT_AVAILABLE'?'파일을 다시 골라 주세요.':missing?'파일 원본이 이 창에 없어요. 업로드 결과를 확인해 주세요.':file.error||'업로드 실패'):bytes(file.size);
+    return `<div class="upload-chip${file.status==='error'?' error':''}">${icon('file')}<div class="upload-chip-copy"><strong title="${esc(file.name)}">${esc(file.name)}</strong><small>${esc(status)}</small></div>${file.status==='error'&&!terminal&&!file.cancelPending?`<button type="button" class="button upload-retry" data-upload-retry="${file.key}" aria-label="${esc(file.name)} ${missing?'업로드 확인':'다시 시도'}" ${file.checking?'disabled':''}>${missing?'업로드 확인':'다시 시도'}</button>`:''}<button type="button" class="${file.cancelPending?'button upload-retry':'icon-button'}" data-upload-remove="${file.key}" aria-label="${esc(file.name)} 첨부 취소" ${file.checking||attempt?.busy||attempt?.payload.fileIds.includes(file.file?.id)?'disabled':''}>${file.cancelPending?'취소 확인':icon('close')}</button>${file.status==='uploading'?`<progress class="upload-progress" max="100" value="${file.progress}" aria-label="업로드 진행률"></progress>`:''}</div>`;
+  }).join('');
+  const focusTarget=focusAction?wrap.querySelector(`[${focusAction==='uploadRetry'?'data-upload-retry':'data-upload-remove'}="${CSS.escape(focusKey)}"]`):null;if(focusTarget&&!focusTarget.disabled)focusTarget.focus({preventScroll:true});
+}
+async function removeUpload(key){
+  const channelId=state.channelId,uploads=queue(channelId),upload=uploads.find(item=>item.key===key),attempt=sendAttempt(channelId);if(!upload||upload.checking||attempt?.busy||attempt?.payload.fileIds.includes(upload.file?.id))return;
+  const context=transferContext(),knownFile=upload.file,focusReturn=beginTransferFocus(`[data-upload-remove="${CSS.escape(key)}"]`);upload.cancelled=true;upload.cancelPending=true;upload.checking=true;upload.status='error';upload.rawFile=null;upload.xhr?.abort();persistQueue(channelId);renderQueue();updateSend();
+  const current=()=>transferContextCurrent(context)&&!state.unavailableChannels.has(channelId)&&(state.queues.get(channelId)||[]).includes(upload);
+  const complete=()=>{upload.cancelPending=false;state.queues.set(channelId,(state.queues.get(channelId)||[]).filter(item=>item!==upload));persistQueue(channelId);};
+  try{const result=await api(knownFile?`/api/files/${id(knownFile.id)}`:`/api/channels/${id(channelId)}/files/requests/${id(upload.key)}`,{method:'DELETE',recoveryContext:context});if(!current())return;if(knownFile?result.ok!==true:result.status!=='cancelled')throw new Error('취소 결과를 확인하지 못했어요.');complete();}
+  catch(error){if(current()){if(['UPLOAD_CANCELLED','UPLOAD_DELETED','UPLOAD_CONSUMED'].includes(error.code)){complete();if(error.code==='UPLOAD_CONSUMED')toast('이미 전송된 첨부파일은 대화에 그대로 남겨 뒀어요.');}else{upload.errorCode=error.code||null;upload.error='첨부 취소를 확인하지 못했어요. 연결이 돌아오면 취소 확인을 눌러 주세요.';}}}
+  finally{if(transferContextCurrent(context)){upload.checking=false;persistQueue(channelId);if(channelId===state.channelId){renderQueue();updateSend();}finishTransferFocus(focusReturn);}}
+}
 async function handleMessageAction(event){
   const button=event.target.closest('[data-action]');if(!button)return;
   const action=button.dataset.action,messageId=button.closest('[data-message-id]')?.dataset.messageId;
@@ -565,6 +728,7 @@ function editChannelDialog(){
   $('#channel-edit-form').onsubmit=async event=>{event.preventDefault();const button=$('button[type=submit]',event.currentTarget);button.disabled=true;try{await api(`/api/channels/${id(channel.id)}`,{method:'PATCH',body:Object.fromEntries(new FormData(event.currentTarget))});await refreshChannels();if(version!==modalVersion||!modal.open)return;modal.close();if(state.channelId===channel.id){syncChannelHeader();renderMessages({preserve:true});}toast('대화방 정보를 저장했어요.');}catch(error){if(version===modalVersion&&modal.open){formError(error.message);button.disabled=false;}}};
 }
 function forgetChannelState(channelId){
+  const attempt=sendAttempt(channelId);if(attempt)forgetSendAttempt(attempt);
   state.unavailableChannels.add(channelId);state.searchSeq++;state.personalSeq++;state.filesSeq++;
   if(state.thread?.parent?.channelId===channelId)closeDrawer();
   for(const upload of state.queues.get(channelId)||[]){upload.channelUnavailable=true;upload.xhr?.abort();}state.queues.delete(channelId);
@@ -860,7 +1024,7 @@ function parentMessage(type,payload={}){
   window.parent.postMessage({type,...payload},location.origin);
 }
 function returnToCompanyLogin(){
-  state.events?.close();state.user=null;resetWorkNotificationState();if(modal.open)modal.close();
+  resetTransfers();state.events?.close();state.user=null;resetWorkNotificationState();if(modal.open)modal.close();
   app.innerHTML='<div class="boot"><p>회사 계정 로그인이 필요해요.</p><a class="button primary" href="/" target="_top">워크스페이스 로그인</a></div>';
   if(window.parent!==window)parentMessage('messenger:auth-expired');
   else location.replace('/');
