@@ -1,8 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {readFile,writeFile,mkdir,cp,mkdtemp,rm,readdir} from 'node:fs/promises';
+import {readFile,writeFile,mkdir,cp,mkdtemp,rm,readdir,lstat} from 'node:fs/promises';
+import {createHash} from 'node:crypto';
 import {globSync} from 'node:fs';
-import {dirname,join,resolve,relative,sep} from 'node:path';
+import {dirname,join,resolve,relative,sep,posix} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {tmpdir} from 'node:os';
 import {execFile} from 'node:child_process';
@@ -22,8 +23,8 @@ function globPattern(pattern){
   return new RegExp('^'+regex+'$');
 }
 async function stageCopy(directory){
-  const docker=await readFile(join(here,'Dockerfile'),'utf8');
-  const rules=(await readFile(join(here,'Dockerfile.dockerignore'),'utf8')).split(/\r?\n/).map(s=>s.trim()).filter(s=>s&&!s.startsWith('#')).map(s=>({include:s.startsWith('!'),pattern:globPattern((s.startsWith('!')?s.slice(1):s).replace(/\/$/,''))}));
+  const docker=await readFile(join(here,'Dockerfile'),'utf8'),dockerignore=await readFile(join(here,'Dockerfile.dockerignore'),'utf8');
+  const rules=dockerignore.split(/\r?\n/).map(s=>s.trim()).filter(s=>s&&!s.startsWith('#')).map(s=>({include:s.startsWith('!'),pattern:globPattern((s.startsWith('!')?s.slice(1):s).replace(/\/$/,''))}));
   const included=path=>{
     let keep=true;
     for(const rule of rules)if(rule.pattern.test(path))keep=rule.include;
@@ -50,24 +51,69 @@ async function stageCopy(directory){
       }
     }
   }
-  return {docker,copied};
+  return {docker,dockerignore,copied};
 }
+
+test('Docker static COPY allowlist contains the complete local server import graph',async t=>{
+  const docker=await readFile(join(here,'Dockerfile'),'utf8'),ignore=await readFile(join(here,'Dockerfile.dockerignore'),'utf8');
+  const rules=ignore.split(/\r?\n/).map(value=>value.trim()).filter(value=>value&&!value.startsWith('#')).map(value=>({include:value.startsWith('!'),pattern:globPattern((value.startsWith('!')?value.slice(1):value).replace(/\/$/,''))}));
+  const included=path=>{let keep=true;for(const rule of rules)if(rule.pattern.test(path))keep=rule.include;return keep;};
+  const payload=new Map();
+  for(const line of docker.split(/\r?\n/).filter(value=>value.startsWith('COPY '))){
+    const args=JSON.parse(line.slice(5)),destination=args.pop();assert.ok(destination.startsWith('/workspace/'));
+    for(const source of args){const matches=[...globSync(source,{cwd:root})];assert.ok(matches.length,'Missing COPY source: '+source);for(const match of matches){
+      const sourcePath=match.replaceAll('\\','/'),entry=join(root,match),info=await lstat(entry),target=posix.join(destination.slice('/workspace/'.length),destination.endsWith('/')?posix.basename(sourcePath):'');
+      if(info.isFile()){if(included(sourcePath))payload.set(target,sourcePath);continue;}
+      if(!included(sourcePath))continue;
+      for(const child of await readdir(entry,{recursive:true})){
+        const full=join(entry,child),file=posix.join(sourcePath,child.replaceAll('\\','/'));
+        if((await lstat(full)).isFile()&&included(file))payload.set(posix.join(target,child.replaceAll('\\','/')),file);
+      }
+    }
+    }
+  }
+  const queue=[companyPath+'/server.mjs'],visited=new Set(),missing=[];
+  // Resolve relative imports against their path inside the image, not against
+  // the developer checkout where an accidentally omitted module still exists.
+  while(queue.length){
+    const imagePath=queue.pop();if(visited.has(imagePath))continue;visited.add(imagePath);
+    const source=payload.get(imagePath);if(!source){missing.push(imagePath);continue;}
+    if(!/\.[cm]?js$/.test(source))continue;
+    const code=await readFile(join(root,source),'utf8');
+    const imports=[...code.matchAll(/(?:\b(?:import|export)\s+(?:[^'";]*?\s+from\s*)?|\b(?:import|require)\s*\(\s*)['"]([^'"\r\n]+)['"]/g)].map(match=>match[1]).filter(specifier=>specifier.startsWith('.'));
+    for(const specifier of imports){
+      const base=posix.normalize(posix.join(posix.dirname(imagePath),specifier));
+      const dependency=[base,base+'.js',base+'.json',base+'/index.js'].find(candidate=>payload.has(candidate))||base;
+      if(!payload.has(dependency))missing.push(imagePath+' -> '+dependency);else queue.push(dependency);
+    }
+  }
+  assert.deepEqual(missing,[],'Docker COPY or dockerignore omitted a runtime dependency');
+  assert.ok(visited.has('tools/company-messenger/productivity-service.mjs'),'Productivity service must be reached through the real messenger import');
+  assert.ok(visited.has('tools/company-messenger/web-push-service.mjs'),'Web push must be reached through the real company import');
+  for(const name of ['client-workflow.mjs','client-notifications.mjs','assistant-productivity.mjs'])assert.ok(visited.has(companyPath+'/'+name),name+' must be reached through the real company import');
+  for(const name of ['device-notifications.js','device-notifications.css','notification-sw.js'])assert.ok(payload.has(companyPath+'/public/'+name),name+' must be present in the copied browser payload');
+  t.diagnostic(`Pure file-read verification: ${payload.size} image files, ${visited.size} transitive runtime imports; no image build, server or database was started.`);
+});
 
 test('Docker COPY payload starts the company host and delivers SHIFT, messenger and current source documents',async t=>{
   const directory=await mkdtemp(join(tmpdir(),'synk-company-container-'));
   try{
-    const {copied}=await stageCopy(join(directory,'workspace'));
+    const payload=join(directory,'workspace');
+    const {copied,docker,dockerignore}=await stageCopy(payload);
     assert.ok(copied.length>50);assert.ok(copied.every(path=>!unsafe(path)));
+    assert.ok(copied.every(path=>!/(?:^|\/)preview-[^/]+\.mjs$/.test(path)),'Local preview launchers must not enter the runtime image');
     const runner=join(directory,'verify.mjs');
     await writeFile(runner,`
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
 const root=process.argv[2],company=${JSON.stringify(companyPath)},checks=[];
 const {createCompanyApp}=await import(pathToFileURL(join(root,company,'server.mjs')));
 process.env.SYNK_COMPANY_DATA=process.argv[3];process.env.MESSENGER_DATA_DIR=join(process.argv[3],'messenger');
-const app=createCompanyApp({port:0,allowTestHost:true,schedule:false,synkIdentityConfig:null});
+const app=createCompanyApp({port:0,allowTestHost:true,schedule:false,synkIdentityConfig:null,synkCustomerIdentityConfig:null});
 try{
   const address=await app.start(),base='http://127.0.0.1:'+address.port;
   const member=app.store.createUser({name:'Packaging fixture',email:'delivery@example.test',role:'member',password:'packaging-fixture-password'});
@@ -75,9 +121,20 @@ try{
   const check=(name,condition)=>{assert.ok(condition,name);checks.push(name);};
   check('both databases use the persistent data root',existsSync(join(process.argv[3],'company.sqlite'))&&existsSync(join(process.argv[3],'messenger','messenger.sqlite'))&&!existsSync(join(root,'tools/company-messenger/data')));
   const health=await fetch(base+'/api/health');check('host health',health.ok);
+  const probe=await promisify(execFile)(process.execPath,[join(root,company,'deploy/healthcheck.mjs')],{env:{...process.env,SYNK_COMPANY_ORIGIN:app.origin,SYNK_COMPANY_PORT:String(address.port)},timeout:5000});
+  check('container readiness command runs from the copied payload',probe.stdout.trim()==='SYNK company health: ready');
+  const discovery=await import(pathToFileURL(join(root,'experiences/atlas-lab/discovery.mjs')));
+  check('Atlas discovery imports its region vocabulary from the image',typeof discovery.createDiscoveryAdapter==='function');
+  const regionAsset=await fetch(base+'/atlas-lab/meeting-regions.mjs');
+  check('Atlas region vocabulary is served to the browser',regionAsset.ok&&/MEETING_REGION_VERSION/.test(await regionAsset.text()));
+  for(const path of ['/consultation/','/consultation/customer-computer.js','/consultation/customer-computer-state.mjs','/consultation/customer-computer.css','/consultation/consultation.mjs','/consultation/interpretation.mjs','/consultation/model-host.mjs','/consultation/core/domain.js','/consultation/core/interpretation.js','/consultation/core/ask.js','/consultation/computer/content.js','/consultation/computer/rules.js','/consultation/assets/scrapbook.css','/consultation/assets/SUIT-Variable.woff2','/consultation/assets/laptop-felt.webp','/consultation/assets/fb-tile-cream-long.webp','/consultation/assets/fb-tile-butter-long.webp','/consultation/assets/fb-slab-black-long.webp']){
+    const r=await fetch(base+path);check('public customer asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);
+  }
+  check('anonymous customer draft denied',(await fetch(base+'/api/customer/computer-draft')).status===401);
   check('anonymous record denied',(await fetch(base+'/api/workroom-practice/state')).status===401);
   const login=await fetch(base+'/api/login',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({email:member.email,password:'packaging-fixture-password'})});
   check('company login',login.ok);const body=await login.json(),cookie=login.headers.get('set-cookie').split(';')[0];
+  check('employee cookie does not authenticate a customer',(await(await fetch(base+'/api/customer/me',{headers:{Cookie:cookie}})).json()).authenticated===false);
   const response=await fetch(base+'/api/workroom-practice/state',{headers:{Cookie:cookie}}),initial=await response.json();
   check('private empty state',response.ok&&initial.revision===0&&initial.status==='empty');
   const engine=(await import(pathToFileURL(join(root,'atlas/personalization.js')))).default;
@@ -107,12 +164,51 @@ try{
   const adminLogin=await fetch(base+'/api/login',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({email:admin.email,password:'packaging-fixture-password'})});
   const adminCookie=adminLogin.headers.get('set-cookie').split(';')[0];
   for(const path of ['/api/content-benchmarks/research-prompt','/api/content-benchmarks/template']){const r=await fetch(base+path,{headers:{Cookie:adminCookie}});check('admin source '+path,r.ok);}
+  for(const path of ['/client-projects.js','/client-projects.css','/brand-quality.js','/brand-quality.css','/pulse/','/pulse/lounge.js','/pulse/lounge.css']){const r=await fetch(base+path);check('brand experience packaged asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);}
+  const brand=await fetch(base+'/api/brand-quality',{headers:{Cookie:cookie}}),brandData=await brand.json();
+  check('packaged brand workspace includes approved source links and six checks',brand.ok&&brandData.sources.length===15&&brandData.checks.length===6);
+  const jsonHeaders={Cookie:cookie,Origin:app.origin,'X-CSRF-Token':body.csrfToken,'Content-Type':'application/json'};
+  const savedRecipe=await fetch(base+'/api/brand-quality/recipes',{method:'POST',headers:jsonHeaders,body:JSON.stringify({title:'Container recipe',purpose:'Verify the shipped template API',format:'Web',sourceIds:['pulse-felt'],version:{label:'v1',body:'Approved source and usage'}})});
+  check('packaged recipe persists immutable first version',savedRecipe.status===201&&(await savedRecipe.json()).recipe.versions.length===1);
+  const savedOperation=await fetch(base+'/api/brand-quality/operations',{method:'POST',headers:jsonHeaders,body:JSON.stringify({title:'Container operation'})});
+  check('packaged operation starts with six unverified checks',savedOperation.status===201&&(await savedOperation.json()).operation.counts.unverified===6);
+  const savedProject=await fetch(base+'/api/client-projects',{method:'POST',headers:jsonHeaders,body:JSON.stringify({title:'Container client project',customerName:'Synthetic client',internalNotes:'PRIVATE PACKAGING NOTE'})}),project=await savedProject.json();
+  check('packaged client project save',savedProject.status===201&&project.project.id);
+  const invitation=await fetch(base+'/api/client-projects/'+project.project.id+'/invite',{method:'POST',headers:jsonHeaders,body:JSON.stringify({revision:project.project.revision})}),invited=await invitation.json();
+  check('packaged customer invitation',invitation.ok&&invited.invite);
+  const lounge=await fetch(base+'/pulse/api/open',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({invite:invited.invite})}),loungeData=await lounge.json();
+  check('packaged isolated customer view omits internal project fields',lounge.ok&&loungeData.project.title==='Container client project'&&!Object.hasOwn(loungeData.project,'internalNotes'));
+  check('packaged verified intake receiver dependency',existsSync(join(root,'docs/마케팅/클라이언트_발주서_20260930/receiver/sync.cjs')));
   console.log(JSON.stringify({passed:checks.length,checks}));
 }finally{await app.stop();}
 `);
     const env=Object.fromEntries(Object.entries(process.env).filter(([key])=>!/^SYNK_|^MESSENGER_/.test(key)));
     const {stdout}=await run(process.execPath,[runner,join(directory,'workspace'),join(directory,'data')],{env,maxBuffer:2*1024*1024,timeout:30000});
     const result=JSON.parse(stdout.trim());assert.ok(result.passed>30);t.diagnostic(JSON.stringify(result));
+    if(process.env.SYNK_CONTAINER_QA_OUTPUT||process.env.SYNK_CONTAINER_RELEASE_DIR){
+      const hash=bytes=>createHash('sha256').update(bytes).digest('hex'),files=[];
+      for(const name of (await readdir(payload,{recursive:true})).sort()){
+        const file=join(payload,name);if(!(await lstat(file)).isFile())continue;
+        const bytes=await readFile(file),source=relative(payload,file).replaceAll('\\','/');
+        files.push({source,bytes:bytes.length,sha256:hash(bytes),currentSourceSHA256:hash(await readFile(join(root,source)))});
+      }
+      const manifest={at:new Date().toISOString(),checks:result.passed,files,sourceChangedDuringRun:files.filter(file=>file.sha256!==file.currentSourceSHA256).map(file=>file.source),dockerfileSHA256:hash(docker),dockerignoreSHA256:hash(dockerignore),includesRuntimeData:false};
+      if(process.env.SYNK_CONTAINER_QA_OUTPUT){const output=resolve(process.env.SYNK_CONTAINER_QA_OUTPUT);await mkdir(output,{recursive:true});await writeFile(join(output,'container-payload.json'),JSON.stringify(manifest,null,2)+'\n');}
+      if(process.env.SYNK_CONTAINER_RELEASE_DIR){
+        assert.deepEqual(manifest.sourceChangedDuringRun,[],'Source changed while validating the release candidate');
+        assert.equal(await readFile(join(here,'Dockerfile'),'utf8'),docker,'Dockerfile changed while staging');
+        assert.equal(await readFile(join(here,'Dockerfile.dockerignore'),'utf8'),dockerignore,'Docker allowlist changed while staging');
+        const output=resolve(process.env.SYNK_CONTAINER_RELEASE_DIR);
+        assert.ok(!output.startsWith(resolve(directory)+sep),'Persistent release candidate must be outside temporary QA cleanup');
+        await mkdir(dirname(output),{recursive:true});await mkdir(output); // Refuse to overwrite any existing candidate.
+        await cp(payload,join(output,'workspace'),{recursive:true,errorOnExist:true,force:false});
+        for(const file of files)assert.equal(hash(await readFile(join(output,'workspace',file.source))),file.sha256,'Exported payload differs: '+file.source);
+        await writeFile(join(output,'Dockerfile'),docker,{flag:'wx'});await writeFile(join(output,'Dockerfile.dockerignore'),dockerignore,{flag:'wx'});
+        await writeFile(join(output,'payload-manifest.json'),JSON.stringify(manifest,null,2)+'\n',{flag:'wx'});
+        await writeFile(join(output,'verification.json'),JSON.stringify(result,null,2)+'\n',{flag:'wx'});
+        await writeFile(join(output,'COMPLETE'),'Validated source payload only. Runtime databases, secrets and synthetic QA data are excluded.\n',{flag:'wx'});
+      }
+    }
   }finally{
     const target=resolve(directory);assert.ok(target.startsWith(resolve(tmpdir())+sep)&&target.split(sep).at(-1).startsWith('synk-company-container-'));
     await rm(target,{recursive:true,force:true});

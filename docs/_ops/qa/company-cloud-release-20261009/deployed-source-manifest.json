@@ -1,0 +1,2149 @@
+{
+  "version": 1,
+  "sourceManifestSHA256": "aeb1620ebc406c000a10b1aa14d3ffa745330ff6076e354e32f294aae9255a72",
+  "scope": "Original deployed snapshot raw file hashes. Documentation and crew input fix in this commit are subsequent changes; Git text normalization may differ.",
+  "files": [
+    {
+      "path": "atlas/ask.js",
+      "bytes": 12003,
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/domain.js",
+      "bytes": 19777,
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/engine.js",
+      "bytes": 35540,
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/interpretation.js",
+      "bytes": 11124,
+      "sha256": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/personalization.js",
+      "bytes": 32366,
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/temper-outcomes.js",
+      "bytes": 19440,
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/trail.js",
+      "bytes": 30475,
+      "sha256": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "atlas/work.js",
+      "bytes": 9319,
+      "sha256": "9ef22ff7a8e94cb7874d0f5e739b1c3d59f3243440196ce75bebed6ab78050d6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/개인정보처리방침_초안_v1.md",
+      "bytes": 39206,
+      "sha256": "a538c8070ad45eee4dae962aeece3043d96e2c12242a5ebebcf3f3fe9c4ace6f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/펠트부품/assets/ui/badge-check.webp",
+      "bytes": 304354,
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/펠트부품/assets/ui/slab-coral-long.webp",
+      "bytes": 479152,
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/펠트스크랩북/README.md",
+      "bytes": 17906,
+      "sha256": "f24a8aef03f9b481cafe84a4cc18178e82b0e2922d1046076b52b5b853bd2218",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/펠트스크랩북/scrapbook.css",
+      "bytes": 17607,
+      "sha256": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/felt-laptop.webp",
+      "bytes": 95412,
+      "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-lab.webp",
+      "bytes": 126616,
+      "sha256": "b1e0ec28fa10cc446952afa82bc58cea3e58b3ddbf9a169e27cbcaec30695b0e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-pulse.webp",
+      "bytes": 148236,
+      "sha256": "f8015d2993079020058bb9af7a6f3e4171b92de2b6509c8c75894dc6d06ae13d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-shift.webp",
+      "bytes": 142304,
+      "sha256": "2682b927496f078ce406d73ead394fbfe3a13ac15efe44f28d51dfc8f22b2a6a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/logo-synk-paper.webp",
+      "bytes": 83378,
+      "sha256": "f59209089f6ac049a4b3a61cfea750621bcbc85bffe3ff8b884992b6005399b2",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-까몽_본체.webp",
+      "bytes": 242710,
+      "sha256": "9abae542b328c93c3e14471cbdb326730d31185dbac99a82a6aeb1a56cb5bc1a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-마린_본체.webp",
+      "bytes": 417210,
+      "sha256": "8db73d81ea016b384b5d8f3c4a93018a37dd2a987171254a78009511ae0d3bd8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/디자인/SNS키트/assets/mascot-몽글_본체.webp",
+      "bytes": 656084,
+      "sha256": "b05298d34c0c04af62ed6b894df3baef3448da155edc250a0fd28e44cc640929",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/assets/fb-slab-black-long.webp",
+      "bytes": 37060,
+      "sha256": "27233dbe66c7a31d10cf3923aa9fddc9b19799d28c3462d6586627f56b0d2534",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/assets/fb-tile-butter-long.webp",
+      "bytes": 42642,
+      "sha256": "4e3d8b71f639320eb97ced801a4488e33b0621f90bb088f5353ac419f648882e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/assets/fb-tile-cream-long.webp",
+      "bytes": 40756,
+      "sha256": "09707fa3e802e07786d12351740dfb240584d4d168297b0b047f9537d224dca8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/assets/laptop-felt.webp",
+      "bytes": 95412,
+      "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "bytes": 39965,
+      "sha256": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/rules.js",
+      "bytes": 55064,
+      "sha256": "0f8ff5199135a9d7527ae6eb6ee26e33f34667fedb4ca46085ec3fa41633d6fd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/analytics.mjs",
+      "bytes": 11352,
+      "sha256": "333dc27fa8f623ccc0611c5458352fe3493e9eed63f5ec9721caef2ed197cc1e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/analytics.test.mjs",
+      "bytes": 8474,
+      "sha256": "4fc3ab5f970c8fc0a8c1681eacf0614c865999c6c084eb01d33ca11b1fd8425c",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/admin.mjs",
+      "bytes": 967,
+      "sha256": "4a9e31bc806aabd812b667a1d15e5f0b5d5cccbd481367acb54d1e0c78ef1f69",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/assistant-productivity.mjs",
+      "bytes": 6909,
+      "sha256": "cbf49fc2b895db9a6cda34fb1431c33b8c74966cf061acc724bef6b8a3994593",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/assistant-service.mjs",
+      "bytes": 18208,
+      "sha256": "65dd68ac5180bd3bd3be5d70b087559aa72f96ea2d796833787beab37c8d35a2",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/auth-race-client.test.mjs",
+      "bytes": 7036,
+      "sha256": "f0546ab8cea70238c72b7289f1f6266e7f6c84592da8570198274e938c9d2731",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/backup.mjs",
+      "bytes": 2385,
+      "sha256": "f7d2ecf6bdd66fbccd85f94e599475e1b0a6bc7c8f683fb15d3ed9d1da4ae598",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md",
+      "bytes": 16150,
+      "sha256": "666b6edbdce9697005ef23bf4589f71de8915553d8d45cceb58eef14affb0f7b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json",
+      "bytes": 705,
+      "sha256": "4f863a4f282bd6aafc092a5193cd8c9fce1261c5eb7c52d4c46b7f6474300b02",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/benchmarks.mjs",
+      "bytes": 11718,
+      "sha256": "eeb97defa9bd37d1171fd19e464bd35843280303461b54608bf513b38800399a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/brand-quality-service.mjs",
+      "bytes": 11155,
+      "sha256": "98ab31fb12e7099f4c2c72914a22e792934873dd4a1fb88e95b96349de2c074b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-intake.mjs",
+      "bytes": 7378,
+      "sha256": "6c06e26b13cf053f7ef682dbba70c7ac4e042e3a77f1bbd0c6f4a87b3e292ca4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-notifications.mjs",
+      "bytes": 8226,
+      "sha256": "9dd703706d4f3f4ffdf0ab46258f1a4616e04490daa28606d731c54e08336d0e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-notifications.test.mjs",
+      "bytes": 11763,
+      "sha256": "3af1c25fd08f85e5df0ab0b1db06d2f8074478481f70c81f584df5cc97c26c2e",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-projects-server.test.mjs",
+      "bytes": 24309,
+      "sha256": "e4bb24234f4b51882460436e54ab998f73b6496ac286975ff5e232864c07c755",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-projects.mjs",
+      "bytes": 16743,
+      "sha256": "b9be1b1c835771e87ab7b95eae0a655a8890bec8db69a0702521055d1dadf87d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-projects.test.mjs",
+      "bytes": 15912,
+      "sha256": "c9a1959d2bbd9cb88750793a544d4ffcde6b3129868af2967fb56193dfbfb0d2",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-workflow-client.test.mjs",
+      "bytes": 3355,
+      "sha256": "927070b01decf23af6d89c6b41d5ffdd8c7be9b5fafd9fc86c3ebe368e528891",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-workflow.mjs",
+      "bytes": 8960,
+      "sha256": "bb6511d03feade0bf0058cf93eacbeca515817109020dd05cc3221caeeba5bcd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-workflow.test.mjs",
+      "bytes": 9697,
+      "sha256": "31adf948c891abb474449c47d321b751cc1c7ea825c16c2fe56abb6ed43b0529",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-DATA-MIGRATION.md",
+      "bytes": 9583,
+      "sha256": "82cb7e6019ec1ad4035e0b9209ac1567ce939f212165d21719d895ed9c860b03",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/CLOUD-OPERATIONS.md",
+      "bytes": 8087,
+      "sha256": "6eee7c8582298ed3f2368e4cb3113d5126bf4401de79a2e5c5e74bce608e5e79",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/cloud.env.example",
+      "bytes": 3000,
+      "sha256": "781853ce8350d5a2274e1e84bd321c6a73b6cfd9a5b3e165353c9aa207bc0c80",
+      "role": "build-configuration"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/collection-policy.mjs",
+      "bytes": 15635,
+      "sha256": "12fd644cfd62a6a1bcf5ec4876c3c633a6ec2ca9462e3854abafc0cbca85f81d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/collectors.mjs",
+      "bytes": 41680,
+      "sha256": "23ec742a07483bfb5bd139d3732921db74a05da2becccdf8d086823748532c00",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/company-guide.mjs",
+      "bytes": 21570,
+      "sha256": "5264d09f6c5344dac240e6ce97c4f256c25c6e57e9d1c09a7bb8f12b00ce30b2",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-runtime.mjs",
+      "bytes": 3188,
+      "sha256": "c1305920135e1a07e037eb59970836953145cef28070219d62d78275357a0b0d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/computer-interpretation-service.mjs",
+      "bytes": 24295,
+      "sha256": "76b716c4062732c75fff3ff53884213d573c492fa1910c9e5de117d43f135193",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/container-delivery.test.mjs",
+      "bytes": 21087,
+      "sha256": "0844f7700ef0d39b02dc3ea56460b598298edb274e665ccb0efd602bc4ec6068",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json",
+      "bytes": 23851,
+      "sha256": "638dcc6ff8ae833e361a1ce98d19e69b8c4f5812bbde1b559dc5aff2ac7ee04d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-engine.mjs",
+      "bytes": 39131,
+      "sha256": "52ba805f423c5600303d33190b0f75b9d0bd4a686131d848f7a840aee2853a9f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-leaders.mjs",
+      "bytes": 4386,
+      "sha256": "fa0d4660c1a6d4b538bfcbba10e04ced1df814a04af2dd5e54a7e192165bc93a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/content-service.mjs",
+      "bytes": 19528,
+      "sha256": "30705a730be4c5e17a0ccec8428cc4f51dd4668731244601da4788f4a4bb8000",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creative-research.mjs",
+      "bytes": 25603,
+      "sha256": "b18f8259fb03f624855a21d9bd8c0f255b72e51a2c225c2942957531c500c6b0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-reviews.mjs",
+      "bytes": 5021,
+      "sha256": "acf0ee93615898defca3617ef19a4d5465d6456bf810cd0539de7a0dd85e9f55",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/creator-sources.mjs",
+      "bytes": 11710,
+      "sha256": "cc99e4dac5a95acb970ce91c5ecd235f9c182a8f7a1ac8ebe640b77dda87822e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/crew-profile-service.mjs",
+      "bytes": 7094,
+      "sha256": "9a86d58bad64748f88d2a87ec7d19eb1803ec37dd0535377c9e0a8f8e3c83852",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/customer-computer-draft.mjs",
+      "bytes": 3705,
+      "sha256": "c4dabf30603754bb960da239b7032e29287b60f80a40c86ff2558887bfae6ea1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/customer-identity.mjs",
+      "bytes": 16610,
+      "sha256": "925ed301bf7aad6f444829691999dd29b4949ebe5ab4e190075ac907963077b4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/customer-identity.test.mjs",
+      "bytes": 17019,
+      "sha256": "17076dd31af496c35454fc264472023276208c220180e7258d41b2990223a7d0",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/customer-routes.mjs",
+      "bytes": 5142,
+      "sha256": "abb0a6db65207591df2aa6ea39724c5e7e5a96a77804575ad1f2c9a7f5bb3995",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/daily-trends-cli.mjs",
+      "bytes": 1750,
+      "sha256": "98604b5b87795f1c961929800c269b0bfd8147890d7335d4092fa8fb5b609ef5",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/daily-trends-service.mjs",
+      "bytes": 13385,
+      "sha256": "7529d9b5720b24077e9b7ecb5dd35902daa1be223652ee6356db028dbc2d9a69",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/daily-trends.test.mjs",
+      "bytes": 20580,
+      "sha256": "187fc7dd1cc78c6c844609ada1e18be88a5ccfde27631cbce805d93df7510d6d",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/demo-service.mjs",
+      "bytes": 20594,
+      "sha256": "17658d1ae43980f64633c59652ba98164e858d06b7a66eddd36f566df6460069",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-backup-watch.test.mjs",
+      "bytes": 7064,
+      "sha256": "fe01caafbffd7fb1bd85dfba014197a54a1af7aadc1643c0bc67820b80c299c1",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy-operations.test.mjs",
+      "bytes": 14767,
+      "sha256": "b6555dd9455a39c47ba3a510e3c4ed0b1c6ddb4a27d00242656b45098b9c2346",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/.gitattributes",
+      "bytes": 14,
+      "sha256": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/Caddyfile",
+      "bytes": 351,
+      "sha256": "174fa3f1787dd51083ffc497e8507c5b9d9e8a5b28c2a9ecb46195ca9ef6d874",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/cloud-common.sh",
+      "bytes": 4278,
+      "sha256": "81ab2c871eb6c972c87d6be9a1b90b0c07d41dd0ddb0e0a67d5ae4b3c0ca5d90",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-backup-watch.sh",
+      "bytes": 2317,
+      "sha256": "0d81149f7b0c8ae5975f90a2e997d3b343a0ae30f7cc12fa0961242510e3fa49",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-backup.sh",
+      "bytes": 4039,
+      "sha256": "3e3201eb0546505276c4dbdcefaa2bdca44ab8f40b16bd58cef13ebb23d554dd",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-health.sh",
+      "bytes": 1291,
+      "sha256": "378937e273fcf88435b8a5068d60422b37896225704c17ce75d19c61aebb7616",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-stack.sh",
+      "bytes": 507,
+      "sha256": "656abdafdbf38ffd583d32afba29a70ea0d56cc47c65e504b50f326eeb221af6",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/compose.yaml",
+      "bytes": 2816,
+      "sha256": "2bba19edbfb94a1f21fd80671729f383fba9298a5e36e90a9f30e2b5df8e2a1f",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs",
+      "bytes": 2004,
+      "sha256": "a922a15f5a34743ced2fea9b816ba1f8f41e115cccbc6460183b73c0ee1b68c1",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/SYSTEMD.md",
+      "bytes": 10254,
+      "sha256": "4e5fb7c9fd6f11790d8972ef0ca05ab8625583ad05db2c71ef200e1028716b3a",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-backup-watch.service",
+      "bytes": 373,
+      "sha256": "d75f5190c95edb5a7e6552ffd8a47e1cc650505f36abb82d8f53fae352c36b18",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-backup-watch.timer",
+      "bytes": 204,
+      "sha256": "baafa2b7200682a399e9555df4c488b4490a1ec9eeaedb6d6f62c57945aa2e4a",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-backup.service",
+      "bytes": 442,
+      "sha256": "2bea6fc7169aa65a82bf3f346e21db9910410ad83e6f88add2c5e8963716e4f7",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-backup.timer",
+      "bytes": 202,
+      "sha256": "f41f74a69dcf099cee9a6924fa2f3ab29ff0aa7e13f5f0df10dc90cb3ce448b9",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-health.service",
+      "bytes": 415,
+      "sha256": "8394d8062119451b063596f582ff3d966d17c85056ec1da4b6137d41ec20839e",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company-health.timer",
+      "bytes": 185,
+      "sha256": "a574f225f98ae239310b63874d33ac8f94299638f443cacf2d5c97571b46cb1e",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/systemd/synk-company.service",
+      "bytes": 782,
+      "sha256": "bd689fc7ab8e84d48f11c5bf16cd84e5dfab319ce4b74a9369413a472674ccea",
+      "role": "deployment-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/device-notifications-server.test.mjs",
+      "bytes": 9646,
+      "sha256": "82c12e107de75a0233142ea2f2ffa17db456fd3c98784499241eb481c88d7926",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile",
+      "bytes": 11718,
+      "sha256": "8cb38de75e52096489956fa4cf01ebed33d7c2ae75b8ec70b3f49371dbe92889",
+      "role": "build-configuration"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile.dockerignore",
+      "bytes": 7843,
+      "sha256": "1b0dd0269010bda0634db7d6b58f89ac957051027a51f26fb432ab41b360b590",
+      "role": "build-configuration"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/growth-history.mjs",
+      "bytes": 7060,
+      "sha256": "f624302823b6834c7090ca84c25fb2fe46bfbf8ddeb8e4e133495ba7db7e7168",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/growth-summary.mjs",
+      "bytes": 4102,
+      "sha256": "8d1e0e680ea366b4d93c313f1a9ed263d1fba85ab7324b37563c4546b61813a0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/hype.mjs",
+      "bytes": 11935,
+      "sha256": "f5aa567b80d6dabbdaef28b7908b6bc70c126ab6de7ff770c68df365aacc8fb6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/launch.mjs",
+      "bytes": 3589,
+      "sha256": "58930d32264911e99392ded791e44476d395a81cad25499b3af1c6c86f9cd725",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/marin-home-client.test.mjs",
+      "bytes": 20458,
+      "sha256": "1f536dfbd628d6bf1f54abc64d271b0fafb313e6406211c18afc1ae7f377bb3b",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/marin-work-client.test.mjs",
+      "bytes": 14537,
+      "sha256": "15d53d38287f6135dc088ab5e37d6d1c80818be2ebf11eeeed6ac43443770c38",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/marin-workflow.test.mjs",
+      "bytes": 4594,
+      "sha256": "bc72646dbcb0691666ed1da2efce978e4f7f0c0b3dcbbe7d8776cd8fc1b5d7d3",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/oauth.mjs",
+      "bytes": 15510,
+      "sha256": "e8ec44d6582d2e363fa5ddc47d6a57bf6d5059e7dd665f998be36565503cf562",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/organization.mjs",
+      "bytes": 7572,
+      "sha256": "5592e29053f67175ae146be1b9a46aeec7cac0edbb97de3e0b63e3faae1dab39",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/organization.test.mjs",
+      "bytes": 9163,
+      "sha256": "c5b64eaa6553d04c2f5475f970a1d46f41f4b6ea7da728c4498fbfeac04864d3",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/ownership-report.mjs",
+      "bytes": 2487,
+      "sha256": "26c00b24f202124108db3c71015273fcffd8bf448afa726eb68c526e186f1daa",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js",
+      "bytes": 131181,
+      "sha256": "277e42fef7142fed911f08e103d5fa1fac630d11a1af5d0ef8d32449f706dd89",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/benchmark.css",
+      "bytes": 10755,
+      "sha256": "21d2f58cf0c2415a37aa22223fcc5641a7e219495691deb133b9ab0805920891",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/benchmark.js",
+      "bytes": 14544,
+      "sha256": "505a7a5d2694ca96c4036c4f5c67d6e4dc01e39061bb55a59131b592fe2c877a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/brand-quality.css",
+      "bytes": 4501,
+      "sha256": "5a826002ccab11a2d7fe41d578bed463d5907cdbe8bc30c791ea1427e2033e63",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/brand-quality.js",
+      "bytes": 16308,
+      "sha256": "102e7a438431cab03ea432f8ab6dfd4bf2c05650d58d0ec58522c259b63f3e48",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/chart-hover.css",
+      "bytes": 3024,
+      "sha256": "2d1bc91cd35f14f9158f5225ed72a2f4c9b2175e948d72f59fe6caffba4aa3e9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/chart-hover.js",
+      "bytes": 11200,
+      "sha256": "14e84681457d428359d17211ebd481eccca4c195d4bf05bb4e60a8d1149fc9ed",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-projects.css",
+      "bytes": 9014,
+      "sha256": "365fc09491e5d836f2f9ce91afa7ba50020af1ca13bb39f91b12f06b783911c0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-projects.js",
+      "bytes": 24155,
+      "sha256": "71d89d46a68bf12f3a75d9ad3f041992d06dcb47c6d27185dda10d1888a552e2",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/company-guide.css",
+      "bytes": 9413,
+      "sha256": "2d9ef58e619f7d9523f50d7707ff2d467b153e411d1f466f4115626bdcd26e09",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/company-guide.js",
+      "bytes": 13036,
+      "sha256": "6682acc815087261621557e2f829020d8b93c2443fc111959725641c4ff7bc19",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/comparison-charts.css",
+      "bytes": 8890,
+      "sha256": "ab046c8c3fedc9bc7fda4da1386b307a45ff3c8cd3e18097bc0bfcbf39d524ee",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/comparison-charts.js",
+      "bytes": 15590,
+      "sha256": "eec39bc2c88e574f7d986d3e4ceced64b3df61379a35de3ceb536d54ec466c04",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/content.css",
+      "bytes": 24338,
+      "sha256": "bc4020456b7d226c14590e76161af37418feb97cfaf8d9b39667bd7ae50b5095",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/content.js",
+      "bytes": 40284,
+      "sha256": "ba57944e98edf5776eb8db5eef65dcadd37489e22dfc85c325ebce6615ab2825",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creative-research.css",
+      "bytes": 5687,
+      "sha256": "d1b67a355c60712df0ae41ebe6bdcc36e984bb7408214d1a4055ec104b6c8786",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creative-research.js",
+      "bytes": 29277,
+      "sha256": "129af0b610dbbdf189f8e36b5b1a21e1114fa16f7ab95883887387fb3405d815",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creator-sources.css",
+      "bytes": 5663,
+      "sha256": "b0b8c730cfa311010a9e410fb6ec91d175622e5e2b201caa5cfffbf5a2f41459",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/creator-sources.js",
+      "bytes": 10468,
+      "sha256": "23806acaa9a08cbb005c007b692c64560ad89b6ae14b54c29150f0c8289d3299",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/customer-computer-state.mjs",
+      "bytes": 2579,
+      "sha256": "e19db63586da4d9a41666a408510af8692bc09f094c5abf02e7db69baa271351",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/customer-computer.css",
+      "bytes": 5710,
+      "sha256": "0468a900e381be9a517d2421aee1d2c6526c52f2e98b5959e49f278e2595af62",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/customer-computer.html",
+      "bytes": 6314,
+      "sha256": "330b04eb0c11a5170fc0d7e2065dbe0c5d51d3af38ef87188731d92ffa1427fd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/customer-computer.js",
+      "bytes": 21099,
+      "sha256": "339712f40d764197d5e91d2b7c2e506986910e880bc25210b83a06638e7cfad3",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+      "bytes": 6525,
+      "sha256": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/device-notifications.css",
+      "bytes": 3301,
+      "sha256": "d488d9604d66beac3bff544f658c422180a53407e61bfcd392ee2097933665ec",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/device-notifications.js",
+      "bytes": 15935,
+      "sha256": "b15afcf164dd745944c5586cdf2cf49e1242bb9822f487c04e094d80b37f85be",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/dialogs.css",
+      "bytes": 17168,
+      "sha256": "20197f221b171547d95f89341c98a01b191febb17b0cbe4336ded5695c3c6fbf",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-history.css",
+      "bytes": 7673,
+      "sha256": "68a40b6557d1efc4bc8df15a6bb917059be71509305fb03a5cd0285ab594a6de",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-history.js",
+      "bytes": 23894,
+      "sha256": "874b4026d9a6ae9543964d16314ccddad3054eb56a4aa75fd2180759caa03919",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-home.css",
+      "bytes": 9493,
+      "sha256": "af7b7045833f120e784410e7ed3fc47461baed69be04e66158bee7ba997b5440",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/growth-home.js",
+      "bytes": 14418,
+      "sha256": "92cd4b65703c35bc9de9390627255fbf58d8d853139e7fb92b0198084583a97d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html",
+      "bytes": 4242,
+      "sha256": "0aa54092c3a62ddff1a4ea116a3e3adaadb25564220c6abdb0d609f88437375a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/maker-tools.css",
+      "bytes": 6199,
+      "sha256": "34d0cc5fb78f9c1a05fadd03c306a3732093b914776ffddc2adc8eecbb11dd5e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/maker-tools.js",
+      "bytes": 2255,
+      "sha256": "aebc84e6aa161eb7e93e82223a241c5c04d346e0bd013d1d324e00d09f9743d0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/manifest.webmanifest",
+      "bytes": 476,
+      "sha256": "b91bff23ea32b8acf6144b5b53722226b8353d169bf76f58e39c9170fd5cbbbd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-home.css",
+      "bytes": 21856,
+      "sha256": "072c8333be4805e0b687547e9290094a5cf4df4a1544b5f72185c4a2b469b4c0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-home.js",
+      "bytes": 13661,
+      "sha256": "a7fe12c024702787c66ef80f3f624636860f476c6fb21c71a0a2325816749ad7",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-work.css",
+      "bytes": 5312,
+      "sha256": "f9e1d8fd774e940c261490119ba3c8370e51b71c7e87ffca89c24c1b790f7d37",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin-work.js",
+      "bytes": 20827,
+      "sha256": "78b54d5adbc5f7b3284420cb3b2e225f600414b3c6b453c4a878fc6e69db3c75",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/marin.webp",
+      "bytes": 144398,
+      "sha256": "1f2f19b0724bbfcba4ed5802ebd2fa21c07ccac19459b09bff2ae33e1b35f57a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/messenger-icon.png",
+      "bytes": 867504,
+      "sha256": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/notification-sw.js",
+      "bytes": 1196,
+      "sha256": "88e192ac00a645669efda6bb091978446e88b3217f06b77cf0ed1ae66fc50be6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/pages.css",
+      "bytes": 19876,
+      "sha256": "b400a5b2b292aad33eb5170cfb6c6aabfbf34fe0fcb3090b66d62e7bbeec8cb8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-check.js",
+      "bytes": 16434,
+      "sha256": "32c2794e841d4c680e5321ddbaa21f99f535792093c85473bcdac5657a7711a3",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/publish-rules.js",
+      "bytes": 3502,
+      "sha256": "e809465319dc048c5f2d69cf480bab2ae84d703ffbc63fff4c5d5f3fc22daab0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-lounge.html",
+      "bytes": 680,
+      "sha256": "4f2f703e862bb0633a5ae125dd95cb3420bb05c55622950766a486aa4e229c27",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/pulse-lounge.js",
+      "bytes": 8845,
+      "sha256": "180a6bc898b19ad16a0dea2d7dfef5904af8d788ba23823484dbd112c7e44594",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-board.css",
+      "bytes": 10285,
+      "sha256": "f63cf5fb130dcd02e5294043b16bbdaf5173489375e4f0f73d1059534d3dc3a6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-board.js",
+      "bytes": 20220,
+      "sha256": "b1ebf64881d2fc9ceba81f4d26d8fda20224d10b3d8dca974e6c3cbb7bd9cf62",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-review.css",
+      "bytes": 15331,
+      "sha256": "f5892e716567d59bb331d834736f9a2ab56d274a50493bd1dcef3dd21db79180",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio-review.js",
+      "bytes": 26902,
+      "sha256": "41117ea9263bea4e71f7954556fae06f324bb8b8f7fd81bf61e20e3497d6a61c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio.css",
+      "bytes": 3177,
+      "sha256": "53f7a865d735ac8026ec4689967d22da8019c5a39011bc755c43aaa7415a6487",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/studio.js",
+      "bytes": 13302,
+      "sha256": "393b8efefafd61d38abbef0d7fe7917a990d885fd08cbe2a4ca41f2afb9b320a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/style.css",
+      "bytes": 38911,
+      "sha256": "d5d7221eb2769bc2ee98150be91868a9c5943191987e35cabc1e3fafb2be55a1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.css",
+      "bytes": 5130,
+      "sha256": "e747ccfc0caedc35442226d0e533da22200e3b44fec376eb2ce7afa01dfb3cc4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/subtitle-lab.js",
+      "bytes": 24533,
+      "sha256": "85895d8faad11a861633769be7515e17d4af05120698febb7c638397c3c26a0f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/synk-id.js",
+      "bytes": 12529,
+      "sha256": "823dfe02aa5836118a90ce8833e8054a8db829bae4a840bcffa1d536b5cbc52c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-overview.js",
+      "bytes": 4385,
+      "sha256": "2c12652d7454be5bf146efaea711be366c7790fe78f28307adb0949dd6e9a575",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-trends.css",
+      "bytes": 7083,
+      "sha256": "acd30904021f686c4ac45d194160f929fc65bcd2bcd2cf77c2124d2ab94f6072",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/team-trends.js",
+      "bytes": 17727,
+      "sha256": "dd132371c4898d03e52757bc419d5f4561d7923d03cbd0d39597bf6a34bc0c68",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/wordmark.svg",
+      "bytes": 492,
+      "sha256": "ccd830d0937d5b8b4eb48b4789ce37de7190ff988d0bfe15f004718865065750",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice-sync.js",
+      "bytes": 10386,
+      "sha256": "8815287d3f89927fcd6ce793e92aec95ce6324077b07a3d248bbdae3c59385ab",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.css",
+      "bytes": 6219,
+      "sha256": "df457e1783adbb630c22dfb6e1a2fcc085d270bdf9c30849df4b1530f638520d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom-practice.js",
+      "bytes": 26406,
+      "sha256": "15b6dd6b6b8f1d16efc90c2d369b4ed73be3e218e4454d83ceaa41b7813016d3",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.css",
+      "bytes": 15326,
+      "sha256": "98f4215153f1655ed5e261fac3ca2f098640781545558219b7374bc3b53145c6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.js",
+      "bytes": 42112,
+      "sha256": "c061d5ddf5381e67731789004d7291c908096b514a6fa25ba044810189831de9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.css",
+      "bytes": 73884,
+      "sha256": "1b6c0420244b558b3b0be3b31844bbd293b298b5fddcf24088d88730b33a14a6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.js",
+      "bytes": 30206,
+      "sha256": "5df67f48139ea8a8ea0fbf8248b734d51fc0c68c56f28d5baad3f9916de4147d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/request-security.mjs",
+      "bytes": 4281,
+      "sha256": "68fee1aeaa902912994dba5202b672b0f14b2e84d30283eabebface9f11880c6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/request-security.test.mjs",
+      "bytes": 3973,
+      "sha256": "0e5a2ea103f98741bccb7ec900ffd3da43df5218e6ba80f25d6c6756ff95fc26",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+      "bytes": 25675,
+      "sha256": "35fa3296ed7b0b8c74980a015d95bd7099199a3cbe0c0c6581ed0babfb29d299",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-auth-race.test.mjs",
+      "bytes": 5248,
+      "sha256": "e3baedf1f79b5cc4f74f809106d7767186b58f37d1415f27e397da5153f8cfe0",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-background-jobs.test.mjs",
+      "bytes": 13783,
+      "sha256": "b43ea7cf6a48dd387b0662fc07ab5dfda8f145f5c1affddb6a89ae746f07462f",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-collaboration.test.mjs",
+      "bytes": 6718,
+      "sha256": "bd608396e8d105569368db59ec766e1bdd9291369482ae2da04dff94a75e9374",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-content-leaders.test.mjs",
+      "bytes": 7214,
+      "sha256": "3d5b043c07bacce432074161bc2a5863e0058ef307027f74718189b5cca7c3ee",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-customer.test.mjs",
+      "bytes": 21668,
+      "sha256": "4b7f2c4eedf4280da26eaa47577af3e00427a7b1a73894b138d15937441094ba",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-disconnect.test.mjs",
+      "bytes": 5102,
+      "sha256": "887f4e6a28f4f66896af9d42c776e749af76d9755644622e051ffcadee84cc8b",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-history.test.mjs",
+      "bytes": 5851,
+      "sha256": "85d7bc40bfd5fc3748f64040509895681c52ca7fe148f8c39961961fbf44d320",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-messenger.test.mjs",
+      "bytes": 46894,
+      "sha256": "49e4a60f3ee6937d3c73637cdc278947231c9e58dae411ee420ff3f845281a9e",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-organization.test.mjs",
+      "bytes": 19713,
+      "sha256": "db04ac35c66c85f7490c6d66af7e5eb5f4faa08ebf435a9b4ee7b84d4e72d66b",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-productivity-notifications.test.mjs",
+      "bytes": 7997,
+      "sha256": "73819331ffd0083d1b219c3f4f06dbe7b1376116288951286f7c16cce7b78328",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-project-leave.test.mjs",
+      "bytes": 17126,
+      "sha256": "9fee009e1d9455d01aa331f7b3580f9b885fb750425de4a0971f05f2a5b786be",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-readiness.test.mjs",
+      "bytes": 2837,
+      "sha256": "ef3415c6ec55ea0a7c6fd2b961eca629d65bf49c60746c86038688e8f803e523",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-request-security.test.mjs",
+      "bytes": 5579,
+      "sha256": "36dd9fd0ded47396de4154a9c9f33ca8655cdc2d5d48e815480b47130ec684e6",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-scheduler.test.mjs",
+      "bytes": 16277,
+      "sha256": "5840f8ea392fed2ec2f3ed502fd1e77cf866082d97c1d64e66ee7305b257d5e8",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-synk-identity.test.mjs",
+      "bytes": 29268,
+      "sha256": "362f4ea9ff50c593f7f2032115ec7e54e82a1ead5ca14c45933e907acb881ae7",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-team-trends.test.mjs",
+      "bytes": 7570,
+      "sha256": "45b0c1de28461d1cfc215bb905aa7ab3e405cf18da444e55041dcf6126d703d5",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-work-notifications.test.mjs",
+      "bytes": 12048,
+      "sha256": "3ed004e0d4dce1ffafd404ab7187a69a5e3587751192eb786d3cb52526fe407d",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "bytes": 110481,
+      "sha256": "394ee9d49543c9b3a84d19dde6d2fe024bde1f116877f47db2ee9603fc02b771",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.test.mjs",
+      "bytes": 8161,
+      "sha256": "209e79cf48872f61a3adebb61a960ba82690511ebad06f0e8412cc94d063ef98",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/static-response.mjs",
+      "bytes": 4721,
+      "sha256": "78988e5deb8d8b83a662132cccc5b106c99bff387f8fa9ba02067de82bef02ad",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store-recovery-key.test.mjs",
+      "bytes": 5118,
+      "sha256": "27ac12809b7af152c45d3a6ba5ba964d4280b70e9356603124bf5eb20b6ba907",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/store.mjs",
+      "bytes": 7015,
+      "sha256": "fc9324478d50c71c3485b42f2ea5e24a3cdd878b712bdd4037df37f5a8734375",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/studio-media.mjs",
+      "bytes": 6180,
+      "sha256": "3f7b9f7373a1a32b37d29403242eb9cabcf7fe28b974a4e9021a7826e76aca8a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/studio-service.mjs",
+      "bytes": 19120,
+      "sha256": "821952e6e6363d837533566d1c84b3e917f2eb2aa7c7dd376f87a1e872c83847",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-identity.mjs",
+      "bytes": 21209,
+      "sha256": "1751f89053652b69da0a4f58aaaab760ca17b2ac72ea6610d1ae2b4be5755322",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/team-trends.mjs",
+      "bytes": 4972,
+      "sha256": "ce08aa195b383594dc2abd7b0bedfffff586083031f6713811437740eb3a2e0c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/trend-collectors.mjs",
+      "bytes": 11642,
+      "sha256": "0f3230d0ba656f6a4e9ea27d2b93a76642eeb9cdccf5f8f85c33c3e3a4bd65f4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json",
+      "bytes": 12645,
+      "sha256": "d89c0a6f65aa459ec1c2402a37fe1e01a75d6fd4e825dc9ad07f4f9e01c9a8fc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.mjs",
+      "bytes": 1470,
+      "sha256": "0a89e4e2516321de9c84240f2539a9c45246a9f6d7850079212410775b507bdd",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workroom-practice-sync-service.mjs",
+      "bytes": 5645,
+      "sha256": "3ef307a3766f1f83d4a94e88bee08a5b2c11a099a23786e60d2157fee37ab36c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-backup.mjs",
+      "bytes": 6637,
+      "sha256": "1f514c7d6d40c8db3b2131aadcd0410f2ec015b15863338c8498bbf0ff10bc53",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-media.mjs",
+      "bytes": 964,
+      "sha256": "e6ff58800e7080357244e4c1b357a01ec35c12ac4e2e8d57bdd0212ccc7efe74",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-navigation.test.mjs",
+      "bytes": 21314,
+      "sha256": "176bdc4639ae1cc442d54a42d93bb021c51a8fd3b517247fa7f9dd9f2322d7dc",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-restore-acceptance.mjs",
+      "bytes": 14936,
+      "sha256": "a6646aed4c282a058c6c074e4845bb90fa4e017aae22dae8ae0fd6168cc24bb4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/workspace-review-client.test.mjs",
+      "bytes": 10691,
+      "sha256": "de2f666f1064a1cd68af5ecf5e71eb8e3b4aee2a127461c8a761bd34f90efd6d",
+      "role": "verification-source"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/WORKSPACE.md",
+      "bytes": 63835,
+      "sha256": "7720f70fef3e9d77c40c172df0a60b4b02ad9e6a7c9e248c7ead9af945a5141b",
+      "role": "documentation"
+    },
+    {
+      "path": "docs/마케팅/제작양식/글_뉴스레터.md",
+      "bytes": 3382,
+      "sha256": "41bf6a23ce75b67cc932bd9b22bc52fa62f0dce664d933101e95adc623d1e224",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/인물클립.md",
+      "bytes": 8880,
+      "sha256": "d7538253fdff2a0586d4cce2339771c20804eda8eab157bf49a12079d4507f0f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/인터뷰.md",
+      "bytes": 6938,
+      "sha256": "576194eae63ac3685ca8038f827aa337e0e5cce0d8e16e824b5582093d381a27",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/제작여정_쇼츠.md",
+      "bytes": 5494,
+      "sha256": "3dd5646be44080402a38abadc2742ebb617f703db320c1eb604e276e890b57e1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/회사소개_작업물.md",
+      "bytes": 3134,
+      "sha256": "2d08cde1ace8c5ad193057b233227dd62970bf8cd95d2dae0d45809c5ef77621",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/AI_소식_도구추천.md",
+      "bytes": 4048,
+      "sha256": "50a1f3891845f3aba2d55f14be752dc53061b9740be14a72237c5f316104cd1d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/AI_활용법.md",
+      "bytes": 20533,
+      "sha256": "2186af45c1273b6ac4fa80f90544e82d92d4eb72167afcbfe3ee2a8f42441e53",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/LAB_상황극.md",
+      "bytes": 5204,
+      "sha256": "d8cd5ec78d2c0fbd23389ea73de3b6e601f260458bc41a3a670dafd068e792a6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/제작양식/LAB_표현소개.md",
+      "bytes": 9264,
+      "sha256": "33910cb2c19a720d8913ad1ce1cdf16c0cea7280fe8d9754a2284d2498463248",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/채널과_발행.md",
+      "bytes": 24869,
+      "sha256": "91c09e4e8bd94cfa54075b43751feb1a31c26be636d4daff78680a43259749a8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_운영체계_20260927.md",
+      "bytes": 18825,
+      "sha256": "5ffb587523f85000988f6386e4d8ede62211ef6f8abd183f818088f6a7ff3f3a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/콘텐츠_제작양식.md",
+      "bytes": 27469,
+      "sha256": "cd38cc99044abd5509af3b72233004f8e89ebfa6b392a3efde44664a297acb4a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/마케팅/클라이언트_발주서_20260930/receiver/sync.cjs",
+      "bytes": 18328,
+      "sha256": "347febb418464ed609e5a74763172654e207e5be01c741c5fc17fc6d51a2cadf",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/명품_기준_v1.md",
+      "bytes": 7321,
+      "sha256": "6753d1dc38abcf1c5c33b957140fcb675b5ec5b174c02c3fedf19a8f623989b9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf",
+      "bytes": 50360,
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/DMMono-Regular.ttf",
+      "bytes": 49744,
+      "sha256": "55b4c98f123daebb3ed27947ba47b2af00554fc6284d639a540bcef5e6258ad2",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/DM_Mono/OFL.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Medium.ttf",
+      "bytes": 309140,
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-Regular.ttf",
+      "bytes": 305928,
+      "sha256": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/InterTight-SemiBold.ttf",
+      "bytes": 309864,
+      "sha256": "643a335cbb3d5c52b32c9974de8b7fbdc22255edefeb389195641744180dd80c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/InterTight/OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/브랜드_폰트/SUIT/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/수강약관_초안_v1.md",
+      "bytes": 8823,
+      "sha256": "629bb78954324676c9d110d4f5abb128b578901362dfd52e52f40643a011cdd3",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/자주묻는질문_정본.md",
+      "bytes": 9299,
+      "sha256": "0ab7e84c44ddc4bc4c06bd232ebfbe6fa2d8b2511e6d8f50085d359426e9e3be",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02_학생_복지_프로그램.txt",
+      "bytes": 16454,
+      "sha256": "16f292b6ab229b9004830cdf565a4a01d07887df18d306c965cd1d642f65b97e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/02B_장학제도_운영규칙_내부용.txt",
+      "bytes": 15733,
+      "sha256": "cb236fe0dab8abe3944acc918b2648b28c58b0294a383819bffc1dbda014dc4c",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/03_유학_프로그램.txt",
+      "bytes": 17557,
+      "sha256": "c7cbda52cb4263b1d0236f1bb7205ac82de1b5b11d68b7430a77f71051665f28",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/04_SYNK_크루_핸드북.txt",
+      "bytes": 23356,
+      "sha256": "47b982cae7a371dda35c5e3133f789a2f0da16232b1843cd0f7db43c869dfaa0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/08_설명회_원장_스피치.txt",
+      "bytes": 16546,
+      "sha256": "0f0b41ca701d126e15cc0e74439c949cf185f6044ec8f0efc199fadd8bdd02b1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/09_학부모_안내문.txt",
+      "bytes": 10845,
+      "sha256": "1662a02ecbbd92aaff16e24af2a7acb44446de325ff86499cb78e8b4c21e5f36",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/10_SYNK_LAB_수업_커리큘럼.txt",
+      "bytes": 27511,
+      "sha256": "8b9f80714498269d62c59758d2501dbaea407e01c0efd1422a843050dbfc8cdc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 강사 수업 규칙.txt",
+      "bytes": 27015,
+      "sha256": "8343a8a323bed3613da47d7bd5dd90e3b3dc9bca2cf8dadaac3c8cf6b6dd503e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 급여 인센티브 정본.txt",
+      "bytes": 70082,
+      "sha256": "6c5905069f50c7d84a910ed17333539cc853393c03ac8384ab5dd03e11e56858",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 소그룹 과업 은행.txt",
+      "bytes": 25190,
+      "sha256": "728d1c40ffce0b0ff911f2cd9c19fccc4f382d22d5c87f8c678bac47b0116491",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK LAB/About Syestem/SYNK_리라이팅_v2/SYNK LAB 주간 교안 양식.txt",
+      "bytes": 11752,
+      "sha256": "44561a320527f2510b0b5e7fd08edcf3f60d35971d67c7d0a12a76dcb76b8ee4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/정본/SYNK/SYNK FAQ.txt",
+      "bytes": 22873,
+      "sha256": "6f86072cadfeafc08eda79c552ea99f80fea688640495ad5d74f37325c6ae6d0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/커리큘럼_정본_v1.md",
+      "bytes": 51884,
+      "sha256": "825d8b8d038f27a271ee5a9679d27dc99927fc7eb4b5c3c9d2f3b47153b7893e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/포토부스_설계.md",
+      "bytes": 14560,
+      "sha256": "f6e01875e816c054a6a3f3485559cfe8856e49fa978fff2c4cc7b371f94ac497",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg",
+      "bytes": 10353,
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Paper-정밀.svg",
+      "bytes": 10439,
+      "sha256": "f737e788e89dfbb2ce790f9b5774018ac0dd3e2cd06eff3a11d8adb36952ca89",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/consultation.mjs",
+      "bytes": 12109,
+      "sha256": "c16039b8738843f4ca242425f5ed1b981742ed6dc9a3dcb3b03a675b8f1c7568",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-ui.mjs",
+      "bytes": 25101,
+      "sha256": "3a4ab4559125b18f5844078c79a1231ba6dc02071246779de2f790d5d7742423",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "bytes": 121711,
+      "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/index.html",
+      "bytes": 18809,
+      "sha256": "7f27a30e6fd8c2dc6bea888183ff9a367cd898f2b80fc7c7604085c7ba2be679",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/interpretation.mjs",
+      "bytes": 20330,
+      "sha256": "f7f0b94c40b7b407db052a1fd561e145989d299bef334584886798899078147e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/journey-memory.mjs",
+      "bytes": 9075,
+      "sha256": "77ce2f2551a0dd9aa25d8cf6021668d81712361f59952ec878a808bb66e2f73e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.css",
+      "bytes": 19466,
+      "sha256": "3b314c30d0eaf1661818c5988d39c0f07b5f2227303ee51d05ffd430179e6341",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/lab.js",
+      "bytes": 34363,
+      "sha256": "9a4acfcddbd8d2427366b60076be3b687abb023eec0d9af56bdd301d7b86eda4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/matching-ui.mjs",
+      "bytes": 7212,
+      "sha256": "bb1db7c559f26d5a7cf9850d221cf7dec2c0387b4490a0b406e8bee4243dd964",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/matching.mjs",
+      "bytes": 22030,
+      "sha256": "9c11fa3548030a35d6643fcd7c89675cfe32c6af4cdbc226b7e90c22703c21c8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-regions.mjs",
+      "bytes": 3708,
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-ui.mjs",
+      "bytes": 27274,
+      "sha256": "7936e09ed6fd692b0232ac3949cfb1630ce756eb28fcf0df1ae32743232d491a",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting.mjs",
+      "bytes": 34293,
+      "sha256": "a982600cc52159bffedf5d26be6c8aed873995b937514a6f21b8815fc2c1ca14",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/model-extraction.mjs",
+      "bytes": 10788,
+      "sha256": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/model-host.mjs",
+      "bytes": 9145,
+      "sha256": "29cf31e3173d51fe40c9d68d9e9d2ed6c62892ab4e116e896efdb6bee45dc2fa",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/participant-launcher.mjs",
+      "bytes": 3136,
+      "sha256": "e719d70f462b1b65ebf138611a176185c74646b8f31c630d6555130ed3f8fc86",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/atlas-lab/reconnect.mjs",
+      "bytes": 12555,
+      "sha256": "7d1653284ef14fb0a386de944180a4132f8f7e765ed0987eb331cfd7d67a6ba6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/korean-rhythm/core.mjs",
+      "bytes": 7579,
+      "sha256": "943553227c21b22e79a17f26bc3cb5a6bda4acf98d32433d7ce63be9d1b891f6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/korean-rhythm/listening.mjs",
+      "bytes": 4962,
+      "sha256": "fc74163545387fce88f17ba8abbd39637a745e8dac16ae499fa2fa2bd21b5b88",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/korean-rhythm/narration.mjs",
+      "bytes": 3222,
+      "sha256": "01d6ca1f063333355b546061a45fb51af8791c7b97befe96325539c2181efe2b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/korean-rhythm/personalization.mjs",
+      "bytes": 5825,
+      "sha256": "d4fd9d6ea706f8b2fe93c805a691686bf80794dd3caf17d8284bedfcdef75df8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/korean-rhythm/suno-tracks.mjs",
+      "bytes": 11839,
+      "sha256": "8c3a2698adcc0fbfded6bccd7feaa4c620d29c027f61331ead11685a891d8e2e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/InterTight-700.woff2",
+      "bytes": 18680,
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/scrapbook.css",
+      "bytes": 17607,
+      "sha256": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/slab-blush-long.webp",
+      "bytes": 119804,
+      "sha256": "0e165b76ebb8605e9472555a77c01281e1344fab590cab79d55563fe71f5caa6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/slab-cream-long.webp",
+      "bytes": 109158,
+      "sha256": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/sticker-book.webp",
+      "bytes": 12126,
+      "sha256": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/assets/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/learning-hub/atlas-learning.js",
+      "bytes": 459735,
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/order-rush/learning.mjs",
+      "bytes": 6923,
+      "sha256": "0533469259716a61ba65f937b36e0ba488c96a9770127cbdbd7c2d8c890dcc1d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/shift-workbench/model.mjs",
+      "bytes": 55951,
+      "sha256": "822b6ffaab220b36fc27913e08747cdf2be8045d6a11e841fa54605a367412da",
+      "role": "runtime-source"
+    },
+    {
+      "path": "experiences/shift-workbench/storage-upgrade.mjs",
+      "bytes": 12700,
+      "sha256": "94411b1dfe778c469a49baeb15894325a4d5982ecef40c26076fe4d1a11fb490",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/API.md",
+      "bytes": 44663,
+      "sha256": "19126f1807b25404d02720545ef0d471df5810412906b907074966736815d0cc",
+      "role": "documentation"
+    },
+    {
+      "path": "tools/company-messenger/collaboration-service.mjs",
+      "bytes": 27244,
+      "sha256": "8d3ab0b07de846e1835fd640a821a1d3789d3de2b7ed835cf2b3ae2757bb760d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/company-integration.mjs",
+      "bytes": 8005,
+      "sha256": "b5f62f4476735bc44774e975f11031e0b7c675f66ceb6779ad5d2fb01cef20d4",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/drive-storage.mjs",
+      "bytes": 15651,
+      "sha256": "5365c830e8ea1cdd878c8dc787db22dcc891c7a0c5b8df5ff7a052e95882cced",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/platform-navigation.mjs",
+      "bytes": 1199,
+      "sha256": "eb0fee0b5c5a06ab968f3030ff03e0f3dc079619a6b432f272d5a6e904fa1830",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/productivity-service.mjs",
+      "bytes": 31334,
+      "sha256": "de761416d49456f6ab27c3f53c61f5f05ba70ab87762fb6bdd73ea110b09a259",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/app.js",
+      "bytes": 221698,
+      "sha256": "99b38b9346aacebe0790e99241c562e22da436036ad1de3a10f5d1dae1968487",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/DMMono-Medium.ttf",
+      "bytes": 50360,
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/DMMono-OFL.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-paper.webp",
+      "bytes": 11336,
+      "sha256": "d0be834422228b7c6e25f693dfc0609ab844de1572131ecb986cd9e2e8b2aefe",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-check.webp",
+      "bytes": 304354,
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-coral.webp",
+      "bytes": 291280,
+      "sha256": "34780a6d00da5afa0c71ef86f9bb8cd975e9adda2cf389585dcdc1d4079a2eec",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/badge-cream.webp",
+      "bytes": 99450,
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/chip-blush-long.webp",
+      "bytes": 163380,
+      "sha256": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/lapis-fabric.png",
+      "bytes": 121184,
+      "sha256": "31093f90018a94f0c7e2bd2eb546678752aa83559b3cb309ae3a8a5623e220d1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-blush-long.webp",
+      "bytes": 402546,
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-blush.webp",
+      "bytes": 212922,
+      "sha256": "9177d0e6e4f94774de70ead7d0e24fed0767ced311021f50bb9ed7921eb4be4f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-coral-long.webp",
+      "bytes": 479152,
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/slab-cream-long.webp",
+      "bytes": 359780,
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/tex-blush.webp",
+      "bytes": 29540,
+      "sha256": "c22e6bae8603eba21f09fc9d53ea857290bffd53ec9112183e44e81c9a638831",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/felt-ui/tex-coral.webp",
+      "bytes": 54754,
+      "sha256": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-Bold.ttf",
+      "bytes": 310440,
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-Medium.ttf",
+      "bytes": 309140,
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/InterTight-OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/laptop-felt.webp",
+      "bytes": 95412,
+      "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/logo-felt.png",
+      "bytes": 2155745,
+      "sha256": "645a8ce5ca3f9c8b71b07a05a7436f4e5fcd59fcd6d7d4b6efb761b017d6a4fc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/logo.svg",
+      "bytes": 10353,
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/marin-smile.webp",
+      "bytes": 404574,
+      "sha256": "368ed95b62514b54de5eb49999ad3e7360e78ce30f5ecd1e8a3e2bf714b32ec8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SOURCES.md",
+      "bytes": 3398,
+      "sha256": "84fe1a2b36a31b409134549bcdc3eb01d125c1dee92bb1aa316c082b12eba272",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-adapt.webp",
+      "bytes": 14018,
+      "sha256": "0da074945f8f9089f58d0f5ba8b6e9a2c30fa3d766885fbde1cf8a5f6dcb7c52",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-book.webp",
+      "bytes": 12126,
+      "sha256": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-check.webp",
+      "bytes": 11796,
+      "sha256": "255e2696f9c008a1d6e220d0452b03b7fe5aaf649c78095ec0c6ef738f6620b0",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-envelope.webp",
+      "bytes": 7014,
+      "sha256": "e157638a16caacb08a98131c50c6aa7024192f1b2d058b64d10e7c252504cf7f",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-person.webp",
+      "bytes": 12962,
+      "sha256": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-search.webp",
+      "bytes": 10774,
+      "sha256": "d08fd73c271ca539a9f5c754c067bd7b438875a136732989e5efe78cb6cb85c8",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/sticker-time.webp",
+      "bytes": 13972,
+      "sha256": "c8b0931c96f1bf654e9f05136a768ea75b96687421e701f826625db3a9906c22",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SUIT-OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/synk-ko.svg",
+      "bytes": 461,
+      "sha256": "20bd52caae7177d9915159b5f075e52fc89f5525403926c8a99f67b4750b6465",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/assets/thread-shift.webp",
+      "bytes": 159706,
+      "sha256": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/index.html",
+      "bytes": 786,
+      "sha256": "0fcabfbd6b146d816c850d06b35935235c58d84d2663ef5a4f37373318ec71cc",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/messenger-design.css",
+      "bytes": 63708,
+      "sha256": "69a8072427c55424c65cdcd13f25a9083db8f2d9cc97479504443f64a4ea4acf",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/public/styles.css",
+      "bytes": 78408,
+      "sha256": "02a5513a3d005224b3b609e028c6463734fd9a092b556da067d15902a8f90bba",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/QA.md",
+      "bytes": 46538,
+      "sha256": "c18eb9864bd6066fcad8277916a85a21b07b48aafa81afc87825a50b082fcfa3",
+      "role": "documentation"
+    },
+    {
+      "path": "tools/company-messenger/qa/device-notifications-acceptance.mjs",
+      "bytes": 15448,
+      "sha256": "99be00ee9307b5418ccc2636bac3b6f759f7ca0a2449a004a6444278d36c1eff",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/qa/productivity-acceptance.mjs",
+      "bytes": 15597,
+      "sha256": "5f94031eb99390c07560ae7c5ff2e6abc2e77a54d70f1c48b1fffc0b68c57ae8",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/qa/productivity-followup-acceptance.mjs",
+      "bytes": 13779,
+      "sha256": "106db510d73d38110abc405e2e24032687026b3ed2802f0740eeb3a5746355bd",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/qa/work-notifications-acceptance.mjs",
+      "bytes": 16272,
+      "sha256": "c9a4aedde9c9353a1b09960291083b2552da4bf359033da631107c82872c7ab5",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/server.mjs",
+      "bytes": 87738,
+      "sha256": "3af57b38ba2bd2652c4ec2eed18ec893de6e623ec396b43ab3859cfe2c3d559d",
+      "role": "runtime-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/api.test.mjs",
+      "bytes": 36647,
+      "sha256": "432e1a8bf1fdbec446233ff3edcd91480730f701e17c90878043d1f996d9ad6d",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/chat-categories.test.mjs",
+      "bytes": 20807,
+      "sha256": "94bd8fc113afab133f153686017a7fb1632620eb49ff8eee0bae2eeef6ea05cc",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/client-features.test.mjs",
+      "bytes": 10000,
+      "sha256": "d67073364d661754057888c21220b84b8636c1e1a7a81c14ed5f50fcf8970562",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/collaboration.test.mjs",
+      "bytes": 18631,
+      "sha256": "7340adb8d9a6ed24a08026aa677d60a1b51bcbee4de0001502aa233f3d3568ef",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/device-notifications-client.test.mjs",
+      "bytes": 10146,
+      "sha256": "8bd9e79aed4ac47db1b61cbb87387b8c2df7fd959a0a8704801aebcef2d24d66",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/drive-api.test.mjs",
+      "bytes": 22653,
+      "sha256": "5a1f9512677090e94da006aff9f6fef9f482925497e6468c3d6bc5646aa7f6f8",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/drive-storage.test.mjs",
+      "bytes": 16568,
+      "sha256": "3e7b3d276f5c3362d3dfb05094c97a1c873ecbc39e08cb059ea4b26760e1b073",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/platform-navigation.test.mjs",
+      "bytes": 2443,
+      "sha256": "590ca87a9d1a006bf0a49da93b6aeaeca3a38386bef02079028f56a376280c70",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/productivity-followup.test.mjs",
+      "bytes": 18077,
+      "sha256": "baee8a45aeca0a7e3375bd11256311535d6198e5caabd2320c35d901ed6230cf",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/productivity-ui.test.mjs",
+      "bytes": 11920,
+      "sha256": "7b8ae19d0542ed3360290524585ce152b03d10f59a5f5f0c65e1027146f715a1",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/productivity-workflow.test.mjs",
+      "bytes": 17880,
+      "sha256": "50df48e5bdab5abcd447d701f0054e9082a7a32db40eba2a198a7d8e880f30cf",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/productivity-workspace-ui.test.mjs",
+      "bytes": 19654,
+      "sha256": "f07e64d2d30261458a880379e1adeeb2da21ccf1177da8c96a3a637db23bc9a4",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-deletion-ui.test.mjs",
+      "bytes": 12245,
+      "sha256": "232b5b98a4e35f4cc229b13d4d4af439ea0c562995aa7e5d22fd4bdfbaf9f965",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-deletion.test.mjs",
+      "bytes": 11465,
+      "sha256": "7aaf0b3a70d3cb97906c531d827d2bf4b85372e752760f33d4d4c7c16238a844",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-invite-ui.test.mjs",
+      "bytes": 10143,
+      "sha256": "432b917845927716eeba10c725b1780b4b2c60885497fc3a93dd4287387a204a",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-leave-ui.test.mjs",
+      "bytes": 12796,
+      "sha256": "dafe9b09bd0922e75d27b536d68e850851043e5ad0946cdd421cba34491a6800",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-leave.test.mjs",
+      "bytes": 12465,
+      "sha256": "fc10b3f8963ab497c3b1ed73343c160b31c46d5a3a7196ad5303091c30c9e0a0",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/project-membership.test.mjs",
+      "bytes": 9523,
+      "sha256": "6bd42d26b28a872ca86afe7f038b814498c2e95b2bbf94e513df2acceac95a6d",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/scheduled-notifications-client.test.mjs",
+      "bytes": 18115,
+      "sha256": "675a3105be8927c6008545e5f47f8ed3dbc08177506f64f335ad55fe8214eb63",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/system-channels.test.mjs",
+      "bytes": 12186,
+      "sha256": "c7c3ae239d106738a19212218c9260290b69aeba83f44d464ee80601407fe7ce",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/web-push.test.mjs",
+      "bytes": 26191,
+      "sha256": "e8508892fbcfa69ea1dcf323023a0ccc95a08b5ab4e88ff2ab71c7dfccfe4e41",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/tests/workspace-open-ui.test.mjs",
+      "bytes": 5645,
+      "sha256": "6b5961bfaa5c126d508ca29ce5568ca0d55b50fd54e0145fd844d38bbf0e1f6a",
+      "role": "verification-source"
+    },
+    {
+      "path": "tools/company-messenger/web-push-service.mjs",
+      "bytes": 22212,
+      "sha256": "e9fcee136aabdfd30721aef0d1a61106fb990007216a99eb2557f127f10d08fe",
+      "role": "runtime-source"
+    }
+  ]
+}

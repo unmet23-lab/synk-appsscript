@@ -5,6 +5,7 @@ import {readFile,writeFile,mkdir,cp,lstat,readdir,realpath} from 'node:fs/promis
 import {createHash,createDecipheriv,timingSafeEqual} from 'node:crypto';
 import {join,resolve,relative,sep,dirname} from 'node:path';
 import {fileURLToPath,pathToFileURL} from 'node:url';
+import {workspaceMediaNames} from './workspace-media.mjs';
 
 const sha=value=>createHash('sha256').update(value).digest('hex');
 const serial=value=>JSON.stringify(value,(_,item)=>typeof item==='bigint'?{$integer:String(item)}:item);
@@ -91,10 +92,10 @@ async function snapshot(directory){
       if(!object(link)||typeof link.companyUserId!=='string'||typeof link.messengerUserId!=='string'||!companyUsers.has(link.companyUserId)||!messengerUsers.has(link.messengerUserId)||seenCompany.has(link.companyUserId)||seenMessenger.has(link.messengerUserId))throw issue('IDENTITY_RELATION_INVALID');
       seenCompany.add(link.companyUserId);seenMessenger.add(link.messengerUserId);
     }
-    const media=company.db.prepare("SELECT body FROM documents WHERE kind='studioMedia'").all().map(row=>JSON.parse(row.body).diskName);
+    const media=workspaceMediaNames(company.db);
     const attachments=messenger.db.prepare("SELECT disk_name FROM files WHERE storage_provider='local'").all().map(row=>row.disk_name);
     if(manifest.mediaCount!==media.length||manifest.attachmentCount!==attachments.length)throw issue('ATTACHMENT_MANIFEST_INVALID');
-    for(const name of media){if(typeof name!=='string'||!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg)$/i.test(name)||!before.has(join('company','studio-media',name)))throw issue('REFERENCED_MEDIA_MISSING');}
+    for(const name of media){if(typeof name!=='string'||!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|intake)$/i.test(name)||!before.has(join('company','studio-media',name)))throw issue('REFERENCED_MEDIA_MISSING');}
     for(const name of attachments){if(typeof name!=='string'||!/^[a-f0-9-]{36}\.bin$/.test(name)||!before.has(join('messenger','uploads',name)))throw issue('REFERENCED_ATTACHMENT_MISSING');}
     return {root,before,manifest,key,company,messenger,practices};
   }catch(error){company?.db.close();messenger?.db.close();throw error;}
@@ -103,10 +104,11 @@ function freshness(evidence,baseline){
   if(!object(evidence)||!['synthetic-rehearsal','operator-attestation'].includes(evidence.kind)||evidence.declaredLatest!==true||evidence.writersStopped!==true||!validDate(evidence.writersStoppedAt)||!validDate(evidence.recordedAt)||evidence.baselineCreatedAt!==baseline.manifest.createdAt||Date.parse(evidence.writersStoppedAt)>Date.parse(evidence.baselineCreatedAt)||Date.parse(evidence.recordedAt)<Date.parse(evidence.baselineCreatedAt))throw issue('LATEST_STOPPED_BASELINE_EVIDENCE_REQUIRED');
 }
 
-export async function acceptWorkspaceRestore({candidateDirectory,baselineDirectory,freshnessEvidence,destination}={}){
+export async function acceptWorkspaceRestore({candidateDirectory,baselineDirectory,freshnessEvidence,destination,layout='siblings'}={}){
   const report={version:1,status:'rejected',candidateMatchesDeclaredBaseline:false,productionTrafficAllowed:false,latestnessIndependentlyVerified:false,scope:freshnessEvidence?.kind==='synthetic-rehearsal'?'synthetic-rehearsal':'offline-operator-declaration',sourceReadOnly:true,sourceFilesUnchanged:null,preparedIsolatedCopy:false,checks:[],issues:[]};
   let candidate,baseline;
   try{
+    if(!['siblings','cloud-volume'].includes(layout))throw issue('RESTORE_LAYOUT_INVALID');
     if(typeof candidateDirectory!=='string'||typeof baselineDirectory!=='string')throw issue('CANDIDATE_AND_LATEST_BASELINE_REQUIRED');
     baseline=await snapshot(baselineDirectory);freshness(freshnessEvidence,baseline);
     if(await realpath(resolve(candidateDirectory))===baseline.root)throw issue('INDEPENDENT_CANDIDATE_AND_BASELINE_REQUIRED');
@@ -138,14 +140,23 @@ export async function acceptWorkspaceRestore({candidateDirectory,baselineDirecto
       if([candidate.root,baseline.root].some(root=>within(root,actual)||within(actual,root)))throw issue('DESTINATION_MUST_BE_SEPARATE');
       await mkdir(actual,{mode:0o700}); // EEXIST rejects overwrite, including symlinks.
       await writeFile(join(actual,'PREPARATION_INCOMPLETE'),'Do not start a host.\n',{mode:0o600});
-      await cp(join(candidate.root,'company'),join(actual,'company'),{recursive:true,errorOnExist:true,force:false});
+      const companyTarget=layout==='cloud-volume'?actual:join(actual,'company');
+      if(layout==='cloud-volume'){
+        for(const entry of await readdir(join(candidate.root,'company'))){
+          if(['messenger','config','PREPARATION_INCOMPLETE','RECOVERY_ACCEPTANCE.json'].includes(entry))throw issue('RESTORE_LAYOUT_CONFLICT');
+          await cp(join(candidate.root,'company',entry),join(companyTarget,entry),{recursive:true,errorOnExist:true,force:false});
+        }
+      }else await cp(join(candidate.root,'company'),companyTarget,{recursive:true,errorOnExist:true,force:false});
       await cp(join(candidate.root,'messenger'),join(actual,'messenger'),{recursive:true,errorOnExist:true,force:false});
-      await writeFile(join(actual,'company','workspace-integration.json'),JSON.stringify({messengerDataDir:join(actual,'messenger'),identityLinks:candidate.manifest.identityLinks},null,2),{mode:0o600});
+      // A cloud volume moves between host staging and /data. Its path comes
+      // from MESSENGER_DATA_DIR, never from the machine doing this comparison.
+      await writeFile(join(companyTarget,'workspace-integration.json'),JSON.stringify({...(layout==='siblings'?{messengerDataDir:join(actual,'messenger')}:{}),identityLinks:candidate.manifest.identityLinks},null,2),{mode:0o600});
       const copied=await files(actual);
-      for(const [path,hash] of candidate.before){if(path.startsWith('company'+sep)||path.startsWith('messenger'+sep)){if(path!==join('company','workspace-integration.json')&&copied.get(path)!==hash)throw issue('ISOLATED_COPY_MISMATCH');}}
+      for(const [path,hash] of candidate.before){if(['company','messenger'].some(name=>path.startsWith(name+sep))){const targetPath=layout==='cloud-volume'&&path.startsWith('company'+sep)?path.slice('company'.length+1):path;if(path!==join('company','workspace-integration.json')&&copied.get(targetPath)!==hash)throw issue('ISOLATED_COPY_MISMATCH');}}
       report.sourceFilesUnchanged=sameFiles(candidate.before,await files(candidate.root))&&sameFiles(baseline.before,await files(baseline.root));
       if(!report.sourceFilesUnchanged)throw issue('SOURCE_CHANGED_DURING_COPY');
       report.preparedIsolatedCopy=true;
+      report.preparedLayout=layout;
       await writeFile(join(actual,'RECOVERY_ACCEPTANCE.json'),JSON.stringify({...report,status:'candidate-matches-declared-baseline',candidateMatchesDeclaredBaseline:true},null,2),{mode:0o600});
       // Keep the blocking marker: only the operator's actual environment and
       // access checks can authorize removing it and reopening traffic.
@@ -161,6 +172,6 @@ export async function acceptWorkspaceRestore({candidateDirectory,baselineDirecto
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let evidence;
   try{evidence=JSON.parse(await readFile(process.argv[4],'utf8'));}catch{}
-  const report=await acceptWorkspaceRestore({candidateDirectory:process.argv[2],baselineDirectory:process.argv[3],freshnessEvidence:evidence,...(process.argv[5]?{destination:process.argv[5]}:{})});
+  const report=await acceptWorkspaceRestore({candidateDirectory:process.argv[2],baselineDirectory:process.argv[3],freshnessEvidence:evidence,...(process.argv[5]?{destination:process.argv[5]}:{}),layout:process.argv[6]===undefined?'siblings':process.argv[6]==='--cloud-volume'?'cloud-volume':'invalid'});
   console.log(JSON.stringify(report,null,2));process.exitCode=report.candidateMatchesDeclaredBaseline?0:2;
 }

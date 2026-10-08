@@ -61,6 +61,11 @@ async function createProvider({ environment, publicSettings, apply = false }, de
       return rows;
     },
     async createClient(body) { if (!apply) throw Error('읽기 전용 공급자에서는 OAuth 등록을 변경할 수 없어요.'); return jsonResponse(await admin('', { method: 'POST', body: JSON.stringify(body) }), 'Public OAuth 등록'); },
+    async updateClient(clientId, body) {
+      if (!apply) throw Error('읽기 전용 공급자에서는 OAuth 등록을 변경할 수 없어요.');
+      if (typeof clientId !== 'string' || !/^[A-Za-z0-9_-]{1,256}$/.test(clientId)) throw Error('갱신할 OAuth 클라이언트 ID를 확인해 주세요.');
+      return jsonResponse(await admin(`/${encodeURIComponent(clientId)}`, { method: 'PUT', body: JSON.stringify(body) }), 'Public OAuth 갱신');
+    },
     async writeMapping(mapping) { if (!apply) throw Error('읽기 전용 공급자에서는 제품 매핑을 변경할 수 없어요.'); await jsonResponse(await management(ref, '/secrets', { method: 'POST', signal: AbortSignal.timeout(20000), body: JSON.stringify([{ name: 'SYNK_OAUTH_CLIENT_PRODUCTS', value: JSON.stringify(mapping) }]) }), '제품 매핑 병합'); },
   };
 }

@@ -3,21 +3,23 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve, sep } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import { createCompanyApp } from './server.mjs';
 import { synkIdentityConfig, createSynkIdentity } from './synk-identity.mjs';
 
 const password='fixture-company-password-2026';
 const ids={one:'11111111-1111-4111-8111-111111111111',two:'22222222-2222-4222-8222-222222222222'};
 const access={one:'synthetic-access-one-not-for-operation',two:'synthetic-access-two-not-for-operation'};
-async function fixture(t,{enabled=true,browser=false,verify,fetcher}={}){
-  const dir=await mkdtemp(join(tmpdir(),'synk-id-company-'));let stamp=Date.now(),rejected=false;
+async function fixture(t,{enabled=true,browser=false,verify,fetcher,webPushEnabled=false}={}){
+  const dir=await mkdtemp(join(tmpdir(),'synk-id-company-'));let stamp=Date.now(),rejected=false;const sent=[];
   const verifier=verify===false?null:verify|| (async value=>{if(rejected)throw Object.assign(Error('revoked'),{status:401});return {synkUserId:value===access.one?ids.one:ids.two,expiresAt:stamp+3600_000};});
   const options={dataDir:dir,port:0,allowTestHost:true,schedule:false,synkIdentityConfig:enabled?{accountApiUrl:'https://identity.example.test/functions/v1/synk-account',publishableKey:'fixture-public',issuer:browser?'https://identity.example.test':null,clientId:browser?'messenger-browser':null}:null,synkIdentityVerifier:verifier,synkIdentityFetch:fetcher,synkIdentityNow:()=>stamp,messengerDriveStorage:{active:async()=>null,status:async()=>({provider:'local'})}};
+  if(webPushEnabled)Object.assign(options,{webPushEnabled:true,origin:'https://workspace.example.test',clock:()=>new Date(stamp).toISOString(),webPushSend:async value=>{assert.equal(await value.authorize(),true);sent.push(value);return {statusCode:201};}});
   let app=createCompanyApp(options),address=await app.start();
   t.after(async()=>{await app.stop();assert.ok(resolve(dir).startsWith(resolve(tmpdir())+sep));await rm(dir,{recursive:true,force:true});});
   const staff=app.store.createUser({name:'회사 크루',email:'same@example.test',password,role:'member'});
   const admin=app.store.createUser({name:'회사 관리자',email:'admin@example.test',password,role:'admin'});
-  const fx={get app(){return app;},get base(){return `http://127.0.0.1:${address.port}`;},staff,admin,advance:ms=>stamp+=ms,revoke:()=>{rejected=true;},async restart(){await app.stop();app=createCompanyApp(options);address=await app.start();},client(){
+  const fx={get app(){return app;},get base(){return `http://127.0.0.1:${address.port}`;},directory:dir,sent,staff,admin,advance:ms=>stamp+=ms,revoke:()=>{rejected=true;},async restart(){await app.stop();app=createCompanyApp(options);address=await app.start();},client(){
     const jar=new Map();return {jar,csrf:'',async request(path,{body,token,origin=app.origin,csrf=this.csrf,method=body===undefined?'GET':'POST'}={}){
       const headers={Cookie:[...jar].map(([key,value])=>key+'='+value).join('; ')};
       if(method==='POST'){headers.Origin=origin;headers['Content-Type']='application/json';if(csrf)headers['X-CSRF-Token']=csrf;}
@@ -68,10 +70,70 @@ test('central revocation and server restart invalidate SYNK sessions while compa
 test('SYNK-derived session does not survive restart without its in-memory token',async t=>{
   const f=await fixture(t),c=f.client();await c.link();await f.restart();assert.equal((await c.request('/api/me')).data.user,null);
 });
+
+test('paused background jobs retain periodic SYNK session revocation checks and cancel them on stop',async t=>{
+  const previous=process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED;
+  process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED='0';
+  t.after(()=>{if(previous===undefined)delete process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED;else process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED=previous;});
+  const registered=[],original=globalThis.setInterval;
+  t.mock.method(globalThis,'setInterval',(callback,ms,...args)=>{const handle=original(callback,ms,...args);registered.push({callback,ms,handle});return handle;});
+  const f=await fixture(t),c=f.client();await c.link();
+  assert.deepEqual(registered.map(row=>row.ms),[15000],'identity checks remain; collection/outbox/reminder intervals are absent');
+  const tokensBefore=f.app.store.db.prepare('SELECT COUNT(*) AS n FROM tokens').get().n;
+  f.revoke();f.advance(31_000);await registered[0].callback();
+  assert.ok(f.app.store.db.prepare('SELECT COUNT(*) AS n FROM tokens').get().n<tokensBefore,'timer itself revokes the session before any HTTP request');
+  assert.equal((await c.request('/api/me')).data.user,null);
+  assert.equal((await c.request('/messenger/api/bootstrap')).status,401);
+  const local=f.client();assert.equal((await local.login()).status,200);
+  await f.app.stop();assert.ok(registered.every(row=>row.handle._destroyed));
+});
 test('temporary identity outage denies access without deleting the company session and recovers after revalidation',async t=>{
   let unavailable=false;const f=await fixture(t,{verify:async()=>{if(unavailable)throw Object.assign(Error('busy'),{status:503});return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();await c.link();const before=f.app.store.db.prepare('SELECT COUNT(*) AS n FROM tokens WHERE purpose=\'session\'').get().n;
   unavailable=true;f.advance(31_000);const denied=await c.request('/api/me');assert.equal(denied.status,503);assert.equal(denied.data.code,'SYNK_IDENTITY_UNAVAILABLE');assert.equal(f.app.store.db.prepare('SELECT COUNT(*) AS n FROM tokens WHERE purpose=\'session\'').get().n,before);assert.equal((await c.request('/messenger/api/bootstrap')).status,503);
   unavailable=false;assert.equal((await c.request('/api/me')).data.user.id,f.staff.id);assert.equal((await c.request('/messenger/api/bootstrap')).status,200);
+});
+
+async function supportNotification(f,staff,text){
+  const project=await staff.request('/api/client-projects',{body:{title:'합성 신원 검증 업무',customerName:'합성 고객',summary:'Synthetic identity recovery fixture'}});assert.equal(project.status,201);
+  const invited=await staff.request('/api/client-projects/'+project.data.project.id+'/invite',{body:{revision:project.data.project.revision}});assert.equal(invited.status,200);
+  const customer=f.client(),opened=await customer.request('/pulse/api/open',{body:{invite:invited.data.invite}});assert.equal(opened.status,200);
+  const response=await fetch(f.base+'/pulse/api/action',{method:'POST',headers:{Cookie:[...customer.jar].map(([key,value])=>key+'='+value).join('; '),Origin:f.app.origin,'Content-Type':'application/json','X-Pulse-CSRF':opened.data.csrf},body:JSON.stringify({revision:opened.data.project.revision,action:'support',text})});
+  assert.equal(response.status,200);await response.json();
+}
+
+test('temporary SYNK verification outage preserves device subscription and resumes push with the same subscription',async t=>{
+  let unavailable=false;
+  const f=await fixture(t,{webPushEnabled:true,verify:async()=>{if(unavailable)throw Object.assign(Error('busy'),{status:503});return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();
+  assert.equal((await c.link()).status,200);
+  const endpoint='https://fcm.googleapis.com/fcm/send/SYNTHETIC-IDENTITY-RECOVERY';
+  const registered=await c.request('/api/device-notifications',{body:{subscription:{endpoint},label:'합성 신원 복구 기기'}});assert.equal(registered.status,201);
+  const id=registered.data.subscription.id,read=()=>f.app.store.db.prepare('SELECT id,enabled,endpoint FROM web_push_subscriptions WHERE id=?').get(id);
+  f.advance(1000);await supportNotification(f,c,'PRIVATE outage fixture');
+  unavailable=true;f.advance(31_000);await f.app.deviceNotifications.tick();
+  assert.equal(f.sent.length,0,'unverified identity must not reach the push provider');
+  assert.deepEqual({...read()},{id,enabled:1,endpoint},'temporary verification failure must preserve the existing device capability');
+  assert.equal((await c.request('/api/device-notifications')).status,503);
+  assert.equal((await c.request('/api/device-notifications',{body:{subscription:{endpoint},label:'재등록 금지'}})).status,503);
+  assert.deepEqual({...read()},{id,enabled:1,endpoint});
+  unavailable=false;await f.app.deviceNotifications.tick();assert.equal(f.sent.length,1,'the queued source resumes without registering the browser again');
+  const restored=await c.request('/api/device-notifications');assert.equal(restored.status,200);assert.equal(restored.data.subscriptions[0].id,id);assert.equal(restored.data.subscriptions[0].enabled,true);
+  f.advance(1000);await supportNotification(f,c,'PRIVATE recovered fixture');await f.app.deviceNotifications.tick();assert.equal(f.sent.length,2);
+  await f.app.deviceNotifications.tick();assert.equal(f.sent.length,2,'repeated checks must not duplicate the recovered notifications');
+  assert.deepEqual({...read()},{id,enabled:1,endpoint});assert.equal(f.app.store.db.prepare("SELECT count(*) AS n FROM web_push_queue WHERE subscription_id=? AND state='accepted'").get(id).n,2);
+  assert.doesNotMatch(JSON.stringify(f.sent),/PRIVATE|합성 고객/);
+});
+
+test('stopping while SYNK device verification is pending preserves the subscription without sending',async t=>{
+  let hold=false,release,announce;const held=new Promise(resolve=>release=resolve),started=new Promise(resolve=>announce=resolve);
+  const f=await fixture(t,{webPushEnabled:true,verify:async()=>{if(hold){announce();await held;}return {synkUserId:ids.one,expiresAt:Date.now()+3600_000};}}),c=f.client();
+  t.after(()=>release());assert.equal((await c.link()).status,200);
+  const endpoint='https://fcm.googleapis.com/fcm/send/SYNTHETIC-IDENTITY-STOP';
+  const registered=await c.request('/api/device-notifications',{body:{subscription:{endpoint}}});assert.equal(registered.status,201);
+  hold=true;f.advance(31_000);const checking=f.app.deviceNotifications.tick();await started;
+  const stopping=f.app.stop();release();await checking;await stopping;
+  assert.equal(f.sent.length,0);
+  const db=new DatabaseSync(join(f.directory,'company.sqlite'),{readOnly:true});
+  try{assert.deepEqual({...db.prepare('SELECT id,enabled,endpoint FROM web_push_subscriptions WHERE id=?').get(registered.data.subscription.id)},{id:registered.data.subscription.id,enabled:1,endpoint},'shutdown is inconclusive, not a permanent subscription revocation');}finally{db.close();}
 });
 test('renewal preserves the linked identity and unlink requires that same SYNK ID plus company reauthentication',async t=>{
   const f=await fixture(t),c=f.client();await c.link();assert.equal((await c.request('/api/synk-id/renew',{token:access.two,body:{}})).status,409);assert.equal((await c.request('/api/synk-id/renew',{token:access.one,body:{}})).status,200);

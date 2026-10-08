@@ -66,7 +66,8 @@ Object.assign(state,{navFilter:'all',roomQuery:'',chatCategory:'personal',catego
 Object.assign(state,{unavailableChannels:new Set(),deletingChannels:new Set(),leavingChannels:new Set(),restoringChannels:new Set(),channelsSeq:0});
 const chatCategories=[['personal','개인채팅','chat'],['team','팀채팅','users'],['all','전체채팅','globe']];
 const systemRoomMeta={announcements:{icon:'announcement',description:'회사 일정·결정·필수 안내',intro:'회사 일정과 결정, 꼭 알아야 할 안내를 확인하세요.'},info:{icon:'note',description:'업무 자료와 정보 공유',intro:'업무에 필요한 자료, 링크와 유용한 정보를 함께 나누세요.'},social:{icon:'chat',description:'가벼운 이야기와 일상',intro:'가벼운 안부부터 오늘의 이야기까지 편하게 나누세요.'}};
-Object.assign(state,{mentionIds:[],workspaceLink:null,ackRequired:false,mentionPicker:null,personalTab:'notifications',savedView:'saved',taskFilter:'all',taskScope:'mine',shareSeq:0,personalSeq:0,personalItems:[],notificationCount:0,searchMessages:[],searchOffset:0});
+Object.assign(state,{mentionIds:[],workspaceLink:null,ackRequired:false,mentionPicker:null,personalTab:'workday',savedView:'saved',taskFilter:'all',taskScope:'mine',shareSeq:0,personalSeq:0,personalItems:[],notificationCount:0,searchMessages:[],searchOffset:0,decisionQuery:'',decisionCurrent:true,decisionKind:'all',customerWork:[],catchUp:null});
+Object.assign(state,{scheduledNotifications:{enabled:null},workNotificationSession:0,workNotificationRevision:0,deadlineSettings:undefined,deadlineSettingsUser:null});
 function sortedPublicChannels(channels){const order=Object.keys(systemRoomMeta);return channels.map((channel,index)=>({channel,index,rank:order.includes(channel.systemKey)?order.indexOf(channel.systemKey):order.length})).sort((a,b)=>a.rank-b.rank||a.index-b.index).map(item=>item.channel);}
 function channelCategory(channel){return channel?.kind==='self'||channel?.kind==='dm'?'personal':channel?.scope==='team'?'team':'all';}
 function selectedConversation(){const channel=currentChannel();return channel&&channelCategory(channel)===state.chatCategory?channel:null;}
@@ -90,7 +91,7 @@ async function api(path, options = {}){
   if(!response.ok){
     if(response.status===401&&moduleBase){returnToCompanyLogin();throw new Error('회사 계정으로 다시 로그인해 주세요.');}
     if(response.status===401 && state.user){state.events?.close();state.user=null;state.queues.forEach(q=>q.forEach(f=>f.xhr?.abort()));state.queues.clear();if(modal.open)modal.close();renderAuth('login');}
-    const error = new Error(data.error || `요청을 처리하지 못했어요. (${response.status})`);error.status=response.status;throw error;
+    const error = new Error(data.error || `요청을 처리하지 못했어요. (${response.status})`);error.status=response.status;error.code=data.code;throw error;
   }
   return data;
 }
@@ -130,7 +131,15 @@ function updateStorageProvider(provider){
   if($('#settings-storage-note'))$('#settings-storage-note').innerHTML=storageNote();
   if($('#composer-input'))updateSend();
 }
-async function refreshStorageProvider(){const data=await api('/api/bootstrap'),previousWrite=canWriteMessages();if(data.integrated)state.integrated=data.integrated;if(data.user)state.user=data.user;if(data.storage)updateStorageProvider(data.storage.provider);if(previousWrite!==canWriteMessages()){applyIntegratedUI();syncComposerAccess();renderMessages({preserve:true});await refreshDetailViews();}}
+async function refreshStorageProvider(){
+  const userId=state.user?.id,session=state.workNotificationSession,revision=++state.workNotificationRevision,data=await api('/api/bootstrap');
+  if(!userId||userId!==state.user?.id||session!==state.workNotificationSession||(data.user&&data.user.id!==userId))return;
+  const previousWrite=canWriteMessages(),previousScheduler=state.scheduledNotifications.enabled;
+  if(data.integrated)state.integrated=data.integrated;if(data.user)state.user=data.user;if(revision===state.workNotificationRevision)setWorkNotificationStatus(data.scheduledNotifications?.enabled);if(data.storage)updateStorageProvider(data.storage.provider);
+  const permissionsChanged=previousWrite!==canWriteMessages();
+  if(permissionsChanged){applyIntegratedUI();syncComposerAccess();}
+  if(permissionsChanged||previousScheduler!==state.scheduledNotifications.enabled){renderMessages({preserve:true});await refreshDetailViews();}
+}
 function storageNote(){return `${storageSentence()} 파일은 자동으로 삭제되지 않아요. 중요한 자료는 별도로 백업해 주세요.${state.user?.role==='member'?'<br>위 수치는 내가 볼 수 있는 대화 기준이에요.':''}`;}
 
 async function boot(){
@@ -138,6 +147,7 @@ async function boot(){
   catch(error){app.innerHTML=`<div class="boot"><div class="page-error"><h2>연결을 기다리고 있어요</h2><p class="muted">메신저 서버가 실행 중인지 확인한 후 다시 열어 주세요.</p><p class="tiny muted">${esc(error.message)}</p><button class="button primary" id="retry-boot">다시 연결</button></div></div>`;$('#retry-boot').onclick=boot;}
 }
 function renderAuth(mode='login'){
+  resetWorkNotificationState();
   if(moduleBase){returnToCompanyLogin();return;}
   const setup=mode==='setup',join=mode==='join';
   const title=setup?'우리 팀의 첫 공간 만들기':join?'팀에 함께하기':'다시 만나서 반가워요';
@@ -148,6 +158,7 @@ function renderAuth(mode='login'){
   $('#switch-auth')?.addEventListener('click',()=>renderAuth(join?'login':'join'));
 }
 function enterWorkspace(data){
+  resetWorkNotificationState();setWorkNotificationStatus(data.scheduledNotifications?.enabled);
   document.body.classList.toggle('integrated-module',Boolean(data.integrated));
   document.body.classList.toggle('viewer-mode',data.integrated?.canWrite===false);
   Object.assign(state,{platformUrl:data.platformUrl||null,user:data.user,workspace:data.workspace,storage:data.storage||{provider:'local'},integrated:data.integrated||null,channels:data.channels,members:data.members,teams:data.teams||[],fileBytes:data.limits?.fileBytes || 104857600,channelId:null,mode:'chat',messages:[],drawer:null,needsSetup:false,navFilter:'all',roomQuery:'',replyTarget:null,thread:null,pins:[],sharedFiles:[],directoryQuery:'',directoryTeam:'all'});
@@ -405,7 +416,7 @@ async function handleMessageAction(event){
   const message=[...state.messages,...state.pins,...state.personalItems.map(item=>item.message||item),...(state.thread?.messages||[]),state.thread?.parent].find(m=>m?.id===messageId);
   if(action==='retry')return selectChannel(state.channelId);if(action==='earlier')return loadEarlier(button);if(action==='focus'){if(canPostToChannel())$('#composer-input').focus();return;}if(action==='attach'){if(canPostToChannel())$('#file-input').click();return;}if(action==='invite')return inviteDialog();
   if(!message)return;
-  if(['save','remind','task','ack','ack-list','workspace-link'].includes(action))return handleProductivityAction(action,message,button);
+  if(['save','remind','task','decision','ack','ack-list','workspace-link'].includes(action))return handleProductivityAction(action,message,button);
   if(action==='reply')return startReply(message);if(action==='thread')return openThread(message);if(action==='reply-origin')return openThread({...message.replyTo,channelId:message.channelId});if(action==='jump')return openSearchMessage(message);if(action==='pin')return togglePin(message,button);
   if(action==='reaction-picker')return reactionDialog(message);if(action==='react')return toggleReaction(message,button.dataset.emoji);if(action==='edit')return editMessageDialog(message);if(action==='delete')return deleteMessageDialog(message);
 }
@@ -849,7 +860,7 @@ function parentMessage(type,payload={}){
   window.parent.postMessage({type,...payload},location.origin);
 }
 function returnToCompanyLogin(){
-  state.events?.close();state.user=null;
+  state.events?.close();state.user=null;resetWorkNotificationState();if(modal.open)modal.close();
   app.innerHTML='<div class="boot"><p>회사 계정 로그인이 필요해요.</p><a class="button primary" href="/" target="_top">워크스페이스 로그인</a></div>';
   if(window.parent!==window)parentMessage('messenger:auth-expired');
   else location.replace('/');
@@ -868,7 +879,7 @@ function applyIntegratedUI(){
 async function handleWorkspaceOpen(value){
   if(!state.user||!moduleVisible||typeof value.requestId!=='string'||state.workspaceOpenId===value.requestId)return;
   const validId=value=>typeof value==='string'&&/^[a-zA-Z0-9_. -]{1,100}$/.test(value);
-  if(value.channelId&&value.userId||value.channelId&&!validId(value.channelId)||value.userId&&!validId(value.userId)||value.panel&&!['files','tasks','saved'].includes(value.panel)||value.messageId!=null&&(!value.channelId||!/^\d{1,16}$/.test(String(value.messageId))||Number(value.messageId)<1)||value.fileId&&(!value.channelId||!validId(value.fileId)))return;
+  if(value.channelId&&value.userId||value.channelId&&!validId(value.channelId)||value.userId&&!validId(value.userId)||value.panel&&!['files','tasks','saved','workday','catchup','decisions','notifications'].includes(value.panel)||value.messageId!=null&&(!value.channelId||!/^\d{1,16}$/.test(String(value.messageId))||Number(value.messageId)<1)||value.fileId&&(!value.channelId||!validId(value.fileId)))return;
   state.workspaceOpenId=value.requestId;const request=++state.navigationSeq,userId=state.user.id;state.workspaceOpenPending=true;
   const active=()=>moduleVisible&&state.user?.id===userId&&state.workspaceOpenId===value.requestId;
   try{
@@ -879,7 +890,7 @@ async function handleWorkspaceOpen(value){
     if(value.panel==='files'){
       if(!selectedConversation()){const self=state.channels.find(channel=>channel.kind==='self');if(self){const loading=selectChannel(self.id),navigation=state.navigationSeq;await loading;if(!active()||navigation!==state.navigationSeq)return;}}
       state.fileScope=value.channelId?'channel':'all';state.fileQuery='';state.fileType='all';setMode('files');
-    }else if(value.panel==='tasks'||value.panel==='saved'){
+    }else if(['tasks','saved','workday','catchup','decisions','notifications'].includes(value.panel)){
       if(value.panel==='tasks'){state.taskScope='mine';state.taskFilter='all';}
       else state.savedView='saved';
       openPersonalPanel(value.panel);
@@ -950,44 +961,201 @@ function mentionKeyboard(event){
 }
 function messageProductivityHtml(message){
   const task=message.task,reminder=message.reminder;
-  return workspaceCardHtml(message.workspaceLink)+(task?`<button class="message-task" data-action="task">${icon('task')}<span><strong>${esc(task.title)}</strong><small>${esc(task.assignee?.name||'담당 미정')} · ${taskStatusLabel(task.status)}${task.dueDate?' · '+esc(task.dueDate):''}</small></span>${icon('chevron')}</button>`:'')+(message.ackRequired?`<div class="message-ack"><button type="button" class="ack-button${message.acknowledged?' checked':''}" data-action="ack" ${message.acknowledged?'disabled':''}>${icon('check')}${message.acknowledged?'확인 완료':'확인했어요'}</button><button class="text-button" data-action="ack-list">확인 ${Number(message.ackCount)||0}명 · 명단 보기</button></div>`:'')+(reminder?`<span class="message-reminder">${icon('clock')}${esc(new Date(reminder.remindAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))} ${reminder.deliveredAt?'알림함에 도착':'알림 예정'}</span>`:'');
+  return workspaceCardHtml(message.workspaceLink)+(task?`<button class="message-task" data-action="task">${icon('task')}<span><strong>${esc(task.title)}</strong><small>${esc(task.assignee?.name||'담당 미정')} · ${taskStatusLabel(taskStage(task))}${task.dueDate?' · '+esc(task.dueDate):''}</small></span>${icon('chevron')}</button>`:'')+(message.ackRequired?`<div class="message-ack"><button type="button" class="ack-button${message.acknowledged?' checked':''}" data-action="ack" ${message.acknowledged?'disabled':''}>${icon('check')}${message.acknowledged?'확인 완료':'확인했어요'}</button><button class="text-button" data-action="ack-list">확인 ${Number(message.ackCount)||0}명 · 명단 보기</button></div>`:'')+(reminder?`<span class="message-reminder">${icon('clock')}${esc(new Date(reminder.remindAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))} ${reminderStatusHtml(reminder)}</span>`:'');
 }
-function messageProductivityTools(message){return `<button class="icon-button" data-action="save" aria-label="${message.saved?'저장 해제':'메시지 저장'}" aria-pressed="${Boolean(message.saved)}">${icon('bookmark')}</button><button class="icon-button" data-action="remind" aria-label="나중에 다시 알림">${icon('clock')}</button>${canPostMessage(message)||message.task?`<button class="icon-button" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}</button>`:''}`;}
+function messageProductivityTools(message){return `<button class="icon-button" data-action="save" aria-label="${message.saved?'저장 해제':'메시지 저장'}" aria-pressed="${Boolean(message.saved)}">${icon('bookmark')}</button><button class="icon-button" data-action="remind" aria-label="나중에 다시 알림">${icon('clock')}</button>${canPostMessage(message)||message.task?`<button class="icon-button" data-action="task" aria-label="${message.task?'할 일 보기':'할 일로 만들기'}">${icon('task')}</button>`:''}${canPostMessage(message)?`<button class="icon-button" data-action="decision" aria-label="결정·최종본으로 기록">${icon('note')}</button>`:''}`;}
 function installProductivityUI(){
   $('.header-actions').insertAdjacentHTML('afterbegin',`<button type="button" class="icon-button personal-bell" id="personal-bell" aria-label="알림함">${icon('bell')}<span id="personal-unread" hidden></span></button>`);
   $('#channel-search').insertAdjacentHTML('afterend',`<button type="button" class="icon-button" id="channel-notifications" aria-label="대화방 설정" title="대화방 설정">${icon('settings')}</button>`);
   $('#composer-input').insertAdjacentHTML('beforebegin','<div id="compose-extras" class="compose-extras hidden"></div><div id="mention-picker" class="mention-picker hidden" role="listbox" aria-label="멘션할 크루"></div>');
   $('#composer-input').setAttribute('aria-controls','mention-picker');$('#composer-input').setAttribute('aria-autocomplete','list');$('#composer-input').setAttribute('aria-expanded','false');
   $('#mention-picker').onmousedown=event=>event.preventDefault();$('#mention-picker').onclick=event=>{const button=event.target.closest('[data-mention-index]');if(button)chooseMention(Number(button.dataset.mentionIndex));};
-  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('notifications');$('#channel-notifications').onclick=roomSettingsDialog;
+  $('#composer-input').addEventListener('click',updateMentionPicker);$('#personal-bell').onclick=()=>openPersonalPanel('workday');$('#channel-notifications').onclick=roomSettingsDialog;
 }
-async function refreshNotificationCount(){try{const data=await api('/api/notifications?unread=1&limit=1');state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
-const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 메시지에 답글',message:'대화방 새 메시지',reminder:'다시 볼 시간',task:'할 일 업데이트'};
-function taskStatusLabel(value){return{todo:'할 일',doing:'진행 중',done:'완료'}[value]||'할 일';}
-function openPersonalPanel(tab='notifications'){
+async function refreshNotificationCount(){const seq=state.notificationSeq=(state.notificationSeq||0)+1,userId=state.user?.id;try{const data=await api('/api/notifications?unread=1&limit=1');if(seq!==state.notificationSeq||userId!==state.user?.id)return;state.notificationCount=data.unreadCount||0;const badge=$('#personal-unread');if(badge){badge.hidden=!state.notificationCount;badge.textContent=state.notificationCount>99?'99+':String(state.notificationCount);}$('#personal-bell')?.setAttribute('aria-label',`내 업무 · 안 읽은 알림 ${state.notificationCount}개`);}catch{}}
+const notificationLabels={dm:'개인 대화',mention:'나를 멘션',reply:'내 메시지에 답글',message:'대화방 새 메시지',reminder:'다시 볼 시간',task:'할 일 업데이트',client_workflow:'고객 업무',due_digest:'오늘의 마감 알림'};
+function taskStatusLabel(value){return{todo:'할 일',requested:'수락 대기',accepted:'수락함',doing:'진행 중',review:'검토 요청',changes:'수정 요청',done:'완료'}[value]||'할 일';}
+function taskStage(task){return task?.stage||({todo:'requested',doing:'doing',done:'done'}[task?.status])||'requested';}
+function openPersonalPanel(tab='workday'){
+  state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;
   closeDrawer();drawerReturnFocus=document.activeElement;setMobileMenu(false,{restoreFocus:false});state.drawer='personal';state.personalTab=tab;state.personalItems=[];
-  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>내 업무</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="personal-tabs" role="group" aria-label="개인 도구">${[['notifications','알림'],['tasks','할 일'],['saved','저장']].map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="${tab===key}">${label}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body"></div>`;
-  $('#close-drawer').onclick=closeDrawer;$$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.personalTab=button.dataset.personalTab;state.personalItems=[];$$('[data-personal-tab]',drawer).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadPersonalPanel();});$('#close-drawer').focus({preventScroll:true});syncDrawerAccess();loadPersonalPanel();
+  const drawer=$('#drawer');drawer.classList.remove('hidden');drawer.innerHTML=`<div class="drawer-head"><h2>내 업무</h2><button class="icon-button" id="close-drawer" aria-label="패널 닫기">${icon('close')}</button></div><div class="personal-tabs productivity-tabs" role="group" aria-label="개인 도구">${[['workday','오늘'],['catchup','바뀐 것'],['tasks','할 일'],['decisions','결정·최종본'],['notifications','알림'],['saved','저장']].map(([key,label])=>`<button type="button" data-personal-tab="${key}" aria-pressed="${tab===key}">${label}</button>`).join('')}</div><div class="drawer-body personal-body" id="personal-body" aria-live="polite"></div>`;
+  $('#close-drawer').onclick=closeDrawer;$$('[data-personal-tab]',drawer).forEach(button=>button.onclick=()=>{state.notificationOpenSeq=(state.notificationOpenSeq||0)+1;state.personalTab=button.dataset.personalTab;state.personalItems=[];$$('[data-personal-tab]',drawer).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loadPersonalPanel();});$('#close-drawer').focus({preventScroll:true});syncDrawerAccess();loadPersonalPanel();
 }
 async function loadPersonalPanel({append=false}={}){
   const body=$('#personal-body'),tab=state.personalTab,seq=++state.personalSeq;if(state.drawer!=='personal'||!body)return;const offset=append?state.personalItems.length:0;
   if(!append)body.innerHTML='<div class="message-loading"><span class="spinner"></span>불러오고 있어요.</div>';
+  if(['workday','catchup','decisions'].includes(tab))return loadProductivityPanel({tab,seq,append});
   try{
     const endpoint=tab==='notifications'?`/api/notifications?offset=${offset}&limit=30`:tab==='tasks'?`/api/tasks?scope=${state.taskScope==='channel'&&!selectedConversation()?'all':state.taskScope}&offset=${offset}&limit=30${state.taskScope==='channel'&&selectedConversation()?'&channelId='+id(state.channelId):''}${state.taskFilter==='all'?'':'&status='+state.taskFilter}`:state.savedView==='reminders'?`/api/reminders?status=pending&offset=${offset}&limit=30`:`/api/saved?offset=${offset}&limit=30`,data=await api(endpoint);if(seq!==state.personalSeq||state.drawer!=='personal'||state.personalTab!==tab)return;
     const items=tab==='notifications'?data.items:tab==='tasks'?data.tasks:state.savedView==='reminders'?data.reminders.map(item=>({...item,message:{...item.message,reminder:{id:item.id,remindAt:item.remindAt}}})):data.messages;state.personalItems=append?[...state.personalItems,...items]:items;
     if(tab==='notifications'){state.notificationCount=data.unreadCount||0;refreshNotificationCount();}
-    const header=tab==='notifications'?'<div class="personal-toolbar"><span>DM · 멘션 · 답글</span><button class="text-button" id="notifications-read-all">모두 읽음</button></div>':tab==='tasks'?`<div class="personal-toolbar"><select id="personal-task-scope" aria-label="할 일 범위"><option value="mine" ${state.taskScope==='mine'?'selected':''}>내게 배정됨</option><option value="channel" ${state.taskScope==='channel'?'selected':''} ${selectedConversation()?'':'disabled'}>이 대화방</option><option value="all" ${state.taskScope==='all'?'selected':''}>참여한 모든 방</option></select><select id="personal-task-filter" aria-label="할 일 상태">${[['all','전체 상태'],['todo','할 일'],['doing','진행 중'],['done','완료']].map(([key,label])=>`<option value="${key}" ${state.taskFilter===key?'selected':''}>${label}</option>`).join('')}</select></div>`:`<div class="personal-toolbar"><span>나만의 보관함</span><select id="personal-saved-filter" aria-label="저장과 예약한 알림"><option value="saved" ${state.savedView==='saved'?'selected':''}>저장한 메시지</option><option value="reminders" ${state.savedView==='reminders'?'selected':''}>예약한 알림</option></select></div>`;
+    const header=tab==='notifications'?'<div class="personal-toolbar notification-toolbar"><span>대화 · 고객 업무 · 마감</span><button class="text-button" id="notifications-read-all">모두 읽음</button></div><div class="personal-toolbar" role="group" aria-label="알림 설정"><button class="text-button deadline-settings-entry" type="button" id="deadline-settings" hidden>마감 알림 설정</button>'+ (moduleBase?'<button class="text-button deadline-settings-entry" type="button" id="device-notifications-entry">이 기기의 알림 설정</button>':'')+'</div>':tab==='tasks'?`<div class="personal-toolbar"><select id="personal-task-scope" aria-label="할 일 범위"><option value="mine" ${state.taskScope==='mine'?'selected':''}>내게 배정됨</option><option value="channel" ${state.taskScope==='channel'?'selected':''} ${selectedConversation()?'':'disabled'}>이 대화방</option><option value="all" ${state.taskScope==='all'?'selected':''}>참여한 모든 방</option></select><select id="personal-task-filter" aria-label="할 일 상태">${[['all','전체 상태'],['todo','할 일'],['doing','진행 중'],['done','완료']].map(([key,label])=>`<option value="${key}" ${state.taskFilter===key?'selected':''}>${label}</option>`).join('')}</select></div>`:`<div class="personal-toolbar"><span>나만의 보관함</span><select id="personal-saved-filter" aria-label="저장과 예약한 알림"><option value="saved" ${state.savedView==='saved'?'selected':''}>저장한 메시지</option><option value="reminders" ${state.savedView==='reminders'?'selected':''}>예약한 알림</option></select></div>`;
     body.innerHTML=header+(state.personalItems.length?state.personalItems.map((item,index)=>personalItemHtml(item,index,tab)).join(''):`<div class="drawer-empty">${icon(tab==='notifications'?'bell':tab==='tasks'?'task':'bookmark')}<strong>${tab==='notifications'?'아직 알림이 없어요':tab==='tasks'?'배정된 할 일이 없어요':'저장한 메시지가 없어요'}</strong><p>${tab==='saved'?'메시지의 책갈피를 눌러 보관하세요.':'관련 소식이 생기면 여기에 모여요.'}</p></div>`)+(data.hasMore?'<button class="button personal-more" id="personal-more">더 보기</button>':'');
     $('#personal-task-scope')?.addEventListener('change',event=>{state.taskScope=event.target.value;loadPersonalPanel();});$('#personal-task-filter')?.addEventListener('change',event=>{state.taskFilter=event.target.value;loadPersonalPanel();});$('#personal-saved-filter')?.addEventListener('change',event=>{state.savedView=event.target.value;loadPersonalPanel();});
     $('#personal-more')?.addEventListener('click',event=>{event.currentTarget.disabled=true;loadPersonalPanel({append:true});});$('#notifications-read-all')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await api('/api/notifications/read-all',{method:'POST',body:{}});await loadPersonalPanel();await refreshNotificationCount();}catch(error){toast(error.message,true);event.currentTarget.disabled=false;}});
-    body.onclick=async event=>{const target=event.target.closest('[data-personal-index]');if(!target)return;const item=state.personalItems[Number(target.dataset.personalIndex)],message=tab==='tasks'?{id:item.messageId,channelId:item.channelId,task:item,body:item.title}:item.message||item;if(!message)return;const action=target.dataset.personalAction;
+    if(tab==='notifications'){attachDeadlineSettings();$('#device-notifications-entry')?.addEventListener('click',()=>parentMessage('messenger:device-notifications'));}
+    body.onclick=async event=>{const target=event.target.closest('[data-personal-index]');if(!target)return;const item=state.personalItems[Number(target.dataset.personalIndex)];if(!item)return;if(tab==='notifications')return openPersonalNotification(item);const message=tab==='tasks'?{id:item.messageId,channelId:item.channelId,task:item,body:item.title}:item.message||item;if(!message)return;const action=target.dataset.personalAction;
       if(action==='task')return taskDialog(message);if(action==='remind')return reminderDialog(message);if(action==='save')return handleProductivityAction('save',message,target);
       try{const navigation=state.navigationSeq;if(tab==='notifications'&&!item.readAt){await api(`/api/notifications/${id(item.id)}/read`,{method:'POST',body:{}});refreshNotificationCount();}if(navigation!==state.navigationSeq||state.drawer!=='personal'||state.personalTab!==tab)return;await openSearchMessage(message);}catch(error){toast(error.message,true);}};
   }catch(error){if(seq===state.personalSeq&&state.drawer==='personal'){body.innerHTML=`<div class="drawer-empty">${esc(error.message)}<button class="button" id="personal-retry">다시 불러오기</button></div>`;$('#personal-retry').onclick=()=>loadPersonalPanel();}}
 }
 function personalItemHtml(item,index,tab){
+  if(tab==='notifications'&&['client_workflow','due_digest'].includes(item.kind))return workflowNotificationHtml(item,index);
   const task=tab==='tasks'?item:null,message=task?null:item.message||item,channel=state.channels.find(room=>room.id===(task?.channelId||message?.channelId));
-  return `<article class="personal-item${tab==='notifications'&&!item.readAt?' is-unread':''}"><button class="personal-item-main" data-personal-index="${index}" data-personal-action="open"><span class="personal-item-meta">${esc(task?taskStatusLabel(task.status):tab==='notifications'?notificationLabels[item.kind]||'알림':message?.user?.name||'저장한 메시지')}<time>${esc(shortDate(item.createdAt||message?.createdAt))}</time></span><strong>${esc(task?.title||message?.body||message?.workspaceLink?.title||'첨부 파일')}</strong><small>${esc(channel?.name||'대화방')}${task?` · ${esc(task.dueDate||'기한 없음')}`:message?.reminder?` · ${esc(new Date(message.reminder.remindAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))} 알림`:''}</small></button><div class="personal-item-actions">${task?`<button class="text-button" data-personal-index="${index}" data-personal-action="task">상태·담당 보기</button>`:tab==='saved'?`<button class="icon-button" data-personal-index="${index}" data-personal-action="remind" aria-label="다시 볼 시간 설정">${icon('clock')}</button><button class="text-button" data-personal-index="${index}" data-personal-action="save">${message.saved?'저장 해제':'저장'}</button>`:''}</div></article>`;
+  return `<article class="personal-item${tab==='notifications'&&!item.readAt?' is-unread':''}"><button class="personal-item-main" data-personal-index="${index}" data-personal-action="open"><span class="personal-item-meta">${esc(task?taskStatusLabel(taskStage(task)):tab==='notifications'?notificationLabels[item.kind]||'알림':message?.user?.name||'저장한 메시지')}<time>${esc(shortDate(item.createdAt||message?.createdAt))}</time></span><strong>${esc(task?.title||message?.body||message?.workspaceLink?.title||'첨부 파일')}</strong><small>${esc(channel?.name||'대화방')}${task?` · ${esc(task.dueDate||'기한 없음')}`:message?.reminder?` · ${esc(new Date(message.reminder.remindAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}))} ${reminderStatusHtml(message.reminder)}`:''}</small></button><div class="personal-item-actions">${task?`<button class="text-button" data-personal-index="${index}" data-personal-action="task">상태·담당 보기</button>`:tab==='saved'?`<button class="icon-button" data-personal-index="${index}" data-personal-action="remind" aria-label="다시 볼 시간 설정">${icon('clock')}</button><button class="text-button" data-personal-index="${index}" data-personal-action="save">${message.saved?'저장 해제':'저장'}</button>`:''}</div></article>`;
+}
+function workflowNotificationHtml(item,index){
+  const due=item.kind==='due_digest',digest=item.digest||{},tasks=digest.tasks||[],title=due?`${digest.date||'오늘'} 마감 업무 ${Number(digest.taskCount??tasks.length)}개`:item.title||'고객 업무가 바뀌었어요';
+  const text=due?`${Number(digest.overdueCount)||0}개 기한 지남 · 현재 남아 있는 업무를 확인하세요.`:item.text||item.body||'',detail=due?'마감 업무·원문 보기':`${item.projectTitle||'고객 프로젝트'}${Number.isFinite(item.seconds)?' · '+Math.floor(item.seconds/60)+':'+String(Math.floor(item.seconds%60)).padStart(2,'0')+' 장면':''}`;
+  return `<article class="personal-item workflow-notification${!item.readAt?' is-unread':''}"><button type="button" class="personal-item-main" data-personal-index="${index}" data-personal-action="open"><span class="personal-item-meta">${notificationLabels[item.kind]}<time>${esc(shortDate(item.createdAt))}</time></span><strong>${esc(title)}</strong><p>${esc(text)}</p><small>${esc(detail)}</small><span class="notification-open-label">${due?'업무 묶음 열기':'고객 의견·검토 열기'} ${icon('arrow')}</span></button></article>`;
+}
+async function openPersonalNotification(item){
+  const navigation=state.navigationSeq,seq=state.notificationOpenSeq=(state.notificationOpenSeq||0)+1,userId=state.user?.id;
+  const current=()=>navigation===state.navigationSeq&&seq===state.notificationOpenSeq&&userId===state.user?.id&&state.drawer==='personal'&&state.personalTab==='notifications';
+  try{
+    const customer=item.kind==='client_workflow',due=item.kind==='due_digest',href=customer?safeClientWorkflowHref(item.href):null;
+    if(customer&&!href)throw new Error('이 고객 업무의 연결을 확인할 수 없어요. 목록을 새로 불러와 주세요.');
+    if(!customer&&!due&&(!item.message?.id||!item.message?.channelId))throw new Error('원래 대화에 접근할 수 없어요. 목록을 새로 불러와 주세요.');
+    if(!item.readAt){await api(`/api/notifications/${id(item.id)}/read`,{method:'POST',body:{}});item.readAt=new Date().toISOString();refreshNotificationCount();}
+    if(!current())return;
+    if(customer){if(moduleBase)parentMessage('messenger:client-open',{url:href});else location.assign(href);return;}
+    if(due){showDeadlineDigest(item);return;}
+    await openSearchMessage(item.message);
+  }catch(error){if(current())toast(error.message,true);}
+}
+function showDeadlineDigest(item){
+  const digest=item.digest||{},tasks=Array.isArray(digest.tasks)?digest.tasks:[];
+  openModal('마감 업무 묶음',`<p class="modal-description">${esc(digest.date||'오늘')}에 모은 업무 중 현재 남아 있는 ${tasks.length}개예요. 기한이나 진행 상황은 업무를 열어 확인하세요.</p><div class="deadline-digest-list">${tasks.length?tasks.map((task,index)=>workdayTaskHtml(task,index,digest.date||'').replace('data-workday-task=','data-digest-task=')).join(''):'<p class="workday-empty">지금 남아 있는 마감 업무가 없어요.</p>'}</div><div class="modal-actions"><button class="button primary" type="button" id="digest-today">오늘 업무함 열기</button></div>`);
+  $('.modal-body',modal).onclick=event=>{const source=event.target.closest('[data-source-message]'),taskButton=event.target.closest('[data-digest-task]');if(source){modal.close();openProductivitySource(source);}else if(taskButton){const task=tasks[Number(taskButton.dataset.digestTask)];if(task)taskDialog(taskMessage(task));}};
+  $('#digest-today').onclick=()=>{modal.close();openPersonalPanel('workday');};
+}
+async function attachDeadlineSettings(){
+  const button=$('#deadline-settings');if(!button)return;const userId=state.user?.id,session=state.workNotificationSession;
+  if(state.deadlineSettingsUser!==userId){state.deadlineSettings=undefined;state.deadlineSettingsUser=userId;}
+  try{
+    const settings=await loadWorkNotificationSettings();
+    if(!settings||userId!==state.user?.id||session!==state.workNotificationSession||!button.isConnected)return;
+    button.hidden=false;button.onclick=async()=>{
+      button.disabled=true;
+      try{const settings=await loadWorkNotificationSettings();if(settings&&userId===state.user?.id&&session===state.workNotificationSession&&button.isConnected)deadlineSettingsDialog();}
+      catch(error){if(userId===state.user?.id&&session===state.workNotificationSession){toast('업무 알림 가동 여부를 확인하지 못했어요. 다시 열어 주세요.',true);}}
+      finally{if(button.isConnected)button.disabled=false;}
+    };
+  }catch(error){if(error.status===404&&userId===state.user?.id&&session===state.workNotificationSession)state.deadlineSettings=null;}
+}
+function setWorkNotificationStatus(enabled,{invalidatePending=false}={}){if(invalidatePending)state.workNotificationRevision++;state.scheduledNotifications={enabled:typeof enabled==='boolean'?enabled:null};$$('[data-reminder-status]').forEach(label=>{label.textContent=reminderStatusLabel({deliveredAt:label.dataset.reminderDelivered==='1'});});}
+function resetWorkNotificationState(){state.workNotificationSession++;setWorkNotificationStatus(null,{invalidatePending:true});state.deadlineSettings=undefined;state.deadlineSettingsUser=null;}
+async function loadWorkNotificationSettings(){
+  const userId=state.user?.id,session=state.workNotificationSession,revision=++state.workNotificationRevision;
+  try{const settings=await api('/api/workday/notifications');if(!userId||userId!==state.user?.id||session!==state.workNotificationSession||revision!==state.workNotificationRevision)return null;state.deadlineSettings=settings;state.deadlineSettingsUser=userId;setWorkNotificationStatus(settings.schedulerEnabled);return settings;}
+  catch(error){if(userId!==state.user?.id||session!==state.workNotificationSession||revision!==state.workNotificationRevision)return null;setWorkNotificationStatus(null);throw error;}
+}
+function reminderStatusLabel(reminder){return reminder.deliveredAt?'알림함에 도착':state.scheduledNotifications.enabled===true?'알림 예정':state.scheduledNotifications.enabled===false?'알림 중지 중':'알림 가동 확인 필요';}
+function reminderStatusHtml(reminder){return `<span data-reminder-status data-reminder-delivered="${reminder.deliveredAt?'1':'0'}">${reminderStatusLabel(reminder)}</span>`;}
+function workNotificationStatusText(enabled){return enabled===true?'회사 업무 알림이 실행 중이에요.':enabled===false?'현재 업무 알림이 중지되어 있어 예약할 수 없습니다. 회사 관리자에게 문의해 주세요.':'업무 알림 가동 여부를 확인할 수 없어 예약할 수 없어요. 잠시 후 다시 열어 주세요.';}
+function deadlineSettingsDialog(){
+  const preferences=state.deadlineSettings;if(!preferences)return;
+  let schedulerEnabled=typeof preferences.schedulerEnabled==='boolean'?preferences.schedulerEnabled:null;
+  const statusText=()=>schedulerEnabled===true?'회사 업무 알림이 실행 중이에요.':schedulerEnabled===false?'회사 업무 알림이 중지되어 있어요. 개인 설정이 켜져 있어도 마감 알림은 전달되지 않아요. 설정을 끄는 것은 가능해요.':'회사 업무 알림의 가동 여부를 확인할 수 없어요. 알림을 켜는 것은 확인 후 가능하며, 기존 설정을 끄는 것은 가능해요.';
+  openModal('마감 알림 설정',`<p class="modal-description">한국 시간 오전 9시 이후, 오늘까지 마감인 내 업무를 하루 한 번 모아 알림함에 남겨요.</p><p class="workflow-help" id="deadline-scheduler-status" role="status">${esc(statusText())}</p><form id="deadline-settings-form" class="workflow-form"><label class="workflow-checkbox"><input type="checkbox" name="enabled" ${preferences.enabled?'checked':''} ${schedulerEnabled!==true&&!preferences.enabled?'disabled':''}><span><strong>내 마감 업무 알림 받기</strong><small>오늘 마감이거나 기한이 지난 내 업무를 모아요.</small></span></label><label class="workflow-checkbox"><input type="checkbox" name="includeWeekends" ${preferences.includeWeekends?'checked':''}><span><strong>주말에도 받기</strong><small>기본은 월요일부터 금요일까지예요.</small></span></label><div id="modal-error" class="form-error hidden" role="alert"></div><div class="modal-actions"><button class="button primary" type="submit" ${schedulerEnabled!==true&&preferences.enabled?'disabled':''}>설정 저장</button></div></form>`);
+  const version=modalVersion,userId=state.user?.id,session=state.workNotificationSession,form=$('#deadline-settings-form'),enabledControl=$('input[name=enabled]',form),button=$('button[type=submit]',form),active=()=>modal.open&&version===modalVersion&&userId===state.user?.id&&session===state.workNotificationSession;
+  const update=()=>{if(!active())return;const status=$('#deadline-scheduler-status');if(status)status.textContent=statusText();if(enabledControl&&schedulerEnabled!==true&&!enabledControl.checked)enabledControl.disabled=true;button.disabled=schedulerEnabled!==true&&Boolean(enabledControl?.checked);};
+  if(enabledControl)enabledControl.onchange=update;
+  form.onsubmit=async event=>{
+    event.preventDefault();if(!active())return;const values=new FormData(form),enabled=values.has('enabled');
+    if(enabled&&schedulerEnabled!==true){formError('업무 알림이 실행 중일 때 마감 알림을 켤 수 있어요. 지금은 설정을 끌 수 있어요.');return;}
+    button.disabled=true;
+    try{const data=await api('/api/workday/notifications',{method:'PATCH',body:{enabled,includeWeekends:values.has('includeWeekends')}});if(userId!==state.user?.id||session!==state.workNotificationSession||state.deadlineSettingsUser!==userId)return;state.deadlineSettings=data;setWorkNotificationStatus(data.schedulerEnabled,{invalidatePending:true});if(active())modal.close();refreshNotificationCount();toast('마감 알림 설정을 저장했어요.');}
+    catch(error){if(active()){if(error.code==='SYNK_WORK_NOTIFICATIONS_PAUSED'){schedulerEnabled=false;setWorkNotificationStatus(false,{invalidatePending:true});}formError(error.message);update();}}
+  };
+}
+const workdayGroups=[['reply','내가 답할 요청','담당자로 지정된 요청을 확인하고 수락하세요.'],['due','오늘·지난 마감','오늘 마감이거나 기한을 넘긴 내 일이에요.'],['review','내가 검토할 결과','결과물을 보고 승인하거나 수정을 요청하세요.'],['waiting','내 요청의 진행 상황','다른 크루에게 맡긴 일과 검토를 기다리는 일이에요.']];
+const catchUpLabels={task_reviewer_reassigned:'검토자 다시 지정',task_created:'새 업무 요청',task_stage:'업무 상태 변경',task_due:'기한 변경',task_assignment:'담당·검토 크루 변경',task_updated:'업무 내용·결과물 변경',decision:'새 결정·최종본',decision_replaced:'결정·최종본 변경'};
+function personName(person){return person?.name||state.members.find(member=>member.id===person)?.name||'크루';}
+function taskMessage(task){return {...task.message,id:task.messageId,channelId:task.channelId,body:task.message?.body||task.title,task};}
+function sourceButton(message,label='원래 대화',attributes=''){
+  return message?.id&&message.channelId?`<button type="button" class="text-button" data-source-message="${esc(message.id)}" data-source-channel="${esc(message.channelId)}" ${attributes}>${esc(label)} ${icon('arrow')}</button>`:'';
+}
+async function openProductivitySource(button){
+  try{await openSearchMessage({id:button.dataset.sourceMessage,channelId:button.dataset.sourceChannel});}catch(error){toast(error.message,true);}
+}
+function workdayTaskHtml(task,index,date){
+  const stage=taskStage(task),overdue=task.dueDate&&task.dueDate<date,room=state.channels.find(channel=>channel.id===task.channelId);
+  return `<article class="workday-item"><span class="workday-meta"><span class="workflow-stage" data-stage="${esc(stage)}">${taskStatusLabel(stage)}</span><span class="${overdue?'overdue':''}">${esc(task.dueDate?(overdue?'기한 지남 · ':'')+task.dueDate:'기한 없음')}</span></span><h4>${esc(task.title)}</h4><p>${esc(task.assignee?.name||'담당 미정')}${task.reviewer?' · 검토 '+esc(task.reviewer.name):''} · ${esc(room?.name||'대화방')}</p><div class="workday-actions"><button class="button" type="button" data-workday-task="${index}">${task.canReassignReviewer?'검토자 다시 지정':stage==='requested'?'요청 확인':stage==='review'?'결과물 검토':'업무 열기'}</button>${sourceButton(taskMessage(task))}</div></article>`;
+}
+function safeClientWorkflowHref(value){
+  try{const url=new URL(value,location.origin),allowed=new Set(['tab','section','project','version','message','seconds']);if(url.origin!==location.origin||url.username||url.password||url.hash||url.pathname!=='/'||url.searchParams.get('tab')!=='workroom'||url.searchParams.get('section')!=='clients'||!url.searchParams.get('project'))return null;for(const key of url.searchParams.keys())if(!allowed.has(key)||url.searchParams.getAll(key).length!==1)return null;const seconds=url.searchParams.get('seconds');if(seconds!==null&&(!/^(?:\d+)(?:\.\d+)?$/.test(seconds)||!Number.isFinite(Number(seconds))))return null;return url.href;}catch{return null;}
+}
+async function clientWorkflowApi(options={}){
+  const headers={};if(options.body!==undefined){headers['Content-Type']='application/json';if(state.integrated?.csrfToken)headers['X-CSRF-Token']=state.integrated.csrfToken;}
+  const response=await fetch('/api/client-workflow',{method:options.method||'GET',credentials:'same-origin',headers,...(options.body!==undefined?{body:JSON.stringify(options.body)}:{})});
+  const data=await response.json().catch(()=>({}));if(!response.ok){const error=new Error(data.error||`고객 업무를 불러오지 못했어요. (${response.status})`);error.status=response.status;throw error;}return data;
+}
+function customerWorkHtml(items,error){
+  if(!state.integrated)return '';
+  return `<section class="workday-section customer-work"><div class="workday-section-head"><h3>고객 요청·승인</h3><span>${items.length}</span></div>${error?`<p class="productivity-error" role="alert">${esc(error)}</p><button class="button" type="button" data-productivity-refresh>다시 불러오기</button>`:items.length?items.map((item,index)=>{
+    const href=safeClientWorkflowHref(item.href),labels={reply:'답할 요청',review:'검토할 결과',waiting:'답변·승인 대기',next:'다음 단계'};
+    return `<article class="workday-item"><span class="workday-meta">${esc(labels[item.group]||'고객 업무')}${Number.isFinite(item.seconds)?` · ${esc(Math.floor(item.seconds/60)+':'+String(Math.floor(item.seconds%60)).padStart(2,'0'))} 장면`:''}</span><h4>${esc(item.title)}</h4><p class="customer-work-text">${esc(item.text)}</p><div class="workday-actions">${href?`<a class="button" href="${esc(href)}" target="_top" data-client-open="${index}">${item.group==='review'?'검토 화면 열기':'고객 의견·시안 열기'}</a>`:''}${(item.actions||[]).map(action=>`<button type="button" class="text-button" data-client-work="${index}" data-client-action="${esc(action.action)}">${esc(action.label)}</button>`).join('')}</div></article>`;
+  }).join(''):'<p class="workday-empty">지금 확인할 고객 요청이 없어요.</p>'}</section>`;
+}
+function catchUpChangeText(event){
+  const change=event.changes||{},from=change.from,to=change.to;
+  if(event.kind==='task_stage')return `${taskStatusLabel(from)} → ${taskStatusLabel(to)}`;
+  if(event.kind==='task_due')return `${from||'기한 없음'} → ${to||'기한 없음'}`;
+  if(event.kind==='task_reviewer_reassigned')return `검토 ${personName(from)} → ${personName(to)} · 같은 결과물로 다시 검토를 요청했어요.`;
+  if(event.kind==='task_assignment')return `담당 ${personName(from?.assigneeId)} → ${personName(to?.assigneeId)} · 검토 ${from?.reviewerId?personName(from.reviewerId):'미지정'} → ${to?.reviewerId?personName(to.reviewerId):'미지정'}`;
+  if(event.kind==='task_updated')return '업무 제목 또는 연결된 결과물이 변경됐어요. 원문에서 현재 내용을 확인하세요.';
+  if(event.kind==='decision_replaced')return '이전 기록을 새 결정·최종본으로 대체했어요.';
+  return event.decision?`${event.decision.effectiveDate}부터 적용`:event.task?`${event.task.assignee?.name||'담당 크루'}에게 요청했어요.`:'원문에서 변경 내용을 확인하세요.';
+}
+function catchUpEventHtml(event,index){
+  const message=event.message||event.task?.message||event.decision?.message;
+  return `<article class="workday-item"><span class="workday-meta">${esc(catchUpLabels[event.kind]||'업무 변경')}<time>${esc(shortDate(event.createdAt))} ${esc(timeLabel(event.createdAt))}</time></span><h3>${esc(event.decision?.summary||event.task?.title||message?.body||'업무 변경')}</h3><p>${esc(catchUpChangeText(event))}</p><small>${esc(event.actor?.name||'크루')} · ${esc(state.channels.find(room=>room.id===message?.channelId)?.name||'대화방')}</small><div class="workday-actions">${sourceButton(message,'변경의 원문')}${event.task?`<button class="text-button" type="button" data-catchup-task="${index}">지금 업무 상태</button>`:''}${event.decision?`<button class="text-button" type="button" data-decision-id="${esc(event.decision.id)}">기록 보기</button>`:''}</div></article>`;
+}
+function decisionHtml(decision){
+  const room=state.channels.find(channel=>channel.id===decision.channelId),current=decision.isCurrent!==false;
+  return `<article class="workday-item decision-item"><span class="workday-meta"><span class="workflow-stage">${decision.kind==='final'?'최종본':'결정'}</span><span>${current?'현재 기록':'대체된 기록'}</span></span><h3>${esc(decision.summary)}</h3><p>${esc(personName(decision.confirmedBy))} 확정 · ${esc(decision.effectiveDate)}부터 적용</p><small>${esc(room?.name||'대화방')} · ${esc(shortDate(decision.confirmedAt))} 기록</small><div class="workday-actions">${sourceButton(decision.message||{id:decision.messageId,channelId:decision.channelId},'확정한 원문')}${decision.resultMessageId?sourceButton(decision.resultMessage||{id:decision.resultMessageId,channelId:decision.channelId},'연결된 결과물'):''}${decision.replacesId?`<button class="text-button" type="button" data-decision-id="${esc(decision.replacesId)}">이전 기록</button>`:''}${decision.replacedById?`<button class="text-button" type="button" data-decision-id="${esc(decision.replacedById)}">후속 기록</button>`:''}</div></article>`;
+}
+async function showDecision(decisionId){
+  openModal('결정·최종본 기록','<div class="message-loading"><span class="spinner"></span>기록을 불러오고 있어요.</div>');const version=modalVersion;
+  try{const data=await api(`/api/decisions/${id(decisionId)}`);if(!modal.open||version!==modalVersion)return;$('.modal-body',modal).innerHTML=decisionHtml(data.decision);$('.modal-body',modal).onclick=event=>{const source=event.target.closest('[data-source-message]'),related=event.target.closest('[data-decision-id]');if(source){modal.close();openProductivitySource(source);}else if(related)showDecision(related.dataset.decisionId);};}
+  catch(error){if(modal.open&&version===modalVersion){$('.modal-body',modal).innerHTML=`<p class="form-error" role="alert">${esc(error.message)}</p><button type="button" class="button" id="decision-retry">다시 불러오기</button>`;$('#decision-retry').onclick=()=>showDecision(decisionId);}}
+}
+async function loadProductivityPanel({tab,seq,append=false}){
+  const body=$('#personal-body'),active=()=>seq===state.personalSeq&&state.drawer==='personal'&&state.personalTab===tab;
+  try{
+    if(tab==='workday'){
+      const [work,client]=await Promise.all([api('/api/workday'),state.integrated?clientWorkflowApi().then(data=>({data})).catch(error=>({error:error.message})):Promise.resolve({data:{items:[]}})]);if(!active())return;
+      state.personalItems=[];state.customerWork=client.data?.items||[];
+      const sections=workdayGroups.map(([key,label,description])=>{
+        const tasks=work.groups?.[key]||[],start=state.personalItems.length;state.personalItems.push(...tasks);
+        return {count:tasks.length,html:tasks.length?`<section class="workday-section"><div class="workday-section-head"><h3>${label}</h3><span>${Number(work.counts?.[key]??tasks.length)}</span></div><p class="workday-section-description">${description}</p>${tasks.map((task,index)=>workdayTaskHtml(task,start+index,work.date)).join('')}</section>`:`<section class="workday-empty-row"><h3>${label}</h3><span>0 · 없음</span></section>`};
+      });
+      const customerActive=state.customerWork.length||client.error;
+      body.innerHTML=`<div class="productivity-heading"><strong>${esc(work.date)} · 오늘의 업무</strong><button class="text-button" type="button" data-productivity-refresh>새로고침</button></div><p class="productivity-description">요청부터 검토까지 여기에서 이어가세요. 한 일이 여러 구역에 보일 수 있어요.</p><button class="text-button deadline-settings-entry" type="button" id="deadline-settings" hidden>마감 알림 설정</button>`+sections.filter(section=>section.count).map(section=>section.html).join('')+(customerActive?customerWorkHtml(state.customerWork,client.error):'')+`<div class="workday-clear-groups">${sections.filter(section=>!section.count).map(section=>section.html).join('')}${state.integrated&&!customerActive?'<section class="workday-empty-row"><h3>고객 요청·승인</h3><span>0 · 없음</span></section>':''}</div>`;
+    }else if(tab==='catchup'){
+      const data=await api('/api/catch-up');if(!active())return;state.catchUp=data;state.personalItems=data.events||[];
+      body.innerHTML=`<div class="productivity-heading"><strong>마지막 확인 이후 바뀐 것</strong><button class="text-button" type="button" data-productivity-refresh>새로고침</button></div><p class="productivity-description">${data.since?'이전에 확인한 변경 이후의':'아직 확인하지 않은'} 업무·결정을 원문과 함께 모았어요. 확인해도 업무 상태는 바뀌지 않아요.</p>${state.personalItems.length?state.personalItems.map(catchUpEventHtml).join(''):'<div class="drawer-empty">'+icon('check')+'<strong>모두 확인했어요</strong><p>새 요청이나 변경이 생기면 여기에 모여요.</p></div>'}${state.personalItems.length?`<div class="catchup-confirm"><p>${data.hasMore?'앞선 변경이 더 있어요. 이 목록을 확인한 뒤 다음 묶음을 이어서 볼 수 있어요.':'현재 목록의 변경을 모두 확인했다면 눌러 주세요.'}</p><button class="button primary" type="button" id="catchup-read">${data.hasMore?'이 목록 확인하고 다음 보기':'이 목록 확인했어요'}</button></div>`:''}`;
+      $('#catchup-read')?.addEventListener('click',async event=>{const button=event.currentTarget;button.disabled=true;try{await api('/api/catch-up/read',{method:'POST',body:{through:data.through}});if(active())await loadPersonalPanel();toast('표시된 변경을 확인했어요.');}catch(error){toast(error.message,true);if(button.isConnected)button.disabled=false;}});
+    }else{
+      const query=new URLSearchParams({q:state.decisionQuery,current:state.decisionCurrent?'1':'0',offset:String(append?state.personalItems.length:0),limit:'25'});if(state.decisionKind!=='all')query.set('kind',state.decisionKind);
+      const data=await api('/api/decisions?'+query);if(!active())return;state.personalItems=append?[...state.personalItems,...data.decisions]:data.decisions;
+      body.innerHTML=`<form id="decisions-search" class="decisions-search"><label class="field"><span>결정·최종본 검색</span><div class="productivity-search-row"><input name="q" type="search" aria-label="결정·최종본 검색어" placeholder="확정한 내용으로 찾기" maxlength="200" value="${esc(state.decisionQuery)}"><button class="button" type="submit">검색</button></div></label><div class="personal-toolbar"><select name="kind" aria-label="기록 종류">${[['all','결정·최종본 모두'],['decision','결정'],['final','최종본']].map(([key,label])=>`<option value="${key}" ${state.decisionKind===key?'selected':''}>${label}</option>`).join('')}</select><label class="checkbox-field"><input name="history" type="checkbox" ${state.decisionCurrent?'':'checked'}>이전 기록 포함</label></div></form><p class="productivity-description">대화의 ‘결정·최종본으로 기록’에서 확정 내용과 근거를 남길 수 있어요.</p>${state.personalItems.length?state.personalItems.map(decisionHtml).join(''):'<div class="drawer-empty">'+icon('note')+'<strong>해당하는 기록이 없어요</strong><p>검색 조건을 바꾸거나 대화에서 결정·최종본을 기록해 보세요.</p></div>'}${data.hasMore?'<button class="button personal-more" id="productivity-more" type="button">기록 더 보기</button>':''}`;
+      $('#decisions-search').onsubmit=event=>{event.preventDefault();const values=new FormData(event.currentTarget);state.decisionQuery=String(values.get('q')||'').trim();state.decisionKind=values.get('kind')||'all';state.decisionCurrent=!values.has('history');loadPersonalPanel();};
+      $('#productivity-more')?.addEventListener('click',event=>{event.currentTarget.disabled=true;loadPersonalPanel({append:true});});
+    }
+    if(tab==='workday')attachDeadlineSettings();
+    body.onclick=async event=>{
+      const source=event.target.closest('[data-source-message]');if(source)return openProductivitySource(source);
+      const taskButton=event.target.closest('[data-workday-task]');if(taskButton){const task=state.personalItems[Number(taskButton.dataset.workdayTask)];if(task)return taskDialog(taskMessage(task));}
+      const changedTask=event.target.closest('[data-catchup-task]');if(changedTask){const task=state.personalItems[Number(changedTask.dataset.catchupTask)]?.task;if(task)return taskDialog(taskMessage(task));}
+      const decisionButton=event.target.closest('[data-decision-id]');if(decisionButton)return showDecision(decisionButton.dataset.decisionId);
+      if(event.target.closest('[data-productivity-refresh]'))return loadPersonalPanel();
+      const clientOpen=event.target.closest('[data-client-open]');if(clientOpen&&moduleBase){event.preventDefault();const href=safeClientWorkflowHref(state.customerWork[Number(clientOpen.dataset.clientOpen)]?.href);if(href)parentMessage('messenger:client-open',{url:href});return;}
+      const clientAction=event.target.closest('[data-client-work]');if(clientAction){const item=state.customerWork[Number(clientAction.dataset.clientWork)];if(!item)return;clientAction.disabled=true;try{await clientWorkflowApi({method:'POST',body:{projectId:item.projectId,messageId:item.messageId,versionId:item.versionId,revision:item.revision,action:clientAction.dataset.clientAction}});if(active())await loadPersonalPanel();toast('고객 업무를 업데이트했어요.');}catch(error){toast(error.status===409?'다른 크루가 먼저 변경했어요. 최신 상태를 다시 확인해 주세요.':error.message,true);if(error.status===409&&active())await loadPersonalPanel();else if(clientAction.isConnected)clientAction.disabled=false;}}
+    };
+  }catch(error){if(active()){body.innerHTML=`<div class="drawer-empty"><p role="alert">${esc(error.message)}</p><button class="button" data-productivity-refresh>다시 불러오기</button></div>`;body.onclick=event=>{if(event.target.closest('[data-productivity-refresh]'))loadPersonalPanel();};}}
 }
 function roomSettingsDialog(){const channel=selectedConversation();if(!channel)return;if(isProject(channel)&&canManageProject(channel))editChannelDialog();else channelNotificationsDialog();}
 async function channelNotificationsDialog(){
@@ -996,7 +1164,7 @@ async function channelNotificationsDialog(){
   $('#notification-form').onsubmit=async event=>{event.preventDefault();const button=$('button[type=submit]',event.currentTarget);button.disabled=true;try{const mode=new FormData(event.currentTarget).get('mode');await api(`/api/channels/${id(channel.id)}/notifications`,{method:'PATCH',body:{mode}});channel.notificationMode=mode;modal.close();toast('이 대화방의 알림 설정을 저장했어요.');}catch(error){formError(error.message);button.disabled=false;}};
 }
 async function handleProductivityAction(action,message,button){
-  if(action==='task')return taskDialog(message);if(action==='remind')return reminderDialog(message);if(action==='ack-list')return ackListDialog(message);
+  if(action==='task')return taskDialog(message);if(action==='decision')return decisionDialog(message);if(action==='remind')return reminderDialog(message);if(action==='ack-list')return ackListDialog(message);
   if(action==='workspace-link'){const link=safeWorkspaceLink(message.workspaceLink);if(link){if(moduleBase)parentMessage('messenger:navigate',{url:link.url});else window.open(link.url,'_blank','noopener');}return;}
   if(button)button.disabled=true;
   try{if(action==='save'){await api(`/api/messages/${id(message.id)}/save`,{method:message.saved?'DELETE':'POST',body:{}});message.saved=!message.saved;toast(message.saved?'나만 볼 수 있게 저장했어요.':'저장을 해제했어요.');}if(action==='ack'){await api(`/api/messages/${id(message.id)}/ack`,{method:'POST',body:{}});message.acknowledged=true;message.ackCount=(message.ackCount||0)+1;}await refreshMessages();await refreshDetailViews();}
@@ -1006,17 +1174,107 @@ async function ackListDialog(message){
   openModal('공지 확인 현황','<div class="message-loading"><span class="spinner"></span>확인 현황을 불러오고 있어요.</div>');const version=modalVersion;
   try{const data=await api(`/api/messages/${id(message.id)}/acks`);if(!modal.open||version!==modalVersion)return;$('.modal-body',modal).innerHTML=`<p class="modal-description">${data.acknowledged.length} / ${data.total}명 확인<br>대화를 읽은 기록과 별개로, ‘확인했어요’를 누른 크루예요.</p><div class="ack-roster"><section><h3>확인한 크루 ${data.acknowledged.length}</h3>${data.acknowledged.map(item=>`<p>${esc(item.user.name)}<time>${esc(shortDate(item.acknowledgedAt))} ${esc(timeLabel(item.acknowledgedAt))}</time></p>`).join('')||'<p class="muted">아직 확인한 크루가 없어요.</p>'}</section><section><h3>아직 확인하지 않은 크루 ${data.pending.length}</h3>${data.pending.map(user=>`<p>${esc(user.name)}</p>`).join('')||'<p class="muted">모두 확인했어요.</p>'}</section></div>`;}catch(error){if(version===modalVersion)formError(error.message);}
 }
+function taskReviewerId(task){return task?.reviewerId||task?.reviewer?.id||null;}
+function reviewerRecoveryHtml(task,people){
+  if(task?.stage!=='review'||!task.reviewerUnavailable)return '';
+  const candidates=people.filter(person=>person.id!==task.assignee?.id&&person.id!==(task.reviewerId||task.reviewer?.id));
+  return `<section class="reviewer-recovery" aria-labelledby="reviewer-recovery-title"><h3 id="reviewer-recovery-title">검토자를 다시 지정해야 해요</h3><p>기존 검토자가 이 대화방에서 검토할 수 없는 상태예요. 제출한 결과물은 그대로 유지돼요.</p>${task.canReassignReviewer?`<label class="field"><span>새 검토 크루</span><select id="replacement-reviewer" aria-describedby="reviewer-recovery-note"><option value="">검토할 크루를 선택하세요</option>${candidates.map(person=>`<option value="${esc(person.id)}">${esc(person.name)}</option>`).join('')}</select></label><label class="workflow-checkbox"><input id="reviewer-recovery-confirm" type="checkbox"><span>같은 결과물로 새 검토자에게 다시 검토를 요청할게요.</span></label><p id="reviewer-recovery-note" class="workflow-help">새 검토자가 결과물을 확인하고 승인해야 완료할 수 있어요.${!candidates.length?' 먼저 이 대화방에 검토할 크루를 초대해 주세요.':''}</p><button type="button" class="button" id="reassign-reviewer" ${candidates.length?'':'disabled'}>새 검토자에게 다시 요청</button>`:'<p class="workflow-help">업무 요청자나 담당자가 아닌 관리자가 새 검토자를 지정할 수 있어요.</p>'}</section>`;
+}
+function bindReviewerRecovery(message,version){
+  const button=$('#reassign-reviewer');if(!button||!message.task?.canReassignReviewer)return;
+  button.onclick=async()=>{
+    if(!canPostMessage(message))return;const reviewerId=$('#replacement-reviewer').value,confirmed=$('#reviewer-recovery-confirm').checked,submit=$('button[type=submit]',$('#task-form'));
+    if(!reviewerId){formError('새 검토자를 선택해 주세요.');$('#replacement-reviewer').focus();return;}
+    if(!confirmed){formError('같은 결과물로 다시 검토를 요청하는지 확인해 주세요.');$('#reviewer-recovery-confirm').focus();return;}
+    button.disabled=true;if(submit)submit.disabled=true;
+    try{
+      const result=await api(`/api/messages/${id(message.id)}/task`,{method:'PATCH',body:{revision:message.task.revision,reviewerId,reassignReviewer:true}});
+      if(modal.open&&version===modalVersion)taskDialog({...message,task:result.task});await refreshMessages();await refreshDetailViews();toast('새 검토자에게 같은 결과물의 검토를 다시 요청했어요.');
+    }catch(error){if(modal.open&&version===modalVersion){formError(error.status===409?'다른 크루가 먼저 변경했어요. 선택은 보존했어요. 최신 상태를 다시 불러온 뒤 검토자를 지정해 주세요.':error.message);$('#task-reload').classList.toggle('hidden',error.status!==409);button.disabled=error.status===409;if(submit)submit.disabled=error.status===409;}}
+  };
+}
 function taskDialog(message){
   const task=message.task,editable=task?task.canManage!==false&&canPostMessage(message):canPostMessage(message),channel=state.channels.find(room=>room.id===message.channelId),people=state.members.filter(person=>channel?.memberIds?.includes(person.id)&&person.companyRole!=='viewer');
-  openModal(task?'메시지의 할 일':'메시지를 할 일로',`<p class="modal-description">원래 대화와 연결된 할 일이에요.${!editable?' 이 할 일의 담당자나 만든 크루가 상태를 바꿀 수 있어요.':''}</p><form id="task-form"><label class="field"><span>할 일</span><input name="title" maxlength="200" required value="${esc(task?.title||message.body?.slice(0,200)||message.workspaceLink?.title||'첨부 자료 확인')}" ${editable?'':'disabled'}></label><div class="field-row"><label class="field"><span>담당 크루</span><select name="assigneeId" required ${editable?'':'disabled'}>${people.map(person=>`<option value="${esc(person.id)}" ${person.id===(task?.assignee?.id||state.user.id)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label><label class="field"><span>기한</span><input name="dueDate" type="date" value="${esc(task?.dueDate||'')}" ${editable?'':'disabled'}></label></div><label class="field"><span>진행 상태</span><select name="status" ${editable?'':'disabled'}>${['todo','doing','done'].map(value=>`<option value="${value}" ${value===(task?.status||'todo')?'selected':''}>${taskStatusLabel(value)}</option>`).join('')}</select></label><div id="modal-error" class="form-error hidden" role="alert"></div>${editable?'<div class="modal-actions"><button class="button primary" type="submit">할 일 저장</button></div>':''}</form>`);
-  if(!editable)return;$('#task-form').onsubmit=async event=>{event.preventDefault();if(!canPostMessage(message))return;const button=$('button[type=submit]',event.currentTarget);button.disabled=true;try{const values=Object.fromEntries(new FormData(event.currentTarget));values.dueDate=values.dueDate||null;await api(`/api/messages/${id(message.id)}/task`,{method:task?'PATCH':'POST',body:values});modal.close();await refreshMessages();await refreshDetailViews();toast('할 일을 저장했어요.');}catch(error){formError(error.message);button.disabled=false;}};
+  const current=taskStage(task),stages=[...new Set([current,...(task?.allowedStages||[])])],manager=state.user.role==='owner'||state.integrated?.canManage;
+  const metadataEditable=editable&&(!task||manager||[task.createdBy?.id,task.assignee?.id].includes(state.user.id)),reviewerEditable=editable&&(!task||(!taskReviewerId(task)&&task.assignee?.id===state.user.id)||((manager||task.createdBy?.id===state.user.id)&&task.assignee?.id!==state.user.id)),resultEditable=editable&&(!task||task.assignee?.id===state.user.id)&&!['review','done'].includes(current);
+  let selectedResult=task?.resultMessage|| (task?.resultMessageId?{id:task.resultMessageId,channelId:message.channelId}:null);
+  openModal(task?'업무 진행·결과물':'메시지를 할 일로',`<p class="modal-description">요청 수락 → 작업 → 검토 요청 → 완료로 이어져요. 수정이 필요하면 결과물을 보완해 다시 검토받으세요.${!editable?' 담당자·검토자·요청자만 변경할 수 있어요.':''}</p>${reviewerRecoveryHtml(task,people)}<form id="task-form" class="workflow-form"><label class="field"><span>할 일</span><input name="title" maxlength="200" required value="${esc(task?.title||message.body?.slice(0,200)||message.workspaceLink?.title||'첨부 자료 확인')}" ${metadataEditable?'':'disabled'}></label><div class="field-row"><label class="field"><span>담당 크루</span><select name="assigneeId" required ${metadataEditable&&!['review','done'].includes(current)?'':'disabled'}>${people.map(person=>`<option value="${esc(person.id)}" ${person.id===(task?.assignee?.id||state.user.id)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label><label class="field"><span>검토 크루</span><select name="reviewerId" ${reviewerEditable&&!['review','done'].includes(current)?'':'disabled'}><option value="">검토 요청 전에 지정</option>${task?.reviewerUnavailable&&taskReviewerId(task)?`<option value="${esc(taskReviewerId(task))}" selected>기존 검토자 · 검토 불가</option>`:''}${people.map(person=>`<option value="${esc(person.id)}" ${person.id===taskReviewerId(task)?'selected':''}>${esc(person.name)}</option>`).join('')}</select></label></div><div class="field-row"><label class="field"><span>기한</span><input name="dueDate" type="date" value="${esc(task?.dueDate||'')}" ${metadataEditable?'':'disabled'}></label><label class="field"><span>진행 상태</span><select name="stage" ${editable&&task?'':'disabled'}>${stages.map(value=>`<option value="${esc(value)}" ${value===current?'selected':''}>${taskStatusLabel(value)}</option>`).join('')}</select></label></div><p class="workflow-help" id="workflow-stage-help">${workflowStageHelp(current)}</p><fieldset class="message-picker" id="task-result-picker"><legend>결과물 메시지</legend>${messagePickerHtml(Boolean(resultEditable))}</fieldset><div class="workflow-source-actions">${sourceButton(message,'요청 원문 열기')}${task&&canPostMessage(message)?'<button type="button" class="text-button" id="task-add-reply">원문에 의견·수정 사유 남기기</button>':''}</div><div id="modal-error" class="form-error hidden" role="alert"></div><button type="button" class="button hidden" id="task-reload">최신 상태 다시 불러오기</button>${editable?`<div class="modal-actions"><button class="button primary" type="submit">${task?'변경 저장':'업무 요청 만들기'}</button></div>`:''}</form>`);
+  const version=modalVersion,form=$('#task-form');
+  bindReviewerRecovery(message,version);
+  bindMessagePicker($('#task-result-picker'),{channelId:message.channelId,selected:selectedResult,editable:resultEditable,onChange:value=>{selectedResult=value;}});
+  $('.workflow-source-actions',form).onclick=event=>{const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);}};
+  $('#task-add-reply')?.addEventListener('click',async()=>{modal.close();await openSearchMessage(message);if(state.channelId===message.channelId)startReply(message);});
+  $('select[name=stage]',form).onchange=event=>{$('#workflow-stage-help').textContent=workflowStageHelp(event.target.value);};
+  $('#task-reload').onclick=async event=>{event.currentTarget.disabled=true;try{const data=await api(`/api/messages/${id(message.id)}`);if(modal.open&&version===modalVersion)taskDialog(data.message);}catch(error){if(modal.open&&version===modalVersion){formError(error.message);$('#task-reload').disabled=false;}}};
+  if(!editable)return;
+  form.onsubmit=async event=>{
+    event.preventDefault();if(!canPostMessage(message))return;const button=$('button[type=submit]',form);button.disabled=true;
+    try{
+      const values=Object.fromEntries(new FormData(form));if(Object.hasOwn(values,'dueDate'))values.dueDate=values.dueDate||null;values.reviewerId=Object.hasOwn(values,'reviewerId')?(values.reviewerId||null):taskReviewerId(task);values.resultMessageId=selectedResult?.id||null;
+      if(task)values.revision=task.revision;else values.stage='requested';
+      if(values.stage==='review'&&(!values.reviewerId||!values.resultMessageId))throw new Error('검토 크루와 결과물 메시지를 선택해 주세요.');
+      await api(`/api/messages/${id(message.id)}/task`,{method:task?'PATCH':'POST',body:values});
+      if(modal.open&&version===modalVersion)modal.close();await refreshMessages();await refreshDetailViews();toast(task?'업무를 업데이트했어요.':'업무 요청을 만들었어요.');
+    }catch(error){if(modal.open&&version===modalVersion){formError(error.status===409?'다른 크루가 먼저 변경했어요. 입력 내용은 보존했어요. 최신 상태를 다시 불러온 뒤 변경해 주세요.':error.message);$('#task-reload').classList.toggle('hidden',error.status!==409);button.disabled=error.status===409;}}
+  };
+}
+function workflowStageHelp(stage){return{requested:'담당 크루가 요청을 확인한 뒤 수락할 수 있어요.',accepted:'요청을 수락했어요. 작업을 시작하면 진행 중으로 바꾸세요.',doing:'결과물을 이 대화방에 올린 뒤 아래에서 골라 검토를 요청하세요.',review:'지정된 검토 크루가 결과물을 보고 완료 또는 수정 요청으로 바꿀 수 있어요.',changes:'수정 의견은 요청 원문의 답글에서 확인하세요. 결과물을 보완한 뒤 다시 검토를 요청하세요.',done:'완료된 업무예요. 담당자·결과물을 변경하려면 먼저 진행 중으로 바꾸고 저장한 뒤 다시 열어 주세요.'}[stage]||'';}
+function messagePickerHtml(editable=true){
+  return `<div class="message-picker-selected" data-picker-selected></div>${editable?'<p class="workflow-help">이 대화방의 메시지에서 결과물을 고르세요. 첨부 파일이나 공유 링크도 함께 연결돼요.</p><div class="productivity-search-row"><input type="search" data-picker-query aria-label="결과물 메시지 검색어" maxlength="200" placeholder="메시지 내용으로 찾기"><button class="button" type="button" data-picker-search>찾기</button></div><div class="message-picker-results" data-picker-results aria-live="polite"></div>':''}`;
+}
+function linkedMessageTitle(message){return message?.body||message?.workspaceLink?.title||message?.files?.map(file=>file.name).join(', ')||'연결된 결과물 메시지';}
+function bindMessagePicker(root,{channelId,selected=null,onChange,editable=true,excludeId=null}){
+  const version=modalVersion;let request=0,offset=0,query='',items=[],hasMore=false,chosen=selected;
+  const active=()=>modal.open&&version===modalVersion&&root.isConnected;
+  const renderChosen=()=>{$('[data-picker-selected]',root).innerHTML=chosen?`<div class="selected-result"><strong>${esc(linkedMessageTitle(chosen))}</strong><small>${esc(chosen.user?.name||'선택한 메시지')}${chosen.files?.length?' · 첨부 '+chosen.files.length+'개':''}</small><div class="workday-actions">${sourceButton({...chosen,channelId},'결과물 열기')}${editable?'<button class="text-button" type="button" data-picker-clear>선택 해제</button>':''}</div></div>`:'<p class="workday-empty">아직 선택한 결과물이 없어요.</p>';};
+  const load=async(append=false)=>{
+    const seq=++request,target=$('[data-picker-results]',root);if(!target)return;target.innerHTML='<p class="workflow-help">메시지를 찾고 있어요.</p>';
+    try{
+      const data=await api('/api/search?'+new URLSearchParams({channelId,q:query,offset:String(append?offset:0),limit:'12'}));if(!active()||seq!==request)return;
+      items=append?[...items,...data.messages]:data.messages;offset=data.nextOffset??items.length;hasMore=data.hasMore;
+      const candidates=items.filter(item=>String(item.id)!==String(excludeId));
+      target.innerHTML=candidates.length?candidates.map(item=>`<button type="button" class="message-choice" data-picker-message="${esc(item.id)}" aria-pressed="${String(chosen?.id)===String(item.id)}"><strong>${esc(linkedMessageTitle(item))}</strong><small>${esc(item.user?.name||'크루')} · ${esc(shortDate(item.createdAt))}${item.files?.length?' · 첨부 '+item.files.length+'개':''}</small></button>`).join(''):'<p class="workday-empty">결과물 메시지가 없어요. 먼저 대화방에 결과물이나 링크를 올려 주세요.</p>';
+      if(hasMore)target.insertAdjacentHTML('beforeend','<button type="button" class="text-button" data-picker-more>이전 메시지 더 보기</button>');
+    }catch(error){if(active()&&seq===request)target.innerHTML=`<p class="productivity-error" role="alert">${esc(error.message)}</p><button type="button" class="button" data-picker-search>다시 찾기</button>`;}
+  };
+  root.onclick=event=>{
+    const source=event.target.closest('[data-source-message]');if(source){modal.close();openProductivitySource(source);return;}
+    if(event.target.closest('[data-picker-search]')){query=$('[data-picker-query]',root).value.trim();load();return;}
+    if(event.target.closest('[data-picker-more]')){load(true);return;}
+    if(event.target.closest('[data-picker-clear]')){chosen=null;onChange(null);renderChosen();$$('[data-picker-message]',root).forEach(button=>button.setAttribute('aria-pressed','false'));return;}
+    const button=event.target.closest('[data-picker-message]');if(button){chosen=items.find(item=>String(item.id)===button.dataset.pickerMessage);if(!chosen)return;onChange(chosen);renderChosen();$$('[data-picker-message]',root).forEach(item=>item.setAttribute('aria-pressed',String(item===button)));}
+  };
+  $('[data-picker-query]',root)?.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();query=event.target.value.trim();load();}});
+  renderChosen();if(editable)load();
+}
+function decisionDialog(message){
+  if(!canPostMessage(message))return;let selectedResult=null,replacesId=null,candidates=[];
+  openModal('결정·최종본으로 기록',`<p class="modal-description">이미 확정한 내용만 기록하세요. 확정자는 현재 크루 <strong>${esc(state.user.name)}</strong>로 남고, 원래 대화가 함께 연결돼요.</p><form id="decision-form" class="workflow-form"><label class="field"><span>확정 내용</span><textarea name="summary" rows="3" maxlength="2000" required>${esc(message.body||message.workspaceLink?.title||'')}</textarea></label><div class="field-row"><label class="field"><span>종류</span><select name="kind"><option value="decision">결정</option><option value="final">최종본</option></select></label><label class="field"><span>적용일</span><input name="effectiveDate" type="date" required value="${new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Seoul'})}"></label></div><fieldset class="message-picker" id="decision-result-picker"><legend>연결할 결과물 · 최종본일 때 필수</legend>${messagePickerHtml()}</fieldset><fieldset class="decision-replacement"><legend>이전 기록 대체 · 선택</legend><p class="workflow-help">같은 대화방·같은 종류의 현재 기록만 대체할 수 있어요. 이전 기록도 연결되어 남아요.</p><div class="productivity-search-row"><input type="search" id="replacement-query" maxlength="200" placeholder="이전 확정 내용으로 찾기" aria-label="대체할 이전 기록 검색어"><button class="button" type="button" id="replacement-search">찾기</button></div><div id="replacement-results" aria-live="polite"><p class="workday-empty">이전 기록을 대체하지 않고 새로 남겨요.</p></div></fieldset><div id="modal-error" class="form-error hidden" role="alert"></div><div class="modal-actions"><button class="button primary" type="submit">확정 기록 남기기</button></div></form>`);
+  const version=modalVersion,form=$('#decision-form'),requestId=crypto.randomUUID();let replacementSeq=0;
+  bindMessagePicker($('#decision-result-picker'),{channelId:message.channelId,selected:message.files?.length||message.workspaceLink?message:null,onChange:value=>{selectedResult=value;}});
+  if(message.files?.length||message.workspaceLink)selectedResult=message;
+  const search=async()=>{replacesId=null;const seq=++replacementSeq,kind=$('select[name=kind]',form).value;$('#replacement-results').innerHTML='<p class="workflow-help">이전 기록을 찾고 있어요.</p>';try{const data=await api('/api/decisions?'+new URLSearchParams({channelId:message.channelId,kind,current:'1',q:$('#replacement-query').value.trim(),limit:'50'}));if(!modal.open||version!==modalVersion||seq!==replacementSeq)return;candidates=data.decisions;$('#replacement-results').innerHTML=`<label class="replacement-option"><input type="radio" name="replacesId" value="" ${replacesId?'':'checked'}><span>대체 없이 새 기록</span></label>`+candidates.map(item=>`<label class="replacement-option"><input type="radio" name="replacesId" value="${esc(item.id)}" ${replacesId===item.id?'checked':''}><span><strong>${esc(item.summary)}</strong><small>${esc(item.effectiveDate)} · ${esc(personName(item.confirmedBy))}</small></span></label>`).join('')+(data.hasMore?'<p class="workflow-help">검색 결과가 많아요. 확정 내용을 더 구체적으로 입력해 주세요.</p>':'');}catch(error){if(modal.open&&version===modalVersion&&seq===replacementSeq)$('#replacement-results').innerHTML=`<p class="productivity-error" role="alert">${esc(error.message)}</p>`;}};
+  $('#replacement-search').onclick=search;$('#replacement-query').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();search();}};
+  $('#replacement-results').onchange=event=>{if(event.target.name==='replacesId')replacesId=event.target.value||null;};
+  $('select[name=kind]',form).onchange=()=>{replacementSeq++;replacesId=null;candidates=[];$('#replacement-results').innerHTML='<p class="workday-empty">종류가 바뀌었어요. 대체할 이전 기록을 다시 찾아 주세요.</p>';};
+  form.onsubmit=async event=>{event.preventDefault();const button=$('button[type=submit]',form);button.disabled=true;try{const values=Object.fromEntries(new FormData(form));values.messageId=message.id;values.resultMessageId=selectedResult?.id||null;values.replacesId=replacesId;values.requestId=requestId;if(values.kind==='final'&&!values.resultMessageId)throw new Error('최종본으로 기록할 결과물 메시지를 선택해 주세요.');await api('/api/decisions',{method:'POST',body:values});if(modal.open&&version===modalVersion)modal.close();await refreshDetailViews();toast('확정 내용과 원문을 함께 기록했어요.');}catch(error){if(modal.open&&version===modalVersion){formError(error.status===409?'선택한 이전 기록이 이미 변경됐어요. 다시 검색해서 현재 기록을 선택해 주세요.':error.message);button.disabled=false;}}};
 }
 function tomorrowReminder(){const date=new Date();date.setDate(date.getDate()+1);date.setHours(9,0,0,0);return date;}
 function localDateTime(date){const value=new Date(date);return `${value.getFullYear()}-${String(value.getMonth()+1).padStart(2,'0')}-${String(value.getDate()).padStart(2,'0')}T${String(value.getHours()).padStart(2,'0')}:${String(value.getMinutes()).padStart(2,'0')}`;}
 function reminderDialog(message){
-  openModal('나중에 다시 보기',`<p class="modal-description">정한 시간에 내 알림함으로 알려드려요. 다른 크루에게는 보이지 않아요.<br>프로그램이 꺼져 있으면 다시 실행한 뒤 알림함에 표시돼요.</p><button type="button" class="button reminder-tomorrow" id="remind-tomorrow">${icon('clock')}내일 오전 9시</button><form id="reminder-form"><label class="field"><span>다시 볼 시간</span><input type="datetime-local" name="remindAt" value="${localDateTime(message.reminder?.remindAt||tomorrowReminder())}" required></label><div id="modal-error" class="form-error hidden" role="alert"></div><div class="modal-actions">${message.reminder?'<button type="button" class="button" id="remove-reminder">예약 취소</button>':''}<button type="submit" class="button primary">알림 예약</button></div></form>`);
-  const save=async(date,button)=>{button.disabled=true;try{if(!Number.isFinite(date.getTime())||date<=new Date())throw new Error('현재보다 나중 시간을 선택해 주세요.');await api(`/api/messages/${id(message.id)}/reminder`,{method:'PUT',body:{remindAt:date.toISOString()}});modal.close();await refreshMessages();await refreshDetailViews();toast('다시 볼 시간을 예약했어요.');}catch(error){formError(error.message);button.disabled=false;}};
-  $('#remind-tomorrow').onclick=event=>save(tomorrowReminder(),event.currentTarget);$('#reminder-form').onsubmit=event=>{event.preventDefault();save(new Date(new FormData(event.currentTarget).get('remindAt')),$('button[type=submit]',event.currentTarget));};$('#remove-reminder')?.addEventListener('click',async event=>{event.currentTarget.disabled=true;try{await api(`/api/messages/${id(message.id)}/reminder`,{method:'DELETE'});modal.close();await refreshMessages();await refreshDetailViews();}catch(error){formError(error.message);event.currentTarget.disabled=false;}});
+  openModal('나중에 다시 보기',`<p class="modal-description">정한 시간에 내 알림함에 남기는 개인 예약이에요. 다른 크루에게는 보이지 않아요.</p><p class="workflow-help" id="reminder-scheduler-status" role="status">${esc(state.scheduledNotifications.enabled===false?workNotificationStatusText(false):'업무 알림 가동 여부를 확인하고 있어요.')}</p><button type="button" class="button reminder-tomorrow" id="remind-tomorrow" disabled>${icon('clock')}내일 오전 9시</button><form id="reminder-form"><label class="field"><span>다시 볼 시간</span><input type="datetime-local" name="remindAt" value="${localDateTime(message.reminder?.remindAt||tomorrowReminder())}" required></label><div id="modal-error" class="form-error hidden" role="alert"></div><div class="modal-actions">${message.reminder?'<button type="button" class="button" id="remove-reminder">예약 취소</button>':''}<button type="submit" class="button primary" disabled>알림 예약</button></div></form>`);
+  const version=modalVersion,userId=state.user?.id,session=state.workNotificationSession,form=$('#reminder-form'),tomorrow=$('#remind-tomorrow'),submit=$('button[type=submit]',form),remove=$('#remove-reminder'),active=()=>modal.open&&version===modalVersion&&userId===state.user?.id&&session===state.workNotificationSession;
+  let schedulerEnabled=null,busy=false;
+  const update=()=>{if(!active())return;$('#reminder-scheduler-status').textContent=workNotificationStatusText(schedulerEnabled);tomorrow.disabled=submit.disabled=busy||schedulerEnabled!==true;if(remove)remove.disabled=busy;};
+  const save=async date=>{
+    if(!active()||busy||schedulerEnabled!==true)return;busy=true;update();
+    try{if(!Number.isFinite(date.getTime())||date<=new Date())throw new Error('현재보다 나중 시간을 선택해 주세요.');await api(`/api/messages/${id(message.id)}/reminder`,{method:'PUT',body:{remindAt:date.toISOString()}});if(!active())return;modal.close();await refreshMessages();await refreshDetailViews();if(userId===state.user?.id&&session===state.workNotificationSession)toast('다시 볼 시간을 예약했어요.');}
+    catch(error){if(active()){if(error.code==='SYNK_WORK_NOTIFICATIONS_PAUSED'){schedulerEnabled=false;setWorkNotificationStatus(false,{invalidatePending:true});}formError(error.message);}}
+    finally{busy=false;update();}
+  };
+  tomorrow.onclick=()=>save(tomorrowReminder());form.onsubmit=event=>{event.preventDefault();return save(new Date(new FormData(form).get('remindAt')));};
+  remove?.addEventListener('click',async()=>{if(!active()||busy)return;busy=true;update();try{await api(`/api/messages/${id(message.id)}/reminder`,{method:'DELETE'});if(!active())return;modal.close();await refreshMessages();await refreshDetailViews();}catch(error){if(active())formError(error.message);}finally{busy=false;update();}});
+  loadWorkNotificationSettings().then(settings=>{if(!active())return;schedulerEnabled=typeof settings?.schedulerEnabled==='boolean'?settings.schedulerEnabled:null;update();}).catch(()=>{if(active()){schedulerEnabled=null;update();}});
 }
 
 boot();

@@ -1,0 +1,22 @@
+[Unit]
+Description=SYNK company container stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target synk-company-health.timer synk-company-backup.timer synk-company-backup-watch.timer
+RequiresMountsFor=/srv/synk
+ConditionPathExists=/etc/synk/company.env
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=/etc/synk/company.env
+StateDirectory=synk-company-ops
+StateDirectoryMode=0700
+UMask=0077
+ExecStart=/usr/bin/bash /opt/synk/current/docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-stack.sh start
+ExecStop=/usr/bin/bash /opt/synk/current/docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-stack.sh stop
+TimeoutStartSec=120
+TimeoutStopSec=90
+
+[Install]
+WantedBy=multi-user.target

@@ -80,8 +80,9 @@ let companyAuthGeneration=0;
 for(const key of ['user','csrf']){
   let value=state[key];
   Object.defineProperty(state,key,{enumerable:true,configurable:false,get:()=>value,set(next){
-    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next)companyAuthGeneration++;
+    if(key==='user'?(value?.id||null)!==(next?.id||null):value!==next){companyAuthGeneration++;if(typeof clientDeskReset==='function')clientDeskReset();}
     value=next;
+    globalThis.SynkDeviceNotifications?.syncIdentity({userId:state.user?.id||null,csrf:state.csrf||'',generation:companyAuthGeneration});
   }});
 }
 const companyAuthSnapshot=()=>({generation:companyAuthGeneration,userId:state.user?.id||null});
@@ -550,7 +551,7 @@ document.addEventListener('click', async event => {
     if (action === 'cancel-handoff-confirm') { target.disabled = true; await api(`/api/channels/${encodeURIComponent(id)}/handoff/cancel`,{}); closeModal(); await loadState(); notify('이관 요청을 취소했어요.'); return; }
     if (action === 'tab') { if(target.tagName==='A'&&(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return; event.preventDefault(); selectWorkspaceView(target.dataset.tab); state.error = ''; state.report = null; render(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); window.scrollTo(0,0); return; }
     if (action === 'close-modal') { closeModal(); return; }
-    if (action === 'logout') { const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; clearInterval(pollTimer); clearInterval(hypePollTimer); state.hypeRequest++; state.hype = null; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning)notify(logoutResult.warning); return; }
+    if (action === 'logout') { const stamp=companyAuthSnapshot();await globalThis.SynkDeviceNotifications?.beforeLogout().catch(()=>{});if(!companyAuthCurrent(stamp))return;const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; clearInterval(pollTimer); clearInterval(hypePollTimer); state.hypeRequest++; state.hype = null; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning)notify(logoutResult.warning); return; }
     if (action === 'refresh') { target.disabled = true; await loadState(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); notify('최신 상태로 불러왔어요.'); return; }
     if (action === 'add-channel') { addChannelModal(); return; }
     if (action === 'day') { await dayModal(target.dataset.date); return; }

@@ -1,0 +1,91 @@
+# Preparation only. Run from an approved release checkout on one Linux host.
+# Set SYNK_COMPANY_DOMAIN to one DNS hostname; do not include a scheme or path.
+# Supply the runtime env file outside the repository. It contains server secrets.
+# Pre-create all bind directories on the mounted persistent disk. Never use an
+# empty directory in place of the restored company volume.
+# Docker HEALTHCHECK reports readiness; restart restarts exited processes only.
+name: synk-company
+services:
+  company:
+    image: ${SYNK_COMPANY_IMAGE:?Set the prebuilt reviewed release image tag}
+    build:
+      context: ../../../../../..
+      dockerfile: docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile
+    init: true
+    restart: unless-stopped
+    stop_grace_period: 60s
+    env_file:
+      - ${SYNK_COMPANY_RUNTIME_ENV_FILE:-/etc/synk/company.env}
+    environment:
+      NODE_ENV: production
+      SYNK_COMPANY_HOST: 0.0.0.0
+      SYNK_COMPANY_PORT: "4191"
+      SYNK_COMPANY_ORIGIN: https://${SYNK_COMPANY_DOMAIN:?Set the approved DNS hostname}
+      SYNK_COMPANY_DATA: /data
+      SYNK_COMPANY_REQUIRE_EXISTING_DATA: "1"
+      MESSENGER_DATA_DIR: /data/messenger
+      SYNK_COMPANY_TRUSTED_PROXY_IPS: "172.30.77.3"
+    networks:
+      edge:
+        ipv4_address: 172.30.77.2
+    expose:
+      - "4191"
+    volumes:
+      - type: bind
+        source: ${COMPANY_VOLUME_DIR:?Set the absolute restored company volume path}
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${COMPANY_BACKUP_DIR:-/srv/synk/backups}
+        target: /backups
+        bind:
+          create_host_path: false
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+  https:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    networks:
+      edge:
+        ipv4_address: 172.30.77.3
+    environment:
+      SYNK_COMPANY_DOMAIN: ${SYNK_COMPANY_DOMAIN:?Set the approved DNS hostname}
+      SYNK_TLS_EMAIL: ${SYNK_TLS_EMAIL:?Set the TLS certificate operations email}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - type: bind
+        source: ./Caddyfile
+        target: /etc/caddy/Caddyfile
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${CADDY_DATA_DIR:-/srv/synk/caddy-data}
+        target: /data
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${CADDY_CONFIG_DIR:-/srv/synk/caddy-config}
+        target: /config
+        bind:
+          create_host_path: false
+    depends_on:
+      company:
+        condition: service_healthy
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+networks:
+  edge:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.77.0/29

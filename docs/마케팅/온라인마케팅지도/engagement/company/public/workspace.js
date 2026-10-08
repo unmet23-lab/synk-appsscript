@@ -12,7 +12,7 @@ function workspaceContextMenu(){
   const view=workspacePrimaryView(),link=(id,label,glyph,action='tab',attrs='',active=false)=>`<button type="button" class="nav-item ${active?'active':''}" data-action="${action}" ${attrs||`data-tab="${id}"`} aria-current="${active?'page':'false'}" ${typeof isDemoMode==='function'&&isDemoMode()&&action==='marketing-section'&&['content','channels'].includes(id)?'disabled title="실제 데이터 화면에서 사용할 수 있어요"':''}>${icon(glyph)}<span>${escape(label)}</span>${id==='messenger'?'<b class="messenger-unread nav-count" hidden></b>':''}</button>`;
   let title={home:'홈',workroom:'내 작업실',handbook:'회사 안내',marketing:'마케팅',messenger:'메신저',members:'팀·크루',settings:'설정'}[view]||'워크스페이스',items='',extra='';
   if(view==='workroom'){
-    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['practice','AI 업무 연습','bookmark'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)).join('');
+    items=[['desk','제작 데스크','bookmark'],['trends','트렌드·레퍼런스','chart'],['tools','제작 도구','check'],['clients','고객 관리','users'],['practice','AI 업무 연습','bookmark'],['pages','내 관리 페이지','link']].map(([id,label,glyph])=>link(id,label,glyph,'workroom-view','',typeof wr!=='undefined'&&wr.view===id)).join('');
     extra=link('tasks','내 할 일','calendar','marin-workroom-panel','data-panel="tasks"')+link('saved','저장한 메시지','bookmark','marin-workroom-panel','data-panel="saved"')+link('profile','내 업무 카드','users','marin-profile')+link('mine','내 성과','chart');
   }else if(view==='handbook'){
     const categories=typeof cg!=='undefined'?cg.data?.categories||[]:[];
@@ -123,7 +123,7 @@ function selectWorkspaceView(view,section='',teamId=undefined,draftId=undefined)
     }else normalizeMarketingScope();
   }else if([...workspacePrimaryTabs,...workspaceMarketingTabs,['members'],['settings']].some(row=>row[0]===view)){
     state.tab=view;
-    if(view==='workroom'&&typeof wr!=='undefined'&&['desk','trends','tools','practice','pages'].includes(section))wr.view=section;
+    if(view==='workroom'&&typeof wr!=='undefined'&&['desk','trends','tools','practice','pages','clients'].includes(section))wr.view=section;
     if(view==='content'&&['library','plan','examples'].includes(section))cp.view=section;
     if(view==='content'&&draftId!==undefined){cp.detailRequest=(Number(cp.detailRequest)||0)+1;cp.draftId=String(draftId);cp.pendingDraftId=String(draftId);cp.activeDraft=null;cp.ideaId='';cp.view='plan';}
   }
@@ -164,6 +164,14 @@ function mountWorkspaceModule(){
   if(workspaceModule.userId&&workspaceModule.userId!==state.user.id)resetWorkspaceModule();
   workspaceModule.userId=state.user.id;
   const shown=state.tab==='messenger';
+  if(shown){
+    const url=new URL(location.href);
+    if(url.searchParams.get('panel')==='notifications'){
+      workspaceModule.open={type:'workspace:open',requestId:crypto.randomUUID(),panel:'notifications'};
+      url.searchParams.delete('panel');history.replaceState(null,'',url.pathname+url.search+url.hash);
+      if(workspaceModule.ready)sendWorkspaceMessage(workspaceModule.open);
+    }
+  }
   if(shown&&!workspaceModule.host){
     const host=document.createElement('section');host.id='workspace-messenger';host.className='workspace-messenger';host.setAttribute('aria-label','팀 메신저');
     const frame=document.createElement('iframe');frame.id='messenger-frame';frame.title='싱ㅋ 팀 메신저';frame.src='/messenger/';frame.setAttribute('referrerpolicy','same-origin');
@@ -238,6 +246,11 @@ function shareWorkspaceView(){
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==workspaceModule.frame?.contentWindow||!event.data||typeof event.data!=='object')return;
   const type=event.data.type;
+  if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
+  if(type==='messenger:client-open'){
+    if(state.user&&typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(event.data.url)).catch(error=>notify(error.message));
+    return;
+  }
   if(type==='messenger:navigate'){void navigateWorkspaceLink(event.data.url).catch(error=>notify(error.message));return;}
   if(type==='messenger:ready'){workspaceModule.ready=true;syncWorkspaceLoading();sendWorkspaceMessage({type:'workspace:visible',visible:state.tab==='messenger'&&!workspaceSidebarBlocksContent()});if(workspaceModule.share)sendWorkspaceMessage(workspaceModule.share);if(state.tab==='messenger'&&workspaceModule.open)sendWorkspaceMessage(workspaceModule.open);return;}
   if(type==='messenger:open-received'){if(event.data.requestId===workspaceModule.open?.requestId)workspaceModule.open=null;return;}
@@ -251,6 +264,15 @@ window.addEventListener('message',event=>{
   }
 });
 window.addEventListener('resize',syncWorkspaceModuleGeometry);
+globalThis.navigator?.serviceWorker?.addEventListener('message',event=>{
+  const stamp=companyAuthSnapshot();
+  void (async()=>{
+    if(!stamp.userId||!await window.SynkDeviceNotifications?.isTrustedWorkerMessage(event)||!companyAuthCurrent(stamp))return;
+    const me=await api('/api/me');
+    if(!companyAuthCurrent(stamp)||me.user?.id!==stamp.userId||me.csrfToken!==state.csrf)return;
+    openWorkspaceDestination({type:'messenger',label:'알림',panel:'notifications'});
+  })().catch(()=>{});
+});
 window.addEventListener('scroll',syncWorkspaceModuleGeometry,{passive:true});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&state.user)void refreshWorkspaceSummary();});
 

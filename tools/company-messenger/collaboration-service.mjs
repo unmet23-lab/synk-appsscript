@@ -1,7 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { createProductivityService } from './productivity-service.mjs';
 
 // All personal indexes point to live messages. They never keep copied message bodies.
-export function createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, origin, fileTypeSql, integrated, resolveLink }) {
+export function createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, origin, fileTypeSql, integrated, resolveLink, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled, externalNotifications = null }) {
+  assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
+  assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
@@ -101,23 +104,36 @@ export function createCollaborationService({ db, assert, textField, now, transac
     for (const userId of changed) publish('notification', channel.id, userId);
   }
   function reminderShape(row) { return row ? { id: row.id, messageId: String(row.message_id), channelId: one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id, remindAt: row.remind_at, createdAt: row.created_at, deliveredAt: row.delivered_at } : null; }
-  function canManageTask(row, userId) {
-    try { requirePosting(userId, one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id); } catch { return false; }
-    const user = activeUser(userId);
-    return row.creator_id === userId || row.assignee_id === userId || user?.role === 'owner';
-  }
-  function taskShape(row, userId) {
-    if (!row) return null;
-    return { id: row.id, messageId: String(row.message_id), channelId: one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id, title: row.title, assignee: activeUser(row.assignee_id), dueDate: row.due_date, status: row.status, createdBy: activeUser(row.creator_id), createdAt: row.created_at, updatedAt: row.updated_at, canManage: canManageTask(row, userId) };
-  }
+  const productivity = createProductivityService({ db, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled, workNotificationsEnabled });
+  const { taskShape } = productivity;
   function messageExtras(message, userId) {
     const mentions = all('SELECT user_id FROM message_mentions WHERE message_id=?', message.id).map(row => activeUser(row.user_id)).filter(Boolean);
     const acknowledged = all('SELECT user_id FROM announcement_acks WHERE message_id=?', message.id).filter(row => accessible(row.user_id, message.channel_id));
     return { mentions, workspaceLink: message.workspace_link ? JSON.parse(message.workspace_link) : null, task: taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), userId), saved: Boolean(one('SELECT 1 FROM saved_messages WHERE message_id=? AND user_id=?', message.id, userId)), reminder: reminderShape(one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, userId)), ackRequired: Boolean(message.ack_required), acknowledged: acknowledged.some(row => row.user_id === userId), ackCount: acknowledged.length };
   }
-  function visibleNotifications(userId) { return all('SELECT n.*,m.channel_id FROM notifications n JOIN messages m ON m.id=n.message_id WHERE n.user_id=? ORDER BY n.created_at DESC,n.id DESC', userId).filter(row => accessible(userId, row.channel_id)); }
-  function unreadCount(userId) { return visibleNotifications(userId).filter(row => !row.read_at).length; }
+  function setExternalNotifications(adapter) {
+    assert(adapter === null || (adapter && ['list', 'read', 'readAll'].every(key => typeof adapter[key] === 'function')), 400, '외부 업무 알림 연결을 확인해 주세요.');
+    externalNotifications = adapter;
+  }
+  setExternalNotifications(externalNotifications);
+  function visibleNotifications(userId) {
+    const messages = all('SELECT n.*,m.channel_id FROM notifications n JOIN messages m ON m.id=n.message_id WHERE n.user_id=?', userId).filter(row => accessible(userId, row.channel_id)).map(row => ({ id: row.id, kind: row.kind, message: messageShape(requireMessage(String(row.message_id), userId), userId), createdAt: row.created_at, readAt: row.read_at, _source: 'message' }));
+    const due = productivity.dueNotifications(userId).map(row => ({ ...row, _source: 'due' }));
+    const external = (externalNotifications?.list(userId) || []).map(row => ({ ...row, _source: 'external' }));
+    return [...messages, ...due, ...external].sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id));
+  }
+  function unreadCount(userId) { return visibleNotifications(userId).filter(row => !row.readAt).length; }
+  function notificationsForPush(userId) {
+    if (!activeUser(userId)) return [];
+    return visibleNotifications(userId).filter(row => {
+      const channelId = row.message?.channelId;
+      return !channelId || mode(userId, channelId) !== 'mute' && !one('SELECT deleted_at FROM channels WHERE id=?', channelId)?.deleted_at;
+    }).map(({ _source, ...row }) => row);
+  }
   function deliverReminders() {
+    // Notifications/reminders GET must not drain restored pending reminders either.
+    if (!workNotificationsEnabled) return;
+    productivity.deliverDueDigests();
     const changed = [];
     transaction(() => {
       for (const row of all('SELECT r.*,m.channel_id FROM message_reminders r JOIN messages m ON m.id=r.message_id JOIN channels c ON c.id=m.channel_id WHERE c.deleted_at IS NULL AND r.delivered_at IS NULL AND r.remind_at<=? ORDER BY r.remind_at LIMIT 500', now())) {
@@ -130,9 +146,10 @@ export function createCollaborationService({ db, assert, textField, now, transac
     for (const [userId, channelId] of changed) publish('notification', channelId, userId);
   }
   function personalMutation(p, method) {
-    return (method === 'POST' && /^\/api\/channels\/[^/]+\/(leave|restore)$/.test(p)) || (method === 'PATCH' && /^\/api\/channels\/[^/]+\/notifications$/.test(p)) || (method === 'POST' && /^\/api\/notifications\/(?:[^/]+\/read|read-all)$/.test(p)) || (['POST', 'DELETE'].includes(method) && /^\/api\/messages\/\d+\/save$/.test(p)) || (['PUT', 'DELETE'].includes(method) && /^\/api\/messages\/\d+\/reminder$/.test(p)) || (method === 'POST' && /^\/api\/messages\/\d+\/ack$/.test(p));
+    return (method === 'PATCH' && p === '/api/workday/notifications') || (method === 'POST' && p === '/api/catch-up/read') || (method === 'POST' && /^\/api\/channels\/[^/]+\/(leave|restore)$/.test(p)) || (method === 'PATCH' && /^\/api\/channels\/[^/]+\/notifications$/.test(p)) || (method === 'POST' && /^\/api\/notifications\/(?:[^/]+\/read|read-all)$/.test(p)) || (['POST', 'DELETE'].includes(method) && /^\/api\/messages\/\d+\/save$/.test(p)) || (['PUT', 'DELETE'].includes(method) && /^\/api\/messages\/\d+\/reminder$/.test(p)) || (method === 'POST' && /^\/api\/messages\/\d+\/ack$/.test(p));
   }
   async function handle({ p, method, url, user, readBody, respond }) {
+    if (await productivity.handle({ p, method, url, user, readBody, respond })) return true;
     let match = p.match(/^\/api\/channels\/([^/]+)\/notifications$/);
     if (match && ['GET', 'PATCH'].includes(method)) {
       const body = method === 'PATCH' ? await readBody() : null;
@@ -142,15 +159,27 @@ export function createCollaborationService({ db, assert, textField, now, transac
     }
     if (p === '/api/notifications' && method === 'GET') {
       deliverReminders();
-      const rows = visibleNotifications(user.id), unread = rows.filter(row => !row.read_at);
-      const result = paged(url.searchParams.get('unread') === '1' ? unread : rows, url.searchParams, 'items', row => ({ id: row.id, kind: row.kind, message: messageShape(requireMessage(String(row.message_id), user.id), user.id), createdAt: row.created_at, readAt: row.read_at }));
+      const rows = visibleNotifications(user.id), unread = rows.filter(row => !row.readAt);
+      const result = paged(url.searchParams.get('unread') === '1' ? unread : rows, url.searchParams, 'items', ({ _source, ...row }) => row);
       respond(200, { ...result, unreadCount: unread.length }); return true;
     }
     if (method === 'POST' && (p === '/api/notifications/read-all' || (match = p.match(/^\/api\/notifications\/([^/]+)\/read$/)))) {
       await readBody();
+      let notificationId = null;
+      if (p !== '/api/notifications/read-all') {
+        try { notificationId = decodeURIComponent(match[1]); } catch { assert(false, 400, '알림 주소를 확인해 주세요.'); }
+      }
       const rows = visibleNotifications(user.id);
-      if (p !== '/api/notifications/read-all') assert(rows.some(row => row.id === match[1]), 404, '알림을 찾을 수 없습니다.');
-      transaction(() => { for (const row of rows.filter(row => p === '/api/notifications/read-all' || row.id === match[1])) run('UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?', now(), row.id, user.id); });
+      if (p !== '/api/notifications/read-all') assert(rows.some(row => row.id === notificationId), 404, '알림을 찾을 수 없습니다.');
+      const selected = rows.filter(row => p === '/api/notifications/read-all' || row.id === notificationId);
+      transaction(() => { for (const row of selected) {
+        if (row._source === 'message') run('UPDATE notifications SET read_at=COALESCE(read_at,?) WHERE id=? AND user_id=?', now(), row.id, user.id);
+        else if (row._source === 'due') productivity.readDueNotification(user.id, row.id);
+      } });
+      // Customer notifications live in the company database. Never put those
+      // writes inside the messenger SQLite transaction.
+      if (p === '/api/notifications/read-all') externalNotifications?.readAll(user.id);
+      else if (selected[0]?._source === 'external') externalNotifications.read(user.id, selected[0].id);
       publish('notification', null, user.id); respond(200, { ok: true, unreadCount: unreadCount(user.id) }); return true;
     }
     match = p.match(/^\/api\/messages\/(\d+)\/(ack|acks|task|save|reminder)$/);
@@ -172,6 +201,10 @@ export function createCollaborationService({ db, assert, textField, now, transac
         else run('DELETE FROM saved_messages WHERE message_id=? AND user_id=?', message.id, user.id);
         publish('message', channel.id, user.id); respond(200, { saved: method === 'POST' });
       } else if (action === 'reminder') {
+        if (method === 'PUT' && !workNotificationsEnabled) {
+          const message = '현재 업무 알림이 중지되어 있어 예약할 수 없습니다. 회사 관리자에게 문의해 주세요.';
+          throw Object.assign(new Error(message), { status: 503, publicMessage: message, code: 'SYNK_WORK_NOTIFICATIONS_PAUSED' });
+        }
         const existing = one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id);
         if (method === 'DELETE') {
           transaction(() => { if (existing) run('DELETE FROM notifications WHERE user_id=? AND dedupe_key=?', user.id, `reminder:${existing.id}`); run('DELETE FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id); });
@@ -185,24 +218,8 @@ export function createCollaborationService({ db, assert, textField, now, transac
           publish('message', channel.id, user.id); respond(200, { reminder: reminderShape(one('SELECT * FROM message_reminders WHERE message_id=? AND user_id=?', message.id, user.id)) });
         }
       } else {
-        requirePosting(user.id, channel.id);
-        const prior = one('SELECT * FROM message_tasks WHERE message_id=?', message.id);
-        assert(method !== 'PATCH' || prior, 404, '업무를 찾을 수 없습니다.');
-        assert(!prior || canManageTask(prior, user.id), 403, '업무를 만든 크루나 담당자, 관리자만 변경할 수 있습니다.');
-        const assigneeId = body.assigneeId ?? prior?.assignee_id;
-        assert(typeof assigneeId === 'string' && channelMembers(channel.id).some(member => member.id === assigneeId && member.companyRole !== 'viewer'), 400, '이 대화방의 업무를 맡을 크루를 선택해 주세요.');
-        const title = textField(body.title ?? prior?.title ?? (message.body.slice(0, 120) || '공유 메시지 확인'), '업무 제목', 200, 1);
-        const status = body.status ?? prior?.status ?? 'todo'; assert(['todo', 'doing', 'done'].includes(status), 400, '업무 상태를 확인해 주세요.');
-        const dueDate = body.dueDate === undefined ? prior?.due_date ?? null : body.dueDate; if (dueDate !== null) kstDate(dueDate, '마감일');
-        const changed = [];
-        transaction(() => {
-          if (prior) run('UPDATE message_tasks SET assignee_id=?,title=?,due_date=?,status=?,updated_at=?,revision=revision+1 WHERE id=?', assigneeId, title, dueDate, status, now(), prior.id);
-          else run('INSERT INTO message_tasks(id,message_id,assignee_id,creator_id,title,due_date,status,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)', randomUUID(), message.id, assigneeId, user.id, title, dueDate, status, now(), now());
-          const task = one('SELECT * FROM message_tasks WHERE message_id=?', message.id);
-          for (const personId of new Set([assigneeId, prior?.assignee_id, task.creator_id].filter(Boolean))) if (personId !== user.id && mode(personId, channel.id) !== 'mute' && notify(personId, message, 'task', `task:${task.id}:${task.revision}:${personId}`)) changed.push(personId);
-        });
-        publish('message', channel.id); for (const userId of changed) publish('notification', channel.id, userId);
-        respond(prior ? 200 : 201, { task: taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), user.id) });
+        const result = productivity.upsertTask({ messageId: message.id, userId: user.id, body, method });
+        respond(result.created ? 201 : 200, { task: result.task });
       }
       return true;
     }
@@ -235,5 +252,5 @@ export function createCollaborationService({ db, assert, textField, now, transac
     }
     return false;
   }
-  return { prepareMessage, applyMessage, notifyMessage, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle };
+  return { prepareMessage, applyMessage, notifyMessage, messageExtras, notificationMode: mode, unreadCount, deliverReminders, personalMutation, handle, productivity, setExternalNotifications, notificationsForPush, notifyExternal: userId => publish('notification', null, userId) };
 }

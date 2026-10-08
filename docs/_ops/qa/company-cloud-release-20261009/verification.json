@@ -1,0 +1,151 @@
+{
+  "recordedAt": "2026-10-08T17:23:11.708Z",
+  "scope": "company-cloud-and-work-notifications-release",
+  "deployed": {
+    "manifestSHA256": "aeb1620ebc406c000a10b1aa14d3ffa745330ff6076e354e32f294aae9255a72",
+    "image": "sha256:79a7377a443ba5759ce76159a77fd8026531d14be38c5f3967c2686a84ccb45e",
+    "files": 424,
+    "linuxRegression": {
+      "at": "2026-10-08T16:14:09.432Z",
+      "files": 62,
+      "tests": 576,
+      "pass": 576,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "containerDeliveryChecks": 108,
+    "paidAIEnabled": false,
+    "backgroundJobsEnabled": false,
+    "workNotificationsEnabled": true,
+    "webPushEnabled": true
+  },
+  "liveAcceptance": {
+    "at": "2026-10-08T16:25:28.412Z",
+    "staffAndCustomerLogin": true,
+    "existingMemoAttachmentAndCustomerDraftPreserved": true,
+    "independentTimerReminderDelivered": true,
+    "reminderNotifications": 1,
+    "reminderDuplicate": false,
+    "reminderRead": true,
+    "testRecordPreserved": true,
+    "realDeviceRegistrations": 0,
+    "realDeviceDeliveries": 0
+  },
+  "backupRestore": {
+    "at": "2026-10-08T16:44:04.707061+00:00",
+    "snapshotAt": "2026-10-08T16:10:33.164Z",
+    "archiveBytes": 166980,
+    "independentGetHttp": 200,
+    "shaMatched": true,
+    "companyTables": 6,
+    "messengerTables": 27,
+    "allRowsKeysAndVapidPreserved": true,
+    "databaseIntegrityAndForeignKeys": true,
+    "sourceUnchanged": true,
+    "liveDatabaseAccess": false,
+    "serviceActions": 0,
+    "scope": "completed manual online snapshot; not calendar execution or cross-database atomicity"
+  },
+  "monitoring": {
+    "at": "2026-10-08T16:17:12.709Z",
+    "openedEmailProofs": 2,
+    "exactPolicyRestorations": 2,
+    "closedIncidents": 2,
+    "originalFailureConditionsRetained": 2,
+    "originalPolicyIdsPreserved": 2,
+    "originalWatchdogPidsAbsent": 2,
+    "activeTestConfigurationRemaining": false,
+    "actualOutageInduced": false
+  },
+  "scheduledBackup": {
+    "actualCalendarExecutionVerified": false,
+    "windowKst": "2026-10-09 03:30–03:46",
+    "serverObservationKst": "2026-10-09 03:50",
+    "oneTimeChatFollowupKst": "2026-10-09 03:55",
+    "chatFollowupNeedsLocalApp": true,
+    "serverBackupIndependentOfLocalPC": true
+  },
+  "deferred": [
+    "physical-phone-and-PC-off-test",
+    "full-cloud-Claude-review",
+    "production-0900-digest-delivery"
+  ],
+  "sourceOnlyFollowup": {
+    "deployed": false,
+    "changes": [
+      "crew profile and review input validation maps known Atlas validation TypeErrors to HTTP 400",
+      "body-revocation test waits until asynchronous authentication finishes and JSON reading starts",
+      "company OAuth provisioning includes minimal registry/provider dependencies and preserves unrelated registrations",
+      "operation documents deduplicated and private identifiers omitted"
+    ],
+    "officialFullCloudReviewStillDeferred": true
+  },
+  "evidence": [
+    {
+      "name": "work-v5-linux-result.json",
+      "sha256": "6bc8460339469804f291545af03e8519227f260e1567251c8a89518552ccec5f",
+      "rawLocation": "protected local operation evidence; not committed"
+    },
+    {
+      "name": "work-v5-logical-comparison-result.json",
+      "sha256": "53070f5683891a29606bd8daac82956767e42aa33208bc10a635f9d527d5c8b8",
+      "rawLocation": "protected local operation evidence; not committed"
+    },
+    {
+      "name": "work-v5-live-browser-result.json",
+      "sha256": "24d6d302a3bc66b3b4b38514755a4876b00d5ae09fc73f8dfa03ee90ce33d1d9",
+      "rawLocation": "protected local operation evidence; not committed"
+    },
+    {
+      "name": "work-v5-offsite-independent-restore-result.json",
+      "sha256": "789ebaca90995ffd0055950394daf9e4733c88acc23f51893534aecaa2f8e19c",
+      "rawLocation": "protected local operation evidence; not committed"
+    },
+    {
+      "name": "alert-delivery-test/final-result.json",
+      "sha256": "03310234ebef98e02bf172a23b17d6805426cef6edddb2bc550642d7ffcdaedb",
+      "rawLocation": "protected local operation evidence; not committed"
+    },
+    {
+      "name": "work-v5-postrestore-health-result.json",
+      "sha256": "c034c4148044630de8f70920f88526ca7bfa7488ba5cd6e87e93e49ba93f7237",
+      "rawLocation": "protected local operation evidence; not committed"
+    }
+  ],
+  "repositoryOptimization": {
+    "excludedRawEvidenceFiles": 67,
+    "excludedRawEvidenceBytes": 10201931,
+    "originalEvidencePreserved": true,
+    "productionDataCredentialsOrMailScreenshotsIncluded": false
+  },
+  "pushVerification": {
+    "startedAt": "2026-10-08T17:16:06.225Z",
+    "finishedAt": "2026-10-08T17:19:17.430Z",
+    "node": "v24.18.0",
+    "testFiles": 119,
+    "exitCode": 0,
+    "errorCode": null,
+    "counts": {
+      "tests": 1161,
+      "pass": 1159,
+      "fail": 0,
+      "skipped": 2,
+      "todo": 0
+    },
+    "failures": [],
+    "log": "company-messenger-final.tap"
+  },
+  "identityRegression": {
+    "tests": 81,
+    "pass": 81,
+    "fail": 0,
+    "skipped": 0
+  },
+  "crewSecurityAndPortalRecheck": {
+    "tests": 25,
+    "pass": 25,
+    "fail": 0,
+    "skipped": 0
+  }
+}

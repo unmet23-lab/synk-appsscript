@@ -442,3 +442,67 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(
 .platform-entry:hover{filter:brightness(1.04)}
 .auth-brand .platform-entry{margin-left:auto}
 @media(max-width:700px){.platform-entry{padding:8px 13px;font-size:11px}}
+
+/* Personal work uses the same approved felt controls, with paper behind reading. */
+.personal-tabs.productivity-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;margin-bottom:8px;padding:4px;background:#fbf8f5}
+.productivity-tabs button{min-height:44px;padding:8px 3px;font-size:12px;white-space:nowrap}
+.productivity-tabs button::before{width:18px;height:18px}
+.productivity-tabs button[data-personal-tab="workday"]::before{background-image:url(assets/felt-ui/badge-check.webp)}
+.productivity-tabs button[data-personal-tab="catchup"]::before{background-image:url(assets/sticker-time.webp)}
+.productivity-tabs button[data-personal-tab="decisions"]::before{background-image:url(assets/sticker-book.webp)}
+.productivity-heading,.workday-section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.productivity-heading{margin-bottom:8px;font-size:14px}.productivity-heading .text-button{flex:none;font-size:12px;min-height:40px}
+.productivity-description,.workday-section-description,.workflow-help{margin:8px 0 16px;font-size:12px;line-height:1.7;color:#6c605a;word-break:keep-all;overflow-wrap:anywhere}
+.workday-section{margin:24px 0}.workday-section:first-of-type{margin-top:16px}
+.workday-section-head h3{margin:0;font-size:15px;line-height:1.5;color:#332926}
+.workday-section-head>span{display:grid;place-items:center;min-width:32px;min-height:32px;background:url(assets/felt-ui/badge-cream.webp) center/contain no-repeat;font-size:12px;font-weight:700;color:#392b26}
+.workday-section-description{margin:6px 0 12px;font-size:12px}.workday-empty{margin:10px 0 0;color:#7d716c;font-size:12px;line-height:1.7}
+.workday-clear-groups{margin-top:20px}.workday-empty-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:40px;padding:8px 0;border-bottom:1px solid #f0e9e4}.workday-empty-row h3{margin:0;font-size:12px;line-height:1.6;color:#786b65;font-weight:500}.workday-empty-row>span{flex:none;font-size:11px;color:#8a7c73}
+.workday-item{padding:16px 0;margin:0;border-bottom:1px solid #eee7e2;word-break:keep-all;overflow-wrap:anywhere}
+.workday-item:last-child{border-bottom:0}.workday-item h3,.workday-item h4{font-size:14px;line-height:1.65;margin:8px 0;color:#332926;white-space:pre-wrap}
+.workday-item p{font-size:12px;line-height:1.75;margin:8px 0;color:#6a5c56}.workday-item>small{font-size:11px;line-height:1.7;color:#7d706a}
+.workday-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:space-between;font-size:11px;color:#786b65;line-height:1.6}
+.workflow-stage{display:inline-flex;align-items:center;min-height:28px;padding:4px 12px;background:url(assets/felt-ui/chip-blush-long.webp) center/100% 100% no-repeat;color:#4b3029;font-size:11px;font-weight:650}
+.workflow-stage[data-stage="done"]{background-image:url(assets/felt-ui/slab-cream-long.webp)}
+.workday-meta .overdue{color:#a43d31;font-weight:700}.workday-actions,.workflow-source-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.workday-actions .button,.workday-actions .text-button,.workflow-source-actions .text-button{min-height:40px;font-size:12px;line-height:1.5;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:7px 12px}
+.workday-actions .button,.productivity-search-row .button,.catchup-confirm .button,.workflow-form .modal-actions .button,.workflow-form>#task-reload{background:url(assets/felt-ui/slab-cream-long.webp) center/100% 100% no-repeat;color:#392c26;border:0;box-shadow:none}
+.workday-actions .text-button,.workflow-source-actions .text-button{padding:7px 2px;color:#765340}.workday-actions svg{width:14px;height:14px;flex:none}
+.workday-actions .button:hover,.productivity-search-row .button:hover{filter:brightness(1.02)}
+.catchup-confirm{margin-top:20px;padding-top:16px;border-top:1px solid #eee7e2}.catchup-confirm p{font-size:12px;line-height:1.7;color:#6a5c56}
+.catchup-confirm .button.primary,.workflow-form .modal-actions .button.primary{min-height:48px;background-image:url(assets/felt-ui/slab-coral-long.webp);color:#fff;font-weight:750;text-shadow:0 1px 1px #792d29}
+.workflow-form .modal-actions .button.primary:disabled{background-image:url(assets/felt-ui/slab-blush-long.webp);color:#73524d;text-shadow:none;opacity:1;filter:none}
+.catchup-confirm .button{width:100%}.productivity-search-row{display:flex;align-items:center;gap:8px;width:100%}
+.productivity-search-row input{min-width:0;flex:1;min-height:42px;font-size:13px;padding:9px 10px;border:1px solid #dfd4cd;background:#fff;border-radius:6px;color:#332926}
+.productivity-search-row .button{flex:none;min-height:42px;padding:9px 16px;font-size:12px}
+.decisions-search .field{margin-bottom:12px}.decisions-search .personal-toolbar{gap:8px;flex-wrap:wrap}.decisions-search select{min-height:40px;min-width:0;max-width:100%;font-size:12px}
+.checkbox-field{display:inline-flex;align-items:center;gap:7px;font-size:12px;min-height:40px;white-space:nowrap}.checkbox-field input{width:16px;height:16px;accent-color:#bd594c}
+.productivity-error{font-size:12px;line-height:1.7;color:#a43d31;word-break:keep-all;overflow-wrap:anywhere}
+.customer-work{padding-top:20px;border-top:1px solid #e8ded6}.customer-work-text{white-space:pre-wrap;max-height:180px;overflow:auto}
+.workflow-form .field-row{align-items:start}.workflow-form .field{min-width:0}.workflow-form .field input,.workflow-form .field select,.workflow-form .field textarea{min-height:44px;max-width:100%;font-size:14px}
+.workflow-form .field textarea{min-height:90px;resize:vertical;line-height:1.65}.workflow-form .modal-actions{margin-top:20px}.workflow-form .form-error{margin-top:16px;line-height:1.7}
+.message-picker,.decision-replacement{min-width:0;border:1px solid #e9dfd7;border-radius:8px;padding:16px;margin:20px 0;background:#fffdfb}
+.message-picker legend,.decision-replacement legend{padding:0 5px;font-size:13px;font-weight:700;color:#493930;line-height:1.6}
+.message-picker .workflow-help,.decision-replacement .workflow-help{margin-top:4px}.message-picker-results{max-height:245px;overflow:auto;margin-top:12px;overscroll-behavior:contain}
+.message-choice{display:block;min-height:62px;width:100%;text-align:left;border:0;border-bottom:1px solid #ede5df;border-radius:0;padding:12px 10px;background:transparent;color:#43342c}
+.message-choice strong,.selected-result strong{display:block;font-size:13px;line-height:1.65;font-weight:600;white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all}
+.message-choice strong{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}.message-choice small,.selected-result small{display:block;font-size:11px;line-height:1.65;color:#786b62;margin-top:5px}
+.message-choice[aria-pressed="true"]{background:url(assets/felt-ui/slab-blush-long.webp) center/100% 100% no-repeat;border-color:transparent;padding-left:16px;padding-right:16px}
+.message-choice:hover{color:#8f3f31}.selected-result{padding:4px 0 8px}.selected-result .workday-actions{margin-top:4px}
+.replacement-option{display:flex;gap:9px;align-items:start;padding:12px 0;border-bottom:1px solid #ede5df;font-size:13px;line-height:1.7;color:#493930}
+.replacement-option input{flex:none;width:16px;height:16px;accent-color:#bd594c;margin-top:4px}.replacement-option strong,.replacement-option small{display:block;font-size:12px;font-weight:500;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere}.replacement-option small{color:#786b62;font-size:11px}
+#replacement-results{max-height:240px;overflow:auto;margin-top:8px;overscroll-behavior:contain}
+.workflow-notification .personal-item-main>p{font-size:12px;line-height:1.7;color:#6a5c56;margin:8px 0;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere}
+.workflow-notification .personal-item-main>strong{white-space:normal;word-break:keep-all;overflow-wrap:anywhere}.notification-open-label{display:flex;align-items:center;gap:6px;font-size:12px;color:#765340;line-height:1.5;margin-top:12px}.notification-open-label svg{width:14px;height:14px;flex:none}
+.notification-toolbar{flex-wrap:wrap;gap:8px}.notification-toolbar>span{min-width:0;font-size:12px}.notification-toolbar .text-button{min-height:40px;flex:none}
+.deadline-settings-entry{min-height:40px;font-size:12px;color:#765340;margin:0 0 8px;text-decoration:underline;text-underline-offset:3px}.deadline-settings-entry[hidden]{display:none}
+.reviewer-recovery{margin:16px 0 24px;padding:16px;background:#fff9f2;border:1px solid #e9dccc;border-radius:8px;word-break:keep-all;overflow-wrap:anywhere}.reviewer-recovery h3{font-size:15px;line-height:1.6;margin:0 0 8px;color:#4b3029}.reviewer-recovery>p{font-size:13px;line-height:1.75;margin:8px 0 16px;color:#6a5c56}
+.reviewer-recovery .field{margin-top:16px}.reviewer-recovery select{min-height:44px;font-size:14px;width:100%;min-width:0}.reviewer-recovery>.button{min-height:48px;background:url(assets/felt-ui/slab-cream-long.webp) center/100% 100% no-repeat;border:0;box-shadow:none;color:#49372c;font-size:13px;padding:10px 18px;max-width:100%;white-space:normal}
+.workflow-checkbox{display:flex;align-items:flex-start;gap:10px;padding:12px 0;font-size:13px;line-height:1.7;word-break:keep-all;overflow-wrap:anywhere;color:#493930}.workflow-checkbox input{flex:none;width:18px;height:18px;margin-top:3px;accent-color:#bd594c}.workflow-checkbox strong,.workflow-checkbox small{display:block}.workflow-checkbox strong{font-size:13px}.workflow-checkbox small{font-size:12px;color:#786b62;margin-top:4px}
+.deadline-digest-list{max-height:52vh;overflow:auto;overscroll-behavior:contain}.deadline-digest-list .workday-item:first-child{padding-top:0}
+@media(max-width:700px){
+  .productivity-tabs button{font-size:12px;min-height:44px}.productivity-tabs button::before{width:18px;height:18px}
+  .workflow-form .field-row{display:grid;grid-template-columns:minmax(0,1fr);gap:0}.message-picker,.decision-replacement{padding:12px}.workday-actions{gap:8px}
+  .workday-item h3,.workday-item h4{font-size:14px}.workflow-form .modal-actions .button{width:100%;min-height:48px}
+  .reviewer-recovery{padding:12px}.reviewer-recovery>.button{width:100%}.notification-toolbar>span{font-size:11px}.deadline-digest-list{max-height:48vh}
+}

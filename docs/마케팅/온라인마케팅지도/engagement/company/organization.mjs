@@ -44,17 +44,17 @@ export function visibleMembers(store, user) {
 function instant(value, label = '적용 시각') {
   if (typeof value === 'string') {
     const match = /^(\d{4})-(\d{2})-(\d{2})T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.exec(value);
-    if (!match || Number(match[2]) < 1 || Number(match[2]) > 12 || Number(match[3]) < 1 || Number(match[3]) > new Date(Date.UTC(Number(match[1]), Number(match[2]), 0)).getUTCDate()) throw new Error(`${label}에는 시간대가 포함된 올바른 날짜와 시간을 입력해 주세요.`);
-  } else if (!(value instanceof Date) && typeof value !== 'number') throw new Error(`${label}을 확인해 주세요.`);
+    if (!match || Number(match[2]) < 1 || Number(match[2]) > 12 || Number(match[3]) < 1 || Number(match[3]) > new Date(Date.UTC(Number(match[1]), Number(match[2]), 0)).getUTCDate()) throw Object.assign(new Error(`${label}에는 시간대가 포함된 올바른 날짜와 시간을 입력해 주세요.`),{status:400});
+  } else if (!(value instanceof Date) && typeof value !== 'number') throw Object.assign(new Error(`${label}을 확인해 주세요.`),{status:400});
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) throw new Error(`${label}을 확인해 주세요.`);
+  if (!Number.isFinite(date.getTime())) throw Object.assign(new Error(`${label}을 확인해 주세요.`),{status:400});
   return date.toISOString();
 }
 
 function ownership(channel) {
-  if (!channel || typeof channel.id !== 'string' || !channel.id) throw new Error('담당 채널을 확인해 주세요.');
-  if (!Array.isArray(channel.ownerIds) || channel.ownerIds.some(id => typeof id !== 'string' || !id.trim())) throw new Error('담당자 목록을 확인해 주세요.');
-  if (channel.teamId != null && (typeof channel.teamId !== 'string' || !channel.teamId.trim())) throw new Error('소속 팀을 확인해 주세요.');
+  if (!channel || typeof channel.id !== 'string' || !channel.id) throw Object.assign(new Error('담당 채널을 확인해 주세요.'),{status:400});
+  if (!Array.isArray(channel.ownerIds) || channel.ownerIds.some(id => typeof id !== 'string' || !id.trim())) throw Object.assign(new Error('담당자 목록을 확인해 주세요.'),{status:400});
+  if (channel.teamId != null && (typeof channel.teamId !== 'string' || !channel.teamId.trim())) throw Object.assign(new Error('소속 팀을 확인해 주세요.'),{status:400});
   return {ownerIds:[...new Set(channel.ownerIds)], teamId:teamOf(channel)};
 }
 
@@ -82,14 +82,14 @@ export function seedOwnership(store, channel, at = new Date()) {
 // Call this inside the same Store transaction as the channel update. It only appends history.
 export function recordOwnershipChange(store, before, after, {actorId = null, at = new Date(), reason = 'assignment'} = {}) {
   const previous = ownership(before), next = ownership(after), effectiveAt = instant(at);
-  if (before.id !== after.id) throw new Error('같은 채널의 담당 변경만 기록할 수 있습니다.');
-  if (actorId !== null && (typeof actorId !== 'string' || !actorId.trim())) throw new Error('변경 담당자를 확인해 주세요.');
-  if (typeof reason !== 'string' || !reason.trim()) throw new Error('변경 사유를 입력해 주세요.');
+  if (before.id !== after.id) throw Object.assign(new Error('같은 채널의 담당 변경만 기록할 수 있습니다.'),{status:400});
+  if (actorId !== null && (typeof actorId !== 'string' || !actorId.trim())) throw Object.assign(new Error('변경 담당자를 확인해 주세요.'),{status:400});
+  if (typeof reason !== 'string' || !reason.trim()) throw Object.assign(new Error('변경 사유를 입력해 주세요.'),{status:400});
   if (sameOwnership(previous, next)) return null;
   const existing = channelEvents(store.all('ownershipEvents'), before.id), last = existing.at(-1);
   if (last) {
-    if (Date.parse(effectiveAt) < Date.parse(last.effectiveAt)) throw new Error('마지막 담당 변경보다 이전 시각으로 변경할 수 없습니다.');
-    if (!sameOwnership(previous, {ownerIds:last.afterOwnerIds, teamId:last.afterTeamId ?? null})) throw new Error('담당 정보가 이미 변경됐습니다. 현재 정보를 다시 확인해 주세요.');
+    if (Date.parse(effectiveAt) < Date.parse(last.effectiveAt)) throw Object.assign(new Error('마지막 담당 변경보다 이전 시각으로 변경할 수 없습니다.'),{status:400});
+    if (!sameOwnership(previous, {ownerIds:last.afterOwnerIds, teamId:last.afterTeamId ?? null})) throw Object.assign(new Error('담당 정보가 이미 변경됐습니다. 현재 정보를 다시 확인해 주세요.'),{status:400});
   } else seedOwnership(store, before, effectiveAt);
   const event = {id:randomUUID(), channelId:before.id,
     beforeOwnerIds:previous.ownerIds, afterOwnerIds:next.ownerIds, beforeTeamId:previous.teamId, afterTeamId:next.teamId,

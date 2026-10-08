@@ -116,6 +116,13 @@ test('an explicit messenger suggestion queues until the current frame is ready a
   f.run("workspaceModule.ready=false;openWorkspaceDestination({type:'messenger',label:'다른 대화',channelId:'room-b'});selectWorkspaceView('home');mountWorkspaceModule()");assert.equal(f.run('workspaceModule.open'),null);const count=f.posted.filter(row=>row.message.type==='workspace:open').length;deliver({type:'messenger:ready'},frame.contentWindow);assert.equal(f.posted.filter(row=>row.message.type==='workspace:open').length,count);assert.equal(f.run('workspaceModule.host.hidden'),true);assert.equal(f.requests.length,0);
 });
 
+test('notification click destination passes the company allowlist and queues a fixed inbox without writes',()=>{
+  const f=fixture();
+  assert.equal(f.run("openWorkspaceDestination({type:'messenger',label:'알림',panel:'notifications'})"),true);
+  assert.equal(f.state.tab,'messenger');assert.equal(f.run('workspaceModule.open.panel'),'notifications');
+  assert.equal(f.requests.length,0);assert.equal(f.run("safeMarinAction({type:'messenger',label:'관리',panel:'admin'})"),null);
+});
+
 test('a home refresh preserves the focused prompt and caret with workroom and company guidance before marketing and messenger',()=>{
   const f=fixture();f.run("ensureMarinSession();marinHome.draft='성과를 확인하고 싶어요'");const input=f.nodes.get('marin-input');input.value=f.home.draft;input.selectionStart=3;input.selectionEnd=5;input.focus();
   let markup='';const app={get innerHTML(){return markup;},set innerHTML(value){markup=value;const replacement=f.element('textarea');replacement.id='marin-input';f.nodes.set('marin-input',replacement);f.document.activeElement=null;},querySelectorAll:()=>[],contains:()=>true,querySelector:()=>null};
