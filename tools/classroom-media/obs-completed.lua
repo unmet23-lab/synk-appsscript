@@ -5,6 +5,9 @@ local active_file = ""
 local inbox_dir = ""
 local snapshot = nil
 local in_use = nil
+-- Only the START which claimed this snapshot may consume one STOP. A failed
+-- completion keeps its original snapshot for recovery, never for a later file.
+local recording_open = false
 
 function script_description()
   return "SYNK: 녹화 종료 후 완료 manifest 생성. CLI prepare/arm으로 수업을 먼저 지정하세요. 녹화 원본은 보존합니다. 자동 remux/파일 분할은 끄세요."
@@ -47,8 +50,12 @@ function on_event(event)
     if #name ~= 64 or not name:match("^[a-f0-9]+$") then
       obs.obs_data_release(snapshot); snapshot = nil; log_error("잘못된 수업 파일"); return
     end
+    recording_open = true
   elseif event == obs.OBS_FRONTEND_EVENT_RECORDING_STOPPED then
-    if not snapshot then log_error("지정된 수업 없음. 녹화는 보존됨; CLI seal 사용"); return end
+    if not snapshot or not recording_open then log_error("이 녹화에 지정된 수업 없음. 녹화는 보존됨; CLI seal 사용"); return end
+    -- Consume the STOP before any fallible work. Even a missing path must not
+    -- be filled later from obs_frontend_get_last_recording() for another class.
+    recording_open = false
     local recording = obs.obs_frontend_get_last_recording()
     if not recording or recording == "" then log_error("완료된 녹화 경로 확인 실패"); return end
     obs.obs_data_set_string(snapshot, "file", recording)
@@ -61,8 +68,8 @@ function on_event(event)
     local handle = io.open(temp, "wb")
     if not handle then log_error("완료 폴더 쓰기 실패"); return end
     local ok = handle:write(obs.obs_data_get_json(snapshot))
-    handle:close()
-    if not ok or not os.rename(temp, target) then log_error("완료 파일 원자적 등록 실패"); return end
+    local closed = handle:close()
+    if not ok or not closed or not os.rename(temp, target) then log_error("완료 파일 원자적 등록 실패"); return end
     os.rename(in_use, in_use .. ".completed." .. tostring(os.time()) .. ".json")
     obs.obs_data_release(snapshot); snapshot = nil; in_use = nil
     obs.script_log(obs.LOG_INFO, "SYNK: 녹화 완료 등록. 업로더가 자동 처리합니다.")
@@ -76,5 +83,6 @@ end
 
 function script_unload()
   obs.obs_frontend_remove_event_callback(on_event)
+  recording_open = false
   if snapshot then obs.obs_data_release(snapshot); snapshot = nil end
 end

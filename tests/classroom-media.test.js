@@ -11,6 +11,201 @@ const CHANNEL = `UC${'x'.repeat(22)}`;
 const VIDEO = 'video000001';
 const SESSION = { classId: '11111111-1111-4111-8111-111111111111', sessionKey: '2026-09-28T09:00', title: '반 1 수업', startsAt: '2026-09-28T00:00:00Z', endsAt: '2026-09-28T01:00:00Z' };
 
+test('a test broadcast ending before its scheduled start syncs its actual interval', async t => {
+  for (const source of ['video', 'broadcast']) {
+    const actualStartTime = '2026-09-27T23:40:00Z', actualEndTime = '2026-09-27T23:45:00Z';
+    const fx = fixture(t, { request: async (resource, options, state) => {
+      if (state.lifecycle !== 'complete') return;
+      if (resource === 'videos') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL }, status: { privacyStatus: state.privacy, uploadStatus: 'processed' }, processingDetails: { processingStatus: 'succeeded' }, liveStreamingDetails: source === 'video' ? { actualStartTime, actualEndTime } : {} }] };
+      if (resource === 'liveBroadcasts') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL, ...(source === 'broadcast' ? { actualStartTime, actualEndTime } : {}) }, status: { privacyStatus: state.privacy, lifeCycleStatus: state.lifecycle }, contentDetails: { boundStreamId: state.bound } }] };
+    } });
+    await fx.worker.prepare(SESSION);
+    fx.worker.fetch = async (_url, options) => {
+      const body = JSON.parse(options.body); fx.syncs.push(body);
+      return new Response('{}', { status: Date.parse(body.ends_at) > Date.parse(body.starts_at) ? 200 : 400 });
+    };
+    fx.state.lifecycle = 'complete'; fx.advance();
+    const result = await fx.worker.once();
+    assert.deepEqual(result.failures, [], source);
+    assert.equal(fx.syncs.at(-1).starts_at, actualStartTime, source);
+    assert.equal(fx.syncs.at(-1).ends_at, actualEndTime, source);
+    assert.equal(fx.worker.jobs()[0].status, 'ready');
+  }
+});
+
+test('completed broadcasts wait for valid actual timestamps without inventing an interval', async t => {
+  for (const timing of [
+    {}, { actualEndTime: SESSION.endsAt }, { actualStartTime: SESSION.startsAt },
+    { actualStartTime: 'invalid', actualEndTime: SESSION.endsAt },
+    { actualStartTime: SESSION.endsAt, actualEndTime: SESSION.startsAt },
+  ]) {
+    let details = timing;
+    const fx = fixture(t, { request: async (resource, _options, state) => {
+      if (resource === 'videos' && state.lifecycle === 'complete') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL }, status: { privacyStatus: state.privacy, uploadStatus: 'processed' }, processingDetails: { processingStatus: 'succeeded' }, liveStreamingDetails: details }] };
+    } });
+    await fx.worker.prepare(SESSION);
+    fx.state.lifecycle = 'complete'; fx.advance();
+    const synced = fx.syncs.length;
+    const result = await fx.worker.once();
+    assert.equal(result.failures[0]?.error, 'BROADCAST_ACTUAL_TIMES_PENDING');
+    assert.equal(fx.syncs.length, synced);
+    assert.equal(fx.worker.jobs()[0].startsAt, SESSION.startsAt);
+    assert.equal(fx.worker.jobs()[0].endsAt, SESSION.endsAt);
+    assert.ok(fx.worker.jobs()[0].nextAttemptAt);
+    details = { actualStartTime: SESSION.startsAt, actualEndTime: SESSION.endsAt };
+    fx.advance();
+    assert.deepEqual((await fx.worker.once()).failures, []);
+    assert.equal(fx.worker.jobs()[0].status, 'ready');
+  }
+});
+
+test('blocked originals reject sealing either replacement path without altering the original state', async t => {
+  for (const flag of ['playbackBlocked', 'blockSyncError']) {
+    for (const replacement of [false, true]) {
+      const fx = fixture(t); await fx.worker.prepare(SESSION);
+      const job = fx.worker.jobs()[0]; job.status = 'failed'; job[flag] = flag === 'playbackBlocked' ? true : 'SYNC_HTTP_503'; fx.worker.save(job);
+      const original = fs.readFileSync(fx.worker.file(job), 'utf8');
+      await assert.rejects(replacement ? fx.worker.replaceReplay(SESSION, fx.recording, { confirmedComplete: true })
+        : seal(fx.config, SESSION, fx.recording, { fallback: true }), /BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY/);
+      assert.equal(fs.readFileSync(fx.worker.file(job), 'utf8'), original);
+      assert.equal(fs.readdirSync(fx.config.inboxDir).length, 0);
+      assert.equal(fx.calls.filter(call => call.resource === 'raw').length, 0);
+      assert.equal(fs.readFileSync(fx.recording, 'utf8'), 'closed recording');
+    }
+  }
+});
+
+test('a queued replacement cannot overwrite a later safety block and succeeds only after recovery', async t => {
+  for (const flag of ['playbackBlocked', 'blockSyncError']) {
+    for (const replacement of [false, true]) {
+      const fx = fixture(t); await fx.worker.prepare(SESSION);
+      const job = fx.worker.jobs()[0]; job.status = 'failed'; fx.worker.save(job);
+      await seal(fx.config, SESSION, fx.recording, { fallback: true, replaceReplay: replacement, confirmedComplete: true });
+      job[flag] = flag === 'playbackBlocked' ? true : 'SYNC_HTTP_503'; fx.worker.save(job);
+      const original = fs.readFileSync(fx.worker.file(job), 'utf8');
+      assert.equal((await fx.worker.ingest())[0]?.error, 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY');
+      assert.equal(fs.readFileSync(fx.worker.file(job), 'utf8'), original);
+      assert.equal(fx.calls.filter(call => call.resource === 'raw').length, 0);
+      assert.equal(fs.readFileSync(fx.recording, 'utf8'), 'closed recording');
+      delete job[flag]; fx.worker.save(job);
+      assert.deepEqual(await fx.worker.ingest(), []);
+      assert.equal(fx.worker.jobs()[0].source, 'upload');
+      assert.equal(fx.worker.jobs()[0].replacedLiveVideoId, VIDEO);
+    }
+  }
+});
+
+test('saving a local backup for a blocked live preserves the block and does not replace its video', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0]; job.playbackBlocked = true; fx.worker.save(job);
+  await seal(fx.config, SESSION, fx.recording);
+  assert.deepEqual(await fx.worker.ingest(), []);
+  assert.equal(fx.worker.jobs()[0].source, 'live');
+  assert.equal(fx.worker.jobs()[0].videoId, VIDEO);
+  assert.equal(fx.worker.jobs()[0].playbackBlocked, true);
+  assert.equal(fx.calls.filter(call => call.resource === 'raw').length, 0);
+});
+
+test('sync exposes only the known recovery conflict and never returns arbitrary server error content', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0], original = { ...job };
+  let sequence = original.syncSequence;
+  for (const [body, expected] of [
+    [JSON.stringify({ error: { code: 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY' } }), 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY'],
+    [JSON.stringify({ error: { code: 'STALE_SYNC_SEQUENCE' } }), 'STALE_SYNC_SEQUENCE'],
+    [JSON.stringify({ error: { code: 'SECRET_SERVER_DETAIL' } }), 'SYNC_HTTP_409'],
+    ['not-json SECRET_SERVER_DETAIL', 'SYNC_HTTP_409'],
+  ]) {
+    fx.worker.fetch = async () => new Response(body, { status: 409 });
+    await assert.rejects(fx.worker.sync(job, 'ready'), error => error.code === expected);
+    assert.deepEqual(fx.worker.jobs()[0], { ...original, syncSequence: ++sequence });
+  }
+});
+
+test('sync sequence is saved before a lost response and advances after a worker restart', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0], previousSync = job.syncedAt;
+  assert.equal(job.syncSequence, 1); assert.equal(fx.syncs[0].sync_sequence, 1);
+  fx.worker.fetch = async (_url, options) => {
+    const body = JSON.parse(options.body);
+    assert.equal(body.sync_sequence, 2);
+    assert.equal(JSON.parse(fs.readFileSync(fx.worker.file(job), 'utf8')).syncSequence, 2);
+    throw new Error('response timed out after server acceptance');
+  };
+  await assert.rejects(fx.worker.sync(job, 'live'), /SYNC_NETWORK_ERROR/);
+  assert.equal(fx.worker.jobs()[0].status, 'scheduled');
+  assert.equal(fx.worker.jobs()[0].syncedAt, previousSync);
+  const restarted = new Worker(fx.config, { ...fx.dependencies, fetchImpl: async (_url, options) => {
+    const body = JSON.parse(options.body); fx.syncs.push(body);
+    assert.equal(body.sync_sequence, 3);
+    assert.equal(JSON.parse(fs.readFileSync(fx.worker.file(job), 'utf8')).syncSequence, 3);
+    return new Response('{}');
+  } });
+  await restarted.sync(restarted.jobs()[0], 'live');
+  assert.equal(restarted.jobs()[0].syncSequence, 3);
+  assert.equal(restarted.jobs()[0].status, 'live');
+});
+
+test('live heartbeat, safety block, and unblock all use increasing request sequences', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  fx.state.privacy = 'public'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.worker.jobs()[0].playbackBlocked, true);
+  fx.state.privacy = 'unlisted'; fx.advance(); await fx.worker.once();
+  assert.deepEqual(fx.syncs.map(row => row.sync_sequence), [1, 2, 3, 4]);
+  assert.deepEqual(fx.syncs.map(row => row.playback_blocked), [false, false, true, false]);
+  assert.equal(fx.worker.jobs()[0].syncSequence, 4);
+});
+
+test('fallback and full replay preserve the session sequence while replacing the upload job', async t => {
+  for (const replacement of [false, true]) {
+    const fx = fixture(t); await fx.worker.prepare(SESSION);
+    const old = fx.worker.jobs()[0]; old.status = replacement ? 'ready' : 'failed'; old.syncSequence = 41; fx.worker.save(old);
+    await seal(fx.config, SESSION, fx.recording, { fallback: true, replaceReplay: replacement, confirmedComplete: true });
+    assert.deepEqual(await fx.worker.ingest(), []);
+    assert.equal(fx.worker.jobs()[0].syncSequence, 41);
+    assert.equal(fx.worker.jobs()[0].source, 'upload');
+    assert.deepEqual((await fx.worker.once()).failures, []);
+    assert.equal(fx.syncs.at(-1).sync_sequence, 42);
+    assert.equal(fx.worker.jobs()[0].syncSequence, 42);
+  }
+});
+
+test('legacy sequences start at one while invalid or exhausted sequences fail before sending', async t => {
+  for (const initial of [undefined, 0]) {
+    const fx = fixture(t), job = { ...SESSION, source: 'live', status: 'scheduled', videoId: VIDEO, syncSequence: initial };
+    fx.worker.save(job); await fx.worker.sync(job, 'scheduled');
+    assert.equal(fx.syncs[0].sync_sequence, 1); assert.equal(fx.worker.jobs()[0].syncSequence, 1);
+  }
+  for (const value of [null, -1, 1.5, '1', Number.MAX_SAFE_INTEGER + 1, Number.MAX_SAFE_INTEGER]) {
+    const fx = fixture(t), job = { ...SESSION, source: 'live', status: 'scheduled', videoId: VIDEO, syncSequence: value };
+    fx.worker.save(job); const before = fs.readFileSync(fx.worker.file(job), 'utf8');
+    const error = value === Number.MAX_SAFE_INTEGER ? /SYNC_SEQUENCE_EXHAUSTED/ : /SYNC_SEQUENCE_INVALID/;
+    await assert.rejects(fx.worker.sync(job, 'scheduled'), error);
+    await assert.rejects(fx.worker.prepare(SESSION), error);
+    await assert.rejects(fx.worker.upload(job), error);
+    assert.equal(fx.syncs.length, 0); assert.equal(fx.calls.length, 0);
+    assert.equal(fs.readFileSync(fx.worker.file(job), 'utf8'), before);
+  }
+  const fx = fixture(t), job = { ...SESSION, source: 'live', status: 'scheduled', videoId: VIDEO, syncSequence: Number.MAX_SAFE_INTEGER - 1 };
+  fx.worker.save(job); await fx.worker.sync(job, 'scheduled');
+  assert.equal(fx.syncs[0].sync_sequence, Number.MAX_SAFE_INTEGER);
+  await assert.rejects(fx.worker.sync(job, 'scheduled'), /SYNC_SEQUENCE_EXHAUSTED/);
+  assert.equal(fx.syncs.length, 1);
+});
+
+test('prepare, recovery, and retry-create preserve request sequences; a new session starts at one', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  await fx.worker.prepare(SESSION); assert.equal(fx.worker.jobs()[0].syncSequence, 2);
+  await fx.worker.recover(SESSION, VIDEO); assert.equal(fx.worker.jobs()[0].syncSequence, 2);
+  const job = fx.worker.jobs()[0]; delete job.videoId; job.createPending = true; fx.worker.save(job);
+  await fx.worker.retryCreate(SESSION, true); assert.equal(fx.worker.jobs()[0].syncSequence, 2);
+  await fx.worker.prepare(SESSION); assert.equal(fx.worker.jobs()[0].syncSequence, 3);
+  const ended = fx.worker.jobs()[0]; ended.status = 'ready'; fx.worker.save(ended);
+  await fx.worker.prepare({ ...SESSION, sessionKey: 'next-separate-session' });
+  assert.equal(fx.syncs.at(-1).sync_sequence, 1);
+});
+
 function fixture(t, overrides = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-classroom-test-'));
   t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
@@ -20,7 +215,8 @@ function fixture(t, overrides = {}) {
     classes: [{ classId: SESSION.classId, playlistId: 'playlist000001', streamId: 'stream001', videoPrivacy: 'unlisted', syncKeyEnv: 'CLASS_KEY' }],
   };
   fs.mkdirSync(config.recordingsRoot);
-  const calls = [], syncs = [], state = { privacy: 'unlisted', playlistPrivacy: 'unlisted', lifecycle: 'ready', processed: true, bound: 'stream001', playlistItems: false };
+  const calls = [], syncs = [], state = { privacy: 'unlisted', playlistPrivacy: 'unlisted', lifecycle: 'ready', processed: true, bound: 'stream001', playlistItems: false,
+    streamStatus: 'active', streamHealth: 'good', streamIssues: [], reusable: true };
   const youtube = {
     async verifyIdentity() { calls.push({ resource: 'identity' }); },
     async request(resource, options = {}) {
@@ -30,11 +226,12 @@ function fixture(t, overrides = {}) {
         if (custom !== undefined) return custom;
       }
       if (resource === 'playlists') return { items: [{ snippet: { channelId: CHANNEL }, status: { privacyStatus: state.playlistPrivacy } }] };
-      if (resource === 'liveStreams') return { items: [{ snippet: { channelId: CHANNEL } }] };
+      if (resource === 'liveStreams') return { items: options.query.id.split(',').map(id => ({ id, snippet: { channelId: CHANNEL },
+        status: { streamStatus: state.streamStatus, healthStatus: { status: state.streamHealth, configurationIssues: state.streamIssues } }, contentDetails: { isReusable: state.reusable } })) };
       if (resource === 'liveBroadcasts' && options.method === 'POST') return { id: VIDEO };
       if (resource === 'liveBroadcasts') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL }, status: { privacyStatus: state.privacy, lifeCycleStatus: state.lifecycle }, contentDetails: { boundStreamId: state.bound } }] };
       if (resource === 'liveBroadcasts/bind') { state.bound = options.query.streamId; return { id: VIDEO }; }
-      if (resource === 'videos') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL }, status: { privacyStatus: state.privacy, uploadStatus: state.processed ? 'processed' : 'uploaded' }, processingDetails: { processingStatus: state.processed ? 'succeeded' : 'processing' }, liveStreamingDetails: state.lifecycle === 'complete' ? { actualEndTime: SESSION.endsAt } : {} }] };
+      if (resource === 'videos') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL }, status: { privacyStatus: state.privacy, uploadStatus: state.processed ? 'processed' : 'uploaded' }, processingDetails: { processingStatus: state.processed ? 'succeeded' : 'processing' }, liveStreamingDetails: state.lifecycle === 'complete' ? { actualStartTime: SESSION.startsAt, actualEndTime: SESSION.endsAt } : {} }] };
       if (resource === 'playlistItems' && options.method === 'POST') { state.playlistItems = true; return { id: 'item1' }; }
       if (resource === 'playlistItems') return { items: state.playlistItems ? [{ id: 'item1' }] : [] };
       throw new Error(`Unexpected API ${resource}`);
@@ -54,6 +251,85 @@ function fixture(t, overrides = {}) {
   fs.writeFileSync(recording, Buffer.from('closed recording'));
   return { dir, config, worker, calls, syncs, state, recording, dependencies, advance: (ms = 60000) => { time += ms; } };
 }
+
+test('full replay replacement requires confirmation, an ended live, and a closed recorder', async t => {
+  const fx = fixture(t);
+  await assert.rejects(fx.worker.replaceReplay(SESSION, fx.recording), /COMPLETE_RECORDING_CONFIRMATION_REQUIRED/);
+  await assert.rejects(fx.worker.replaceReplay(SESSION, fx.recording, { confirmedComplete: true }), /REPLAY_REQUIRES_ENDED_LIVE/);
+  await fx.worker.prepare(SESSION);
+  await assert.rejects(fx.worker.replaceReplay(SESSION, fx.recording, { confirmedComplete: true }), /REPLAY_REQUIRES_ENDED_LIVE/);
+  const job = fx.worker.jobs()[0]; job.status = 'ready'; fx.worker.save(job);
+  fs.writeFileSync(`${fx.worker.activeFile(SESSION)}.in-use`, 'recording');
+  await assert.rejects(fx.worker.replaceReplay(SESSION, fx.recording, { confirmedComplete: true }), /OBS_RECORDING_IN_PROGRESS/);
+  assert.equal(fs.readdirSync(fx.config.inboxDir).length, 0);
+});
+
+test('confirmed full replay replaces a ready archive once and preserves the old backup across restarts', async t => {
+  const replacementVideo = 'video000002';
+  const fx = fixture(t, {
+    raw: async (_url, options) => options.method === 'POST'
+      ? new Response(null, { headers: { location: 'https://www.googleapis.com/upload/replacement' } })
+      : options.headers['content-range'].startsWith('bytes */') ? new Response(null, { status: 308 }) : Response.json({ id: replacementVideo }),
+    request: async (resource, options) => resource === 'videos' && options.query.id === replacementVideo
+      ? { items: [{ id: replacementVideo, snippet: { channelId: CHANNEL }, status: { privacyStatus: 'unlisted', uploadStatus: 'processed' }, processingDetails: { processingStatus: 'succeeded' } }] } : undefined,
+  });
+  await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'complete'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.worker.jobs()[0].status, 'ready');
+  await seal(fx.config, SESSION, fx.recording);
+  assert.deepEqual(await fx.worker.ingest(), []);
+  const full = path.join(fx.config.recordingsRoot, 'complete-lesson.mkv');
+  fs.writeFileSync(full, 'operator-verified full recording');
+  const first = await fx.worker.replaceReplay(SESSION, full, { confirmedComplete: true });
+  assert.deepEqual(await fx.worker.replaceReplay(SESSION, full, { confirmedComplete: true }), first);
+  assert.equal((await fx.worker.once()).failures.length, 0);
+  assert.equal(fx.syncs.at(-1).youtube_video_id, replacementVideo);
+  assert.equal(fx.syncs.at(-1).replace_replay, true);
+  assert.equal(fx.syncs.at(-1).source, 'upload');
+  const job = fx.worker.jobs()[0];
+  assert.equal(job.replacedLiveVideoId, VIDEO);
+  assert.equal(job.supersededRecording.file, fs.realpathSync(fx.recording));
+  assert.equal(job.status, 'ready');
+  const restarted = new Worker(fx.config, fx.dependencies);
+  assert.equal((await restarted.once()).failures.length, 0);
+  assert.deepEqual(await restarted.replaceReplay(SESSION, full, { confirmedComplete: true }), first);
+  assert.equal(fx.calls.filter(call => call.resource === 'raw' && call.method === 'POST').length, 1);
+  assert.ok(fs.existsSync(fx.recording)); assert.ok(fs.existsSync(full));
+  assert.equal(fs.readdirSync(fx.config.inboxDir).filter(file => file.endsWith('.ready.json')).length, 2);
+});
+
+test('a full replay manifest cannot replace an active live and changed sealed bytes never upload', async t => {
+  const fx = fixture(t);
+  await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0]; job.status = 'ready'; fx.worker.save(job);
+  const { manifest } = await fx.worker.replaceReplay(SESSION, fx.recording, { confirmedComplete: true });
+  job.status = 'live'; fx.worker.save(job);
+  assert.equal((await fx.worker.ingest())[0].error, 'REPLAY_REQUIRES_ENDED_LIVE');
+  job.status = 'ready'; fx.worker.save(job);
+  fs.appendFileSync(fx.recording, 'changed');
+  assert.equal((await fx.worker.ingest())[0].error, 'SEALED_RECORDING_CHANGED');
+  assert.ok(fs.existsSync(manifest));
+  assert.equal(fx.calls.filter(call => call.resource === 'raw').length, 0);
+});
+
+test('a queued fallback cannot silently take priority over an accepted full replay', async t => {
+  const fx = fixture(t);
+  await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0]; job.status = 'failed'; fx.worker.save(job);
+  const fallbackManifest = await seal(fx.config, SESSION, fx.recording, { fallback: true });
+  const full = path.join(fx.config.recordingsRoot, 'complete.mkv'); fs.writeFileSync(full, 'complete lesson');
+  await assert.rejects(fx.worker.replaceReplay(SESSION, full, { confirmedComplete: true }), /PENDING_FALLBACK_REQUIRES_REVIEW/);
+  assert.equal(fs.readdirSync(fx.config.inboxDir).filter(file => file.endsWith('.replacement.ready.json')).length, 0);
+  assert.equal(fx.worker.jobs()[0].source, 'live');
+  assert.ok(fs.existsSync(fallbackManifest));
+  // After operator review and archiving the earlier request, queue the full replay.
+  fs.renameSync(fallbackManifest, `${fallbackManifest}.operator-archived`);
+  await fx.worker.replaceReplay(SESSION, full, { confirmedComplete: true });
+  assert.deepEqual(await fx.worker.ingest(), []);
+  assert.equal(fx.worker.jobs()[0].recording.file, fs.realpathSync(full));
+  assert.equal(fx.worker.jobs()[0].replaceReplay, true);
+  assert.ok(fs.existsSync(fx.recording));
+});
 
 test('four classroom mappings must have different stream IDs and playlists', t => {
   const { config } = fixture(t);
@@ -181,7 +457,7 @@ test('private upload is not published ready even if processing succeeded', async
   await seal(fx.config, SESSION, fx.recording);
   const result = await fx.worker.once();
   assert.equal(result.failures[0].error, 'VIDEO_NOT_OWNED_EXPECTED_PRIVACY');
-  assert.ok(fx.syncs.every(item => item.status === 'failed'));
+  assert.ok(fx.syncs.every(item => item.status === 'processing' && item.playback_blocked === true));
 });
 
 test('live archive becomes replay on the same video ID and local recording stays backup', async t => {
@@ -238,6 +514,7 @@ test('ended broadcast in archive processing does not block next class session', 
   fx.state.lifecycle = 'complete'; fx.state.processed = false; fx.advance();
   await fx.worker.once();
   assert.equal(fx.syncs.at(-1).status, 'processing');
+  fx.state.lifecycle = 'ready'; // A newly created broadcast is independent of the ended one.
   await assert.doesNotReject(fx.worker.prepare({ ...SESSION, sessionKey: 'next-session' }));
   assert.equal(fx.calls.filter(call => call.resource === 'liveBroadcasts' && call.method === 'POST').length, 2);
 });
@@ -277,7 +554,7 @@ test('upload initiation 429 is retried with no duplicate committed video', async
   assert.equal(fx.syncs.at(-1).status, 'ready');
 });
 
-test('steady four-class heartbeat batches videos and broadcasts into two GETs', async t => {
+test('steady four-class heartbeat batches video, broadcast, and fresh stream health into three GETs', async t => {
   const fx = fixture(t, { request: async (resource, options) => {
     if (resource === 'videos') return { items: options.query.id.split(',').map(id => ({ id, snippet: { channelId: CHANNEL }, status: { privacyStatus: 'unlisted', uploadStatus: 'uploaded' }, processingDetails: { processingStatus: 'processing' } })) };
     if (resource === 'liveBroadcasts' && !options.method) return { items: options.query.id.split(',').map(id => ({ id, snippet: { channelId: CHANNEL }, status: { privacyStatus: 'unlisted', lifeCycleStatus: 'live' }, contentDetails: { boundStreamId: `stream00${id.at(-1)}` } })) };
@@ -290,8 +567,8 @@ test('steady four-class heartbeat batches videos and broadcasts into two GETs', 
   fx.calls.length = 0; fx.advance(60000);
   const result = await fx.worker.once();
   assert.equal(result.results.length, 4); assert.equal(result.failures.length, 0);
-  assert.equal(fx.calls.length, 2);
-  assert.deepEqual(fx.calls.map(call => call.resource).sort(), ['liveBroadcasts', 'videos']);
+  assert.equal(fx.calls.length, 3);
+  assert.deepEqual(fx.calls.map(call => call.resource).sort(), ['liveBroadcasts', 'liveStreams', 'videos']);
   assert.ok(fx.calls.every(call => call.query.id.split(',').length === 4));
 });
 
@@ -356,7 +633,7 @@ function roomFixture(t) {
       return { id: options.query.id };
     }
     if (resource === 'liveBroadcasts') return { items: options.query.id.split(',').map(id => broadcasts.get(id)).filter(Boolean) };
-    if (resource === 'videos') return { items: options.query.id.split(',').map(id => ({ id, snippet: { channelId: CHANNEL }, status: { privacyStatus: 'unlisted', uploadStatus: fx.state.processed ? 'processed' : 'uploaded' }, processingDetails: { processingStatus: fx.state.processed ? 'succeeded' : 'processing' } })) };
+    if (resource === 'videos') return { items: options.query.id.split(',').map(id => ({ id, snippet: { channelId: CHANNEL }, status: { privacyStatus: 'unlisted', uploadStatus: fx.state.processed ? 'processed' : 'uploaded' }, processingDetails: { processingStatus: fx.state.processed ? 'succeeded' : 'processing' }, liveStreamingDetails: broadcasts.get(id)?.status.lifeCycleStatus === 'complete' ? { actualStartTime: SESSION.startsAt, actualEndTime: SESSION.endsAt } : {} })) };
     if (resource === 'playlistItems') return options.method === 'POST' ? { id: 'item' } : { items: [] };
   } });
   delete fx.config.classes[0].streamId;
@@ -455,4 +732,158 @@ test('legacy class stream configuration keeps the existing class active-file pat
   const active = JSON.parse(fs.readFileSync(result.activeSessionFile, 'utf8'));
   assert.equal(active.streamId, 'stream001');
   assert.equal(Object.hasOwn(active, 'roomId'), false);
+});
+
+test('temporary privacy failure blocks playback without terminalizing live, then recovers on the next poll', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  fx.state.privacy = 'public'; fx.advance();
+  assert.equal((await fx.worker.once()).failures[0].error, 'VIDEO_NOT_OWNED_EXPECTED_PRIVACY');
+  assert.equal(fx.syncs.at(-1).status, 'live'); assert.equal(fx.syncs.at(-1).playback_blocked, true);
+  const blocked = fx.worker.jobs()[0];
+  assert.equal(blocked.status, 'live'); assert.equal(blocked.playbackBlocked, true);
+  assert.ok(blocked.nextAttemptAt); assert.equal(fx.worker.nextDelay(), 60000);
+  fx.state.privacy = 'unlisted'; fx.advance();
+  const result = await fx.worker.once();
+  assert.equal(result.failures.length, 0); assert.equal(result.results[0].status, 'live');
+  assert.equal(fx.syncs.at(-1).playback_blocked, false);
+  assert.equal(fx.worker.jobs()[0].playbackBlocked, false);
+  assert.equal(fx.worker.jobs()[0].lastError, undefined);
+  assert.ok(fx.syncs.every(row => row.status !== 'failed'));
+});
+
+test('a ready replay with temporary privacy damage is rechecked promptly and recovers without a lifecycle reset', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'complete'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.worker.jobs()[0].status, 'ready');
+  fx.state.privacy = 'public'; fx.advance(24 * 60 * 60 * 1000); await fx.worker.once();
+  assert.equal(fx.syncs.at(-1).status, 'ready'); assert.equal(fx.syncs.at(-1).playback_blocked, true);
+  assert.equal(fx.worker.nextDelay(), 60000);
+  fx.state.privacy = 'unlisted'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.syncs.at(-1).status, 'ready'); assert.equal(fx.syncs.at(-1).playback_blocked, false);
+});
+
+test('changed broadcast binding is blocked and can recover on the same live video', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  fx.state.bound = 'differentStream'; fx.advance();
+  assert.equal((await fx.worker.once()).failures[0].error, 'LIVE_MAPPING_INVALID');
+  assert.equal(fx.syncs.at(-1).status, 'live'); assert.equal(fx.syncs.at(-1).playback_blocked, true);
+  fx.state.bound = 'stream001'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.syncs.at(-1).status, 'live'); assert.equal(fx.syncs.at(-1).playback_blocked, false);
+  assert.equal(new Set(fx.syncs.map(row => row.youtube_video_id)).size, 1);
+});
+
+test('failed block sync retains the local playback block and retries safely', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  const fetch = fx.worker.fetch;
+  fx.worker.fetch = async () => new Response('{}', { status: 503 });
+  fx.state.privacy = 'public'; fx.advance(); await fx.worker.once();
+  const blocked = fx.worker.jobs()[0];
+  assert.equal(blocked.status, 'live'); assert.equal(blocked.playbackBlocked, true);
+  assert.equal(blocked.blockSyncError, 'SYNC_HTTP_503');
+  fx.worker.fetch = fetch; fx.advance(); await fx.worker.once();
+  assert.equal(fx.syncs.at(-1).playback_blocked, true);
+  fx.state.privacy = 'unlisted'; fx.advance(); await fx.worker.once();
+  assert.equal(fx.syncs.at(-1).playback_blocked, false);
+  assert.equal(fx.worker.jobs()[0].blockSyncError, undefined);
+});
+
+test('verify permits idle classrooms without input, but refuses non-reusable or invalid streams before creation', async t => {
+  const fx = fixture(t); fx.state.streamStatus = 'inactive'; fx.state.streamHealth = 'noData';
+  const verified = await fx.worker.verify();
+  assert.equal(verified.streamChecks[0].streamStatus, 'inactive');
+  assert.equal(verified.streamChecks[0].healthStatus, 'noData');
+  await assert.doesNotReject(fx.worker.prepare(SESSION));
+  fx.state.reusable = false; fx.calls.length = 0;
+  await assert.rejects(fx.worker.verify(), /STREAM_NOT_REUSABLE/);
+  await assert.rejects(fx.worker.prepare(SESSION), /STREAM_NOT_REUSABLE/);
+  assert.equal(fx.calls.filter(call => call.method === 'POST').length, 0);
+  fx.state.reusable = undefined;
+  await assert.rejects(fx.worker.verify(), /STREAM_REUSABLE_UNKNOWN/);
+  fx.state.reusable = true; fx.state.streamStatus = 'error';
+  await assert.rejects(fx.worker.verify(), /STREAM_ERROR/);
+  fx.state.streamStatus = 'created';
+  await assert.rejects(fx.worker.verify(), /STREAM_NOT_READY/);
+});
+
+test('live health is checked each polling cycle and blocks missing audio, lost input, or absent health data', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  const cases = [
+    { streamStatus: 'error', streamHealth: 'good', streamIssues: [], code: 'STREAM_ERROR' },
+    { streamStatus: 'active', streamHealth: 'bad', streamIssues: [{ type: 'noAudioStream', severity: 'error' }], code: 'STREAM_HEALTH_ERROR' },
+    { streamStatus: 'inactive', streamHealth: 'noData', streamIssues: [], code: 'STREAM_NOT_ACTIVE' },
+    { streamStatus: 'active', streamHealth: 'noData', streamIssues: [], code: 'STREAM_HEALTH_NO_DATA' },
+  ];
+  for (const sample of cases) {
+    Object.assign(fx.state, sample); fx.calls.length = 0; fx.advance();
+    const failed = await fx.worker.once();
+    assert.equal(failed.failures[0].error, sample.code);
+    assert.equal(fx.calls.filter(call => call.resource === 'liveStreams').length, 1);
+    assert.equal(fx.syncs.at(-1).status, 'live'); assert.equal(fx.syncs.at(-1).playback_blocked, true);
+    assert.equal(fx.worker.jobs()[0].streamHealth.healthStatus, sample.streamHealth);
+    Object.assign(fx.state, { streamStatus: 'active', streamHealth: 'good', streamIssues: [] }); fx.advance();
+    assert.equal((await fx.worker.once()).failures.length, 0);
+    assert.equal(fx.syncs.at(-1).playback_blocked, false);
+  }
+  fx.state.streamHealth = 'ok'; fx.state.streamIssues = [{ type: 'videoBitrateLow', severity: 'warning' }]; fx.advance();
+  assert.equal((await fx.worker.once()).failures.length, 0);
+  assert.equal(fx.worker.jobs()[0].streamHealth.issues[0].severity, 'warning');
+});
+
+test('finished replays do not depend on the input health of the next class using the room', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'complete'; fx.advance(); await fx.worker.once();
+  fx.state.streamStatus = 'error'; fx.state.streamHealth = 'bad';
+  fx.advance(24 * 60 * 60 * 1000);
+  assert.equal((await fx.worker.once()).failures.length, 0);
+  assert.equal(fx.syncs.at(-1).status, 'ready'); assert.equal(fx.syncs.at(-1).playback_blocked, false);
+});
+
+test('shared metadata failure persists exponential backoff and diagnostic state across worker restart', async t => {
+  let outage = false;
+  const fx = fixture(t, { request: async resource => { if (outage && resource === 'videos') throw new ApiError('YOUTUBE_HTTP_503', 503); } });
+  await fx.worker.prepare(SESSION); fx.state.lifecycle = 'live'; fx.advance(); await fx.worker.once();
+  outage = true; fx.advance();
+  const failed = await fx.worker.once();
+  assert.equal(failed.failures[0].error, 'YOUTUBE_HTTP_503');
+  let job = fx.worker.jobs()[0];
+  assert.equal(job.attempts, 1); assert.equal(job.lastError, 'YOUTUBE_HTTP_503'); assert.ok(job.lastAttemptAt);
+  assert.equal(fx.worker.nextDelay(), 10000);
+  const restarted = new Worker(fx.config, fx.dependencies), calls = fx.calls.length;
+  fx.advance(1000); assert.deepEqual(await restarted.once(), { results: [], failures: [] });
+  assert.equal(fx.calls.length, calls); assert.equal(restarted.nextDelay(), 9000);
+  fx.advance(9000); await restarted.once();
+  assert.equal(restarted.jobs()[0].attempts, 2); assert.equal(restarted.nextDelay(), 20000);
+  outage = false; fx.advance(20000);
+  assert.equal((await restarted.once()).failures.length, 0);
+  job = restarted.jobs()[0]; assert.equal(job.status, 'live'); assert.equal(job.attempts, 0); assert.equal(job.lastError, undefined);
+});
+
+test('prepare refuses a finished broadcast instead of arming an already ended lesson', async t => {
+  for (const terminal of ['complete', 'revoked']) {
+    const fx = fixture(t); await fx.worker.prepare(SESSION);
+    fx.state.lifecycle = terminal; fx.calls.length = 0;
+    await assert.rejects(fx.worker.prepare(SESSION, { arm: true }), /BROADCAST_ALREADY_ENDED/);
+    assert.equal(fx.calls.filter(call => call.method === 'POST').length, 0);
+    assert.equal(fs.existsSync(fx.worker.activeFile(SESSION)), false);
+  }
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  fx.state.lifecycle = 'complete'; fx.advance(); await fx.worker.once(); fx.calls.length = 0;
+  await assert.rejects(fx.worker.prepare(SESSION), /BROADCAST_ALREADY_ENDED/);
+  assert.equal(fx.calls.length, 0);
+});
+
+test('prepare checks actual video end time even if broadcast lifecycle has not caught up', async t => {
+  let ended = false;
+  const fx = fixture(t, { request: async (resource, options) => {
+    if (ended && resource === 'videos') return { items: [{ id: VIDEO, snippet: { channelId: CHANNEL },
+      status: { privacyStatus: 'unlisted', uploadStatus: 'processed' }, liveStreamingDetails: { actualEndTime: SESSION.endsAt } }] };
+  } });
+  await fx.worker.prepare(SESSION); ended = true; fx.calls.length = 0;
+  await assert.rejects(fx.worker.prepare(SESSION, { arm: true }), /BROADCAST_ALREADY_ENDED/);
+  assert.equal(fs.existsSync(fx.worker.activeFile(SESSION)), false);
+  assert.equal(fx.calls.filter(call => call.method === 'POST').length, 0);
 });

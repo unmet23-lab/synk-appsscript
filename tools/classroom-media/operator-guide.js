@@ -1,0 +1,150 @@
+'use strict';
+
+// Pure text presentation. Never serialize jobs or interpolate unknown errors.
+const LIVE_FRESH_MS = 150000;
+const clean = value => typeof value === 'string'
+  ? value.replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g, '').slice(0, 80) : '';
+const stamp = value => typeof value === 'number' && Number.isFinite(value) && Math.abs(value) <= 8640000000000000 ? value
+  : typeof value === 'string' && value.trim() ? Date.parse(value) : NaN;
+const fresh = (value, now) => { const time = stamp(value); return Number.isFinite(time) && time <= now && now - time <= LIVE_FRESH_MS; };
+function timeText(value) {
+  const time = stamp(value);
+  return Number.isFinite(time) ? new Intl.DateTimeFormat('ko-KR', {
+    timeZone: 'Asia/Seoul', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false,
+  }).format(new Date(time)) + ' (한국시간)' : '기록 없음';
+}
+function gib(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= 0
+    ? (value / 1024 ** 3).toFixed(1) + ' GiB' : '확인 안 됨';
+}
+
+function errorGuidance(code) {
+  if (typeof code !== 'string') return '원인을 확인하지 못했습니다. 담당자에게 로컬 작업 기록 확인을 요청하고 녹화 원본을 보존하세요.';
+  if (['CONFIG_PLACEHOLDERS', 'ANON_KEY', 'CLASS_SYNC_KEY', 'SYNC_ENV_MISSING'].includes(code))
+    return '담당자가 예제 설정값과 공개키·반별 동기화키를 확인한 뒤 check를 다시 실행하세요. 키 원문을 안내에 붙이지 마세요.';
+  if (['DIRECTORY_READY', 'MINIMUM_FREE_BYTES', 'RECORDING_DISK_SPACE'].includes(code))
+    return '녹화 폴더·권한·여유 공간을 확인하세요. 녹화 원본을 보존한 채 공간을 확보하고 check를 다시 실행하세요.';
+  if (['YOUTUBE_NETWORK_ERROR', 'SYNC_NETWORK_ERROR', 'UPLOAD_NO_PROGRESS', 'UPLOAD_FINAL_RESPONSE_PENDING'].includes(code)
+    || /^(?:YOUTUBE|SYNC|UPLOAD|UPLOAD_INIT)_HTTP_(?:408|429|5[0-9]{2})$/.test(code))
+    return '연결 또는 서버 응답을 기다리고 있습니다. worker가 실행 중이면 재시도합니다. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.';
+  if (['YOUTUBE_CREDENTIAL_MISSING', 'CHANNEL_MISMATCH'].includes(code)
+    || /^(?:YOUTUBE|SYNC|UPLOAD|UPLOAD_INIT)_HTTP_(?:401|403)$/.test(code))
+    return '담당자가 계정 인증·채널·반 연결과 API 권한 또는 할당량을 확인해야 합니다. 설정을 확인한 뒤 재시도하세요.';
+  if (code === 'SYNC_HTTP_409')
+    return '저장된 수업과 상태 또는 영상 정보가 충돌합니다. 같은 수업을 반복 준비하거나 작업 기록을 지우지 말고 담당자에게 확인을 요청하세요.';
+  if (code === 'STALE_SYNC_SEQUENCE')
+    return '더 최신인 요청이 서버에 이미 반영되어 오래된 요청을 거절했습니다. worker는 다음 요청에 새 순서를 사용합니다. 계속되면 담당자가 중복 worker 실행과 최신 작업 기록을 확인하세요. 순서 값을 임의로 낮추거나 작업 기록을 지우지 마세요.';
+  if (['SYNC_SEQUENCE_INVALID', 'SYNC_SEQUENCE_EXHAUSTED'].includes(code))
+    return '저장된 동기화 순서가 잘못되었거나 사용 가능한 범위를 넘었습니다. 담당자가 서버와 최신 작업 기록을 대조해야 합니다. 순서를 초기화하거나 작업 기록을 지우지 말고 녹화 원본을 보존하세요.';
+  if (code === 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY')
+    return '기존 영상의 재생 차단이 해제되지 않아 교체를 보류했습니다. 기존 영상의 공개설정·교실 연결과 오류를 복구하고 worker의 정상 조회로 서버 차단 해제까지 확인한 뒤 교체하세요. 녹화 원본과 작업 기록을 보존하세요.';
+  if (code === 'BROADCAST_ACTUAL_TIMES_PENDING')
+    return '방송은 종료됐지만 YouTube의 실제 시작·종료 시각을 확인하지 못했습니다. worker가 실행 중이면 다시 조회합니다. 계속되면 Studio에서 종료 상태를 확인하세요. 예정 시각이나 현재 시각으로 작업 기록을 고치지 말고 녹화 원본을 보존하세요.';
+  if (['STREAM_ERROR', 'STREAM_NOT_READY', 'STREAM_NOT_ACTIVE', 'STREAM_HEALTH_ERROR', 'STREAM_HEALTH_NO_DATA', 'STREAM_STATUS_UNKNOWN'].includes(code))
+    return 'OBS 송출 연결과 YouTube 스트림 상태를 확인하세요. 마이크 입력·음소거·오디오 트랙을 확인하고 직접 들어 보세요. 입력이 정상화되면 다음 성공 조회에서 차단을 해제합니다.';
+  if (['STREAM_NOT_OWNED', 'STREAM_NOT_REUSABLE', 'STREAM_REUSABLE_UNKNOWN', 'SESSION_STREAM_CONFIG_CHANGED'].includes(code))
+    return '담당자가 이 교실의 올바른 재사용 스트림인지 확인해야 합니다. 기존 수업의 연결을 임의로 덮어쓰지 말고 확인 전 방송을 시작하지 마세요.';
+  if (['VIDEO_NOT_OWNED_EXPECTED_PRIVACY', 'BROADCAST_NOT_OWNED_EXPECTED_PRIVACY', 'PLAYLIST_NOT_OWNED_UNLISTED', 'LIVE_MAPPING_INVALID', 'BROADCAST_BOUND_TO_OTHER_CLASS'].includes(code))
+    return '영상·재생목록의 채널, 정해진 공개설정과 교실 연결을 확인하세요. 비공개 영상을 공개로 바꾸지 마세요. 정상화 뒤 다음 성공 조회에서 차단을 해제합니다.';
+  if (['BROADCAST_CREATE_AMBIGUOUS_MANUAL_RECOVERY', 'UPLOAD_CREATE_AMBIGUOUS_MANUAL_RECOVERY', 'UPLOAD_SESSION_EXPIRED_MANUAL_RECOVERY'].includes(code))
+    return 'YouTube Studio에서 영상 생성 여부를 먼저 확인하세요. 이미 있으면 recover로 연결하고, 없음을 확인한 경우에만 retry-create --confirmed-no-video를 사용하세요. 이후 라이브는 prepare, 녹화 업로드는 once/watch로 재개합니다. 녹화 원본과 작업 기록은 보존하세요.';
+  if (code === 'PLAYLIST_INSERT_AMBIGUOUS_MANUAL_REVIEW')
+    return 'YouTube Studio에서 영상이 해당 반 재생목록에 있는지 확인하세요. 없으면 한 번 추가하고 다음 조회를 기다리세요. 목록 추가를 반복하지 마세요.';
+  if (code === 'WORKER_LOCKED_CHECK_PID_BEFORE_REMOVING_LOCK')
+    return '다른 worker가 실행 중인지 먼저 확인하세요. 비정상 종료한 PID가 끝났음을 확인한 경우에만 잠금파일을 처리하세요. 작업 state를 지우지 마세요.';
+  if (['OBS_RECORDING_IN_PROGRESS', 'ROOM_HAS_UNFINISHED_LIVE', 'CLASS_HAS_UNFINISHED_LIVE'].includes(code))
+    return '현재 방송·녹화와 완료 파일 등록이 끝났는지 확인하세요. 녹화 원본과 점유 파일을 보존하고 정상 완료 또는 담당자의 복구 확인 뒤 다음 수업을 준비하세요.';
+  if (code === 'BROADCAST_ALREADY_ENDED')
+    return '종료된 방송은 같은 수업으로 재개되지 않습니다. Studio에서 종료와 로컬 녹화 완료를 확인하세요. 이어송출은 새 수업 키로 준비하고, 복습 완본은 직접 확인한 뒤 replace-replay를 사용하세요. 새 비공개 영상은 학생을 다시 초대해야 합니다.';
+  if (['REPLAY_REQUIRES_ENDED_LIVE', 'FALLBACK_REQUIRES_FAILED_LIVE', 'COMPLETE_RECORDING_CONFIRMATION_REQUIRED'].includes(code))
+    return '진행 중인 방송에는 완본 교체를 적용하지 마세요. 종료된 수업과 전체 녹화를 직접 확인한 뒤 replace-replay --confirmed-complete를 사용하세요. 기존 --fallback은 failed 상태 전용입니다. 새 영상의 비공개 초대와 앱 초대 확인이 다시 필요합니다.';
+  if (code === 'PENDING_FALLBACK_REQUIRES_REVIEW')
+    return '기존 fallback 요청을 먼저 확인하세요. 담당자가 해당 요청을 완료 폴더 밖에 보관한 뒤 완본 교체를 다시 접수하세요. 녹화 원본과 작업 state는 지우지 마세요.';
+  if (['RECORDING_STILL_CHANGING', 'SEALED_RECORDING_CHANGED', 'EMPTY_RECORDING', 'RECORDING_READ_TRUNCATED', 'SESSION_RECORDING_CONFLICT', 'MANIFEST_ALREADY_EXISTS', 'RECORDING_COMPLETION_REQUIRED', 'RECORDING_END_TIME_REQUIRED', 'SESSION_RECORDING_ALREADY_COMPLETED'].includes(code))
+    return '녹화가 종료되었는지, 파일과 수업 연결이 맞는지 확인하세요. 원본을 보존하고 처음·중간·끝을 재생한 뒤 담당자가 등록 기록을 확인해야 합니다. 확인 없이 원본을 덮어쓰거나 완료 파일을 재생성하지 마세요.';
+  return '원인을 확인하지 못했습니다. 담당자에게 로컬 작업 기록 확인을 요청하고 녹화 원본을 보존하세요.';
+}
+
+function preflightText(result) {
+  const checks = Array.isArray(result?.checks) ? result.checks : [];
+  const passed = result?.ok === true && checks.length > 0 && checks.every(check => check?.ok === true);
+  const lines = [passed ? '로컬 자동 검사 통과' : '로컬 준비 확인 필요'];
+  const credentialReasons = { MISSING: '설정되지 않았습니다', PLACEHOLDER: '예제값이 남아 있습니다', INVALID_FORMAT: '공백 또는 형식이 잘못되었습니다', TOO_SHORT: '길이가 부족합니다' };
+  const directoryReasons = { MISSING: '폴더가 없습니다', NOT_DIRECTORY: '폴더 경로가 아닙니다', NOT_READABLE: '읽을 수 없습니다', NOT_WRITABLE: '쓸 수 없습니다', UNAVAILABLE: '접근 상태를 확인할 수 없습니다' };
+  const directoryNames = { stateDir: '작업 기록 폴더', inboxDir: '녹화 완료 폴더', recordingsRoot: '녹화 원본 폴더' };
+  for (const check of checks) {
+    if (!check || typeof check !== 'object') continue;
+    let text;
+    switch (check.code) {
+      case 'CONFIG_PLACEHOLDERS':
+        text = check.ok ? '예제 설정값 없음' : '예제 설정값이 남아 있습니다. 담당자가 실제 운영 설정으로 바꾸세요.';
+        break;
+      case 'ANON_KEY':
+      case 'CLASS_SYNC_KEY': {
+        const suffix = Number.isInteger(check.classIndex) && check.classIndex > 0 ? ' ' + check.classIndex + '번' : '';
+        const name = check.code === 'ANON_KEY' ? '공개키' : '반별 동기화키' + suffix;
+        text = check.ok ? name + ' 형식 확인' : name + ': ' + (credentialReasons[check.reason] || '확인할 수 없습니다') + '. 담당자가 설정한 뒤 다시 검사하세요.';
+        break;
+      }
+      case 'DIRECTORY_READY':
+        text = (directoryNames[check.directory] || '운영 폴더') + (check.ok ? ' 접근 확인' : ': ' + (directoryReasons[check.reason] || '확인할 수 없습니다') + '. 담당자가 폴더와 접근 권한을 확인하세요.');
+        break;
+      case 'MINIMUM_FREE_BYTES':
+        text = check.ok ? '최소 여유 공간 기준: ' + gib(check.minimumFreeBytes)
+          : '최소 여유 공간 기준이 잘못되었습니다. minimumFreeBytes를 0보다 큰 정수 바이트로 설정하세요.';
+        break;
+      case 'RECORDING_DISK_SPACE':
+        text = '녹화 디스크 여유: ' + gib(check.freeBytes) + ' / 설정된 최소 기준: ' + gib(check.minimumFreeBytes);
+        if (!check.ok) text += check.reason === 'INSUFFICIENT_SPACE'
+          ? '. 원본을 보존한 채 여유 공간을 확보하고 다시 검사하세요.'
+          : '. 디스크와 최소 여유 공간 설정을 확인한 뒤 다시 검사하세요.';
+        break;
+      default:
+        text = '추가 검사 결과를 해석할 수 없습니다. 담당자가 검사 항목을 확인하세요.';
+    }
+    lines.push((check.ok === true ? '✓ ' : '확인 필요: ') + text);
+  }
+  lines.push('실제 확인 필요: OBS 교실 연결·완료 스크립트, 카메라 화면, 마이크 음량·잡음·동기, 종료된 녹화 파일의 전체 재생.');
+  lines.push('비공개 영상은 학생 Google 계정 초대와 앱의 초대 확인 후 실제 학생 계정 재생·미초대 계정 차단을 확인하세요.');
+  lines.push('이 결과는 로컬 설정 검사이며 실제 송출·학생 시청 완료를 뜻하지 않습니다.');
+  return lines.join('\n');
+}
+
+function statusText(jobs, { now = Date.now() } = {}) {
+  if (!Array.isArray(jobs) || !jobs.length) return '저장된 수업 작업이 없습니다. 로컬 기록만으로 현재 송출 여부는 알 수 없습니다.';
+  const clock = Number.isFinite(now) ? now : NaN;
+  const lines = ['저장된 작업 상태 · 실시간 화면을 직접 확인한 결과는 아닙니다.'];
+  jobs.forEach((job, index) => {
+    const current = job && typeof job === 'object' ? job : {};
+    const label = clean(current.title) || clean(current.displayName) || clean(current.sessionKey) || '수업 ' + (index + 1);
+    const health = current.streamHealth && typeof current.streamHealth === 'object' ? current.streamHealth : {};
+    const issues = Array.isArray(health.issues) ? health.issues : [];
+    const healthy = health.streamStatus === 'active' && ['good', 'ok'].includes(health.healthStatus) && !issues.some(issue => issue?.severity === 'error');
+    let state;
+    if (current.blockSyncError) state = '차단 요청 저장됨 · 서버 반영 미확인';
+    else if (current.playbackBlocked) state = '재생 일시 차단';
+    else if (current.status === 'live') {
+      state = !current.lastError && fresh(current.syncedAt, clock) && fresh(health.checkedAt, clock) && healthy
+        ? '최근 확인: 방송 신호 수신 중' : '방송 상태 미확인';
+    } else {
+      state = ({ scheduled: '수업 예정', processing: '업로드 또는 복습 영상 처리 중', ready: '영상 처리 완료 · 학생 재생 확인 필요', failed: '영상 처리 실패 · 복구 확인 필요' })[current.status] || '작업 상태 미확인';
+    }
+    lines.push('', label + ' — ' + state);
+    lines.push('마지막 앱 상태 반영: ' + timeText(current.syncedAt));
+    if (current.status === 'live') lines.push('마지막 스트림 확인: ' + timeText(health.checkedAt));
+    if (current.status === 'live' && !fresh(current.syncedAt, clock)) lines.push('마지막 반영 시각이 오래되었거나 확인할 수 없습니다. 현재 방송 중이라고 판단하지 마세요.');
+    if (current.lastError) lines.push('다음 행동: ' + errorGuidance(current.lastError));
+    if (current.blockSyncError) lines.push('차단 반영 확인: ' + errorGuidance(current.blockSyncError) + ' 학생 화면도 함께 확인하세요.');
+    if (issues.some(issue => issue?.type === 'noAudioStream')) lines.push('오디오 확인: YouTube가 오디오 입력 문제를 보고했습니다. 마이크·음소거·오디오 트랙을 확인하고 직접 들어 보세요.');
+    else if (issues.some(issue => issue?.severity === 'warning')) lines.push('스트림 품질 경고가 있습니다. OBS와 YouTube Studio에서 영상·음성을 확인하세요.');
+    const next = stamp(current.nextAttemptAt);
+    if (Number.isFinite(next)) lines.push(next > clock
+      ? 'worker 실행 중이면 다음 재시도 예정: ' + timeText(next)
+      : '저장된 재시도 예정 시각이 지났습니다. worker 실행 여부와 최근 처리 결과를 확인하세요.');
+    if (current.status === 'ready' || current.replaceReplay) lines.push('비공개 영상의 학생 초대 완료는 이 기록으로 알 수 없습니다. 새 영상은 재초대와 앱 초대 확인 후 실제 학생 계정으로 재생하세요.');
+    if (current.status === 'ready') lines.push('처리 성공만으로 전체 수업 녹화가 보장되지는 않습니다. 원본과 영상의 처음·중간·끝을 확인하세요.');
+  });
+  return lines.join('\n');
+}
+
+module.exports = { preflightText, statusText, errorGuidance };
