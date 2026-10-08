@@ -29,7 +29,7 @@ function errorGuidance(code, { paused = false } = {}) {
     return paused
       ? '연결 또는 서버 응답 오류가 기록되어 있습니다. 담당자가 서버와 로컬 작업 기록을 대조해 일시정지 원인을 확인하세요. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.'
       : '연결 또는 서버 응답을 기다리고 있습니다. worker가 실행 중이면 재시도합니다. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.';
-  if (['YOUTUBE_CREDENTIAL_MISSING', 'CHANNEL_MISMATCH'].includes(code)
+  if (['YOUTUBE_CREDENTIAL_MISSING', 'YOUTUBE_AUTH_REFRESH_FAILED', 'CHANNEL_MISMATCH'].includes(code)
     || /^(?:YOUTUBE|SYNC|UPLOAD|UPLOAD_INIT)_HTTP_(?:401|403)$/.test(code))
     return '담당자가 계정 인증·채널·반 연결과 API 권한 또는 할당량을 확인해야 합니다. 설정을 확인한 뒤 재시도하세요.';
   if (code === 'SYNC_HTTP_409')

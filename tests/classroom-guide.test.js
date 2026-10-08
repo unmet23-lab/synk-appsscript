@@ -7,6 +7,12 @@ const ago = ms => new Date(now - ms).toISOString();
 const live = changes => ({ sessionKey: 'lesson-1', status: 'live', syncedAt: ago(1000),
   streamHealth: { streamStatus: 'active', healthStatus: 'good', checkedAt: ago(1000), issues: [] }, ...changes });
 
+test('failed authentication refresh gives account repair guidance without a healthy-live claim', () => {
+  const text = statusText([live({ lastError: 'YOUTUBE_AUTH_REFRESH_FAILED' })], { now });
+  assert.match(text, /계정 인증·채널/);
+  assert.doesNotMatch(text, /원인을 확인하지 못했습니다|최근 확인: 방송 신호 수신 중/);
+});
+
 test('live is recent only when both timestamps, current health, and last result agree', () => {
   assert.match(statusText([live()], { now }), /최근 확인: 방송 신호 수신 중/);
   for (const row of [live({ syncedAt: ago(150001) }), live({ lastError: 'YOUTUBE_NETWORK_ERROR' }),
