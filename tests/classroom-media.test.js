@@ -106,12 +106,11 @@ test('saving a local backup for a blocked live preserves the block and does not 
   assert.equal(fx.calls.filter(call => call.resource === 'raw').length, 0);
 });
 
-test('sync exposes only the known recovery conflict and never returns arbitrary server error content', async t => {
+test('sync exposes only known conflicts and never returns arbitrary server error content', async t => {
   const fx = fixture(t); await fx.worker.prepare(SESSION);
   const job = fx.worker.jobs()[0], original = { ...job };
   let sequence = original.syncSequence;
   for (const [body, expected] of [
-    [JSON.stringify({ error: { code: 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY' } }), 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY'],
     [JSON.stringify({ error: { code: 'STALE_SYNC_SEQUENCE' } }), 'STALE_SYNC_SEQUENCE'],
     [JSON.stringify({ error: { code: 'SECRET_SERVER_DETAIL' } }), 'SYNC_HTTP_409'],
     ['not-json SECRET_SERVER_DETAIL', 'SYNC_HTTP_409'],
@@ -120,6 +119,91 @@ test('sync exposes only the known recovery conflict and never returns arbitrary 
     await assert.rejects(fx.worker.sync(job, 'ready'), error => error.code === expected);
     assert.deepEqual(fx.worker.jobs()[0], { ...original, syncSequence: ++sequence });
   }
+});
+
+test('permanent sync rejection pauses durably and explicit reviewed retry preserves identity and sequence', async t => {
+  for (const code of ['VIDEO_ALREADY_LINKED', 'SESSION_IDENTITY_CONFLICT', 'STALE_STATE', 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY']) {
+    const fx = fixture(t); await fx.worker.prepare(SESSION);
+    fx.state.lifecycle = 'live'; fx.advance();
+    let attempts = 0;
+    fx.worker.fetch = async () => { attempts++; return Response.json({ error: { code } }, { status: 409 }); };
+    const result = await fx.worker.once();
+    assert.equal(result.failures[0].error, code);
+    assert.equal(result.paused[0].error, code);
+    const job = fx.worker.jobs()[0];
+    assert.equal(job.syncPaused.code, code); assert.equal(job.nextAttemptAt, undefined);
+    assert.equal(job.syncSequence, 2); assert.equal(attempts, 1);
+    const restarted = new Worker(fx.config, fx.dependencies);
+    const called = fx.calls.length, synced = fx.syncs.length;
+    fx.advance(24 * 60 * 60 * 1000);
+    assert.equal((await restarted.once()).paused.length, 1);
+    assert.equal(fx.calls.length, called); assert.equal(fx.syncs.length, synced);
+    assert.equal(restarted.nextDelay(), restarted.pollInterval());
+    await assert.rejects(restarted.prepare(SESSION), /SYNC_MANUAL_REVIEW_REQUIRED/);
+    await assert.rejects(restarted.recover(SESSION, VIDEO), /SYNC_MANUAL_REVIEW_REQUIRED/);
+    await assert.rejects(restarted.retrySync(SESSION, false), /SYNC_REVIEW_CONFIRMATION_REQUIRED/);
+    assert.equal(restarted.jobs()[0].syncSequence, 2);
+    assert.equal((await restarted.retrySync(SESSION, true)).retryQueued, true);
+    assert.equal(restarted.jobs()[0].videoId, VIDEO); assert.equal(restarted.jobs()[0].syncSequence, 2);
+    assert.equal(restarted.jobs()[0].lastError, code, 'manual acknowledgement is not successful sync');
+    assert.deepEqual((await restarted.once()).failures, []);
+    assert.equal(restarted.jobs()[0].syncSequence, 3); assert.equal(restarted.jobs()[0].syncPaused, undefined);
+    assert.equal(restarted.jobs()[0].lastError, undefined);
+  }
+});
+
+test('explicit nonretryable responses pause with a sanitized code while transient conflicts retry', async t => {
+  for (const [status, body, paused] of [
+    [409, { error: { code: 'SECRET_SERVER_DETAIL', retryable: false } }, true],
+    [503, { error: { retryable: true } }, false],
+    [409, { error: { code: 'STALE_SYNC_SEQUENCE' } }, false],
+  ]) {
+    const fx = fixture(t); await fx.worker.prepare(SESSION); fx.advance();
+    fx.worker.fetch = async () => Response.json(body, { status });
+    await fx.worker.once(); const job = fx.worker.jobs()[0];
+    assert.equal(!!job.syncPaused, paused);
+    assert.equal(!!job.nextAttemptAt, !paused);
+    assert.doesNotMatch(JSON.stringify(job), /SECRET_SERVER_DETAIL/);
+  }
+});
+
+test('early OBS completion ingests actual recording times and preserves independent live schedule', async t => {
+  for (const existingLive of [false, true]) {
+    const fx = fixture(t); if (existingLive) await fx.worker.prepare(SESSION);
+    const startsAt = '2026-09-27T23:40:00Z', endsAt = '2026-09-27T23:45:00Z';
+    atomic(path.join(fx.config.inboxDir, 'early.ready.json'), { ...SESSION, startsAt, endsAt, file: fx.recording, completion: 'obs-recording-stopped' });
+    assert.deepEqual(await fx.worker.ingest(), []);
+    const job = fx.worker.jobs()[0];
+    assert.equal(job.recording.startsAt, startsAt); assert.equal(job.recording.endsAt, endsAt);
+    assert.equal(job.source, existingLive ? 'live' : 'upload');
+    assert.equal(job.startsAt, existingLive ? SESSION.startsAt : startsAt);
+    assert.equal(job.endsAt, existingLive ? SESSION.endsAt : endsAt);
+    assert.deepEqual(await fx.worker.ingest(), [], 'repeated scan remains idempotent');
+    assert.equal(fs.readFileSync(fx.recording, 'utf8'), 'closed recording');
+  }
+});
+
+test('upload initiation auth-refresh rejection clears pending, but an uncertain request preserves it', async t => {
+  for (const status of [401, 0, 503]) {
+    const fx = fixture(t, { raw: async () => { throw new ApiError(status === 401 ? 'YOUTUBE_AUTH_REFRESH_FAILED' : 'YOUTUBE_NETWORK_ERROR', status); } });
+    await seal(fx.config, SESSION, fx.recording); await fx.worker.ingest();
+    await assert.rejects(fx.worker.upload(fx.worker.jobs()[0]));
+    const job = fx.worker.jobs()[0];
+    assert.equal(!!job.createPending, status !== 401);
+    assert.equal(job.videoId, undefined); assert.equal(job.uploadUrl, undefined);
+    assert.equal(fs.readFileSync(fx.recording, 'utf8'), 'closed recording');
+  }
+});
+
+test('paused live accepts its local backup but rejects queued replacement without erasing pause', async t => {
+  const fx = fixture(t); await fx.worker.prepare(SESSION);
+  const job = fx.worker.jobs()[0]; job.status = 'failed'; job.syncPaused = { code: 'VIDEO_ALREADY_LINKED', status: 409, at: SESSION.startsAt }; fx.worker.save(job);
+  await seal(fx.config, SESSION, fx.recording); assert.deepEqual(await fx.worker.ingest(), []);
+  assert.equal(fx.worker.jobs()[0].recording.file, fs.realpathSync(fx.recording));
+  await seal(fx.config, SESSION, fx.recording, { fallback: true });
+  assert.equal((await fx.worker.ingest())[0].error, 'SYNC_MANUAL_REVIEW_REQUIRED');
+  assert.deepEqual(fx.worker.jobs()[0].syncPaused, job.syncPaused);
+  assert.equal(fx.worker.jobs()[0].videoId, VIDEO);
 });
 
 test('sync sequence is saved before a lost response and advances after a worker restart', async t => {

@@ -4,7 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const { readCredential, youtubeChannel, googleAccessToken } = require('../lib/sns-publisher');
+const { readCredential, youtubeChannel } = require('../lib/sns-publisher');
 
 const VIDEO_ID = /^[A-Za-z0-9_-]{11}$/;
 const UUID = /^[a-f\d]{8}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{4}-[a-f\d]{12}$/i;
@@ -13,6 +13,8 @@ const ROOM_ID = /^[a-z0-9_-]{1,60}$/;
 const STREAM_ID = /^[A-Za-z0-9_-]{3,100}$/;
 const REPO = path.resolve(__dirname, '../..');
 const CHUNK = 8 * 1024 * 1024;
+const SYNC_CONFLICTS = new Set(['VIDEO_ALREADY_LINKED', 'SESSION_IDENTITY_CONFLICT', 'STALE_STATE', 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY', 'STALE_SYNC_SEQUENCE']);
+const MANUAL_SYNC_CONFLICTS = new Set([...SYNC_CONFLICTS].filter(code => code !== 'STALE_SYNC_SEQUENCE'));
 const read = file => JSON.parse(fs.readFileSync(file, 'utf8'));
 const key = session => crypto.createHash('sha256').update(`${session.classId}\n${session.sessionKey}`).digest('hex');
 const inside = (root, file) => { const rel = path.relative(root, file); return !rel.startsWith('..') && !path.isAbsolute(rel); };
@@ -140,24 +142,52 @@ function nextSyncSequence(job) {
 class YouTube {
   constructor(config, { fetchImpl = fetch, credential } = {}) { this.config = config; this.fetch = fetchImpl; this.credential = credential; }
   async verifyIdentity() {
-    this.credential ||= readCredential(this.config.credentialAccount || 'lab-youtube', { allowLegacy: false });
-    if (!this.credential) throw new ApiError('YOUTUBE_CREDENTIAL_MISSING');
-    const { channel, token } = await youtubeChannel(this.credential, this.fetch);
-    if (channel.id !== this.config.expectedChannelId) throw new ApiError('CHANNEL_MISMATCH');
-    this.token = token.accessToken; this.tokenAt = Date.now();
+    if (this.identityPromise) return this.identityPromise;
+    // A rejected or expired token must not remain usable after a failed refresh.
+    this.token = null; this.tokenAt = 0;
+    this.identityPromise = (async () => {
+      this.credential ||= readCredential(this.config.credentialAccount || 'lab-youtube', { allowLegacy: false });
+      if (!this.credential) throw new ApiError('YOUTUBE_CREDENTIAL_MISSING');
+      const { channel, token } = await youtubeChannel(this.credential, this.fetch);
+      if (channel.id !== this.config.expectedChannelId) throw new ApiError('CHANNEL_MISMATCH');
+      this.token = token.accessToken; this.tokenAt = Date.now();
+    })().catch(error => {
+      throw error instanceof ApiError ? error : new ApiError('YOUTUBE_AUTH_REFRESH_FAILED');
+    });
+    try { await this.identityPromise; } finally { this.identityPromise = null; }
   }
   async headers() {
-    if (!this.token) await this.verifyIdentity();
-    if (Date.now() - this.tokenAt > 40 * 60 * 1000) {
-      this.token = (await googleAccessToken(this.credential, this.fetch)).accessToken; this.tokenAt = Date.now();
-    }
+    if (!this.token || Date.now() - this.tokenAt > 40 * 60 * 1000) await this.verifyIdentity();
     return { authorization: `Bearer ${this.token}` };
   }
   async raw(url, options = {}) {
     const parsed = new URL(url);
     if (parsed.protocol !== 'https:' || parsed.hostname !== 'www.googleapis.com' || parsed.username || parsed.password) throw new ApiError('UNSAFE_GOOGLE_URL');
-    try { return await this.fetch(url, { ...options, redirect: 'manual', signal: AbortSignal.timeout(30000), headers: { ...await this.headers(), ...options.headers } }); }
-    catch { throw new ApiError('YOUTUBE_NETWORK_ERROR'); }
+    const send = async authorization => {
+      const headers = new Headers(options.headers);
+      headers.set('authorization', authorization);
+      try { return await this.fetch(url, { ...options, redirect: 'manual', signal: AbortSignal.timeout(30000), headers }); }
+      catch { throw new ApiError('YOUTUBE_NETWORK_ERROR'); }
+    };
+    const auth = await this.headers();
+    const response = await send(auth.authorization);
+    if (response.status !== 401) return response;
+    // Only an explicit authentication rejection proves a POST/PUT was refused.
+    // Network failures and 5xx responses keep the worker's ambiguity guards.
+    if (`Bearer ${this.token}` === auth.authorization) { this.token = null; this.tokenAt = 0; }
+    try {
+      if (!this.token || this.identityPromise) await this.verifyIdentity();
+    } catch (error) {
+      // Preserve the known rejection so pending creates do not become ambiguous.
+      throw new ApiError(error instanceof ApiError ? error.code : 'YOUTUBE_AUTH_REFRESH_FAILED', 401);
+    }
+    // The current callers use JSON strings, buffers, or no body. Never resend a
+    // stream (which may already have been consumed) if a future caller adds one.
+    if (options.body != null && typeof options.body !== 'string' && !Buffer.isBuffer(options.body)) return response;
+    const retryToken = this.token;
+    const retry = await send(`Bearer ${retryToken}`);
+    if (retry.status === 401 && this.token === retryToken) { this.token = null; this.tokenAt = 0; }
+    return retry;
   }
   async request(resource, { method = 'GET', query = {}, body } = {}) {
     const url = `https://www.googleapis.com/youtube/v3/${resource}?${new URLSearchParams(query)}`;
@@ -262,6 +292,7 @@ class Worker {
     return { verifiedClasses: this.config.classes.length, verifiedRooms: this.config.rooms?.length || 0, streamChecks };
   }
   async sync(job, status, { playbackBlocked = false } = {}) {
+    if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
     const cls = this.cls(job), secret = this.env[cls.syncKeyEnv], anon = this.env[this.config.anonKeyEnv];
     if (!secret || secret.length < 32 || !anon) throw new ApiError('SYNC_ENV_MISSING');
     // Reserve the sequence durably before sending. A lost response must never
@@ -273,9 +304,15 @@ class Worker {
     catch { throw new ApiError('SYNC_NETWORK_ERROR'); }
     if (!response.ok) {
       // Only a known, non-sensitive server code may replace the generic error.
-      const failure = response.status === 409 ? await response.json().catch(() => null) : null;
-      const code = ['BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY', 'STALE_SYNC_SEQUENCE'].includes(failure?.error?.code)
+      const failure = await response.json().catch(() => null);
+      const code = response.status === 409 && SYNC_CONFLICTS.has(failure?.error?.code)
         ? failure.error.code : `SYNC_HTTP_${response.status}`;
+      // A permanent rejection requires an operator to reconcile the saved
+      // identity/state; repeating it must not create videos or advance forever.
+      if (MANUAL_SYNC_CONFLICTS.has(code) || failure?.error?.retryable === false) {
+        job.syncPaused = { code, status: response.status, at: new Date(this.now()).toISOString() };
+        job.lastError = code; delete job.nextAttemptAt; this.save(job);
+      }
       throw new ApiError(code, response.status);
     }
     job.status = status; job.playbackBlocked = playbackBlocked; job.syncedAt = new Date(this.now()).toISOString(); this.save(job);
@@ -327,6 +364,7 @@ class Worker {
       this.assertRoomAvailable(valid);
       let job = fs.existsSync(this.file(valid)) ? read(this.file(valid)) : { ...valid, streamId: this.stream(valid), source: 'live', status: 'scheduled' };
       sameRoom(job, valid, this.config);
+      if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
       if (job.source !== 'live') throw new ApiError('SESSION_ALREADY_UPLOAD');
       if (['processing', 'ready'].includes(job.status)) throw new ApiError('BROADCAST_ALREADY_ENDED');
       if (arm && (job.recording || job.status === 'ready')) throw new ApiError('SESSION_RECORDING_ALREADY_COMPLETED');
@@ -375,6 +413,7 @@ class Worker {
   jobs() { return fs.readdirSync(this.config.stateDir).filter(f => /^[a-f0-9]{64}\.json$/.test(f)).map(f => read(path.join(this.config.stateDir, f))); }
   pollInterval() { return Math.max(30000, Math.min(60000, Number(this.config.pollIntervalMs) || 60000)); }
   dueAt(job) {
+    if (job.syncPaused) return Infinity;
     // Sending the next media chunk is independent of status/heartbeat polling.
     let due = 0;
     if (job.videoId && job.syncedAt) {
@@ -398,6 +437,7 @@ class Worker {
         if (!valid.endsAt || !['recorder-closed', 'obs-recording-stopped'].includes(manifest.completion)) throw new ApiError('RECORDING_COMPLETION_REQUIRED');
         const old = fs.existsSync(this.file(valid)) ? read(this.file(valid)) : null;
         if (old) sameRoom(old, valid, this.config);
+        if (old?.syncPaused && (manifest.fallback || manifest.replaceReplay || old.source !== 'live')) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
         const replacement = manifest.replaceReplay === true;
         const replacingLive = replacement && old?.source === 'live' && ['processing', 'ready', 'failed'].includes(old.status);
         if (replacement && !manifest.fallback) throw new ApiError('REPLAY_REQUIRES_ENDED_LIVE');
@@ -417,10 +457,12 @@ class Worker {
           }
         }
         if (replacement && !replacingLive) throw new ApiError('REPLAY_REQUIRES_ENDED_LIVE');
-        const recording = await fingerprint(manifest.file, this.config.recordingsRoot);
+        const recording = { ...await fingerprint(manifest.file, this.config.recordingsRoot), startsAt: valid.startsAt, endsAt: valid.endsAt };
         if (manifest.sha256 && (manifest.sha256 !== recording.sha256 || manifest.size !== recording.size)) throw new ApiError('SEALED_RECORDING_CHANGED');
         if (old?.source === 'live' && !manifest.fallback) {
-          old.recording = recording; old.endsAt = valid.endsAt; old.backupOnly = true; this.save(old); continue;
+          // OBS recording times describe the backup, not the YouTube live
+          // interval. Keep live timing until poll obtains its actual interval.
+          old.recording = recording; old.backupOnly = true; this.save(old); continue;
         }
         if (old?.source === 'live' && manifest.fallback && old.status !== 'failed' && !replacingLive) throw new ApiError('FALLBACK_REQUIRES_FAILED_LIVE');
         if (old && old.source !== 'live') throw new ApiError('SESSION_ALREADY_EXISTS');
@@ -445,7 +487,13 @@ class Worker {
     if (!job.uploadUrl) {
       if (job.createPending) throw new ApiError('UPLOAD_CREATE_AMBIGUOUS_MANUAL_RECOVERY');
       job.createPending = true; this.save(job);
-      const response = await this.yt.raw('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status&notifySubscribers=false', { method: 'POST', headers: { 'content-type': 'application/json', 'x-upload-content-type': 'application/octet-stream', 'x-upload-content-length': String(file.size) }, body: JSON.stringify({ snippet: { title: job.title, categoryId: '27' }, status: { privacyStatus: this.cls(job).videoPrivacy } }) });
+      let response;
+      try {
+        response = await this.yt.raw('https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status&notifySubscribers=false', { method: 'POST', headers: { 'content-type': 'application/json', 'x-upload-content-type': 'application/octet-stream', 'x-upload-content-length': String(file.size) }, body: JSON.stringify({ snippet: { title: job.title, categoryId: '27' }, status: { privacyStatus: this.cls(job).videoPrivacy } }) });
+      } catch (error) {
+        if (definiteRejection(error)) { delete job.createPending; this.save(job); }
+        throw error;
+      }
       if (!response.ok) {
         const error = new ApiError(`UPLOAD_INIT_HTTP_${response.status}`, response.status);
         if (definiteRejection(error)) { delete job.createPending; this.save(job); }
@@ -515,6 +563,7 @@ class Worker {
   async once() {
     return this.locked(async () => {
       const failures = await this.ingest(), results = [];
+      const paused = this.jobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
       const available = this.jobs().filter(job => this.dueAt(job) <= this.now());
       const activeLives = available.filter(job => job.source === 'live' && !['ready', 'failed'].includes(job.status));
       const remainder = available.filter(job => !activeLives.includes(job)).sort((a, b) => (a.lastAttemptAt || 0) - (b.lastAttemptAt || 0)).slice(0, 2);
@@ -525,7 +574,7 @@ class Worker {
         // Shared metadata/auth requests fail before the per-job loop. Persist the
         // same backoff as an individual failure so watch cannot spin each second.
         for (const job of batch) { await this.recordFailure(job, error); failures.push({ sessionKey: job.sessionKey, error: job.lastError }); }
-        return { results, failures };
+        return { results, failures, ...(paused.length ? { paused } : {}) };
       }
       await Promise.all(batch.map(async job => {
         job.lastAttemptAt = this.now(); this.save(job);
@@ -545,12 +594,14 @@ class Worker {
           failures.push({ sessionKey: job.sessionKey, error: job.lastError });
         }
       }));
-      return { results, failures };
+      const stopped = this.jobs().filter(job => job.syncPaused).map(job => ({ sessionKey: job.sessionKey, error: job.syncPaused.code }));
+      return { results, failures, ...(stopped.length ? { paused: stopped } : {}) };
     });
   }
   async recordFailure(job, error) {
     job.lastAttemptAt = this.now(); job.attempts = (job.attempts || 0) + 1; job.lastError = safeCode(error);
-    job.nextAttemptAt = this.now() + Math.min(300000, 5000 * 2 ** Math.min(job.attempts, 6));
+    if (job.syncPaused) delete job.nextAttemptAt;
+    else job.nextAttemptAt = this.now() + Math.min(300000, 5000 * 2 ** Math.min(job.attempts, 6));
     if (error.streamHealth) job.streamHealth = error.streamHealth;
     const blockPlayback = job.videoId && /NOT_OWNED_(?:UNLISTED|EXPECTED_PRIVACY)|LIVE_MAPPING_INVALID|BROADCAST_BOUND_TO_OTHER_CLASS|^STREAM_/.test(job.lastError);
     if (blockPlayback) job.playbackBlocked = true;
@@ -563,12 +614,26 @@ class Worker {
       this.save(job);
     }
   }
+  async retrySync(session, confirmedResolved) {
+    if (!confirmedResolved) throw new ApiError('SYNC_REVIEW_CONFIRMATION_REQUIRED');
+    return this.locked(async () => {
+      const valid = validateSession(session, this.config);
+      if (!fs.existsSync(this.file(valid))) throw new ApiError('RECOVERY_JOB_REQUIRED');
+      const job = read(this.file(valid)); sameRoom(job, valid, this.config);
+      if (!job.syncPaused) throw new ApiError('SYNC_RETRY_NOT_APPLICABLE');
+      nextSyncSequence(job);
+      delete job.syncPaused; delete job.nextAttemptAt; delete job.syncedAt;
+      this.save(job);
+      return { retryQueued: true, sessionKey: job.sessionKey };
+    });
+  }
   async recover(session, videoId) {
     return this.locked(async () => {
       const valid = validateSession(session, this.config);
       if (!VIDEO_ID.test(videoId || '') || !fs.existsSync(this.file(valid))) throw new ApiError('RECOVERY_JOB_REQUIRED');
       const job = read(this.file(valid));
       sameRoom(job, valid, this.config);
+      if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
       if (job.videoId && job.videoId !== videoId) throw new ApiError('RECOVERY_VIDEO_CONFLICT');
       nextSyncSequence(job);
       this.videoSnapshot.clear(); this.broadcastSnapshot.clear(); this.streamSnapshot.clear();
@@ -589,6 +654,7 @@ class Worker {
       const valid = validateSession(session, this.config);
       const job = read(this.file(valid));
       sameRoom(job, valid, this.config);
+      if (job.syncPaused) throw new ApiError('SYNC_MANUAL_REVIEW_REQUIRED');
       if (job.videoId || (!job.createPending && !/UPLOAD_SESSION_EXPIRED/.test(job.lastError || ''))) throw new ApiError('RETRY_CREATE_NOT_APPLICABLE');
       nextSyncSequence(job);
       delete job.createPending; delete job.uploadUrl; delete job.uploadedBytes; delete job.nextAttemptAt;

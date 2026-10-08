@@ -108,3 +108,38 @@ test('retry times are conditional on a running worker and audio errors stay acti
   assert.doesNotMatch(text, /최근 확인: 방송 신호 수신 중/);
   assert.match(statusText([live({ nextAttemptAt: ago(1000) })], { now }), /예정 시각이 지났습니다/);
 });
+
+test('a paused job does not claim live health or promise an automatic retry from stale metadata', () => {
+  for (const nextAttemptAt of [ago(-10000), ago(10000)]) {
+    const text = statusText([live({ nextAttemptAt, lastError: 'SYNC_NETWORK_ERROR', blockSyncError: 'SYNC_HTTP_503',
+      syncPaused: { code: 'VIDEO_ALREADY_LINKED', status: 409, at: ago(500) } })], { now });
+    assert.match(text, /동기화 일시정지/);
+    assert.match(text, /다른 수업에 이미 연결/);
+    assert.match(text, /자동 조회·동기화·업로드 재시도는 중단/);
+    assert.match(text, /서버 반영 미확인/);
+    assert.doesNotMatch(text, /최근 확인: 방송 신호 수신 중|다음 재시도 예정|재시도 예정 시각이 지났|worker가 실행 중이면 재시도/);
+    assert.ok(text.indexOf('원인을 해결한 뒤') < text.indexOf('retry-sync CONFIG SESSION --confirmed-resolved'));
+    assert.match(text, /로컬 일시정지만 해제/);
+    assert.match(text, /소유권 재확인과 정상 동기화/);
+    assert.match(text, /작업 파일을 지우거나 순서를 초기화하지/);
+  }
+});
+
+test('pause guidance separates conflict causes without exposing unknown server data', () => {
+  assert.match(errorGuidance('SESSION_IDENTITY_CONFLICT'), /서버 기록과 다릅니다/);
+  assert.match(errorGuidance('STALE_STATE'), /이미 더 진행된 수업 상태/);
+  for (const code of ['SYNC_MANUAL_REVIEW_REQUIRED', 'SYNC_REVIEW_CONFIRMATION_REQUIRED']) {
+    const guidance = errorGuidance(code);
+    assert.ok(guidance.indexOf('충돌을 해결한 뒤') < guidance.indexOf('--confirmed-resolved'));
+    assert.match(guidance, /작업 기록과 순서를 초기화하지/);
+  }
+  assert.match(errorGuidance('SYNC_RETRY_NOT_APPLICABLE'), /일시정지 상태가 아닙니다/);
+  assert.doesNotMatch(statusText([live({ syncPaused: { code: 'SYNC_HTTP_503', status: 503, at: ago(500) } })], { now }), /worker가 실행 중이면 재시도/);
+  const secret = 'DO_NOT_SHOW_PAUSE_SECRET';
+  const text = statusText([live({ syncPaused: { code: secret, status: secret, at: secret,
+    response: { token: secret }, uploadUrl: 'https://example.test/' + secret } })], { now });
+  assert.match(text, /동기화 일시정지/);
+  assert.match(text, /기록 없음/);
+  assert.match(text, /원인을 확인하지 못했습니다/);
+  assert.doesNotMatch(text, /DO_NOT_SHOW_PAUSE_SECRET|https:\/\/example|최근 확인: 방송 신호 수신 중/);
+});

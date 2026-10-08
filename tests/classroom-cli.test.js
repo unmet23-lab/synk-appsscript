@@ -6,6 +6,32 @@ const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const CLI = path.resolve(__dirname, '../tools/classroom-media/cli.js');
+const { key } = require('../tools/classroom-media/worker');
+
+test('paused sync is visible and CLI retry requires explicit confirmation without losing identity', t => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-classroom-retry-cli-'));
+  t.after(() => fs.rmSync(dir, { recursive: true, force: true }));
+  const session = { classId: '11111111-1111-4111-8111-111111111111', sessionKey: 'lesson', title: '합성 수업', startsAt: '2026-10-09T01:00:00Z', endsAt: '2026-10-09T02:00:00Z' };
+  const config = { expectedChannelId: `UC${'x'.repeat(22)}`, syncUrl: 'https://test.supabase.co/functions/v1/classroom-sync', anonKeyEnv: 'UNUSED', stateDir: path.join(dir, 'state'), inboxDir: path.join(dir, 'inbox'), recordingsRoot: path.join(dir, 'recordings'), classes: [{ classId: session.classId, playlistId: 'playlist000001', streamId: 'stream001', videoPrivacy: 'private', syncKeyEnv: 'UNUSED' }] };
+  const configPath = path.join(dir, 'config.json'), sessionPath = path.join(dir, 'session.json');
+  fs.writeFileSync(configPath, JSON.stringify(config)); fs.writeFileSync(sessionPath, JSON.stringify(session)); fs.mkdirSync(config.stateDir);
+  const jobPath = path.join(config.stateDir, key(session) + '.json');
+  const job = { ...session, source: 'live', status: 'live', videoId: 'video000001', syncSequence: 12, syncPaused: { code: 'VIDEO_ALREADY_LINKED', status: 409, at: session.startsAt }, lastError: 'VIDEO_ALREADY_LINKED' };
+  fs.writeFileSync(jobPath, JSON.stringify(job)); const before = fs.readFileSync(jobPath, 'utf8');
+  const run = (...args) => spawnSync(process.execPath, [CLI, ...args], { encoding: 'utf8', timeout: 10000 });
+  for (const flag of [[], ['--confirmed-no-video']]) {
+    const denied = run('retry-sync', configPath, sessionPath, ...flag);
+    assert.equal(denied.status, 1); assert.match(denied.stderr, /SYNC_REVIEW_CONFIRMATION_REQUIRED/);
+    assert.equal(fs.readFileSync(jobPath, 'utf8'), before);
+  }
+  const once = run('once', configPath); assert.equal(once.status, 1, once.stderr);
+  assert.equal(JSON.parse(once.stdout).paused[0].error, 'VIDEO_ALREADY_LINKED');
+  const resumed = run('retry-sync', configPath, sessionPath, '--confirmed-resolved');
+  assert.equal(resumed.status, 0, resumed.stderr); assert.equal(JSON.parse(resumed.stdout).retryQueued, true);
+  const after = JSON.parse(fs.readFileSync(jobPath, 'utf8'));
+  assert.equal(after.syncPaused, undefined); assert.equal(after.videoId, job.videoId); assert.equal(after.syncSequence, 12);
+  assert.equal(after.lastError, job.lastError);
+});
 
 test('check is read-only and prepare/arm stop before credentials or remote work when preflight fails', t => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-classroom-cli-'));

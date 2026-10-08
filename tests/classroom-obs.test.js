@@ -17,7 +17,7 @@ const prefix = javascriptRuntime ? [runtime] : [];
 const probe = spawnSync(executable, [...prefix, '-v'], { encoding: 'utf8', timeout: 10000 });
 const unavailable = !process.env.SYNK_LUA_BIN && probe.error?.code === 'ENOENT';
 
-for (const scenario of ['success', 'open-failure', 'write-failure', 'close-failure', 'rename-failure', 'missing-path', 'duplicate-stop', 'existing-manifest', 'unarmed', 'manual-recovery']) {
+for (const scenario of ['success', 'early-stop', 'duplicate-start', 'zero-duration', 'clock-backward', 'open-failure', 'write-failure', 'close-failure', 'rename-failure', 'missing-path', 'duplicate-stop', 'existing-manifest', 'unarmed', 'manual-recovery']) {
   test(`OBS recording ownership: ${scenario}`, { skip: unavailable ? 'Lua unavailable: set SYNK_LUA_BIN to execute this regression' : false }, () => {
     assert.ifError(probe.error);
     assert.equal(probe.status, 0, probe.stderr);

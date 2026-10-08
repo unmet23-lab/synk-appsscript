@@ -62,7 +62,7 @@ node tools/classroom-media/cli.js arm C:/SYNK-Classroom/config.json C:/SYNK-Clas
 node tools/classroom-media/cli.js watch C:/SYNK-Classroom/config.json
 ```
 
-OBS 녹화 시작 때 지정된 수업 파일을 `.in-use`로 점유한다. 따라서 녹화 중 다른 수업으로 지정해도 기존 녹화에 새 반 정보가 섞이지 않는다. 녹화가 완전히 끝난 이벤트에서 마지막 녹화 경로와 종료시각으로 완료 manifest를 만든다. 녹화 시작/종료가 자동 시간표로 제어되는 장비라면 그 장비의 시작 전에 수업 `prepare`/`arm`을 호출해야 한다. 현재 실제 장비와 시간표 연동은 미확정이다.
+OBS 녹화 시작 때 지정된 수업 파일을 `.in-use`로 점유한다. 따라서 녹화 중 다른 수업으로 지정해도 기존 녹화에 새 반 정보가 섞이지 않는다. 완료 manifest에는 OBS의 실제 녹화 시작·종료 이벤트 시각과 마지막 녹화 경로를 기록한다. 예정 시각보다 일찍 끝나도 실제 구간을 사용하며, 잘못된 시각을 예정값으로 대신 채우지 않는다. 녹화 시작/종료가 자동 시간표로 제어되는 장비라면 그 장비의 시작 전에 수업 `prepare`/`arm`을 호출해야 한다. 현재 실제 장비와 시간표 연동은 미확정이다.
 
 **OBS 자동 remux와 자동 파일 분할은 끈다.** 이 스크립트는 수업당 하나의 완성된 파일을 처리한다. 중간 분할파일이나 remux 중인 파일은 이 경로로 처리하지 않는다. MKV 등 OBS가 직접 닫는 녹화 파일을 보존한다. OBS가 비정상 종료되어 `RECORDING_STOPPED`가 없으면 자동 업로드하지 않는다. 파일을 복구하고 재생 확인한 뒤 운영자가 `seal`을 사용한다. 해당 `.in-use` 파일도 녹화가 끝났는지 확인한 뒤 보관·정리하고 다음 수업을 arm한다.
 
@@ -75,9 +75,11 @@ node tools/classroom-media/cli.js seal C:/SYNK-Classroom/config.json C:/SYNK-Cla
 node tools/classroom-media/cli.js seal C:/SYNK-Classroom/config.json C:/SYNK-Classroom/lesson.json D:/SYNK-Classroom/recordings/lesson.mkv --fallback
 ```
 
-`watch`를 상시 운영 계정의 기존 작업 스케줄러/서비스로 실행한다. 중복 watch는 stateDir 잠금으로 차단한다. 앱의 live 표시는 최근 heartbeat가 있어야 유지되므로 PC 종료나 네트워크 장애가 오래 지속되면 재생 입구가 사라질 수 있다. 테스트 때 `once`로 한 번만 처리할 수 있다. 업로드는 8 MiB 단위로 최대 두 건씩 진행하며 다음 청크는 1초 뒤 계속 보낸다. 업로드 중에도 영상·방송·스트림 상태 조회와 앱 heartbeat는 각 작업의 기본 60초 주기를 유지한다. 전송이 끝난 새 영상은 즉시 처리 상태를 한 번 확인한다. 개별 작업뿐 아니라 공통 인증·메타데이터 조회 실패도 저장된 재시도 시각을 따르며 최대 5분 지수 backoff로 재시도한다.
+`watch`를 상시 운영 계정의 기존 작업 스케줄러/서비스로 실행한다. 중복 watch는 stateDir 잠금으로 차단한다. 앱의 live 표시는 최근 heartbeat가 있어야 유지되므로 PC 종료나 네트워크 장애가 오래 지속되면 재생 입구가 사라질 수 있다. 테스트 때 `once`로 한 번만 처리할 수 있다. 업로드는 8 MiB 단위로 최대 두 건씩 진행하며 다음 청크는 1초 뒤 계속 보낸다. 업로드 중에도 영상·방송·스트림 상태 조회와 앱 heartbeat는 각 작업의 기본 60초 주기를 유지한다. 전송이 끝난 새 영상은 즉시 처리 상태를 한 번 확인한다. 일시 오류인 개별 작업·공통 인증·메타데이터 조회 실패는 저장된 재시도 시각을 따르며 최대 5분 지수 backoff로 재시도한다. 아래의 동기화 충돌이나 서버가 자동 재시도를 금지한 작업은 `syncPaused`로 보존하고 해당 작업의 외부 요청을 중단한다.
 
 YouTube 조회는 같은 worker의 `videos`·`liveBroadcasts`·`liveStreams`를 각각 최대 50개 ID로 묶는다. 준비가 끝난 네 교실의 라이브를 한 worker가 같은 주기에 조회하면 기본 GET은 3회다. 교실별 worker 네 개면 각 3회, 합계 12회다. 이전의 영상·방송 2종 조회에 현재 스트림 health 조회가 추가된 계산이며, 채널·목록 캐시 갱신과 생성·목록 추가·업로드·오류 재시도는 별도다. 채널 신원과 반 목록 검증은 10분간 캐시하지만 방송 중 health는 그 캐시만으로 판단하지 않는다.
+
+YouTube가 명백한 HTTP 401을 반환한 요청은 인증 캐시를 갱신하고 채널 소유권을 다시 확인한 뒤 한 번만 다시 보낸다. 재인증·채널 확인이 실패하거나 다시 401이면 오류로 남긴다. 네트워크 단절·시간초과·5xx처럼 서버 처리 여부가 불명확한 응답에는 이 인증 재전송을 적용하지 않는다. 기존 생성·업로드 복구 절차와 중복 방지 기록을 그대로 사용한다.
 
 중앙 worker는 조회를 줄일 수 있지만 각 PC의 로컬 녹화 경로를 그대로 읽을 수 없다. 공유 경로 또는 완료 파일 전달·경로 변환이 검증되기 전에는 교실별 worker로 운영하고 기본 60초 간격을 유지한다. 실제 할당량은 해당 Google Cloud 프로젝트에서 확인한다. `verify`는 캐시와 관계없이 다시 검사한다.
 
@@ -91,7 +93,22 @@ YouTube 조회는 같은 worker의 `videos`·`liveBroadcasts`·`liveStreams`를 
 
 자동 복구의 남은 한계: 교체한 업로드 영상 자체가 `failed`이면 다른 영상으로 다시 교체하거나 이전 라이브로 되돌리는 명령은 아직 없다. `failed` 수업을 `scheduled/live`로 되돌리는 상태 전환도 거절하므로 실제 방송이 진행 중이면 입력이 정상이어도 차단 해제가 실패할 수 있다. 종료 후 실제 `processing/ready`로 확인되는 전환은 허용한다. 담당자가 Studio와 서버·로컬 기록을 함께 확인해 복구해야 하며, 파일·작업 기록을 지우거나 source를 바꿔 이 제한을 우회하지 않는다.
 
-`node tools/classroom-media/cli.js status CONFIG --human`은 저장된 작업을 한국어로 설명한다. 최근 150초 이내의 앱 반영·스트림 확인과 정상 입력이 함께 있어야 ‘최근 확인: 방송 신호 수신 중’이라고 표시하며, 오래된 live 기록은 ‘방송 상태 미확인’으로 표시한다. 서버 차단 반영 실패와 로컬 차단도 구분한다. 이 명령은 외부 상태를 새로 조회하지 않으므로 실제 방송·학생 재생 완료의 증거가 아니다. 오류별 다음 행동을 안내하지만 복구 명령을 자동 실행하지 않는다.
+### 동기화가 일시정지된 수업
+
+`VIDEO_ALREADY_LINKED`·`SESSION_IDENTITY_CONFLICT`·`STALE_STATE`·`BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY`, 또는 서버가 `retryable: false`로 응답한 작업은 자동 반복을 중단한다. worker는 원인 코드·응답 상태·발생 시각을 `syncPaused`에 저장하며, 재시작해도 해당 작업의 조회·동기화·업로드를 재개하지 않는다. 다른 정상 작업은 계속 처리한다. 이 일시정지가 OBS 송출·녹화를 중지하는 것은 아니므로 현장 상태도 직접 확인한다.
+
+1. `status CONFIG --human`으로 일시정지 이유를 확인하고 서버의 반·교실·수업·영상 연결, Studio의 실제 영상 상태, 로컬 작업 기록을 대조한다. 다른 worker의 중복 실행과 다른 수업에 이미 연결된 영상도 확인한다.
+2. 담당자가 원인을 해결한 후 아래 `retry-sync`를 실행한다. 이 명령은 로컬 일시정지만 해제하며 서버 기록·영상·수업 키·동기화 순서를 초기화하지 않는다. 작업 JSON을 지우거나 숫자를 임의로 바꾸어 재시도를 강제하지 않는다.
+3. `once/watch`의 소유권 재확인과 정상 상태 동기화가 끝났는지 확인한다. 원인이 남아 있으면 다시 일시정지된다. 재생 차단 중인 원영상을 교체하려던 경우에는 원영상의 정상 조회와 **서버 차단 해제 확인 뒤** 교체를 다시 접수한다. 새 영상 초대와 실제 학생 재생 확인은 별도다.
+
+```powershell
+node tools/classroom-media/cli.js status C:/SYNK-Classroom/config.json --human
+# 담당자가 서버·로컬·Studio의 충돌 원인을 해결했음을 확인한 뒤
+node tools/classroom-media/cli.js retry-sync C:/SYNK-Classroom/config.json C:/SYNK-Classroom/lesson.json --confirmed-resolved
+node tools/classroom-media/cli.js once C:/SYNK-Classroom/config.json
+```
+
+`node tools/classroom-media/cli.js status CONFIG --human`은 저장된 작업을 한국어로 설명한다. 최근 150초 이내의 앱 반영·스트림 확인과 정상 입력이 함께 있어야 ‘최근 확인: 방송 신호 수신 중’이라고 표시하며, 오래된 live 기록은 ‘방송 상태 미확인’으로 표시한다. 서버 차단 반영 실패와 로컬 차단도 구분한다. 일시정지된 작업은 저장 시각·원인·명시적 재개 절차를 표시하며 이전 정상 신호나 자동 재시도 예정으로 안내하지 않는다. 이 명령은 외부 상태를 새로 조회하지 않으므로 실제 방송·학생 재생 완료의 증거가 아니다. 오류별 다음 행동을 안내하지만 복구 명령을 자동 실행하지 않는다.
 
 2026-10-09 화면·운영 안내·DB 검사 후속 보완의 확인 범위는 [후속 검증 기록](../../docs/_ops/qa/classroom-followup-20261009/README.md)에 있다.
 
@@ -106,7 +123,7 @@ node --test tests/classroom-media.test.js tests/classroom-preflight.test.js
 - 재개 URL이 만료되면 새 영상을 자동 생성하지 않는다. Studio에서 영상이 **생성되지 않았음을 확인한 운영자만** `retry-create ... --confirmed-no-video`를 실행한다. 라이브는 그 뒤 `prepare`, 녹화 업로드는 `once/watch`로 재개한다. 기존 영상이 있는데 초기화하면 중복이 생기므로 먼저 `recover`를 사용한다.
 - 재생목록 삽입 응답을 잃으면 `playlistItems.list`로 기존 항목을 찾는다. 계속 없으면 추가를 반복하지 않고 수동 점검을 요구한다. Studio에서 해당 영상이 그 목록에 있는지 확인·추가하면 다음 조회 때 자동 복구한다.
 - 비정상 종료 후 `worker.lock`이 남으면 기록된 PID가 실제로 종료됐는지 확인한 뒤 잠금파일만 제거한다. state JSON을 지우면 중복 방지 정보가 사라진다.
-- 영상 공개설정·교실 매핑·스트림 입력/health 이상은 `playback_blocked=true`로 학생의 재생 입구를 막고 기존 `scheduled/live/processing/ready` 상태는 유지한다. 일시 오류를 종결 상태 `failed`로 바꾸지 않는다. 설정·입력이 정상으로 돌아오면 다음 성공 조회가 차단을 해제한다. 서버 연결도 끊겼으면 즉시 차단 반영을 보장할 수 없으므로 운영자가 `status`와 학생 화면을 함께 확인한다.
+- 영상 공개설정·교실 매핑·스트림 입력/health 이상은 `playback_blocked=true`로 학생의 재생 입구를 막고 기존 `scheduled/live/processing/ready` 상태는 유지한다. 일시 오류를 종결 상태 `failed`로 바꾸지 않는다. 설정·입력이 정상으로 돌아오면 다음 성공 조회가 차단을 해제한다. 동기화가 일시정지된 작업은 위의 담당자 확인·`retry-sync` 절차가 먼저 필요하다. 서버 연결도 끊겼으면 즉시 차단 반영을 보장할 수 없으므로 운영자가 `status`와 학생 화면을 함께 확인한다.
 
 ```powershell
 node tools/classroom-media/cli.js recover C:/SYNK-Classroom/config.json C:/SYNK-Classroom/lesson.json VIDEO_ID_11

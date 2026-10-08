@@ -4,13 +4,15 @@ local active, inbox = 'state/active-room-test.json', 'inbox'
 local files, encoded, assignments, logs = {}, {}, {}, {}
 local failure, last_recording, path_reads = nil, 'recordings/A.mkv', 0
 local serial = 0
+local now = 1000
+local utc = { [900] = '2026-10-09T00:59:00Z', [1000] = '2026-10-09T01:00:00Z', [1050] = '2026-10-09T01:00:30Z', [1100] = '2026-10-09T01:01:00Z' }
 local function clone(value)
   local result = {}
   for key, item in pairs(value) do result[key] = item end
   return result
 end
 local function session(letter)
-  return { classId = 'class-' .. letter, sessionKey = 'session-' .. letter, manifestName = string.rep(letter, 64) }
+  return { classId = 'class-' .. letter, sessionKey = 'session-' .. letter, roomId = 'room-1', manifestName = string.rep(letter, 64), startsAt = '2026-10-09T02:00:00Z', endsAt = '2026-10-09T03:00:00Z' }
 end
 local function target(letter) return inbox .. '/' .. string.rep(letter, 64) .. '.ready.json' end
 local function arm(letter) files[active] = session(letter) end
@@ -42,8 +44,11 @@ os.rename = function(from, to)
   files[to], files[from] = files[from], nil
   return true
 end
-os.time = function() return 1791500000 end
-os.date = function() return '2026-10-09T01:00:00Z' end
+os.time = function() return now end
+os.date = function(format, time)
+  assert(format == '!%Y-%m-%dT%H:%M:%SZ', 'recording timestamps must be UTC')
+  return assert(utc[time or now], 'unknown synthetic timestamp')
+end
 obslua = {
   OBS_FRONTEND_EVENT_RECORDING_STARTED = 1, OBS_FRONTEND_EVENT_RECORDING_STOPPED = 2,
   LOG_ERROR = 'error', LOG_INFO = 'info',
@@ -68,13 +73,37 @@ obslua = {
 }
 dofile(source)
 script_load({ active_file = active, inbox_dir = inbox })
-local function start() on_event(obslua.OBS_FRONTEND_EVENT_RECORDING_STARTED) end
-local function stop() on_event(obslua.OBS_FRONTEND_EVENT_RECORDING_STOPPED) end
+local function start(time) now = time or 1000; on_event(obslua.OBS_FRONTEND_EVENT_RECORDING_STARTED) end
+local function stop(time) now = time or 1100; on_event(obslua.OBS_FRONTEND_EVENT_RECORDING_STOPPED) end
 
 if scenario == 'unarmed' then
   start(); stop()
   assert(path_reads == 0, 'unarmed stop must never select a recording')
   assert(files[target('a')] == nil)
+elseif scenario == 'early-stop' or scenario == 'duplicate-start' then
+  arm('a'); start()
+  assert(files[active .. '.in-use'].startsAt == session('a').startsAt, 'claimed source must retain the planned time for recovery')
+  if scenario == 'duplicate-start' then start(1050) end
+  stop()
+  local completed, original = manifest('a'), session('a')
+  assert(completed.startsAt == utc[1000], 'manifest must use the first recording START, not the planned or later start')
+  assert(completed.endsAt == utc[1100], 'manifest must use recording STOP')
+  assert(completed.endsAt < original.startsAt, 'regression must finish before the planned class start')
+  for _, field in ipairs({ 'classId', 'sessionKey', 'roomId', 'manifestName' }) do
+    assert(completed[field] == original[field], 'actual recording time must not change session identity')
+  end
+  assert(completed.file == 'recordings/A.mkv')
+  assert(completed.completion == 'obs-recording-stopped' and completed.fallback == false)
+  assert(path_reads == 1)
+elseif scenario == 'zero-duration' or scenario == 'clock-backward' then
+  arm('a'); start(); stop(scenario == 'zero-duration' and 1000 or 900)
+  assert(files[target('a')] == nil, 'invalid timing must never publish a completion')
+  assert(files[active .. '.in-use'], 'invalid timing must retain the occupied session')
+  last_recording = 'recordings/B.mkv'
+  start(); stop(); stop()
+  assert(files[target('a')] == nil, 'later recording must not fill an invalid completion')
+  assert(path_reads == 0, 'invalid timing must not select any last recording')
+  assert(#logs > 0, 'invalid timing must be visible in OBS logs')
 elseif scenario == 'success' then
   arm('a'); start(); stop()
   assert(manifest('a').file == 'recordings/A.mkv')

@@ -18,7 +18,7 @@ function gib(value) {
     ? (value / 1024 ** 3).toFixed(1) + ' GiB' : '확인 안 됨';
 }
 
-function errorGuidance(code) {
+function errorGuidance(code, { paused = false } = {}) {
   if (typeof code !== 'string') return '원인을 확인하지 못했습니다. 담당자에게 로컬 작업 기록 확인을 요청하고 녹화 원본을 보존하세요.';
   if (['CONFIG_PLACEHOLDERS', 'ANON_KEY', 'CLASS_SYNC_KEY', 'SYNC_ENV_MISSING'].includes(code))
     return '담당자가 예제 설정값과 공개키·반별 동기화키를 확인한 뒤 check를 다시 실행하세요. 키 원문을 안내에 붙이지 마세요.';
@@ -26,18 +26,30 @@ function errorGuidance(code) {
     return '녹화 폴더·권한·여유 공간을 확인하세요. 녹화 원본을 보존한 채 공간을 확보하고 check를 다시 실행하세요.';
   if (['YOUTUBE_NETWORK_ERROR', 'SYNC_NETWORK_ERROR', 'UPLOAD_NO_PROGRESS', 'UPLOAD_FINAL_RESPONSE_PENDING'].includes(code)
     || /^(?:YOUTUBE|SYNC|UPLOAD|UPLOAD_INIT)_HTTP_(?:408|429|5[0-9]{2})$/.test(code))
-    return '연결 또는 서버 응답을 기다리고 있습니다. worker가 실행 중이면 재시도합니다. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.';
+    return paused
+      ? '연결 또는 서버 응답 오류가 기록되어 있습니다. 담당자가 서버와 로컬 작업 기록을 대조해 일시정지 원인을 확인하세요. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.'
+      : '연결 또는 서버 응답을 기다리고 있습니다. worker가 실행 중이면 재시도합니다. 녹화 원본과 작업 기록을 유지하고 새 영상을 중복 생성하지 마세요.';
   if (['YOUTUBE_CREDENTIAL_MISSING', 'CHANNEL_MISMATCH'].includes(code)
     || /^(?:YOUTUBE|SYNC|UPLOAD|UPLOAD_INIT)_HTTP_(?:401|403)$/.test(code))
     return '담당자가 계정 인증·채널·반 연결과 API 권한 또는 할당량을 확인해야 합니다. 설정을 확인한 뒤 재시도하세요.';
   if (code === 'SYNC_HTTP_409')
     return '저장된 수업과 상태 또는 영상 정보가 충돌합니다. 같은 수업을 반복 준비하거나 작업 기록을 지우지 말고 담당자에게 확인을 요청하세요.';
+  if (code === 'VIDEO_ALREADY_LINKED')
+    return '이 영상이 서버의 다른 수업에 이미 연결되어 있습니다. 담당자가 반·수업·영상 연결을 대조하고 중복 worker 여부를 확인하세요. 다른 수업의 연결을 덮어쓰거나 새 영상을 만들어 우회하지 마세요.';
+  if (code === 'SESSION_IDENTITY_CONFLICT')
+    return '저장된 수업의 반·교실·영상 연결이 서버 기록과 다릅니다. 담당자가 서버와 로컬 원본 기록을 대조하세요. 수업 키나 영상 ID를 임의로 바꾸거나 작업 기록을 지우지 마세요.';
+  if (code === 'STALE_STATE')
+    return '서버가 이미 더 진행된 수업 상태를 저장했습니다. 담당자가 Studio의 실제 방송 상태와 서버·로컬 기록을 대조하세요. 서버 상태를 되돌리거나 같은 수업을 새로 준비하지 마세요.';
+  if (['SYNC_MANUAL_REVIEW_REQUIRED', 'SYNC_REVIEW_CONFIRMATION_REQUIRED'].includes(code))
+    return '동기화가 일시정지된 수업은 담당자 확인이 필요합니다. status CONFIG --human으로 원인을 확인하고 서버·로컬·Studio의 충돌을 해결한 뒤 retry-sync CONFIG SESSION --confirmed-resolved를 실행하세요. 이후 once/watch의 정상 조회와 동기화까지 확인하세요. 작업 기록과 순서를 초기화하지 마세요.';
+  if (code === 'SYNC_RETRY_NOT_APPLICABLE')
+    return '이 수업은 동기화 일시정지 상태가 아닙니다. status CONFIG --human으로 현재 오류와 다음 행동을 확인하세요. 작업 기록을 바꿔 일시정지를 만들거나 복구 명령을 반복하지 마세요.';
   if (code === 'STALE_SYNC_SEQUENCE')
     return '더 최신인 요청이 서버에 이미 반영되어 오래된 요청을 거절했습니다. worker는 다음 요청에 새 순서를 사용합니다. 계속되면 담당자가 중복 worker 실행과 최신 작업 기록을 확인하세요. 순서 값을 임의로 낮추거나 작업 기록을 지우지 마세요.';
   if (['SYNC_SEQUENCE_INVALID', 'SYNC_SEQUENCE_EXHAUSTED'].includes(code))
     return '저장된 동기화 순서가 잘못되었거나 사용 가능한 범위를 넘었습니다. 담당자가 서버와 최신 작업 기록을 대조해야 합니다. 순서를 초기화하거나 작업 기록을 지우지 말고 녹화 원본을 보존하세요.';
   if (code === 'BLOCKED_VIDEO_REPLACEMENT_REQUIRES_RECOVERY')
-    return '기존 영상의 재생 차단이 해제되지 않아 교체를 보류했습니다. 기존 영상의 공개설정·교실 연결과 오류를 복구하고 worker의 정상 조회로 서버 차단 해제까지 확인한 뒤 교체하세요. 녹화 원본과 작업 기록을 보존하세요.';
+    return '기존 영상의 재생 차단이 해제되지 않아 교체를 보류했습니다. 기존 영상의 공개설정·교실 연결과 오류를 복구하세요. 동기화가 일시정지됐다면 담당자 확인 후 retry-sync로 재개하고, worker의 정상 조회로 서버 차단 해제까지 확인한 뒤 교체하세요. 녹화 원본과 작업 기록을 보존하세요.';
   if (code === 'BROADCAST_ACTUAL_TIMES_PENDING')
     return '방송은 종료됐지만 YouTube의 실제 시작·종료 시각을 확인하지 못했습니다. worker가 실행 중이면 다시 조회합니다. 계속되면 Studio에서 종료 상태를 확인하세요. 예정 시각이나 현재 시각으로 작업 기록을 고치지 말고 녹화 원본을 보존하세요.';
   if (['STREAM_ERROR', 'STREAM_NOT_READY', 'STREAM_NOT_ACTIVE', 'STREAM_HEALTH_ERROR', 'STREAM_HEALTH_NO_DATA', 'STREAM_STATUS_UNKNOWN'].includes(code))
@@ -120,8 +132,10 @@ function statusText(jobs, { now = Date.now() } = {}) {
     const health = current.streamHealth && typeof current.streamHealth === 'object' ? current.streamHealth : {};
     const issues = Array.isArray(health.issues) ? health.issues : [];
     const healthy = health.streamStatus === 'active' && ['good', 'ok'].includes(health.healthStatus) && !issues.some(issue => issue?.severity === 'error');
+    const paused = current.syncPaused && typeof current.syncPaused === 'object' ? current.syncPaused : null;
     let state;
-    if (current.blockSyncError) state = '차단 요청 저장됨 · 서버 반영 미확인';
+    if (paused) state = '동기화 일시정지 · 담당자 확인 필요';
+    else if (current.blockSyncError) state = '차단 요청 저장됨 · 서버 반영 미확인';
     else if (current.playbackBlocked) state = '재생 일시 차단';
     else if (current.status === 'live') {
       state = !current.lastError && fresh(current.syncedAt, clock) && fresh(health.checkedAt, clock) && healthy
@@ -133,12 +147,20 @@ function statusText(jobs, { now = Date.now() } = {}) {
     lines.push('마지막 앱 상태 반영: ' + timeText(current.syncedAt));
     if (current.status === 'live') lines.push('마지막 스트림 확인: ' + timeText(health.checkedAt));
     if (current.status === 'live' && !fresh(current.syncedAt, clock)) lines.push('마지막 반영 시각이 오래되었거나 확인할 수 없습니다. 현재 방송 중이라고 판단하지 마세요.');
-    if (current.lastError) lines.push('다음 행동: ' + errorGuidance(current.lastError));
-    if (current.blockSyncError) lines.push('차단 반영 확인: ' + errorGuidance(current.blockSyncError) + ' 학생 화면도 함께 확인하세요.');
+    if (paused) {
+      lines.push('일시정지 저장 시각: ' + timeText(paused.at));
+      lines.push('이 수업의 자동 조회·동기화·업로드 재시도는 중단되었습니다. OBS 송출·녹화의 실제 상태는 직접 확인하세요.');
+      lines.push('원인 확인: ' + errorGuidance(paused.code, { paused: true }));
+      lines.push('재개 절차: 담당자가 서버·로컬 작업 기록과 YouTube Studio를 대조해 원인을 해결한 뒤 retry-sync CONFIG SESSION --confirmed-resolved를 실행하세요. 이 명령은 로컬 일시정지만 해제합니다. once/watch의 소유권 재확인과 정상 동기화까지 확인해야 복구가 끝납니다.');
+      lines.push('기존 영상·녹화 원본·작업 기록과 동기화 순서를 유지하세요. 작업 파일을 지우거나 순서를 초기화하지 마세요.');
+    } else if (current.lastError) lines.push('다음 행동: ' + errorGuidance(current.lastError));
+    if (current.blockSyncError) lines.push(paused
+      ? '차단 반영 확인: 서버 반영 미확인입니다. 재개 후 동기화 결과와 학생 화면도 함께 확인하세요.'
+      : '차단 반영 확인: ' + errorGuidance(current.blockSyncError) + ' 학생 화면도 함께 확인하세요.');
     if (issues.some(issue => issue?.type === 'noAudioStream')) lines.push('오디오 확인: YouTube가 오디오 입력 문제를 보고했습니다. 마이크·음소거·오디오 트랙을 확인하고 직접 들어 보세요.');
     else if (issues.some(issue => issue?.severity === 'warning')) lines.push('스트림 품질 경고가 있습니다. OBS와 YouTube Studio에서 영상·음성을 확인하세요.');
     const next = stamp(current.nextAttemptAt);
-    if (Number.isFinite(next)) lines.push(next > clock
+    if (!paused && Number.isFinite(next)) lines.push(next > clock
       ? 'worker 실행 중이면 다음 재시도 예정: ' + timeText(next)
       : '저장된 재시도 예정 시각이 지났습니다. worker 실행 여부와 최근 처리 결과를 확인하세요.');
     if (current.status === 'ready' || current.replaceReplay) lines.push('비공개 영상의 학생 초대 완료는 이 기록으로 알 수 없습니다. 새 영상은 재초대와 앱 초대 확인 후 실제 학생 계정으로 재생하세요.');
