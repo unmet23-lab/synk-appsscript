@@ -527,11 +527,30 @@ function synkbrief_운영상태읽기_(key) {
       if (health !== 'ok' && health !== 'healthy' && health !== 'pending') healthy = false;
       rows.push({ name: name, health: health, http: job ? safeHttp(job.http_status) : 0, at: job ? safeTime(job.last_run_at) : '-' });
     });
+    // 고정 운영 서버는 승인된 큐가 켜져 있어야 한다. 누락과 알려진 오류 종류를 검증·요약한다.
+    if (Object.prototype.hasOwnProperty.call(body, 'queue')) {
+      const queue = body.queue;
+      const codes = ['stalled_ready', 'stalled_retries', 'stale_leases', 'expiry_overdue', 'recent_errors',
+        'cron_missing', 'cron_disabled', 'cron_duplicate', 'cron_failed', 'cron_stale'];
+      if (!queue || typeof queue !== 'object' || Array.isArray(queue) || typeof queue.healthy !== 'boolean'
+        || typeof queue.key_configured !== 'boolean' || !queue.issue_counts || typeof queue.issue_counts !== 'object'
+        || Array.isArray(queue.issue_counts) || Object.keys(queue.issue_counts).length !== codes.length
+        || codes.some(code => !Number.isSafeInteger(queue.issue_counts[code]) || queue.issue_counts[code] < 0)) throw new Error('shape');
+      const active = codes.filter(code => queue.issue_counts[code] > 0);
+      if (queue.healthy !== (queue.key_configured && active.length === 0)) throw new Error('shape');
+      if (!queue.healthy) healthy = false;
+      // 건수·대기량·원문·식별자는 해시와 메일에 넣지 않는다. 오류 종류 변화와 복구만 구분한다.
+      if (!queue.key_configured) rows.push({ name: 'synkbrief-queue', health: 'key_missing', http: 200, at: new Date(checked).toISOString() });
+      active.forEach(code => rows.push({ name: 'synkbrief-queue', health: code, http: 200, at: new Date(checked).toISOString() }));
+    } else {
+      healthy = false;
+      rows.push({ name: 'synkbrief-queue', health: 'missing', http: 200, at: new Date(checked).toISOString() });
+    }
     if (!rows.some(r => r.name.charAt(0) === '@')) { healthy = false; rows.push({ name: 'accounts', health: 'missing', http: 0, at: '-' }); }
     if (!body.healthy && rows.every(r => r.health === 'ok' || r.health === 'healthy' || r.health === 'pending')) rows.push({ name: 'ops-status', health: 'unhealthy', http: 200, at: new Date(checked).toISOString() });
     // 정상 시각/HTTP 성공의 변화는 장애 알림을 만들지 않는다.
     const issues = healthy ? [] : rows.filter(r => r.health !== 'ok' && r.health !== 'healthy' && r.health !== 'pending');
-    issues.sort((a, b) => a.name.localeCompare(b.name));
+    issues.sort((a, b) => a.name.localeCompare(b.name) || a.health.localeCompare(b.health));
     return { validated: true, healthy: healthy, at: new Date(checked).toISOString(), rows: issues };
   } catch (_) { return failed('invalid_response', 200); }
 }
