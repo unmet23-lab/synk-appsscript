@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-07T12:08:06.271Z",
+  "allMatched": true,
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    },
+    {
+      "path": "tests/atlas-discovery-relationship.test.mjs",
+      "sha256": "eb09a8cc8617d938ac69449a23ffac54e23befd42d7ca41d1741fc94bb47ac8d"
+    },
+    {
+      "path": "tests/atlas-discovery.test.mjs",
+      "sha256": "59e332ba8ba787c70ee661413ad77c27c39d32f66c67ce5d0ca15439bb319b1c"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "path": "tests/atlas-meeting-regions.test.mjs",
+      "sha256": "e8926cb0359a15c88a076716b775073a651b09372dd4bcde6d79624369357c7d"
+    },
+    {
+      "path": "tests/atlas-dating-new-criterion.test.mjs",
+      "sha256": "0df30b4a3098b86449d91e06166702405237ffafccaee34a68c473da2ee5c463"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    },
+    {
+      "path": "experiences/atlas-lab/product-experience.mjs",
+      "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161"
+    },
+    {
+      "path": "experiences/atlas-lab/meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    }
+  ]
+}

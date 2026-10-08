@@ -1,0 +1,136 @@
+{
+  "kind": "atlas-dating-deployment-preparation",
+  "at": "2026-10-07T22:25:46.405Z",
+  "status": "local-checks-passed",
+  "prepared": [
+    "same-host Caddy HTTPS template",
+    "single-process systemd unit",
+    "private persistent SQLite path",
+    "environment and intentionally unconfigured public OAuth example",
+    "deployment and restore boundaries"
+  ],
+  "runtime": {
+    "node": "v24.18.0",
+    "platform": "win32",
+    "caddy": "2.11.7",
+    "caddyArchiveSource": "https://github.com/caddyserver/caddy/releases/download/v2.11.7/caddy_2.11.7_windows_amd64.zip",
+    "caddyArchiveSha256": "0a1edc0b799512051c57071ce0e798d3f2cf67dc98171366f1d2b326072e3b06",
+    "archiveMatchedOfficialReleaseDigest": true
+  },
+  "tests": {
+    "total": 42,
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "command": "node --test tests/atlas-dating-runtime.test.mjs tests/atlas-dating-transport.test.mjs tests/atlas-dating-shutdown.test.mjs tests/atlas-dating-public.test.mjs",
+        "passed": 40,
+        "durationMs": 1859.152,
+        "rawOutput": "contracts.tap",
+        "reporter": "node-default"
+      },
+      {
+        "command": "SYNK_QA_CADDY=<verified-local-executable> node --test --test-reporter=tap tests/atlas-dating-deploy.test.mjs",
+        "passed": 2,
+        "durationMs": 7017.6131,
+        "rawOutput": "proxy-tests.tap",
+        "reporter": "tap"
+      }
+    ]
+  },
+  "observed": {
+    "caddyAdaptAndValidate": true,
+    "actualLoopbackTls": true,
+    "publicFiles200": 22,
+    "privateRoutes404": 7,
+    "overwrittenForwardingMetadata": true,
+    "foreignOrigin403": true,
+    "crossSiteApi403": true,
+    "anonymousState401": true,
+    "upstreamStopped502": true,
+    "sameDatabaseRestartPreservedProfileAndRevision": true,
+    "actualErrorLogs": 1,
+    "errorLogRequestFieldRemoved": true,
+    "oauthCodeStateBearerSentinelsAbsent": true,
+    "unfilledConfigRejectedWithoutDatabaseCreation": true
+  },
+  "initialFailures": [
+    {
+      "attempts": 2,
+      "finalFailure": false,
+      "reason": "Caddy wildcard deletion of X-Forwarded-* also deleted explicit header values, producing HTTP403.",
+      "correction": "Remove only Forwarded and unused X-Forwarded-For; explicitly overwrite X-Forwarded-Host and X-Forwarded-Proto.",
+      "logs": [
+        "proxy-tests-header-diagnostic.tap",
+        "proxy-tests-initial.tap"
+      ]
+    }
+  ],
+  "boundaries": {
+    "systemdExecuted": false,
+    "linuxPermissionsVerified": false,
+    "publicDnsChanged": false,
+    "publicCertificateIssued": false,
+    "productionOAuthRegistered": false,
+    "deployed": false,
+    "actualUsers": 0,
+    "physicalDevices": 0,
+    "realProviderCalls": 0,
+    "paidModelCalls": 0,
+    "recruitment": false,
+    "osTrustStoreModified": false,
+    "acmeEnabledInTest": false,
+    "caddyAdminEnabledInTest": false,
+    "tlsTrust": "fixture CA supplied to individual HTTPS requests only",
+    "temporaryProcessesAndFilesCleaned": true,
+    "syntheticVerifierInjected": true
+  },
+  "remaining": [
+    "host and exact HTTPS origin",
+    "production OAuth callback and portal entry",
+    "Linux service and permissions verification",
+    "central migrations and bounded dispatcher operation",
+    "adult provider selection",
+    "operational backup and restore verification",
+    "physical devices; recruitment deferred"
+  ],
+  "sourcesCapturedAfterTests": {
+    "experiences/atlas-lab/deploy/account.public.example.json": "b3f9a013176b22fb6be837b4449bb5575a25c4cd923cb092f8088aa2eb14d22e",
+    "experiences/atlas-lab/deploy/Caddyfile": "2e66a627bbdfc53b4ebc2df8cc33cec5e45b8f33bd81ba8c927395726aebfaa8",
+    "experiences/atlas-lab/deploy/README.md": "3af6cd08aae69ebf2ee8d39f93ba0edb24081f5475db246043ead9eedc7d6ef5",
+    "experiences/atlas-lab/deploy/runtime.env.example": "52a7ebd4e9c52848531d64cbb9339f9d01cc94f77b38e065e7e7e0596331d18b",
+    "experiences/atlas-lab/deploy/synk-dating.service": "bda90ecffeb1b55486d265f200b8d3c575dfab79836e50fc21141416a221b5ae",
+    "tests/atlas-dating-deploy.test.mjs": "505caeb5bab64182dcb7e7465be617d15c207d1f7268b061cce281d4ec459b2f",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-runtime.mjs": "a8e41e4f95db51c3f51f292ab6f5c028c86ad599d5d1a37ff40fba6513b8577a",
+    "experiences/atlas-lab/dating-transport.mjs": "dfb55acffc77459e0ba6e8a29a6939fa7f7768a35e7f2a90f91a565fe67e55c8",
+    "experiences/atlas-lab/dating-public.mjs": "6a3f19c74db9e8163b7aaf416402d032315b329d817c98e2733351b7a6c98853",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "experiences/atlas-lab/dating-service.mjs": "cef366d04812bfe57d1ba642afef68d49726bf8c44296286db3ef0770549ccf2",
+    "experiences/atlas-lab/dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "tests/atlas-dating-runtime.test.mjs": "8ecb483054344a5f727a806a0bb0a2ef49a461fbf6321701414b407c826d9d61",
+    "tests/atlas-dating-transport.test.mjs": "699c85ce387d6377e265b1b395447b685981cc6741903714f4de5faf7b50e698",
+    "tests/atlas-dating-shutdown.test.mjs": "54b49a742261dc57a43deb94920c43adecdd82fae362cf83509272aa4eb3592c",
+    "tests/atlas-dating-public.test.mjs": "c0e3bc584b80364fd3ea383995ca4d5739c3e608a3860585017df773e55c9f65"
+  },
+  "logSha256": {
+    "contracts.tap": "f11b3287b14d7d69b6db1d5b4032d67ea2b2a79a204f884d80ea7faa60c89a80",
+    "proxy-tests-header-diagnostic.tap": "504657f29b32d406c6db24d45d1aca6c6ef357faf0aff8c11f11e776a44e48cf",
+    "proxy-tests-initial.tap": "5dc73015f15895890eb3a47bb24fd010179d683da2877f72615e8c2019aea1d6",
+    "proxy-tests.tap": "7a1d66c1e1ebeb7521a1d887dcae81ca148d1855cab8abf1fe46e7d1c490a795"
+  },
+  "references": [
+    "https://caddyserver.com/docs/caddyfile/directives/reverse_proxy",
+    "https://caddyserver.com/docs/caddyfile/directives/log#filter",
+    "https://caddyserver.com/docs/automatic-https",
+    "https://www.freedesktop.org/software/systemd/man/latest/systemd.service.html",
+    "https://www.freedesktop.org/software/systemd/man/latest/systemd.exec.html"
+  ]
+}

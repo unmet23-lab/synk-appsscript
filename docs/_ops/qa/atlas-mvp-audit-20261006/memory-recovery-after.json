@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-06T11:16:23.024Z",
+  "phase": "after",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "externalRequests": [],
+  "errors": [],
+  "checks": [
+    {
+      "label": "old-version",
+      "stage": "explicit-delete",
+      "storedVersion": 2,
+      "enabled": false,
+      "retainedValue": false,
+      "notice": "기억한 답과 회고를 지웠고 자동 저장을 껐어요. 현재 탭의 체험은 남아 있어요."
+    },
+    {
+      "label": "old-version",
+      "stage": "recovery-complete",
+      "noAutomaticConsent": true,
+      "oldTabRejected": true,
+      "reenabledExplicitly": true,
+      "staleSaveAndForgetRejected": true
+    },
+    {
+      "label": "malformed-counters",
+      "stage": "explicit-delete",
+      "storedVersion": 2,
+      "enabled": false,
+      "retainedValue": false,
+      "notice": "기억한 답과 회고를 지웠고 자동 저장을 껐어요. 현재 탭의 체험은 남아 있어요."
+    },
+    {
+      "label": "malformed-counters",
+      "stage": "recovery-complete",
+      "noAutomaticConsent": true,
+      "oldTabRejected": true,
+      "reenabledExplicitly": true,
+      "staleSaveAndForgetRejected": true
+    },
+    {
+      "label": "valid-v1-and-normal-forget",
+      "version1Readable": true,
+      "version2WrittenOnExplicitSave": true,
+      "staleForgetRejected": true,
+      "validForgetAccepted": true,
+      "oldSaveRejectedAfterForget": true
+    },
+    {
+      "label": "non-json-indexeddb-payload",
+      "outcome": "completed",
+      "notice": "기억한 답과 회고를 지웠고 자동 저장을 껐어요. 현재 탭의 체험은 남아 있어요."
+    }
+  ]
+}

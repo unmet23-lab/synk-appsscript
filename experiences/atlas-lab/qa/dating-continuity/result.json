@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-06T15:06:12.014Z",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "paths": [
+    "one primary recommendation; optional candidates collapsed; exact same account has an introduction action and role link",
+    "explicit 30-day hide survives a new round and reload, remains private, unchanged pool is explained, own unhide restores comparison",
+    "candidate role receives exactly that introduction; only explicit acceptance unlocks preparation; focus moves to same pair; published weekend produces dates with blank time and duration",
+    "chosen duration derives end only after chosen start; manual end survives start editing; both people accept; current action shows the confirmed appointment",
+    "seven-day hide expires at its original deadline and rechecks current eligibility",
+    "after block removal, own reopening and waiting period, closed history does not hide a permitted new introduction; old acceptance is not restored"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "one-recommendation-390.png",
+    "hidden-candidate-390.png",
+    "same-person-public-schedule-390.png",
+    "confirmed-next-action-1280.png",
+    "confirmed-next-action-320.png"
+  ]
+}

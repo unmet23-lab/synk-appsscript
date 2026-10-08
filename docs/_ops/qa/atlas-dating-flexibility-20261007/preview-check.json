@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-06T20:42:08.142Z",
+  "url": "http://127.0.0.1:53146/atlas-lab/dating.html",
+  "isolatedPreview": true,
+  "publicChecks": [
+    {
+      "file": "dating.html",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "dating-ui.mjs",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "dating.css",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "dating-account.mjs",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "dating-insights.mjs",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "dating-journey.mjs",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "discovery-guidance.mjs",
+      "status": 200,
+      "matches": true
+    },
+    {
+      "file": "usability.html",
+      "status": 200,
+      "matches": true
+    }
+  ]
+}

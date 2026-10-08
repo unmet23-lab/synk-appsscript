@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-06T22:09:05.929Z",
+  "status": "reproduced",
+  "kind": "synthetic-input-reproduction",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    {
+      "issue": "unknown-answer-has-default-selection",
+      "sourceValue": null,
+      "displayedValue": "advance",
+      "mutation": false
+    },
+    {
+      "issue": "new-schedule-draft-lost-on-tab-navigation",
+      "entered": {
+        "startsAt": "2026-10-10T14:00",
+        "durationMinutes": "30",
+        "endsAt": "2026-10-10T15:10",
+        "place": "가상 초안 카페",
+        "note": "아직 전송하지 않은 가상 메모"
+      },
+      "returned": {
+        "startsAt": "",
+        "durationMinutes": "",
+        "endsAt": "",
+        "place": "",
+        "note": ""
+      },
+      "appointmentSent": false
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "before-unknown-select-390.png",
+    "before-navigation-entered-1280.png",
+    "before-navigation-lost-1280.png"
+  ]
+}

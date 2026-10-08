@@ -1,0 +1,96 @@
+TAP version 13
+# Subtest: create: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+ok 1 - create: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 346.8455
+  type: 'test'
+  ...
+# Subtest: create: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+ok 2 - create: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 249.3665
+  type: 'test'
+  ...
+# Subtest: create: database fsync failure preserves sources and cannot become a successful backup or receipt
+ok 3 - create: database fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 270.9664
+  type: 'test'
+  ...
+# Subtest: create: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+not ok 4 - create: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 364.7831
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-backup-failure.test.mjs:148:5'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception: An incomplete backup must be rejected even with the residual manifest hash'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-backup-failure.test.mjs:169:16)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Synthetic failure artifacts retained in a private temporary directory; path omitted.
+# Subtest: create: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+ok 5 - create: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 348.981
+  type: 'test'
+  ...
+# Subtest: restore: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+ok 6 - restore: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 374.2545
+  type: 'test'
+  ...
+# Subtest: restore: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+ok 7 - restore: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 474.9266
+  type: 'test'
+  ...
+# Subtest: restore: database fsync failure preserves sources and cannot become a successful backup or receipt
+ok 8 - restore: database fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 323.346
+  type: 'test'
+  ...
+# Subtest: restore: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+not ok 9 - restore: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 531.3908
+  type: 'test'
+  location: 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-backup-failure.test.mjs:148:5'
+  failureType: 'testCodeFailure'
+  error: 'Residual final receipt must be explicitly marked incomplete'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: '=='
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-backup-failure.test.mjs:173:16)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+# Synthetic failure artifacts retained in a private temporary directory; path omitted.
+# Subtest: restore: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+ok 10 - restore: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 391.4714
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 8
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3835.2544

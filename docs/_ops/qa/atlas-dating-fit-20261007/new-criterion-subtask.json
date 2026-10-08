@@ -1,0 +1,852 @@
+{
+  "version": 1,
+  "finalSourceChecks": 88,
+  "sourceHashesStable": true,
+  "newChecks": {
+    "skipped": 0,
+    "exitCode": 0,
+    "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-new-tests.tap",
+    "tests": 17,
+    "fail": 0,
+    "cases": [
+      {
+        "index": 1,
+        "passed": true,
+        "name": "new criterion keeps connection importance unchanged and records only the current confirmed own answer"
+      },
+      {
+        "index": 2,
+        "passed": true,
+        "name": "new criterion requires a valid explicit answer snapshot and a fixed completed proposal"
+      },
+      {
+        "index": 3,
+        "passed": true,
+        "name": "new criterion apply source links only the next matching delivered recommendation, with a private meeting source"
+      },
+      {
+        "index": 4,
+        "passed": true,
+        "name": "new criterion context, basis and source peer availability remain independent link gates"
+      },
+      {
+        "index": 5,
+        "passed": true,
+        "name": "withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry"
+      },
+      {
+        "index": 6,
+        "passed": true,
+        "name": "new criterion comparison expires at the bound declaration deadline and cannot outlive it"
+      },
+      {
+        "index": 7,
+        "passed": true,
+        "name": "new criterion evaluation stays prospective and unknown remains separate from failure"
+      },
+      {
+        "index": 8,
+        "passed": true,
+        "name": "HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records"
+      },
+      {
+        "index": 9,
+        "passed": true,
+        "name": "HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result"
+      },
+      {
+        "index": 10,
+        "passed": true,
+        "name": "HTTP two importance slots require the owner to choose replacement and never relax a required answer"
+      },
+      {
+        "index": 11,
+        "passed": true,
+        "name": "HTTP current declaration changes, unknown answers and stale review source cannot authorize the old preview"
+      },
+      {
+        "index": 12,
+        "passed": true,
+        "name": "HTTP bounded new importance expires and a once-only own answer cannot be promoted to baseline"
+      },
+      {
+        "index": 13,
+        "passed": true,
+        "name": "HTTP withdrawal and peer deletion stop new criterion changes while own saved reflection can still be erased"
+      },
+      {
+        "index": 14,
+        "passed": true,
+        "name": "HTTP retry of applied new importance is idempotent and returns current withdrawn source without reviving it"
+      },
+      {
+        "index": 15,
+        "passed": true,
+        "name": "HTTP pause preserves private completed reflection without opening recommendation discovery and allows owner withdrawal"
+      },
+      {
+        "index": 16,
+        "passed": true,
+        "name": "HTTP expired temporary importance uses the live baseline scope and never reuses the expired deadline"
+      },
+      {
+        "index": 17,
+        "passed": true,
+        "name": "HTTP expired baseline importance can be replaced with a newly confirmed baseline criterion"
+      }
+    ],
+    "pass": 17,
+    "command": "node --test --test-reporter=tap tests/atlas-dating-new-criterion.test.mjs",
+    "cancelled": 0
+  },
+  "correctedPauseTargeted": {
+    "pass": 2,
+    "tests": 2,
+    "fail": 0,
+    "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-pause-regression.tap",
+    "note": "After pause fix, before expired priority scope fix; final fresh new case 15 also covers paused reflection on final source."
+  },
+  "date": "2026-10-07",
+  "engineSourceChanges": 0,
+  "sourceHashes": {
+    "tests/atlas-dating-new-criterion.test.mjs": "0df30b4a3098b86449d91e06166702405237ffafccaee34a68c473da2ee5c463",
+    "experiences/atlas-lab/discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "experiences/atlas-lab/product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "experiences/atlas-lab/dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+    "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+  },
+  "productRegression": {
+    "sourceStable": true,
+    "cases": [
+      {
+        "index": 72,
+        "passed": true,
+        "name": "private goal snapshot is immutable and viewing without delivery is not an observed outcome"
+      },
+      {
+        "index": 73,
+        "passed": true,
+        "name": "actual delivery joins own corrected responses to Temper; unknown and withdrawal are not failures"
+      },
+      {
+        "index": 74,
+        "passed": true,
+        "name": "evaluation consent is explicit, prospective and withdrawal cannot revive old eligibility"
+      },
+      {
+        "index": 75,
+        "passed": true,
+        "name": "comfort is separate from intent and binds a completed proposal; no retroactive evaluation consent"
+      },
+      {
+        "index": 76,
+        "passed": true,
+        "name": "corrections after the declared observation window remain late missing, not successes"
+      },
+      {
+        "index": 77,
+        "passed": true,
+        "name": "resaving the same value does not turn an on-time observation into a late correction"
+      },
+      {
+        "index": 78,
+        "passed": true,
+        "name": "explicit correction links only the next matching recommendation, requires delivery and reports comparison without causality"
+      },
+      {
+        "index": 79,
+        "passed": true,
+        "name": "source correction or withdrawal invalidates followup irreversibly even when the same value is restored at the same timestamp"
+      },
+      {
+        "index": 80,
+        "passed": true,
+        "name": "changed basis, context or withdrawn source candidate never acquires a correction link"
+      },
+      {
+        "index": 81,
+        "passed": true,
+        "name": "comparison consent stays prospective, unknown is separate, and withdrawing then reenabling cannot restore comparison eligibility"
+      },
+      {
+        "index": 82,
+        "passed": true,
+        "name": "legacy experience remains valid without invented correction history and malformed comparison records are rejected"
+      },
+      {
+        "index": 83,
+        "passed": true,
+        "name": "private criterion snapshots are fixed at connection; completed response is separate and never changes preferences"
+      },
+      {
+        "index": 84,
+        "passed": true,
+        "name": "legacy and malformed criterion histories do not infer past importance"
+      },
+      {
+        "index": 85,
+        "passed": true,
+        "name": "restoration requires worse on a delivered linked record and an explicit original change; withdrawal and repeat cannot revive it"
+      }
+    ],
+    "pass": 14,
+    "fail": 0,
+    "tests": 14,
+    "evidence": "Cases 72 through 85 of the preserved mixed audit; pure product source and test file unchanged in final code",
+    "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-tests.tap"
+  },
+  "contract": {
+    "followupSource": "own-completed-meeting",
+    "confirmedOwnAnswerRequired": true,
+    "automaticApply": false,
+    "consentProspective": true,
+    "peerPrivateReflectionReturned": false,
+    "sourceWithdrawalDoesNotUndoExplicitPreference": true,
+    "scopeAndDeadlineBound": true,
+    "historicalImportanceUnchanged": true,
+    "explicitReplacementAtTwoSlots": true
+  },
+  "preservedInitialEvidence": [
+    {
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-interrupted-before-service-freeze.tap",
+      "note": "Stopped incomplete audit before root regional service freeze; excluded from final counts"
+    },
+    {
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-tests.tap",
+      "note": "Initial mixed 85: 77 passed/8 failed, seven new fixtures lacked counterpart private region confirmation and one actual paused-view regression"
+    },
+    {
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-before-pause-fix-new-tests.tap",
+      "note": "14 passed before paused-view fix"
+    },
+    {
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-before-expired-scope-fix-new-tests.tap",
+      "note": "15 passed before expired raw priority scope fix"
+    }
+  ],
+  "paidCalls": 0,
+  "remoteCalls": 0,
+  "serviceRegressionBeforeFinalFixes": {
+    "note": "Paused view attempted unavailable recommendation getter and rolled back pause; fixed by guarding current discovery projection. Other 56 cases passed in initial source epoch.",
+    "cases": [
+      {
+        "index": 15,
+        "passed": true,
+        "name": "criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values"
+      },
+      {
+        "index": 16,
+        "passed": true,
+        "name": "criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion"
+      },
+      {
+        "index": 17,
+        "passed": true,
+        "name": "once-only and expired criterion sources cannot be promoted to a new recommendation context"
+      },
+      {
+        "index": 18,
+        "passed": true,
+        "name": "worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances"
+      },
+      {
+        "index": 19,
+        "passed": true,
+        "name": "worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources"
+      },
+      {
+        "index": 20,
+        "passed": true,
+        "name": "priority restoration preserves field edits and is invalidated by a later priority declaration or a new context"
+      },
+      {
+        "index": 21,
+        "passed": true,
+        "name": "separate explicit SQLite stores refuse public paths and demo/account mode reuse"
+      },
+      {
+        "index": 22,
+        "passed": true,
+        "name": "fictional role login is explicit; account service never accepts demo login or decode-only identities"
+      },
+      {
+        "index": 23,
+        "passed": true,
+        "name": "central account verification forwards the exact bearer and uses only active synk_user_id"
+      },
+      {
+        "index": 24,
+        "passed": true,
+        "name": "onboarding and disclosure remain separate from private preferences and self-declaration is never verified"
+      },
+      {
+        "index": 25,
+        "passed": true,
+        "name": "atomic revision CAS, idempotency and actor isolation work across two SQLite connections"
+      },
+      {
+        "index": 26,
+        "passed": true,
+        "name": "appointment revisions and participant-private reflection are persisted and inbox is viewer-specific"
+      },
+      {
+        "index": 27,
+        "passed": true,
+        "name": "blocks, disclosure and adult withdrawal close every pair without restoring old acceptances"
+      },
+      {
+        "index": 28,
+        "passed": false,
+        "name": "account pause preserves agreed appointments and private reflection while blocking new commitments"
+      },
+      {
+        "index": 29,
+        "passed": true,
+        "name": "reports remain private, operators are server-granted and suspending a target closes its pairs"
+      },
+      {
+        "index": 30,
+        "passed": true,
+        "name": "suspension revokes operator report reads as well as processing and replay never returns stale private reports"
+      },
+      {
+        "index": 31,
+        "passed": true,
+        "name": "deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart"
+      },
+      {
+        "index": 32,
+        "passed": true,
+        "name": "account verifier runs on every request and cannot grant operator powers through client claims"
+      },
+      {
+        "index": 33,
+        "passed": true,
+        "name": "invalid product action rolls back the account, pair and receipt together"
+      },
+      {
+        "index": 34,
+        "passed": true,
+        "name": "a failure while producing the response rolls back already-written account, pair and receipt"
+      },
+      {
+        "index": 35,
+        "passed": true,
+        "name": "first discovery opens without invented answers and server-stamped actions remain immediately readable"
+      },
+      {
+        "index": 36,
+        "passed": true,
+        "name": "account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal"
+      },
+      {
+        "index": 37,
+        "passed": true,
+        "name": "guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites"
+      },
+      {
+        "index": 38,
+        "passed": true,
+        "name": "closing preserves only my readable reflection and counterpart deletion keeps my words without its profile"
+      },
+      {
+        "index": 39,
+        "passed": true,
+        "name": "account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once"
+      },
+      {
+        "index": 40,
+        "passed": true,
+        "name": "account deletion removes its exposure references and ordinary responses never include other viewers logs"
+      },
+      {
+        "index": 41,
+        "passed": true,
+        "name": "the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart"
+      },
+      {
+        "index": 42,
+        "passed": true,
+        "name": "introduction delivery, mutual intent and date acceptance are separate persisted stages"
+      },
+      {
+        "index": 43,
+        "passed": true,
+        "name": "declined introduction cannot be resent through block/unblock, a new pair, or an old success replay"
+      },
+      {
+        "index": 44,
+        "passed": true,
+        "name": "introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal"
+      },
+      {
+        "index": 45,
+        "passed": true,
+        "name": "legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement"
+      },
+      {
+        "index": 46,
+        "passed": true,
+        "name": "date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances"
+      },
+      {
+        "index": 47,
+        "passed": true,
+        "name": "date expiry closes its recipient gate across restart and does not count as a decline"
+      },
+      {
+        "index": 48,
+        "passed": true,
+        "name": "a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry"
+      },
+      {
+        "index": 49,
+        "passed": true,
+        "name": "unanswered introduction expiry is not rejection and cooldown is durable across restart"
+      },
+      {
+        "index": 50,
+        "passed": true,
+        "name": "preview is private and does not save an answer; explicit apply checks revision, expiry and owner"
+      },
+      {
+        "index": 51,
+        "passed": true,
+        "name": "preview applies the current exposure tie order and rejects changed pool or global exposure"
+      },
+      {
+        "index": 52,
+        "passed": true,
+        "name": "own recommendation experience requires an issued current decision and explicit delivery, never GET exposure"
+      },
+      {
+        "index": 53,
+        "passed": true,
+        "name": "explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates"
+      },
+      {
+        "index": 54,
+        "passed": true,
+        "name": "experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data"
+      },
+      {
+        "index": 55,
+        "passed": true,
+        "name": "comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion"
+      },
+      {
+        "index": 56,
+        "passed": true,
+        "name": "an answer expiring inside the five-minute preview period invalidates the reviewed result"
+      },
+      {
+        "index": 57,
+        "passed": true,
+        "name": "old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers"
+      },
+      {
+        "index": 58,
+        "passed": true,
+        "name": "an explicitly reviewed correction links the next delivered recommendation privately and persists across restart"
+      },
+      {
+        "index": 59,
+        "passed": true,
+        "name": "changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences"
+      },
+      {
+        "index": 60,
+        "passed": true,
+        "name": "no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction"
+      },
+      {
+        "index": 61,
+        "passed": true,
+        "name": "expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable"
+      },
+      {
+        "index": 62,
+        "passed": true,
+        "name": "priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail"
+      },
+      {
+        "index": 63,
+        "passed": true,
+        "name": "baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer"
+      },
+      {
+        "index": 64,
+        "passed": true,
+        "name": "expired, cleared and missing baseline values cannot be published; deletion removes correction records"
+      },
+      {
+        "index": 65,
+        "passed": true,
+        "name": "counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal"
+      },
+      {
+        "index": 66,
+        "passed": true,
+        "name": "explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities"
+      },
+      {
+        "index": 67,
+        "passed": true,
+        "name": "the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance"
+      },
+      {
+        "index": 68,
+        "passed": true,
+        "name": "demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect"
+      },
+      {
+        "index": 69,
+        "passed": true,
+        "name": "legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence"
+      },
+      {
+        "index": 70,
+        "passed": true,
+        "name": "a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive"
+      },
+      {
+        "index": 71,
+        "passed": true,
+        "name": "schedule context reads only currently public availability and disappears when pair access is withdrawn"
+      }
+    ],
+    "finalSourceRunClaimed": false,
+    "pass": 56,
+    "fail": 1,
+    "tests": 57,
+    "log": "docs/_ops/qa/atlas-dating-fit-20261007/new-criterion-tests.tap"
+  },
+  "scope": "Own completed meeting new importance -> confirmed answer -> explicit priority preview/apply -> next delivered recommendation followup",
+  "fixes": [
+    "Require both current private actual meeting area declarations in synthetic fixture independently of public profile",
+    "Guard private criterion projection during paused or unavailable discovery",
+    "Use live priority scope after temporary deadline expiry and ignore expired baseline deadlines"
+  ],
+  "limitations": [
+    "Synthetic local service tests only; no actual meeting or satisfaction effects verified",
+    "Existing Core/Temper consumption only; no new engine or policy learning",
+    "Initial failed and interrupted source stages retained as development history and excluded from final totals"
+  ],
+  "realParticipants": 0,
+  "deployment": false,
+  "finalServiceRegression": {
+    "tests": 57,
+    "fail": 0,
+    "beforeHashes": {
+      "experiences/atlas-lab/product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+      "tests/atlas-product-experience.test.mjs": "6215bb1e6d039f56b15bb42be637bae7b78d0f4c12e988d73612751deceec773",
+      "experiences/atlas-lab/dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+      "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+      "tests/atlas-dating-service.test.mjs": "bbf454f64b05a4eb8e521d1629baa63611fb0cb1616221f830244e460d218d29",
+      "experiences/atlas-lab/discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    },
+    "cases": [
+      {
+        "passed": true,
+        "name": "criterion reflection uses the connection snapshot, only own completion, and an explicit priority preview without relaxing required values",
+        "index": 1
+      },
+      {
+        "passed": true,
+        "name": "criterion preview survives a new context only for unchanged baseline sources and never revives after redeclaration, withdrawal or deletion",
+        "index": 2
+      },
+      {
+        "passed": true,
+        "name": "once-only and expired criterion sources cannot be promoted to a new recommendation context",
+        "index": 3
+      },
+      {
+        "passed": true,
+        "name": "worse restoration previews only the original correction, preserves later unrelated edits, and never restores selection or acceptances",
+        "index": 4
+      },
+      {
+        "passed": true,
+        "name": "worse restoration rejects same-field redeclaration, source withdrawal, current expiry and forged preview sources",
+        "index": 5
+      },
+      {
+        "passed": true,
+        "name": "priority restoration preserves field edits and is invalidated by a later priority declaration or a new context",
+        "index": 6
+      },
+      {
+        "passed": true,
+        "name": "separate explicit SQLite stores refuse public paths and demo/account mode reuse",
+        "index": 7
+      },
+      {
+        "passed": true,
+        "name": "fictional role login is explicit; account service never accepts demo login or decode-only identities",
+        "index": 8
+      },
+      {
+        "passed": true,
+        "name": "central account verification forwards the exact bearer and uses only active synk_user_id",
+        "index": 9
+      },
+      {
+        "passed": true,
+        "name": "onboarding and disclosure remain separate from private preferences and self-declaration is never verified",
+        "index": 10
+      },
+      {
+        "passed": true,
+        "name": "atomic revision CAS, idempotency and actor isolation work across two SQLite connections",
+        "index": 11
+      },
+      {
+        "passed": true,
+        "name": "appointment revisions and participant-private reflection are persisted and inbox is viewer-specific",
+        "index": 12
+      },
+      {
+        "passed": true,
+        "name": "blocks, disclosure and adult withdrawal close every pair without restoring old acceptances",
+        "index": 13
+      },
+      {
+        "passed": true,
+        "name": "account pause preserves agreed appointments and private reflection while blocking new commitments",
+        "index": 14
+      },
+      {
+        "passed": true,
+        "name": "reports remain private, operators are server-granted and suspending a target closes its pairs",
+        "index": 15
+      },
+      {
+        "passed": true,
+        "name": "suspension revokes operator report reads as well as processing and replay never returns stale private reports",
+        "index": 16
+      },
+      {
+        "passed": true,
+        "name": "deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart",
+        "index": 17
+      },
+      {
+        "passed": true,
+        "name": "account verifier runs on every request and cannot grant operator powers through client claims",
+        "index": 18
+      },
+      {
+        "passed": true,
+        "name": "invalid product action rolls back the account, pair and receipt together",
+        "index": 19
+      },
+      {
+        "passed": true,
+        "name": "a failure while producing the response rolls back already-written account, pair and receipt",
+        "index": 20
+      },
+      {
+        "passed": true,
+        "name": "first discovery opens without invented answers and server-stamped actions remain immediately readable",
+        "index": 21
+      },
+      {
+        "passed": true,
+        "name": "account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal",
+        "index": 22
+      },
+      {
+        "passed": true,
+        "name": "guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites",
+        "index": 23
+      },
+      {
+        "passed": true,
+        "name": "closing preserves only my readable reflection and counterpart deletion keeps my words without its profile",
+        "index": 24
+      },
+      {
+        "passed": true,
+        "name": "account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once",
+        "index": 25
+      },
+      {
+        "passed": true,
+        "name": "account deletion removes its exposure references and ordinary responses never include other viewers logs",
+        "index": 26
+      },
+      {
+        "passed": true,
+        "name": "the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart",
+        "index": 27
+      },
+      {
+        "passed": true,
+        "name": "introduction delivery, mutual intent and date acceptance are separate persisted stages",
+        "index": 28
+      },
+      {
+        "passed": true,
+        "name": "declined introduction cannot be resent through block/unblock, a new pair, or an old success replay",
+        "index": 29
+      },
+      {
+        "passed": true,
+        "name": "introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal",
+        "index": 30
+      },
+      {
+        "passed": true,
+        "name": "legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement",
+        "index": 31
+      },
+      {
+        "passed": true,
+        "name": "date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances",
+        "index": 32
+      },
+      {
+        "passed": true,
+        "name": "date expiry closes its recipient gate across restart and does not count as a decline",
+        "index": 33
+      },
+      {
+        "passed": true,
+        "name": "a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry",
+        "index": 34
+      },
+      {
+        "passed": true,
+        "name": "unanswered introduction expiry is not rejection and cooldown is durable across restart",
+        "index": 35
+      },
+      {
+        "passed": true,
+        "name": "preview is private and does not save an answer; explicit apply checks revision, expiry and owner",
+        "index": 36
+      },
+      {
+        "passed": true,
+        "name": "preview applies the current exposure tie order and rejects changed pool or global exposure",
+        "index": 37
+      },
+      {
+        "passed": true,
+        "name": "own recommendation experience requires an issued current decision and explicit delivery, never GET exposure",
+        "index": 38
+      },
+      {
+        "passed": true,
+        "name": "explicit result review and introduction request retain the comparison basis without recording GETs or replay duplicates",
+        "index": 39
+      },
+      {
+        "passed": true,
+        "name": "experience evaluation withdrawal is prospective on reenable and storage withdrawal removes all personal outcome data",
+        "index": 40
+      },
+      {
+        "passed": true,
+        "name": "comfort requires own completion, is separate from reflection, and remains withdrawable after counterpart deletion",
+        "index": 41
+      },
+      {
+        "passed": true,
+        "name": "an answer expiring inside the five-minute preview period invalidates the reviewed result",
+        "index": 42
+      },
+      {
+        "passed": true,
+        "name": "old decision reports keep their basis while withdrawn peer labels vanish; suspended users can retract consent and answers",
+        "index": 43
+      },
+      {
+        "passed": true,
+        "name": "an explicitly reviewed correction links the next delivered recommendation privately and persists across restart",
+        "index": 44
+      },
+      {
+        "passed": true,
+        "name": "changing or withdrawing the source invalidates a preview and followup without reverting the chosen preferences",
+        "index": 45
+      },
+      {
+        "passed": true,
+        "name": "no-op or unlinked changes never invent a correction; undo followed by re-entry cannot revive an old correction",
+        "index": 46
+      },
+      {
+        "passed": true,
+        "name": "expired correction and a newly started situation do not link the next result, while a fresh post-expiry preview remains applicable",
+        "index": 47
+      },
+      {
+        "passed": true,
+        "name": "priority corrections use the same explicit source link and storage withdrawal removes the full comparison trail",
+        "index": 48
+      },
+      {
+        "passed": true,
+        "name": "baseline publication patches only explicitly selected valid self fields and never enables disclosure or copies a context answer",
+        "index": 49
+      },
+      {
+        "passed": true,
+        "name": "expired, cleared and missing baseline values cannot be published; deletion removes correction records",
+        "index": 50
+      },
+      {
+        "passed": true,
+        "name": "counterpart disclosure withdrawal hides correction references and suspending the owner still permits comparison withdrawal",
+        "index": 51
+      },
+      {
+        "passed": true,
+        "name": "explicit demo start creates absent sample accounts only, while account mode never bootstraps fictional identities",
+        "index": 52
+      },
+      {
+        "passed": true,
+        "name": "the recommended demo identity is the invited identity and only its own role can accept before separate date acceptance",
+        "index": 53
+      },
+      {
+        "passed": true,
+        "name": "demo visibility and reciprocal requirements use the same saved public profile; hidden IDs cannot bypass connect",
+        "index": 54
+      },
+      {
+        "passed": true,
+        "name": "legacy fixed-candidate discovery migrates once, preserves personal declarations and existing pairs, and never rebinds old candidate evidence",
+        "index": 55
+      },
+      {
+        "passed": true,
+        "name": "a full legacy log migrates without reviving cleared mandatory values or expiring baselines, and preserves its original archive",
+        "index": 56
+      },
+      {
+        "passed": true,
+        "name": "schedule context reads only currently public availability and disappears when pair access is withdrawn",
+        "index": 57
+      }
+    ],
+    "sourceHashesStable": true,
+    "command": "node --test --test-reporter=tap tests/atlas-dating-service.test.mjs",
+    "skipped": 0,
+    "exitCode": 0,
+    "cancelled": 0,
+    "log": "docs/_ops/qa/atlas-dating-fit-20261007/final-service-regression.tap",
+    "pass": 57,
+    "afterHashes": {
+      "experiences/atlas-lab/product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+      "tests/atlas-product-experience.test.mjs": "6215bb1e6d039f56b15bb42be637bae7b78d0f4c12e988d73612751deceec773",
+      "experiences/atlas-lab/dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+      "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+      "tests/atlas-dating-service.test.mjs": "bbf454f64b05a4eb8e521d1629baa63611fb0cb1616221f830244e460d218d29",
+      "experiences/atlas-lab/discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219"
+    }
+  },
+  "uniqueCaseCount": 88
+}

@@ -1,0 +1,16 @@
+{
+  "preservedFailures": [
+    "Old field count and rejection wording fixtures were updated while legacy replay remained preserved.",
+    "Seven new HTTP setup failures came from a public region without a separate current private declaration; fixture now explicitly confirms both owners.",
+    "An actual pause view regression was reproduced and fixed; the final full service57 is rerun after all service fixes.",
+    "Independent review reproduced expired-priority preview, unavailable UI decline, and one-slot replacement errors before their fixes.",
+    "Root projection fixture initially reused a timestamp; all eight new projections and affected old regressions pass on final source.",
+    "Browser fixture reused historical timestamps, missed a valid Korean notice variant, and tried a child inside a closed ancestor; exact failed runs remain preserved.",
+    "Incomplete or pre-fix service groups and repeated development runs do not add to final unique test counts."
+  ],
+  "paidCalls": 0,
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "remoteMigration": false,
+  "publicDeployment": false
+}

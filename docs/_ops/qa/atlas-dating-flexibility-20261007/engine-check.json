@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-06T20:37:07.272Z",
+  "existingSources": [
+    {
+      "path": "atlas/ask.js",
+      "sameAsPrior": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sameAsPrior": true
+    }
+  ],
+  "newCoreModule": {
+    "path": "atlas/conditional-preference.js",
+    "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+    "contract": "core-conditional-preference-1"
+  },
+  "newEnginesAdded": 0
+}

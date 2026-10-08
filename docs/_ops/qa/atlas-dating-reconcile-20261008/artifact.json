@@ -1,0 +1,13 @@
+{
+  "directory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-reconcile-ready-20261008-081604",
+  "zip": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-reconcile-ready-20261008-081604.zip",
+  "extractedDirectory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-reconcile-ready-20261008-081604-archive-check",
+  "files": 58,
+  "totalBytes": 1848795,
+  "manifestSha256": "6503aed9903f0e1c7ccac44b43223b627a81ff1036f1ade6eb676a502215bf6e",
+  "zipSha256": "5c07d0c78adfee098afbfeff6e3a817e4461da61124004988716d4d3d7a1f7a7",
+  "zipBytes": 1166033,
+  "archiveExtractionVerified": true,
+  "deployed": false,
+  "containsRealUserData": false
+}

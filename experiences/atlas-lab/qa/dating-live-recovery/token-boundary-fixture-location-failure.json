@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-07T00:00:14.450Z",
+  "status": "failed",
+  "kind": "synthetic-live-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "failure": "locator.evaluate: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"experience-start\"]').locator('xpath=ancestor::details[1]')\u001b[22m\n\n    at reveal (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-live-recovery-smoke.mjs:21:52)\n    at tokenBoundaryPath (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-live-recovery-smoke.mjs:76:70)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-live-recovery-smoke.mjs:240:3"
+}

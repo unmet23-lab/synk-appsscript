@@ -1,0 +1,221 @@
+{
+  "at": "2026-10-07T12:02:06.975Z",
+  "status": "passed",
+  "uniqueBrowserPaths": 42,
+  "finalSourceStable": true,
+  "sourceBefore": {
+    "dating-ui.mjs": "fdfc961ce658e0224ef176f4d3c5fcf27bc9bdfbeb9a9f4539e25e43f767869b",
+    "dating-live.mjs": "be21d8afac0b32d3465e1da70785a377775a69b3f310be524b44db7bae1b0b91",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "appointments.mjs": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9",
+    "introductions.mjs": "6b99ec5ea7427d7cb4bd11eb4e3403006750cbc84e916a19028149ddb4db574d",
+    "meeting-alignment.mjs": "48cb2c2ba2d29cedaa4d12ca75b1675243dbfae00ff46c37d8b2d393220da036",
+    "dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "sourceAfter": {
+    "dating-ui.mjs": "fdfc961ce658e0224ef176f4d3c5fcf27bc9bdfbeb9a9f4539e25e43f767869b",
+    "dating-live.mjs": "be21d8afac0b32d3465e1da70785a377775a69b3f310be524b44db7bae1b0b91",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "appointments.mjs": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9",
+    "introductions.mjs": "6b99ec5ea7427d7cb4bd11eb4e3403006750cbc84e916a19028149ddb4db574d",
+    "meeting-alignment.mjs": "48cb2c2ba2d29cedaa4d12ca75b1675243dbfae00ff46c37d8b2d393220da036",
+    "dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "sourceSha256": {
+    "dating-ui.mjs": "fdfc961ce658e0224ef176f4d3c5fcf27bc9bdfbeb9a9f4539e25e43f767869b",
+    "dating-live.mjs": "be21d8afac0b32d3465e1da70785a377775a69b3f310be524b44db7bae1b0b91",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "c749e44049329aabd5151dc04009392e92c268426c3ce086eb451a6142c98219",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-adult.mjs": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "appointments.mjs": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9",
+    "introductions.mjs": "6b99ec5ea7427d7cb4bd11eb4e3403006750cbc84e916a19028149ddb4db574d",
+    "meeting-alignment.mjs": "48cb2c2ba2d29cedaa4d12ca75b1675243dbfae00ff46c37d8b2d393220da036",
+    "dating-service.mjs": "256fd661beb4d47bcb1dd1cd6cdab572b0ca43dba08d32a198c751672fa41161",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  "testSha256": {
+    "tests/atlas-dating-fit-smoke.mjs": "ea1c9077a419c0cb11802de9caa1eca57b69fa13afb61aa033ce3ba8647d905a",
+    "tests/atlas-dating-smoke.mjs": "380f8c40ce7f18263180e0d9a2d168c10f1988cd33a12ec2b3b284a7460a1ddd",
+    "tests/atlas-dating-readiness-smoke.mjs": "eba462b2d1165350a2071df5d0ffeeeccfc235991389b0b5a8d25154194677fe"
+  },
+  "groups": [
+    {
+      "name": "new",
+      "status": "passed",
+      "paths": 15,
+      "result": "docs/_ops/qa/atlas-dating-fit-20261007/browser-new-result.json",
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/browser-new.log",
+      "runtimeErrors": 0,
+      "externalRequests": 0,
+      "actualUsers": 0,
+      "modelCalls": 0,
+      "resultSha256": "d2a01180db5d5574ab9c1cb3af50ab6eaf11a83c2bab6becd54c5dabfa446b20",
+      "logSha256": "688aa94769c581ec327d3d74419435952a6211907976e294e2b5666931dce84e",
+      "sourceStable": true
+    },
+    {
+      "name": "dating",
+      "status": "passed",
+      "paths": 18,
+      "result": "docs/_ops/qa/atlas-dating-fit-20261007/browser-dating-result.json",
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/browser-dating-regression.log",
+      "runtimeErrors": 0,
+      "externalRequests": 0,
+      "actualUsers": 0,
+      "modelCalls": 0,
+      "resultSha256": "350a9f2cc54cc80e65d28941ae4ca75ccf4e57c00a65b8bff18a5bc2d72efb4b",
+      "logSha256": "f800ebeb1b874758f0e0da00bdb6f95fbbde14b67f8b4754be658bb067e87c20"
+    },
+    {
+      "name": "readiness",
+      "status": "passed",
+      "paths": 9,
+      "result": "docs/_ops/qa/atlas-dating-fit-20261007/browser-readiness-result.json",
+      "log": "docs/_ops/qa/atlas-dating-fit-20261007/browser-readiness-regression.log",
+      "runtimeErrors": 0,
+      "externalRequests": 0,
+      "actualUsers": 0,
+      "modelCalls": 0,
+      "resultSha256": "3a4741cde3725a097cb346f4ae47a4768818d1d8406af182a18c2f0a64866aa8",
+      "logSha256": "11bfcf15c00feb81e0245acb24c4e367f2c713f7002d85f2df757dd39b0390f5",
+      "sourceStable": true
+    }
+  ],
+  "screenshots": {
+    "new": 14,
+    "sourceDirectory": "experiences/atlas-lab/qa/dating-fit",
+    "newFiles": [
+      {
+        "name": "legacy-relation-kept-unmapped-320.png",
+        "sha256": "9490cc3514d280971c3336a16e36d31513e8dbbcde68fa1ca6ce863172814d3c"
+      },
+      {
+        "name": "serious-relationship-at-gradual-speed-390.png",
+        "sha256": "e240713e4a1472756f405ffccb21b19d04d03c623bc9490aa1b6651ccdfd6791"
+      },
+      {
+        "name": "separate-relationship-reasons-390.png",
+        "sha256": "6e376daa3212ee34e0345519791ac61669f0f0dd7df151bb7868f6f67fe11a64"
+      },
+      {
+        "name": "explicit-meeting-region-private-picker-320.png",
+        "sha256": "2e1c65ee35782568e9cb1f929823fcd6fffd749f1f5d5eee23e42526c1e3ede5"
+      },
+      {
+        "name": "private-regions-do-not-fill-public-evidence-390.png",
+        "sha256": "eed907f1775b5ec14cd786b729f48e5fb0aafabe94b0ba846bac6374ac3b3b39"
+      },
+      {
+        "name": "disjoint-public-areas-exclude-without-expansion-390.png",
+        "sha256": "4ef428d2106071eb666aa4db360087c697b80b465ecaef59479024b1e6074d3e"
+      },
+      {
+        "name": "withdrawn-public-region-polls-back-to-pending-390.png",
+        "sha256": "1f951632656515f222d4b9408be5883db58588fd616e7d5c21168f162cdbd48a"
+      },
+      {
+        "name": "blocked-acceptance-keeps-explicit-decline-390.png",
+        "sha256": "76fd7521ba596963a11e48ff2c08aac75c2d796c27c06c4bc210e5b5230697b9"
+      },
+      {
+        "name": "new-criterion-confirmed-reflection-keeps-ranking-390.png",
+        "sha256": "d5ca3ce43d5cec6d409cfca04e89e7899e9c0d7d01ee282d2547527dbf8d3f5e"
+      },
+      {
+        "name": "new-criterion-replacement-and-deadline-preview-320.png",
+        "sha256": "654f8ecaaac094d1d63947da1221ff92352e3375837501237b11ae31e21923be"
+      },
+      {
+        "name": "new-criterion-explicitly-applied-390.png",
+        "sha256": "bcef405ece786bd43b50a6a4aff938bb52188c66d714fc731f3e37b616cf1105"
+      },
+      {
+        "name": "next-experience-linked-to-new-criterion-390.png",
+        "sha256": "ec36d8b79f7c554a2eb881c4c5131695a0be60cae863e0d1c37eec234612f512"
+      },
+      {
+        "name": "withdrawn-reflection-invalidates-link-not-applied-choice-390.png",
+        "sha256": "bbdd7852bb3450d07bf30073c710f35279b8f97d5fb9ef917066c23bdb6bc93a"
+      },
+      {
+        "name": "one-priority-keeps-existing-and-adds-new-320.png",
+        "sha256": "babba6b1f11547db085b0307377ee9963b8bbc01d14e8d8f496af5a2ddd7d7de"
+      }
+    ]
+  },
+  "regressionFixtureMigration": {
+    "file": "tests/atlas-dating-smoke.mjs",
+    "from": "wants.purpose",
+    "to": "wants.relationshipGoal",
+    "changed": "Two priority checkbox selectors and one effective-priority assertion only; the existing 18-flow scope remains unchanged. Historical combined answers now belong to the dedicated saved-log migration fixture."
+  },
+  "preservedFixtureFailures": [
+    {
+      "result": "browser-first-timeout.json",
+      "log": "browser-first-timeout.log",
+      "reason": "Saved historical fixture events used identical timestamps; invalid stored order caused state 400 and the browser view timeout."
+    },
+    {
+      "result": "browser-legacy-fixture-order-failure.json",
+      "log": "browser-legacy-fixture-order-failure.log",
+      "reason": "Direct state GET reproduced the same invalid fixture order; fixed by advancing each historical event timestamp by 1 ms."
+    },
+    {
+      "result": "browser-preview-notice-fixture-failure.json",
+      "log": "browser-preview-notice-fixture-failure.log",
+      "reason": "The fixture regular expression omitted the actual Korean form of choose. Revision immutability and no-preview guards had already passed."
+    },
+    {
+      "result": "browser-nested-details-fixture-failure.json",
+      "log": "browser-nested-details-fixture-failure.log",
+      "reason": "The fixture tried to click a child summary while the accepted-pair secondary recommendation fold was closed; the helper now clicks closed ancestors first."
+    }
+  ],
+  "visualInspection": [
+    "new-criterion-replacement-and-deadline-preview-320.png",
+    "blocked-acceptance-keeps-explicit-decline-390.png"
+  ],
+  "actualUsers": 0,
+  "realAccounts": 0,
+  "modelCalls": 0,
+  "paidCalls": 0,
+  "deployments": 0,
+  "remoteMigrations": 0,
+  "limitations": "These are local synthetic UI and server flows, not satisfaction, real-person, provider or production evidence."
+}

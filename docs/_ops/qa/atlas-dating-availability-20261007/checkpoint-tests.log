@@ -1,0 +1,41 @@
+✔ demo credentials are memory-only, distinct from a real SYNK session (23.0286ms)
+✔ an OAuth session is bound to its registered identity origin and product client (0.6164ms)
+✔ account requests use SYNK bearer but never send private records to the identity host (0.7463ms)
+✔ revoked identity clears stored credentials and does not retry the mutation (0.5478ms)
+✔ logout rejects a late response from the prior identity (0.8556ms)
+✔ dating PKCE uses its own pending namespace without overwriting platform login (4.9804ms)
+✔ renewal is single-flight and a logout during refresh cannot restore a session (0.9448ms)
+✔ a revoked refresh credential clears the session; a transient provider outage preserves it (1.7849ms)
+✔ only dispatched action uncertainty is marked: transport, unreadable JSON/body and server outage; definitive rejection and GET are separate (3.3487ms)
+✔ logout or disposal during a dispatched mutation does not turn a stale response into a recoverable write (0.8501ms)
+✔ a malformed authentication rejection clears credentials and never remains uncertain (0.346ms)
+✔ checkpoint stores only a versioned actor/client-bound receipt marker, never the binding source, action, revision or credentials (8.5164ms)
+✔ matching demo actor can restore after a new fictional session; other actor, mode or client registration discards the marker (1.6075ms)
+✔ expiry is exact and future or malformed cache entries cannot authorize a receipt lookup (1.9393ms)
+✔ a reload restores GET-only pending with no action/revision, never sends automatically, and applied receipt removes the marker (2.3565ms)
+✔ missing receipts and failed checks preserve reload lookup; definitive authentication rejection clears it (1.1338ms)
+✔ write/readback failures stop before POST, including a storage adapter that silently drops writes (1.4659ms)
+✔ successful send, definite action rejection, logout and identity change erase markers; uncertain retry preserves original creation time (2.3432ms)
+✔ clear during asynchronous checkpoint hashing cannot publish a late marker or dispatch a POST (0.5425ms)
+✔ binding changes and expiry stop retrying an in-memory body, and send without restore cannot overwrite another unresolved marker (2.6815ms)
+✔ failed marker cleanup reports the limitation without claiming a proven successful mutation failed (1.0189ms)
+✔ a lost response keeps an immutable tab-only envelope, blocks new writes, and retries the same UUID and body only explicitly (3.0641ms)
+✔ a missing receipt is inconclusive and an exact applied receipt resolves with the latest view (0.8461ms)
+✔ receipt transport or malformed/mismatched replies preserve pending; definitive rejection clears it (1.289ms)
+✔ repeated uncertain retries retain pending, but revision rejection clears it (0.4255ms)
+✔ identity changes and explicit lifecycle clearing discard pending and reject late private responses (0.6438ms)
+✔ concurrent checks/retries cannot launch duplicate traffic and ordinary definite failures do not leave pending (0.7594ms)
+✔ an incomplete or other actor’s action response stays unresolved instead of publishing the wrong view (0.4974ms)
+✔ receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body (204.2743ms)
+✔ receipt queries and methods are strict and cross-origin calls cannot read outcomes (128.4891ms)
+✔ old receipts cannot bypass current suspended/deleted account gates or revive a mutation (487.8756ms)
+✔ a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once (145.8062ms)
+✔ real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation (130.1604ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1243.1543

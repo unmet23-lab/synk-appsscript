@@ -1,0 +1,120 @@
+{
+  "at": "2026-10-07T13:29:28.304Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Blocked-introduction reasons and exact owner action from currently authorized facts",
+    "Read-only next-context transition preview and atomic explicit exposure/start apply",
+    "Server-time Korean today-only, recommendation-only and custom deadline controls with current-source bounds and return explanation"
+  ],
+  "tests": {
+    "uniqueCases": 416,
+    "passed": 416,
+    "failed": 0,
+    "totalExecutions": 416,
+    "groups": [
+      {
+        "name": "service, context transition, introduction guidance, completed-meeting criteria and mutual regions",
+        "log": "server-final.tap",
+        "sha256": "566c5b378581436cde6cb78e0a725d967f58d2d47f6e37b9e045ddcd80b496d8",
+        "tests": 122,
+        "pass": 122,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "deadline policy, discovery, relationship contracts, readiness, projections, disclosure and live state",
+        "log": "client-discovery-final.tap",
+        "sha256": "3920dba6648c7fa5cfa260d5c61d7535b717a0500411f11d9b9e2965b0a496e1",
+        "tests": 213,
+        "pass": 213,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "adult, central availability, receipts, account, checkpoint, delivery and lifecycle",
+        "log": "access-delivery-final.tap",
+        "sha256": "adc52ef454e002edf2cd2653f123ce77f9bcf71718a824999254729e34eb057e",
+        "tests": 76,
+        "pass": 76,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      {
+        "name": "actual paired PGlite and SQLite backup restoration",
+        "log": "backup-final.tap",
+        "sha256": "f1919759bee154eb558a2a51a0ca41f9b3404cb1a4cfaf86fec9f0dd496e1391",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    ]
+  },
+  "browserPaths": 56,
+  "browser": [
+    {
+      "name": "new personal controls",
+      "paths": 14,
+      "record": "browser-dating-control.json",
+      "log": "browser-new.log",
+      "at": "2026-10-07T13:11:07.695Z",
+      "errors": 0,
+      "externalRequests": 0
+    },
+    {
+      "name": "existing relationship regions and new criterion",
+      "paths": 15,
+      "record": "browser-dating-fit.json",
+      "log": "browser-fit-regression.log",
+      "at": "2026-10-07T13:04:47.254Z",
+      "errors": 0,
+      "externalRequests": 0
+    },
+    {
+      "name": "existing introduction and appointment",
+      "paths": 18,
+      "record": "browser-dating.json",
+      "log": "browser-dating-regression.log",
+      "at": "2026-10-07T13:07:34.159Z",
+      "errors": 0,
+      "externalRequests": 0
+    },
+    {
+      "name": "existing preparation and adult access",
+      "paths": 9,
+      "record": "browser-dating-readiness.json",
+      "log": "browser-readiness-regression.log",
+      "at": "2026-10-07T13:08:12.982Z",
+      "errors": 0,
+      "externalRequests": 0
+    }
+  ],
+  "mobileScreenshots": 8,
+  "preview": {
+    "url": "http://127.0.0.1:49339/atlas-lab/dating.html",
+    "filesMatched": 16,
+    "isolatedDemo": true
+  },
+  "sourceStable": true,
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "tutorChanges": 0,
+  "publicDeployment": false,
+  "remoteMigration": false,
+  "limitations": [
+    "All identities, meetings, authorization suppliers and browser evidence are synthetic and local; real satisfaction, actual meetings, physical devices and production are unverified.",
+    "Hidden counterpart region or invitation settings are never identified as a cause; generic pending guidance offers current-state refresh instead.",
+    "Only eligible IDs actually listed by the client are accepted for the reviewed exposure plan; server permission checks do not prove physical human viewing.",
+    "Today-only uses the current server projection time and Asia/Seoul midnight. Manual custom dates use the device timezone with a visible label; final server revalidation remains authoritative.",
+    "Guidance and shortcuts never grant consent, publish answers, widen actual meeting areas or relax either party must-haves.",
+    "Existing Core/Domain/Ask/Temper and product contracts are reused; no underlying engine code or weights changed.",
+    "Paid AI features, model evaluation, tutor, real participant recruitment, production providers and deployment remain deferred."
+  ]
+}

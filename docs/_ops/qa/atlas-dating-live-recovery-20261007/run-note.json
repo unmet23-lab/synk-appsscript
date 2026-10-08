@@ -1,0 +1,24 @@
+{
+  "initialFailures": [
+    "An added suspended POST replay rejection broke one established safe-current-view test; removed only that guard, leaving new receipt GET unavailable for suspended accounts.",
+    "The old browser503 fixture clicked propose again with a new request; this is intentionally locked now. It now checks the missing receipt and explicitly retries the same request. Initial failed result is preserved.",
+    "The old conditional preview fixture assumed the preview survived until manual apply/cancel. It now explicitly runs the production refresh and checks source-bound invalidation, own account non-mutation and valid draft retention. The initial failed result is preserved.",
+    "The unchanged poll discarded a rotating five-minute recommendation receipt. At clock+6minutes, an actual recommendation review POST returned409 preview-stale and added no record. Preserved pre-fix evidence."
+  ],
+  "reportPreparationFixes": [
+    "A shell quote in a run-note edit failed without writing; applied the edit as a patch.",
+    "The initial source manifest omitted dating.html; include every served file before comparing hashes."
+  ],
+  "reviewFixes": [
+    "Do not mark untouched forms dirty after refresh.",
+    "Preserve edited HTML forms and div.form islands against their own source, including profile public fields and alignment proposal versions.",
+    "Discard only changed-source inputs and pending previews on authority updates; preserve unrelated own inputs.",
+    "Do not display not-yet-sent captions while the original POST outcome is unknown.",
+    "Accept the latest authorized view on unchanged polls without redrawing or changing input focus; a clock+6minutes review now returns200 and adds exactly one record."
+  ],
+  "finalFailures": 0,
+  "fullServiceSuiteRerunAfterFix": false,
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false
+}

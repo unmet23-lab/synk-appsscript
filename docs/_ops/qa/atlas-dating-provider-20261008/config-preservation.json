@@ -1,0 +1,38 @@
+{
+  "at": "2026-10-07T19:32:23.303Z",
+  "preservedFiles": [
+    {
+      "path": "desktop/auth-config.json",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/synk-account/config.json",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/daily-fortune/account.config.json",
+      "unchanged": true
+    },
+    {
+      "path": "tools/synk-id/state/provision-production.json",
+      "unchanged": true
+    }
+  ],
+  "portal": {
+    "existingSettingsPreserved": true,
+    "existingClientsPreserved": true,
+    "oldCount": 18,
+    "newCount": 19,
+    "added": [
+      {
+        "product": "platform",
+        "clientId": "42cd91ff-6b8d-4202-93fe-5748ca4fa663",
+        "redirectUris": [
+          "http://127.0.0.1:4300/atlas-lab/dating.html"
+        ]
+      }
+    ],
+    "published": false
+  },
+  "ok": true
+}

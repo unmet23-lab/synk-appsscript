@@ -1,0 +1,27 @@
+{
+  "files": 43,
+  "tests": 647,
+  "pass": 647,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "runs": {
+    "main": {
+      "tests": 646,
+      "pass": 646,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "delta": {
+      "tests": 1,
+      "pass": 1,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0,
+      "file": "tests/atlas-dating-allowance-review-service.test.mjs",
+      "filter": "^own public withdrawal already removes",
+      "note": "One boundary test was added after the 646-check suite loaded its files. Product source remained frozen; this delta covers the new test once."
+    }
+  }
+}

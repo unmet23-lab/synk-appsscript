@@ -1,0 +1,147 @@
+{
+  "kind": "synthetic-dating-onboarding-browser",
+  "at": "2026-10-07T18:06:17.555Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "fresh onboarding starts with no consent prechecked; name, region, intro and all explicit checkbox choices survive every app tab and settings resume without an action POST, server revision change or browser-storage copy",
+    "discarding the initial draft restores saved empty values and unchecked choices across later navigation without silently saving or selecting consent",
+    "explicitly leaving all optional consents false still completes first setup with one atomic onboard request and one revision; reload neither restarts onboarding nor publishes the private profile or implies adult verification",
+    "a reload discards the initial unsaved draft and consent choices because raw onboarding data remains only in current-tab memory",
+    "actual authentication rejection clears the initial draft and checked choices; restored access and another account cannot revive or inherit them",
+    "a partially saved profile and adult declaration resume with exact completed steps, prior saved text and no fabricated optional consent; settings links back to the remaining initial choices",
+    "a real newer saved profile invalidates the initial draft and its stale checkbox choices while keeping the server-saved completed-step information",
+    "resuming partial initial setup completes all remaining choices atomically, accepts explicit false options and preserves previously saved public-answer data",
+    "a slow rejected initial save locks every submitted text and checkbox plus navigation, then unlocks and retains the exact draft without a partially stored profile or pending delivery",
+    "a successful retry after explicit rejection submits the retained choices as one fresh atomic action; no earlier profile or adult step had to be repeated",
+    "a request lost before reaching the server leaves all initial steps uncommitted and retains the exact tab draft; checking the missing receipt does not POST or falsely mark setup complete",
+    "explicit same-content retry after an unreceived initial save reuses the original request identity and atomically completes all steps exactly once",
+    "when an atomic initial save commits but its response is lost, receipt lookup recovers the full completed profile, adult declaration and exact consent choices without a second POST",
+    "after a committed initial save loses its response, reload restores only a receipt checkpoint without raw text or consent storage; receipt lookup resolves completion without automatic replay or a second POST",
+    "reloading after an unreceived save restores a check-only receipt marker, not raw inputs or checked consent, and a missing receipt never automatically resends or invents completion",
+    "after a lost initial request and a newer profile saved elsewhere, the same-content retry receives a revision conflict, clears pending delivery and unlocks every input; refreshing uses the new source and drops old raw text and consent choices without an extra save",
+    "a pending required server adult check rejects public or invitation consent in the atomic first-setup action without leaving a partially saved profile or adult declaration, and retains the draft for correction",
+    "the user can explicitly leave public and invitation consent off to complete private first setup while adult verification is pending, without bypassing the separate verified gate"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "same-tab-draft-and-choices-390.png",
+    "same-tab-draft-and-choices-390-viewport.png",
+    "private-first-setup-completed-320.png",
+    "private-first-setup-completed-320-viewport.png",
+    "partial-first-setup-resume-320.png",
+    "partial-first-setup-resume-320-viewport.png",
+    "unreceived-first-setup-retry-390.png",
+    "unreceived-first-setup-retry-390-viewport.png",
+    "reloaded-receipt-completes-first-setup-390.png",
+    "reloaded-receipt-completes-first-setup-390-viewport.png",
+    "retry-conflict-unlocks-and-refreshes-390.png",
+    "retry-conflict-unlocks-and-refreshes-390-viewport.png"
+  ],
+  "posts": [
+    {
+      "fixture": "navigation-private",
+      "requestId": "3753ba79-9664-45f4-8f61-bc3d8e231ae0",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "partial-resume",
+      "requestId": "d5c739b7-06a0-4a01-942a-7b8704fc4702",
+      "expectedRevision": 3,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "slow-rejection",
+      "requestId": "22921d2e-6825-4d70-9819-251eb6c3c653",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "slow-rejection",
+      "requestId": "0e828d89-dfdb-4f1b-a52d-d79c9576b188",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "unreceived",
+      "requestId": "393f7a3d-00d5-48db-83ac-fa51c2f8da01",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "unreceived",
+      "requestId": "393f7a3d-00d5-48db-83ac-fa51c2f8da01",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "committed-receipt",
+      "requestId": "9e94911f-e3e7-4647-b0b0-a03b0cf74431",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "committed-reload",
+      "requestId": "84c66221-da6c-4e89-82cb-a05c2ad124c3",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "unreceived-reload",
+      "requestId": "bd49c39f-6ff4-4b34-a879-2c8936fafa33",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "retry-conflict",
+      "requestId": "1941bf23-e1f1-4d1f-91aa-dae542707076",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "retry-conflict",
+      "requestId": "1941bf23-e1f1-4d1f-91aa-dae542707076",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "adult-required",
+      "requestId": "1cec135c-6097-4ba7-8221-b63ad0e731e4",
+      "expectedRevision": 1,
+      "kind": "onboard"
+    },
+    {
+      "fixture": "adult-required",
+      "requestId": "d8c8c66f-3497-49f0-9599-f75d3349236e",
+      "expectedRevision": 1,
+      "kind": "onboard"
+    }
+  ],
+  "sourceBefore": {
+    "dating-ui.mjs": "fa8857b40f884720c1266da958aa161a57360a5b9a84dc128e7ab5cfee31361e",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceSha256": {
+    "dating-ui.mjs": "fa8857b40f884720c1266da958aa161a57360a5b9a84dc128e7ab5cfee31361e",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceStable": true
+}

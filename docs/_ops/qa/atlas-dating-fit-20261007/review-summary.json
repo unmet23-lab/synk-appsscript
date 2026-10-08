@@ -1,0 +1,16 @@
+{
+  "record": "review-reproductions.json",
+  "formalTestsAddedByManualReview": 0,
+  "actualIssuesFixed": 4,
+  "fixes": [
+    "Pause retained own reflection without forcing unavailable discovery",
+    "Expired priority scope no longer blocks new preview",
+    "Region mismatch keeps an explicit decline control",
+    "One-slot priority form no longer offers rejected replacement"
+  ],
+  "additionalFixes": [
+    "Expired temporary priority is described as current baseline",
+    "Disclosure array summaries are detached"
+  ],
+  "nonblockingObservation": "The optional shared-region label branch has no dedicated projection; the current structured match reason supplies the actual comparison."
+}

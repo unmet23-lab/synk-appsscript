@@ -1,0 +1,60 @@
+{
+  "scope": "Session-only minimal receipt checkpoint and reload GET-only recovery",
+  "tests": {
+    "files": 4,
+    "pass": 33,
+    "fail": 0,
+    "checkpointCases": 10,
+    "existingDeliveryCases": 7,
+    "accountCases": 11,
+    "receiptServiceCases": 5,
+    "log": "checkpoint-tests.log",
+    "deduplicated": true
+  },
+  "sourceHashes": [
+    {
+      "file": "experiences/atlas-lab/dating-delivery.mjs",
+      "sha256": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d"
+    },
+    {
+      "file": "experiences/atlas-lab/dating-checkpoint.mjs",
+      "sha256": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812"
+    },
+    {
+      "file": "tests/atlas-dating-delivery.test.mjs",
+      "sha256": "ddf6315b08fa479133a54bf7aebb31f475bfeedcf74ad0763b47a10109b8583f"
+    },
+    {
+      "file": "tests/atlas-dating-checkpoint.test.mjs",
+      "sha256": "837476f95b1594dccc332d5e4ac04cad31fcaaeaeda2e46b4d953c68a6c76c5c"
+    }
+  ],
+  "contract": {
+    "storage": "sessionStorage",
+    "key": "synk.dating.delivery.checkpoint.v1",
+    "schema": [
+      "version",
+      "requestId",
+      "actorId",
+      "demo",
+      "binding",
+      "createdAt"
+    ],
+    "binding": "SHA256 of public registration binding, never source string",
+    "maxAgeMs": 86400000,
+    "reloadMode": "checkOnly",
+    "automaticPost": false,
+    "reloadRetryAllowed": false,
+    "missingReceipt": "inconclusive; pending retained",
+    "originalActionPersisted": false,
+    "revisionPersisted": false,
+    "credentialPersisted": false,
+    "actorIdentifierPersisted": true,
+    "clearFailure": "reported separately without reversing confirmed action success"
+  },
+  "runNote": "Initial checkpoint fixture referred to accountId instead of actorId; four fixture errors were corrected. First17 and final33 are overlapping runs and are not added together. No backend/account/UI/document changes made by this subtask.",
+  "initialLog": "checkpoint-tests-initial.log",
+  "paidCalls": 0,
+  "actualParticipants": 0,
+  "remoteDeployment": false
+}

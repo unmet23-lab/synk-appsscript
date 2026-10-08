@@ -1,0 +1,167 @@
+{
+  "at": "2026-10-07T18:36:49.490Z",
+  "status": "passed",
+  "kind": "synthetic-schedule-validation-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "serverTime": "2026-10-10T03:00:00.000Z",
+  "paths": [
+    "blur validates the touched start only; correcting it immediately clears its inline and ARIA error",
+    {
+      "label": "missing-required-fields",
+      "invalidFields": [
+        "startsAt",
+        "endsAt",
+        "place"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    "correcting required fields clears every error before resubmission and 30 minutes automatically fills the ending",
+    {
+      "label": "start-before-server-time",
+      "invalidFields": [
+        "startsAt"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "start-equal-to-server-time",
+      "invalidFields": [
+        "startsAt"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "invalid-duration-0",
+      "invalidFields": [
+        "durationMinutes"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "invalid-duration--1",
+      "invalidFields": [
+        "durationMinutes"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "invalid-duration-1.5",
+      "invalidFields": [
+        "durationMinutes"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    "zero, negative and fractional durations are rejected; correcting to 45 restores automatic end calculation; a blank optional duration with a manually supplied ending is valid",
+    {
+      "label": "end-equal-to-start",
+      "invalidFields": [
+        "endsAt"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "end-before-start",
+      "invalidFields": [
+        "endsAt"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "blank-place",
+      "invalidFields": [
+        "place"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    {
+      "label": "invalid-draft-after-navigation",
+      "invalidFields": [
+        "place"
+      ],
+      "actionPostsBefore": 4,
+      "actionPostsAfter": 4
+    },
+    "internal navigation retains every draft value, including whitespace and the optional note, without sending an action",
+    "a corrected schedule with a blank optional duration creates exactly one pending appointment",
+    {
+      "label": "revision-end-equal-to-start",
+      "invalidFields": [
+        "endsAt"
+      ],
+      "actionPostsBefore": 5,
+      "actionPostsAfter": 5
+    },
+    {
+      "label": "revision-draft-after-navigation",
+      "invalidFields": [
+        "endsAt"
+      ],
+      "actionPostsBefore": 5,
+      "actionPostsAfter": 5
+    },
+    "the same validation blocks an invalid revision without changing the existing appointment; correction updates its version exactly once and the counterpart sees the pending revision"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "actionPosts": [
+    {
+      "role": "sample-1",
+      "kind": "discovery",
+      "action": "set"
+    },
+    {
+      "role": "sample-1",
+      "kind": "discovery",
+      "action": "set"
+    },
+    {
+      "role": "sample-1",
+      "kind": "connect"
+    },
+    {
+      "role": "sample-3",
+      "kind": "introduction",
+      "action": "respond"
+    },
+    {
+      "role": "sample-1",
+      "kind": "appointment",
+      "action": "propose"
+    },
+    {
+      "role": "sample-1",
+      "kind": "appointment",
+      "action": "revise"
+    }
+  ],
+  "screenshots": [
+    "required-errors-320.png",
+    "past-start-error-390.png",
+    "corrected-new-schedule-390.png",
+    "revision-error-320.png",
+    "corrected-revision-320.png"
+  ],
+  "sourceHashesBefore": {
+    "experiences/atlas-lab/dating-ui.mjs": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+    "experiences/atlas-lab/dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "experiences/atlas-lab/dating.html": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770",
+    "tests/atlas-dating-schedule-validation-smoke.mjs": "fd5aee8eb3f77502db3d72dc14d1acac5db4589ba2d25fa494b7398ab0757999"
+  },
+  "sourceHashesAfter": {
+    "experiences/atlas-lab/dating-ui.mjs": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+    "experiences/atlas-lab/dating.css": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b",
+    "experiences/atlas-lab/dating.html": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770",
+    "tests/atlas-dating-schedule-validation-smoke.mjs": "fd5aee8eb3f77502db3d72dc14d1acac5db4589ba2d25fa494b7398ab0757999"
+  }
+}

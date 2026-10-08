@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-07T13:29:24.489Z",
+  "status": "passed-in-scope",
+  "subtaskEvidence": {
+    "context": "context-transition-subtask.json",
+    "deadline": "preference-deadline-subtask.json",
+    "introduction": "guidance-final-tests.log"
+  },
+  "finalServer": {
+    "log": "server-final.tap",
+    "tests": 122,
+    "pass": 122,
+    "fail": 0,
+    "includesService57": true,
+    "includesContext14": true,
+    "includesGuidance28": true,
+    "includesCriterion17": true,
+    "includesMutualRegion6": true
+  },
+  "note": "Delegated implementation finished; final shared-source regression, browser scripts, UI integration and documentation were completed by the parent after delegation was interrupted.",
+  "sourceChecksMatched": true,
+  "paidCalls": 0
+}

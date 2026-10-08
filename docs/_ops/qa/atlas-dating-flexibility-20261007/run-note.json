@@ -1,0 +1,17 @@
+{
+  "scope": "free-local-checks",
+  "initialBroadRun": {
+    "completed": false,
+    "interruptedByAgent": true,
+    "reason": "Browser navigation timed out while broad SQLite and browser runs were concurrent; reran broad tests with concurrency 4.",
+    "log": "tests-parallel-interrupted.tap"
+  },
+  "firstClarityBrowserAttempt": {
+    "completed": false,
+    "reason": "Initial page navigation exceeded the 12-second limit; no product action had run.",
+    "log": "browser-clarity-first-attempt.json"
+  },
+  "finalTestConcurrency": 4,
+  "modelCalls": 0,
+  "externalApiCost": 0
+}

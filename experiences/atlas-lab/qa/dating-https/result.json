@@ -1,0 +1,209 @@
+{
+  "kind": "synthetic-dating-https-browser",
+  "at": "2026-10-07T20:33:52.591Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "realProviderRequests": 0,
+  "physicalDevices": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "credentialInjection": false,
+  "verifierInjection": false,
+  "tlsVerificationGloballyDisabled": false,
+  "trustStoreModified": false,
+  "fixtureBrowserIgnoresSelfSignedCertificate": true,
+  "paths": [
+    "A real TLS connection terminates at a loopback reverse proxy, which overwrites forwarding headers before the account backend. The UI completes PKCE S256 through a separate synthetic identity service and saves first setup with every optional consent off. Reload restores the private profile from SQLite.",
+    "An independent desktop-sized browser context starts without credentials, completes its own PKCE flow over the TLS product origin and restores the same account without copying browser storage or resubmitting the profile.",
+    "Logging out through the TLS origin removes local credentials and private UI, revokes only that synthetic session, and stays signed out after reload. The independent desktop session remains authorized.",
+    "All browser-requested app modules, styles, fonts and felt assets load through the HTTPS static allowlist without failed requests, HTTP errors, page errors, external requests or horizontal overflow at 390 and 1280 pixels."
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "failedRequests": [],
+  "failedResponses": [],
+  "staticResponses": [
+    {
+      "path": "/atlas-lab/candidate-highlights.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-account.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-checkpoint.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-delivery.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-insights.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-journey.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-live.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating-ui.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating.css",
+      "status": 200,
+      "contentType": "text/css; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/dating.html",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/discovery-guidance.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/discovery.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/meeting-regions.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/onboarding-drafts.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/preference-deadline.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/profile-editing-drafts.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/atlas-lab/public-profile-preview.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/learning-hub/assets/slab-blush-long.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/learning-hub/assets/slab-cream-long.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/learning-hub/assets/SUIT-Variable.woff2",
+      "status": 200,
+      "contentType": "font/woff2"
+    },
+    {
+      "path": "/synk-account/assets/sticker-person.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/synk-account/src/core.mjs",
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8"
+    },
+    {
+      "path": "/learning-hub/assets/slab-cream-long.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    },
+    {
+      "path": "/learning-hub/assets/slab-blush-long.webp",
+      "status": 200,
+      "contentType": "image/webp"
+    }
+  ],
+  "callbackRequests": [
+    {
+      "method": "GET",
+      "path": "/atlas-lab/dating.html",
+      "fetchSite": "cross-site",
+      "origin": null
+    },
+    {
+      "method": "GET",
+      "path": "/atlas-lab/dating.html",
+      "fetchSite": "cross-site",
+      "origin": null
+    }
+  ],
+  "screenshots": [
+    "https-signed-out-390.png",
+    "https-private-account-saved-390.png",
+    "https-independent-account-restored-1280.png",
+    "https-logged-out-390.png"
+  ],
+  "counters": {
+    "tlsRequests": 160,
+    "forwardedRequests": 160,
+    "authorize": 2,
+    "acceptedS256": 2,
+    "centralIdentityChecks": 5,
+    "productActions": 1,
+    "logout": 1
+  },
+  "sourceBefore": {
+    "experiences/atlas-lab/dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "experiences/atlas-lab/dating-account.mjs": "16003a3ad621019cf551dab26d0109d4030bb839b31980ff5a2cf348479a8ec7",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-service.mjs": "861631b7e224f13be91c0c442b2c9da0923caa3c42ab39516699deab5589d439",
+    "experiences/atlas-lab/dating-runtime.mjs": "53d0184a3d912d1da4787a72fd2abbcba45218304ba508e921e21dc03939c855",
+    "experiences/atlas-lab/dating-transport.mjs": "dfb55acffc77459e0ba6e8a29a6939fa7f7768a35e7f2a90f91a565fe67e55c8",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c",
+    "experiences/atlas-lab/dating-public.mjs": "6a3f19c74db9e8163b7aaf416402d032315b329d817c98e2733351b7a6c98853",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "tests/atlas-dating-https-smoke.mjs": "e749368fc08f731d00b29d8afb1b69def1fccd357bc4a9da8608a77bc9827862"
+  },
+  "sourceSha256": {
+    "experiences/atlas-lab/dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "experiences/atlas-lab/dating-account.mjs": "16003a3ad621019cf551dab26d0109d4030bb839b31980ff5a2cf348479a8ec7",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-service.mjs": "861631b7e224f13be91c0c442b2c9da0923caa3c42ab39516699deab5589d439",
+    "experiences/atlas-lab/dating-runtime.mjs": "53d0184a3d912d1da4787a72fd2abbcba45218304ba508e921e21dc03939c855",
+    "experiences/atlas-lab/dating-transport.mjs": "dfb55acffc77459e0ba6e8a29a6939fa7f7768a35e7f2a90f91a565fe67e55c8",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c",
+    "experiences/atlas-lab/dating-public.mjs": "6a3f19c74db9e8163b7aaf416402d032315b329d817c98e2733351b7a6c98853",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "tests/atlas-dating-https-smoke.mjs": "e749368fc08f731d00b29d8afb1b69def1fccd357bc4a9da8608a77bc9827862"
+  },
+  "sourceStable": true
+}

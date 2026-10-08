@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-08T00:28:56.522Z",
+  "status": "failed",
+  "kind": "synthetic-page-lifecycle-browser",
+  "actualUsers": 0,
+  "physicalDevices": 0,
+  "realIdentityProviderCalls": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "navigation": [
+    {
+      "scenario": "editable-return",
+      "sameInstance": false,
+      "events": [],
+      "native": false,
+      "fallback": "synthetic persisted PageTransitionEvent after actual browser navigation"
+    }
+  ],
+  "screenshots": [],
+  "errors": [],
+  "externalRequests": [],
+  "sourceBefore": {
+    "dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39"
+  },
+  "activeRecovery": {
+    "native": false,
+    "inputPreserved": true,
+    "stateRequestsBefore": 2,
+    "stateRequestsAfter": 2,
+    "notice": ""
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: return must restore actual state polling\n    at activePath (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-page-lifecycle-smoke.mjs:68:9)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-page-lifecycle-smoke.mjs:98:2",
+  "sourceAfter": {
+    "dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39"
+  },
+  "sourceStable": true
+}

@@ -1,0 +1,136 @@
+TAP version 13
+# Subtest: create: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+ok 1 - create: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 281.4539
+  type: 'test'
+  ...
+# Subtest: create: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+ok 2 - create: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 214.7044
+  type: 'test'
+  ...
+# Subtest: create: database fsync failure preserves sources and cannot become a successful backup or receipt
+ok 3 - create: database fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 215.5283
+  type: 'test'
+  ...
+# Subtest: create: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+ok 4 - create: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 232.1238
+  type: 'test'
+  ...
+# Subtest: create: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+ok 5 - create: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 227.518
+  type: 'test'
+  ...
+# Subtest: create: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+ok 6 - create: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 281.3046
+  type: 'test'
+  ...
+# Subtest: create: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+ok 7 - create: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 368.0146
+  type: 'test'
+  ...
+# Subtest: restore: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+ok 8 - restore: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 351.4495
+  type: 'test'
+  ...
+# Subtest: restore: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+ok 9 - restore: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 341.589
+  type: 'test'
+  ...
+# Subtest: restore: database fsync failure preserves sources and cannot become a successful backup or receipt
+ok 10 - restore: database fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 320.5693
+  type: 'test'
+  ...
+# Subtest: restore: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+ok 11 - restore: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 457.9932
+  type: 'test'
+  ...
+# Subtest: restore: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+ok 12 - restore: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 431.8383
+  type: 'test'
+  ...
+# Subtest: restore: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+ok 13 - restore: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 655.337
+  type: 'test'
+  ...
+# Subtest: restore: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+ok 14 - restore: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 447.528
+  type: 'test'
+  ...
+# Subtest: reconcile: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+ok 15 - reconcile: database partial write with disk full preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 427.7725
+  type: 'test'
+  ...
+# Subtest: reconcile: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+ok 16 - reconcile: paired evidence partial write with I/O failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 467.752
+  type: 'test'
+  ...
+# Subtest: reconcile: database fsync failure preserves sources and cannot become a successful backup or receipt
+ok 17 - reconcile: database fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 427.0671
+  type: 'test'
+  ...
+# Subtest: reconcile: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+ok 18 - reconcile: final metadata fsync failure preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 487.1551
+  type: 'test'
+  ...
+# Subtest: reconcile: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+ok 19 - reconcile: parent terminates the child during evidence write preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 447.2706
+  type: 'test'
+  ...
+# Subtest: reconcile: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+ok 20 - reconcile: completion marker cannot be removed preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 511.415
+  type: 'test'
+  ...
+# Subtest: reconcile: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+ok 21 - reconcile: parent terminates the child before completion marker removal preserves sources and cannot become a successful backup or receipt
+  ---
+  duration_ms: 501.8119
+  type: 'test'
+  ...
+1..21
+# tests 21
+# suites 0
+# pass 21
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 8297.797

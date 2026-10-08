@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-06T22:24:12.802Z",
+  "sourceCount": 86,
+  "drift": [],
+  "localLinks": [
+    {
+      "reference": "_ops/qa/atlas-dating-input-continuity-20261007/reproduction.json",
+      "exists": true
+    },
+    {
+      "reference": "_ops/qa/atlas-dating-input-continuity-20261007/report.json",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-service.mjs",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-ui.mjs",
+      "exists": true
+    },
+    {
+      "reference": "_ops/qa/atlas-dating-input-continuity-20261007/run-note.json",
+      "exists": true
+    }
+  ],
+  "layoutWidths": [
+    320,
+    390,
+    1280
+  ],
+  "screenshotInspection": [
+    "unknown-is-unselected-390.png",
+    "new-schedule-retained-390.png"
+  ],
+  "actualUsers": 0
+}

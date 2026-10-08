@@ -1,0 +1,118 @@
+TAP version 13
+# Subtest: saved public fields use canonical labels while private storage and invitations may both be off
+ok 1 - saved public fields use canonical labels while private storage and invitations may both be off
+  ---
+  duration_ms: 2.7863
+  type: 'test'
+  ...
+# Subtest: private discovery, preferences and experience are never read or turned into public declarations
+ok 2 - private discovery, preferences and experience are never read or turned into public declarations
+  ---
+  duration_ms: 0.1901
+  type: 'test'
+  ...
+# Subtest: a valid independent deadline is displayed without deriving any private deadline
+ok 3 - a valid independent deadline is displayed without deriving any private deadline
+  ---
+  duration_ms: 0.1379
+  type: 'test'
+  ...
+# Subtest: an expired required answer keeps its field and required status but never its old value
+ok 4 - an expired required answer keeps its field and required status but never its old value
+  ---
+  duration_ms: 0.2215
+  type: 'test'
+  ...
+# Subtest: the exact deadline is rechecked against asOf even when a supplied projection still contains its old value
+ok 5 - the exact deadline is rechecked against asOf even when a supplied projection still contains its old value
+  ---
+  duration_ms: 0.1525
+  type: 'test'
+  ...
+# Subtest: server-filtered expired and withdrawn answers cannot be reconstructed from saved raw values
+ok 6 - server-filtered expired and withdrawn answers cannot be reconstructed from saved raw values
+  ---
+  duration_ms: 0.1543
+  type: 'test'
+  ...
+# Subtest: a projected value must also agree with the current saved public answer
+ok 7 - a projected value must also agree with the current saved public answer
+  ---
+  duration_ms: 0.1415
+  type: 'test'
+  ...
+# Subtest: invalid enums, unknown fields, consent and invalid meeting-region sets are omitted
+ok 8 - invalid enums, unknown fields, consent and invalid meeting-region sets are omitted
+  ---
+  duration_ms: 0.178
+  type: 'test'
+  ...
+# Subtest: meeting regions are labelled from explicit canonical choices and never inferred from the free-form region
+ok 9 - meeting regions are labelled from explicit canonical choices and never inferred from the free-form region
+  ---
+  duration_ms: 0.2378
+  type: 'test'
+  ...
+# Subtest: legacy public declarations retain their legacy label without inventing independent goal or speed
+ok 10 - legacy public declarations retain their legacy label without inventing independent goal or speed
+  ---
+  duration_ms: 0.1877
+  type: 'test'
+  ...
+# Subtest: missing or malformed required public answers remain unknown instead of fulfilled or optional
+ok 11 - missing or malformed required public answers remain unknown instead of fulfilled or optional
+  ---
+  duration_ms: 0.1333
+  type: 'test'
+  ...
+# Subtest: profile-public off and paused states show saved content with accurate non-public notices
+ok 12 - profile-public off and paused states show saved content with accurate non-public notices
+  ---
+  duration_ms: 0.2096
+  type: 'test'
+  ...
+# Subtest: self-declaration and server adult verification gates are preserved without inventing a new demo age requirement
+ok 13 - self-declaration and server adult verification gates are preserved without inventing a new demo age requirement
+  ---
+  duration_ms: 0.322
+  type: 'test'
+  ...
+# Subtest: central hold, required resume, and local suspension never claim public visibility
+ok 14 - central hold, required resume, and local suspension never claim public visibility
+  ---
+  duration_ms: 0.2289
+  type: 'test'
+  ...
+# Subtest: invalid public deadlines cannot be displayed as unlimited or current
+ok 15 - invalid public deadlines cannot be displayed as unlimited or current
+  ---
+  duration_ms: 0.224
+  type: 'test'
+  ...
+# Subtest: missing server clock and malformed or deleted projections cannot certify public content
+ok 16 - missing server clock and malformed or deleted projections cannot certify public content
+  ---
+  duration_ms: 0.1618
+  type: 'test'
+  ...
+# Subtest: the owner snapshot is never mutated, no device clock is used, and output changes do not modify the input
+ok 17 - the owner snapshot is never mutated, no device clock is used, and output changes do not modify the input
+  ---
+  duration_ms: 0.2121
+  type: 'test'
+  ...
+# Subtest: accessors and inherited values cannot introduce executable or hidden public answers
+ok 18 - accessors and inherited values cannot introduce executable or hidden public answers
+  ---
+  duration_ms: 0.1482
+  type: 'test'
+  ...
+1..18
+# tests 18
+# suites 0
+# pass 18
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 103.5269

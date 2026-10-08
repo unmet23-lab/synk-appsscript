@@ -1,0 +1,33 @@
+{
+  "at": "2026-10-06T21:04:42.722Z",
+  "status": "failed",
+  "kind": "synthetic-dating-conditional-draft-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "before-fix-cancelled-draft-390.png"
+  ],
+  "observations": [
+    {
+      "behavior": "conditional preview cancellation preserves scope and deadline",
+      "source": "experiences/atlas-lab/dating-ui.mjs:527",
+      "expected": {
+        "scope": "baseline",
+        "until": "2026-10-09T18:30"
+      },
+      "actual": {
+        "scope": "context",
+        "until": ""
+      },
+      "accountRevisionBefore": 3,
+      "accountRevisionAfter": 3,
+      "profileUnchanged": true,
+      "storedRuleUnchanged": true
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: preview cancellation must preserve unsaved scope and deadline\n+ actual - expected\n\n  {\n+   scope: 'context',\n+   until: ''\n-   scope: 'baseline',\n-   until: '2026-10-09T18:30'\n  }\n\n    at file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-conditional-draft-smoke.mjs:72:10"
+}

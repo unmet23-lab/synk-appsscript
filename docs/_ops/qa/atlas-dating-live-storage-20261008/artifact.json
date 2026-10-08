@@ -1,0 +1,25 @@
+{
+  "directory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-storage-ready-20261008-092102",
+  "zip": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-storage-ready-20261008-092102.zip",
+  "archiveCheck": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-storage-ready-20261008-092102-archive-check",
+  "build": {
+    "verified": true,
+    "files": 58,
+    "totalBytes": 1849945,
+    "manifestSha256": "4009a65ce79212c8ed9b4871d6cb463bad5b1ac2b1f2d6461468104d6def4ec8",
+    "deployed": false,
+    "runtimeTested": false,
+    "providerTested": false
+  },
+  "archiveVerification": {
+    "verified": true,
+    "files": 58,
+    "totalBytes": 1849945,
+    "manifestSha256": "4009a65ce79212c8ed9b4871d6cb463bad5b1ac2b1f2d6461468104d6def4ec8",
+    "deployed": false,
+    "runtimeTested": false,
+    "providerTested": false
+  },
+  "zipSha256": "36a98b7157aa3d806fe553443e030ea42a2b273d96501f7e8d5ca5213557502b",
+  "zipBytes": 1166497
+}

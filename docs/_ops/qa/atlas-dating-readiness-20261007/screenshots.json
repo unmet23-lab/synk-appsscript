@@ -1,0 +1,30 @@
+[
+  {
+    "path": "first-recommendation-onboarding-320.png",
+    "sha256": "499df5adcde541b8c7967001c10bc449398b0819d4f04ab6f021433b650fb97d"
+  },
+  {
+    "path": "required-confirmations-ready-390.png",
+    "sha256": "44d1cacaf4d84cc3a1b370272257bb229cf90f4a285ceeeca401110249866fd5"
+  },
+  {
+    "path": "own-ready-public-information-pending-390.png",
+    "sha256": "3fbc4106d86f7e78f022d09f7060b09b83774a8c135df126d01b2bf3005c8ca1"
+  },
+  {
+    "path": "eligible-with-other-pending-320.png",
+    "sha256": "17f1477320bc12f2bd5769058574e5fa8b0c561a8be47bd422279634e29cb209"
+  },
+  {
+    "path": "own-adult-unavailable-management-320.png",
+    "sha256": "f250a55c87e230fe620d7ddfd48cd9019e1fd982ce2d32075ed4ab27d60dbf73"
+  },
+  {
+    "path": "adult-expired-closes-former-introduction-390.png",
+    "sha256": "33ff7eb2c324dc8cfd9662bb0645265171b2c26d8ed38da811196d5dbfae0808"
+  },
+  {
+    "path": "adult-verified-requires-explicit-resume-390.png",
+    "sha256": "403fe076addfd562c50d21d890c50243441e17b2928b2fce2a53b714efbeebb2"
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "paths": 4,
+  "counters": {
+    "tlsRequests": 160,
+    "forwardedRequests": 160,
+    "authorize": 2,
+    "acceptedS256": 2,
+    "centralIdentityChecks": 5,
+    "productActions": 1,
+    "logout": 1
+  },
+  "sourceStable": true,
+  "errors": [],
+  "failedRequests": [],
+  "failedResponses": [],
+  "externalRequests": [],
+  "report": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\dating-https\\result.json"
+}

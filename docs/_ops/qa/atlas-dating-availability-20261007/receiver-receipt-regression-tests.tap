@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+ok 1 - receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+  ---
+  duration_ms: 222.3246
+  type: 'test'
+  ...
+# Subtest: receipt queries and methods are strict and cross-origin calls cannot read outcomes
+ok 2 - receipt queries and methods are strict and cross-origin calls cannot read outcomes
+  ---
+  duration_ms: 151.0657
+  type: 'test'
+  ...
+# Subtest: old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+ok 3 - old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+  ---
+  duration_ms: 231.2509
+  type: 'test'
+  ...
+# Subtest: a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+ok 4 - a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+  ---
+  duration_ms: 153.5227
+  type: 'test'
+  ...
+# Subtest: real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+ok 5 - real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+  ---
+  duration_ms: 122.7792
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1012.5578

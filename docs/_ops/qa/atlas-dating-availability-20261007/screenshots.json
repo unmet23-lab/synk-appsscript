@@ -1,0 +1,18 @@
+[
+  {
+    "path": "reload-checks-receipt-without-resending-390.png",
+    "sha256": "f43dc590c30713dcf67a3ebf1d8607e300ef3b8376fa7d23b4ae452dd6e92787"
+  },
+  {
+    "path": "missing-receipt-remains-get-only-320.png",
+    "sha256": "d8974926192fee74bd655fa7f11171718c95162bc11719a32b44b3dd0162c54e"
+  },
+  {
+    "path": "connection-restored-preserves-own-input-390.png",
+    "sha256": "35502983cc5d57ba3e40288c89e8c608545c61a4649f5d2607c38f47d125e84f"
+  },
+  {
+    "path": "central-hold-masks-private-view-320.png",
+    "sha256": "878d1b1607d617cfe068ee8341996dc3e0b55f37d8aee5e11a63579e1aa08e43"
+  }
+]

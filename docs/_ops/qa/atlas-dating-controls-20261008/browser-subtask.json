@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "paths": 14,
+  "sourceStable": true,
+  "consoleErrors": 0,
+  "externalRequests": 0,
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "report": "experiences/atlas-lab/qa/dating-controls/result.json",
+  "log": "docs/_ops/qa/atlas-dating-controls-20261008/browser-final.log",
+  "testSha256": "6c24d2e626083d2fed60e6feedf8f91353803eeff42e4d39a341fb907dbcc225",
+  "visualReview": [
+    "single-answer-before-confirmation-390-viewport.png",
+    "saved-preview-excludes-other-draft-320-viewport.png",
+    "paused-private-off-preview-expired-required-320-viewport.png",
+    "two-private-saved-candidates-390-viewport.png",
+    "saved-pair-opens-real-comparison-320-viewport.png",
+    "unavailable-saved-candidate-redacted-320-viewport.png"
+  ],
+  "limits": "Synthetic local browser tests; no participant satisfaction, real-device, deployment or paid-provider evidence."
+}

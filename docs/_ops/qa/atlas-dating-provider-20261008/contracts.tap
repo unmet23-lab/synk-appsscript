@@ -1,0 +1,514 @@
+TAP version 13
+# Subtest: the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject
+ok 1 - the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject
+  ---
+  duration_ms: 5.4694
+  type: 'test'
+  ...
+# Subtest: expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer
+ok 2 - expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer
+  ---
+  duration_ms: 1.0081
+  type: 'test'
+  ...
+# Subtest: a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback
+ok 3 - a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback
+  ---
+  duration_ms: 0.9861
+  type: 'test'
+  ...
+# Subtest: verifier timeout aborts its signal and a late success cannot promote the returned unavailable result
+ok 4 - verifier timeout aborts its signal and a late success cannot promote the returned unavailable result
+  ---
+  duration_ms: 61.4559
+  type: 'test'
+  ...
+# Subtest: verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected
+ok 5 - verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected
+  ---
+  duration_ms: 1.0838
+  type: 'test'
+  ...
+# Subtest: the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields
+ok 6 - the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields
+  ---
+  duration_ms: 377.1136
+  type: 'test'
+  ...
+# Subtest: an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents
+ok 7 - an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents
+  ---
+  duration_ms: 448.1007
+  type: 'test'
+  ...
+# Subtest: pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable
+ok 8 - pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable
+  ---
+  duration_ms: 496.0856
+  type: 'test'
+  ...
+# Subtest: expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart
+ok 9 - expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart
+  ---
+  duration_ms: 1221.8559
+  type: 'test'
+  ...
+# Subtest: revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason
+ok 10 - revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason
+  ---
+  duration_ms: 1313.5463
+  type: 'test'
+  ...
+# Subtest: a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired
+ok 11 - a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired
+  ---
+  duration_ms: 2810.9939
+  type: 'test'
+  ...
+# Subtest: out-of-order claims cannot override a newer revocation, including an older successful call completing after it
+ok 12 - out-of-order claims cannot override a newer revocation, including an older successful call completing after it
+  ---
+  duration_ms: 253.7413
+  type: 'test'
+  ...
+# Subtest: a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection
+ok 13 - a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection
+  ---
+  duration_ms: 346.1009
+  type: 'test'
+  ...
+# Subtest: turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one
+ok 14 - turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one
+  ---
+  duration_ms: 952.0592
+  type: 'test'
+  ...
+# Subtest: server factory passes the explicit synthetic verifier through and defaults remain unconfigured
+ok 15 - server factory passes the explicit synthetic verifier through and defaults remain unconfigured
+  ---
+  duration_ms: 319.8536
+  type: 'test'
+  ...
+# Subtest: a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended
+ok 16 - a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended
+  ---
+  duration_ms: 1207.3118
+  type: 'test'
+  ...
+# Subtest: an assertion that expires while its asynchronous check is in flight cannot authorize a stale new connection
+ok 17 - an assertion that expires while its asynchronous check is in flight cannot authorize a stale new connection
+  ---
+  duration_ms: 462.8272
+  type: 'test'
+  ...
+# Subtest: a terminal product tombstone cannot regain its document or verified state after a later authoritative success
+ok 18 - a terminal product tombstone cannot regain its document or verified state after a later authoritative success
+  ---
+  duration_ms: 276.4807
+  type: 'test'
+  ...
+# Subtest: omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default
+ok 19 - omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default
+  ---
+  duration_ms: 1028.9275
+  type: 'test'
+  ...
+# Subtest: once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart
+ok 20 - once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart
+  ---
+  duration_ms: 390.1754
+  type: 'test'
+  ...
+# Subtest: same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume
+ok 21 - same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume
+  ---
+  duration_ms: 281.8015
+  type: 'test'
+  ...
+# Subtest: lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token
+ok 22 - lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token
+  ---
+  duration_ms: 2.6805
+  type: 'test'
+  ...
+# Subtest: the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities
+ok 23 - the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities
+  ---
+  duration_ms: 794.5802
+  type: 'test'
+  ...
+# Subtest: central deletion reuses product erasure and preserves only the other person’s own private reflection
+ok 24 - central deletion reuses product erasure and preserves only the other person’s own private reflection
+  ---
+  duration_ms: 1876.1197
+  type: 'test'
+  ...
+# Subtest: exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back
+ok 25 - exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back
+  ---
+  duration_ms: 523.1022
+  type: 'test'
+  ...
+# Subtest: delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase
+ok 26 - delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase
+  ---
+  duration_ms: 279.9535
+  type: 'test'
+  ...
+# Subtest: receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry
+ok 27 - receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry
+  ---
+  duration_ms: 1941.2187
+  type: 'test'
+  ...
+# Subtest: lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection
+ok 28 - lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection
+  ---
+  duration_ms: 321.9706
+  type: 'test'
+  ...
+# Subtest: an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log
+ok 29 - an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log
+  ---
+  duration_ms: 1208.6278
+  type: 'test'
+  ...
+# Subtest: an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+ok 30 - an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports
+  ---
+  duration_ms: 31.0548
+  type: 'test'
+  ...
+# Subtest: the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+ok 31 - the local CLI refuses callbacks it cannot serve and account files do not fall back to demo
+  ---
+  duration_ms: 23.354
+  type: 'test'
+  ...
+# Subtest: configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+ok 32 - configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server
+  ---
+  duration_ms: 164.5538
+  type: 'test'
+  ...
+# Subtest: only an explicit account server loads a trusted adult adapter and loading never invokes verify
+ok 33 - only an explicit account server loads a trusted adult adapter and loading never invokes verify
+  ---
+  duration_ms: 16.9311
+  type: 'test'
+  ...
+# Subtest: invalid adult adapters and private provider errors produce only fixed configuration errors
+ok 34 - invalid adult adapters and private provider errors produce only fixed configuration errors
+  ---
+  duration_ms: 20.116
+  type: 'test'
+  ...
+# Subtest: the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+ok 35 - the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender
+  ---
+  duration_ms: 14.1963
+  type: 'test'
+  ...
+# Subtest: CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+ok 36 - CLI malformed files and unknown arguments exit without printing private JSON or creating a database
+  ---
+  duration_ms: 411.432
+  type: 'test'
+  ...
+# Subtest: an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+ok 37 - an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port
+  ---
+  duration_ms: 375.8175
+  type: 'test'
+  ...
+# Subtest: the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+ok 38 - the actual CLI wires the adult and lifecycle adapters while public configuration contains neither
+  ---
+  duration_ms: 469.0664
+  type: 'test'
+  ...
+# Subtest: default provisioning only reads and creates no clients, mappings, journal or configs
+ok 39 - default provisioning only reads and creates no clients, mappings, journal or configs
+  ---
+  duration_ms: 5.2388
+  type: 'test'
+  ...
+# Subtest: apply registers only public clients with actual API fields, preserves legacy and generates only actual returned IDs
+ok 40 - apply registers only public clients with actual API fields, preserves legacy and generates only actual returned IDs
+  ---
+  duration_ms: 13.3239
+  type: 'test'
+  ...
+# Subtest: an unknown client creation response is recovered from provider state without duplicate registration
+ok 41 - an unknown client creation response is recovered from provider state without duplicate registration
+  ---
+  duration_ms: 5.411
+  type: 'test'
+  ...
+# Subtest: a partial run preserves actual IDs and never repeats an unresolved creation attempt
+ok 42 - a partial run preserves actual IDs and never repeats an unresolved creation attempt
+  ---
+  duration_ms: 1.53
+  type: 'test'
+  ...
+# Subtest: a completed secret write with a lost response is confirmed by digest rather than replayed
+ok 43 - a completed secret write with a lost response is confirmed by digest rather than replayed
+  ---
+  duration_ms: 6.9403
+  type: 'test'
+  ...
+# Subtest: fresh mapping drift stops before first registration or before secret overwrite
+ok 44 - fresh mapping drift stops before first registration or before secret overwrite
+  ---
+  duration_ms: 0.7656
+  type: 'test'
+  ...
+# Subtest: verified unknown mapping entries are preserved while mismatched legacy mappings are refused
+ok 45 - verified unknown mapping entries are preserved while mismatched legacy mappings are refused
+  ---
+  duration_ms: 3.801
+  type: 'test'
+  ...
+# Subtest: unbound existing callback requires explicit choice and is never duplicated or silently repurposed
+ok 46 - unbound existing callback requires explicit choice and is never duplicated or silently repurposed
+  ---
+  duration_ms: 4.5584
+  type: 'test'
+  ...
+# Subtest: invalid public material stops before remote mutation and errors do not echo key values
+ok 47 - invalid public material stops before remote mutation and errors do not echo key values
+  ---
+  duration_ms: 0.5828
+  type: 'test'
+  ...
+# Subtest: pending mapping journal can resume after a verified write without replaying it
+ok 48 - pending mapping journal can resume after a verified write without replaying it
+  ---
+  duration_ms: 6.1958
+  type: 'test'
+  ...
+# Subtest: explicit retry after confirmed absence resumes a failed request without repeating successful clients
+ok 49 - explicit retry after confirmed absence resumes a failed request without repeating successful clients
+  ---
+  duration_ms: 4.6493
+  type: 'test'
+  ...
+# Subtest: returned provider IDs recover even when the list omits client_name and persist across interrupted list reads
+ok 50 - returned provider IDs recover even when the list omits client_name and persist across interrupted list reads
+  ---
+  duration_ms: 4.473
+  type: 'test'
+  ...
+# Subtest: failure journal stores only safe status metadata and does not silently retry or echo provider bodies
+ok 51 - failure journal stores only safe status metadata and does not silently retry or echo provider bodies
+  ---
+  duration_ms: 0.8656
+  type: 'test'
+  ...
+# Subtest: existing Fortune and unrelated mapping source order survive the full workflow
+ok 52 - existing Fortune and unrelated mapping source order survive the full workflow
+  ---
+  duration_ms: 4.3051
+  type: 'test'
+  ...
+# Subtest: read-only plan preserves verified legacy mapping and distinguishes unfinished adapters
+ok 53 - read-only plan preserves verified legacy mapping and distinguishes unfinished adapters
+  ---
+  duration_ms: 1.977
+  type: 'test'
+  ...
+# Subtest: all three personal apps include browser and native registration with public client_name contracts
+ok 54 - all three personal apps include browser and native registration with public client_name contracts
+  ---
+  duration_ms: 0.3437
+  type: 'test'
+  ...
+# Subtest: unknown product mappings survive only a matching full source digest
+ok 55 - unknown product mappings survive only a matching full source digest
+  ---
+  duration_ms: 0.6058
+  type: 'test'
+  ...
+# Subtest: registered new app requires explicit binding and merges without replacing older entries
+ok 56 - registered new app requires explicit binding and merges without replacing older entries
+  ---
+  duration_ms: 2.0241
+  type: 'test'
+  ...
+# Subtest: redirect or product drift rejects before any mutation plan can be issued
+ok 57 - redirect or product drift rejects before any mutation plan can be issued
+  ---
+  duration_ms: 0.3659
+  type: 'test'
+  ...
+# Subtest: safe additional HTTPS callbacks survive planning while required and native scope checks remain
+ok 58 - safe additional HTTPS callbacks survive planning while required and native scope checks remain
+  ---
+  duration_ms: 0.5002
+  type: 'test'
+  ...
+# Subtest: Fortune native/browser role swaps are rejected independently of allowlist set order
+ok 59 - Fortune native/browser role swaps are rejected independently of allowlist set order
+  ---
+  duration_ms: 0.2682
+  type: 'test'
+  ...
+# Subtest: explicit generated configuration preserves Fortune browser/native and legacy consent in real output
+ok 60 - explicit generated configuration preserves Fortune browser/native and legacy consent in real output
+  ---
+  duration_ms: 400.6768
+  type: 'test'
+  ...
+# Subtest: missing current or candidate is rejected; both environments preserve published Fortune registrations
+ok 61 - missing current or candidate is rejected; both environments preserve published Fortune registrations
+  ---
+  duration_ms: 325.389
+  type: 'test'
+  ...
+# Subtest: central browser product keys preserve Care using its platform API product
+ok 62 - central browser product keys preserve Care using its platform API product
+  ---
+  duration_ms: 291.633
+  type: 'test'
+  ...
+# Subtest: cross-environment keys/origins/portals and missing or changed legacy registrations fail before output
+ok 63 - cross-environment keys/origins/portals and missing or changed legacy registrations fail before output
+  ---
+  duration_ms: 105.9018
+  type: 'test'
+  ...
+# Subtest: existing files and root/source/ancestor targets are preserved without deletion
+ok 64 - existing files and root/source/ancestor targets are preserved without deletion
+  ---
+  duration_ms: 360.0378
+  type: 'test'
+  ...
+# Subtest: empty output directories are accepted and symbolic output ancestors are refused
+ok 65 - empty output directories are accepted and symbolic output ancestors are refused
+  ---
+  duration_ms: 306.7126
+  type: 'test'
+  ...
+# Subtest: a missing build artifact fails without leaving a partly prepared output
+ok 66 - a missing build artifact fails without leaving a partly prepared output
+  ---
+  duration_ms: 82.67
+  type: 'test'
+  ...
+# Subtest: CLI requires current and candidate configuration and rejects malformed or ambiguous arguments
+ok 67 - CLI requires current and candidate configuration and rejects malformed or ambiguous arguments
+  ---
+  duration_ms: 0.419
+  type: 'test'
+  ...
+# Subtest: config-only merge preserves every published field and stale candidates cannot remove Fortune or added HTTPS callbacks
+ok 68 - config-only merge preserves every published field and stale candidates cannot remove Fortune or added HTTPS callbacks
+  ---
+  duration_ms: 67.2063
+  type: 'test'
+  ...
+# Subtest: config-only rejects source-only products and native schemes unsupported by the published bundle
+ok 69 - config-only rejects source-only products and native schemes unsupported by the published bundle
+  ---
+  duration_ms: 48.7306
+  type: 'test'
+  ...
+# Subtest: dating consent joins the published platform contract without changing its app config or existing callbacks
+ok 70 - dating consent joins the published platform contract without changing its app config or existing callbacks
+  ---
+  duration_ms: 49.566
+  type: 'test'
+  ...
+# Subtest: registry preserves existing legacy identities and distinguishes unimplemented services
+ok 71 - registry preserves existing legacy identities and distinguishes unimplemented services
+  ---
+  duration_ms: 2.2575
+  type: 'test'
+  ...
+# Subtest: actual registrations produce all six isolated desktop clients and canonical browser configs
+ok 72 - actual registrations produce all six isolated desktop clients and canonical browser configs
+  ---
+  duration_ms: 5.8956
+  type: 'test'
+  ...
+# Subtest: three personal apps produce distinct native and browser clients using their registered callbacks
+ok 73 - three personal apps produce distinct native and browser clients using their registered callbacks
+  ---
+  duration_ms: 0.818
+  type: 'test'
+  ...
+# Subtest: dating uses a dedicated browser registration without changing any existing native callback
+ok 74 - dating uses a dedicated browser registration without changing any existing native callback
+  ---
+  duration_ms: 0.2672
+  type: 'test'
+  ...
+# Subtest: only an observed dating registration adds its isolated platform config and consent entry
+ok 75 - only an observed dating registration adds its isolated platform config and consent entry
+  ---
+  duration_ms: 1.4989
+  type: 'test'
+  ...
+# Subtest: only observed legacy IDs are auto-bound; unknown registrations and missing clients stay explicit
+ok 76 - only observed legacy IDs are auto-bound; unknown registrations and missing clients stay explicit
+  ---
+  duration_ms: 0.342
+  type: 'test'
+  ...
+# Subtest: secret credentials, shared client identities, wrong callback scopes and revoked rows are rejected
+ok 77 - secret credentials, shared client identities, wrong callback scopes and revoked rows are rejected
+  ---
+  duration_ms: 0.9845
+  type: 'test'
+  ...
+# Subtest: an explicitly selected browser callback must be present in the registered redirect list
+ok 78 - an explicitly selected browser callback must be present in the registered redirect list
+  ---
+  duration_ms: 0.2497
+  type: 'test'
+  ...
+# Subtest: dry-run writes nothing; writes are backed up atomically and equivalent files stay unchanged
+ok 79 - dry-run writes nothing; writes are backed up atomically and equivalent files stay unchanged
+  ---
+  duration_ms: 73.8074
+  type: 'test'
+  ...
+# Subtest: a selected dating output can be written without replacing the three existing app configs
+ok 80 - a selected dating output can be written without replacing the three existing app configs
+  ---
+  duration_ms: 78.0941
+  type: 'test'
+  ...
+# Subtest: config generation refuses junctions leading outside the workspace before writing
+ok 81 - config generation refuses junctions leading outside the workspace before writing
+  ---
+  duration_ms: 8.8044
+  type: 'test'
+  ...
+# Subtest: desktop default config lookup is fixed and explicit overrides cannot silently fall back
+ok 82 - desktop default config lookup is fixed and explicit overrides cannot silently fall back
+  ---
+  duration_ms: 0.9063
+  type: 'test'
+  ...
+# Subtest: HTTPS callback additions retain every native and legacy required callback
+ok 83 - HTTPS callback additions retain every native and legacy required callback
+  ---
+  duration_ms: 0.5428
+  type: 'test'
+  ...
+# Subtest: native auxiliary HTTPS callbacks cannot be selected as the desktop runtime address
+ok 84 - native auxiliary HTTPS callbacks cannot be selected as the desktop runtime address
+  ---
+  duration_ms: 0.4047
+  type: 'test'
+  ...
+1..84
+# tests 84
+# suites 0
+# pass 84
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 12436.9295

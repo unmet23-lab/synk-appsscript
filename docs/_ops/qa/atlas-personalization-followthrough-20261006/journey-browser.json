@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "status": "passed",
+  "at": "2026-10-06T13:39:05.086Z",
+  "kind": "fictional-discovery-meeting-journey-browser-ux",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualPeople": 0,
+  "deployed": false,
+  "errors": [],
+  "missing": [],
+  "failedRequests": [],
+  "externalRequests": [],
+  "unexpectedRequests": [],
+  "mockedApi": [
+    {
+      "label": "local-1280",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-1280",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-390",
+      "path": "/api/me"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/computer-interpretation"
+    },
+    {
+      "label": "local-320",
+      "path": "/api/me"
+    }
+  ],
+  "paths": [
+    {
+      "label": "local-1280",
+      "checks": [
+        "same-candidate-label-and-schedule",
+        "no-inferred-meeting-consent-or-preferences",
+        "preview-preserves-actual-state-and-selection",
+        "cancel-preserves-both-roles",
+        "apply-clears-selection-and-meeting",
+        "separate-bilateral-meeting-consent",
+        "both-accept-and-simulated-meeting",
+        "private-feedback",
+        "same-selection-reentry-preserves-record",
+        "candidate-switch-clears-records",
+        "old-candidate-return-does-not-resurrect-records"
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "consents": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-b",
+          "field": "consent",
+          "value": true
+        }
+      ],
+      "layout": {
+        "width": 1280,
+        "documentWidth": 1280,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "desktop-extra-boundaries",
+      "checks": [
+        "consent-has-no-preview-action",
+        "unapplied-consent-form-preserves-pair",
+        "editing-form-discards-stale-preview",
+        "candidate-selection-discards-preview-and-old-pair",
+        "unselect-closes-pair"
+      ]
+    },
+    {
+      "label": "local-390",
+      "checks": [
+        "same-candidate-label-and-schedule",
+        "no-inferred-meeting-consent-or-preferences",
+        "preview-preserves-actual-state-and-selection",
+        "cancel-preserves-both-roles",
+        "apply-clears-selection-and-meeting",
+        "separate-bilateral-meeting-consent",
+        "both-accept-and-simulated-meeting",
+        "private-feedback",
+        "same-selection-reentry-preserves-record",
+        "candidate-switch-clears-records",
+        "old-candidate-return-does-not-resurrect-records"
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "consents": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-b",
+          "field": "consent",
+          "value": true
+        }
+      ],
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "local-320",
+      "checks": [
+        "same-candidate-label-and-schedule",
+        "no-inferred-meeting-consent-or-preferences",
+        "preview-preserves-actual-state-and-selection",
+        "cancel-preserves-both-roles",
+        "apply-clears-selection-and-meeting",
+        "separate-bilateral-meeting-consent",
+        "both-accept-and-simulated-meeting",
+        "private-feedback",
+        "same-selection-reentry-preserves-record",
+        "candidate-switch-clears-records",
+        "old-candidate-return-does-not-resurrect-records"
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "consents": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-b",
+          "field": "consent",
+          "value": true
+        }
+      ],
+      "layout": {
+        "width": 320,
+        "documentWidth": 320,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "file-share-390",
+      "checks": [
+        "same-candidate-label-and-schedule",
+        "no-inferred-meeting-consent-or-preferences",
+        "preview-preserves-actual-state-and-selection",
+        "cancel-preserves-both-roles",
+        "apply-clears-selection-and-meeting",
+        "separate-bilateral-meeting-consent",
+        "both-accept-and-simulated-meeting",
+        "private-feedback",
+        "same-selection-reentry-preserves-record",
+        "candidate-switch-clears-records",
+        "old-candidate-return-does-not-resurrect-records"
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "consents": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-b",
+          "field": "consent",
+          "value": true
+        }
+      ],
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    },
+    {
+      "label": "http-share-390",
+      "checks": [
+        "same-candidate-label-and-schedule",
+        "no-inferred-meeting-consent-or-preferences",
+        "preview-preserves-actual-state-and-selection",
+        "cancel-preserves-both-roles",
+        "apply-clears-selection-and-meeting",
+        "separate-bilateral-meeting-consent",
+        "both-accept-and-simulated-meeting",
+        "private-feedback",
+        "same-selection-reentry-preserves-record",
+        "candidate-switch-clears-records",
+        "old-candidate-return-does-not-resurrect-records"
+      ],
+      "beforeCandidate": "candidate-1",
+      "afterCandidate": "candidate-2",
+      "consents": [
+        {
+          "person": "person-a",
+          "field": "consent",
+          "value": true
+        },
+        {
+          "person": "person-b",
+          "field": "consent",
+          "value": true
+        }
+      ],
+      "layout": {
+        "width": 390,
+        "documentWidth": 390,
+        "overflowing": []
+      }
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-preview.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-same-candidate.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-1280-feedback-retained.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\desktop-cancelled-selection.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-preview.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-same-candidate.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-390-feedback-retained.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-preview.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-same-candidate.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\local-320-feedback-retained.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-preview.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-same-candidate.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\file-share-390-feedback-retained.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-preview.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-closed.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-same-candidate.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\http-share-390-feedback-retained.png"
+  ],
+  "share": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\atlas-lab\\qa\\journey\\share.html"
+}

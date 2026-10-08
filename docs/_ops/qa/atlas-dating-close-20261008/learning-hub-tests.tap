@@ -1,0 +1,39 @@
+TAP version 13
+# Subtest: local account entry serves only reviewed public files, never its build sources or dependencies
+ok 1 - local account entry serves only reviewed public files, never its build sources or dependencies
+  ---
+  duration_ms: 69.8768
+  type: 'test'
+  ...
+# Subtest: local root opens the platform while the learning hub remains directly available
+not ok 2 - local root opens the platform while the learning hub remains directly available
+  ---
+  duration_ms: 138.8399
+  type: 'test'
+  location: 'C:\\Users\\q1212\\.codex\\worktrees\\atlas-dating-close\\SYNK-appsscript\\tests\\learning-hub-server.test.js:9:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    
+    404 !== 200
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 200
+  actual: 404
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (C:\Users\q1212\.codex\worktrees\atlas-dating-close\SYNK-appsscript\tests\learning-hub-server.test.js:19:14)
+    process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    async Test.run (node:internal/test_runner/test:1332:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+  ...
+1..2
+# tests 2
+# suites 0
+# pass 1
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 434.3718

@@ -1,0 +1,31 @@
+✔ real canonical purge SQL, outbox worker and product HTTP receiver erase together; a lost acknowledgment retries safely after restart (3873.5056ms)
+✔ lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token (3.0169ms)
+✔ the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities (626.0118ms)
+✔ central deletion reuses product erasure and preserves only the other person’s own private reflection (1605.5927ms)
+✔ exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back (218.8043ms)
+✔ delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase (118.6947ms)
+✔ receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry (523.0366ms)
+✔ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (169.4906ms)
+✔ an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log (668.3059ms)
+✔ access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery (114.1232ms)
+✔ consent missing and explicit no are separate and neither action automatically grants consent (101.9141ms)
+✔ own schedule and independently required baseline answers get a concrete question without silently changing requirements (411.0612ms)
+✔ conflict recovery cancels only the conflicting current choice and retains the hard requirement (576.4662ms)
+✔ closed and expired contexts require an explicit new context, without resurrecting a selection (328.5775ms)
+✔ visible pool emptiness does not infer nonpublic accounts, rejection or attraction (11.4431ms)
+✔ current skips offer individual restoration first while a new context remains explicit (553.345ms)
+✔ legacy or unrelated exclusion tickets cannot offer a current individual-restoration list (54.4062ms)
+✔ opening the current exclusion list cannot mutate context answers or other exclusions (266.5431ms)
+✔ missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row (35.8853ms)
+✔ a missing own answer needed for reciprocal comparison is offered before waiting on other people (51.8663ms)
+✔ hard mismatch invites checking the recorded criteria without recommending a weaker requirement (52.9722ms)
+✔ ready recommendations return no empty-state guidance and malformed projections stay unclassified (257.1826ms)
+✔ guidance is pure, detached, and never reads raw state or private records (148.087ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4259.9309

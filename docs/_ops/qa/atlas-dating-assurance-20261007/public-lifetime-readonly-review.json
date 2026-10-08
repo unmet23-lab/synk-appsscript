@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "name": "publish-public-deadline-required",
+      "view": {
+        "values": {
+          "availability": "weekend",
+          "self.pace": "lead",
+          "self.plan": "planned",
+          "wants.pace": "any",
+          "wants.plan": "any",
+          "self.purpose": "gradual",
+          "wants.purpose": "any",
+          "self.contact": "few-days",
+          "wants.contact": "daily",
+          "self.rhythm": "early",
+          "wants.rhythm": "any",
+          "self.notice": "advance",
+          "wants.notice": "any"
+        },
+        "required": [
+          "wants.contact"
+        ],
+        "expiredFields": []
+      }
+    },
+    {
+      "name": "expired-public-required-poll-keeps-unrelated-draft",
+      "expired": [
+        "wants.contact"
+      ],
+      "required": true,
+      "draft": "spontaneous",
+      "rawContact": "daily"
+    },
+    {
+      "name": "past-deadline-roundtrip-with-other-answer-change",
+      "notice": "공개할 답을 따로 저장했어요. 내 비공개 기준과 회고는 공개하지 않아요.",
+      "profile": {
+        "nickname": "가상 예시 민서",
+        "region": "가상 지역",
+        "intro": "직접 역할을 열어 초대와 약속에 응답하는 가상 성인 예시예요.",
+        "values": {
+          "availability": "weekend",
+          "self.pace": "lead",
+          "self.plan": "spontaneous",
+          "wants.pace": "any",
+          "wants.plan": "any",
+          "self.purpose": "gradual",
+          "wants.purpose": "any",
+          "self.contact": "few-days",
+          "wants.contact": "daily",
+          "self.rhythm": "early",
+          "wants.rhythm": "any",
+          "self.notice": "advance",
+          "wants.notice": "any"
+        },
+        "required": [
+          "wants.contact"
+        ],
+        "expirations": {
+          "wants.contact": "2026-10-10T03:01:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "changed-expired-answer-keep-deadline-error",
+      "notice": "입력한 값이나 지금 가능한 동작을 다시 확인해 주세요.",
+      "lastStatus": 400
+    }
+  ],
+  "pageErrors": [],
+  "requests": [
+    {
+      "status": 200
+    },
+    {
+      "status": 200
+    },
+    {
+      "status": 400
+    }
+  ],
+  "external": [],
+  "width": {
+    "scroll": 320,
+    "client": 320
+  }
+}

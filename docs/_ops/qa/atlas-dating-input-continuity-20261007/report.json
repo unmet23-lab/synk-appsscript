@@ -1,0 +1,107 @@
+{
+  "at": "2026-10-06T22:24:12.752Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "An unknown or expired preference stays unselected and cannot be declared by changing only the required checkbox",
+    "Only an explicitly selected answer can enter preview; cancellation preserves its private input while source changes discard it",
+    "Unsent appointment inputs and automatic/manual end-time mode persist across app navigation and unchanged refresh in the same tab",
+    "Account, introduction, public access and structural appointment changes invalidate drafts, including unseen pause and storage round trips",
+    "Explicit place/duration reuse shares the same draft boundary; with storage consent off it is limited to the current form",
+    "Successful sends clear the corresponding draft; navigation and restoration never send an appointment automatically"
+  ],
+  "tests": {
+    "files": 8,
+    "tests": 164,
+    "pass": 164,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "runs": {
+      "main": {
+        "tests": 107,
+        "pass": 107,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "service": {
+        "tests": 57,
+        "pass": 57,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      }
+    }
+  },
+  "browsers": [
+    {
+      "kind": "dating-input-continuity",
+      "paths": 11,
+      "screenshots": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T22:20:06.563Z"
+    },
+    {
+      "kind": "dating-conditional-draft",
+      "paths": 9,
+      "screenshots": 7,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T22:20:47.208Z"
+    },
+    {
+      "kind": "dating-flexibility",
+      "paths": 10,
+      "screenshots": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T22:21:36.003Z"
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "screenshots": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T22:22:06.887Z"
+    },
+    {
+      "kind": "dating-clarity",
+      "paths": 4,
+      "screenshots": 6,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T22:22:58.712Z"
+    }
+  ],
+  "browserPaths": 52,
+  "preview": {
+    "url": "http://127.0.0.1:57336/atlas-lab/dating.html",
+    "isolatedPreview": true,
+    "filesMatched": 8
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "All browser participants are virtual adults; satisfaction, meeting results and real participant usability are unmeasured.",
+    "Drafts are tab memory only. Reload, tab closure and another device do not retain them; no browser persistent storage or server draft storage was added.",
+    "Server refresh is needed to learn a counterpart change. The guard supplements existing server authorization and CAS checks, never replaces them.",
+    "Real SYNK login, adult verification, physical two devices and production operation remain unverified.",
+    "Paid AI calls, paid evaluation, tutor and participant recruitment remain deferred. The previous domain.js freeze mismatch is unchanged."
+  ],
+  "artifacts": {
+    "design": "docs/아틀라스_공통능력_고도화_20261005.md#19-미확인-답과-작성-중인-약속-2026-10-07-후속",
+    "browser": "experiences/atlas-lab/qa/dating-input-continuity/result.json",
+    "tests": "docs/_ops/qa/atlas-dating-input-continuity-20261007/tests-output.log"
+  }
+}

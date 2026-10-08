@@ -1,0 +1,78 @@
+[
+  {
+    "path": "experiences/atlas-lab/onboarding-drafts.mjs",
+    "sha256": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940"
+  },
+  {
+    "path": "experiences/atlas-lab/profile-editing-drafts.mjs",
+    "sha256": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6"
+  },
+  {
+    "path": "experiences/atlas-lab/public-profile-preview.mjs",
+    "sha256": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+  },
+  {
+    "path": "experiences/atlas-lab/candidate-highlights.mjs",
+    "sha256": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+  },
+  {
+    "path": "experiences/atlas-lab/dating.html",
+    "sha256": "3d04f09caa98147ead0f9cb83f860b78971c308312d178454b25979cf8908770"
+  },
+  {
+    "path": "experiences/atlas-lab/dating.css",
+    "sha256": "90a1f6dca2652d56c9a52d84ce1b3df1e37796febf7fa5b9e703e134c3363c8b"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-ui.mjs",
+    "sha256": "fa8857b40f884720c1266da958aa161a57360a5b9a84dc128e7ab5cfee31361e"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-live.mjs",
+    "sha256": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-insights.mjs",
+    "sha256": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery.mjs",
+    "sha256": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+  },
+  {
+    "path": "experiences/atlas-lab/public-profile.mjs",
+    "sha256": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-service.mjs",
+    "sha256": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-server.mjs",
+    "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-store.mjs",
+    "sha256": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  {
+    "path": "experiences/atlas-lab/preference-deadline.mjs",
+    "sha256": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc"
+  },
+  {
+    "path": "experiences/atlas-lab/introduction-guidance.mjs",
+    "sha256": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae"
+  },
+  {
+    "path": "experiences/atlas-lab/meeting-regions.mjs",
+    "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+  },
+  {
+    "path": "experiences/atlas-lab/product-experience.mjs",
+    "sha256": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery-guidance.mjs",
+    "sha256": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2"
+  }
+]

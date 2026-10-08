@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-06T23:45:08.206Z",
+  "status": "passed",
+  "kind": "synthetic-live-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "the production poll queues an ordinary counterpart alignment response while typing; the banner preserves the focused draft, and explicit apply shows the new response without sending a schedule",
+    "a changed server proposal version immediately invalidates the older schedule edit while preserving an unrelated unsent own introduction",
+    "counterpart introduction withdrawal applies during typing and removes schedule editing authority and the invalid draft without requiring a manual refresh",
+    "counterpart public withdrawal immediately removes the disclosed candidate and pair projection; unrelated own introduction input remains",
+    "aborting only the actual server-applied POST response leaves the original draft and locks further mutations; the receipt GET recovers the single stored appointment without another POST",
+    "aborting before delivery and receiving a missing receipt never declares the request unsaved; explicit retry sends the identical UUID, revision and body and revises the appointment exactly once",
+    "changing the actual demo actor URL clears memory-only pending delivery and never transfers an unsent request to another identity or silently retries it after returning",
+    "an actual expired demo bearer receives HTTP 401 from the local service during pending delivery; polling clears the private view, drafts and recovery request instead of retaining stale private DOM",
+    "a real synthetic operator suspension makes the pending receipt GET return HTTP 403 account-suspended; recovery clears the private view and unsent request instead of presenting a retry under revoked authority"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "ordinary-response-keeps-focused-draft-390.png",
+    "public-withdrawal-preserves-only-own-draft-320.png",
+    "lost-response-keeps-draft-and-locks-mutations-390.png",
+    "missing-receipt-stays-uncertain-320.png"
+  ]
+}

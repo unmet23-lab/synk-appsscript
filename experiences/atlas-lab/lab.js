@@ -6,6 +6,10 @@ import { createComputerConsultation } from './consultation.mjs';
 import { createComputerInterpretation } from './interpretation.mjs';
 import { createComputerModelHost } from './model-host.mjs';
 import { mountMatchingLab } from './matching-ui.mjs';
+import { mountMeetingLab } from './meeting-ui.mjs';
+import { mountDiscoveryLab } from './discovery-ui.mjs';
+import { mountJourneyMemory } from './journey-memory.mjs';
+import { mountParticipantLauncher } from './participant-launcher.mjs';
 
 const $ = id => document.getElementById(id);
 const el = (tag, attrs = {}, ...children) => {
@@ -17,7 +21,7 @@ const el = (tag, attrs = {}, ...children) => {
   return node;
 };
 const ready = () => new Promise(resolve => {
-  const check = () => (globalThis.SynkLearning?.Flow && globalThis.SynkComputerRules && globalThis.SynkComputerContent && globalThis.SynkAtlasInterpretation && globalThis.SynkTemperOutcomes ? resolve() : setTimeout(check, 30));
+  const check = () => (globalThis.SynkLearning?.Flow && globalThis.SynkComputerRules && globalThis.SynkComputerContent && globalThis.SynkAtlasInterpretation && globalThis.SynkTemperOutcomes && globalThis.SynkAtlasPersonalization?.preferences ? resolve() : setTimeout(check, 30));
   check();
 });
 await ready();
@@ -411,7 +415,14 @@ modelHost.connect().then(host => {
   syncConsultation();
 });
 const matchingLab = mountMatchingLab({ Domain: globalThis.SynkAtlasDomain, Ask, TemperOutcomes: globalThis.SynkTemperOutcomes });
-window.synkAtlasLab = { matching: () => matchingLab.snapshot(), simulate: key => TemperFlow.simulate({ spec: CONTENTS[key], steps: 60, seed: `lab-${key}` }), answers: () => ({ ...answers }), consult: () => consultation.choose({ ...answers }), run: () => run && { settings: run.settings(), changes: run.changes() },
+let journeyMemory, participantLauncher;
+const onJourneyChange = () => journeyMemory?.changed();
+const meetingLab = mountMeetingLab({ Domain: globalThis.SynkAtlasDomain, Ask, Personalization: globalThis.SynkAtlasPersonalization, onStateChange: onJourneyChange });
+const discoveryLab = mountDiscoveryLab({ Domain: globalThis.SynkAtlasDomain, Ask, Personalization: globalThis.SynkAtlasPersonalization,
+  onStateChange: onJourneyChange, onSelectionChange: seed => { meetingLab.syncSelection(seed); participantLauncher?.setSeed(seed); }, onStartMeeting: seed => meetingLab.loadSelection(seed) });
+journeyMemory = mountJourneyMemory({ discovery: discoveryLab, meeting: meetingLab });
+participantLauncher = mountParticipantLauncher({ getSeed: () => discoveryLab.handoff() });
+window.synkAtlasLab = { memory: () => journeyMemory.inspect(), discovery: () => discoveryLab.snapshot(), discoveryPreview: () => discoveryLab.previewSnapshot(), meeting: person => meetingLab.snapshot(person), matching: () => matchingLab.snapshot(), simulate: key => TemperFlow.simulate({ spec: CONTENTS[key], steps: 60, seed: `lab-${key}` }), answers: () => ({ ...answers }), consult: () => consultation.choose({ ...answers }), run: () => run && { settings: run.settings(), changes: run.changes() },
   interpretation: () => interpretation.snapshot(),
   interpretationTiming: () => extractionMs,
   buildExtractionRequest: () => { const request = interpretation.buildExtractionRequest(); syncConsultation(); return request; },

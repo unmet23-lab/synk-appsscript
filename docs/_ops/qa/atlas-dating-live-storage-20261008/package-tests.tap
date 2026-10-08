@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+ok 1 - the explicit package list covers the actual static and delayed CJS dependency graph plus every browser file
+  ---
+  duration_ms: 45.1912
+  type: 'test'
+  ...
+# Subtest: isolated package starts from another cwd under a module parent and serves only the reviewed surface
+ok 2 - isolated package starts from another cwd under a module parent and serves only the reviewed surface
+  ---
+  duration_ms: 1712.6556
+  type: 'test'
+  ...
+# Subtest: canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+ok 3 - canary operational files stay outside the allowlist and existing or in-checkout targets remain untouched
+  ---
+  duration_ms: 636.5635
+  type: 'test'
+  ...
+# Subtest: independent manifest hash, payload integrity and exact file inventory reject tampering
+ok 4 - independent manifest hash, payload integrity and exact file inventory reject tampering
+  ---
+  duration_ms: 315.6109
+  type: 'test'
+  ...
+# Subtest: linked source roots, source ancestors and output directories are refused
+ok 5 - linked source roots, source ancestors and output directories are refused
+  ---
+  duration_ms: 397.1967
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3239.9385

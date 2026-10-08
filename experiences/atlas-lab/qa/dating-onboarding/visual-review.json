@@ -1,0 +1,28 @@
+{
+  "status": "passed",
+  "scope": "Local Chromium synthetic screenshots, not real-device or user-satisfaction proof",
+  "viewed": [
+    "same-tab-draft-and-choices-390-viewport.png",
+    "partial-first-setup-resume-320-viewport.png",
+    "unreceived-first-setup-retry-390-viewport.png",
+    "retry-conflict-unlocks-and-refreshes-390-viewport.png",
+    "private-first-setup-completed-320-viewport.png"
+  ],
+  "findings": [
+    "Inputs, explicit checkbox choices, completion and discard controls remain readable at 390 px.",
+    "Saved versus missing initial steps are legible at 320 px with no horizontal overflow.",
+    "Unknown-delivery receipt and same-content retry controls remain distinct and visible.",
+    "Conflict refresh visibly resets stale text and checked options to the latest saved source.",
+    "All-false optional consent completion leads to a private readiness screen without onboarding or verified-adult claims."
+  ],
+  "automated": {
+    "flowCount": 18,
+    "screenshotCount": 12,
+    "viewportWidths": [320, 390],
+    "horizontalOverflow": false,
+    "brokenImages": 0,
+    "runtimeErrors": 0,
+    "externalRequests": 0,
+    "modelCalls": 0
+  }
+}

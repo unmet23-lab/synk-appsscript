@@ -1,0 +1,63 @@
+✔ the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject (2.3092ms)
+✔ expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer (0.5841ms)
+✔ a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback (0.5608ms)
+✔ verifier timeout aborts its signal and a late success cannot promote the returned unavailable result (74.3904ms)
+✔ verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected (2.4776ms)
+✔ the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields (278.2034ms)
+✔ an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents (330.6875ms)
+✔ pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable (382.7579ms)
+✖ expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart (579.7263ms)
+✔ revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason (451.2358ms)
+✔ a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired (834.6381ms)
+✔ out-of-order claims cannot override a newer revocation, including an older successful call completing after it (253.9247ms)
+✔ a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection (209.2633ms)
+✖ turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one (536.5487ms)
+✔ server factory passes the explicit synthetic verifier through and defaults remain unconfigured (262.3184ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 13
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4339.5366
+
+✖ failing tests:
+
+test at tests\atlas-dating-adult.test.mjs:124:1
+✖ expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart (579.7263ms)
+  AssertionError [ERR_ASSERTION]: {"httpStatus":500,"ok":false,"error":{"code":"ERR_SQLITE_ERROR"}}
+  
+  500 !== 200
+  
+      at Object.get (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:81:91)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:128:40)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-dating-adult.test.mjs:175:1
+✖ turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one (536.5487ms)
+  AssertionError [ERR_ASSERTION]: {"httpStatus":500,"ok":false,"error":{"code":"ERR_SQLITE_ERROR"}}
+  
+  500 !== 200
+  
+      at Object.get (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:81:91)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-adult.test.mjs:177:43)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 500,
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

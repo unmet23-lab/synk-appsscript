@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "task": "meeting-regions",
+  "scope": "Dating product pure explicit broad-area vocabulary and intersection",
+  "engineSourceChanges": 0,
+  "paidCalls": 0,
+  "externalCalls": 0,
+  "tests": {
+    "total": 11,
+    "pass": 11,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "log": "meeting-regions-tests.tap"
+  },
+  "syntaxChecks": [
+    "experiences/atlas-lab/meeting-regions.mjs",
+    "tests/atlas-meeting-regions.test.mjs"
+  ],
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/meeting-regions.mjs",
+      "sha256": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017"
+    },
+    {
+      "path": "tests/atlas-meeting-regions.test.mjs",
+      "sha256": "e8926cb0359a15c88a076716b775073a651b09372dd4bcde6d79624369357c7d"
+    }
+  ]
+}

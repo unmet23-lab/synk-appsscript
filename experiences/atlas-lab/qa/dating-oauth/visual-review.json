@@ -1,0 +1,11 @@
+{
+  "kind": "dating-oauth-mobile-visual-review",
+  "reviewedAt": "2026-10-08",
+  "viewport": {"width": 390, "height": 900},
+  "directlyViewed": ["oauth-second-context-restored-390.png", "oauth-cancelled-390.png"],
+  "observations": [
+    "Restored account screen displays the SYNK ID connection and authenticated product navigation without horizontal overflow.",
+    "Cancelled callback screen displays the sign-in entry and explicit cancellation notice without private profile content."
+  ],
+  "scope": "Local Chrome screenshots from a synthetic loopback OAuth browser test. This is not actual provider, user, age-verification or physical-device evidence."
+}

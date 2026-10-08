@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-07T14:15:43.585Z",
+  "status": "passed",
+  "kind": "public-answer-expiration-service-subtask",
+  "checks": {
+    "newUnique": 23,
+    "pure": 7,
+    "http": 16,
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "currentSourceSha256": {
+    "experiences/atlas-lab/dating-service.mjs": "94a77bde4a84b879de1ba7bdcbe3622b9b3d987cb3ca9597cb06cf5707c53331",
+    "experiences/atlas-lab/public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "tests/atlas-dating-public-expiry.test.mjs": "42cdcca0245468491c900e05a2ee0b69d57d183029a209bd7f36f5b0d6632457"
+  },
+  "sourceSha256": {
+    "experiences/atlas-lab/dating-service.mjs": "94a77bde4a84b879de1ba7bdcbe3622b9b3d987cb3ca9597cb06cf5707c53331",
+    "experiences/atlas-lab/public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "tests/atlas-dating-public-expiry.test.mjs": "42cdcca0245468491c900e05a2ee0b69d57d183029a209bd7f36f5b0d6632457"
+  },
+  "finalTestLog": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-final-tests.log",
+  "logs": [
+    {
+      "path": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-initial-tests.log",
+      "sha256": "6d5f835c559fdde28f608587e12b90ae71440c0ba332ba0f8eb30c0c52503750"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-tests.log",
+      "sha256": "91623e3f4a9f2f21adae26d81c8ac7fd8c7ad5bba818ea587a1b84573605946e"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-final-tests.log",
+      "sha256": "a21c1360c891fca82e3c1672e84a8fcbc2018f3f66346cccc7e76a114a218fd5"
+    },
+    {
+      "path": "docs/_ops/qa/atlas-dating-public-expiry-20261007/initial-guard-regression.log",
+      "sha256": "8fe08b63150c4a2dff20a39aa6ce2de47c630dcb0f1c9553a27d9458bcd0194b"
+    }
+  ],
+  "priorTests": {
+    "initial": {
+      "tests": 20,
+      "passed": 18,
+      "failed": 2,
+      "log": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-initial-tests.log",
+      "failures": [
+        {
+          "name": "all public and private regions expiring together",
+          "reason": "The second fixture actor was accidentally connected to itself; corrected target from fixed ids[1] to ids[1-index]. Rejection 400 was expected for that invalid self-connect, not an expiration implementation failure."
+        },
+        {
+          "name": "alignment consumes current public fields",
+          "reason": "The fixture gave both people the same published planning answer, so there was no alignment offer and no key. Corrected to explicit differing answers and checked no-public-difference after expiry."
+        }
+      ]
+    },
+    "fixed20": {
+      "passed": 20,
+      "log": "docs/_ops/qa/atlas-dating-public-expiry-20261007/public-expiry-tests.log"
+    },
+    "related34": {
+      "passed": 34,
+      "files": [
+        "tests/atlas-dating-fit-service.test.mjs",
+        "tests/atlas-dating-introduction-guidance.test.mjs"
+      ],
+      "log": "docs/_ops/qa/atlas-dating-public-expiry-20261007/initial-guard-regression.log",
+      "counting": "Included in root regression evidence; do not add these same existing cases again."
+    }
+  },
+  "contracts": {
+    "rawOwner": "profile.values, profile.required and independently stored profile.expirations remain available to the owner. Expired values are not removed from storage.",
+    "projection": "view.publicAnswers has current values, unchanged required IDs, expiredFields as field-ID strings. Authorized peers receive current public values, no expiration map or old expired values.",
+    "input": "Absent expiration keys preserve their saved deadline. Only explicit null clears it. New deadlines must be canonical future UTC ISO. An unchanged past deadline and unchanged answer may round-trip.",
+    "baselinePublication": "Copies explicitly selected valid baseline values only; preserves existing public deadlines and never copies a private deadline.",
+    "newIntroduction": "Current send/accept gates reject expired mandatory public evidence and current required sender comparisons. Recipient private answers are never invented or newly required.",
+    "acceptedIntroduction": "Public deadline expiry does not retroactively close accepted introductions or confirmed appointments; schedule hints and alignment read current public fields.",
+    "preview": "Owner and peer current public projection binds previews, so a clock-only expiry invalidates an issued preview even if revisions are unchanged."
+  },
+  "implementationScope": [
+    "experiences/atlas-lab/dating-service.mjs",
+    "experiences/atlas-lab/public-profile.mjs",
+    "tests/atlas-dating-public-expiry.test.mjs"
+  ],
+  "readonlyOutsideScope": true,
+  "actualUsers": 0,
+  "realAccounts": 0,
+  "modelCalls": 0,
+  "paidCalls": 0,
+  "remoteMigrations": 0,
+  "deployments": 0,
+  "limitations": [
+    "Local synthetic proof does not establish satisfaction or production operation.",
+    "A region comparison may retain the adapter legacy/inactive label if all compared areas have expired; the current service prevents introduction and the owner expiry projection reports the expired answer. No adapter expansion was made."
+  ]
+}

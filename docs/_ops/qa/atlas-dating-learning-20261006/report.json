@@ -1,0 +1,209 @@
+{
+  "at": "2026-10-06T15:08:17.881Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "private reflection on one criterion captured at the original introduction, with explicit context-priority preview",
+    "worse followup restores only its linked correction and preserves later unrelated declarations",
+    "Core Ask declared-decision-value and policy cost for useful questions, with mandatory confirmations preserved",
+    "no eligible candidates: one explicit availability alternative in the current context without weakening must-haves or hiding deadlines"
+  ],
+  "engine": {
+    "originalEnginesAdded": 0,
+    "originalEngineFilesChangedByThisBatch": 0,
+    "reused": [
+      "Core Ask evaluate",
+      "Core Domain",
+      "Core preference and context contracts",
+      "Temper",
+      "existing introduction and appointment contracts"
+    ]
+  },
+  "tests": {
+    "at": "2026-10-06T15:02:41.999Z",
+    "fileCount": 34,
+    "exitCode": 0,
+    "tests": 543,
+    "pass": 543,
+    "fail": 0,
+    "skipped": 0
+  },
+  "browsers": {
+    "dating": {
+      "status": "passed",
+      "at": "2026-10-06T14:58:17.366Z",
+      "completedAt": "2026-10-06T14:59:17.859Z",
+      "paths": 18,
+      "result": "experiences/atlas-lab/qa/dating/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "dating-insights": {
+      "status": "passed",
+      "at": "2026-10-06T14:57:32.461Z",
+      "completedAt": "2026-10-06T14:57:57.300Z",
+      "paths": 5,
+      "result": "experiences/atlas-lab/qa/dating-insights/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "dating-continuity": {
+      "status": "passed",
+      "at": "2026-10-06T15:06:12.014Z",
+      "completedAt": "2026-10-06T15:06:20.950Z",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/dating-continuity/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "dating-learning": {
+      "status": "passed",
+      "at": "2026-10-06T15:06:18.969Z",
+      "completedAt": "2026-10-06T15:07:07.158Z",
+      "paths": 4,
+      "result": "experiences/atlas-lab/qa/dating-learning/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "discovery": {
+      "status": "passed",
+      "at": "2026-10-06T14:54:11.573Z",
+      "completedAt": "2026-10-06T14:55:41.335Z",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/discovery/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "journey": {
+      "status": "passed",
+      "at": "2026-10-06T14:55:52.645Z",
+      "completedAt": "2026-10-06T14:56:37.898Z",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/journey/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    },
+    "meeting": {
+      "status": "passed",
+      "at": "2026-10-06T14:56:44.443Z",
+      "completedAt": "2026-10-06T14:57:20.052Z",
+      "paths": 6,
+      "result": "experiences/atlas-lab/qa/meeting/result.json",
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0
+    }
+  },
+  "browserPaths": 51,
+  "independentReview": {
+    "findingsFixed": [
+      "context-only availability alternatives now match the exact preview even with expired baseline answers",
+      "baseline criterion lineage can survive a new context while context-only declarations stay bound to their source",
+      "leaving the criterion correction screen clears its source before unrelated comparison",
+      "response-triggered correction and restoration actions remain visible, including their outer discovery disclosure"
+    ],
+    "regression": "tests/atlas-dating-learning-smoke.mjs",
+    "lastUiChangeVerification": [
+      "dating-learning: 4 paths including source isolation and visible CTAs",
+      "dating-continuity: 6 paths including initially collapsed secondary discovery"
+    ]
+  },
+  "freeze": {
+    "matched": 8,
+    "total": 9,
+    "mismatches": [
+      {
+        "path": "atlas/domain.js",
+        "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+        "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+        "same": false
+      }
+    ],
+    "fullRegressionRerun": false,
+    "priorFullRegression": "docs/_ops/qa/atlas-experience-loop-20261006/report.json",
+    "impact": "Existing atlas/domain.js model-capture mismatch remains. Frozen manifests and held-out records were not edited; this report covers the declared current tests only."
+  },
+  "preview": {
+    "at": "2026-10-06T15:08:17.766Z",
+    "origin": "http://127.0.0.1:51983",
+    "checks": [
+      {
+        "file": "dating.html",
+        "status": 200,
+        "same": true,
+        "sha256": "650f4ff313ec199a3258c399e38353230efcc72f4540f6c25027944cebdf981b"
+      },
+      {
+        "file": "dating-ui.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "d76247baf3e630d18a7647858d99f12f26010ff98034e2bf6a3707070c2a1572"
+      },
+      {
+        "file": "dating-account.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "88befe24ab60d9508de07c8278a270ab706b0b9e5a29e78f7279331fbc729306"
+      },
+      {
+        "file": "dating-journey.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "25fdd3fc428c0f1878fb6149d7ddb55ad0ea8f026be46882da66109be43de3b8"
+      },
+      {
+        "file": "discovery.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "562314730ba1241e50384ede9ba87a18cdd50eef70d04d83c95be4d4816b720b"
+      },
+      {
+        "file": "discovery-guidance.mjs",
+        "status": 200,
+        "same": true,
+        "sha256": "97c585efd946b5c81a7af3719b76b8c8bd8875ebc7182fda424cffc853106a41"
+      }
+    ],
+    "mode": "demo",
+    "demoRoles": [
+      "adult-a",
+      "adult-b",
+      "sample-1",
+      "sample-2",
+      "sample-3",
+      "operator"
+    ],
+    "browser": {
+      "url": "http://127.0.0.1:51983/atlas-lab/dating.html",
+      "existingTabUpdated": true,
+      "verified": "CUA accessibility tree: SYNK landing with demo start; user account data unchanged"
+    }
+  },
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "remoteDeployment": false,
+  "notVerified": [
+    "real user understanding, correction burden and satisfaction",
+    "real SYNK login and adult verification",
+    "physical two-device use",
+    "operational backups and account deletion integration",
+    "public deployment"
+  ],
+  "deferred": [
+    "paid AI functionality and model evaluations",
+    "AI conversation tutor"
+  ],
+  "finalCheck": {
+    "at": "2026-10-06T15:09:01.734Z",
+    "sourceCount": 55,
+    "drift": 0,
+    "localLinks": 13,
+    "missingLinks": 0
+  }
+}

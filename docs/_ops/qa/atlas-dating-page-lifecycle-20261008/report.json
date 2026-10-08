@@ -1,0 +1,316 @@
+{
+  "kind": "atlas-dating-page-lifecycle-local-qa",
+  "status": "passed",
+  "at": "2026-10-08T00:35:18.319Z",
+  "node": "v24.18.0",
+  "changes": [
+    "Preserve the live account client, drafts, and pending receipt/envelope when pagehide.persisted is true; only permanent departure disposes the client.",
+    "Stop polling during suspension, restore one interval and a current state read on persisted pageshow.",
+    "Ignore automatic and manual state responses started in an earlier page lifecycle; defer a fresh read until ongoing reads/actions finish without replaying actions.",
+    "Recover an interrupted first load and transient initial storage failure without losing login; retain authoritative 401 cleanup.",
+    "Correct an existing beforeunload test navigation destination that now correctly returns 404 under the restricted public-file list."
+  ],
+  "initialEvidence": {
+    "browser": "experiences/atlas-lab/qa/dating-page-lifecycle/failed-1791419339743.json",
+    "failure": "On a synthetic persisted hide/show, the input survived but state HTTP requests did not resume because the client was permanently disposed.",
+    "existingRecovery": "existing-recovery-initial.log",
+    "existingRecoveryFailure": "The beforeunload test navigated to a no-longer-public usability.html and got net::ERR_HTTP_RESPONSE_CODE_FAILURE; changed only the test destination to the existing public config endpoint.",
+    "intermediateSourceChanged": "experiences/atlas-lab/qa/dating-page-lifecycle/intermediate-nine-paths-source-changed.json",
+    "intermediateExcluded": true
+  },
+  "tests": {
+    "uniquePassed": 38,
+    "failed": 0,
+    "skipped": 0,
+    "rawExecutions": 43,
+    "duplicatePackageExecutionsExcluded": 5,
+    "suites": [
+      {
+        "log": "regression-tests.tap",
+        "tests": 38,
+        "pass": 38,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      },
+      {
+        "log": "final-package-tests.tap",
+        "tests": 5,
+        "pass": 5,
+        "fail": 0,
+        "skipped": 0,
+        "cancelled": 0
+      }
+    ],
+    "note": "Account/checkpoint/delivery 33 tests plus package 5; package re-run on final UI source. Backend unchanged since prior evidence; no broad backend rerun."
+  },
+  "browser": {
+    "pathsPassed": 19,
+    "newLifecyclePaths": 10,
+    "existingRecoveryPaths": 9,
+    "nativeBackNavigations": 2,
+    "nativeBfcacheRestoresObserved": 0,
+    "persistedHandlersTestedWithInjectedEvents": true,
+    "sourceStable": true,
+    "sourceChanged": [],
+    "reports": [
+      {
+        "file": "experiences/atlas-lab/qa/dating-page-lifecycle/result.json",
+        "sha256": "4c760acb96b095c9453a76090d4d57371bc1d3c1cd44cdd67cc66301e5dd39ee"
+      },
+      {
+        "file": "experiences/atlas-lab/qa/dating-availability-recovery/result.json",
+        "sha256": "9f5a4a4d7b7e247bca4eb7e170301cc506c458bffbbfa35742092c6be9c02260"
+      }
+    ],
+    "scenarios": [
+      {
+        "scenario": "editable-return",
+        "native": false,
+        "inputPreserved": true,
+        "pollingRecovered": true,
+        "manualSavePosts": 1
+      },
+      {
+        "scenario": "native-navigation-without-cache",
+        "native": false,
+        "pendingCheckOnly": true,
+        "additionalActionPosts": 0
+      },
+      {
+        "scenario": "uncertain-save-return",
+        "native": false,
+        "inputAndReceiptPreserved": true,
+        "automaticActionPosts": 0,
+        "explicitRetrySameEnvelope": true,
+        "revisionIncrement": 1,
+        "receiptIncrement": 1
+      },
+      {
+        "scenario": "stale-state-crossing-return",
+        "injected": true,
+        "oldResponseIgnored": true,
+        "freshStateRead": true,
+        "actionPosts": 0
+      },
+      {
+        "scenario": "manual-state-crossing-return",
+        "injected": true,
+        "oldResponseIgnored": true,
+        "freshStateRead": true,
+        "actionPosts": 0
+      },
+      {
+        "scenario": "initial-state-crossing-return",
+        "injected": true,
+        "freshViewLoaded": true,
+        "checkpointRestored": true,
+        "actionPosts": 0,
+        "activePollingIntervals": 1
+      },
+      {
+        "scenario": "initial-return-storage-unavailable",
+        "injected": true,
+        "realSqlite503": true,
+        "credentialPreserved": true,
+        "onlineRecoveredView": true,
+        "actionPosts": 0,
+        "activePollingIntervals": 1
+      },
+      {
+        "scenario": "revoked-session-crossing-return",
+        "injected": true,
+        "privateViewCleared": true,
+        "checkpointCleared": true,
+        "credentialCleared": true,
+        "additionalActionPosts": 0
+      },
+      {
+        "scenario": "repeat-suspend-return",
+        "injected": true,
+        "cycles": 3,
+        "queriesWhileSuspended": 0,
+        "activePollingIntervals": 1,
+        "actionPosts": 0
+      },
+      {
+        "scenario": "final-disposal",
+        "injected": true,
+        "disposedClientCannotBeRevived": true,
+        "actionPosts": 0
+      }
+    ],
+    "errors": [],
+    "externalRequests": [],
+    "screenshots": [
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-page-lifecycle\\editable-return-can-save-390.png",
+        "sha256": "d837f11a9ea9985c55cee5dcac7a13ccbf8fdb54eb4b90af2ed7b2fc8f7d0c11"
+      },
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-page-lifecycle\\pending-return-awaits-explicit-retry-320.png",
+        "sha256": "25545d8548716a67f74e197d6fa59e69ab8439897fa9757e11d1e1cb7a3e5b97"
+      },
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-availability-recovery\\reload-checks-receipt-without-resending-390.png",
+        "sha256": "e0265dfbc33de511235fd1cf27b7ea4d27f8eef0771d3cd31eca62112add80b5"
+      },
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-availability-recovery\\missing-receipt-remains-get-only-320.png",
+        "sha256": "304630835973921599e1d46bbc1b42294cf71a351526369033fc654f7d0b9dcf"
+      },
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-availability-recovery\\connection-restored-preserves-own-input-390.png",
+        "sha256": "2423ca91b16241824e67cac3a3b8c20a4b6214a74a1e21a6b647f236b2a92e45"
+      },
+      {
+        "file": "experiences\\atlas-lab\\qa\\dating-availability-recovery\\central-hold-masks-private-view-320.png",
+        "sha256": "f97e2f861be4c4ef27512233d7974af93d695684c895d87fc40fbbc54e9b74a0"
+      }
+    ],
+    "visualReview": [
+      "editable-return-can-save-390.png",
+      "pending-return-awaits-explicit-retry-320.png"
+    ],
+    "limits": "Actual back navigation reloaded the page. Persisted lifecycle handlers were exercised with injected PageTransitionEvent events against real local HTTP/SQLite; this is not native BFCache success or physical-device evidence."
+  },
+  "review": {
+    "independentReadOnly": true,
+    "confirmedAdditionalIssuesAfterFinalFix": 0,
+    "finalUiSha256": "196cb7446889dd1ed7bf451a9ed1e0fa4faccde57912c3a54520ce238b56bb89",
+    "resolvedDuringReview": [
+      "Non-quiet state reads also need a lifecycle guard.",
+      "The interrupted initial read must be able to populate a missing view and restore the receipt marker.",
+      "A transient initial return failure must recover on online/timer without a tight retry loop.",
+      "A delayed authoritative authentication rejection must clear the private view even across lifecycle changes."
+    ]
+  },
+  "artifact": {
+    "directory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-page-return-ready-20261008-093402",
+    "zip": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-page-return-ready-20261008-093402.zip",
+    "archiveCheck": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-page-return-ready-20261008-093402-archive-check",
+    "build": {
+      "verified": true,
+      "files": 58,
+      "totalBytes": 1851659,
+      "manifestSha256": "cf659899e9e82e3d28d38c327dce40d7eb448017a7a120d2eb18d25e053e635b",
+      "deployed": false,
+      "runtimeTested": false,
+      "providerTested": false
+    },
+    "archiveVerification": {
+      "verified": true,
+      "files": 58,
+      "totalBytes": 1851659,
+      "manifestSha256": "cf659899e9e82e3d28d38c327dce40d7eb448017a7a120d2eb18d25e053e635b",
+      "deployed": false,
+      "runtimeTested": false,
+      "providerTested": false
+    },
+    "zipSha256": "83977c21a1f9bd6565fd72cc8d54c61cb108758882b404dde3060587162b7eb2",
+    "zipBytes": 1166964
+  },
+  "artifactSourceChanged": [],
+  "boundaries": {
+    "localSyntheticOnly": true,
+    "actualUsers": 0,
+    "realUserData": false,
+    "realIdentityProviders": 0,
+    "remoteDatabaseCalls": 0,
+    "paidAiCalls": 0,
+    "tutorChanged": false,
+    "recruitmentStarted": false,
+    "publicDeployment": false,
+    "physicalDevices": 0,
+    "nativeBfcacheSuccessVerified": false,
+    "satisfactionImprovementMeasured": false,
+    "newEngineOrRecommendationWeightChanges": false
+  },
+  "remaining": [
+    "Real browser/device native BFCache behavior remains unverified.",
+    "After a full reload, an unknown write with no receipt remains GET-only by existing contract; safely ending that uncertainty requires a separate server receipt/cancellation decision, not deleting the marker or automatic replay.",
+    "Operational host/HTTPS/OAuth, central delivery, adult provider and encrypted independent backup remain separate readiness work; paid AI/tutor and recruitment remain deferred."
+  ],
+  "sourceSha256": {
+    "atlas/ask.js": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "atlas/conditional-preference.js": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e",
+    "atlas/domain.js": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+    "atlas/engine.js": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+    "atlas/personalization.js": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+    "atlas/temper-outcomes.js": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+    "atlas/trail.js": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc",
+    "experiences/atlas-lab/appointments.mjs": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9",
+    "experiences/atlas-lab/candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882",
+    "experiences/atlas-lab/dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-adult.mjs": "41d9db2f95edbee0842d25cbcd672cccac5b11c1c1be8bfab85aefd833076545",
+    "experiences/atlas-lab/dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "experiences/atlas-lab/dating-journey.mjs": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d",
+    "experiences/atlas-lab/dating-lifecycle.mjs": "6633a9dbc6d51394fe680f34b42c1d9c0748b5a9889194b8c9d92aa25486a942",
+    "experiences/atlas-lab/dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "experiences/atlas-lab/dating-public.mjs": "6a3f19c74db9e8163b7aaf416402d032315b329d817c98e2733351b7a6c98853",
+    "experiences/atlas-lab/dating-reconcile.mjs": "62fc1f1c0312d0405291400f266786a0f1babec57c6e4a4c80de91c775e25d10",
+    "experiences/atlas-lab/dating-restore.mjs": "43cf3de3b2e0c9e9f12acda8bdcb1641a4cc9129cc16b6312ae4006bdd74ab78",
+    "experiences/atlas-lab/dating-runtime.mjs": "a8e41e4f95db51c3f51f292ab6f5c028c86ad599d5d1a37ff40fba6513b8577a",
+    "experiences/atlas-lab/dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "experiences/atlas-lab/dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-store.mjs": "fe7fca5af009f72c32fe4f5f1e51aa43b84c80c850e6489004f3e7e8930a2472",
+    "experiences/atlas-lab/dating-transport.mjs": "dfb55acffc77459e0ba6e8a29a6939fa7f7768a35e7f2a90f91a565fe67e55c8",
+    "experiences/atlas-lab/dating-ui.mjs": "196cb7446889dd1ed7bf451a9ed1e0fa4faccde57912c3a54520ce238b56bb89",
+    "experiences/atlas-lab/dating.css": "28d130eeda73754eac3b61b5a63265bdba90e92bce29ce83991bcce6cb7d3a9a",
+    "experiences/atlas-lab/dating.html": "3fb4959cf182fc87a36d3beb04cb118ad8d6ac37d2ff1266c8b80644b7462fca",
+    "experiences/atlas-lab/deploy/Caddyfile": "2e66a627bbdfc53b4ebc2df8cc33cec5e45b8f33bd81ba8c927395726aebfaa8",
+    "experiences/atlas-lab/deploy/account.public.example.json": "b3f9a013176b22fb6be837b4449bb5575a25c4cd923cb092f8088aa2eb14d22e",
+    "experiences/atlas-lab/deploy/runtime.env.example": "52a7ebd4e9c52848531d64cbb9339f9d01cc94f77b38e065e7e7e0596331d18b",
+    "experiences/atlas-lab/deploy/synk-dating.service": "bda90ecffeb1b55486d265f200b8d3c575dfab79836e50fc21141416a221b5ae",
+    "experiences/atlas-lab/discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "experiences/atlas-lab/discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "experiences/atlas-lab/introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "experiences/atlas-lab/introductions.mjs": "6b99ec5ea7427d7cb4bd11eb4e3403006750cbc84e916a19028149ddb4db574d",
+    "experiences/atlas-lab/journey-host.mjs": "812be2fcf4c1e6014bea1fa6353f0d52faa642d89e591254bfdceb9e569b0503",
+    "experiences/atlas-lab/meeting-alignment.mjs": "48cb2c2ba2d29cedaa4d12ca75b1675243dbfae00ff46c37d8b2d393220da036",
+    "experiences/atlas-lab/meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "experiences/atlas-lab/meeting.mjs": "a982600cc52159bffedf5d26be6c8aed873995b937514a6f21b8815fc2c1ca14",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "experiences/atlas-lab/preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "experiences/atlas-lab/product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "experiences/atlas-lab/profile-editing-drafts.mjs": "ba6808e6362a2e10310c313c541e4236d65739383ba6ed243f23bae2363560f6",
+    "experiences/atlas-lab/public-profile-preview.mjs": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f",
+    "experiences/atlas-lab/public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "experiences/atlas-lab/reconnect.mjs": "7d1653284ef14fb0a386de944180a4132f8f7e765ed0987eb331cfd7d67a6ba6",
+    "experiences/learning-hub/assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+    "experiences/learning-hub/assets/slab-blush-long.webp": "0e165b76ebb8605e9472555a77c01281e1344fab590cab79d55563fe71f5caa6",
+    "experiences/learning-hub/assets/slab-cream-long.webp": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c",
+    "experiences/synk-account/assets/sticker-person.webp": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+    "experiences/synk-account/src/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "tools/atlas-dating-backup.mjs": "0ffb970c0aecc7700bbe0c79413039c8a3136110b2511e2949d442b03cf301bb",
+    "tests/atlas-dating-page-lifecycle-smoke.mjs": "93765bc4f3e54723a741f120daf6dd4763a0c1a72b09da31b1b90fbb37de3c21",
+    "tests/atlas-dating-availability-recovery-smoke.mjs": "e213c1d11eb199f9c33616804b65199c061a9ca53f548271e82f5cbac477d4bf",
+    "tests/atlas-dating-account.test.mjs": "7c44f024ed2c0f6de1aab7c73c0475805a132edf92fd3e8ee56d62f0acd10567",
+    "tests/atlas-dating-checkpoint.test.mjs": "837476f95b1594dccc332d5e4ac04cad31fcaaeaeda2e46b4d953c68a6c76c5c",
+    "tests/atlas-dating-delivery.test.mjs": "ddf6315b08fa479133a54bf7aebb31f475bfeedcf74ad0763b47a10109b8583f",
+    "tests/atlas-dating-package.test.mjs": "a38fe5e5e6685bf763f93f49e3e6721febbc8b691d7d6fe813977abc9584d5ac",
+    "tools/atlas-dating-package.mjs": "c6e5fd1e95a281f70068f7c9c22e3bd404977a3fecfe4cae1d9813788ab57dbc",
+    "docs/아틀라스_공통능력_고도화_20261005.md": "d3d0b7d41e082ae59fa1f867b413ad3061e800e274ae8e4ee7afb0e025819c3d",
+    "docs/_ops/트랙.md": "1c3b9d36674e18e1a4eab765872600b6db7b8dcd0abcfe9ed0e67a6f37ae3a34"
+  },
+  "logsSha256": {
+    "existing-recovery-final.log": "f236f45a66aec4a04e74a00ef7ede8ad865d2e732f2af0369d852014c79b1104",
+    "existing-recovery-initial.log": "eeec802cc51d4438e5dced4dc0965c9710871a0c827868ccf57ec47bcc8ebc17",
+    "existing-recovery-smoke.log": "cdba7c2ca64f09a5e14200c74e3fbfd43a51f8a1e363913995fe04d7a580bd1c",
+    "final-package-tests.tap": "49dc29bf3080b6394ed6203636b083efddcbec289fb25dc9749e00bf9cd07c66",
+    "regression-tests.tap": "43318e372fbf40f6738613cdd1a164a14b5ec4b471bbc0b5b7f5310115eca0b7"
+  },
+  "finalSourceCheck": {
+    "at": "2026-10-08T00:35:35.448Z",
+    "matched": true,
+    "runtimeChangesFromPreviousTurn": [
+      "experiences/atlas-lab/dating-ui.mjs"
+    ]
+  }
+}

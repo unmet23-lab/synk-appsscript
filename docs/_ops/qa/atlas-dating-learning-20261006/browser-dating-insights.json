@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-06T14:57:32.461Z",
+  "status": "passed",
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "paths": [
+    "evidence coverage and bounded single-answer stability are visible without a compatibility probability",
+    "scene choice stays private and changes no criterion until preview apply; cancel and response withdrawal preserve independent preferences",
+    "two authorized candidates compare on selected criteria without storing priorities or scoring people",
+    "selected baseline self answer is reviewed before publishing; cancellation, other private answers and profile visibility are preserved",
+    "source experience links explicit correction and next recommendation; private followup persists, source withdrawal invalidates comparison and response withdrawal remains available"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "recommendation-evidence-390.png",
+    "scene-choice-390.png",
+    "scene-detail-390.png",
+    "candidate-comparison-390.png",
+    "comparison-detail-390.png",
+    "disclosure-review-390.png",
+    "correction-followup-390.png",
+    "followup-detail-390.png",
+    "final-320.png"
+  ]
+}

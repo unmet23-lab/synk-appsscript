@@ -1,0 +1,166 @@
+{
+  "at": "2026-10-06T12:04:35.694Z",
+  "status": "passed",
+  "scope": "local MVP product implementation and free verification",
+  "node": "v24.18.0",
+  "modelCalls": 0,
+  "paidApiCost": 0,
+  "actualUsers": 0,
+  "deployed": false,
+  "tests": {
+    "total": 802,
+    "passed": 802,
+    "failed": 0,
+    "log": "tests.tap",
+    "files": "test-files.json"
+  },
+  "browser": {
+    "groups": 38,
+    "suites": [
+      {
+        "name": "dating",
+        "source": "experiences/atlas-lab/qa/dating/result.json",
+        "status": "passed",
+        "groups": 10,
+        "errors": 0,
+        "externalRequests": 0
+      },
+      {
+        "name": "next",
+        "source": "experiences/atlas-lab/qa/next/result.json",
+        "status": "passed",
+        "groups": 6,
+        "errors": 0,
+        "externalRequests": 0
+      },
+      {
+        "name": "journey",
+        "source": "experiences/atlas-lab/qa/journey/result.json",
+        "status": "passed",
+        "groups": 6,
+        "errors": 0,
+        "externalRequests": 0
+      },
+      {
+        "name": "discovery",
+        "source": "experiences/atlas-lab/qa/discovery/result.json",
+        "status": "passed",
+        "groups": 6,
+        "errors": 0,
+        "externalRequests": 0
+      },
+      {
+        "name": "meeting",
+        "source": "experiences/atlas-lab/qa/meeting/result.json",
+        "status": "passed",
+        "groups": 6,
+        "errors": 0,
+        "externalRequests": 0
+      },
+      {
+        "name": "memory-recovery",
+        "source": "experiences/atlas-lab/qa/memory-recovery/result-after.json",
+        "status": "passed",
+        "groups": 4,
+        "errors": 0,
+        "externalRequests": 0
+      }
+    ]
+  },
+  "evaluation": {
+    "source": "discovery-evaluation.json",
+    "summary": {
+      "baseline": {
+        "cases": 12,
+        "eligibilityPassed": 12,
+        "authoredPriorityPassed": 7,
+        "selectedIneligible": 0
+      },
+      "atlas": {
+        "cases": 12,
+        "eligibilityPassed": 12,
+        "authoredPriorityPassed": 12,
+        "selectedIneligible": 0
+      },
+      "changedTop": 5,
+      "comparableCases": 12
+    },
+    "limitations": [
+      "직접 작성한 가상 선언 12개 사례의 제품 규칙 검증이에요.",
+      "실제 프로필·모델 해석·관계 성과·사용자 만족도는 검증하지 않았어요.",
+      "질문 부담이나 실제 추천 효과가 좋아졌다는 근거로 사용할 수 없어요."
+    ]
+  },
+  "frozenModelEvaluationFiles": {
+    "unchanged": true,
+    "files": 9,
+    "method": "hash-only-no-heldout-content-inspection"
+  },
+  "preview": "http://127.0.0.1:59173/atlas-lab/dating.html",
+  "evidenceBoundaries": [
+    "Synthetic adults and isolated local browser contexts; no actual dating users.",
+    "SQLite persistence and mock verified identities; no real central SYNK OAuth roundtrip.",
+    "Adult self-declaration is not verified age.",
+    "Loopback local service; no public deployment or push/email delivery.",
+    "Actual user satisfaction, question burden, relationship outcomes, physical devices, operational backup and central account-deletion integration remain unverified.",
+    "Paid AI calls/evaluation and tutor remain deferred."
+  ],
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery.mjs",
+      "sha256": "c5c2e490bd8ea5310b41613c70a9792649f6210ee93926e76d325da4dcb68b8b"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-ui.mjs",
+      "sha256": "6d688246b8c460f0bf450839980a6671d9e396385d7459341e470118266e34f2"
+    },
+    {
+      "path": "experiences/atlas-lab/discovery-evaluation.mjs",
+      "sha256": "13f999c5679567f0097a42f9220a9acd468e87d3d233c0a1941f052b34e6869e"
+    },
+    {
+      "path": "experiences/atlas-lab/appointments.mjs",
+      "sha256": "35b88629f145d80510ce0f9dfc6482c1d247d7570116e00bae095582155bfe57"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-account.mjs",
+      "sha256": "c0bc6b01b818358a8fc103cd44c9e6c1bc338045c809e2d929550e97216ec3ce"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-auth.mjs",
+      "sha256": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "be91bf1c4aa27a24100018e8b79129ecbd2cd7ae82f924f16e8ac946663ad347"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "f3daf3090c7c72fa8a1a83f8cf358040cfd69de54f6de5ef77d1da2e3e91f461"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3f8bf5b69976dd5ffe6ef2e3a8df93dbaf7b835d7b2a774b2266e0affd465ab6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-ui.mjs",
+      "sha256": "d16e6e869c7dad94a71956adfaa23019c37f69426799312148a6c19f838032d4"
+    },
+    {
+      "path": "experiences/atlas-lab/dating.html",
+      "sha256": "650f4ff313ec199a3258c399e38353230efcc72f4540f6c25027944cebdf981b"
+    },
+    {
+      "path": "experiences/atlas-lab/dating.css",
+      "sha256": "dfc357df293ed426a02e933b8f0b4e26d7f2760603a83cc3e5390c8e0614aa25"
+    },
+    {
+      "path": "experiences/atlas-lab/build-share.mjs",
+      "sha256": "85d6c5ce11ede17cf6277442f9000dd5198c310cc5e998affe01e6a4827e6b23"
+    },
+    {
+      "path": "experiences/learning-hub/server.mjs",
+      "sha256": "9c510dd2c5ac6d692502f8e2abd9d2792a8329ce5e38e1c5d36f54f777dff6db"
+    }
+  ]
+}

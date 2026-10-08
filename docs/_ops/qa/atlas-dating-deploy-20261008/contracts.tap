@@ -1,0 +1,48 @@
+✔ standalone dating files are an exact closed browser dependency graph (42.0022ms)
+✔ raw traversal, encoded paths, aliases and unknown files never map to a dating public file (0.3869ms)
+✔ standalone host serves every browser dependency and only its own root and config (390.1672ms)
+✔ standalone host does not dispatch unrelated APIs or normalized traversal to a service (16.1669ms)
+✔ request guard runs before public config, files, redirect and service actions (6.3107ms)
+✔ request guard can finish a response and accepted requests continue (5.6037ms)
+✔ reviewed names cannot publish files through a symlink or junction (14.4463ms)
+✔ development hub retains other product entry points while dating server code stays private (194.676ms)
+✔ an account host derives its fixed port from the registered callback and rejects mismatched or ephemeral ports (21.2028ms)
+✔ restore mode requires paired paths, an explicit account database and an explicit check or resume command (7.9405ms)
+✔ the local CLI refuses callbacks it cannot serve and account files do not fall back to demo (15.2082ms)
+✔ HTTPS proxy configuration pins the public callback separately from its private listening port (178.2393ms)
+✔ public transport settings cannot silently enable demo or accept ambiguous trust declarations (5.9258ms)
+✔ a public host rejects a callback for another origin or page before opening storage (14.6566ms)
+✔ the actual public factory guards configuration, static files and APIs before authentication (363.7342ms)
+✔ configuration inspection is redacted and never evaluates an adult module, opens SQLite or starts a server (185.5217ms)
+✔ only an explicit account server loads a trusted adult adapter and loading never invokes verify (12.6256ms)
+✔ invalid adult adapters and private provider errors produce only fixed configuration errors (26.4532ms)
+✔ the lifecycle receiver and CLI accept only the same 32 to 256 character contract as the central sender (9.1355ms)
+✔ CLI malformed files and unknown arguments exit without printing private JSON or creating a database (347.1724ms)
+✔ an occupied fixed callback port stops the CLI instead of moving the account host to an unregistered port (207.6654ms)
+✔ the actual CLI wires the adult and lifecycle adapters while public configuration contains neither (313.2871ms)
+✔ shutdown lets an accepted save finish and rejects a later pipelined request before dispatch (207.2994ms)
+✔ a bounded forced stop prevents a late authentication from writing after SQLite closes (213.0038ms)
+✔ draining rejects public config and mutation without reading the body or invoking a handler (0.6102ms)
+✔ CLI signal wiring drains once and removes handlers; forced completion exits nonzero (0.5235ms)
+✔ invalid shutdown bounds fail before a listener or database is created (0.4724ms)
+✔ public transport requires account mode, a pure HTTPS origin and an explicit finite exact proxy list (8.0433ms)
+✔ HTTPS proxy origin supports safe navigation, HEAD and same-origin browser writes (0.6302ms)
+✔ private listener, backend authority and exact proxy peer remain mandatory (0.8433ms)
+✔ IPv4-mapped IPv6 addresses are normalized for both registration and peer matching (0.737ms)
+✔ forwarded scheme, hostname and explicit port cannot be inferred from other headers (0.6036ms)
+✔ raw duplicate, comma-joined, array and mixed forwarding headers are rejected (0.4913ms)
+✔ cross-site and same-site browser traffic, missing mutation origin and sibling origins are rejected (1.266ms)
+✔ the public OAuth callback permits cross-site GET navigation without relaxing authenticated API origins (0.4607ms)
+✔ public resource navigation still requires the trusted proxy, exact forwarding authority and unique headers (0.4402ms)
+✔ public lifecycle uses the same trusted proxy path while forbidding browser context (0.325ms)
+✔ unconfigured local mode retains its original loopback origin and separate lifecycle contract (0.2558ms)
+✔ real HTTP parser duplicates and spoofed browser origins fail before authentication or mutation (181.6834ms)
+✔ real lifecycle requests require both proxy verification and their independent server credential (144.9043ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1859.152

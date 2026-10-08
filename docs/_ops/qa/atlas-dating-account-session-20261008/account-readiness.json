@@ -1,0 +1,93 @@
+{
+  "kind": "read-only-dating-account-readiness",
+  "observedAt": "2026-10-08",
+  "scope": "Known local public configurations, registration catalogue and journals only; no remote authenticated requests or writes.",
+  "secretValuesPrinted": false,
+  "remoteKeyRevealCalled": false,
+  "localObserved": {
+    "registryHasDatingClient": false,
+    "knownConfigsHaveDatingCallback": false,
+    "knownProvisionJournalsHaveDatingBinding": false,
+    "processDatingAccountConfigPathSet": false,
+    "processDatingModeSet": false,
+    "processDatingDbPathSet": false,
+    "processDatingLifecycleTokenSet": false
+  },
+  "remoteRegistration": {
+    "verified": false,
+    "status": "unverified",
+    "reason": "Local absence is not proof of current remote absence. The existing OAuth list helper retrieves server credentials through api-keys?reveal=true, so it was not called in this bounded audit."
+  },
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "observed": "Account CLI requires SYNK_DATING_MODE=account plus separate public account config; default mode is demo."
+    },
+    {
+      "path": "experiences/atlas-lab/dating-account.mjs",
+      "observed": "The platform client slot must register the exact current origin and /atlas-lab/dating.html callback without a query; the existing platform callback cannot be reused as-is."
+    },
+    {
+      "path": "experiences/atlas-lab/dating-auth.mjs",
+      "observed": "Default verifier checks active identity through the existing SYNK account API on each authenticated request."
+    },
+    {
+      "path": "tools/synk-id/registry.cjs",
+      "observed": "No dating service or dating callback registration entry."
+    },
+    {
+      "path": "tools/synk-id/public-config.cjs",
+      "observed": "No dating-specific configuration output."
+    },
+    {
+      "path": "experiences/synk-account/config.json",
+      "observed": "File exists; platform client exists; no dating-named client or dating callback."
+    },
+    {
+      "path": "desktop/auth-config.json",
+      "observed": "File exists; platform client exists; no dating-named client or dating callback."
+    },
+    {
+      "path": "tools/synk-id/state/provision-rehearsal.json",
+      "observed": "File exists; no dating binding or callback."
+    },
+    {
+      "path": "tools/synk-id/state/provision-production.json",
+      "observed": "File exists; no dating binding or callback."
+    },
+    {
+      "path": ".tmp/synk-id/portal-rehearsal-unified-20261007/config.json",
+      "observed": "File exists; no dating callback."
+    },
+    {
+      "path": ".tmp/synk-id/portal-production-unified-20261007/config.json",
+      "observed": "File exists; no dating callback."
+    },
+    {
+      "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+      "observed": "Product contract explicitly leaves actual SYNK login, provider age verification and physical devices unverified."
+    },
+    {
+      "path": "docs/_ops/qa/atlas-dating-account-session-20261008/local-environment.json",
+      "observed": "Parent agent's current loopback preview evidence; this audit did not modify that file."
+    }
+  ],
+  "existingCoverage": {
+    "datingAccountUnitTests": 12,
+    "sharedOAuthCoreUnitTests": 9,
+    "datingAccountUnits": "Mock fetch and synthetic stored sessions cover namespace, binding, revocation, refresh, late response and uncertain writes.",
+    "sharedCoreUnits": "PKCE/state/callback/expiry/denial/token request validation with mocked transport.",
+    "priorAccountBrowserSmoke": "Onboarding/readiness/availability/legibility scripts inject synthetic sessionStorage and a verifier; they do not complete browser OAuth code exchange.",
+    "newBoundedBrowserSmoke": "tests/atlas-dating-oauth-smoke.mjs exercises actual dating UI -> loopback consent -> S256 token exchange -> default identity verifier, without session or verifier injection. Read result.json for current execution outcome."
+  },
+  "actualProviderTestBlockers": [
+    "No verified dedicated dating public OAuth registration and exact stable callback in the known local configs.",
+    "Central consent portal must recognize that client/callback and the verified client-to-platform product mapping must include it.",
+    "No current real-provider login evidence; real account round-trip must be separately scoped after registration/configuration.",
+    "Actual adult-verification provider, lifecycle delivery, hosting and physical-device behavior remain separate from OAuth login."
+  ],
+  "safeNextAction": "Finish the five local OAuth browser paths and use their result only as local implementation evidence. External registration/configuration and actual provider or device testing remain outside this run.",
+  "productionDeployment": false,
+  "paidAI": false,
+  "participantRecruitment": false
+}

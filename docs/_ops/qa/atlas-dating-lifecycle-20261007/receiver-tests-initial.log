@@ -1,0 +1,40 @@
+✔ lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token (3.0301ms)
+✔ the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities (527.743ms)
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1271.9565ms)
+✔ exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back (187.2395ms)
+✔ delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase (115.3614ms)
+✔ receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry (1287.908ms)
+✖ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (223.8827ms)
+✔ an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log (878.6359ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 6
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4679.7137
+
+✖ failing tests:
+
+test at tests\atlas-dating-lifecycle-service.test.mjs:62:1
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1271.9565ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'deleted' !== 200
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-lifecycle-service.test.mjs:69:57)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'deleted',
+    expected: 200,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-dating-lifecycle-service.test.mjs:101:1
+✖ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (223.8827ms)
+  [Error: EBUSY: resource busy or locked, unlink 'C:\Users\q1212\AppData\Local\Temp\synk-lifecycle-MJJRD3\account.sqlite'] { errno: -4082, code: 'EBUSY', syscall: 'unlink', path: 'C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-lifecycle-MJJRD3\\account.sqlite' }

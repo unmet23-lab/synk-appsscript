@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-07",
+  "scope": "read-only discovery guidance and readiness projection helper",
+  "result": "passed",
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/discovery-guidance.mjs",
+      "sha256": "ce57fb7a939c5a867d1c93e0a37c63a47a90c8da02962dce7e5c37b811b0c768"
+    },
+    {
+      "path": "tests/atlas-discovery-guidance.test.mjs",
+      "sha256": "274a5dff5401cb3e11c9256a86d3592608e3e6839f0de3e1873870476fe2a15c"
+    }
+  ],
+  "tests": {
+    "command": "node --test tests/atlas-discovery-guidance.test.mjs tests/atlas-discovery.test.mjs tests/atlas-discovery-personalization.test.mjs tests/atlas-discovery-insights.test.mjs tests/atlas-discovery-conditional.test.mjs",
+    "final": {
+      "total": 129,
+      "passed": 129,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "helper-tests.log"
+    },
+    "guidance": {
+      "total": 31,
+      "existing": 14,
+      "added": 17,
+      "includedInFinal129": true
+    },
+    "repeatedRunsNotAdditive": true,
+    "development": [
+      {
+        "total": 28,
+        "passed": 25,
+        "failed": 3,
+        "causes": [
+          "fixture used unsupported question mode",
+          "guidance accessed discovery before account gate",
+          "readiness accessed discovery before preparation gate"
+        ],
+        "corrected": true
+      },
+      {
+        "total": 28,
+        "passed": 26,
+        "failed": 2,
+        "causes": [
+          "fixture passed adapter-internal optionalUse instead of public action",
+          "remaining readiness preparation getter ordering"
+        ],
+        "corrected": true
+      }
+    ],
+    "syntax": {
+      "command": "node --check experiences/atlas-lab/discovery-guidance.mjs",
+      "exitCode": 0
+    }
+  },
+  "contract": {
+    "readinessKeys": [
+      "status",
+      "title",
+      "body",
+      "preparation",
+      "recommendation",
+      "optional",
+      "pending"
+    ],
+    "topStatuses": [
+      "needs-action",
+      "ready",
+      "waiting",
+      "unavailable"
+    ],
+    "publicPendingProof": "pending row + own structured required unknown comparison + current valid own required answer + unique matching authorized public profile lacking compared value",
+    "readyProof": "current discovery.status ready plus an actually eligible row; other pending rows and optional question budget do not revoke readiness",
+    "notIncluded": [
+      "candidate IDs or names",
+      "answer values",
+      "private counterpart criteria",
+      "free-form reason text",
+      "answer totals or percent completion"
+    ],
+    "requiredAdultGate": "required true and current status not verified returns unavailable before candidate or discovery access",
+    "consentBehavior": "read-only; no automatic grants or requirement relaxation"
+  },
+  "sourceChanges": {
+    "originalEngineFiles": 0,
+    "ui": 0,
+    "accountClient": 0,
+    "backend": 0,
+    "paidCalls": 0,
+    "externalWrites": 0,
+    "deployment": 0,
+    "participants": 0
+  },
+  "limits": [
+    "Local synthetic projections and unit regression only.",
+    "UI integration and browser flow are handled by the root agent.",
+    "Actual user understanding and satisfaction require later participant validation."
+  ],
+  "publicTitleCorrection": {
+    "change": "Only proven public-answer pending uses an explicit public-answer waiting title; unclassified pending retains its original title.",
+    "title": "공개 답이 더 필요해 추천을 보류했어요.",
+    "fallbackTitle": "필수 확인이 남아 추천을 보류했어요.",
+    "preservedIdAndAction": true,
+    "testCountUnchanged": true,
+    "previous": {
+      "sources": [
+        {
+          "path": "experiences/atlas-lab/discovery-guidance.mjs",
+          "sha256": "84b627e188be548f1b403c3b1942e65f087500fd58e3320952124d416caee6d1"
+        },
+        {
+          "path": "tests/atlas-discovery-guidance.test.mjs",
+          "sha256": "15a0885ea6ffcf1f531fe6cc08bbc5d5d380031d7839096318e3948366cf7dd3"
+        }
+      ],
+      "total": 129,
+      "passed": 129,
+      "failed": 0,
+      "log": "helper-before-public-title-tests.log",
+      "sourceLogCopyHashVerified": true
+    },
+    "rerun": {
+      "total": 129,
+      "passed": 129,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "helper-tests.log"
+    },
+    "uiChanges": 0,
+    "backendChanges": 0,
+    "paidCalls": 0,
+    "externalWrites": 0
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "reviewedAt": "2026-10-08",
+  "kind": "local-synthetic-browser-and-capture-review",
+  "result": "passed",
+  "browserResult": "result.json",
+  "command": "node tests/atlas-dating-schedule-validation-smoke.mjs",
+  "verifiedUiSha256": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+  "verifiedTestSha256": "fd5aee8eb3f77502db3d72dc14d1acac5db4589ba2d25fa494b7398ab0757999",
+  "invalidSubmissionsWithoutActionPost": 12,
+  "validAppointmentPosts": { "propose": 1, "revise": 1 },
+  "visualReview": {
+    "viewportWidths": [320, 390],
+    "screenshotsInspected": [
+      "required-errors-320.png",
+      "past-start-error-390.png",
+      "corrected-new-schedule-390.png",
+      "revision-error-320.png",
+      "corrected-revision-320.png"
+    ],
+    "findings": "Inline errors remain adjacent to the relevant field, focus rings are visible, Korean text wraps without clipping, and fields plus submit controls fit the form. DOM assertions found no horizontal page overflow or broken images. Corrected forms show no stale errors."
+  },
+  "regressionFoundAndFixed": {
+    "beforeUiSha256": "33e72111f563ce6b033e1d469f0163efe7c3cf9023cf1546a24f5c4f4a7b17a0",
+    "trigger": "In an existing appointment revision, edit the ending to equal the start and immediately click propose for the first time.",
+    "observedTwice": "The inline ending error appeared on focusout, but the active element stayed the propose button and no click submission validation focused the first invalid field.",
+    "cause": "Showing an error during pointer-driven focusout shifted the submit button before the click completed.",
+    "fix": "When focusout moves directly to this form's propose button, mark the field touched and let the submit callback render errors and focus the first invalid field.",
+    "verification": "The original focus, ARIA, unchanged appointment and zero POST assertions were retained and passed after the UI fix."
+  },
+  "limits": "Synthetic sample-1/sample-3 accounts, isolated local SQLite and headless Chrome only. No real users, external requests, model calls, external API cost or deployment."
+}

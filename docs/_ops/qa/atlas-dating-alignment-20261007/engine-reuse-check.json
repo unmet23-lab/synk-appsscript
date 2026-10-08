@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-06T20:11:07.956Z",
+  "engineOriginalEditsByThisBatch": 0,
+  "checks": [
+    {
+      "path": "atlas/ask.js",
+      "sameAsPriorBatch": true
+    },
+    {
+      "path": "atlas/personalization.js",
+      "sameAsPriorBatch": true
+    }
+  ]
+}

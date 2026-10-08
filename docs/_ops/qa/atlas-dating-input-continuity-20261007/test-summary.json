@@ -1,0 +1,24 @@
+{
+  "files": 8,
+  "tests": 164,
+  "pass": 164,
+  "fail": 0,
+  "cancelled": 0,
+  "skipped": 0,
+  "runs": {
+    "main": {
+      "tests": 107,
+      "pass": 107,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "service": {
+      "tests": 57,
+      "pass": 57,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    }
+  }
+}

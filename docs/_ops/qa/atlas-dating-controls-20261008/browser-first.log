@@ -1,0 +1,1867 @@
+{
+  "kind": "synthetic-dating-controls-browser",
+  "at": "2026-10-07T17:10:40.361Z",
+  "status": "failed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "reviewing and cancelling one public answer never saves its edited value or required flag, and the confirmation appears beside that exact field",
+    "editing a reviewed field invalidates its old confirmation; confirming the current contact value saves only that field and its required flag, preserving unrelated unsaved inputs, stored legacy answers, private preferences, history, consent and introductions",
+    "the owner public-profile preview continues to show the saved planned answer rather than an unrelated unsaved spontaneous draft after a different field is saved",
+    "saving the second public field updates the profile preview immediately with its current stored answer",
+    "while private storage, public visibility and invitations are off and matching is paused, the preview labels the non-public state, omits private preferences and expired public values, and explains the still-required unknown answer",
+    "an expired required public answer can be explicitly renewed without a deadline through its own confirmation while paused and private storage remains off; its required flag and all unrelated public answers are preserved",
+    "single-field withdrawal removes only its own saved answer, required flag and expiration; no private data, public visibility, invitation setting or paused status is recreated",
+    "a confirmation based on an old account revision cannot overwrite a concurrent public-answer change; the UI explains the conflict and the server preserves the newer stored value",
+    "refreshing after an external saved public-answer change updates the owner preview and input from the latest authorized view without displaying an obsolete confirmation"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "single-answer-before-confirmation-390.png",
+    "single-answer-before-confirmation-390-viewport.png",
+    "saved-preview-excludes-other-draft-320.png",
+    "saved-preview-excludes-other-draft-320-viewport.png",
+    "paused-private-off-preview-expired-required-320.png",
+    "paused-private-off-preview-expired-required-320-viewport.png",
+    "private-off-single-answer-withdrawn-390.png",
+    "private-off-single-answer-withdrawn-390-viewport.png",
+    "live-current-public-preview-390.png",
+    "live-current-public-preview-390-viewport.png"
+  ],
+  "sourceBefore": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "675d0aa72c8bf3fbe6485dfb6351d6c51510a8141bca4fd5670081dc3939ed0b",
+    "dating-live.mjs": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f",
+    "dating.css": "74139e1c74b0232717022fc9d12c2e953872b1a346fdd709a8c721677a0d0bb0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "b01ccda5dbd80a2bd8a50800cefe7067ecbdb090e8ec3580098dc03c5270ae44",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882",
+    "public-profile-preview.mjs": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    consents: {\n      profilePublic: true,\n      receiveInvitations: true,\n      storePreferences: true\n...\n      metrics: null,\n+     recommendationToken: 'JZPwzc4SNNtKraF_8YkLAdoBxyuCA3-I74ntr9QBLYg',\n-     recommendationToken: 'XCCbKN5FBBL7WUnmhr1xX2xO9DC1F9QDSldzRmRznxo',\n      records: [],\n      version: 'dating-experience-1'\n    },\n    exposure: [],\n    fields: [\n\n    at candidateBookmarks (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-controls-smoke.mjs:90:666)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-controls-smoke.mjs:102:233",
+  "sourceSha256": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "675d0aa72c8bf3fbe6485dfb6351d6c51510a8141bca4fd5670081dc3939ed0b",
+    "dating-live.mjs": "33d4132e9157d27fc1c7a65b1d44a9265bf0134db0d0d01d52317ec9e811635f",
+    "dating.css": "74139e1c74b0232717022fc9d12c2e953872b1a346fdd709a8c721677a0d0bb0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "b01ccda5dbd80a2bd8a50800cefe7067ecbdb090e8ec3580098dc03c5270ae44",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882",
+    "public-profile-preview.mjs": "76106c8e35d25996bacc7cd0af72cb9c653225ea7934a177f8dfb4586fcd2a8f"
+  },
+  "sourceStable": true
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+... Skipped lines
+
+  {
+    consents: {
+      profilePublic: true,
+      receiveInvitations: true,
+      storePreferences: true
+...
+      metrics: null,
++     recommendationToken: 'JZPwzc4SNNtKraF_8YkLAdoBxyuCA3-I74ntr9QBLYg',
+-     recommendationToken: 'XCCbKN5FBBL7WUnmhr1xX2xO9DC1F9QDSldzRmRznxo',
+      records: [],
+      version: 'dating-experience-1'
+    },
+    exposure: [],
+    fields: [
+
+    at candidateBookmarks (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-controls-smoke.mjs:90:666)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-controls-smoke.mjs:102:233 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: {
+    fields: [
+      {
+        id: 'consent',
+        label: '후보 살펴보기 동의',
+        kind: 'required',
+        question: '서로 공개한 조건으로 공개 후보를 살펴볼까요?',
+        options: [
+          { id: 'true', value: true, label: '살펴볼게요' },
+          { id: 'false', value: false, label: '지금은 살펴보지 않을게요' }
+        ],
+        value: true,
+        valueLabel: '살펴볼게요',
+        state: 'known',
+        required: true,
+        baseline: {
+          state: 'known',
+          value: true,
+          valueLabel: '살펴볼게요',
+          provenance: {
+            eventId: 'event-1',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.004Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: true,
+          valueLabel: '살펴볼게요',
+          provenance: {
+            eventId: 'event-1',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.004Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'availability',
+        label: '가능한 일정',
+        kind: 'required',
+        question: '첫 만남은 언제 가능한가요?',
+        options: [
+          { id: 'weekend', value: 'weekend', label: '주말' },
+          { id: 'weekday', value: 'weekday', label: '평일 저녁' },
+          { id: 'any', value: 'any', label: '둘 다 가능해요' }
+        ],
+        value: 'weekend',
+        valueLabel: '주말',
+        state: 'known',
+        required: true,
+        baseline: {
+          state: 'known',
+          value: 'weekend',
+          valueLabel: '주말',
+          provenance: {
+            eventId: 'event-2',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.005Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'weekend',
+          valueLabel: '주말',
+          provenance: {
+            eventId: 'event-2',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.005Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.pace',
+        label: '내 대화 방식',
+        kind: 'self',
+        question: '처음 이야기를 나눌 때 나는 주로 어떻게 하나요?',
+        options: [
+          { id: 'lead', value: 'lead', label: '먼저 대화를 열어요' },
+          { id: 'listen', value: 'listen', label: '듣고 답해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.plan',
+        label: '내 약속 방식',
+        kind: 'self',
+        question: '나는 약속을 어떻게 준비하는 편인가요?',
+        options: [
+          { id: 'planned', value: 'planned', label: '미리 계획해요' },
+          {
+            id: 'spontaneous',
+            value: 'spontaneous',
+            label: '그때그때 정해요'
+          }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.pace',
+        label: '상대에게 바라는 대화 방식',
+        kind: 'wants',
+        question: '두근거리는 첫 대화, 어떤 사람이면 편할까요?',
+        options: [
+          { id: 'lead', value: 'lead', label: '질문하며 대화를 이끌어 주는 사람' },
+          { id: 'listen', value: 'listen', label: '차분히 듣고 응답하는 사람' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.plan',
+        label: '상대에게 바라는 약속 방식',
+        kind: 'wants',
+        question: '다음 약속을 잡을 때 상대가 어떻게 해 주면 좋을까요?',
+        options: [
+          { id: 'planned', value: 'planned', label: '미리 계획을 정하는 사람' },
+          {
+            id: 'spontaneous',
+            value: 'spontaneous',
+            label: '즉흥적으로 정하는 사람'
+          },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: 'planned',
+        valueLabel: '미리 계획을 정하는 사람',
+        state: 'known',
+        required: false,
+        baseline: {
+          state: 'known',
+          value: 'planned',
+          valueLabel: '미리 계획을 정하는 사람',
+          provenance: {
+            eventId: 'event-4',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.007Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'planned',
+          valueLabel: '미리 계획을 정하는 사람',
+          provenance: {
+            eventId: 'event-4',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.007Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.purpose',
+        label: '예전에 함께 고른 목적·속도',
+        kind: 'self',
+        question: '예전에 함께 고른 목적·속도',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '천천히 알아가고 싶어요' },
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          { id: 'open', value: 'open', label: '대화하면서 정하고 싶어요' }
+        ],
+        value: null,
+        legacy: true,
+        comparisonUse: 'history-only',
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.purpose',
+        label: '예전에 함께 고른 상대의 목적·속도',
+        kind: 'wants',
+        question: '예전에 함께 고른 상대의 목적·속도',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '천천히 알아가고 싶어요' },
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          { id: 'open', value: 'open', label: '대화하면서 정하고 싶어요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        legacy: true,
+        comparisonUse: 'history-only',
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.relationshipGoal',
+        label: '내가 원하는 관계의 목적',
+        kind: 'self',
+        question: '지금 어떤 관계를 시작하고 싶나요?',
+        options: [
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          {
+            id: 'exploring',
+            value: 'exploring',
+            label: '좋은 대화·교류부터 시작하고 싶어요'
+          },
+          { id: 'open', value: 'open', label: '알아가면서 정하고 싶어요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.relationshipGoal',
+        label: '상대에게 바라는 관계의 목적',
+        kind: 'wants',
+        question: '상대도 어떤 관계를 생각하면 좋을까요?',
+        options: [
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          {
+            id: 'exploring',
+            value: 'exploring',
+            label: '좋은 대화·교류부터 시작하고 싶어요'
+          },
+          { id: 'open', value: 'open', label: '알아가면서 정하고 싶어요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.relationshipSpeed',
+        label: '내가 편한 알아가는 속도',
+        kind: 'self',
+        question: '관계의 목적과 별개로, 어느 속도로 알아가는 게 편한가요?',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '시간을 두고 천천히 알아가요' },
+          { id: 'steady', value: 'steady', label: '마음이 맞으면 자주 알아가요' },
+          {
+            id: 'flexible',
+            value: 'flexible',
+            label: '서로 편한 속도를 조율해요'
+          }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.relationshipSpeed',
+        label: '상대에게 바라는 알아가는 속도',
+        kind: 'wants',
+        question: '상대와 어느 속도로 알아가면 편할까요?',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '시간을 두고 천천히 알아가요' },
+          { id: 'steady', value: 'steady', label: '마음이 맞으면 자주 알아가요' },
+          {
+            id: 'flexible',
+            value: 'flexible',
+            label: '서로 편한 속도를 조율해요'
+          },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.meetingRegions',
+        label: '실제로 만날 수 있는 지역',
+        kind: 'regions',
+        question: '직접 만나기 가능한 지역은 어디인가요?',
+        options: [
+          {
+            id: 'seoul-center',
+            value: 'seoul-center',
+            label: '서울 도심',
+            detail: '종로·중구·용산'
+          },
+          {
+            id: 'seoul-northeast',
+            value: 'seoul-northeast',
+            label: '서울 동북권',
+            detail: '성동·광진·동대문·중랑·성북·강북·도봉·노원'
+          },
+          {
+            id: 'seoul-northwest',
+            value: 'seoul-northwest',
+            label: '서울 서북권',
+            detail: '은평·서대문·마포'
+          },
+          {
+            id: 'seoul-southwest',
+            value: 'seoul-southwest',
+            label: '서울 서남권',
+            detail: '양천·강서·구로·금천·영등포·동작·관악'
+          },
+          {
+            id: 'seoul-southeast',
+            value: 'seoul-southeast',
+            label: '서울 동남권',
+            detail: '서초·강남·송파·강동'
+          },
+          { id: 'busan', value: 'busan', label: '부산', detail: '' },
+          { id: 'daegu', value: 'daegu', label: '대구', detail: '' },
+          { id: 'incheon', value: 'incheon', label: '인천', detail: '' },
+          { id: 'gwangju', value: 'gwangju', label: '광주', detail: '' },
+          { id: 'daejeon', value: 'daejeon', label: '대전', detail: '' },
+          { id: 'ulsan', value: 'ulsan', label: '울산', detail: '' },
+          { id: 'sejong', value: 'sejong', label: '세종', detail: '' },
+          {
+            id: 'gyeonggi',
+            value: 'gyeonggi',
+            label: '경기',
+            detail: ''
+          },
+          { id: 'gangwon', value: 'gangwon', label: '강원', detail: '' },
+          {
+            id: 'chungbuk',
+            value: 'chungbuk',
+            label: '충북',
+            detail: ''
+          },
+          {
+            id: 'chungnam',
+            value: 'chungnam',
+            label: '충남',
+            detail: ''
+          },
+          { id: 'jeonbuk', value: 'jeonbuk', label: '전북', detail: '' },
+          { id: 'jeonnam', value: 'jeonnam', label: '전남', detail: '' },
+          {
+            id: 'gyeongbuk',
+            value: 'gyeongbuk',
+            label: '경북',
+            detail: ''
+          },
+          {
+            id: 'gyeongnam',
+            value: 'gyeongnam',
+            label: '경남',
+            detail: ''
+          },
+          { id: 'jeju', value: 'jeju', label: '제주', detail: '' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.contact',
+        label: '내가 편한 연락 빈도',
+        kind: 'self',
+        question: '알아가는 동안 나는 어느 정도 연락하는 게 편한가요?',
+        options: [
+          { id: 'daily', value: 'daily', label: '하루에 한 번쯤 연락해요' },
+          {
+            id: 'few-days',
+            value: 'few-days',
+            label: '며칠에 한 번 여유 있게 연락해요'
+          },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.contact',
+        label: '상대에게 바라는 연락 빈도',
+        kind: 'wants',
+        question: '상대는 어느 정도 연락해 주면 편할까요?',
+        options: [
+          { id: 'daily', value: 'daily', label: '하루에 한 번쯤 연락해요' },
+          {
+            id: 'few-days',
+            value: 'few-days',
+            label: '며칠에 한 번 여유 있게 연락해요'
+          },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: 'daily',
+        valueLabel: '하루에 한 번쯤 연락해요',
+        state: 'known',
+        required: false,
+        baseline: {
+          state: 'known',
+          value: 'daily',
+          valueLabel: '하루에 한 번쯤 연락해요',
+          provenance: {
+            eventId: 'event-3',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.006Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'daily',
+          valueLabel: '하루에 한 번쯤 연락해요',
+          provenance: {
+            eventId: 'event-3',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.006Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.rhythm',
+        label: '내 생활 리듬',
+        kind: 'self',
+        question: '요즘 나는 주로 언제 활동하나요?',
+        options: [
+          { id: 'early', value: 'early', label: '이른 시간에 활동하는 편이에요' },
+          { id: 'late', value: 'late', label: '늦은 시간에 활동하는 편이에요' },
+          { id: 'variable', value: 'variable', label: '활동 시간이 자주 달라요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.rhythm',
+        label: '상대에게 바라는 생활 리듬',
+        kind: 'wants',
+        question: '상대의 활동 시간은 어떤 쪽이면 편할까요?',
+        options: [
+          { id: 'early', value: 'early', label: '이른 시간에 활동하는 편이에요' },
+          { id: 'late', value: 'late', label: '늦은 시간에 활동하는 편이에요' },
+          { id: 'variable', value: 'variable', label: '활동 시간이 자주 달라요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.notice',
+        label: '내 사전 예고 방식',
+        kind: 'self',
+        question: '연락하기 어려울 때 나는 어떻게 알리는 편인가요?',
+        options: [
+          { id: 'advance', value: 'advance', label: '바쁠 때 미리 알려요' },
+          { id: 'when-free', value: 'when-free', label: '여유가 생기면 알려요' },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.notice',
+        label: '상대에게 바라는 사전 예고',
+        kind: 'wants',
+        question: '상대가 연락하기 어려울 때 어떻게 알려 주면 편할까요?',
+        options: [
+          { id: 'advance', value: 'advance', label: '바쁠 때 미리 알려요' },
+          { id: 'when-free', value: 'when-free', label: '여유가 생기면 알려요' },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      }
+    ],
+    priorities: {
+      baseline: [ 'wants.contact', 'wants.plan' ],
+      context: null,
+      effective: [ 'wants.contact', 'wants.plan' ]
+    },
+    context: {
+      id: 'current-discovery',
+      closed: false,
+      expiresAt: null,
+      endedReason: null,
+      revision: 5,
+      conflicts: []
+    },
+    exposure: [],
+    experience: {
+      version: 'dating-experience-1',
+      goal: null,
+      evaluationConsent: false,
+      records: [],
+      metrics: null,
+      limitations: [
+        '본인 응답의 기술통계이며 상대의 점수나 호감 확률이 아니에요.',
+        '미응답과 모르겠음은 실패가 아니에요. 비교 정책과 실제 효과는 검증하지 않았어요.',
+        '평가 동의 후 시작된 기록만 집계하며 동의를 끄면 이전 기록도 집계에서 제외돼요.',
+        '기준 수정 뒤 더 가까워졌다는 답도 본인의 비교 응답이며, 수정이 개선을 일으켰다는 인과효과는 아니에요.'
+      ],
+      criterionReviews: [],
+      recommendationToken: 'JZPwzc4SNNtKraF_8YkLAdoBxyuCA3-I74ntr9QBLYg'
+    },
+    pairs: [],
+    consents: {
+      profilePublic: true,
+      receiveInvitations: true,
+      storePreferences: true
+    },
+    profile: {
+      nickname: '조작 검사 가상 1',
+      region: '가상 소개 지역',
+      intro: '무료 확인을 위한 합성 소개',
+      values: { availability: 'weekend' },
+      required: []
+    }
+  },
+  expected: {
+    fields: [
+      {
+        id: 'consent',
+        label: '후보 살펴보기 동의',
+        kind: 'required',
+        question: '서로 공개한 조건으로 공개 후보를 살펴볼까요?',
+        options: [
+          { id: 'true', value: true, label: '살펴볼게요' },
+          { id: 'false', value: false, label: '지금은 살펴보지 않을게요' }
+        ],
+        value: true,
+        valueLabel: '살펴볼게요',
+        state: 'known',
+        required: true,
+        baseline: {
+          state: 'known',
+          value: true,
+          valueLabel: '살펴볼게요',
+          provenance: {
+            eventId: 'event-1',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.004Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: true,
+          valueLabel: '살펴볼게요',
+          provenance: {
+            eventId: 'event-1',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.004Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'availability',
+        label: '가능한 일정',
+        kind: 'required',
+        question: '첫 만남은 언제 가능한가요?',
+        options: [
+          { id: 'weekend', value: 'weekend', label: '주말' },
+          { id: 'weekday', value: 'weekday', label: '평일 저녁' },
+          { id: 'any', value: 'any', label: '둘 다 가능해요' }
+        ],
+        value: 'weekend',
+        valueLabel: '주말',
+        state: 'known',
+        required: true,
+        baseline: {
+          state: 'known',
+          value: 'weekend',
+          valueLabel: '주말',
+          provenance: {
+            eventId: 'event-2',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.005Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'weekend',
+          valueLabel: '주말',
+          provenance: {
+            eventId: 'event-2',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.005Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.pace',
+        label: '내 대화 방식',
+        kind: 'self',
+        question: '처음 이야기를 나눌 때 나는 주로 어떻게 하나요?',
+        options: [
+          { id: 'lead', value: 'lead', label: '먼저 대화를 열어요' },
+          { id: 'listen', value: 'listen', label: '듣고 답해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.plan',
+        label: '내 약속 방식',
+        kind: 'self',
+        question: '나는 약속을 어떻게 준비하는 편인가요?',
+        options: [
+          { id: 'planned', value: 'planned', label: '미리 계획해요' },
+          {
+            id: 'spontaneous',
+            value: 'spontaneous',
+            label: '그때그때 정해요'
+          }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.pace',
+        label: '상대에게 바라는 대화 방식',
+        kind: 'wants',
+        question: '두근거리는 첫 대화, 어떤 사람이면 편할까요?',
+        options: [
+          { id: 'lead', value: 'lead', label: '질문하며 대화를 이끌어 주는 사람' },
+          { id: 'listen', value: 'listen', label: '차분히 듣고 응답하는 사람' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.plan',
+        label: '상대에게 바라는 약속 방식',
+        kind: 'wants',
+        question: '다음 약속을 잡을 때 상대가 어떻게 해 주면 좋을까요?',
+        options: [
+          { id: 'planned', value: 'planned', label: '미리 계획을 정하는 사람' },
+          {
+            id: 'spontaneous',
+            value: 'spontaneous',
+            label: '즉흥적으로 정하는 사람'
+          },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: 'planned',
+        valueLabel: '미리 계획을 정하는 사람',
+        state: 'known',
+        required: false,
+        baseline: {
+          state: 'known',
+          value: 'planned',
+          valueLabel: '미리 계획을 정하는 사람',
+          provenance: {
+            eventId: 'event-4',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.007Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'planned',
+          valueLabel: '미리 계획을 정하는 사람',
+          provenance: {
+            eventId: 'event-4',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.007Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.purpose',
+        label: '예전에 함께 고른 목적·속도',
+        kind: 'self',
+        question: '예전에 함께 고른 목적·속도',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '천천히 알아가고 싶어요' },
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          { id: 'open', value: 'open', label: '대화하면서 정하고 싶어요' }
+        ],
+        value: null,
+        legacy: true,
+        comparisonUse: 'history-only',
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.purpose',
+        label: '예전에 함께 고른 상대의 목적·속도',
+        kind: 'wants',
+        question: '예전에 함께 고른 상대의 목적·속도',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '천천히 알아가고 싶어요' },
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          { id: 'open', value: 'open', label: '대화하면서 정하고 싶어요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        legacy: true,
+        comparisonUse: 'history-only',
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.relationshipGoal',
+        label: '내가 원하는 관계의 목적',
+        kind: 'self',
+        question: '지금 어떤 관계를 시작하고 싶나요?',
+        options: [
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          {
+            id: 'exploring',
+            value: 'exploring',
+            label: '좋은 대화·교류부터 시작하고 싶어요'
+          },
+          { id: 'open', value: 'open', label: '알아가면서 정하고 싶어요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.relationshipGoal',
+        label: '상대에게 바라는 관계의 목적',
+        kind: 'wants',
+        question: '상대도 어떤 관계를 생각하면 좋을까요?',
+        options: [
+          {
+            id: 'committed',
+            value: 'committed',
+            label: '진지한 관계를 생각해요'
+          },
+          {
+            id: 'exploring',
+            value: 'exploring',
+            label: '좋은 대화·교류부터 시작하고 싶어요'
+          },
+          { id: 'open', value: 'open', label: '알아가면서 정하고 싶어요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.relationshipSpeed',
+        label: '내가 편한 알아가는 속도',
+        kind: 'self',
+        question: '관계의 목적과 별개로, 어느 속도로 알아가는 게 편한가요?',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '시간을 두고 천천히 알아가요' },
+          { id: 'steady', value: 'steady', label: '마음이 맞으면 자주 알아가요' },
+          {
+            id: 'flexible',
+            value: 'flexible',
+            label: '서로 편한 속도를 조율해요'
+          }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.relationshipSpeed',
+        label: '상대에게 바라는 알아가는 속도',
+        kind: 'wants',
+        question: '상대와 어느 속도로 알아가면 편할까요?',
+        options: [
+          { id: 'gradual', value: 'gradual', label: '시간을 두고 천천히 알아가요' },
+          { id: 'steady', value: 'steady', label: '마음이 맞으면 자주 알아가요' },
+          {
+            id: 'flexible',
+            value: 'flexible',
+            label: '서로 편한 속도를 조율해요'
+          },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.meetingRegions',
+        label: '실제로 만날 수 있는 지역',
+        kind: 'regions',
+        question: '직접 만나기 가능한 지역은 어디인가요?',
+        options: [
+          {
+            id: 'seoul-center',
+            value: 'seoul-center',
+            label: '서울 도심',
+            detail: '종로·중구·용산'
+          },
+          {
+            id: 'seoul-northeast',
+            value: 'seoul-northeast',
+            label: '서울 동북권',
+            detail: '성동·광진·동대문·중랑·성북·강북·도봉·노원'
+          },
+          {
+            id: 'seoul-northwest',
+            value: 'seoul-northwest',
+            label: '서울 서북권',
+            detail: '은평·서대문·마포'
+          },
+          {
+            id: 'seoul-southwest',
+            value: 'seoul-southwest',
+            label: '서울 서남권',
+            detail: '양천·강서·구로·금천·영등포·동작·관악'
+          },
+          {
+            id: 'seoul-southeast',
+            value: 'seoul-southeast',
+            label: '서울 동남권',
+            detail: '서초·강남·송파·강동'
+          },
+          { id: 'busan', value: 'busan', label: '부산', detail: '' },
+          { id: 'daegu', value: 'daegu', label: '대구', detail: '' },
+          { id: 'incheon', value: 'incheon', label: '인천', detail: '' },
+          { id: 'gwangju', value: 'gwangju', label: '광주', detail: '' },
+          { id: 'daejeon', value: 'daejeon', label: '대전', detail: '' },
+          { id: 'ulsan', value: 'ulsan', label: '울산', detail: '' },
+          { id: 'sejong', value: 'sejong', label: '세종', detail: '' },
+          {
+            id: 'gyeonggi',
+            value: 'gyeonggi',
+            label: '경기',
+            detail: ''
+          },
+          { id: 'gangwon', value: 'gangwon', label: '강원', detail: '' },
+          {
+            id: 'chungbuk',
+            value: 'chungbuk',
+            label: '충북',
+            detail: ''
+          },
+          {
+            id: 'chungnam',
+            value: 'chungnam',
+            label: '충남',
+            detail: ''
+          },
+          { id: 'jeonbuk', value: 'jeonbuk', label: '전북', detail: '' },
+          { id: 'jeonnam', value: 'jeonnam', label: '전남', detail: '' },
+          {
+            id: 'gyeongbuk',
+            value: 'gyeongbuk',
+            label: '경북',
+            detail: ''
+          },
+          {
+            id: 'gyeongnam',
+            value: 'gyeongnam',
+            label: '경남',
+            detail: ''
+          },
+          { id: 'jeju', value: 'jeju', label: '제주', detail: '' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.contact',
+        label: '내가 편한 연락 빈도',
+        kind: 'self',
+        question: '알아가는 동안 나는 어느 정도 연락하는 게 편한가요?',
+        options: [
+          { id: 'daily', value: 'daily', label: '하루에 한 번쯤 연락해요' },
+          {
+            id: 'few-days',
+            value: 'few-days',
+            label: '며칠에 한 번 여유 있게 연락해요'
+          },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.contact',
+        label: '상대에게 바라는 연락 빈도',
+        kind: 'wants',
+        question: '상대는 어느 정도 연락해 주면 편할까요?',
+        options: [
+          { id: 'daily', value: 'daily', label: '하루에 한 번쯤 연락해요' },
+          {
+            id: 'few-days',
+            value: 'few-days',
+            label: '며칠에 한 번 여유 있게 연락해요'
+          },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: 'daily',
+        valueLabel: '하루에 한 번쯤 연락해요',
+        state: 'known',
+        required: false,
+        baseline: {
+          state: 'known',
+          value: 'daily',
+          valueLabel: '하루에 한 번쯤 연락해요',
+          provenance: {
+            eventId: 'event-3',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.006Z'
+          }
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'known',
+          value: 'daily',
+          valueLabel: '하루에 한 번쯤 연락해요',
+          provenance: {
+            eventId: 'event-3',
+            source: 'explicit',
+            duration: 'ongoing',
+            encounterId: 'current-discovery',
+            at: '2026-10-10T03:00:00.006Z'
+          }
+        },
+        source: 'baseline',
+        requiredValue: null
+      },
+      {
+        id: 'self.rhythm',
+        label: '내 생활 리듬',
+        kind: 'self',
+        question: '요즘 나는 주로 언제 활동하나요?',
+        options: [
+          { id: 'early', value: 'early', label: '이른 시간에 활동하는 편이에요' },
+          { id: 'late', value: 'late', label: '늦은 시간에 활동하는 편이에요' },
+          { id: 'variable', value: 'variable', label: '활동 시간이 자주 달라요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.rhythm',
+        label: '상대에게 바라는 생활 리듬',
+        kind: 'wants',
+        question: '상대의 활동 시간은 어떤 쪽이면 편할까요?',
+        options: [
+          { id: 'early', value: 'early', label: '이른 시간에 활동하는 편이에요' },
+          { id: 'late', value: 'late', label: '늦은 시간에 활동하는 편이에요' },
+          { id: 'variable', value: 'variable', label: '활동 시간이 자주 달라요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'self.notice',
+        label: '내 사전 예고 방식',
+        kind: 'self',
+        question: '연락하기 어려울 때 나는 어떻게 알리는 편인가요?',
+        options: [
+          { id: 'advance', value: 'advance', label: '바쁠 때 미리 알려요' },
+          { id: 'when-free', value: 'when-free', label: '여유가 생기면 알려요' },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      },
+      {
+        id: 'wants.notice',
+        label: '상대에게 바라는 사전 예고',
+        kind: 'wants',
+        question: '상대가 연락하기 어려울 때 어떻게 알려 주면 편할까요?',
+        options: [
+          { id: 'advance', value: 'advance', label: '바쁠 때 미리 알려요' },
+          { id: 'when-free', value: 'when-free', label: '여유가 생기면 알려요' },
+          { id: 'flexible', value: 'flexible', label: '상황에 맞춰 조율해요' },
+          { id: 'any', value: 'any', label: '어느 쪽도 괜찮아요' }
+        ],
+        value: null,
+        valueLabel: '미확인',
+        state: 'unknown',
+        required: false,
+        baseline: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        context: {
+          state: 'inherit',
+          value: null,
+          valueLabel: '평소 기준을 따름',
+          provenance: null
+        },
+        effective: {
+          state: 'unknown',
+          value: null,
+          valueLabel: '미확인',
+          provenance: null
+        },
+        source: 'missing',
+        requiredValue: null
+      }
+    ],
+    priorities: {
+      baseline: [ 'wants.contact', 'wants.plan' ],
+      context: null,
+      effective: [ 'wants.contact', 'wants.plan' ]
+    },
+    context: {
+      id: 'current-discovery',
+      closed: false,
+      expiresAt: null,
+      endedReason: null,
+      revision: 5,
+      conflicts: []
+    },
+    exposure: [],
+    experience: {
+      version: 'dating-experience-1',
+      goal: null,
+      evaluationConsent: false,
+      records: [],
+      metrics: null,
+      limitations: [
+        '본인 응답의 기술통계이며 상대의 점수나 호감 확률이 아니에요.',
+        '미응답과 모르겠음은 실패가 아니에요. 비교 정책과 실제 효과는 검증하지 않았어요.',
+        '평가 동의 후 시작된 기록만 집계하며 동의를 끄면 이전 기록도 집계에서 제외돼요.',
+        '기준 수정 뒤 더 가까워졌다는 답도 본인의 비교 응답이며, 수정이 개선을 일으켰다는 인과효과는 아니에요.'
+      ],
+      criterionReviews: [],
+      recommendationToken: 'XCCbKN5FBBL7WUnmhr1xX2xO9DC1F9QDSldzRmRznxo'
+    },
+    pairs: [],
+    consents: {
+      profilePublic: true,
+      receiveInvitations: true,
+      storePreferences: true
+    },
+    profile: {
+      nickname: '조작 검사 가상 1',
+      region: '가상 소개 지역',
+      intro: '무료 확인을 위한 합성 소개',
+      values: { availability: 'weekend' },
+      required: []
+    }
+  },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

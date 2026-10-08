@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-06T20:13:12.216Z",
+  "sourceCount": 65,
+  "drift": [],
+  "localLinks": [
+    {
+      "reference": "../experiences/atlas-lab/usability.html",
+      "exists": true
+    },
+    {
+      "reference": "_ops/qa/atlas-dating-alignment-20261007/report.json",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/meeting-alignment.mjs",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-service.mjs",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-store.mjs",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-ui.mjs",
+      "exists": true
+    }
+  ],
+  "layoutWidths": [
+    320,
+    390,
+    1280
+  ],
+  "printedObservationWidth": 794
+}

@@ -1,0 +1,84 @@
+{
+  "at": "2026-10-06T21:19:02.515Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Conditional draft cancellation preserves unsaved scope and deadline without applying them",
+    "Stale preview cancellation reads current state and discards a changed original source while preserving drafts after peer-only public changes",
+    "Each saved allowance layer exposes its scope, status and deadline; withdrawing the baseline remains visible even while the context allowance stays active",
+    "Usability preparation supplies a private correction baseline and a date task consistent with mutually public availability"
+  ],
+  "tests": {
+    "files": 6,
+    "tests": 125,
+    "pass": 125,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "browsers": [
+    {
+      "kind": "dating-conditional-draft",
+      "paths": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 7,
+      "at": "2026-10-06T21:10:53.081Z"
+    },
+    {
+      "kind": "dating-flexibility",
+      "paths": 10,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9,
+      "at": "2026-10-06T21:11:49.361Z"
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 9,
+      "at": "2026-10-06T21:13:22.677Z"
+    },
+    {
+      "kind": "dating-clarity",
+      "paths": 4,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "screenshots": 6,
+      "at": "2026-10-06T21:14:35.902Z"
+    }
+  ],
+  "browserPaths": 41,
+  "preview": {
+    "url": "http://127.0.0.1:54124/atlas-lab/dating.html",
+    "guide": "http://127.0.0.1:54124/atlas-lab/usability.html",
+    "isolatedPreview": true,
+    "filesMatched": 8
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Participants and real satisfaction measurement are deferred by the user; all browser checks use synthetic roles.",
+    "This run covers 6 files and 125 automated checks, not a rerun of the earlier 614-check suite.",
+    "Real SYNK login/adult verification, physical two devices and production operation remain unverified.",
+    "Paid AI, paid evaluations and tutor remain deferred.",
+    "The old model freeze still matches 8/9 with the unchanged pre-existing atlas/domain.js mismatch."
+  ],
+  "artifacts": {
+    "design": "docs/아틀라스_공통능력_고도화_20261005.md#17-입력-보존과-사용-범위의-설명-2026-10-07-후속",
+    "guide": "experiences/atlas-lab/usability.html",
+    "tests": "docs/_ops/qa/atlas-dating-usability-readiness-20261007/tests-output.log",
+    "beforeDraft": "experiences/atlas-lab/qa/dating-conditional-draft/pre-fix-result.json",
+    "beforeLayers": "conditional-layer-before.json",
+    "afterLayers": "conditional-layer-after.json"
+  }
+}

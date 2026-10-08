@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-07T00:23:32.586Z",
+  "status": "passed",
+  "kind": "synthetic-live-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "after the five-minute recommendation receipt expires, the unchanged production poll renews only the authorized receipt without changing recommendation content, own revision, focused input or response flags; the current recommendation review still saves successfully",
+    "two successive ordinary counterpart responses apply immediately when no input was edited; restoring untouched controls never creates an artificial dirty state or unnecessary response banner",
+    "editing a public-answer draft does not restore it across a changed public baseline saved in another authenticated tab; the current authorized baseline replaces the stale draft",
+    "the production poll queues an ordinary counterpart alignment response while typing; the banner preserves the focused draft, and explicit apply shows the new response without sending a schedule",
+    "a changed server proposal version immediately invalidates the older schedule edit while preserving an unrelated unsent own introduction",
+    "counterpart introduction withdrawal applies during typing and removes schedule editing authority and the invalid draft without requiring a manual refresh",
+    "counterpart public withdrawal immediately removes the disclosed candidate and pair projection; unrelated own introduction input remains",
+    "an uncertain schedule POST never retains a caption claiming it has not yet been sent; recovery wording acknowledges that the server may already have stored the original request",
+    "aborting only the actual server-applied POST response leaves the original draft and locks further mutations; the receipt GET recovers the single stored appointment without another POST",
+    "aborting before delivery and receiving a missing receipt never declares the request unsaved; explicit retry sends the identical UUID, revision and body and revises the appointment exactly once",
+    "changing the actual demo actor URL clears memory-only pending delivery and never transfers an unsent request to another identity or silently retries it after returning",
+    "an actual expired demo bearer receives HTTP 401 from the local service during pending delivery; polling clears the private view, drafts and recovery request instead of retaining stale private DOM",
+    "a real synthetic operator suspension makes the pending receipt GET return HTTP 403 account-suspended; recovery clears the private view and unsent request instead of presenting a retry under revoked authority"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "ordinary-response-keeps-focused-draft-390.png",
+    "public-withdrawal-preserves-only-own-draft-320.png",
+    "lost-response-keeps-draft-and-locks-mutations-390.png",
+    "missing-receipt-stays-uncertain-320.png"
+  ],
+  "recommendationReceiptBoundary": {
+    "elapsedMinutes": 6,
+    "tokenRenewed": true,
+    "ownRevisionUnchanged": true,
+    "hasNewResponse": false,
+    "reviewHttpStatus": 200,
+    "reviewErrorCode": null,
+    "recordsAdded": 1,
+    "opaqueValuesRecorded": false
+  }
+}

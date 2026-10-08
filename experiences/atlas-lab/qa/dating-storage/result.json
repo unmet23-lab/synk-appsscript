@@ -1,0 +1,147 @@
+{
+  "kind": "synthetic-dating-live-sqlite-storage-browser",
+  "at": "2026-10-08T00:17:37.597Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "realProviderRequests": 0,
+  "physicalDevices": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "syntheticSessionInjection": true,
+  "syntheticVerifierInjection": true,
+  "injectedHttpFailures": false,
+  "physicalDiskExhaustion": false,
+  "sqliteFaults": [
+    "query_only",
+    "max_page_count with a test-only receipt trigger allocation"
+  ],
+  "paths": [
+    {
+      "scenario": "readonly",
+      "width": 320,
+      "initialStatus": 503,
+      "receiptDuringFault": 503,
+      "result": "Real SQLite failure rolls back all onboarding data and its receipt. The browser keeps all text, checkboxes, session and receipt-only checkpoint; no automatic POST occurs. Recovery returns not-found; an explicit same-request retry stores exactly one revision and receipt."
+    },
+    {
+      "scenario": "full",
+      "width": 390,
+      "initialStatus": 503,
+      "receiptDuringFault": 200,
+      "result": "Real SQLite failure rolls back all onboarding data and its receipt. The browser keeps all text, checkboxes, session and receipt-only checkpoint; no automatic POST occurs. Recovery returns not-found; an explicit same-request retry stores exactly one revision and receipt."
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "readonly-retains-input-and-pending-receipt-320.png",
+    "readonly-retains-input-and-pending-receipt-320-full.png",
+    "readonly-recovered-awaits-user-retry-320.png",
+    "readonly-recovered-awaits-user-retry-320-full.png",
+    "full-retains-input-and-pending-receipt-390.png",
+    "full-retains-input-and-pending-receipt-390-full.png",
+    "full-recovered-awaits-user-retry-390.png",
+    "full-recovered-awaits-user-retry-390-full.png"
+  ],
+  "posts": [
+    {
+      "scenario": "readonly",
+      "requestId": "c8086e00-4267-4012-a9f1-e6609b5e81d0",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "scenario": "readonly",
+      "requestId": "c8086e00-4267-4012-a9f1-e6609b5e81d0",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "scenario": "full",
+      "requestId": "a09405b5-a651-49e4-9f06-6b032345d84e",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "scenario": "full",
+      "requestId": "a09405b5-a651-49e4-9f06-6b032345d84e",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    }
+  ],
+  "responses": [
+    {
+      "scenario": "readonly",
+      "endpoint": "/api/atlas-dating/action",
+      "httpStatus": 503,
+      "errorCode": "storage-unavailable"
+    },
+    {
+      "scenario": "readonly",
+      "endpoint": "/api/atlas-dating/receipt",
+      "httpStatus": 503,
+      "errorCode": "storage-unavailable"
+    },
+    {
+      "scenario": "readonly",
+      "endpoint": "/api/atlas-dating/receipt",
+      "httpStatus": 200,
+      "receiptStatus": "not-found"
+    },
+    {
+      "scenario": "readonly",
+      "endpoint": "/api/atlas-dating/action",
+      "httpStatus": 200,
+      "replayed": false
+    },
+    {
+      "scenario": "full",
+      "endpoint": "/api/atlas-dating/action",
+      "httpStatus": 503,
+      "errorCode": "storage-unavailable"
+    },
+    {
+      "scenario": "full",
+      "endpoint": "/api/atlas-dating/receipt",
+      "httpStatus": 200,
+      "receiptStatus": "not-found"
+    },
+    {
+      "scenario": "full",
+      "endpoint": "/api/atlas-dating/receipt",
+      "httpStatus": 200,
+      "receiptStatus": "not-found"
+    },
+    {
+      "scenario": "full",
+      "endpoint": "/api/atlas-dating/action",
+      "httpStatus": 200,
+      "replayed": false
+    }
+  ],
+  "sourceBefore": {
+    "experiences/atlas-lab/dating-store.mjs": "fe7fca5af009f72c32fe4f5f1e51aa43b84c80c850e6489004f3e7e8930a2472",
+    "experiences/atlas-lab/dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39",
+    "experiences/atlas-lab/dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "experiences/atlas-lab/dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "experiences/atlas-lab/dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "tests/atlas-dating-storage-smoke.mjs": "07acf80a67acaf131f70d1898872da1441cb519b5435e0a913fd8ce7caaab2c6",
+    "tests/lib/dating-sqlite-faults.mjs": "b8771189f2b00f4bd2fc076e5fe038d1d5b1470966c0d6386b87e8bd64b04f32"
+  },
+  "sourceAfter": {
+    "experiences/atlas-lab/dating-store.mjs": "fe7fca5af009f72c32fe4f5f1e51aa43b84c80c850e6489004f3e7e8930a2472",
+    "experiences/atlas-lab/dating-service.mjs": "1e424717f99ff7d8968b2f33d5c685252757cf34a4c623c122ae3faebdbc2f39",
+    "experiences/atlas-lab/dating-server.mjs": "c70bc542c5d2560de42561c5fb4c490cae7f6137ed5a0b375e5529da27b55881",
+    "experiences/atlas-lab/dating-account.mjs": "82c5ee4bbc4fba314299e092e5c6362d53d929e00d11483edf03c92d5889888f",
+    "experiences/atlas-lab/dating-ui.mjs": "f190cc1e4b3e6b006f47246dfacd25089121a3f79b2d83947ba24aec8323b62b",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "tests/atlas-dating-storage-smoke.mjs": "07acf80a67acaf131f70d1898872da1441cb519b5435e0a913fd8ce7caaab2c6",
+    "tests/lib/dating-sqlite-faults.mjs": "b8771189f2b00f4bd2fc076e5fe038d1d5b1470966c0d6386b87e8bd64b04f32"
+  },
+  "sourceStable": true
+}

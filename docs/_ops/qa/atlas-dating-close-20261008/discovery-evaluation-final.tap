@@ -1,0 +1,34 @@
+TAP version 13
+# Subtest: fixed authored synthetic evaluation compares ordering while sharing reciprocal eligibility
+ok 1 - fixed authored synthetic evaluation compares ordering while sharing reciprocal eligibility
+  ---
+  duration_ms: 4.4054
+  type: 'test'
+  ...
+# Subtest: fixture priorities are independent declared expectations, including ties, mandatory unknowns and consent withdrawal
+ok 2 - fixture priorities are independent declared expectations, including ties, mandatory unknowns and consent withdrawal
+  ---
+  duration_ms: 0.5609
+  type: 'test'
+  ...
+# Subtest: evaluation uses existing Core Domain, Ask and preferences and makes no network calls
+ok 3 - evaluation uses existing Core Domain, Ask and preferences and makes no network calls
+  ---
+  duration_ms: 5872.4843
+  type: 'test'
+  ...
+# Subtest: evaluation labels its synthetic policy scope and makes no satisfaction or real relationship claim
+ok 4 - evaluation labels its synthetic policy scope and makes no satisfaction or real relationship claim
+  ---
+  duration_ms: 0.4616
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10658.0452

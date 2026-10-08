@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+ok 1 - region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+  ---
+  duration_ms: 1225.7244
+  type: 'test'
+  ...
+# Subtest: private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+ok 2 - private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+  ---
+  duration_ms: 701.0185
+  type: 'test'
+  ...
+# Subtest: new introduction checks both private-to-current-public region directions without exposing the recipient private region
+ok 3 - new introduction checks both private-to-current-public region directions without exposing the recipient private region
+  ---
+  duration_ms: 1804.3107
+  type: 'test'
+  ...
+# Subtest: pending acceptance rechecks current regions while direct rejection remains available
+ok 4 - pending acceptance rechecks current regions while direct rejection remains available
+  ---
+  duration_ms: 2796.152
+  type: 'test'
+  ...
+# Subtest: a completed acceptance is not retroactively cancelled when the next recommendation region changes
+ok 5 - a completed acceptance is not retroactively cancelled when the next recommendation region changes
+  ---
+  duration_ms: 2242.3871
+  type: 'test'
+  ...
+# Subtest: exact private region expiry blocks a new introduction without copying an expired answer from public profile
+ok 6 - exact private region expiry blocks a new introduction without copying an expired answer from public profile
+  ---
+  duration_ms: 1686.0194
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 10818.3897

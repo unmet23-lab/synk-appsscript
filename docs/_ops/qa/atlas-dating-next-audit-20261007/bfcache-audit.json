@@ -1,0 +1,218 @@
+{
+  "at": "2026-10-07T00:07:15.213Z",
+  "scope": "read-only-BFCache-product-audit-with-synthetic-temp-fixtures",
+  "modelCalls": 0,
+  "cost": 0,
+  "actualUsers": 0,
+  "sourceEdits": 0,
+  "runs": [
+    {
+      "removePlaywrightBFCacheOptOut": false,
+      "errors": [],
+      "externalRequests": [],
+      "API": [
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/config"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/demo/session"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/config"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/demo/session"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        }
+      ],
+      "browserVersion": "154.0.8037.98",
+      "documentCacheControl": "no-store",
+      "serverRevisionBefore": 2,
+      "serverRevisionAfter": 3,
+      "lifecycleEvents": [
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        },
+        {
+          "type": "pagehide",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        },
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/usability.html",
+          "persisted": false
+        },
+        {
+          "type": "pagehide",
+          "pathname": "/atlas-lab/usability.html",
+          "persisted": false
+        },
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        }
+      ],
+      "sameDocumentRestored": false,
+      "returnedWithPersistedTrue": false,
+      "beforePollRevision": 3,
+      "pollRequestsAdded": 1,
+      "afterPollRevision": 3,
+      "mutationRequestsAdded": 1,
+      "afterMutationRevision": 4,
+      "mutationNotice": "",
+      "reloadRequestsAdded": 1,
+      "reloadNotice": "계정의 최신 기록을 불러왔어요.",
+      "afterReloadRevision": 4,
+      "staleViewAfterPoll": false,
+      "notRestoredReasons": null,
+      "status": "BFCache-not-restored-in-this-run"
+    },
+    {
+      "removePlaywrightBFCacheOptOut": true,
+      "errors": [],
+      "externalRequests": [],
+      "API": [
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/config"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/demo/session"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/config"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/demo/session"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        },
+        {
+          "method": "POST",
+          "path": "/api/atlas-dating/action"
+        },
+        {
+          "method": "GET",
+          "path": "/api/atlas-dating/state"
+        }
+      ],
+      "browserVersion": "154.0.8037.98",
+      "documentCacheControl": "no-store",
+      "serverRevisionBefore": 2,
+      "serverRevisionAfter": 3,
+      "lifecycleEvents": [
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        },
+        {
+          "type": "pagehide",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        },
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/usability.html",
+          "persisted": false
+        },
+        {
+          "type": "pagehide",
+          "pathname": "/atlas-lab/usability.html",
+          "persisted": false
+        },
+        {
+          "type": "pageshow",
+          "pathname": "/atlas-lab/dating.html",
+          "persisted": false
+        }
+      ],
+      "sameDocumentRestored": false,
+      "returnedWithPersistedTrue": false,
+      "beforePollRevision": 3,
+      "pollRequestsAdded": 1,
+      "afterPollRevision": 3,
+      "mutationRequestsAdded": 1,
+      "afterMutationRevision": 4,
+      "mutationNotice": "",
+      "reloadRequestsAdded": 1,
+      "reloadNotice": "계정의 최신 기록을 불러왔어요.",
+      "afterReloadRevision": 4,
+      "staleViewAfterPoll": false,
+      "notRestoredReasons": {
+        "reasons": [
+          "masked",
+          "response-cache-control-no-store",
+          "response-cache-control-no-store-with-js-network-request"
+        ],
+        "children": []
+      },
+      "status": "BFCache-not-restored-in-this-run"
+    }
+  ],
+  "confirmedBug": false,
+  "conclusion": "This audit did not reproduce the claimed BFCache disposal failure; do not present source suspicion as confirmed browser behavior.",
+  "cleanup": {
+    "browsersClosed": true,
+    "serversClosed": true,
+    "temporaryFolderRemoved": false,
+    "temporaryCleanupRejection": "blocked by policy",
+    "temporaryFolderName": "synk-bfcache-audit-032a90a1-333b-4903-ba15-c78c102f4a91"
+  }
+}

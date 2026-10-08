@@ -1,0 +1,38 @@
+✔ lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token (5.282ms)
+✔ the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities (856.921ms)
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1870.0445ms)
+✔ exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back (295.781ms)
+✔ delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase (2711.159ms)
+✔ receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry (7489.9827ms)
+✔ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (3706.4796ms)
+✔ an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log (819.3235ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 7
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 17983.1342
+
+✖ failing tests:
+
+test at tests\atlas-dating-lifecycle-service.test.mjs:62:1
+✖ central deletion reuses product erasure and preserves only the other person’s own private reflection (1870.0445ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + null
+  - undefined
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-lifecycle-service.test.mjs:71:212)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: null,
+    expected: undefined,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

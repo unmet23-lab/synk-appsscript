@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-06T22:20:47.208Z",
+  "status": "passed",
+  "kind": "synthetic-dating-conditional-draft-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "baseline scope and future deadline survive cancellation without writing account, public profile or rule",
+    "editing the cancelled draft and applying its new preview saves the exact selected scope and deadline",
+    "a peer change rejects stale preview application; cancelling preserves the unsubmitted own draft while its source is unchanged",
+    "starting a new recommendation context discards the old unsaved conditional draft",
+    "changing the original contact declaration and restoring its value does not resurrect the superseded conditional draft",
+    "a same-actor second surface redeclaring daily makes the reviewed preview stale; cancellation fetches the new source and drops the old draft",
+    "a same-actor second surface changing the source to few-days blocks the conditional editor after stale preview cancellation",
+    "switching synthetic actors in the same browser surface clears private drafts and returning does not recover unsaved data",
+    "withdrawing a saved baseline allowance explains both layers before saving and leaves the current context allowance active after explicit apply"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "cancelled-draft-preserved-390.png",
+    "saved-scope-and-deadline-390.png",
+    "stale-preview-cancel-preserves-own-draft-390.png",
+    "same-actor-source-refresh-drops-old-draft-390.png",
+    "source-bound-draft-reset-320.png",
+    "source-bound-draft-reset-1280.png",
+    "baseline-withdrawal-keeps-context-preview-320.png"
+  ],
+  "observations": [
+    {
+      "behavior": "conditional preview cancellation preserves scope and deadline",
+      "source": "experiences/atlas-lab/dating-ui.mjs:527",
+      "expected": {
+        "scope": "baseline",
+        "until": "2026-10-09T18:30"
+      },
+      "actual": {
+        "scope": "baseline",
+        "until": "2026-10-09T18:30"
+      },
+      "accountRevisionBefore": 3,
+      "accountRevisionAfter": 3,
+      "profileUnchanged": true,
+      "storedRuleUnchanged": true
+    },
+    {
+      "behavior": "saved context scope and exact deadline are visible in the editor and preference summary",
+      "contactInfo": "이번 추천의 허용 조건\n\n지금 추천에 사용하고 있어요.\n\n사용 범위: 이번 추천에서만. 이번 추천이 끝나면 함께 끝나요.\n\n이 조건의 종료 시점: 2026. 10. 10. 오후 4시 40분 0초 GMT+9",
+      "summaryInfo": "이번 추천의 허용 조건\n\n지금 추천에 사용하고 있어요.\n\n사용 범위: 이번 추천에서만. 이번 추천이 끝나면 함께 끝나요.\n\n이 조건의 종료 시점: 2026. 10. 10. 오후 4시 40분 0초 GMT+9"
+    },
+    {
+      "behavior": "a same-actor second surface redeclares the same value; cancellation loads its newer source and drops the old draft",
+      "expectedRevision": 9,
+      "actualRevision": 9,
+      "oldDraftDeadline": "2026-10-14T18:50",
+      "actualDeadline": ""
+    },
+    {
+      "behavior": "withdrawing the saved baseline allowance describes each layer and keeps the active context allowance",
+      "layerCaption": "조건을 붙여 허용하는 연락 방식\n\n지금: 하루에 한 번쯤을 선호하지만, 상대가 바쁠 때 미리 알린다고 공개하면 며칠에 한 번도 괜찮다는 선택이에요. 상대의 미확인 답으로는 허용하지 않아요. / 평소 허용(앞으로도): 사용 가능, 2026. 10. 19. 09:00:00 (한국 시간)까지 · 허용 조건 기한 / 이번 허용(이번 추천에서만): 사용 가능, 2026. 10. 18. 10:20:00 (한국 시간)까지 · 허용 조건 기한 · 회차가 먼저 끝나면 함께 종료 / 현재 비교: 이번 허용 사용 / 원래 연락 답: 하루에 한 번쯤 연락해요\n\n적용 후: 하루에 한 번쯤을 선호하지만, 상대가 바쁠 때 미리 알린다고 공개하면 며칠에 한 번도 괜찮다는 선택이에요. 상대의 미확인 답으로는 허용하지 않아요. / 평소 허용(앞으로도): 없음 / 이번 허용(이번 추천에서만): 사용 가능, 2026. 10. 18. 10:20:00 (한국 시간)까지 · 허용 조건 기한 · 회차가 먼저 끝나면 함께 종료 / 현재 비교: 이번 허용 사용 / 원래 연락 답: 하루에 한 번쯤 연락해요 현재 사용하는 허용 조건은 그대로예요. 원래 연락 답은 바뀌지 않아요."
+    }
+  ]
+}

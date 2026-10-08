@@ -1,0 +1,23 @@
+TAP version 13
+# Subtest: unfilled deployment account example fails configuration-only startup without creating product data
+ok 1 - unfilled deployment account example fails configuration-only startup without creating product data
+  ---
+  duration_ms: 162.6787
+  type: 'test'
+  ...
+# Subtest: actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts
+ok 2 - actual Caddy template validates and enforces the standalone TLS, persistence and redacted failure contracts
+  ---
+  duration_ms: 1641.887
+  type: 'test'
+  ...
+# {"caddy":"v2.11.7","publicFiles":22,"privateRoutesRejected":7,"upstreamFailureStatus":502,"observedErrorLogs":1,"requestFieldRedacted":true,"profileRestored":true,"tlsTrust":"fixture CA supplied to these HTTPS requests only","externalProviderCalls":0,"acmeEnabled":false,"adminEnabled":false}
+1..2
+# tests 2
+# suites 0
+# pass 2
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7017.6131

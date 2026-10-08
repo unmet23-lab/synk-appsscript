@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "subtask": "adult-verification-contract",
+  "checkedAt": "2026-10-07T10:52:02.003Z",
+  "sourceFrozen": true,
+  "scope": "Server-injected local assertion function; no remote provider, paid call, legal age decision or deployment.",
+  "newTests": {
+    "log": "adult-tests-final.log",
+    "tests": 21,
+    "pass": 21,
+    "fail": 0,
+    "sha256": "f6f38eb869c0f809508326ab39e9e97154b2fb59d1bcccb352cd45ce138014ce"
+  },
+  "regressionTests": {
+    "log": "adult-service-regression.log",
+    "tests": 75,
+    "pass": 75,
+    "fail": 0,
+    "sha256": "f9868a504bd471245efbf105584231bf9dcbf3a068ee83bb43e657fbbeef4535"
+  },
+  "sources": [
+    {
+      "path": "experiences/atlas-lab/dating-adult.mjs",
+      "sha256": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "278b72f4a47127739787b8f7c153958e5fab80e196501e62e7550f4065c47977"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+    },
+    {
+      "path": "tests/atlas-dating-adult.test.mjs",
+      "sha256": "1079beb4deb6beb7eb29f194af621d1da7ffce2997f4f83fb6dee128d6a13180"
+    }
+  ],
+  "contract": {
+    "configuration": "adultVerification:{required:true,issuer,verify,timeoutMs?}; server code only, no CLI or browser activation.",
+    "fields": [
+      "version",
+      "subjectId",
+      "issuer",
+      "status",
+      "sequence",
+      "issuedAt",
+      "validUntil"
+    ],
+    "version": 1,
+    "statuses": [
+      "verified",
+      "pending",
+      "revoked",
+      "unverified"
+    ],
+    "sequence": "Positive safe integer, monotonic per subject and issuer; same sequence and different content creates a persistent conflictedSequence fence that only a higher trusted result clears.",
+    "persistentPolicy": "The existing database-level dating_meta.adult_required bit remembers enforcement after deletion of every account document; old three-column metadata is upgraded without PII.",
+    "rawPersonalData": "Date of birth, ID documents, provider tokens and extra fields are rejected; only the exact minimal assertion is retained in the existing private account document.",
+    "ownProjection": [
+      "required",
+      "status",
+      "validUntil",
+      "checkedAt",
+      "resumeRequired",
+      "canResume"
+    ],
+    "peerProjection": "No private verification status or assertion."
+  },
+  "behavior": [
+    "Fresh unconfigured databases and fictional demo retain declaration-only behavior and verified:false.",
+    "An enforced database with a missing verifier remains required/unavailable instead of downgrading to declarations, including after every account is deleted.",
+    "Expiry, revocation, malformed claims, errors and timeout fail closed; only explicit current consent and peer reopening can begin a new invitation.",
+    "First enforcement retires existing declaration-only acceptances instead of relabeling them as verified.",
+    "Profile, private criteria, preferences, own outcomes, reporting and deletion remain available; unavailable candidates are hidden.",
+    "Old successful asynchronous checks cannot override newer revocation. Same-sequence equivocation cannot be recovered by returning the original claim or restarting the service.",
+    "Local suspension and deletion are independent and never cleared by verification; consent withdrawal and account deletion remain possible even while the verifier returns a conflicting claim."
+  ],
+  "preservedObservations": [
+    {
+      "log": "adult-tests-initial.log",
+      "tests": 15,
+      "pass": 13,
+      "fail": 2,
+      "cause": "Simultaneous hold of both people reused the archived introduction timestamp.",
+      "resolution": "Each hold advances the existing store logical clock. The simultaneous expiry and first-enforcement cases now pass."
+    },
+    {
+      "log": "adult-tests-second.log",
+      "tests": 15,
+      "pass": 15,
+      "fail": 0,
+      "note": "Intermediate check before three additional boundaries and missing-verifier restart test."
+    },
+    {
+      "log": "adult-tests-19-intermediate.log",
+      "tests": 19,
+      "pass": 19,
+      "fail": 0,
+      "note": "Intermediate check before independent review identified the all-deleted policy and equivocation restart gaps."
+    },
+    {
+      "log": "adult-boundary-prefail.log",
+      "tests": 2,
+      "pass": 0,
+      "fail": 2,
+      "cause": "Document-only policy detection downgraded after all accounts were deleted, and an original same-sequence claim removed the equivocation hold after restart.",
+      "resolution": "A database-level policy bit and persistent sequence fence now preserve both requirements. The final 21 cases include both reproductions and fixes."
+    },
+    {
+      "log": "adult-boundary-fixed-initial.log",
+      "tests": 2,
+      "pass": 1,
+      "fail": 1,
+      "cause": "A new account without a verifier or previous claim encountered an undefined fallback while applying the retained policy.",
+      "resolution": "Null claim fallback is explicit. The corrected boundary-only run and final suite both pass."
+    },
+    {
+      "log": "adult-boundary-fixed.log",
+      "tests": 2,
+      "pass": 2,
+      "fail": 0,
+      "note": "Boundary-only confirmation; the final 21-case run also checks legacy metadata migration and privacy withdrawal."
+    },
+    {
+      "log": "adult-service-regression-19-intermediate.log",
+      "tests": 75,
+      "pass": 75,
+      "fail": 0,
+      "note": "Intermediate source before the policy marker and conflict fence fixes; not counted as another set of tests."
+    },
+    {
+      "log": "adult-service-regression-pre-final.log",
+      "tests": 70,
+      "pass": 70,
+      "fail": 0,
+      "note": "Intermediate source; an incorrect receipt filename glob matched no file. The final run includes the actual receipt-service test file and all 75 cases."
+    }
+  ],
+  "limitations": [
+    "No actual provider account, paid verification, legal adult threshold, supplier decision, public deployment, real device or real-person verification is claimed.",
+    "Revocation is observed on a configured local service request; no provider webhook or external revocation schedule is enabled.",
+    "Database backups must carry the metadata policy bit and private conflict fence with account data; restoring a deliberately older pre-enforcement database requires the explicit server enforcement setting.",
+    "The injected function currently refreshes subjects in the local product store. A real supplier integration still needs its approved bulk/status retrieval and operational latency/cost design."
+  ],
+  "externalCalls": 0,
+  "paidCost": 0,
+  "engineSourceChanges": 0
+}

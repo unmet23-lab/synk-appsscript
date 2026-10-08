@@ -1,0 +1,15 @@
+{
+  "preservedFailures": [
+    "Context-transition fixture used invalid option values and a wrong null expectation; initial three failures retained before final pass.",
+    "New browser fixture initially recorded a conditional allowance without its required preview, then tried a control inside a closed ancestor, then supplied an unsupported completion property. Corrected fixture runs are preserved separately.",
+    "Delegated agents stopped because of account/runtime authentication and network errors. Parent completed final verification without paid service activation or changes to the product authorization rules."
+  ],
+  "repeatedRunsNotAdditive": true,
+  "existingDatingSmokeChange": "Only its new-context step now explicitly confirms the preview before asserting the same old reset behavior.",
+  "sourceStable": true,
+  "paidCalls": 0,
+  "modelCalls": 0,
+  "actualUsers": 0,
+  "remoteMigration": false,
+  "publicDeployment": false
+}

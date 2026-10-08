@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+ok 1 - paired PGlite dump/load and SQLite backup restore a lost-ack hold, replay exactly, and require fresh consent and acceptance
+  ---
+  duration_ms: 6198.3273
+  type: 'test'
+  ...
+# Subtest: restored final deletion receipt and tombstone survive worker replay and every later active event
+ok 2 - restored final deletion receipt and tombstone survive worker replay and every later active event
+  ---
+  duration_ms: 5943.4825
+  type: 'test'
+  ...
+# Subtest: a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+ok 3 - a missing central cursor or product lifecycle ledger fails read-only admission before the host is opened
+  ---
+  duration_ms: 6116.2203
+  type: 'test'
+  ...
+# Subtest: individually valid snapshots from different delivery points fail paired restore admission
+ok 4 - individually valid snapshots from different delivery points fail paired restore admission
+  ---
+  duration_ms: 5897.4413
+  type: 'test'
+  ...
+# Subtest: two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+ok 5 - two coherent old backups need newer deletion and sequence knowledge outside the pair to reject rollback
+  ---
+  duration_ms: 4853.4981
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 29323.4257

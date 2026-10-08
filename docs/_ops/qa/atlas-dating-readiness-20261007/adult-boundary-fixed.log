@@ -1,0 +1,10 @@
+✔ once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart (6862.247ms)
+✔ same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume (3136.6047ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10413.1173

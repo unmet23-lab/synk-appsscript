@@ -1,0 +1,31 @@
+✔ public deadlines are independent and omitted keys preserve an already-ended saved deadline (2.2027ms)
+✔ an unchanged past deadline round-trips only its exact unchanged saved answer (0.7131ms)
+✔ changing a saved answer while omitting deadlines cannot resurrect its expired publication (0.2555ms)
+✔ only explicit null clears a public deadline and a new deadline must be canonical and future (0.8688ms)
+✔ orphan deadline keys and executable expiration getters are rejected (0.7757ms)
+✔ the exact public deadline removes only the current value and retains its required guard and raw owner record (0.3018ms)
+✔ a projected meeting-region array is an independent copy and malformed stored deadlines fail closed (0.1858ms)
+✔ HTTP expired public self answers leave owner raw and private answers intact while peer comparison sees no old value (588.0071ms)
+✔ HTTP expired required public wants remains a pending mandatory guard, including formerly any (1296.4288ms)
+✔ HTTP old clients and unchanged past deadline round-trips cannot revive a saved expired public answer (746.7713ms)
+✔ HTTP invalid expiry inputs reject atomically without changing profile or private state (580.5118ms)
+✔ HTTP baseline publication preserves an independent public deadline and never copies the private answer deadline (522.1405ms)
+✔ HTTP all public and private regions expiring together cannot fall through to the no-region legacy guard (1808.4428ms)
+✔ HTTP outstanding acceptance rechecks the sender current mandatory comparison and keeps explicit decline available (2061.0997ms)
+✔ HTTP sender public required expiry blocks pending acceptance without demanding new recipient private answers (914.636ms)
+✔ HTTP normal profile-only recipient acceptance still works when current published answers have no deadlines (1181.8431ms)
+✔ HTTP crossing a peer public deadline invalidates a live private preview without any saved revision changing (841.2501ms)
+✔ HTTP crossing the owner own public deadline also invalidates a preview whose private criteria stayed the same (692.8925ms)
+✔ HTTP accepted introductions and confirmed appointments survive public deadline expiry while schedule hints use only current availability (1829.2ms)
+✔ HTTP alignment consumes current public fields and a deadline-only edit invalidates the former alignment key (1471.3718ms)
+✔ HTTP owner public availability expiry blocks a new send even while current private availability remains known (755.5339ms)
+✔ HTTP sender private required deadline ending before acceptance does not copy a public answer to revive the request (1278.9888ms)
+✔ HTTP public notice expiry ends a conditional allowance record without changing the private original contact preference (1616.0923ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 18398.1303

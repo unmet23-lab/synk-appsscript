@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-07T14:45:23.2718088Z",
+  "status": "passed",
+  "task": "candidate highlights read-only product projection",
+  "testCommand": "node --test tests/atlas-candidate-highlights.test.mjs",
+  "tests": 18,
+  "passed": 18,
+  "failed": 0,
+  "sourceFrozen": true,
+  "syntaxChecks": [
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "tests/atlas-candidate-highlights.test.mjs"
+  ],
+  "sourceSha256": {
+    "experiences/atlas-lab/candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882",
+    "tests/atlas-candidate-highlights.test.mjs": "2a0a66d2423fe95b10e7a8bca2e0ee419835b14b87bb929252a7332a30389c68",
+    "experiences/atlas-lab/discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a"
+  },
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "sourceChanges": [
+    "experiences/atlas-lab/candidate-highlights.mjs",
+    "tests/atlas-candidate-highlights.test.mjs"
+  ],
+  "log": "candidate-highlights-tests.tap",
+  "initialFailure": {
+    "cause": "Synthetic published candidate fixture omitted the consent:true declaration required by the existing adapter, so its current candidate list was empty. Fixture corrected; product source was unchanged.",
+    "log": "candidate-highlights-tests-initial-fixture-failure.tap"
+  },
+  "contract": {
+    "input": "getCandidateHighlights(discovery,candidate); dated limits require discovery.asOf from server view",
+    "changesRanking": false,
+    "mutatesSource": false,
+    "sources": "current known own wants, owner:self and editable reasonDetails with matching value/provenance, present in current candidate projection",
+    "deviceClock": false,
+    "echoesPrivateMetadata": false,
+    "selectedOrder": "current effective priorities",
+    "output": [
+      "field",
+      "label",
+      "text",
+      "comparison",
+      "source",
+      "required",
+      "prioritySource",
+      "until"
+    ],
+    "maximumRows": 2,
+    "statuses": [
+      "match",
+      "different",
+      "unknown",
+      "conditional",
+      "any"
+    ]
+  }
+}

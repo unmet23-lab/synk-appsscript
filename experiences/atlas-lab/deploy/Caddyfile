@@ -1,0 +1,36 @@
+# Preparation template: replace BOTH occurrences of dating.example.invalid.
+# This file belongs on a dedicated host, after domain/account registration.
+# Do not add file_server: the application owns the 22-file public allowlist.
+# Do not enable request/access logging: OAuth callback URLs contain codes.
+{
+	# Upstream failure logs also contain a request. Drop that entire field.
+	log default {
+		format filter {
+			wrap json
+			fields {
+				request delete
+			}
+		}
+	}
+}
+
+https://dating.example.invalid {
+	encode zstd gzip
+	reverse_proxy 127.0.0.1:4302 {
+		header_up Host 127.0.0.1:4302
+		header_up -Forwarded
+		# Do not delete X-Forwarded-* as a wildcard: Caddy applies deletion
+		# after setting, which would erase the two required headers below.
+		header_up -X-Forwarded-For
+		header_up X-Forwarded-Proto https
+		header_up X-Forwarded-Host dating.example.invalid
+		# Origin and Sec-Fetch-Site remain unchanged for application validation.
+		# No application-level retry of writes after an uncertain response.
+		lb_retries 0
+		transport http {
+			dial_timeout 3s
+			response_header_timeout 30s
+			keepalive 4s
+		}
+	}
+}

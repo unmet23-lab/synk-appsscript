@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SYNK Atlas · 순간 맞춤 실험실</title>
 <link rel="stylesheet" href="/learning-hub/assets/scrapbook.css"><link rel="stylesheet" href="/atlas-lab/lab.css">
-<script src="/learning-hub/atlas-learning.js" defer></script><script src="/consult/core/domain.js" defer></script><script src="/consult/core/interpretation.js" defer></script><script src="/consult/core/temper-outcomes.js" defer></script><script src="/consult/computer/content.js" defer></script><script src="/consult/computer/rules.js" defer></script><script type="module" src="/atlas-lab/lab.js"></script></head>
+<script src="/learning-hub/atlas-learning.js" defer></script><script src="/consult/core/domain.js" defer></script><script src="/consult/core/engine.js" defer></script><script src="/consult/core/personalization.js" defer></script><script src="/consult/core/interpretation.js" defer></script><script src="/consult/core/temper-outcomes.js" defer></script><script src="/consult/computer/content.js" defer></script><script src="/consult/computer/rules.js" defer></script><script type="module" src="/atlas-lab/lab.js"></script></head>
 <body class="sb-page"><main>
 <header class="lab-head"><span class="brand">SYNK ATLAS</span><a class="back" href="/learning-hub/">← 맞춤 학습으로</a></header>
 
@@ -99,8 +99,47 @@
   </div>
 </section>
 
+<section class="block discovery-lab" aria-labelledby="discovery-title">
+  <p class="eyebrow">④ 어떤 사람을 만나고 싶나요? · 가상 성인 후보로 체험하기</p>
+  <h2 id="discovery-title">끌리는 상황을 고르면,<br>살펴볼 사람이 달라져요.</h2>
+  <p class="note">내가 대화하는 방식과 상대에게 바라는 방식을 따로 골라 보세요. 상대가 밝힌 조건까지 함께 확인해 후보와 이유를 보여 드려요. 모두 가상의 성인이며, 실제 소개나 메시지를 보내지 않아요.</p>
+  <h3 id="discovery-summary" tabindex="-1"></h3>
+  <details class="journey-memory"><summary>다시 와도 이어서 보고 싶다면</summary><div id="journey-memory" data-local-memory="optional"></div></details>
+  <div class="discovery-input-grid">
+    <div id="discovery-question" class="discovery-question"></div>
+    <div id="discovery-profile" class="discovery-profile"></div>
+  </div>
+  <div id="discovery-preview" class="discovery-preview" role="region" aria-label="조건 변경 미리보기"></div>
+  <div id="discovery-change" class="discovery-change" role="status" aria-live="polite"></div>
+  <div id="discovery-candidates" class="discovery-cards"></div>
+  <div id="discovery-selection" class="discovery-selection"></div>
+  <p id="discovery-notice" class="mini" role="status" aria-live="polite"></p>
+  <div id="discovery-held" class="discovery-held"></div>
+  <details class="discovery-reset"><summary>다른 가상 사례로 처음부터 보기</summary><div id="discovery-scenarios" class="interpret-actions"></div></details>
+  <p class="mini">기억하기를 켜기 전에는 이 탭에서만 체험해요. 기억한 내용은 이 기기에서 직접 지울 수 있어요. 조건에 맞는 후보를 찾는 시연이며, 실제 호감·관계 적합성·만족도를 측정한 결과는 아니에요.</p>
+  <details class="journey-memory"><summary>두 사람이 각자 답하는 흐름 체험하기</summary><div id="journey-participants" data-local-host="optional"></div></details>
+</section>
+
+<section class="block meeting-lab" aria-labelledby="meeting-title">
+  <p class="eyebrow">⑤ 원하는 만남부터 · 가상 인물로 체험하기</p>
+  <h2 id="meeting-title" tabindex="-1">내가 고친 한 가지가<br>다음 만남을 바꿔요.</h2>
+  <p class="note">위에서 고른 후보와 만나고 싶은 분위기를 골라 보세요. 두 가상 인물의 역할을 바꾸며 각자의 의향을 확인할 수 있어요. 후보를 고르기 전에는 가상 인물 A와 B로 체험해요. 실제 소개·약속·메시지 전송은 일어나지 않아요.</p>
+  <div id="meeting-connection" class="meeting-connection"></div>
+  <div id="meeting-roles" class="interpret-actions" role="group" aria-label="체험할 가상 인물"></div>
+  <p id="meeting-stage" class="mini"></p>
+  <div class="meeting-grid">
+    <div id="meeting-inputs" class="meeting-inputs"></div>
+    <aside id="meeting-plan" class="meeting-plan" aria-label="첫 만남 제안"></aside>
+  </div>
+  <div id="meeting-actions" class="interpret-actions"></div>
+  <p id="meeting-notice" class="mini" role="status" aria-live="polite"></p>
+  <div id="meeting-reflection" class="meeting-reflection"></div>
+  <details class="meeting-record"><summary>나에게 반영된 변경 보기</summary><div id="meeting-changes"></div></details>
+  <p class="mini">기억하기를 켠 경우에만 이 기기에 선택과 피드백을 저장해요. 두 가상 인물을 직접 조작하는 이 화면의 역할 전환은 개인정보 보호 기능이 아니에요. 별도 역할 창은 로컬 서버가 각 역할에 필요한 내용만 내려줍니다. 실제 만족도나 관계의 성공 가능성을 측정한 결과가 아니에요.</p>
+</section>
+
 <section class="block" aria-labelledby="matching-title">
-  <p class="eyebrow">④ 소개팅에서는 · 두 사람의 조건과 의향</p>
+  <p class="eyebrow">⑥ 소개의 기본 조건과 의향 확인</p>
   <h2 id="matching-title">서로 원할 때만 다음 단계로</h2>
   <p class="note">가상 두 사람의 만날 수 있는 시간과 대화 속도로 확인해요. 상대에게 바라는 조건을 양쪽에서 확인하고, 두 사람 모두 소개를 받은 뒤 수락해야 서로의 수락을 알릴 수 있어요. 실제 사람의 성격이나 관계의 성공 가능성을 평가하는 기능은 아니에요.</p>
   <div id="matching-scenarios" class="content-pick" role="group" aria-label="소개팅 사례 고르기"></div>
@@ -119,7 +158,7 @@
 </section>
 
 <section class="block" aria-labelledby="map-title">
-  <p class="eyebrow">⑤ 어디에 붙어 있나</p>
+  <p class="eyebrow">⑦ 어디에 붙어 있나</p>
   <h2 id="map-title">콘텐츠마다 돌리는 손잡이</h2>
   <div class="table-wrap"><table class="map">
     <thead><tr><th>콘텐츠</th><th>사람에 맞춰 바뀌는 것</th><th>쓰는 엔진</th><th>지금</th></tr></thead>
@@ -129,6 +168,8 @@
       <tr><td>맞춤 학습 입구</td><td>오늘 컨디션 → 그날 모든 게임의 시작 속도</td><td>Core·Vellum</td><td><span class="state on">연결</span></td></tr>
       <tr><td>AI 컴퓨터 맞춤 추천</td><td>원문 조건 확인·정정, 도움이 될 질문부터 묻기</td><td>Core(근거·묻기)</td><td><span class="state lab">실험실</span></td></tr>
       <tr><td>소개팅 최소 검증</td><td>쌍방 필수 조건·미확인 질문·소개 전달·상호 수락</td><td>Core·Temper</td><td><span class="state lab">가상 사례</span></td></tr>
+      <tr><td>살펴볼 사람 찾기</td><td>상황에서 고른 선호 → 쌍방 조건에 맞는 후보·다른 점·미확인 비교</td><td>Core(설정·근거·묻기)</td><td><span class="state lab">가상 체험</span></td></tr>
+      <tr><td>원하는 첫 만남</td><td>만남 제안·이번만/계속 수정·경험 피드백 확인 후 다음 제안</td><td>Core(설정·근거·묻기)</td><td><span class="state lab">가상 체험</span></td></tr>
       <tr><td>한국어 레이싱</td><td>차 속도·문제 간격·보기 수·문항 난도</td><td>Core·Temper·Vellum·Loom</td><td><span class="state plan">선언안</span></td></tr>
       <tr><td>바람길</td><td>달리는 속도·지시 간격(조작과 언어는 따로)</td><td>Core·Temper</td><td><span class="state plan">선언안</span></td></tr>
       <tr><td>입장 검사 · 선생님이 돌아왔다</td><td>손님/부탁 수, 규칙 수, 글 길이, 돋보기·글 도움 시점</td><td>Core·Vellum·Strata</td><td><span class="state plan">선언안</span></td></tr>
@@ -137,5 +178,5 @@
   </table></div>
   <p class="caveat">선언안은 손잡이 목록과 붙이는 자리까지 정한 상태예요. 화면 연결은 각 콘텐츠를 맡은 작업에서 몇 줄로 붙여요.</p>
 </section>
-<footer id="lab-privacy">SYNK Atlas · 이 기기에서 정리한 답은 브라우저에만 잠깐 남아요. AI 응답의 원문 인용은 서버에 암호화해 최대 24시간 보관하며 직접 지울 수 있어요. 비용·중복 요청 방지 기록은 남아요.</footer>
+<footer id="lab-privacy">SYNK Atlas · 소개팅 체험은 기억하기를 켠 경우에만 이 기기에 저장해요. 별도 역할 창의 체험은 로컬 서버를 끝내면 지워져요. 컴퓨터 추천의 AI 응답 보관은 위 안내를 따릅니다.</footer>
 </main></body></html>

@@ -1,0 +1,46 @@
+{
+  "at": "2026-10-07T18:58:36.485Z",
+  "kind": "synthetic-account-session-browser",
+  "status": "failed",
+  "actualUsers": 0,
+  "physicalDevices": 0,
+  "realIdentityProviderCalls": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "delayed-logout-private-dom-boundary-390.png"
+  ],
+  "logoutObservations": [
+    {
+      "case": "delayed-success",
+      "phase": "remote-response-pending",
+      "viewCleared": true,
+      "credentialCleared": true,
+      "privateTextInDOM": true,
+      "draftInDOM": true,
+      "privateControls": 17,
+      "signInVisible": false,
+      "navigationHidden": false
+    }
+  ],
+  "sourcesBefore": {
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-ui.mjs": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa"
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  {\n    credentialCleared: true,\n+   draftInDOM: true,\n+   navigationHidden: false,\n+   privateControls: 17,\n+   privateTextInDOM: true,\n+   signInVisible: false,\n-   draftInDOM: false,\n-   navigationHidden: true,\n-   privateControls: 0,\n-   privateTextInDOM: false,\n-   signInVisible: true,\n    viewCleared: true\n  }\n\n    at assertCleared (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-account-session-smoke.mjs:55:38)\n    at delayedLogout (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-account-session-smoke.mjs:69:3)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-account-session-smoke.mjs:101:3",
+  "sourcesAfter": {
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-ui.mjs": "050f1bc5e856cd25595f15cff28ba382a813866204965469533b13ad594a7e76",
+    "dating-live.mjs": "b19c3c166ab75f378039d76820a972db8a42396b4f8b88742310be6f50266e5d",
+    "dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa"
+  }
+}

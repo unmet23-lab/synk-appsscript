@@ -1,0 +1,16 @@
+✔ lifecycle verifier is explicitly configured, server-only and constant-length digest comparison accepts only its configured token (2.6061ms)
+✔ the actual route fails closed for absent configuration, browser origins, user credentials, foreign events and demo identities (700.422ms)
+✔ central deletion reuses product erasure and preserves only the other person’s own private reflection (1405.5095ms)
+✔ exact duplicates keep response and revisions stable through restart while event ID content conflicts roll back (240.7635ms)
+✔ delayed terminal deletion and unseen subjects create durable tombstones, while excessive future dates never erase (122.0252ms)
+✔ receipt storage failure rolls erasure and peer archival back atomically, then the same event can retry (624.6381ms)
+✔ lifecycle and an ordinary stale CAS write cannot leave an active account, including a second SQLite connection (163.3647ms)
+✔ an already deleted local account stays deleted without an extra revision and deletion bypasses a full introduction log (890.2427ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4356.368

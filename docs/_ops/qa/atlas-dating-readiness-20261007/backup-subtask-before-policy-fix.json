@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-07T10:36:01.5884077Z",
+  "status": "passed-in-scope",
+  "scope": "local-paired-backup-restore-rehearsal",
+  "tests": {
+    "cases": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "cancelled": 0,
+    "finalFrozenSourceRunPending": false,
+    "sourceUnchangedDuringRun": true,
+    "sourceFilesChecked": 11,
+    "log": "backup-tests-final-source.tap"
+  },
+  "methods": {
+    "central": "Actual PGlite dumpDataDir to disk, close database, new PGlite loadDataDir from saved bytes",
+    "product": "Actual node:sqlite backup into a separate file, stop host, replace offline DB, remove only its stale WAL/SHM files, reopen",
+    "pairing": "Await all synthetic writes and worker runs, close HTTP admission before taking the two snapshots",
+    "manifest": "Physical SHA-256 and logical inventory digests of the paired saved artifacts",
+    "admission": "Read-only test fixture checks only; no production restore gate is installed"
+  },
+  "limitations": [
+    "Two sequential snapshots are consistent only because the isolated writers and HTTP/worker are quiesced; this is not an atomic cross-database backup mechanism.",
+    "Two coherent old backups cannot detect later hold/deletion erased from both histories without newer sequence or erasure knowledge retained outside the pair.",
+    "The knownLatest comparison is a rehearsal input, not an implemented remote source of deletion knowledge.",
+    "No production backup encryption, storage, retention, schedule, remote recovery, actual PostgreSQL/Supabase deployment or live-device proof.",
+    "No production automatic restore admission or catch-up is implemented by this test."
+  ],
+  "externalRequests": 0,
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "productionChanged": false,
+  "sourceHashes": [
+    {
+      "path": "tests/atlas-dating-backup-restore.test.mjs",
+      "sha256": "2eadb0ce511bf75f6317244996ffd7d373a49be02a16bb967b93aa2080194235"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-store.mjs",
+      "sha256": "be7ed02c8bed2d05b2942cde64935c07e45c63afc65d00274c9ffd788894b98f"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-service.mjs",
+      "sha256": "f61245d20de9851e810c96e0e1cf71386bb5dbbcda4883bff1420cd38e06aade"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-server.mjs",
+      "sha256": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-lifecycle.mjs",
+      "sha256": "78e5b2b1a2bb44e505ac19633649390fe985d1dcabd3f86e1749532984a951f6"
+    },
+    {
+      "path": "experiences/atlas-lab/dating-adult.mjs",
+      "sha256": "be6594cf17ec01ca0ca352f3819d8f2726a21771d681e36f729075dad8ef2555"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/account-lifecycle-fixture.js",
+      "sha256": "ba37dc9739210a9e16cd1723fe6150ad92ab9ad6e5324e1b47afa699d3e803a7"
+    },
+    {
+      "path": "../SYNK-talk/tests/lib/postgres-json-fixture.js",
+      "sha256": "3fa6f3d9b36b814712f95762ab16b97f861580c6a29bd60096cb8b395b5b248f"
+    },
+    {
+      "path": "../SYNK-talk/lib/synk-account-lifecycle.js",
+      "sha256": "5c993a74670418e97606ea4d411997d6626521bf054d5e3832436df6ce124b88"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007020000_synk_account_lifecycle_c16.sql",
+      "sha256": "a22224fcce7ace0678b36a53ba9246aba89f1fabeb3a85016feb8dd1fc6f63a0"
+    },
+    {
+      "path": "../SYNK-talk/supabase/migrations/20261007030000_synk_account_availability_c16.sql",
+      "sha256": "550d19cbefd11a3f1c119915e167f944ba1a7f6407797ef6e7ab3f29f9a73137"
+    }
+  ],
+  "evidence": [
+    "backup-tests-final-source.tap",
+    "backup-source-before-final.json",
+    "backup-source-after-final.json",
+    "backup-tests-initial.tap",
+    "backup-tests-final.tap",
+    "backup-tests-source-drift.tap",
+    "backup-source-before-drift.json",
+    "backup-source-after-drift.json"
+  ],
+  "runtime": {
+    "node": "v24.18.0",
+    "central": "PGlite using canonical SYNK-talk migration fixture",
+    "sqlite": "node:sqlite DatabaseSync and backup"
+  },
+  "artifacts": "Physical dump and backup files were created and checked in guarded temporary directories, then removed; only test logs, source hashes and procedure evidence remain",
+  "confirmedChecks": [
+    "Lost acknowledgment and same event retry preserve product receipt, high-water, seen sequence and original introduction archive",
+    "Restored temporary hold requires explicit public consent, per-peer reopen and a new acceptance",
+    "Restored final tombstone rejects a later active event",
+    "Actual damaged central cursor/outbox or product receipts/high-water/seen-sequence are detected",
+    "Archive loss changes the actual SQLite backup checksum",
+    "Individually valid snapshots from mismatched delivery points are rejected",
+    "A newer external sequence watermark rejects coherent older backups before an eventual final deletion; newer deletion knowledge also rejects them"
+  ]
+}

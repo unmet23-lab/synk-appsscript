@@ -1,0 +1,22 @@
+{
+  "sources": [
+    {
+      "sha256": "b01ccda5dbd80a2bd8a50800cefe7067ecbdb090e8ec3580098dc03c5270ae44",
+      "path": "experiences/atlas-lab/dating-service.mjs"
+    },
+    {
+      "sha256": "5fd8b6b5caf2ba16d6a516ad0994048b4d651917fe3d4e7a0b7fec13ff416bd4",
+      "path": "tests/atlas-dating-controls-service.test.mjs"
+    }
+  ],
+  "status": "passed",
+  "completedAt": "2026-10-07T17:08:42.1933491Z",
+  "paidCalls": 0,
+  "sourceFrozen": true,
+  "localSyntheticOnly": true,
+  "passed": 18,
+  "failed": 0,
+  "log": "controls-service-tests.tap",
+  "externalRequests": 0,
+  "tests": 18
+}

@@ -1,0 +1,280 @@
+TAP version 13
+# Subtest: the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject
+ok 1 - the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject
+  ---
+  duration_ms: 5.0923
+  type: 'test'
+  ...
+# Subtest: expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer
+ok 2 - expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer
+  ---
+  duration_ms: 0.9911
+  type: 'test'
+  ...
+# Subtest: a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback
+ok 3 - a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback
+  ---
+  duration_ms: 2.196
+  type: 'test'
+  ...
+# Subtest: verifier timeout aborts its signal and a late success cannot promote the returned unavailable result
+ok 4 - verifier timeout aborts its signal and a late success cannot promote the returned unavailable result
+  ---
+  duration_ms: 67.4926
+  type: 'test'
+  ...
+# Subtest: verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected
+ok 5 - verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected
+  ---
+  duration_ms: 1.1995
+  type: 'test'
+  ...
+# Subtest: the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields
+ok 6 - the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields
+  ---
+  duration_ms: 423.5019
+  type: 'test'
+  ...
+# Subtest: an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents
+ok 7 - an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents
+  ---
+  duration_ms: 349.6444
+  type: 'test'
+  ...
+# Subtest: pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable
+ok 8 - pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable
+  ---
+  duration_ms: 375.9293
+  type: 'test'
+  ...
+# Subtest: expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart
+ok 9 - expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart
+  ---
+  duration_ms: 1214.0126
+  type: 'test'
+  ...
+# Subtest: revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason
+ok 10 - revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason
+  ---
+  duration_ms: 1368.5249
+  type: 'test'
+  ...
+# Subtest: a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired
+ok 11 - a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired
+  ---
+  duration_ms: 4174.2344
+  type: 'test'
+  ...
+# Subtest: out-of-order claims cannot override a newer revocation, including an older successful call completing after it
+ok 12 - out-of-order claims cannot override a newer revocation, including an older successful call completing after it
+  ---
+  duration_ms: 480.7853
+  type: 'test'
+  ...
+# Subtest: a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection
+ok 13 - a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection
+  ---
+  duration_ms: 481.6197
+  type: 'test'
+  ...
+# Subtest: turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one
+ok 14 - turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one
+  ---
+  duration_ms: 845.6149
+  type: 'test'
+  ...
+# Subtest: server factory passes the explicit synthetic verifier through and defaults remain unconfigured
+ok 15 - server factory passes the explicit synthetic verifier through and defaults remain unconfigured
+  ---
+  duration_ms: 489.0549
+  type: 'test'
+  ...
+# Subtest: a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended
+ok 16 - a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended
+  ---
+  duration_ms: 1424.1454
+  type: 'test'
+  ...
+# Subtest: an assertion that expires while its asynchronous check is in flight cannot authorize a stale new connection
+ok 17 - an assertion that expires while its asynchronous check is in flight cannot authorize a stale new connection
+  ---
+  duration_ms: 1338.3691
+  type: 'test'
+  ...
+# Subtest: a terminal product tombstone cannot regain its document or verified state after a later authoritative success
+ok 18 - a terminal product tombstone cannot regain its document or verified state after a later authoritative success
+  ---
+  duration_ms: 282.8816
+  type: 'test'
+  ...
+# Subtest: omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default
+ok 19 - omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default
+  ---
+  duration_ms: 1083.5932
+  type: 'test'
+  ...
+# Subtest: once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart
+ok 20 - once-required policy survives deletion of every account document and blocks declaration-only disclosure by a new account after restart
+  ---
+  duration_ms: 620.5116
+  type: 'test'
+  ...
+# Subtest: same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume
+ok 21 - same-sequence equivocation remains fenced across restart and only a higher trusted claim can permit explicit resume
+  ---
+  duration_ms: 519.623
+  type: 'test'
+  ...
+# Subtest: availability uses exactly the authenticated v2 nine-field contract and preserves v1 deletion
+ok 22 - availability uses exactly the authenticated v2 nine-field contract and preserves v1 deletion
+  ---
+  duration_ms: 8.0899
+  type: 'test'
+  ...
+# Subtest: a central request hides an inactive owner from a peer without owner reconnection and preserves own records
+ok 23 - a central request hides an inactive owner from a peer without owner reconnection and preserves own records
+  ---
+  duration_ms: 1258.1236
+  type: 'test'
+  ...
+# Subtest: cancellation permits explicit consent resume and a new introduction, never an old appointment or acceptance
+ok 24 - cancellation permits explicit consent resume and a new introduction, never an old appointment or acceptance
+  ---
+  duration_ms: 5779.0802
+  type: 'test'
+  ...
+# Subtest: duplicates survive restart, older states are ignored and a sequence cannot represent two statuses
+ok 25 - duplicates survive restart, older states are ignored and a sequence cannot represent two statuses
+  ---
+  duration_ms: 790.798
+  type: 'test'
+  ...
+# Subtest: active-first reordering conservatively requires resume while the baseline active one preserves healthy consent
+ok 26 - active-first reordering conservatively requires resume while the baseline active one preserves healthy consent
+  ---
+  duration_ms: 1157.102
+  type: 'test'
+  ...
+# Subtest: availability received before the product account exists stays fenced through creation and restart
+ok 27 - availability received before the product account exists stays fenced through creation and restart
+  ---
+  duration_ms: 637.7181
+  type: 'test'
+  ...
+# Subtest: central release cannot clear a local suspension or silently reactivate consent set under suspension
+ok 28 - central release cannot clear a local suspension or silently reactivate consent set under suspension
+  ---
+  duration_ms: 1266.02
+  type: 'test'
+  ...
+# Subtest: terminal v1 deletion dominates every later availability event and removes preserved invitation archives
+ok 29 - terminal v1 deletion dominates every later availability event and removes preserved invitation archives
+  ---
+  duration_ms: 2497.1063
+  type: 'test'
+  ...
+# Subtest: receipt replay returns only the current restricted view; late verified GET reads current gates
+ok 30 - receipt replay returns only the current restricted view; late verified GET reads current gates
+  ---
+  duration_ms: 2212.9635
+  type: 'test'
+  ...
+# Subtest: a missing lifecycle receipt rolls the gate, original history and consent changes back as one transaction
+ok 31 - a missing lifecycle receipt rolls the gate, original history and consent changes back as one transaction
+  ---
+  duration_ms: 1357.5546
+  type: 'test'
+  ...
+# Subtest: a full introduction history cannot prevent availability enforcement or erase the original
+ok 32 - a full introduction history cannot prevent availability enforcement or erase the original
+  ---
+  duration_ms: 1998.6453
+  type: 'test'
+  ...
+# Subtest: completed appointment facts and both private reflections survive a temporary central hold
+ok 33 - completed appointment facts and both private reflections survive a temporary central hold
+  ---
+  duration_ms: 6477.8787
+  type: 'test'
+  ...
+# Subtest: a peer reopen prepared before retirement cannot match a reused introduction revision after central resume
+ok 34 - a peer reopen prepared before retirement cannot match a reused introduction revision after central resume
+  ---
+  duration_ms: 1665.5963
+  type: 'test'
+  ...
+# Subtest: region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+ok 35 - region profile rejects empty duplicate oversized and free-text arrays without changing private or public state
+  ---
+  duration_ms: 1207.2346
+  type: 'test'
+  ...
+# Subtest: private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+ok 36 - private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations
+  ---
+  duration_ms: 922.2082
+  type: 'test'
+  ...
+# Subtest: new introduction checks both private-to-current-public region directions without exposing the recipient private region
+ok 37 - new introduction checks both private-to-current-public region directions without exposing the recipient private region
+  ---
+  duration_ms: 1651.2834
+  type: 'test'
+  ...
+# Subtest: pending acceptance rechecks current regions while direct rejection remains available
+ok 38 - pending acceptance rechecks current regions while direct rejection remains available
+  ---
+  duration_ms: 3868.2947
+  type: 'test'
+  ...
+# Subtest: a completed acceptance is not retroactively cancelled when the next recommendation region changes
+ok 39 - a completed acceptance is not retroactively cancelled when the next recommendation region changes
+  ---
+  duration_ms: 1488.7606
+  type: 'test'
+  ...
+# Subtest: exact private region expiry blocks a new introduction without copying an expired answer from public profile
+ok 40 - exact private region expiry blocks a new introduction without copying an expired answer from public profile
+  ---
+  duration_ms: 1144.8742
+  type: 'test'
+  ...
+# Subtest: receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+ok 41 - receipts reveal only the authenticated actor’s outcome, keep current view separate from applied revision, and never return the action body
+  ---
+  duration_ms: 364.4876
+  type: 'test'
+  ...
+# Subtest: receipt queries and methods are strict and cross-origin calls cannot read outcomes
+ok 42 - receipt queries and methods are strict and cross-origin calls cannot read outcomes
+  ---
+  duration_ms: 206.6514
+  type: 'test'
+  ...
+# Subtest: old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+ok 43 - old receipts cannot bypass current suspended/deleted account gates or revive a mutation
+  ---
+  duration_ms: 222.8077
+  type: 'test'
+  ...
+# Subtest: a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+ok 44 - a missing receipt during a delayed POST never proves absence; one explicit retry commits the same envelope once
+  ---
+  duration_ms: 167.8607
+  type: 'test'
+  ...
+# Subtest: real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+ok 45 - real HTTP lost response is classified by account client and resolved by delivery receipt without replaying the private mutation
+  ---
+  duration_ms: 174.7829
+  type: 'test'
+  ...
+1..45
+# tests 45
+# suites 0
+# pass 45
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 27924.5947

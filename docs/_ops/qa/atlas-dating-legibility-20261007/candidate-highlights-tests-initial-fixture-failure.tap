@@ -1,0 +1,231 @@
+✖ current effective priority order selects at most two canonical own labels without changing any source (64.0465ms)
+✖ no priority declaration returns no highlights and never promotes existing matched reasons (21.1027ms)
+✖ a known difference stays different even if arbitrary reason copy says perfect agreement (19.4794ms)
+✖ a missing public answer remains explicitly unconfirmed rather than matched (18.8584ms)
+✖ an explicit any declaration is neutral and does not imply a stronger fit (21.338ms)
+✖ only a current satisfied contact allowance is labelled conditional, distinct from matching the preference (67.1874ms)
+✖ unknown public allowance evidence stays different; a stale or unsupported allowance cannot become conditional (62.964ms)
+✖ only current known own wants declarations qualify; explicit unknown and expired values are not filled from history (26.6157ms)
+✖ partner-owned, non-editable and ambiguous own reasons cannot be used as a highlight (25.696ms)
+✖ own reason value, source and provenance must agree with the current effective declaration (32.5444ms)
+✖ an independently supplied stale candidate reason cannot replace the current public projection (21.6808ms)
+✖ current temporary answer provenance is labelled context and past source expiry is excluded at the exact boundary (31.8846ms)
+✔ expired baseline importance cannot be shown through stale effective priorities (21.1374ms)
+✖ temporary importance ends at its declared boundary and a fresh projection uses only the valid baseline order (41.637ms)
+✖ dated declarations require the explicit server clock and never consult the device clock (39.5277ms)
+✔ closed, withdrawn, malformed and duplicate-priority projections fail closed without inventing reasons (97.6663ms)
+✖ unrelated private metadata and accessor properties are neither read nor echoed (14.9892ms)
+✖ required own comparison keeps its baseline authority and is omitted during a conflicting temporary answer (17.1148ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 2
+ℹ fail 16
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 920.4441
+
+✖ failing tests:
+
+test at tests\atlas-candidate-highlights.test.mjs:30:1
+✖ current effective priority order selects at most two canonical own labels without changing any source (64.0465ms)
+  TypeError: Cannot read properties of undefined (reading 'reasonDetails')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:31:85)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17)
+
+test at tests\atlas-candidate-highlights.test.mjs:36:1
+✖ no priority declaration returns no highlights and never promotes existing matched reasons (21.1027ms)
+  TypeError: Cannot read properties of undefined (reading 'matched')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:37:66)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at tests\atlas-candidate-highlights.test.mjs:39:1
+✖ a known difference stays different even if arbitrary reason copy says perfect agreement (19.4794ms)
+  TypeError: Cannot read properties of undefined (reading 'reasonDetails')
+      at reason (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:27:57)
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:40:82)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:43:1
+✖ a missing public answer remains explicitly unconfirmed rather than matched (18.8584ms)
+  TypeError: Cannot read properties of undefined (reading 'comparison')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:45:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:47:1
+✖ an explicit any declaration is neutral and does not imply a stronger fit (21.338ms)
+  TypeError: Cannot read properties of undefined (reading 'comparison')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:48:117)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:50:1
+✖ only a current satisfied contact allowance is labelled conditional, distinct from matching the preference (67.1874ms)
+  TypeError: Cannot read properties of undefined (reading 'comparison')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:52:60)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:55:1
+✖ unknown public allowance evidence stays different; a stale or unsupported allowance cannot become conditional (62.964ms)
+  TypeError: Cannot read properties of undefined (reading 'comparison')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:57:49)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:60:1
+✖ only current known own wants declarations qualify; explicit unknown and expired values are not filled from history (26.6157ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
+  + actual - expected
+  
+  + []
+  - [
+  -   'wants.plan'
+  - ]
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:61:91)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: [],
+    expected: [ 'wants.plan' ],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-candidate-highlights.test.mjs:64:1
+✖ partner-owned, non-editable and ambiguous own reasons cannot be used as a highlight (25.696ms)
+  TypeError: Cannot read properties of undefined (reading 'reasonDetails')
+      at reason (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:27:57)
+      at file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:65:26
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:66:27)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:69:1
+✖ own reason value, source and provenance must agree with the current effective declaration (32.5444ms)
+  TypeError: Cannot read properties of undefined (reading 'reasonDetails')
+      at reason (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:27:57)
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:71:32)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:74:1
+✖ an independently supplied stale candidate reason cannot replace the current public projection (21.6808ms)
+  TypeError: Cannot read properties of undefined (reading 'reasonDetails')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:75:56)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:79:1
+✖ current temporary answer provenance is labelled context and past source expiry is excluded at the exact boundary (31.8846ms)
+  TypeError: Cannot read properties of undefined (reading 'source')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:81:60)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:87:1
+✖ temporary importance ends at its declared boundary and a fresh projection uses only the valid baseline order (41.637ms)
+  TypeError: Cannot read properties of undefined (reading 'prioritySource')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:89:49)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:92:1
+✖ dated declarations require the explicit server clock and never consult the device clock (39.5277ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 2
+  
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:94:54)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\atlas-candidate-highlights.test.mjs:103:1
+✖ unrelated private metadata and accessor properties are neither read nor echoed (14.9892ms)
+  TypeError: Object.defineProperty called on non-object
+      at Object.defineProperty (<anonymous>)
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:104:44)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)
+
+test at tests\atlas-candidate-highlights.test.mjs:108:1
+✖ required own comparison keeps its baseline authority and is omitted during a conflicting temporary answer (17.1148ms)
+  TypeError: Cannot read properties of undefined (reading 'required')
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-candidate-highlights.test.mjs:109:165)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7)

@@ -1,0 +1,20 @@
+[
+  {
+    "path": "atlas/domain.js",
+    "sha256": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+    "current": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+    "unchanged": true
+  },
+  {
+    "path": "atlas/ask.js",
+    "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "current": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+    "unchanged": true
+  },
+  {
+    "path": "atlas/personalization.js",
+    "sha256": "f7d647885eca10001028ddbe76be77d80625ab1491d1c679e1ad642634cb49d2",
+    "current": "f7d647885eca10001028ddbe76be77d80625ab1491d1c679e1ad642634cb49d2",
+    "unchanged": true
+  }
+]

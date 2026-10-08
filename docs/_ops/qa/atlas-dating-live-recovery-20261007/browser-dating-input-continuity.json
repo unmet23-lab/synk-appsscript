@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-06T23:44:44.844Z",
+  "status": "passed",
+  "kind": "synthetic-input-continuity-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "an unknown answer stays unselected; neither a preview attempt nor a required-checkbox change silently declares the first option",
+    "an explicitly selected draft survives preview cancellation and becomes a declaration only after separate apply",
+    "clearing an answer and reaching an explicit expiry both return the editor to an unselected state without reviving the old value",
+    "tab navigation and an unchanged refresh preserve the unsent schedule and its automatic end-time mode without creating an appointment",
+    "a manually edited ending stays manual across navigation and refresh; explicitly choosing a new duration restores automatic end calculation",
+    "pausing and resuming does not resurrect a previously unsent schedule draft",
+    "successful proposal clears the sent draft; after the counterpart marks only the time as unsuitable, an ordinary new proposal starts blank",
+    "explicit reuse copies only the previous place and duration; turning storage consent off and on discards that seed instead of reviving it on returning to the inbox",
+    "a new proposal version written through another role-authenticated tab discards the older local edit and shows the current server proposal",
+    "navigating the real demo-role link in the same tab never transfers an unsent draft to another actor or restores it after returning",
+    "a counterpart public withdrawal removes the draft and closes the connection; restoring public visibility alone does not revive the old draft or acceptance"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "unknown-is-unselected-390.png",
+    "expired-answer-is-unselected-320.png",
+    "new-schedule-retained-390.png",
+    "new-version-discards-old-edit-1280.png"
+  ]
+}

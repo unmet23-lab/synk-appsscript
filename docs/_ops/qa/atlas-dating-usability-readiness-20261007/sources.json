@@ -1,0 +1,306 @@
+[
+  {
+    "path": "atlas/ask.js",
+    "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd"
+  },
+  {
+    "path": "atlas/personalization.js",
+    "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery.mjs",
+    "sha256": "974e8bcd43cb1969207f2655775722f7dac112606e63ed8f9f43e99da69a1b28"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-ui.mjs",
+    "sha256": "d3d96880cf18fe07e44939d98bbe351ba7bd75c9166b63cb417b6fd562db5afc"
+  },
+  {
+    "path": "experiences/atlas-lab/dating.css",
+    "sha256": "967eb2c001569fe56bbe55fca20d1a4bd5cb134ede0cf0cd1ef51deec1ee1975"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-insights.mjs",
+    "sha256": "b2bbf5d53681173484abcd56163c8ec7fad19b8a90e25f3268298f7fd7c873c8"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-service.mjs",
+    "sha256": "fd1bd4f804aa687c9095a2e2cc5cddb63721762bd5eec61f377067f16480bc3e"
+  },
+  {
+    "path": "experiences/atlas-lab/product-experience.mjs",
+    "sha256": "5568e588ff27fab8fd410ed3098332920231402128d13e43c3113e755bea5976"
+  },
+  {
+    "path": "docs/아틀라스_공통능력_고도화_20261005.md",
+    "sha256": "262a43cb7a0d50b3587a0c4f041bdf4875177fe2de8c18d3117170a799155194"
+  },
+  {
+    "path": "tests/atlas-appointments.test.mjs",
+    "sha256": "ebf96d6ab2920b05a75d234cad4a9017a3e35f05707da67f7f49f341bcb2fc19"
+  },
+  {
+    "path": "tests/atlas-introductions.test.mjs",
+    "sha256": "40cc0e3751dbf0b8a6897100573a09ab14f71c1b4630119d35c43d3b12be0be1"
+  },
+  {
+    "path": "tests/atlas-dating-service.test.mjs",
+    "sha256": "bbf454f64b05a4eb8e521d1629baa63611fb0cb1616221f830244e460d218d29"
+  },
+  {
+    "path": "tests/atlas-dating-account.test.mjs",
+    "sha256": "d28d83cab85e28801bc4e0e098a9135a710bedb0a82eec4421296478d83876b5"
+  },
+  {
+    "path": "tests/atlas-product-experience.test.mjs",
+    "sha256": "6215bb1e6d039f56b15bb42be637bae7b78d0f4c12e988d73612751deceec773"
+  },
+  {
+    "path": "tests/atlas-discovery.test.mjs",
+    "sha256": "73d0d49e8b7343208139cc44bb77f44e4dc25b054ae78c82c625d9662a56cb00"
+  },
+  {
+    "path": "tests/atlas-discovery-personalization.test.mjs",
+    "sha256": "a6b69b72aac44c760951736590f5640ac842b0dccbc54c0e76264bb3c6bbf493"
+  },
+  {
+    "path": "tests/atlas-discovery-evaluation.test.mjs",
+    "sha256": "cec2532eb17e636ecfc217917ddb0a1765caaae6598faf3da97ce5f64adb0821"
+  },
+  {
+    "path": "tests/atlas-discovery-guidance.test.mjs",
+    "sha256": "5e570f7f864049b1f547a14c04e0a8c7e2a030efa08cf226a1df40384ae7e14d"
+  },
+  {
+    "path": "tests/atlas-preference-context.test.js",
+    "sha256": "e16c69881ebdc043f2fddf13ee48ebdee00c50d5d455b8d8458c60d00b499d0a"
+  },
+  {
+    "path": "tests/atlas-preference-domain-bridge.test.js",
+    "sha256": "66577ff2cb010e5bd04a63e1ba7d5a98fdd6995fa6f859cf75bc3de30510315f"
+  },
+  {
+    "path": "tests/atlas-personalization.test.js",
+    "sha256": "74e2be757dee4d8df879767e67c64f199c0d17c4926d13ebf843273454e0a2ba"
+  },
+  {
+    "path": "tests/atlas-personalization-conflict.test.js",
+    "sha256": "7238b623ed40a6c552be2ee4555369cacbc9a2d01f55a9b5a927c80a053d3683"
+  },
+  {
+    "path": "tests/atlas-preferences.test.js",
+    "sha256": "8679250ab8934c7c8205b3380dd1b92b0ff19e1abcce1cb134542f97117c4a6f"
+  },
+  {
+    "path": "tests/atlas-ask.test.js",
+    "sha256": "b6678ac021e687ae60c854c6a45e6ab4e648780afa98d163583b3578a93d89dd"
+  },
+  {
+    "path": "tests/atlas-ask-value.test.js",
+    "sha256": "ad00a4e99871aa8b57539bfe476101101047233a88d7f358e9efd9967cf2fa6a"
+  },
+  {
+    "path": "tests/atlas-meeting.test.mjs",
+    "sha256": "a158560438120936e9ad606cfdc43c27b15f835a6b17d2e32161b7472040bfd5"
+  },
+  {
+    "path": "tests/atlas-journey-host.test.mjs",
+    "sha256": "c38b42fa9926d436fad8d914dfebcba01cd6903936b80d6e64a0cc29e942ac83"
+  },
+  {
+    "path": "tests/atlas-reconnect.test.mjs",
+    "sha256": "6fceb490e3762f5a062dde19baf212167bced44dfbf312bb77ffedaffd0ad6a5"
+  },
+  {
+    "path": "tests/atlas-participant-ui.test.mjs",
+    "sha256": "575357feb14631164458ec04bc1e4556569ca2aa85752dc3a4a0235b4b00dc52"
+  },
+  {
+    "path": "tests/atlas-participant-launcher.test.mjs",
+    "sha256": "73b90fb6526741d82531a112d26204fcaeb30024c4c63dae54a540e2af11049e"
+  },
+  {
+    "path": "tests/path-travel-personalization.test.mjs",
+    "sha256": "dabd7c92454c518dd4194e05bc52341ae9e6ab06230a3473ea8eafc23e254324"
+  },
+  {
+    "path": "tests/path-travel-model.test.mjs",
+    "sha256": "8ce18cf49f2512d3c7d48d51ebb438f38cc6ea861f8bd6a20133f49d7955d71d"
+  },
+  {
+    "path": "tests/path-travel-conversation.test.mjs",
+    "sha256": "512d26e2e6849c3b5dfcd42c05dc91860394dff89ac74e7c917e804354784f2e"
+  },
+  {
+    "path": "tests/path-travel-catalog.test.mjs",
+    "sha256": "334352020ac2a34553dfc192cf7adddc69283d5eff7f44700475488103fbf2e8"
+  },
+  {
+    "path": "tests/path-travel-server.test.mjs",
+    "sha256": "385aad8093ca3216a260d3b987b8adf09ad41ff71cdd0f8461f8f519746cff3e"
+  },
+  {
+    "path": "tests/atlas-domain-objectives.test.js",
+    "sha256": "28e9f58c54065bb7b6cea31c2802d8510289a96d930a850feacf8cfb0aede8a3"
+  },
+  {
+    "path": "tests/atlas-travel.test.mjs",
+    "sha256": "c934e34cc43c904e2f2236bdfeef85f32706c78df07388c975ecbba1d0be7501"
+  },
+  {
+    "path": "experiences/learning-hub/server.test.mjs",
+    "sha256": "df100d1e0b074d9ac4d609584c5914a38e1674bab15d5ef66cb3f0eebfac2bce"
+  },
+  {
+    "path": "tests/atlas-discovery-insights.test.mjs",
+    "sha256": "137be1d738233fbc5526d11a413d7f2a3f97c2d1b35143e66611d858c3538a12"
+  },
+  {
+    "path": "tests/atlas-dating-insights.test.mjs",
+    "sha256": "069b4e434cca226dc0a719c994436751ed7d4da3b6731475e90ce197f450c8f2"
+  },
+  {
+    "path": "tests/atlas-dating-personalization-smoke.mjs",
+    "sha256": "7af86559ac2bccc62dca008efe904cc08bd19ee57c66b7d78a2df5179f172447"
+  },
+  {
+    "path": "tests/atlas-dating-smoke.mjs",
+    "sha256": "669481138220c11d9b44b0bf0b55a75a79c32640468dc527948515ff6a0a1672"
+  },
+  {
+    "path": "tests/atlas-discovery-smoke.mjs",
+    "sha256": "d8d3322bda67a64e48c84be0e5ff9ea9adeeae9515aa408d934c5195ca48c08b"
+  },
+  {
+    "path": "tests/atlas-journey-smoke.mjs",
+    "sha256": "b631a9a0389dd77cdb1d52332ba67be27f02671fc618e72cf8cb38239300fd0a"
+  },
+  {
+    "path": "tests/atlas-meeting-smoke.mjs",
+    "sha256": "20c236e87a2aa8c819f1b7c20fe102906dbb3cfcf197dbbb7329aec7af07dbb5"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-server.mjs",
+    "sha256": "86a01059ceb63b8cca587c5d16b480c7bad93ab3d6d1802d050665e8fe93f3e8"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-account.mjs",
+    "sha256": "1084964a9f312699008dd8fbb45100e00318b503c4852ecf65b4a592334b16cb"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-journey.mjs",
+    "sha256": "853a07ec7e0214046836f5379069f824f92921b0372c3fd7320cfd5394d4788d"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery-guidance.mjs",
+    "sha256": "97c585efd946b5c81a7af3719b76b8c8bd8875ebc7182fda424cffc853106a41"
+  },
+  {
+    "path": "tests/atlas-discovery-repeat.test.mjs",
+    "sha256": "abf073d6d5d8c2b597ef2013a7e38295aa39ed4a12171970ae7f2cc4b0b073c9"
+  },
+  {
+    "path": "tests/atlas-dating-journey.test.mjs",
+    "sha256": "56119003d553b985e9340c00ee6b4e8642ba57d1e399a606d14d315fb41e2cb2"
+  },
+  {
+    "path": "tests/atlas-dating-continuity-smoke.mjs",
+    "sha256": "cf8156830c1c2044d451c83df201439bfab2e81d588a665af79df9f4d4dc64b8"
+  },
+  {
+    "path": "tests/atlas-discovery-recovery.test.mjs",
+    "sha256": "1db9340c5452d0910fca948120bf245c92b20303477927bdbdb8887395d38ef2"
+  },
+  {
+    "path": "tests/atlas-dating-learning-smoke.mjs",
+    "sha256": "298bdc652549296be6af62a83789eec4078097680ef2bbaa108d388aa8f52f1f"
+  },
+  {
+    "path": "docs/_ops/트랙.md",
+    "sha256": "3d168bf697c4dff49279d2de53393f35bf86617a1f1524ca6be4e07899d530ab"
+  },
+  {
+    "path": "tests/atlas-discovery-change-reasons.test.mjs",
+    "sha256": "9118d4b5d2a8dc14014ecc88f4ff19f7a9a657555444dc9ce9d31d252ef6b999"
+  },
+  {
+    "path": "tests/atlas-dating-clarity-smoke.mjs",
+    "sha256": "130b2f282f3b388f1c9314b349d67a298edb7cb7b8c01320711a4e5c9dd3f0ed"
+  },
+  {
+    "path": "tests/atlas-meeting-alignment.test.mjs",
+    "sha256": "e8445111bf8f49adfe9679361585c7feec0b9ca034d32b9f0ccf31770b0dc020"
+  },
+  {
+    "path": "tests/atlas-dating-alignment-service.test.mjs",
+    "sha256": "89855c4977b2e72a1f6bb1f8d50511189a2607d4755aa8a4a26591991277b8cb"
+  },
+  {
+    "path": "experiences/atlas-lab/meeting-alignment.mjs",
+    "sha256": "48cb2c2ba2d29cedaa4d12ca75b1675243dbfae00ff46c37d8b2d393220da036"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-store.mjs",
+    "sha256": "cecdda6e74da4ead66228bb1835ef0848fcc543648c1d5730c284a6d8cb0e7e3"
+  },
+  {
+    "path": "experiences/atlas-lab/usability.html",
+    "sha256": "e26446a6c4b7e1ac6dce80163c2177c685b1e11f6400ab0df235775976f5c5e5"
+  },
+  {
+    "path": "tests/atlas-dating-alignment-smoke.mjs",
+    "sha256": "2cdab570d6cf56af59e2f34ee0b038665058486e7012f9fcbbf45eed7e339999"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-dating-alignment-20261007/report.json",
+    "sha256": "233fff03091f63d688ecdfa9012e58d954c7a4edd5e47f2cc9a097bc4bc4d1ac"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-dating-alignment-20261007/finalize.mjs",
+    "sha256": "6f46128213bfa75c6b93baadd3fa360033203b59913d0808e6fddc4be8852200"
+  },
+  {
+    "path": "tests/atlas-conditional-preference.test.js",
+    "sha256": "30a0b0b374bf2b7b34caeffba1ac105214b1e9e01ab7c99c14c3f5bba826e6b0"
+  },
+  {
+    "path": "tests/atlas-discovery-conditional.test.mjs",
+    "sha256": "e1f90cbedb52107d12418d152faf058cefae9988d18b6c6dfe5be1e49f2ad2d2"
+  },
+  {
+    "path": "tests/atlas-dating-conditional-service.test.mjs",
+    "sha256": "475f0bc8d19e7276d0d0ecb1172e120a7efa9e7f3189065dfdf1a99aac732707"
+  },
+  {
+    "path": "tests/atlas-dating-flexibility-smoke.mjs",
+    "sha256": "70a5078842386fca9e27cff7c715909380337dfb6a1dd898d21b0d82b23ea940"
+  },
+  {
+    "path": "atlas/conditional-preference.js",
+    "sha256": "6b814ec429c7a29643f958b6cb09ef4efc96f22913d3e873dbb095f8f09e3d4e"
+  },
+  {
+    "path": "docs/코어엔진_설계.md",
+    "sha256": "a66c4523e0c08523d56ea690d675d535baa53bf2ad8422a52eec025ea22e8abe"
+  },
+  {
+    "path": "docs/엔진8종_상향설계_v3.md",
+    "sha256": "b18a131c7f4dd428b4868b4590316068780c903e7905f93dab6957129f5b75b8"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-dating-flexibility-20261007/report.json",
+    "sha256": "a02e9d9dda42d4c8132f1fd8a1382f065716d7cf05719512851ac7a661456df0"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-dating-flexibility-20261007/finalize.mjs",
+    "sha256": "f998dc4e2062ce4c58edc924b52f947fdae86980665eb99a46c595b6fff38fc6"
+  },
+  {
+    "path": "tests/atlas-dating-conditional-draft-smoke.mjs",
+    "sha256": "e7c5829e55000e503b51505f70ba6fcae9f067fbeb81201852cfddb86783d8a9"
+  },
+  {
+    "path": "docs/_ops/qa/atlas-dating-usability-readiness-20261007/finalize.mjs",
+    "sha256": "501e8300e965f51b149a2eecc448ae0a3127aac36f329b29a8352998676d7793"
+  }
+]

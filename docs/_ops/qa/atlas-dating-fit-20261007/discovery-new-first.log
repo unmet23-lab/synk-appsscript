@@ -1,0 +1,23 @@
+✔ relationship goal and speed are independent explicit axes and are separate from conversation pace (629.2962ms)
+✔ explicit goals and speeds change the actual comparison and priority weighs the selected axis (617.8609ms)
+✔ independent mandatory goal and speed preserve mismatch, unknown and reciprocal own-answer confirmation (596.6262ms)
+✔ speed scope, expiry, preview and undo do not rewrite goal, public facts or old version-one events (326.742ms)
+✔ all three legacy combined answers remain history and never fill either new axis or ranking (1864.3255ms)
+✔ a legacy must-have remains pending until direct retirement, even after both new answers are supplied (376.6588ms)
+✔ version-one displayed bases with the historical fourteen fields replay while new records bind all fields (684.8821ms)
+✔ both missing meeting areas retain legacy comparison; a public declared area requires my direct answer (496.9789ms)
+✔ only exact voluntary area intersection admits a recommendation; broad text does not fill IDs (707.4901ms)
+✔ regions normalize and copy only validated sets and cannot be supplied as a partner private wish (72.8105ms)
+✔ private meeting area baseline/context masks, expiry and undo preserve explicit lifetime without backfill (953.6018ms)
+✔ meeting area preview leaves state/selection unchanged until apply and expiry rejects stale restoration (389.2555ms)
+✔ time-limited priority expires to the current baseline and never resurrects an earlier context priority (836.4427ms)
+✔ priority deadlines cannot outlive selected answer/context and equal expiry is allowed (91.9416ms)
+✔ priority undo preserves old deadline and cannot revive a priority whose earlier deadline ended (108.9461ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9477.3173

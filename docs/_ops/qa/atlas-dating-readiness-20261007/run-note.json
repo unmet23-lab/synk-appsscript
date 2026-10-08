@@ -1,0 +1,34 @@
+{
+  "preservedFailures": [
+    "Guidance fixtures and gated getter ordering were corrected before the helper129 final run; intermediate counts are not added.",
+    "Simultaneous adult holds reused an introduction archive timestamp. Per-hold logical clock advance fixed the two initially failing cases.",
+    "An enforced DB lost its requirement after deletion of every account and an omitted verifier restart. Reproduced before fixing with durable non-personal metadata, including legacy schema upgrade.",
+    "Same-sequence conflicting claims could recover with the original same-sequence claim. Reproduced before a persistent conflict fence requiring a higher trusted sequence.",
+    "Backup source drift was observed while the adult contract was being edited; the full final five were rerun with matching before/after source hashes.",
+    "The new browser fixture incorrectly required an already-open counterpart gate to reopen; its initial eight successful paths and final fixture failure were preserved before correction."
+  ],
+  "wording": {
+    "publicWaitingTitleClarifiedAfterMobileReview": true,
+    "guidanceIdAndActionUnchanged": true,
+    "helper129Rerun": true,
+    "newBrowser9AndDating18AfterWordingChange": true,
+    "availability9BeforeWordingChange": true,
+    "availabilityChecksAffectedByWording": false
+  },
+  "review": {
+    "twoActualAdultBoundaryIssuesResolved": true,
+    "independentReadOnlyReview": true,
+    "extraReviewTests": 0
+  },
+  "regression": {
+    "client55AfterFinalPolicyFix": true,
+    "service75AfterFinalPolicyFix": true,
+    "backup5AfterFinalPolicyFix": true,
+    "browser36AfterFinalPolicyFix": true
+  },
+  "noProviderActivation": true,
+  "paidCalls": 0,
+  "actualUsers": 0,
+  "remoteMigration": false,
+  "publicDeployment": false
+}

@@ -1,0 +1,293 @@
+{
+  "at": "2026-10-06T21:04:39.402Z",
+  "stage": "before-caption-fix",
+  "network": "loopback HTTP only",
+  "paidCalls": 0,
+  "realParticipants": 0,
+  "baselineHashes": {
+    "service": "0359711e59a18848d364ccfdaaa88515fba75d04931da24d2f3e222b670474c6",
+    "tests": "f19a9637793ad209b177cb514477563b37091c4575f67d4112bdb6e3675b163c"
+  },
+  "baselineChangedCriteria": "  function changedCriteria(before, after) {\n    const a = ownCriteria(before), b = ownCriteria(after), caption = field => `평소: ${field.baseline.valueLabel} / 이번: ${field.context.valueLabel} / ${field.required ? '필수' : '필수 아님'}`;\n    const changes = b.fields.flatMap((field, index) => canonical(a.fields[index]) === canonical(field) ? []\n      : [{ field: field.id, before: caption(before.fields[index]), after: caption(after.fields[index]) }]);\n    if (canonical(a.priorities) !== canonical(b.priorities)) {\n      const labels = value => ['baseline', 'context'].map(key => `${key === 'baseline' ? '평소' : '이번'}: ${value[key] === null ? '평소 기준을 따름' : value[key].map(id => fields.get(id)?.label || id).join(', ') || '별도 우선순위 없음'}`).join(' / ');\n      changes.push({ field: 'priorities', before: labels(a.priorities), after: labels(b.priorities) });\n    }\n    if (canonical(before.conditionalPreference) !== canonical(after.conditionalPreference)) {\n      const caption = projection => projection?.effective?.status === 'active'\n        ? `${projection.description} / ${projection.target === 'context' ? '이번 추천에서만' : '앞으로도'}${projection.effective.rule?.until ? ` / 종료: ${projection.effective.rule.until}` : ''}`\n        : projection?.effective?.status === 'inactive' ? '조건부 허용을 지금은 사용하지 않아요.' : '조건부 허용 없이 원래 연락 기준으로 비교해요.';\n      changes.push({ field: 'conditional.contact', before: caption(before.conditionalPreference), after: caption(after.conditionalPreference) });\n    }\n    return changes.filter(change => change.before !== change.after);\n  }\n",
+  "actions": [
+    "conditional-set baseline",
+    "conditional-set context",
+    "preview conditional-clear baseline",
+    "apply-preview",
+    "start-context"
+  ],
+  "before": {
+    "topCandidateId": "demo:sample-2",
+    "eligibleIds": [
+      "demo:sample-2",
+      "demo:sample-3"
+    ],
+    "primary": "daily",
+    "conditional": {
+      "id": "contact-with-notice",
+      "field": "wants.contact",
+      "title": "바쁠 때 미리 알려주면 연락 간격도 괜찮아요",
+      "description": "하루에 한 번쯤을 선호하지만, 상대가 바쁠 때 미리 알린다고 공개하면 며칠에 한 번도 괜찮다는 선택이에요. 상대의 미확인 답으로는 허용하지 않아요.",
+      "available": true,
+      "availableTargets": [
+        "context",
+        "baseline"
+      ],
+      "blockReason": null,
+      "baseline": {
+        "status": "active",
+        "reason": null,
+        "rule": {
+          "version": "core-conditional-preference-1",
+          "id": "contact-with-notice",
+          "scope": {
+            "personId": "owner-21b3cc6e5a9b9b70",
+            "productId": "dating",
+            "contextId": "dating-demo-accounts",
+            "domain": "SYNK"
+          },
+          "field": "wants.contact",
+          "feature": "self.contact",
+          "primary": "daily",
+          "alternative": "few-days",
+          "when": {
+            "field": "self.notice",
+            "value": "advance"
+          },
+          "target": "baseline",
+          "encounterId": "current-discovery",
+          "at": "2026-10-07T03:00:00.005Z",
+          "until": null,
+          "source": {
+            "eventId": "event-3",
+            "source": "explicit",
+            "duration": "ongoing",
+            "encounterId": "current-discovery",
+            "at": "2026-10-07T03:00:00.003Z"
+          }
+        }
+      },
+      "context": {
+        "status": "active",
+        "reason": null,
+        "rule": {
+          "version": "core-conditional-preference-1",
+          "id": "contact-with-notice",
+          "scope": {
+            "personId": "owner-21b3cc6e5a9b9b70",
+            "productId": "dating",
+            "contextId": "dating-demo-accounts",
+            "domain": "SYNK"
+          },
+          "field": "wants.contact",
+          "feature": "self.contact",
+          "primary": "daily",
+          "alternative": "few-days",
+          "when": {
+            "field": "self.notice",
+            "value": "advance"
+          },
+          "target": "context",
+          "encounterId": "current-discovery",
+          "at": "2026-10-07T03:00:00.006Z",
+          "until": null,
+          "source": {
+            "eventId": "event-3",
+            "source": "explicit",
+            "duration": "ongoing",
+            "encounterId": "current-discovery",
+            "at": "2026-10-07T03:00:00.003Z"
+          }
+        }
+      },
+      "target": "context",
+      "effective": {
+        "status": "active",
+        "reason": null,
+        "rule": {
+          "version": "core-conditional-preference-1",
+          "id": "contact-with-notice",
+          "scope": {
+            "personId": "owner-21b3cc6e5a9b9b70",
+            "productId": "dating",
+            "contextId": "dating-demo-accounts",
+            "domain": "SYNK"
+          },
+          "field": "wants.contact",
+          "feature": "self.contact",
+          "primary": "daily",
+          "alternative": "few-days",
+          "when": {
+            "field": "self.notice",
+            "value": "advance"
+          },
+          "target": "context",
+          "encounterId": "current-discovery",
+          "at": "2026-10-07T03:00:00.006Z",
+          "until": null,
+          "source": {
+            "eventId": "event-3",
+            "source": "explicit",
+            "duration": "ongoing",
+            "encounterId": "current-discovery",
+            "at": "2026-10-07T03:00:00.003Z"
+          }
+        }
+      },
+      "summary": "하루에 한 번쯤이라는 기본 선호는 유지해요. 바쁠 때 미리 알린다고 공개한 상대에게만 며칠 간격도 허용해요."
+    }
+  },
+  "preview": {
+    "status": 200,
+    "before": {
+      "topCandidateId": "demo:sample-2",
+      "topLabel": "가상 예시 하린",
+      "eligibleIds": [
+        "demo:sample-2",
+        "demo:sample-3"
+      ]
+    },
+    "after": {
+      "topCandidateId": "demo:sample-2",
+      "topLabel": "가상 예시 하린",
+      "eligibleIds": [
+        "demo:sample-2",
+        "demo:sample-3"
+      ],
+      "status": "ready"
+    },
+    "changes": [],
+    "summary": "적용해도 가상 예시 하린부터 살펴보는 순서는 같아요."
+  },
+  "after": {
+    "topCandidateId": "demo:sample-2",
+    "eligibleIds": [
+      "demo:sample-2",
+      "demo:sample-3"
+    ],
+    "primary": "daily",
+    "conditional": {
+      "id": "contact-with-notice",
+      "field": "wants.contact",
+      "title": "바쁠 때 미리 알려주면 연락 간격도 괜찮아요",
+      "description": "하루에 한 번쯤을 선호하지만, 상대가 바쁠 때 미리 알린다고 공개하면 며칠에 한 번도 괜찮다는 선택이에요. 상대의 미확인 답으로는 허용하지 않아요.",
+      "available": true,
+      "availableTargets": [
+        "context",
+        "baseline"
+      ],
+      "blockReason": null,
+      "baseline": {
+        "status": "none",
+        "reason": null,
+        "rule": null
+      },
+      "context": {
+        "status": "active",
+        "reason": null,
+        "rule": {
+          "version": "core-conditional-preference-1",
+          "id": "contact-with-notice",
+          "scope": {
+            "personId": "owner-21b3cc6e5a9b9b70",
+            "productId": "dating",
+            "contextId": "dating-demo-accounts",
+            "domain": "SYNK"
+          },
+          "field": "wants.contact",
+          "feature": "self.contact",
+          "primary": "daily",
+          "alternative": "few-days",
+          "when": {
+            "field": "self.notice",
+            "value": "advance"
+          },
+          "target": "context",
+          "encounterId": "current-discovery",
+          "at": "2026-10-07T03:00:00.006Z",
+          "until": null,
+          "source": {
+            "eventId": "event-3",
+            "source": "explicit",
+            "duration": "ongoing",
+            "encounterId": "current-discovery",
+            "at": "2026-10-07T03:00:00.003Z"
+          }
+        }
+      },
+      "target": "context",
+      "effective": {
+        "status": "active",
+        "reason": null,
+        "rule": {
+          "version": "core-conditional-preference-1",
+          "id": "contact-with-notice",
+          "scope": {
+            "personId": "owner-21b3cc6e5a9b9b70",
+            "productId": "dating",
+            "contextId": "dating-demo-accounts",
+            "domain": "SYNK"
+          },
+          "field": "wants.contact",
+          "feature": "self.contact",
+          "primary": "daily",
+          "alternative": "few-days",
+          "when": {
+            "field": "self.notice",
+            "value": "advance"
+          },
+          "target": "context",
+          "encounterId": "current-discovery",
+          "at": "2026-10-07T03:00:00.006Z",
+          "until": null,
+          "source": {
+            "eventId": "event-3",
+            "source": "explicit",
+            "duration": "ongoing",
+            "encounterId": "current-discovery",
+            "at": "2026-10-07T03:00:00.003Z"
+          }
+        }
+      },
+      "summary": "하루에 한 번쯤이라는 기본 선호는 유지해요. 바쁠 때 미리 알린다고 공개한 상대에게만 며칠 간격도 허용해요."
+    }
+  },
+  "next": {
+    "topCandidateId": "demo:sample-2",
+    "eligibleIds": [
+      "demo:sample-2",
+      "demo:sample-3"
+    ],
+    "primary": "daily",
+    "conditional": {
+      "id": "contact-with-notice",
+      "field": "wants.contact",
+      "title": "바쁠 때 미리 알려주면 연락 간격도 괜찮아요",
+      "description": "하루에 한 번쯤을 선호하지만, 상대가 바쁠 때 미리 알린다고 공개하면 며칠에 한 번도 괜찮다는 선택이에요. 상대의 미확인 답으로는 허용하지 않아요.",
+      "available": true,
+      "availableTargets": [
+        "context",
+        "baseline"
+      ],
+      "blockReason": null,
+      "baseline": {
+        "status": "none",
+        "reason": null,
+        "rule": null
+      },
+      "context": {
+        "status": "none",
+        "reason": null,
+        "rule": null
+      },
+      "target": null,
+      "effective": {
+        "status": "none",
+        "reason": null,
+        "rule": null
+      },
+      "summary": "기본 선호는 그대로 두고, 내가 직접 정한 경우에만 조건에 맞는 다른 연락 간격도 비교해요."
+    }
+  },
+  "reproduced": true
+}

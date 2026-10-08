@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: new criterion keeps connection importance unchanged and records only the current confirmed own answer
+ok 1 - new criterion keeps connection importance unchanged and records only the current confirmed own answer
+  ---
+  duration_ms: 10.8217
+  type: 'test'
+  ...
+# Subtest: new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+ok 2 - new criterion requires a valid explicit answer snapshot and a fixed completed proposal
+  ---
+  duration_ms: 2.1793
+  type: 'test'
+  ...
+# Subtest: new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+ok 3 - new criterion apply source links only the next matching delivered recommendation, with a private meeting source
+  ---
+  duration_ms: 8.9597
+  type: 'test'
+  ...
+# Subtest: new criterion context, basis and source peer availability remain independent link gates
+ok 4 - new criterion context, basis and source peer availability remain independent link gates
+  ---
+  duration_ms: 1.1959
+  type: 'test'
+  ...
+# Subtest: withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+ok 5 - withdrawing or replacing new reflection irreversibly invalidates followup, including same-timestamp re-entry
+  ---
+  duration_ms: 2.0397
+  type: 'test'
+  ...
+# Subtest: new criterion comparison expires at the bound declaration deadline and cannot outlive it
+ok 6 - new criterion comparison expires at the bound declaration deadline and cannot outlive it
+  ---
+  duration_ms: 1.931
+  type: 'test'
+  ...
+# Subtest: new criterion evaluation stays prospective and unknown remains separate from failure
+ok 7 - new criterion evaluation stays prospective and unknown remains separate from failure
+  ---
+  duration_ms: 5.4711
+  type: 'test'
+  ...
+# Subtest: HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+ok 8 - HTTP new criterion uses own completed appointment and confirmed answer without changing criteria or peer records
+  ---
+  duration_ms: 17657.1571
+  type: 'test'
+  ...
+# Subtest: HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+ok 9 - HTTP new criterion preview reveals source and scope, needs explicit apply, and follows the next delivered result
+  ---
+  duration_ms: 23533.3654
+  type: 'test'
+  ...

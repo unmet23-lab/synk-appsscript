@@ -1,0 +1,928 @@
+TAP version 13
+# Subtest: new pair has no invented responses or inbox, and public views are detached from stored state
+ok 1 - new pair has no invented responses or inbox, and public views are detached from stored state
+  ---
+  duration_ms: 4.4938
+  type: 'test'
+  ...
+# Subtest: ISO offsets are normalized to the same instant and IANA zone remains explicit for display
+ok 2 - ISO offsets are normalized to the same instant and IANA zone remains explicit for display
+  ---
+  duration_ms: 12.6325
+  type: 'test'
+  ...
+# Subtest: invalid dates, ambiguous local instants, bad zones, nonfuture starts and inverted intervals fail
+ok 3 - invalid dates, ambiguous local instants, bad zones, nonfuture starts and inverted intervals fail
+  ---
+  duration_ms: 1.0243
+  type: 'test'
+  ...
+# Subtest: explicit deadlines must be future, within 72 hours and no later than the schedule start
+ok 4 - explicit deadlines must be future, within 72 hours and no later than the schedule start
+  ---
+  duration_ms: 2.4913
+  type: 'test'
+  ...
+# Subtest: a proposal and a single acceptance never fabricate the other acceptance
+ok 5 - a proposal and a single acceptance never fabricate the other acceptance
+  ---
+  duration_ms: 4.4297
+  type: 'test'
+  ...
+# Subtest: either participant may propose a change; it preserves old snapshots and requires two fresh acceptances
+ok 6 - either participant may propose a change; it preserves old snapshots and requires two fresh acceptances
+  ---
+  duration_ms: 7.257
+  type: 'test'
+  ...
+# Subtest: declining a revised version cannot restore the previously confirmed version
+ok 7 - declining a revised version cannot restore the previously confirmed version
+  ---
+  duration_ms: 13.8519
+  type: 'test'
+  ...
+# Subtest: deadline exactly expires without manufacturing a decline and reading is pure and repeatable
+ok 8 - deadline exactly expires without manufacturing a decline and reading is pure and repeatable
+  ---
+  duration_ms: 2.3644
+  type: 'test'
+  ...
+# Subtest: an expiry inbox item can be marked read after its virtual expiry, without duplication
+ok 9 - an expiry inbox item can be marked read after its virtual expiry, without duplication
+  ---
+  duration_ms: 0.8651
+  type: 'test'
+  ...
+# Subtest: confirmation before expiry remains valid after the response deadline but cannot be revised after its start
+ok 10 - confirmation before expiry remains valid after the response deadline but cannot be revised after its start
+  ---
+  duration_ms: 2.5981
+  type: 'test'
+  ...
+# Subtest: cancellation closes pending or confirmed appointments and cannot be reversed by old responses
+ok 11 - cancellation closes pending or confirmed appointments and cannot be reversed by old responses
+  ---
+  duration_ms: 9.4874
+  type: 'test'
+  ...
+# Subtest: completion requires a finished mutual agreement and records only the actor confirmation
+ok 12 - completion requires a finished mutual agreement and records only the actor confirmation
+  ---
+  duration_ms: 7.9673
+  type: 'test'
+  ...
+# Subtest: own reflection needs only own completion; no private content enters partner cards, history or inbox
+ok 13 - own reflection needs only own completion; no private content enters partner cards, history or inbox
+  ---
+  duration_ms: 7.2791
+  type: 'test'
+  ...
+# Subtest: an ended appointment never waits on the other completion before a new proposal or late own reflection
+ok 14 - an ended appointment never waits on the other completion before a new proposal or late own reflection
+  ---
+  duration_ms: 7.5736
+  type: 'test'
+  ...
+# Subtest: inbox read state belongs to its recipient and is never a public read receipt
+ok 15 - inbox read state belongs to its recipient and is never a public read receipt
+  ---
+  duration_ms: 2.8048
+  type: 'test'
+  ...
+# Subtest: notification preferences are personal, retain inbox content and do not replay suppressed alerts
+ok 16 - notification preferences are personal, retain inbox content and do not replay suppressed alerts
+  ---
+  duration_ms: 3.3855
+  type: 'test'
+  ...
+# Subtest: CAS rejects a competing write; one upcoming appointment per pair prevents duplicate proposals
+ok 17 - CAS rejects a competing write; one upcoming appointment per pair prevents duplicate proposals
+  ---
+  duration_ms: 2.0584
+  type: 'test'
+  ...
+# Subtest: exact retries preserve schedule, deadline, revision and inbox after unrelated writes or time passing
+ok 18 - exact retries preserve schedule, deadline, revision and inbox after unrelated writes or time passing
+  ---
+  duration_ms: 1.4709
+  type: 'test'
+  ...
+# Subtest: the same request identifier is independently scoped to each authenticated actor
+ok 19 - the same request identifier is independently scoped to each authenticated actor
+  ---
+  duration_ms: 0.2924
+  type: 'test'
+  ...
+# Subtest: foreign actors, extra action fields, cross-pair logs and tampered revisions fail closed
+ok 20 - foreign actors, extra action fields, cross-pair logs and tampered revisions fail closed
+  ---
+  duration_ms: 2.1874
+  type: 'test'
+  ...
+# Subtest: stored events use canonical nondecreasing time; projections cannot hide future events
+ok 21 - stored events use canonical nondecreasing time; projections cannot hide future events
+  ---
+  duration_ms: 1.8976
+  type: 'test'
+  ...
+# Subtest: injected clock is used only when the host does not provide a time
+ok 22 - injected clock is used only when the host does not provide a time
+  ---
+  duration_ms: 0.5108
+  type: 'test'
+  ...
+# Subtest: only the person who declined can reopen the exact closed invitation; no old acceptance returns
+ok 23 - only the person who declined can reopen the exact closed invitation; no old acceptance returns
+  ---
+  duration_ms: 5.6123
+  type: 'test'
+  ...
+# Subtest: busy is a scheduling answer and allows another proposal without inventing relationship rejection
+ok 24 - busy is a scheduling answer and allows another proposal without inventing relationship rejection
+  ---
+  duration_ms: 2.0433
+  type: 'test'
+  ...
+# Subtest: a silent recipient must reopen an expired invitation, while their explicit acceptance is not silence
+ok 25 - a silent recipient must reopen an expired invitation, while their explicit acceptance is not silence
+  ---
+  duration_ms: 2.8268
+  type: 'test'
+  ...
+# Subtest: cancel-and-resend cannot bypass the unanswered recipient gate
+ok 26 - cancel-and-resend cannot bypass the unanswered recipient gate
+  ---
+  duration_ms: 3.1063
+  type: 'test'
+  ...
+# Subtest: legacy follow-ups remain readable but newly appended actions enforce the receiving boundary
+ok 27 - legacy follow-ups remain readable but newly appended actions enforce the receiving boundary
+  ---
+  duration_ms: 6.5887
+  type: 'test'
+  ...
+# Subtest: too-long creates only an actor-private source-bound suggestion and never changes the existing schedule
+ok 28 - too-long creates only an actor-private source-bound suggestion and never changes the existing schedule
+  ---
+  duration_ms: 4.0504
+  type: 'test'
+  ...
+# Subtest: duration rule rounds two thirds down to five minutes with a floor of fifteen and no needless short suggestion
+ok 29 - duration rule rounds two thirds down to five minutes with a floor of fifteen and no needless short suggestion
+  ---
+  duration_ms: 20.0357
+  type: 'test'
+  ...
+# Subtest: explicit apply changes only the next own form; undo and dismiss never notify the partner
+ok 30 - explicit apply changes only the next own form; undo and dismiss never notify the partner
+  ---
+  duration_ms: 9.9895
+  type: 'test'
+  ...
+# Subtest: correcting the source reflection invalidates an applied suggestion and stale apply/undo cannot restore it
+ok 31 - correcting the source reflection invalidates an applied suggestion and stale apply/undo cannot restore it
+  ---
+  duration_ms: 6.8319
+  type: 'test'
+  ...
+# Subtest: an applied hint is consumed once after explicit sending and neither duration nor private reasons are auto-inserted
+ok 32 - an applied hint is consumed once after explicit sending and neither duration nor private reasons are auto-inserted
+  ---
+  duration_ms: 5.6605
+  type: 'test'
+  ...
+# Subtest: change-activity is only private guidance until the person chooses a place themselves
+ok 33 - change-activity is only private guidance until the person chooses a place themselves
+  ---
+  duration_ms: 4.6061
+  type: 'test'
+  ...
+# Subtest: proposal changes compare the immediately preceding public schedule, never reflection or prior acceptance
+ok 34 - proposal changes compare the immediately preceding public schedule, never reflection or prior acceptance
+  ---
+  duration_ms: 5.854
+  type: 'test'
+  ...
+# Subtest: resending an unchanged schedule cannot clear acceptances or renew a response deadline
+ok 35 - resending an unchanged schedule cannot clear acceptances or renew a response deadline
+  ---
+  duration_ms: 2.7418
+  type: 'test'
+  ...
+# Subtest: undo cancels only this application: the same source can be applied again or explicitly dismissed
+ok 36 - undo cancels only this application: the same source can be applied again or explicitly dismissed
+  ---
+  duration_ms: 13.6482
+  type: 'test'
+  ...
+# Subtest: demo credentials are memory-only, distinct from a real SYNK session
+ok 37 - demo credentials are memory-only, distinct from a real SYNK session
+  ---
+  duration_ms: 24.7128
+  type: 'test'
+  ...
+# Subtest: an OAuth session is bound to its registered identity origin and product client
+ok 38 - an OAuth session is bound to its registered identity origin and product client
+  ---
+  duration_ms: 0.8455
+  type: 'test'
+  ...
+# Subtest: account requests use SYNK bearer but never send private records to the identity host
+ok 39 - account requests use SYNK bearer but never send private records to the identity host
+  ---
+  duration_ms: 0.9787
+  type: 'test'
+  ...
+# Subtest: revoked identity clears stored credentials and does not retry the mutation
+ok 40 - revoked identity clears stored credentials and does not retry the mutation
+  ---
+  duration_ms: 0.8492
+  type: 'test'
+  ...
+# Subtest: logout rejects a late response from the prior identity
+ok 41 - logout rejects a late response from the prior identity
+  ---
+  duration_ms: 1.1711
+  type: 'test'
+  ...
+# Subtest: dating PKCE uses its own pending namespace without overwriting platform login
+ok 42 - dating PKCE uses its own pending namespace without overwriting platform login
+  ---
+  duration_ms: 6.2919
+  type: 'test'
+  ...
+# Subtest: renewal is single-flight and a logout during refresh cannot restore a session
+ok 43 - renewal is single-flight and a logout during refresh cannot restore a session
+  ---
+  duration_ms: 0.9961
+  type: 'test'
+  ...
+# Subtest: a revoked refresh credential clears the session; a transient provider outage preserves it
+ok 44 - a revoked refresh credential clears the session; a transient provider outage preserves it
+  ---
+  duration_ms: 1.6218
+  type: 'test'
+  ...
+# Subtest: separate explicit SQLite stores refuse public paths and demo/account mode reuse
+ok 45 - separate explicit SQLite stores refuse public paths and demo/account mode reuse
+  ---
+  duration_ms: 76.583
+  type: 'test'
+  ...
+# Subtest: fictional role login is explicit; account service never accepts demo login or decode-only identities
+ok 46 - fictional role login is explicit; account service never accepts demo login or decode-only identities
+  ---
+  duration_ms: 137.5551
+  type: 'test'
+  ...
+# Subtest: central account verification forwards the exact bearer and uses only active synk_user_id
+ok 47 - central account verification forwards the exact bearer and uses only active synk_user_id
+  ---
+  duration_ms: 1.1184
+  type: 'test'
+  ...
+# Subtest: onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+ok 48 - onboarding and disclosure remain separate from private preferences and self-declaration is never verified
+  ---
+  duration_ms: 475.3182
+  type: 'test'
+  ...
+# Subtest: atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+ok 49 - atomic revision CAS, idempotency and actor isolation work across two SQLite connections
+  ---
+  duration_ms: 131.2259
+  type: 'test'
+  ...
+# Subtest: appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+ok 50 - appointment revisions and participant-private reflection are persisted and inbox is viewer-specific
+  ---
+  duration_ms: 552.3138
+  type: 'test'
+  ...
+# Subtest: blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+ok 51 - blocks, disclosure and adult withdrawal close every pair without restoring old acceptances
+  ---
+  duration_ms: 2960.0761
+  type: 'test'
+  ...
+# Subtest: account pause preserves agreed appointments and private reflection while blocking new commitments
+ok 52 - account pause preserves agreed appointments and private reflection while blocking new commitments
+  ---
+  duration_ms: 739.9184
+  type: 'test'
+  ...
+# Subtest: reports remain private, operators are server-granted and suspending a target closes its pairs
+ok 53 - reports remain private, operators are server-granted and suspending a target closes its pairs
+  ---
+  duration_ms: 521.2151
+  type: 'test'
+  ...
+# Subtest: suspension revokes operator report reads as well as processing and replay never returns stale private reports
+ok 54 - suspension revokes operator report reads as well as processing and replay never returns stale private reports
+  ---
+  duration_ms: 269.6395
+  type: 'test'
+  ...
+# Subtest: deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+ok 55 - deletion scrubs private rows, leaves a tombstone, and stale writes stay rejected after restart
+  ---
+  duration_ms: 447.1774
+  type: 'test'
+  ...
+# Subtest: account verifier runs on every request and cannot grant operator powers through client claims
+ok 56 - account verifier runs on every request and cannot grant operator powers through client claims
+  ---
+  duration_ms: 50.0665
+  type: 'test'
+  ...
+# Subtest: invalid product action rolls back the account, pair and receipt together
+ok 57 - invalid product action rolls back the account, pair and receipt together
+  ---
+  duration_ms: 338.2847
+  type: 'test'
+  ...
+# Subtest: a failure while producing the response rolls back already-written account, pair and receipt
+ok 58 - a failure while producing the response rolls back already-written account, pair and receipt
+  ---
+  duration_ms: 265.6222
+  type: 'test'
+  ...
+# Subtest: first discovery opens without invented answers and server-stamped actions remain immediately readable
+ok 59 - first discovery opens without invented answers and server-stamped actions remain immediately readable
+  ---
+  duration_ms: 644.0075
+  type: 'test'
+  ...
+# Subtest: account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+ok 60 - account recommendations consume only disclosed eligible profiles and survive candidate privacy withdrawal
+  ---
+  duration_ms: 936.1704
+  type: 'test'
+  ...
+# Subtest: guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+ok 61 - guessing a disclosed account ID cannot bypass fresh mutual matching prerequisites
+  ---
+  duration_ms: 564.9415
+  type: 'test'
+  ...
+# Subtest: closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+ok 62 - closing preserves only my readable reflection and counterpart deletion keeps my words without its profile
+  ---
+  duration_ms: 821.1101
+  type: 'test'
+  ...
+# Subtest: account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+ok 63 - account-wide exposure balancing changes only tied priorities and records each viewer/context/candidate once
+  ---
+  duration_ms: 1943.8126
+  type: 'test'
+  ...
+# Subtest: account deletion removes its exposure references and ordinary responses never include other viewers logs
+ok 64 - account deletion removes its exposure references and ordinary responses never include other viewers logs
+  ---
+  duration_ms: 605.61
+  type: 'test'
+  ...
+# Subtest: the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+ok 65 - the persisted clock prevents expired discovery and appointment revivals after a backward-clock restart
+  ---
+  duration_ms: 580.3978
+  type: 'test'
+  ...
+# Subtest: introduction delivery, mutual intent and date acceptance are separate persisted stages
+ok 66 - introduction delivery, mutual intent and date acceptance are separate persisted stages
+  ---
+  duration_ms: 477.1972
+  type: 'test'
+  ...
+# Subtest: declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+ok 67 - declined introduction cannot be resent through block/unblock, a new pair, or an old success replay
+  ---
+  duration_ms: 519.3153
+  type: 'test'
+  ...
+# Subtest: introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+ok 68 - introduction revision conflicts are atomic and pause blocks new intent while allowing withdrawal
+  ---
+  duration_ms: 407.8781
+  type: 'test'
+  ...
+# Subtest: legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+ok 69 - legacy confirmed appointments retain completion and reflection but cannot imply an introduction agreement
+  ---
+  duration_ms: 723.2555
+  type: 'test'
+  ...
+# Subtest: date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+ok 70 - date decline binds the account pair and one explicit own reopening clears both gates without restoring acceptances
+  ---
+  duration_ms: 936.0434
+  type: 'test'
+  ...
+# Subtest: date expiry closes its recipient gate across restart and does not count as a decline
+ok 71 - date expiry closes its recipient gate across restart and does not count as a decline
+  ---
+  duration_ms: 645.1094
+  type: 'test'
+  ...
+# Subtest: a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+ok 72 - a busy date response preserves introduction consent while cancelling unanswered requests cannot pressure-retry
+  ---
+  duration_ms: 758.9753
+  type: 'test'
+  ...
+# Subtest: unanswered introduction expiry is not rejection and cooldown is durable across restart
+ok 73 - unanswered introduction expiry is not rejection and cooldown is durable across restart
+  ---
+  duration_ms: 378.0576
+  type: 'test'
+  ...
+# Subtest: fixed authored synthetic evaluation compares ordering while sharing reciprocal eligibility
+ok 74 - fixed authored synthetic evaluation compares ordering while sharing reciprocal eligibility
+  ---
+  duration_ms: 0.9663
+  type: 'test'
+  ...
+# Subtest: fixture priorities are independent declared expectations, including ties, mandatory unknowns and consent withdrawal
+ok 75 - fixture priorities are independent declared expectations, including ties, mandatory unknowns and consent withdrawal
+  ---
+  duration_ms: 0.1883
+  type: 'test'
+  ...
+# Subtest: evaluation uses existing Core Domain, Ask and preferences and makes no network calls
+ok 76 - evaluation uses existing Core Domain, Ask and preferences and makes no network calls
+  ---
+  duration_ms: 1908.0084
+  type: 'test'
+  ...
+# Subtest: evaluation labels its synthetic policy scope and makes no satisfaction or real relationship claim
+ok 77 - evaluation labels its synthetic policy scope and makes no satisfaction or real relationship claim
+  ---
+  duration_ms: 0.3709
+  type: 'test'
+  ...
+# Subtest: access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery
+ok 78 - access, onboarding, pause, storage and profile visibility are distinguished before candidate recovery
+  ---
+  duration_ms: 47.9787
+  type: 'test'
+  ...
+# Subtest: consent missing and explicit no are separate and neither action automatically grants consent
+ok 79 - consent missing and explicit no are separate and neither action automatically grants consent
+  ---
+  duration_ms: 42.7877
+  type: 'test'
+  ...
+# Subtest: own schedule and independently required baseline answers get a concrete question without silently changing requirements
+ok 80 - own schedule and independently required baseline answers get a concrete question without silently changing requirements
+  ---
+  duration_ms: 187.6423
+  type: 'test'
+  ...
+# Subtest: conflict recovery cancels only the conflicting current choice and retains the hard requirement
+ok 81 - conflict recovery cancels only the conflicting current choice and retains the hard requirement
+  ---
+  duration_ms: 224.6851
+  type: 'test'
+  ...
+# Subtest: closed and expired contexts require an explicit new context, without resurrecting a selection
+ok 82 - closed and expired contexts require an explicit new context, without resurrecting a selection
+  ---
+  duration_ms: 96.0181
+  type: 'test'
+  ...
+# Subtest: visible pool emptiness does not infer nonpublic accounts, rejection or attraction
+ok 83 - visible pool emptiness does not infer nonpublic accounts, rejection or attraction
+  ---
+  duration_ms: 4.916
+  type: 'test'
+  ...
+# Subtest: current skips are distinguished from hard mismatch and ending them is explicit
+ok 84 - current skips are distinguished from hard mismatch and ending them is explicit
+  ---
+  duration_ms: 177.4119
+  type: 'test'
+  ...
+# Subtest: missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row
+ok 85 - missing counterpart schedule is claimed only for an exact currently visible profile ID with a pending row
+  ---
+  duration_ms: 12.8909
+  type: 'test'
+  ...
+# Subtest: a missing own answer needed for reciprocal comparison is offered before waiting on other people
+ok 86 - a missing own answer needed for reciprocal comparison is offered before waiting on other people
+  ---
+  duration_ms: 18.0027
+  type: 'test'
+  ...
+# Subtest: hard mismatch invites checking the recorded criteria without recommending a weaker requirement
+ok 87 - hard mismatch invites checking the recorded criteria without recommending a weaker requirement
+  ---
+  duration_ms: 19.3213
+  type: 'test'
+  ...
+# Subtest: ready recommendations return no empty-state guidance and malformed projections stay unclassified
+ok 88 - ready recommendations return no empty-state guidance and malformed projections stay unclassified
+  ---
+  duration_ms: 70.7231
+  type: 'test'
+  ...
+# Subtest: guidance is pure, detached, and never reads raw state or private records
+ok 89 - guidance is pure, detached, and never reads raw state or private records
+  ---
+  duration_ms: 44.2133
+  type: 'test'
+  ...
+# Subtest: expanded situational declarations remain unknown in legacy records and change ranking only after an explicit answer
+ok 90 - expanded situational declarations remain unknown in legacy records and change ranking only after an explicit answer
+  ---
+  duration_ms: 1085.0334
+  type: 'test'
+  ...
+# Subtest: candidate feedback does not infer preferences and skip-current lasts only for its context
+ok 91 - candidate feedback does not infer preferences and skip-current lasts only for its context
+  ---
+  duration_ms: 650.2116
+  type: 'test'
+  ...
+# Subtest: question pause suppresses only optional choices and resume retains missing answers
+ok 92 - question pause suppresses only optional choices and resume retains missing answers
+  ---
+  duration_ms: 131.5883
+  type: 'test'
+  ...
+# Subtest: field undo restores prior layers and hard requirements but never selection, consent, or an old context
+ok 93 - field undo restores prior layers and hard requirements but never selection, consent, or an old context
+  ---
+  duration_ms: 697.3353
+  type: 'test'
+  ...
+# Subtest: exposure rotates only exactly tied eligible candidates and cannot improve an excluded or weaker candidate
+ok 94 - exposure rotates only exactly tied eligible candidates and cannot improve an excluded or weaker candidate
+  ---
+  duration_ms: 734.5734
+  type: 'test'
+  ...
+# Subtest: external public pool uses the same reciprocal constraints without demo profiles, invented values, or synthetic meeting seeds
+ok 95 - external public pool uses the same reciprocal constraints without demo profiles, invented values, or synthetic meeting seeds
+  ---
+  duration_ms: 141.5282
+  type: 'test'
+  ...
+# Subtest: removed or undisclosed external profiles cannot break history replay or leak through feedback, exposure, preview, or selection
+ok 96 - removed or undisclosed external profiles cannot break history replay or leak through feedback, exposure, preview, or selection
+  ---
+  duration_ms: 313.8344
+  type: 'test'
+  ...
+# Subtest: external profile changes invalidate an old selection without making private answers unreadable
+ok 97 - external profile changes invalidate an old selection without making private answers unreadable
+  ---
+  duration_ms: 151.7327
+  type: 'test'
+  ...
+# Subtest: external candidate validation is finite and a non-consenting profile never enters Core or Ask
+ok 98 - external candidate validation is finite and a non-consenting profile never enters Core or Ask
+  ---
+  duration_ms: 62.8077
+  type: 'test'
+  ...
+# Subtest: legacy UI handlers pause questions, record private reasons, and skip only the current candidate
+ok 99 - legacy UI handlers pause questions, record private reasons, and skip only the current candidate
+  ---
+  duration_ms: 1599.6243
+  type: 'test'
+  ...
+# Subtest: legacy UI handlers undo a field without restoring selection and rotate equal-condition candidates
+ok 100 - legacy UI handlers undo a field without restoring selection and rotate equal-condition candidates
+  ---
+  duration_ms: 1696.3544
+  type: 'test'
+  ...
+# Subtest: UI export and restore are detached, validate before replacement, and resynchronize the selected handoff
+ok 101 - UI export and restore are detached, validate before replacement, and resynchronize the selected handoff
+  ---
+  duration_ms: 1403.496
+  type: 'test'
+  ...
+# Subtest: UI context controls apply a temporary choice, unknown mask, revert, and new-context reset through real handlers
+ok 102 - UI context controls apply a temporary choice, unknown mask, revert, and new-context reset through real handlers
+  ---
+  duration_ms: 2244.3809
+  type: 'test'
+  ...
+# Subtest: UI preview uses one clock reading even when wall time advances between calls
+ok 103 - UI preview uses one clock reading even when wall time advances between calls
+  ---
+  duration_ms: 893.5777
+  type: 'test'
+  ...
+# Subtest: switching an edit scope preserves the answer the user has just selected
+ok 104 - switching an edit scope preserves the answer the user has just selected
+  ---
+  duration_ms: 587.6826
+  type: 'test'
+  ...
+# Subtest: an observed expiry cannot reopen an old selection after the UI wall clock moves backward
+ok 105 - an observed expiry cannot reopen an old selection after the UI wall clock moves backward
+  ---
+  duration_ms: 778.0217
+  type: 'test'
+  ...
+# Subtest: live scenarios can start before the fixed fixture clock and accept a real future deadline
+ok 106 - live scenarios can start before the fixed fixture clock and accept a real future deadline
+  ---
+  duration_ms: 452.726
+  type: 'test'
+  ...
+# Subtest: live UI uses real time for initial answers and explicit scenario resets, while restored future logs stay ordered
+ok 107 - live UI uses real time for initial answers and explicit scenario resets, while restored future logs stay ordered
+  ---
+  duration_ms: 1157.1033
+  type: 'test'
+  ...
+# Subtest: UI reaches an explicitly scheduled expiry without another click and invalidates the connected candidate
+ok 108 - UI reaches an explicitly scheduled expiry without another click and invalidates the connected candidate
+  ---
+  duration_ms: 564.1683
+  type: 'test'
+  ...
+# Subtest: current-context choices preserve the baseline and return to it only after an explicit revert
+ok 109 - current-context choices preserve the baseline and return to it only after an explicit revert
+  ---
+  duration_ms: 713.4706
+  type: 'test'
+  ...
+# Subtest: explicit unknown masks the baseline, any is a known value, and cancellation restores the baseline
+ok 110 - explicit unknown masks the baseline, any is a known value, and cancellation restores the baseline
+  ---
+  duration_ms: 927.7477
+  type: 'test'
+  ...
+# Subtest: deleting a baseline answer preserves this-context unknown and does not repeat the declined optional question
+ok 111 - deleting a baseline answer preserves this-context unknown and does not repeat the declined optional question
+  ---
+  duration_ms: 730.8873
+  type: 'test'
+  ...
+# Subtest: temporary soft choices cannot replace or relax an independently confirmed must-have
+ok 112 - temporary soft choices cannot replace or relax an independently confirmed must-have
+  ---
+  duration_ms: 1405.7494
+  type: 'test'
+  ...
+# Subtest: clearing a baseline required answer stays pending even if a current soft answer exists
+ok 113 - clearing a baseline required answer stays pending even if a current soft answer exists
+  ---
+  duration_ms: 1023.765
+  type: 'test'
+  ...
+# Subtest: explicit unknown on a required choice asks again without replacing the stored must-have
+ok 114 - explicit unknown on a required choice asks again without replacing the stored must-have
+  ---
+  duration_ms: 537.2301
+  type: 'test'
+  ...
+# Subtest: baseline edits clear the current override and unknown mask, while deleted baseline values never return
+ok 115 - baseline edits clear the current override and unknown mask, while deleted baseline values never return
+  ---
+  duration_ms: 1136.1023
+  type: 'test'
+  ...
+# Subtest: ending a discovery hides its candidates and handoff; a new context restores only current baseline declarations
+ok 116 - ending a discovery hides its candidates and handoff; a new context restores only current baseline declarations
+  ---
+  duration_ms: 1277.9543
+  type: 'test'
+  ...
+# Subtest: explicit expiry uses caller time without imposing an automatic lifetime and rejects stale preview application
+ok 117 - explicit expiry uses caller time without imposing an automatic lifetime and rejects stale preview application
+  ---
+  duration_ms: 1125.7121
+  type: 'test'
+  ...
+# Subtest: scope-specific previews are pure, preserve hard constraints and become stale after context closure
+ok 118 - scope-specific previews are pure, preserve hard constraints and become stale after context closure
+  ---
+  duration_ms: 1004.9844
+  type: 'test'
+  ...
+# Subtest: consent and self declarations never become temporary inferred choices; availability remains directly declared
+ok 119 - consent and self declarations never become temporary inferred choices; availability remains directly declared
+  ---
+  duration_ms: 1197.1423
+  type: 'test'
+  ...
+# Subtest: first asks explicit discovery consent before showing any candidates or invented profile
+ok 120 - first asks explicit discovery consent before showing any candidates or invented profile
+  ---
+  duration_ms: 4.0894
+  type: 'test'
+  ...
+# Subtest: ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+ok 121 - ready has three eligible candidates, one reciprocal must-have failure and one unknown schedule
+  ---
+  duration_ms: 364.1628
+  type: 'test'
+  ...
+# Subtest: the candidate the user wants still fails if the candidate requires a different self style
+ok 122 - the candidate the user wants still fails if the candidate requires a different self style
+  ---
+  duration_ms: 487.5454
+  type: 'test'
+  ...
+# Subtest: situational wants change real candidate order without changing own style or inventing candidate liking
+ok 123 - situational wants change real candidate order without changing own style or inventing candidate liking
+  ---
+  duration_ms: 371.0631
+  type: 'test'
+  ...
+# Subtest: soft mismatch is eligible while explicit wants must-have strictly excludes it
+ok 124 - soft mismatch is eligible while explicit wants must-have strictly excludes it
+  ---
+  duration_ms: 769.3554
+  type: 'test'
+  ...
+# Subtest: schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+ok 125 - schedule is mandatory; explicit either schedule works but absent schedule is never filled in
+  ---
+  duration_ms: 900.2179
+  type: 'test'
+  ...
+# Subtest: boundary with no eligible candidates never substitutes an excluded or unknown person
+ok 126 - boundary with no eligible candidates never substitutes an excluded or unknown person
+  ---
+  duration_ms: 498.3803
+  type: 'test'
+  ...
+# Subtest: consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+ok 127 - consent withdrawal and clearing hide all candidates, change history and selection; restoring needs new selection
+  ---
+  duration_ms: 1025.9192
+  type: 'test'
+  ...
+# Subtest: select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+ok 128 - select is only a cancelable user choice and does not alter own profile or imply mutual acceptance
+  ---
+  duration_ms: 522.6872
+  type: 'test'
+  ...
+# Subtest: any explicit set or clear invalidates an old selection, including repeating the same answer
+ok 129 - any explicit set or clear invalidates an old selection, including repeating the same answer
+  ---
+  duration_ms: 1863.4317
+  type: 'test'
+  ...
+# Subtest: skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+ok 130 - skipping unknown wants preserves the exact ranking and unknown value; known or mandatory fields cannot be skipped
+  ---
+  duration_ms: 755.0195
+  type: 'test'
+  ...
+# Subtest: no personal wants and equal policy ranks are explicitly described without a compatibility number
+ok 131 - no personal wants and equal policy ranks are explicitly described without a compatibility number
+  ---
+  duration_ms: 529.2561
+  type: 'test'
+  ...
+# Subtest: Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+ok 132 - Domain runs both directions and Ask evaluates the same ordered eligible set through scoped preferences
+  ---
+  duration_ms: 366.4453
+  type: 'test'
+  ...
+# Subtest: no consent also prevents all candidate decision calls, not just final visual display
+ok 133 - no consent also prevents all candidate decision calls, not just final visual display
+  ---
+  duration_ms: 1.6347
+  type: 'test'
+  ...
+# Subtest: strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+ok 134 - strict finite replay rejects foreign actors, invalid flags, fake fields, unknown candidates and noncanonical times
+  ---
+  duration_ms: 648.8019
+  type: 'test'
+  ...
+# Subtest: clearing a required answer preserves the requirement; reanswering cannot silently relax it
+ok 135 - clearing a required answer preserves the requirement; reanswering cannot silently relax it
+  ---
+  duration_ms: 1019.6417
+  type: 'test'
+  ...
+# Subtest: reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+ok 136 - reciprocal matches stay in the reciprocal explanation rather than masquerading as my own wants
+  ---
+  duration_ms: 214.9959
+  type: 'test'
+  ...
+# Subtest: preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+ok 137 - preview shows the actual reordered candidate list without changing state, selection, requirements or handoff
+  ---
+  duration_ms: 564.2384
+  type: 'test'
+  ...
+# Subtest: applying a reviewed preview equals the ordinary explicit action and clears the old selection
+ok 138 - applying a reviewed preview equals the ordinary explicit action and clears the old selection
+  ---
+  duration_ms: 945.06
+  type: 'test'
+  ...
+# Subtest: clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+ok 139 - clearing a mandatory answer in a preview preserves the real setting and shows hypothetical holds
+  ---
+  duration_ms: 1026.1666
+  type: 'test'
+  ...
+# Subtest: preview reports newly eligible and still-held people without relaxing the other side requirements
+ok 140 - preview reports newly eligible and still-held people without relaxing the other side requirements
+  ---
+  duration_ms: 338.1402
+  type: 'test'
+  ...
+# Subtest: preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+ok 141 - preview application rejects changed sources, including equal-length alternate states and intervening selection changes
+  ---
+  duration_ms: 785.4385
+  type: 'test'
+  ...
+# Subtest: preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+ok 142 - preview application rejects modified actions, candidate changes, extra fields and invented confirmation text
+  ---
+  duration_ms: 1777.9016
+  type: 'test'
+  ...
+# Subtest: handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+ok 143 - handoff contains only the selected public identity and both explicit schedules, without meeting consent or inferred preferences
+  ---
+  duration_ms: 857.8419
+  type: 'test'
+  ...
+# Subtest: handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+ok 144 - handoff keys preserve revisits but distinguish reselection, different candidates and equal-count condition changes
+  ---
+  duration_ms: 1006.2422
+  type: 'test'
+  ...
+# Subtest: answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+ok 145 - answers, consent and selection withdrawal immediately remove handoff and old meeting identity cannot revive
+  ---
+  duration_ms: 828.4098
+  type: 'test'
+  ...
+# Subtest: hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+ok 146 - hypothetical consent cannot authorize candidate disclosure: consent changes are direct and other previews require current consent
+  ---
+  duration_ms: 877.987
+  type: 'test'
+  ...
+# Subtest: a delivered request needs the recipient explicit acceptance and never creates date consent
+ok 147 - a delivered request needs the recipient explicit acceptance and never creates date consent
+  ---
+  duration_ms: 3.1735
+  type: 'test'
+  ...
+# Subtest: decline survives replacement pair IDs and only its author can reopen
+ok 148 - decline survives replacement pair IDs and only its author can reopen
+  ---
+  duration_ms: 0.677
+  type: 'test'
+  ...
+# Subtest: expiry is exact, is not a decline, and seven-day pressure limit survives a different pair
+ok 149 - expiry is exact, is not a decline, and seven-day pressure limit survives a different pair
+  ---
+  duration_ms: 0.3496
+  type: 'test'
+  ...
+# Subtest: recipient explicit reopening after expiry permits a fresh request without reviving old acceptance
+ok 150 - recipient explicit reopening after expiry permits a fresh request without reviving old acceptance
+  ---
+  duration_ms: 0.3586
+  type: 'test'
+  ...
+# Subtest: withdrawal and relation closure revoke introduction consent and cannot be undone by the other person
+ok 151 - withdrawal and relation closure revoke introduction consent and cannot be undone by the other person
+  ---
+  duration_ms: 1.2639
+  type: 'test'
+  ...
+# Subtest: revision, idempotency, actor, immutable input and time boundaries are validated
+ok 152 - revision, idempotency, actor, immutable input and time boundaries are validated
+  ---
+  duration_ms: 1.0027
+  type: 'test'
+  ...
+# Subtest: restored ledgers cannot claim fake acceptance or leak an unrelated pair request
+ok 153 - restored ledgers cannot claim fake acceptance or leak an unrelated pair request
+  ---
+  duration_ms: 0.2047
+  type: 'test'
+  ...
+1..153
+# tests 153
+# suites 0
+# pass 153
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 45946.4426

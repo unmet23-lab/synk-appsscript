@@ -1,0 +1,10 @@
+{
+  "command": "node --test --test-reporter=tap tests/synk-account-restore-export.test.js",
+  "cwd": "C:/Users/q1212/Documents/SYNK-talk",
+  "passed": 14,
+  "failed": 0,
+  "skipped": 0,
+  "durationMs": 24455.0357,
+  "evidence": "Observed process exit 0 and TAP result in this task; counts retained here, raw TAP was not saved.",
+  "realRemoteConnections": 0
+}

@@ -1,0 +1,24 @@
+{
+  "scope": "free-local-product-usability-checks",
+  "intentionalBeforeFixReproduction": {
+    "status": "failed-as-expected",
+    "reason": "Cancelling a conditional preview reset the unsaved baseline scope and future deadline to context and blank.",
+    "evidence": "experiences/atlas-lab/qa/dating-conditional-draft/pre-fix-result.json"
+  },
+  "initialSyntheticFixtureAttempt": {
+    "completed": false,
+    "reason": "The same-page role-switch test omitted discovery onboarding consent for the second synthetic role. The fixture was corrected before the final run.",
+    "source": "Browser-check agent execution report; intermediate failure output was not retained as a separate artifact."
+  },
+  "final": {
+    "automated": "6 files, 125 of 125 passed",
+    "browser": "41 of 41 paths passed, including 9 new draft and layer checks",
+    "testConcurrency": 2,
+    "existingBrowserRegressions": "Run sequentially after the new browser checks",
+    "modelCalls": 0,
+    "externalApiCost": 0,
+    "actualUsers": 0,
+    "publicDeployment": false
+  },
+  "userDirection": "Participant recruitment later; free improvements first. Paid AI and tutor remain deferred."
+}

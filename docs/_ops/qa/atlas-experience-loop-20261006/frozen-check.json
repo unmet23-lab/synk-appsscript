@@ -1,0 +1,60 @@
+{
+  "at": "2026-10-06T12:27:09.463Z",
+  "method": "hash-only-no-heldout-content-inspection",
+  "checks": [
+    {
+      "path": "experiences/atlas-lab/model-extraction.mjs",
+      "expected": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+      "actual": "629651ccbccf6b60734c697447cfe9de62175de57bd701315c7ee36a10156266",
+      "same": true
+    },
+    {
+      "path": "experiences/atlas-lab/interpretation.mjs",
+      "expected": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+      "actual": "589dc1fba5ee1020f062b9f7345b40d7755f33a810003bbf3ba19e2e585138c9",
+      "same": true
+    },
+    {
+      "path": "docs/마케팅/맞춤도구/computer/content.js",
+      "expected": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+      "actual": "428217f11059f75a10329ef51a2ab0b451928efe89e39ec7b40be4961535df58",
+      "same": true
+    },
+    {
+      "path": "atlas/interpretation.js",
+      "expected": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "actual": "ac43c5d2ee96ee2b24b7c39cde23b8bcb73089c76ce40a794dc1ea013a5d5f8e",
+      "same": true
+    },
+    {
+      "path": "atlas/domain.js",
+      "expected": "9951725913b41d97052f2f396b1ef4463c7c47e75a218f72096999d6f8d6b046",
+      "actual": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "same": false
+    },
+    {
+      "path": "atlas/temper-interpretation.js",
+      "expected": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+      "actual": "238e3cf2b362514e002dc7c2640999b5fd8b80e03efd26962b1426af952047de",
+      "same": true
+    },
+    {
+      "path": "docs/_ops/qa/atlas-model-20261005/freeze.json",
+      "expected": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347",
+      "actual": "dcd263a22e3c1b28a1d4b78f4ad0d55ffa79e3b1c91863e3df98ea94556e1347",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/atlas-interpretation-heldout-v1.json",
+      "expected": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+      "actual": "14cf6f3185d4f2b90b364a49c7d3d851494d614cad2ce0e32aca2300b978c99e",
+      "same": true
+    },
+    {
+      "path": "tests/fixtures/atlas-interpretation-heldout-v1.manifest.json",
+      "expected": "875a1f28c7cb2140f8f121abc7a7cfafe1683b94256e5eaf7b512672d5de64ca",
+      "actual": "875a1f28c7cb2140f8f121abc7a7cfafe1683b94256e5eaf7b512672d5de64ca",
+      "same": true
+    }
+  ]
+}

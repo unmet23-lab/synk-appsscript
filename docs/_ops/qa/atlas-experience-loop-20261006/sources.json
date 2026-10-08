@@ -1,0 +1,62 @@
+[
+  {
+    "path": "experiences/atlas-lab/dating.html",
+    "sha256": "650f4ff313ec199a3258c399e38353230efcc72f4540f6c25027944cebdf981b"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-ui.mjs",
+    "sha256": "4ec6607ccd4b4a66a1ea52787a6ddd7ffbf829824afaf88af55af81e5a18de30"
+  },
+  {
+    "path": "experiences/atlas-lab/dating.css",
+    "sha256": "dfc357df293ed426a02e933b8f0b4e26d7f2760603a83cc3e5390c8e0614aa25"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-account.mjs",
+    "sha256": "5807602cf1f090db4e013a801a2340dbd8117b55d91070a01ae50a9e688a9971"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-server.mjs",
+    "sha256": "3f8bf5b69976dd5ffe6ef2e3a8df93dbaf7b835d7b2a774b2266e0affd465ab6"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-service.mjs",
+    "sha256": "a04a62ac448a80f9dd5efff06c4b47f6ddfc3e76f27836e8b23dada35ffcf67c"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-store.mjs",
+    "sha256": "3f9eddd2a2f58df4653760cc25594d80f344fea094c714b2f534dc9704921182"
+  },
+  {
+    "path": "experiences/atlas-lab/dating-auth.mjs",
+    "sha256": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8"
+  },
+  {
+    "path": "experiences/atlas-lab/appointments.mjs",
+    "sha256": "0a5f4ccb75325340ad8d3f501bc9efe6e5278f7507296f79ea3db4ebdca255b9"
+  },
+  {
+    "path": "experiences/atlas-lab/introductions.mjs",
+    "sha256": "6b99ec5ea7427d7cb4bd11eb4e3403006750cbc84e916a19028149ddb4db574d"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery.mjs",
+    "sha256": "c5c2e490bd8ea5310b41613c70a9792649f6210ee93926e76d325da4dcb68b8b"
+  },
+  {
+    "path": "experiences/atlas-lab/discovery-guidance.mjs",
+    "sha256": "fe4d8627c5365f2b3499ca90f50f76db14eafbfe2a72bd1f82394f0bd59fa35c"
+  },
+  {
+    "path": "atlas/domain.js",
+    "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
+  },
+  {
+    "path": "atlas/ask.js",
+    "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd"
+  },
+  {
+    "path": "atlas/personalization.js",
+    "sha256": "113525470ee3c3db1241e5ea0ea00016c2a2cdaf845e821aa08379b4d7ee7844"
+  }
+]

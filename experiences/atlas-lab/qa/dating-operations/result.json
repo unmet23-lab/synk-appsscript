@@ -1,0 +1,103 @@
+{
+  "kind": "synthetic-dating-operations-browser",
+  "at": "2026-10-07T20:33:52.574Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "realProviderRequests": 0,
+  "physicalDevices": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "syntheticSessionInjection": true,
+  "syntheticVerifierInjection": true,
+  "injectedHttpFailures": true,
+  "paths": [
+    {
+      "status": 429,
+      "code": "account-busy",
+      "width": 390,
+      "result": "An explicit rejection retains every first-setup text/checkbox and session, unlocks inputs/navigation without a receipt checkpoint, and performs no automatic POST. A user click succeeds once with a fresh request ID and exactly one saved revision."
+    },
+    {
+      "status": 503,
+      "code": "service-restarting",
+      "width": 320,
+      "result": "An explicit rejection retains every first-setup text/checkbox and session, unlocks inputs/navigation without a receipt checkpoint, and performs no automatic POST. A user click succeeds once with a fresh request ID and exactly one saved revision."
+    },
+    {
+      "status": 503,
+      "code": "service-error",
+      "width": 390,
+      "result": "A genuinely committed local save followed by generic 503 stays uncertain. A receipt GET returning explicit service-restarting does not erase that uncertainty or unlock mutations. A later receipt GET resolves the single committed save without another POST."
+    }
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "account-busy-retains-first-setup-390.png",
+    "service-restarting-retains-first-setup-320.png",
+    "ambiguous-save-and-restarting-receipt-stay-pending-390.png"
+  ],
+  "posts": [
+    {
+      "account": 0,
+      "requestId": "c414f6fd-b208-4d5d-83f7-42ab10ee6139",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "account": 0,
+      "requestId": "90cb65cd-abe2-465f-b167-a660ef240594",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "account": 1,
+      "requestId": "a1e6c875-09d1-4967-8e2b-445f03f3d8ef",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "account": 1,
+      "requestId": "9eb932fe-a861-4cc8-862c-ea22b2944875",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    },
+    {
+      "account": 2,
+      "requestId": "4cd5e2f9-3968-4875-a740-d923f2747b84",
+      "expectedRevision": 0,
+      "kind": "onboard"
+    }
+  ],
+  "sourceBefore": {
+    "experiences/atlas-lab/dating-account.mjs": "16003a3ad621019cf551dab26d0109d4030bb839b31980ff5a2cf348479a8ec7",
+    "experiences/atlas-lab/dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-service.mjs": "861631b7e224f13be91c0c442b2c9da0923caa3c42ab39516699deab5589d439",
+    "tests/atlas-dating-operations-smoke.mjs": "41ce02a47ad6ef7ddec97a868c929c0ea92f4b1ccb99d046481d04e887bd7b57",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "experiences/atlas-lab/dating-runtime.mjs": "53d0184a3d912d1da4787a72fd2abbcba45218304ba508e921e21dc03939c855",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c"
+  },
+  "sourceAfter": {
+    "experiences/atlas-lab/dating-account.mjs": "16003a3ad621019cf551dab26d0109d4030bb839b31980ff5a2cf348479a8ec7",
+    "experiences/atlas-lab/dating-ui.mjs": "0df15de8382dd5da39297310f10faa40454d30e6a6071125bdcd5d2a83b79bd2",
+    "experiences/atlas-lab/dating-delivery.mjs": "bb41049b13563571681ace341af5cb39436ce8855c492e954b1a77701ba07a1d",
+    "experiences/atlas-lab/dating-checkpoint.mjs": "ea1725c2e8da3fbe19701095b861840680d8f72c3da4769bcf3a31ba19d14812",
+    "experiences/atlas-lab/onboarding-drafts.mjs": "befe9826c9bd6b7d27a4dbff9c924e305d1f53d25bb2781e8ae00dceec2c7940",
+    "experiences/atlas-lab/dating-server.mjs": "f751e49c634a17bbd977574555b9550e802bf8cb08a8234d5d2ce9168e8641c2",
+    "experiences/atlas-lab/dating-service.mjs": "861631b7e224f13be91c0c442b2c9da0923caa3c42ab39516699deab5589d439",
+    "tests/atlas-dating-operations-smoke.mjs": "41ce02a47ad6ef7ddec97a868c929c0ea92f4b1ccb99d046481d04e887bd7b57",
+    "experiences/atlas-lab/dating-admission.mjs": "d77aaba11bfc35a5129ef2a6c9284ac8a2a630c23939e5db5a9d3d20ccd93878",
+    "experiences/atlas-lab/dating-shutdown.mjs": "fbe173ae1625306917f502ef46520bbea5f8b00a702bfc80db10f5ca32867182",
+    "experiences/atlas-lab/dating-restore.mjs": "bf90708150385b495fdb3454870b61014b0eaa3fc11055e71a117cb8119f5971",
+    "experiences/atlas-lab/dating-runtime.mjs": "53d0184a3d912d1da4787a72fd2abbcba45218304ba508e921e21dc03939c855",
+    "experiences/learning-hub/server.mjs": "3a47e5e6e0eb16c7c688251cfd8da3a319d474a450eef99d1677100405fe227c"
+  },
+  "sourceStable": true
+}

@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-07T13:00:42.666Z",
+  "status": "failed",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [
+    "blocked introduction explains missing own public area and opens the separate disclosure form without publishing or copying the private answer",
+    "own invitation consent explains the block and navigates to settings without enabling it or sending a request",
+    "a counterpart private incompatibility stays a generic current-state check; refresh leaks no private area and neither changes criteria nor creates an introduction"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "guide-opens-own-disclosure-320.png",
+    "guide-opens-own-settings-320.png",
+    "unknown-peer-cause-stays-private-390.png"
+  ],
+  "sourceBefore": {
+    "dating-ui.mjs": "48421a82ea08484959172f2a70d35b7d432373ed7f1a767868244a16937a8b3a",
+    "dating-live.mjs": "be21d8afac0b32d3465e1da70785a377775a69b3f310be524b44db7bae1b0b91",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "8e95ca39eea295383b04a11a84e8a98f7c982465ea0734a488af9df9ae0fc1ec",
+    "introduction-guidance.mjs": "10da87ed71b7282afa53393efbc487d8a99b3cd85f091e492c61958af51e0670",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "dd851714e40e73a52a6cbfd51e92fbb8c1f8e0b97cb348b9befd2c316099bd27",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "failure": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-action=\"new-context\"]')\u001b[22m\n\u001b[2m    - locator resolved to <button type=\"button\" data-action=\"new-context\">이번 조건을 마치기 전 확인</button>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying click action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    29 × waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying click action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at click (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-control-smoke.mjs:23:91)\n    at nextContext (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-control-smoke.mjs:75:110)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-control-smoke.mjs:105:174",
+  "sourceSha256": {
+    "dating-ui.mjs": "48421a82ea08484959172f2a70d35b7d432373ed7f1a767868244a16937a8b3a",
+    "dating-live.mjs": "be21d8afac0b32d3465e1da70785a377775a69b3f310be524b44db7bae1b0b91",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "8e95ca39eea295383b04a11a84e8a98f7c982465ea0734a488af9df9ae0fc1ec",
+    "introduction-guidance.mjs": "10da87ed71b7282afa53393efbc487d8a99b3cd85f091e492c61958af51e0670",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "dd851714e40e73a52a6cbfd51e92fbb8c1f8e0b97cb348b9befd2c316099bd27",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505"
+  },
+  "sourceStable": true
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+locator.click: Timeout 15000ms exceeded.
+Call log:
+  - waiting for locator('[data-action="new-context"]')
+    - locator resolved to <button type="button" data-action="new-context">이번 조건을 마치기 전 확인</button>
+  - attempting click action
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+    - waiting 20ms
+    2 × waiting for element to be visible, enabled and stable
+      - element is not visible
+    - retrying click action
+      - waiting 100ms
+    29 × waiting for element to be visible, enabled and stable
+       - element is not visible
+     - retrying click action
+       - waiting 500ms
+
+    at click (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-control-smoke.mjs:23:91)
+    at nextContext (C:\Users\q1212\Documents\SYNK-appsscript\tests\atlas-dating-control-smoke.mjs:75:110)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-control-smoke.mjs:105:174 {
+  log: [
+    `  - waiting for locator('[data-action="new-context"]')`,
+    '    - locator resolved to <button type="button" data-action="new-context">이번 조건을 마치기 전 확인</button>',
+    '  - attempting click action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying click action',
+    '      - waiting 100ms',
+    '    29 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying click action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+
+Node.js v24.18.0

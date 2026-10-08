@@ -1,0 +1,55 @@
+{
+  "kind": "synthetic-dating-oauth-browser",
+  "at": "2026-10-07T19:08:22.305Z",
+  "status": "passed",
+  "actualUsers": 0,
+  "realProviderRequests": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "credentialInjection": false,
+  "verifierInjection": false,
+  "paths": [
+    "Actual dating sign-in -> separate loopback consent -> valid S256 code exchange -> default server identity verifier; private first setup persists across reload without a second token exchange or profile storage in the browser.",
+    "A second isolated browser context starts signed out, obtains its own PKCE session and restores the same saved account from SQLite without copying browser credentials or resubmitting profile data.",
+    "A real access_denied callback removes the pending transaction and OAuth URL fields, shows cancellation, and creates no token request or account view.",
+    "A mismatched-state callback is cleaned and rejected before token exchange; an explicit new sign-in creates a fresh PKCE transaction and restores the account successfully.",
+    "Replaying an already-consumed callback makes no second token request and exposes no profile in the rejected page; a clean reload uses the still-valid prior account session."
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "oauth-saved-account-390.png",
+    "oauth-second-context-restored-390.png",
+    "oauth-cancelled-390.png",
+    "oauth-state-rejected-390.png",
+    "oauth-replay-rejected-390.png"
+  ],
+  "counters": {
+    "authorize": 5,
+    "decisions": 5,
+    "tokenRequests": 3,
+    "acceptedS256": 3,
+    "rejectedTokens": 0,
+    "centralIdentityChecks": 6,
+    "productActions": 1
+  },
+  "sourceBefore": {
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "synk-account/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "atlas-dating-oauth-smoke.mjs": "1e5a5c3e37f4642775b07f9cec339bb47e40c7e359b959b9b815ce1e7fd46972"
+  },
+  "sourceSha256": {
+    "dating-ui.mjs": "c30023f676d1291d93f7ea71db8b6c8116362c3849b0aedc4b49f32821425951",
+    "dating-account.mjs": "f45df51b75d7ee502baa36e44c6c1fc31258fdd6238f9591736f1da2e24c94e6",
+    "dating-auth.mjs": "84fc7df71c8b8539afd4fb60241093af27ba7d898d377f35cf1f0ded8f1077b8",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-service.mjs": "c0929e57802e406b242e00811d85aa814d419bf9963eb757ed6035c70199e9fa",
+    "synk-account/core.mjs": "5c85d1d957403ba1b04795e115d9cb40f26ede59e8dbbfbaa743666ee3e1cbbd",
+    "atlas-dating-oauth-smoke.mjs": "1e5a5c3e37f4642775b07f9cec339bb47e40c7e359b959b9b815ce1e7fd46972"
+  },
+  "sourceStable": true
+}

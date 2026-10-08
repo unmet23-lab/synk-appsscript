@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: today uses the next Korean midnight and an exclusive ISO boundary
+ok 1 - today uses the next Korean midnight and an exclusive ISO boundary
+  ---
+  duration_ms: 13.3656
+  type: 'test'
+  ...
+# Subtest: Korean midnight is a new today while the preceding millisecond ends the previous today
+ok 2 - Korean midnight is a new today while the preceding millisecond ends the previous today
+  ---
+  duration_ms: 0.3755
+  type: 'test'
+  ...
+# Subtest: Korean day arithmetic handles month, year and leap-day rollover
+ok 3 - Korean day arithmetic handles month, year and leap-day rollover
+  ---
+  duration_ms: 1.0173
+  type: 'test'
+  ...
+# Subtest: server as-of determines today independently of device clock skew
+ok 4 - server as-of determines today independently of device clock skew
+  ---
+  duration_ms: 2.8245
+  type: 'test'
+  ...
+# Subtest: the device timezone and daylight-saving settings do not alter the Korean boundary or explanation
+ok 5 - the device timezone and daylight-saving settings do not alter the Korean boundary or explanation
+  ---
+  duration_ms: 2.2174
+  type: 'test'
+  ...
+# Subtest: today clamps to the shortest applicable answer, current importance or context limit
+ok 6 - today clamps to the shortest applicable answer, current importance or context limit
+  ---
+  duration_ms: 0.4488
+  type: 'test'
+  ...
+# Subtest: equal limits do not falsely clamp and ties explain both current constraints
+ok 7 - equal limits do not falsely clamp and ties explain both current constraints
+  ---
+  duration_ms: 0.2345
+  type: 'test'
+  ...
+# Subtest: baseline choices do not inherit or revive the current context lifetime
+ok 8 - baseline choices do not inherit or revive the current context lifetime
+  ---
+  duration_ms: 0.8038
+  type: 'test'
+  ...
+# Subtest: context quick selection explicitly narrows baseline to context without a new timestamp declaration
+ok 9 - context quick selection explicitly narrows baseline to context without a new timestamp declaration
+  ---
+  duration_ms: 0.3274
+  type: 'test'
+  ...
+# Subtest: context mode never promotes a temporary choice to baseline and honors earlier source limits
+ok 10 - context mode never promotes a temporary choice to baseline and honors earlier source limits
+  ---
+  duration_ms: 0.5623
+  type: 'test'
+  ...
+# Subtest: context without a fixed current end stays tied to the recommendation rather than inventing a date
+ok 11 - context without a fixed current end stays tied to the recommendation rather than inventing a date
+  ---
+  duration_ms: 0.3461
+  type: 'test'
+  ...
+# Subtest: scope mode preserves existing selected scope and distinguishes explicit from inherited lifetime
+ok 12 - scope mode preserves existing selected scope and distinguishes explicit from inherited lifetime
+  ---
+  duration_ms: 2.3798
+  type: 'test'
+  ...
+# Subtest: custom requires a canonical future ISO instant and keeps an allowed explicit boundary
+ok 13 - custom requires a canonical future ISO instant and keeps an allowed explicit boundary
+  ---
+  duration_ms: 0.3344
+  type: 'test'
+  ...
+# Subtest: custom rejects exceeding any applicable upper bound instead of silently changing the owner choice
+ok 14 - custom rejects exceeding any applicable upper bound instead of silently changing the owner choice
+  ---
+  duration_ms: 0.3864
+  type: 'test'
+  ...
+# Subtest: expired current source limits require reconfirmation instead of generating past or extended deadlines
+ok 15 - expired current source limits require reconfirmation instead of generating past or extended deadlines
+  ---
+  duration_ms: 1.1087
+  type: 'test'
+  ...
+# Subtest: timestamps do not accept datetime-local, offsets, rounding, invalid calendar dates or non-string coercion
+ok 16 - timestamps do not accept datetime-local, offsets, rounding, invalid calendar dates or non-string coercion
+  ---
+  duration_ms: 0.849
+  type: 'test'
+  ...
+# Subtest: precision in inherited end times is shown honestly and absent limits remain absent
+ok 17 - precision in inherited end times is shown honestly and absent limits remain absent
+  ---
+  duration_ms: 0.1929
+  type: 'test'
+  ...
+# Subtest: unrecognized modes, unsupported scopes, duplicate targets and unnecessary until fields are rejected
+ok 18 - unrecognized modes, unsupported scopes, duplicate targets and unnecessary until fields are rejected
+  ---
+  duration_ms: 0.4143
+  type: 'test'
+  ...
+# Subtest: the helper accepts no private profiles, peer data or executable accessors and returns only own deadline policy
+ok 19 - the helper accepts no private profiles, peer data or executable accessors and returns only own deadline policy
+  ---
+  duration_ms: 2.0202
+  type: 'test'
+  ...
+# Subtest: historical prototype pollution cannot create an inherited clock or hidden answer lifetime
+ok 20 - historical prototype pollution cannot create an inherited clock or hidden answer lifetime
+  ---
+  duration_ms: 0.5438
+  type: 'test'
+  ...
+1..20
+# tests 20
+# suites 0
+# pass 20
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 235.1748

@@ -1,0 +1,109 @@
+{
+  "at": "2026-10-06T21:59:44.783Z",
+  "status": "passed-in-scope",
+  "scope": [
+    "Undo one current explicit exclusion while preserving context, other exclusions, timed hiding and history; no automatic selection, introduction or appointment restoration",
+    "Capture a private allowance review only on an explicit recommendation record whose actual first candidate used the currently valid conditional contact reason",
+    "Review or withdraw the feeling without changing the preference; a stop response can propose clearing only its bound layer through preview and explicit apply",
+    "Source re-declaration, expiry, context or public generation changes invalidate old review authority without revival; old records never receive inferred snapshots"
+  ],
+  "tests": {
+    "files": 43,
+    "tests": 647,
+    "pass": 647,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "runs": {
+      "main": {
+        "tests": 646,
+        "pass": 646,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0
+      },
+      "delta": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "file": "tests/atlas-dating-allowance-review-service.test.mjs",
+        "filter": "^own public withdrawal already removes",
+        "note": "One boundary test was added after the 646-check suite loaded its files. Product source remained frozen; this delta covers the new test once."
+      }
+    }
+  },
+  "browsers": [
+    {
+      "kind": "dating-agency",
+      "paths": 9,
+      "screenshots": 6,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T21:51:55.914Z"
+    },
+    {
+      "kind": "dating-conditional-draft",
+      "paths": 9,
+      "screenshots": 7,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T21:54:58.638Z"
+    },
+    {
+      "kind": "dating-flexibility",
+      "paths": 10,
+      "screenshots": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T21:55:49.240Z"
+    },
+    {
+      "kind": "dating",
+      "paths": 18,
+      "screenshots": 9,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T21:56:31.050Z"
+    },
+    {
+      "kind": "dating-clarity",
+      "paths": 4,
+      "screenshots": 6,
+      "errors": 0,
+      "externalRequests": 0,
+      "modelCalls": 0,
+      "at": "2026-10-06T21:57:22.495Z"
+    }
+  ],
+  "browserPaths": 50,
+  "preview": {
+    "url": "http://127.0.0.1:52308/atlas-lab/dating.html",
+    "guide": "http://127.0.0.1:52308/atlas-lab/usability.html",
+    "isolatedPreview": true,
+    "filesMatched": 8
+  },
+  "engineCodeChangedByThisBatch": 0,
+  "newEngines": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "publicDeployment": false,
+  "limitations": [
+    "Participants are deferred by the user. All browser roles and outcomes are synthetic.",
+    "Allowance responses describe looking at a recommendation, not observed counterpart behavior, completed meetings or causal satisfaction improvements.",
+    "Real SYNK login/adult verification, physical two devices and production operation remain unverified.",
+    "Paid AI calls, paid model evaluations and tutor remain deferred. The pre-existing atlas/domain.js model freeze mismatch remains unchanged."
+  ],
+  "artifacts": {
+    "design": "docs/아틀라스_공통능력_고도화_20261005.md#18-개별-제외-취소와-허용-조건-회고-2026-10-07-후속",
+    "guide": "experiences/atlas-lab/usability.html",
+    "browser": "experiences/atlas-lab/qa/dating-agency/result.json",
+    "tests": "docs/_ops/qa/atlas-dating-agency-20261007/tests-output.log"
+  }
+}

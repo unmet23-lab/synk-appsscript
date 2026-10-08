@@ -1,0 +1,14 @@
+✔ region profile rejects empty duplicate oversized and free-text arrays without changing private or public state (988.7807ms)
+✔ private region declaration and explicit baseline publication stay separate without enabling disclosure or invitations (766.1252ms)
+✔ new introduction checks both private-to-current-public region directions without exposing the recipient private region (1558.1212ms)
+✔ pending acceptance rechecks current regions while direct rejection remains available (1295.3814ms)
+✔ a completed acceptance is not retroactively cancelled when the next recommendation region changes (1432.7719ms)
+✔ exact private region expiry blocks a new introduction without copying an expired answer from public profile (1420.6127ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7796.35

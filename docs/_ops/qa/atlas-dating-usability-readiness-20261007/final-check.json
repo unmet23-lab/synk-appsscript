@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-06T21:19:02.548Z",
+  "sourceCount": 76,
+  "drift": [],
+  "localLinks": [
+    {
+      "reference": "_ops/qa/atlas-dating-usability-readiness-20261007/report.json",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/usability.html",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-ui.mjs",
+      "exists": true
+    },
+    {
+      "reference": "../experiences/atlas-lab/dating-service.mjs",
+      "exists": true
+    }
+  ],
+  "layoutWidths": [
+    320,
+    390,
+    1280
+  ],
+  "printedObservationWidth": 794
+}

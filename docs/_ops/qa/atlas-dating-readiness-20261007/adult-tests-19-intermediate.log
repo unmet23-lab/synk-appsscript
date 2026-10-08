@@ -1,0 +1,27 @@
+✔ the adult assertion trusts only the exact pinned server contract, never a DOB, client token or different subject (2.5106ms)
+✔ expiry is evaluated at the exact boundary and the display projection excludes the assertion subject and issuer (0.5393ms)
+✔ a bounded verifier receives only the verified account subject and abort signal; errors never become verified or a declaration fallback (0.5238ms)
+✔ verifier timeout aborts its signal and a late success cannot promote the returned unavailable result (75.3363ms)
+✔ verification is an explicit server setting; missing verifier, false required and fictional demo enforcement are rejected (0.6158ms)
+✔ the default account path remains declaration-only, does not invoke a provider, and cannot be promoted by client verified fields (308.4512ms)
+✔ an enforced valid server assertion is projected only to its owner and repeated reads do not revise or store raw documents (339.3012ms)
+✔ pending or malformed server evidence blocks new recommendation and disclosure but keeps own profile, criteria and deletion usable (394.8431ms)
+✔ expiry closes an accepted pair and preserves own preference, private criteria, outcome settings and history across restart (910.902ms)
+✔ revocation is checked during a peer read, hides only unavailable candidates, and never reveals a peer verification reason (519.7631ms)
+✔ a recovered verification requires explicit consent and peer reopening; old acceptances and closed pair IDs stay retired (1267.4664ms)
+✔ out-of-order claims cannot override a newer revocation, including an older successful call completing after it (319.7215ms)
+✔ a same-sequence conflicting claim fails closed and its hold persists despite mutation rejection (222.6011ms)
+✔ turning on enforcement cannot convert a declaration-only accepted relationship into a verified accepted one (703.8678ms)
+✔ server factory passes the explicit synthetic verifier through and defaults remain unconfigured (505.8343ms)
+✔ a local suspension cannot be cleared by a recovered adult assertion or consent set while suspended (994.377ms)
+✔ an assertion that expires while its asynchronous check is in flight cannot authorize a stale new connection (521.2045ms)
+✔ a terminal product tombstone cannot regain its document or verified state after a later authoritative success (239.5899ms)
+✔ omitting an enforced database verifier on restart fails closed instead of downgrading to the declaration-only default (782.0227ms)
+ℹ tests 19
+ℹ suites 0
+ℹ pass 19
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8266.6584

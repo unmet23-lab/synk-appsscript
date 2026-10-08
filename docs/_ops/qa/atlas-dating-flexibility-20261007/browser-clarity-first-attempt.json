@@ -1,0 +1,13 @@
+{
+  "at": "2026-10-06T20:29:12.732Z",
+  "status": "failed",
+  "kind": "synthetic-dating-clarity-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "failure": "page.goto: Timeout 12000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:64713/atlas-lab/dating.html?demo=adult-a\", waiting until \"load\"\u001b[22m\n\n    at pageFor (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tests\\atlas-dating-clarity-smoke.mjs:29:14)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-clarity-smoke.mjs:164:85"
+}

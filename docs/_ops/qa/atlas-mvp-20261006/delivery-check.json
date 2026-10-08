@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-06T11:04:36.827Z",
+  "checked": 24,
+  "missing": [],
+  "preview": [
+    {
+      "page": 200
+    },
+    {
+      "available": true,
+      "localOnly": true,
+      "synthetic": true,
+      "persistence": "memory-only",
+      "roles": 2,
+      "sessionTtlMs": 86400000,
+      "pairTtlMs": 259200000,
+      "authenticatedIdentity": false
+    }
+  ]
+}

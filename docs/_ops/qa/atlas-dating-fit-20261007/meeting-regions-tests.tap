@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: meeting-area vocabulary is immutable, bounded and has no implicit any/nearby choice
+ok 1 - meeting-area vocabulary is immutable, bounded and has no implicit any/nearby choice
+  ---
+  duration_ms: 2.1916
+  type: 'test'
+  ...
+# Subtest: answers are copied and ordered by the vocabulary without modifying the declared set
+ok 2 - answers are copied and ordered by the vocabulary without modifying the declared set
+  ---
+  duration_ms: 1.0822
+  type: 'test'
+  ...
+# Subtest: the selected regions must be between one and six distinct known values
+ok 3 - the selected regions must be between one and six distinct known values
+  ---
+  duration_ms: 0.5449
+  type: 'test'
+  ...
+# Subtest: region text, residence, coordinates and raw scalars cannot silently become an answer
+ok 4 - region text, residence, coordinates and raw scalars cannot silently become an answer
+  ---
+  duration_ms: 0.2521
+  type: 'test'
+  ...
+# Subtest: sparse, extended or executable arrays are rejected without reading a getter
+ok 5 - sparse, extended or executable arrays are rejected without reading a getter
+  ---
+  duration_ms: 0.2151
+  type: 'test'
+  ...
+# Subtest: intersection is exact and symmetric regardless of source ordering
+ok 6 - intersection is exact and symmetric regardless of source ordering
+  ---
+  duration_ms: 0.248
+  type: 'test'
+  ...
+# Subtest: different selected areas do not gain a geographic proximity or same-city allowance
+ok 7 - different selected areas do not gain a geographic proximity or same-city allowance
+  ---
+  duration_ms: 0.1543
+  type: 'test'
+  ...
+# Subtest: missing public information is unknown, distinct from a confirmed disjoint set
+ok 8 - missing public information is unknown, distinct from a confirmed disjoint set
+  ---
+  duration_ms: 0.2122
+  type: 'test'
+  ...
+# Subtest: current private actual areas and confirmed public actual areas stay separate
+ok 9 - current private actual areas and confirmed public actual areas stay separate
+  ---
+  duration_ms: 0.316
+  type: 'test'
+  ...
+# Subtest: formatted areas use validated labels in stable order and preserve unknown
+ok 10 - formatted areas use validated labels in stable order and preserve unknown
+  ---
+  duration_ms: 0.3474
+  type: 'test'
+  ...
+# Subtest: returned intersections cannot mutate either source or subsequent comparisons
+ok 11 - returned intersections cannot mutate either source or subsequent comparisons
+  ---
+  duration_ms: 0.1385
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 130.9118

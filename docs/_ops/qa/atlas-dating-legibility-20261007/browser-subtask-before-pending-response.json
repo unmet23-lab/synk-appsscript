@@ -1,0 +1,214 @@
+{
+  "at": "2026-10-07T14:43:12.609Z",
+  "status": "passed",
+  "kind": "dating-legibility-browser-subtask",
+  "uniqueBrowserPaths": 12,
+  "finalSourceStable": true,
+  "newPaths": [
+    "the actual settings controls turn private-answer storage, public visibility and invitations off; expired required public answers remain editable in settings while discovery and private experience stay cleared",
+    "saving a different public answer preserves the expired required answer, its original deadline and a saved legacy answer; the profile page offers the same independent disclosure controls without recreating private forms or baseline-copy actions",
+    "restoring an expired required public answer needs an explicit no-deadline choice and a separate confirmation while all three consent controls remain off and private history remains cleared",
+    "explicitly withdrawing one public field removes that selected answer, its own required flag and deadline while preserving other public answers and leaving private storage off",
+    "a paused account can still explicitly edit its independently saved public answers through settings; editing does not resume recommendations, publish the profile, reopen invitations or recreate private history",
+    "the home expired-public reminder opens the exact public contact field, expands its lifetime controls and focuses that public row without changing the private contact answer, deadline, revision or consent",
+    "a compared-but-not-introducible candidate explains the owner expired required public answer and its real card action opens that same exact public lifetime row rather than a private preference form",
+    "the match candidate shows the two explicitly chosen priorities in their saved order; highlighted source, current own value, timestamp, deadline and comparison match the authorized structured reason exactly without changing ranking or asserting liking",
+    "the different candidate shows the two explicitly chosen priorities in their saved order; highlighted source, current own value, timestamp, deadline and comparison match the authorized structured reason exactly without changing ranking or asserting liking",
+    "the unknown candidate shows the two explicitly chosen priorities in their saved order; highlighted source, current own value, timestamp, deadline and comparison match the authorized structured reason exactly without changing ranking or asserting liking",
+    "the conditional candidate shows the two explicitly chosen priorities in their saved order; highlighted source, current own value, timestamp, deadline and comparison match the authorized structured reason exactly without changing ranking or asserting liking",
+    "a highlight correction action opens its exact private preference field without altering its value or priorities, keeping this route distinct from public-expiry reconfirmation"
+  ],
+  "sourceBefore": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "05a59b8d167dcf242d39dca529eb9bcc551b98e868a1f3e010078da07e0a7e79",
+    "dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "1efaa303973dcebae968a06519aad8b0af1132f3e9bd828b41f23f7048df2e18",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+  },
+  "sourceAfter": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "05a59b8d167dcf242d39dca529eb9bcc551b98e868a1f3e010078da07e0a7e79",
+    "dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "1efaa303973dcebae968a06519aad8b0af1132f3e9bd828b41f23f7048df2e18",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+  },
+  "sourceSha256": {
+    "public-profile.mjs": "75a51c725459b38ca29c1c1e36e434b4b2e843635b07331dc1d7f05ed60c8245",
+    "dating-ui.mjs": "05a59b8d167dcf242d39dca529eb9bcc551b98e868a1f3e010078da07e0a7e79",
+    "dating-live.mjs": "bb17da22edbd39f09c44d08f0ee06cfafd0d2fee1f01a56274c2ed87ecdfbad3",
+    "dating.css": "d3241785ded82a9eb57846f06a62225c5faf8859e809bdd03eb236bda97805c0",
+    "discovery.mjs": "f19deaee63299fe3d057fc490e0ef5bb52f2f973cb9a6a199469730269ea561a",
+    "introduction-guidance.mjs": "f5545cda2d8ef6df286bf377d2183646dce4b58b3668c5ffcd727687a1baebae",
+    "preference-deadline.mjs": "7fb2e2cd407949a48b22ee59a7eb3b661d5bede061357562c1d44e2eaa405cbc",
+    "meeting-regions.mjs": "9c52cb419a8af0854e21d28d5ceec98c7fa62d0465703f1c15f048964d86f017",
+    "discovery-guidance.mjs": "7ddb579b49243c99611f24f5df9ad25b1cb277073a33c45e090bc6457653ecd2",
+    "dating-insights.mjs": "cdaf8832e1e7b7dd0040fb5ed236e2137546b96d3bdbb710b7e5ddce90b8bc49",
+    "product-experience.mjs": "16ce267a2653cdbee19680c72697d5a35817c0c0d251c7b36a453781262b8baf",
+    "dating-service.mjs": "1efaa303973dcebae968a06519aad8b0af1132f3e9bd828b41f23f7048df2e18",
+    "dating-server.mjs": "3d53ef8240eb7960e2bf910edd08b5430dfe3af771d93de7347aced3e3e17dd6",
+    "dating-store.mjs": "15ca9a5a9de8093d7666c448c28ff4528a8573609054433bba77ef4e2d64b505",
+    "candidate-highlights.mjs": "64bca3aa0f7ed996fa6e04d410f3227f5883b899cc79ba2736d6b19c17d05882"
+  },
+  "testSha256": {
+    "tests/atlas-dating-legibility-smoke.mjs": "d42637a4ab5970e3c8c3ac0388c603ef6cd4072f2b28c5b2f02a6b272c6e9d23"
+  },
+  "groups": [
+    {
+      "name": "legibility-new",
+      "paths": 12,
+      "result": "docs/_ops/qa/atlas-dating-legibility-20261007/browser-new-result.json",
+      "log": "docs/_ops/qa/atlas-dating-legibility-20261007/browser-new.log",
+      "resultSha256": "1d2e152fb52f670e5be5942d028e66133638a32a0628f5a535d7f4f42a7e2cc0",
+      "logSha256": "ffbe18edb1f6f177d4250a6faf59b813f84a1b59c6b1687694249756063de459"
+    }
+  ],
+  "screenshots": {
+    "count": 20,
+    "fullPage": 10,
+    "viewport": 10,
+    "sourceDirectory": "experiences/atlas-lab/qa/dating-legibility",
+    "files": [
+      {
+        "name": "storage-off-settings-public-management-320.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/storage-off-settings-public-management-320.png",
+        "sha256": "1b9ac3939c54f4a32c424f9a4d10a29e1bff13af6c7885016d4a87c0a7fe1c07"
+      },
+      {
+        "name": "storage-off-settings-public-management-320-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/storage-off-settings-public-management-320-viewport.png",
+        "sha256": "ed8595340e72e51e74748bca1b6ba206d8c101a768079fef74c349ac5a366996"
+      },
+      {
+        "name": "storage-off-profile-preserves-expired-required-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/storage-off-profile-preserves-expired-required-390.png",
+        "sha256": "d3f8bc4b3014893137fab874dcc4c49971ef79208c506b36319734bbf86ff01f"
+      },
+      {
+        "name": "storage-off-profile-preserves-expired-required-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/storage-off-profile-preserves-expired-required-390-viewport.png",
+        "sha256": "53ba70d0af0743e7b0238e9d3055caf0a7e1d78889bad12eed43c21844eb1e5e"
+      },
+      {
+        "name": "paused-storage-off-public-edit-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/paused-storage-off-public-edit-390.png",
+        "sha256": "c07bdfca29b865bc2e1a434fbd31cc09bdd1c20cc3d1ee91de11fcb7ebf1b609"
+      },
+      {
+        "name": "paused-storage-off-public-edit-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/paused-storage-off-public-edit-390-viewport.png",
+        "sha256": "bb1be2a6f2def3d1930336b342297ac96e027ef16799f93bda9f2012505f41ff"
+      },
+      {
+        "name": "home-expiry-opens-exact-public-field-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/home-expiry-opens-exact-public-field-390.png",
+        "sha256": "cab2b401afbeb34ff0c3541f99b54ffce175ab9a6b4736e8179ac1b352867369"
+      },
+      {
+        "name": "home-expiry-opens-exact-public-field-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/home-expiry-opens-exact-public-field-390-viewport.png",
+        "sha256": "d3c2e31b4471c15c25d5beb63f6ffcda0f99ff3d78dc664220624c2a6cff000c"
+      },
+      {
+        "name": "card-expiry-action-opens-public-lifetime-320.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/card-expiry-action-opens-public-lifetime-320.png",
+        "sha256": "9a18a912940ffd6b2d457a568865214b1c769082a88519d8c2a39e31ca0539ae"
+      },
+      {
+        "name": "card-expiry-action-opens-public-lifetime-320-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/card-expiry-action-opens-public-lifetime-320-viewport.png",
+        "sha256": "98a68146749995655bcbacfec5ca8eb39b674515cb79c24c49e23ea6fc9a02dc"
+      },
+      {
+        "name": "priority-match-current-public-comparison-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-match-current-public-comparison-390.png",
+        "sha256": "ce647c8d357f8fb3d96717e700d722bead7d6edf034af13668bd21a981fc2663"
+      },
+      {
+        "name": "priority-match-current-public-comparison-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-match-current-public-comparison-390-viewport.png",
+        "sha256": "5ef211ce4a88db9e6a15a561c2c32e3dd425dec3a4d3958965883f7db0638fbd"
+      },
+      {
+        "name": "priority-different-current-public-comparison-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-different-current-public-comparison-390.png",
+        "sha256": "860420ae398f0b2096f4a3be47e632d2e7c693497802ed0a62f8c919f0575f23"
+      },
+      {
+        "name": "priority-different-current-public-comparison-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-different-current-public-comparison-390-viewport.png",
+        "sha256": "958707b2f6d683f0434d6ee7e3055e57501819f54989b7ba17a201db1c9c5b99"
+      },
+      {
+        "name": "priority-unknown-current-public-comparison-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-unknown-current-public-comparison-390.png",
+        "sha256": "860420ae398f0b2096f4a3be47e632d2e7c693497802ed0a62f8c919f0575f23"
+      },
+      {
+        "name": "priority-unknown-current-public-comparison-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-unknown-current-public-comparison-390-viewport.png",
+        "sha256": "fa6eda2add590dd499f1cdc3444dcf18f374bb60b68c98483fb62fe2a61957a6"
+      },
+      {
+        "name": "priority-conditional-current-public-comparison-390.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-conditional-current-public-comparison-390.png",
+        "sha256": "860420ae398f0b2096f4a3be47e632d2e7c693497802ed0a62f8c919f0575f23"
+      },
+      {
+        "name": "priority-conditional-current-public-comparison-390-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/priority-conditional-current-public-comparison-390-viewport.png",
+        "sha256": "6854c78c0f0d027187eb70c98b0d6292ffd4a385577091ed0ba86ca87b4cea51"
+      },
+      {
+        "name": "highlight-action-opens-own-private-answer-320.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/highlight-action-opens-own-private-answer-320.png",
+        "sha256": "edc232f7f304b527de654f3e8419a4d9b2f06f76f790502e450bdb58dd73c028"
+      },
+      {
+        "name": "highlight-action-opens-own-private-answer-320-viewport.png",
+        "path": "experiences/atlas-lab/qa/dating-legibility/highlight-action-opens-own-private-answer-320-viewport.png",
+        "sha256": "48ca3be8a8ca6c90bec3948924f2ca2a2fd82ffbe0f0ccfc9d23906befa89bf3"
+      }
+    ]
+  },
+  "visualInspection": [
+    "card-expiry-action-opens-public-lifetime-320-viewport.png",
+    "priority-conditional-current-public-comparison-390-viewport.png"
+  ],
+  "assertions": {
+    "privateStorageOff": "Actual consent controls turn private storage off; settings and profile public disclosure stay usable; saving/restoring/withdrawing public answers and editing while paused preserve the off consent controls and cleared private history.",
+    "expiredRequired": "Editing another public answer preserves the expired required value, deadline, required flag and historical combined relationship answer. Explicit no-deadline restore requires confirmation. Explicit field withdrawal removes only its own value, required flag and deadline.",
+    "publicFocus": "Home and candidate-card expiration actions open and focus the exact public field with its lifetime open; private value, revision and consent stay unchanged.",
+    "highlightSource": "All four comparison types retain the chosen priority order and correspond to the authorized structured own value, source, timestamp, deadline and comparison; the conditional description distinguishes allowance from exact match.",
+    "distinctPrivateRoute": "Highlight correction opens the private preference field, while public expiry reconfirmation opens public disclosure."
+  },
+  "initialFailures": [],
+  "runtimeErrors": 0,
+  "externalRequests": 0,
+  "actualUsers": 0,
+  "realAccounts": 0,
+  "modelCalls": 0,
+  "paidCalls": 0,
+  "deployments": 0,
+  "remoteMigrations": 0,
+  "limitations": "Local synthetic browser and server flows do not establish satisfaction improvement, actual-person outcomes, physical-device operation or production deployment. Existing regressions are run once by root and are not duplicated here."
+}

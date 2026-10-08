@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-07T00:32:36.398Z",
+  "status": "failed",
+  "kind": "synthetic-availability-recovery-browser",
+  "actualUsers": 0,
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "paths": [],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [],
+  "dialogs": [
+    {
+      "type": "beforeunload",
+      "decision": "accept"
+    }
+  ],
+  "bootAuthRecovery": {
+    "hasView": false,
+    "hasPendingDelivery": false,
+    "checkpointStillPresent": true,
+    "storedCredentialCleared": true,
+    "originalActionPosts": 1
+  },
+  "failure": "AssertionError [ERR_ASSERTION]: initial account authentication loss must remove the previous receipt marker\n\nfalse !== true\n\n    at bootAuthPath (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:160:84)\n    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:164:127"
+}
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: initial account authentication loss must remove the previous receipt marker
+
+false !== true
+
+    at bootAuthPath (file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:160:84)
+    at async file:///C:/Users/q1212/Documents/SYNK-appsscript/tests/atlas-dating-availability-recovery-smoke.mjs:164:127 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.18.0

@@ -1,0 +1,58 @@
+[
+  {
+    "path": "legacy-relation-kept-unmapped-320.png",
+    "sha256": "9490cc3514d280971c3336a16e36d31513e8dbbcde68fa1ca6ce863172814d3c"
+  },
+  {
+    "path": "serious-relationship-at-gradual-speed-390.png",
+    "sha256": "e240713e4a1472756f405ffccb21b19d04d03c623bc9490aa1b6651ccdfd6791"
+  },
+  {
+    "path": "separate-relationship-reasons-390.png",
+    "sha256": "6e376daa3212ee34e0345519791ac61669f0f0dd7df151bb7868f6f67fe11a64"
+  },
+  {
+    "path": "explicit-meeting-region-private-picker-320.png",
+    "sha256": "2e1c65ee35782568e9cb1f929823fcd6fffd749f1f5d5eee23e42526c1e3ede5"
+  },
+  {
+    "path": "private-regions-do-not-fill-public-evidence-390.png",
+    "sha256": "eed907f1775b5ec14cd786b729f48e5fb0aafabe94b0ba846bac6374ac3b3b39"
+  },
+  {
+    "path": "disjoint-public-areas-exclude-without-expansion-390.png",
+    "sha256": "4ef428d2106071eb666aa4db360087c697b80b465ecaef59479024b1e6074d3e"
+  },
+  {
+    "path": "withdrawn-public-region-polls-back-to-pending-390.png",
+    "sha256": "1f951632656515f222d4b9408be5883db58588fd616e7d5c21168f162cdbd48a"
+  },
+  {
+    "path": "blocked-acceptance-keeps-explicit-decline-390.png",
+    "sha256": "76fd7521ba596963a11e48ff2c08aac75c2d796c27c06c4bc210e5b5230697b9"
+  },
+  {
+    "path": "new-criterion-confirmed-reflection-keeps-ranking-390.png",
+    "sha256": "d5ca3ce43d5cec6d409cfca04e89e7899e9c0d7d01ee282d2547527dbf8d3f5e"
+  },
+  {
+    "path": "new-criterion-replacement-and-deadline-preview-320.png",
+    "sha256": "654f8ecaaac094d1d63947da1221ff92352e3375837501237b11ae31e21923be"
+  },
+  {
+    "path": "new-criterion-explicitly-applied-390.png",
+    "sha256": "bcef405ece786bd43b50a6a4aff938bb52188c66d714fc731f3e37b616cf1105"
+  },
+  {
+    "path": "next-experience-linked-to-new-criterion-390.png",
+    "sha256": "ec36d8b79f7c554a2eb881c4c5131695a0be60cae863e0d1c37eec234612f512"
+  },
+  {
+    "path": "withdrawn-reflection-invalidates-link-not-applied-choice-390.png",
+    "sha256": "bbdd7852bb3450d07bf30073c710f35279b8f97d5fb9ef917066c23bdb6bc93a"
+  },
+  {
+    "path": "one-priority-keeps-existing-and-adds-new-320.png",
+    "sha256": "babba6b1f11547db085b0307377ee9963b8bbc01d14e8d8f496af5a2ddd7d7de"
+  }
+]

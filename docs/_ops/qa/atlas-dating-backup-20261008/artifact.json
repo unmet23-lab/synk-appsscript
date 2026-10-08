@@ -1,0 +1,12 @@
+{
+  "directory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-backup-ready-20261008-074811",
+  "manifestSha256": "60a5aa4a7d58370e493c21064949be7097ac7313ad23d08cdaa024b772946a43",
+  "files": 57,
+  "totalBytes": 1833816,
+  "zip": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-backup-ready-20261008-074811.zip",
+  "zipSha256": "6d47e333161b2b3a5be8c227d51cf55177a32fab410885c42c29fbd08ca20753",
+  "archiveExtractionVerified": true,
+  "extractedDirectory": "C:\\Users\\q1212\\Documents\\SYNK-builds\\atlas-dating-backup-ready-20261008-074811-archive-check",
+  "deployed": false,
+  "containsRealUserData": false
+}

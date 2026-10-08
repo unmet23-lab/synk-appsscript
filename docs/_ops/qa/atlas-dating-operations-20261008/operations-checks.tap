@@ -1,0 +1,190 @@
+TAP version 13
+# Subtest: admission defaults bound active verification to eight and reject invalid or unbounded settings
+ok 1 - admission defaults bound active verification to eight and reject invalid or unbounded settings
+  ---
+  duration_ms: 2.0299
+  type: 'test'
+  ...
+# Subtest: queued verification starts in FIFO order and a verifier failure releases capacity
+ok 2 - queued verification starts in FIFO order and a verifier failure releases capacity
+  ---
+  duration_ms: 4.0646
+  type: 'test'
+  ...
+# Subtest: queue deadline never releases an active verifier slot or calls an expired job
+ok 3 - queue deadline never releases an active verifier slot or calls an expired job
+  ---
+  duration_ms: 71.9647
+  type: 'test'
+  ...
+# Subtest: cancelling queued and active clients removes only queued work until the verifier actually settles
+ok 4 - cancelling queued and active clients removes only queued work until the verifier actually settles
+  ---
+  duration_ms: 0.5617
+  type: 'test'
+  ...
+# Subtest: closing admission rejects queued and future work without pretending an active verifier has stopped
+ok 5 - closing admission rejects queued and future work without pretending an active verifier has stopped
+  ---
+  duration_ms: 14.4076
+  type: 'test'
+  ...
+# Subtest: a delayed timer cannot admit work whose monotonic queue deadline has already passed
+ok 6 - a delayed timer cannot admit work whose monotonic queue deadline has already passed
+  ---
+  duration_ms: 43.6327
+  type: 'test'
+  ...
+# Subtest: close or cancellation before the invocation microtask prevents an external verifier from starting
+ok 7 - close or cancellation before the invocation microtask prevents an external verifier from starting
+  ---
+  duration_ms: 0.4784
+  type: 'test'
+  ...
+# Subtest: HTTP queue overflow and deadline return retry guidance before auth or any database transaction
+ok 8 - HTTP queue overflow and deadline return retry guidance before auth or any database transaction
+  ---
+  duration_ms: 1624.9665
+  type: 'test'
+  ...
+# Subtest: HTTP client cancellation removes queued verification and an abandoned active request cannot write
+ok 9 - HTTP client cancellation removes queued verification and an abandoned active request cannot write
+  ---
+  duration_ms: 429.9417
+  type: 'test'
+  ...
+# Subtest: service close rejects waiting HTTP work and late verifier completion never reopens or touches storage
+ok 10 - service close rejects waiting HTTP work and late verifier completion never reopens or touches storage
+  ---
+  duration_ms: 214.667
+  type: 'test'
+  ...
+# Subtest: HTTP verifier failure frees capacity and demo sessions do not need account admission
+ok 11 - HTTP verifier failure frees capacity and demo sessions do not need account admission
+  ---
+  duration_ms: 480.2732
+  type: 'test'
+  ...
+# Subtest: offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+ok 12 - offline admission reads the checkpointed database unchanged, redacts identities, and is one-use
+  ---
+  duration_ms: 1573.6674
+  type: 'test'
+  ...
+# Subtest: missing database or independent evidence cannot create a database or authorize a restart
+ok 13 - missing database or independent evidence cannot create a database or authorize a restart
+  ---
+  duration_ms: 221.3861
+  type: 'test'
+  ...
+# Subtest: an operator latest export must have explicit provenance and a bounded fresh timestamp
+ok 14 - an operator latest export must have explicit provenance and a bounded fresh timestamp
+  ---
+  duration_ms: 285.0812
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot pass a newer independent hold sequence
+ok 15 - two mutually coherent old backups cannot pass a newer independent hold sequence
+  ---
+  duration_ms: 201.4327
+  type: 'test'
+  ...
+# Subtest: two mutually coherent old backups cannot resurrect an independently known terminal deletion
+ok 16 - two mutually coherent old backups cannot resurrect an independently known terminal deletion
+  ---
+  duration_ms: 180.5975
+  type: 'test'
+  ...
+# Subtest: latest exports must match the service environment and stable ledger status, not merely counters
+ok 17 - latest exports must match the service environment and stable ledger status, not merely counters
+  ---
+  duration_ms: 310.0211
+  type: 'test'
+  ...
+# Subtest: even a coherent pending hold requires product state to be fenced before reopening
+ok 18 - even a coherent pending hold requires product state to be fenced before reopening
+  ---
+  duration_ms: 218.2996
+  type: 'test'
+  ...
+# Subtest: changed database, latest evidence, or environment invalidates and consumes a prior admission
+ok 19 - changed database, latest evidence, or environment invalidates and consumes a prior admission
+  ---
+  duration_ms: 218.5531
+  type: 'test'
+  ...
+# Subtest: admission expires and rejects clock rollback before any service opens the database
+ok 20 - admission expires and rejects clock rollback before any service opens the database
+  ---
+  duration_ms: 250.6476
+  type: 'test'
+  ...
+# Subtest: uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+ok 21 - uncheckpointed sidecars are rejected before readonly SQLite access and when added after inspection
+  ---
+  duration_ms: 258.2006
+  type: 'test'
+  ...
+# Subtest: suspended product accounts remain suspended and are compatible with central active accounts
+ok 22 - suspended product accounts remain suspended and are compatible with central active accounts
+  ---
+  duration_ms: 217.9743
+  type: 'test'
+  ...
+# Subtest: missing tables, malformed receipts, and checksum damage fail closed
+ok 23 - missing tables, malformed receipts, and checksum damage fail closed
+  ---
+  duration_ms: 285.9821
+  type: 'test'
+  ...
+# Subtest: empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+ok 24 - empty central and product inventories, demo databases, and malformed evidence cannot authorize restore
+  ---
+  duration_ms: 1075.7775
+  type: 'test'
+  ...
+# Subtest: valid deleted tombstones require deletion ledger and no private document
+ok 25 - valid deleted tombstones require deletion ledger and no private document
+  ---
+  duration_ms: 326.8958
+  type: 'test'
+  ...
+# Subtest: shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+ok 26 - shutdown lets an accepted save finish and rejects a later pipelined request before dispatch
+  ---
+  duration_ms: 1597.2369
+  type: 'test'
+  ...
+# Subtest: a bounded forced stop prevents a late authentication from writing after SQLite closes
+ok 27 - a bounded forced stop prevents a late authentication from writing after SQLite closes
+  ---
+  duration_ms: 353.9662
+  type: 'test'
+  ...
+# Subtest: draining rejects public config and mutation without reading the body or invoking a handler
+ok 28 - draining rejects public config and mutation without reading the body or invoking a handler
+  ---
+  duration_ms: 0.3671
+  type: 'test'
+  ...
+# Subtest: CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+ok 29 - CLI signal wiring drains once and removes handlers; forced completion exits nonzero
+  ---
+  duration_ms: 0.281
+  type: 'test'
+  ...
+# Subtest: invalid shutdown bounds fail before a listener or database is created
+ok 30 - invalid shutdown bounds fail before a listener or database is created
+  ---
+  duration_ms: 0.3314
+  type: 'test'
+  ...
+1..30
+# tests 30
+# suites 0
+# pass 30
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 5759.1531

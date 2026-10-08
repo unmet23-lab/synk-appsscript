@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-06T20:09:56.797Z",
+  "status": "passed",
+  "kind": "synthetic-dating-alignment-browser",
+  "modelCalls": 0,
+  "externalApiCost": 0,
+  "actualUsers": 0,
+  "paths": [
+    "only a mutually accepted introduction offers one optional question from different public answers; opening it records no response",
+    "unanswered and different remain unagreed; only two explicit yes answers agree; own withdrawal clears agreement and no preference or appointment is inferred",
+    "scheduling works while alignment is unanswered and still requires each independent appointment acceptance",
+    "changing public evidence and changing it back never revives old agreement or changes an already confirmed appointment",
+    "after the first confirmed meeting starts, its preparation answer cannot be reused for another meeting",
+    "the local facilitator guide opens at mobile width and produces a printable blank observation sheet without external requests"
+  ],
+  "errors": [],
+  "externalRequests": [],
+  "screenshots": [
+    "optional-public-difference-390.png",
+    "different-is-not-agreement-390.png",
+    "two-explicit-answers-1280.png",
+    "two-explicit-answers-320.png",
+    "public-change-clears-old-agreement-320.png",
+    "free-usability-guide-390.png",
+    "free-usability-guide-print.png"
+  ]
+}
