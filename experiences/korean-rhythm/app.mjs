@@ -96,11 +96,11 @@ function renderRecommendation(select = false) {
   const candidate = recommendation?.selected || (target ? candidates[0] : null);
   for (const x of $('track-grid').children) x.classList.toggle('rec', !!candidate && Number(x.dataset.track) === candidate.trackId);
   $('recommendation-reason').textContent = target ? rhythmTargetLabel(target)
-    : recommendation?.reason || '맞춤 추천을 연결하지 못했어요. 원하는 곡은 계속 플레이할 수 있어요.';
+    : recommendation?.reason || '맞춤 추천을 불러오지 못했어요. 원하는 곡은 그대로 플레이할 수 있어요.';
   const summary = learn((c) => c.summary());
-  $('learning-scope').textContent = !coach || !learningAvailable ? '맞춤 기록 연결 불가'
-    : summary?.storage.available ? (hosted ? 'WORLD 계정의 학습 기록 · 공유와 삭제는 WORLD 계정 설정에서 관리해요' : '이 브라우저의 공통 학습 기록 · 학생 계정 연결 전')
-      : '저장이 제한되어 이번 페이지에서만 기록해요.';
+  $('learning-scope').textContent = !coach || !learningAvailable ? '학습 기록을 연결하지 못했어요.'
+    : summary?.storage.available ? (hosted ? '학습 기록은 WORLD 계정에 이어지고, 공유와 삭제는 WORLD 계정 설정에서 할 수 있어요.' : '학습 기록은 이 브라우저에만 저장되고, 아직 학생 계정과는 이어지지 않아요.')
+      : '기록을 저장할 수 없어서 이 페이지에서만 기억해요.';
   $('reset-learning').hidden = hosted;
   if (candidate && select) selectTrack(candidate.trackId);
   return { candidate, reason: recommendation?.reason || null };
@@ -147,7 +147,7 @@ async function start() {
   try {
     if (!window.AudioContext) throw new Error('이 브라우저는 음악 재생을 지원하지 않아요. 최신 Chrome 또는 Edge에서 열어 주세요.');
     const target = assignment(), track = assignmentTrack(TRACKS[state.track], target);
-    if (!track) throw new Error('지정 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
+    if (!track) throw new Error('과제 문항이 있는 곡을 준비하지 못했어요. WORLD에서 다시 열어 주세요.');
     const round = new RoundState(track, state.level, crypto.getRandomValues(new Uint32Array(1))[0]);
     const loading = music.prepare(track, round.questions);   // 소리 길은 누른 그 순간에 연다(휴대폰 자동 재생 규칙)
     state.round = round; state.pressed.clear(); state.paused = false;
@@ -428,7 +428,7 @@ function finish() {
   renderSkills(r);
   // 공통 코인(play-common): 곡을 끝까지 마쳤을 때만. 완주 15 + 정답 비율 × 10.
   const coins = $('r-coins');
-  coins.textContent = '공통 차고에 완주를 모으고 있어요.';
+  coins.textContent = '공통 코인을 계산하고 있어요.';
   globalThis.SynkPlayCollection?.award({ game: 'rhythm', total, correct, completed: true, automatic: false, roundId: collectionRoundId })
     .then((result) => { if (state.round === r) coins.textContent = globalThis.SynkPlayCollection.rewardText(result); });
   const next = renderRecommendation();
@@ -471,7 +471,7 @@ function renderSkills(r) {
   $('result-timing').textContent = timingEnd === null ? '' : timingAuto() ? timingSummary(timingStart, timingEnd) : '정해진 판정 폭으로 연주했어요.';
   $('result-timing').hidden = !$('result-timing').textContent;
   const independent = r.questions.filter((q) => q.learning?.independent).length;
-  $('result-learning-note').textContent = `도움·반복을 제외한 새 응답 ${independent}개를 맞춤 추천에 참고해요. 읽기 능력은 이 곡으로 판단하지 않아요.`;
+  $('result-learning-note').textContent = `도움을 받거나 다시 들은 답을 빼고, 새로 답한 ${independent}개를 맞춤 추천에 참고해요. 이 곡으로 읽기 실력을 판단하지는 않아요.`;
 }
 /** 결과에서 문장 소리를 튼다. 다른 소리로 끊기면 끝까지 들은 것으로 치지 않는다. */
 async function playReview(voice) {
@@ -549,7 +549,7 @@ $('reset-learning').addEventListener('click', () => {
   try {
     const result = coach?.reset();
     learningAvailable = result?.storage?.available === true;
-    if (learningAvailable) message = '이 기기의 공통 맞춤 학습 기록을 지웠어요.';
+    if (learningAvailable) message = '이 브라우저의 모든 게임 학습 기록을 지웠어요.';
   } catch (error) {
     if (error?.code === 'ACCOUNT_RESET_REQUIRED') message = '계정의 학습 기록은 SYNK WORLD에서 관리해 주세요.';
     else learningAvailable = false;

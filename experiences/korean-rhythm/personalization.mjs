@@ -5,13 +5,17 @@ const SKILLS=[['detail','detail','negation','negation','detail'],['reason','nega
 // (strata/topik-i-forms.js) reads it: [passage, recall passage] per question. What is understood is the
 // passage, not the O/X claim. A test keeps this equal to grammarIn (a draft before teacher review).
 export const RHYTHM_GRAMMAR=[[[['G302'],[]],[['G409'],['G406','G409']],[['G307'],['G307']],[['G208'],['G208']],[['G208'],['G208']]],[[['G208'],['G208']],[['G307','G402'],['G307']],[['G208'],['G208']],[['G409'],['G208']],[['G410','G211'],['G410','G211']]],[[['G402'],['G304','G402']],[['G208'],['G208']],[['G208'],['G208']],[[],['G208']],[['G208'],['G409']]]];
+// Reword a spoken line and that item's version goes up (learning standard §7-2); its family stays.
+// 2026-10-08: t1q2's recall claim ‘배우러 등록했나요?’ → ‘배우려고 등록했나요?’ (-(으)러 goes with 가다·오다) → version 2.
+export const ITEM_VERSION=Object.freeze({t1q2r:2});
 export function rhythmItem(trackId,question,{recall=false}={}){
   const sourceIndex=question.sourceIndex??Number(question.id.match(/q(\d+)/)?.[1]||0);
   // A recall only swaps a number or a time and follows the answer and explanation at once,
   // so it shares the original's family: practice, never a new independent first try.
   const familyKey=`korean-rhythm:t${trackId}q${sourceIndex}:v1`;
-  return {id:`t${trackId}q${sourceIndex}${recall?'r':`v${question.variant??0}`}`,
-    itemKey:recall?`${familyKey}:recall`:`${familyKey}:claim${question.variant??0}`,familyKey,
+  const id=`t${trackId}q${sourceIndex}${recall?'r':`v${question.variant??0}`}`,version=ITEM_VERSION[id];
+  return {id,
+    itemKey:(recall?`${familyKey}:recall`:`${familyKey}:claim${question.variant??0}`)+(version?`:v${version}`:''),familyKey,
     skillId:`ko.listening.${SKILLS[trackId][sourceIndex]}`,difficulty:trackId+1,
     modality:'listening',responseFormat:'binary-choice',audioRequired:true,confounded:false,
     conceptIds:[...(RHYTHM_GRAMMAR[trackId]?.[sourceIndex]?.[recall?1:0]||[])]};
@@ -26,9 +30,9 @@ export const RHYTHM_CANDIDATES=TRACKS.map(track=>({id:`track-${track.id}`,trackI
 
 export function assignmentTracks(target){
  if(!target)return RHYTHM_CANDIDATES;
- return RHYTHM_CANDIDATES.filter(c=>c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&c.familyKeys.some((key,i)=>target.familyKeys?.includes(key)&&rhythmItem(c.trackId,{sourceIndex:i}).skillId===target.skillId&&(!target.itemKeys?.length||[0,1].some(v=>target.itemKeys.includes(`${key}:claim${v}`)))));
+ return RHYTHM_CANDIDATES.filter(c=>c.difficulty===target.difficulty&&c.modality===target.modality&&c.responseFormat===target.responseFormat&&c.familyKeys.some((key,i)=>target.familyKeys?.includes(key)&&rhythmItem(c.trackId,{sourceIndex:i}).skillId===target.skillId&&(!target.itemKeys?.length||[0,1].some(v=>target.itemKeys.includes(rhythmItem(c.trackId,{sourceIndex:i,variant:v}).itemKey)))));
 }
-export function rhythmTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용'}[target.skillId.split('.').at(-1)]||'지정 표현'} · 난도 ${target.difficulty}. 지정된 ${target.requiredAttempts}문항에 응답해요.`;}
+export function rhythmTargetLabel(target){return `이번 목표: 듣기 · ${{detail:'세부 내용',negation:'부정 표현',condition:'조건 표현',reason:'이유',main:'중심 내용'}[target.skillId.split('.').at(-1)]||'과제 표현'} · 난도 ${target.difficulty}. 과제 문항 ${target.requiredAttempts}개에 답해요.`;}
 // The results line naming the next song: the object particle follows the title's last syllable (‘해안선’을, ‘네 시’를).
 export function nextTrackLine(label,reason){return `다음 곡으로 ‘${label}’${josa(label,'을','를')} 추천해요.${reason?` ${reason}`:''}`;}
 // Preserve a complete song and its timing while selecting only authorized claim
@@ -37,7 +41,7 @@ export function assignmentTrack(track,target){
  if(!target)return track;
  if(!assignmentTracks(target).some(c=>c.trackId===track.id))return null;
  const variantChoices={};
- track.questions.forEach((q,i)=>{const m=rhythmItem(track.id,{sourceIndex:i});if(target.familyKeys?.includes(m.familyKey)&&m.skillId===target.skillId)variantChoices[i]=[0,1].filter(v=>!target.itemKeys?.length||target.itemKeys.includes(`${m.familyKey}:claim${v}`));});
+ track.questions.forEach((q,i)=>{const m=rhythmItem(track.id,{sourceIndex:i});if(target.familyKeys?.includes(m.familyKey)&&m.skillId===target.skillId)variantChoices[i]=[0,1].filter(v=>!target.itemKeys?.length||target.itemKeys.includes(rhythmItem(track.id,{sourceIndex:i,variant:v}).itemKey));});
  return {...track,variantChoices};
 }
 

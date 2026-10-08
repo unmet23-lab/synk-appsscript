@@ -29,7 +29,7 @@
       <span class="kicker">TALK RHYTHM · A MUSIC GAME</span>
       <h1>말의 리듬</h1>
       <p class="lede">노래를 타며 듣고,<br><span class="crayon-under">O·X로 박자</span>에 답해요!</p>
-      <p class="sub">SYNK가 만든 한국어 노래에 맞춰 두 단추로 박자를 쳐요. 노래가 잠깐 작아지고 짧은 문장이 들리면, 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</p>
+      <p class="sub">SYNK가 만든 한국어 노래에 맞춰 두 단추로 박자를 쳐요. 노래가 잠깐 작아지면서 짧은 문장이 들리면, 들은 내용과 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</p>
     </div>
     <figure class="hero-art" aria-hidden="true">
       <canvas class="hero-runway" id="hero-runway"></canvas>
@@ -62,16 +62,16 @@
       <span class="tag" id="how-title">하는 방법</span>
       <ol class="how-steps">
         <li><b class="num">1</b><strong>박자 맞추기</strong><span>노트가 크림색 선에 닿을 때 아래 O·X 단추를 눌러요. 길게 이어진 노트는 끝까지 꾹 눌러요.</span></li>
-        <li><b class="num">2</b><strong>듣고 O·X</strong><span>노래가 작아지고 짧은 문장이 들려요. 끝까지 듣고, 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</span></li>
-        <li><b class="num">3</b><strong>이어서 콤보</strong><span>놓치지 않고 이어 치면 콤보가 쌓여요. 곡이 끝나면 들은 문장과 해설을 다시 들어요.</span></li>
+        <li><b class="num">2</b><strong>듣고 O·X</strong><span>노래가 작아지고 짧은 문장이 들려요. 끝까지 듣고 내용이 맞으면 O, 아니면 X를 박자에 맞춰 눌러요.</span></li>
+        <li><b class="num">3</b><strong>이어서 콤보</strong><span>놓치지 않고 이어 치면 콤보가 쌓여요. 곡이 끝나면 들은 문장을 다시 듣고 해설도 볼 수 있어요.</span></li>
       </ol>
-      <p class="fine">컴퓨터는 F·J 키나 ←·→ 키로 쳐요. Space나 Esc로 잠깐 멈춰요. 문장은 글로 보이지 않지만, 꼭 필요하면 ‘글로 보기’를 눌러요.</p>
+      <p class="fine">컴퓨터에서는 F·J 키나 ←·→ 키로 쳐요. Space나 Esc를 누르면 잠깐 멈춰요. 문장은 글로 나오지 않지만, 꼭 필요하면 ‘글로 보기’를 눌러요.</p>
     </section>
   </section>
 
   <footer class="lobby-foot">
-    <p>TOPIK I 듣기의 내용 일치(시간·장소·이유·조건을 담은 짧은 말 알아듣기)를 연습해요. 박자 점수와 별은 TOPIK 급수가 아니에요.</p>
-    <p><span id="learning-scope">이 브라우저의 공통 학습 기록 · 학생 계정 연결 전</span> <button id="reset-learning" class="text-link" type="button">이 기기의 공통 학습 기록 지우기</button></p>
+    <p>TOPIK I 듣기의 내용 일치(시간·장소·이유·조건을 담은 짧은 말 알아듣기)를 연습해요. 박자 점수와 별은 TOPIK 급수와 상관없어요.</p>
+    <p><span id="learning-scope">학습 기록은 이 브라우저에만 저장되고, 아직 학생 계정과는 이어지지 않아요.</span> <button id="reset-learning" class="text-link" type="button">이 브라우저의 모든 게임 학습 기록 지우기</button></p>
   </footer>
 </main>
 
@@ -149,7 +149,7 @@
       <p class="fine" id="result-timing" hidden></p>
       <section class="recall" aria-labelledby="recall-title">
         <h3 id="recall-title">새 문장도 알아들을까요?</h3>
-        <p class="fine" id="recall-intro">숫자나 시간만 바꾼 새 문장을 먼저 소리로 듣고, O·X로 답해요.</p>
+        <p class="fine" id="recall-intro">조금 바꾼 새 문장을 먼저 소리로 듣고 O·X로 답해요.</p>
         <div id="recall-content" hidden>
           <p class="recall-q" id="recall-question">먼저 들어요</p>
           <div class="recall-options" id="recall-options"></div>
@@ -184,7 +184,7 @@
     </div>
     <p class="fine">판정 폭 맞춤: 박자를 맞추는 모습에 따라 판정 폭이 조금씩 넓어지거나 좁아져요. 효과 줄이기: 빛 번짐과 반짝이를 줄여요.</p>
     <div class="offset">
-      <span class="offset-label"><b>박자 보정</b><small>누를 때마다 늦게 맞으면 + 쪽으로 조금씩 옮겨요. 블루투스 이어폰은 소리가 늦을 수 있어요.</small></span>
+      <span class="offset-label"><b>박자 보정</b><small>누른 박자가 자꾸 늦게 맞으면 + 쪽으로 조금씩 옮겨요. 블루투스 이어폰은 소리가 늦게 들릴 수 있어요.</small></span>
       <span class="offset-ctl">
         <button class="disc-btn" type="button" data-offset="-10" aria-label="박자 보정 10ms 줄이기">−</button>
         <output data-offset-value>0ms</output>
@@ -207,7 +207,7 @@
       <button class="chip-btn" type="button" data-effects-toggle aria-pressed="false">효과 줄이기</button>
     </div>
     <div class="offset">
-      <span class="offset-label"><b>박자 보정</b><small>늘 늦게 맞으면 + 쪽으로 옮겨요.</small></span>
+      <span class="offset-label"><b>박자 보정</b><small>누른 박자가 자꾸 늦게 맞으면 + 쪽으로 옮겨요.</small></span>
       <span class="offset-ctl">
         <button class="disc-btn" type="button" data-offset="-10" aria-label="박자 보정 10ms 줄이기">−</button>
         <output data-offset-value>0ms</output>
