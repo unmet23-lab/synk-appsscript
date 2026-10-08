@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-08T20:58:27.372Z",
+  "status": "BLOCKED_NO_DEPLOY_UNRESOLVED_OFFICIAL_REVIEW",
+  "manifestSHA256": "68eb109bfd4b43a9811b859e9217cee79440a8689ee869a3e6462e315ec6d106",
+  "parentManifestSHA256": "e696b9efeed78191a6e4619665bdab885abb1483dcb05cc4b5c193c44cf0fcef",
+  "image": "sha256:309617f10c1c6d989f81fc78e3a388b0e22b47eb7a1c9c8053658d3201cc52f9",
+  "linuxTests": {
+    "tests": 805,
+    "pass": 805,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "capsule": 108,
+  "imageReplacementChecks": [
+    24,
+    24
+  ],
+  "syntheticMigrationChecks": 354,
+  "normalLifecycleStops": 5,
+  "productionServiceActions": 0,
+  "productionDataAccess": false,
+  "newEmptyTables": 3,
+  "officialReview": {
+    "completed": true,
+    "requestedModel": "claude-opus-5-5",
+    "models": [
+      "claude-opus-5-5"
+    ],
+    "effort": "max",
+    "finishedAt": "2026-10-08T20:54:29.853Z",
+    "rawSHA256": "36d098fb4f3e2a225dd1cdfcc4ee73ceaab90536883a823db4548ecf2fdcd451",
+    "summarySHA256": "3574aba8555f0c59260d760fcc388abec6cc817d544fa5bdc4d911b59f8f448c",
+    "P0": 0,
+    "P1": 0,
+    "P2": 3,
+    "acceptedForDeployment": false
+  },
+  "findings": [
+    "120-second upload timeout can repeatedly reject large files on slower links.",
+    "Uncertain upload and already-attached-file cancellation can leave unrecoverable attachment chips.",
+    "Keyboard focus is lost when recovery action replaces its button with a disabled control."
+  ],
+  "inheritedCompanySourceFilesIdentical": 199,
+  "reviewScopeNote": "Combined review found no P2 or higher in the unchanged customer session and company SSO code; this is not a full cloud-operations audit.",
+  "next": [
+    "Messenger source owner fixes the three findings in a new immutable candidate.",
+    "Repeat exact candidate Windows/browser/Linux and changed recovery lifecycle checks plus official review.",
+    "Recheck current production parent and preserve current live sessions before any deployment."
+  ],
+  "limitations": [
+    "All users and messages are synthetic and storage is local; no live messages or remote Drive writes",
+    "Interrupted pending upload is an injected durable boundary, not an actual remote write or crash",
+    "Provider identity, browser UI focus/File objects, paid AI, push and scheduled work notifications are outside this test"
+  ]
+}

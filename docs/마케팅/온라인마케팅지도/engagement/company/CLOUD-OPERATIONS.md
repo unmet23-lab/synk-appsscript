@@ -116,3 +116,8 @@ AI는 현재 OpenAI 추출 어댑터를 유지한다. **Google 크레딧으로 O
 정지 사본 대조에서 schema0변경, 기동 전 만료 token1삭제와 평문/연결이 같은 직원 암호문1재암호화만 확인했다. capture SSH 연결은 먼저 끝났지만 원격 사본·안전 재개 영수증을 회수했고, 05:45 main/3timers active·healthy, 공개17파일 SHA/MIME 일치다. 기존 직원/고객 탭 reload 후 재로그인0·원래 메모/111B Drive첨부/23:33 상담 초안 보존, 직원7/고객1의 동일session/CSRF/TTL·원키/VAPID/업무자료 대조 통과. 유료AI/BG0 유지. SSO 검수는 직접 사용자 보류 지시이며 PASS가 아니다. 메신저 복구 v5는 별도 검수·Linux 인수 중이고 아직 운영반영하지 않았다.
 
 최신 근거: `.tmp/platform-unified-login-20261009/company-linux-v8/FINAL-ACCEPTANCE.json`, `../company-linux-v7/COORDINATION.json`. 실제 새 네이티브 Platform 입구 인수는 공개 웹→PC 담당이 이어 한다. 폰/PC종료/실푸시·전체클라우드Claude·실제09시마감은 별도다.
+
+
+## 10-09 05:57 메신저 복구 v5 인수와 보류
+
+통합 로그인 e696 운영·직원/고객 자료 보존은 완료 상태다. SSO 소스7파일 `6e1855a644737616a88c1c06cc38db8fe97e06ab`, 운영기록 `c4b5452a4613c18c72dd6087bb9aede77ea29628`를 기존 codex/company-cloud-push-20261009에 push/ref 확인했다(통합원문102시험·기존변경보존, master/CI완료 주장은 없음). 추가 메신저 v5 68eb109b는 Linux805/805·실제CMD합성업그레이드354/5종료·3빈표 추가/기존행·키·첨부 보존을 통과했다. 하지만05:54 공식 Opus5.5/max 검수의 P2 세 건(큰 파일 제한시간·불확실 첨부취소·키보드초점) 때문에 배포보류다. 원격 운영변경0, 수정후보를 기다린다. 회사SSO/고객세션은 동일199파일로 합동검수에 포함되어 P2이상없었으며 전체클라우드운영검수는 아니다. 근거 `.tmp/messenger-send-recovery-20261009/linux-v5/HANDOFF.json`. 유료AI0 유지.
