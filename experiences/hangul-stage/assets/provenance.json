@@ -1,5 +1,5 @@
 {
-  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본 그대로다(songs/README.md, 음악 장부). 자음 그림 연상(mnemonic/)과 받침 노래 낱말 그림(words/)은 Codex로 구운 펠트 판에서 오렸다(지시문은 판과 같은 곳).",
+  "note": "바이트 그대로 가져온 사본이다. 펠트 부품(kit)은 입장 검사의 줄이고 흰 띠를 걷은 사본(빈칸 베기와 같음), 몽글·글꼴·효과음도 입장 검사 사본에서 왔다(효과음은 docs/브랜드_사운드킷 원본과 같다). 원본 키트를 고치면 docs/디자인/펠트부품/README.md 「사본 맞추기」대로 이 사본도 맞춘다. 노래(songs/)는 Suno 공식 내려받기 원본이거나 그것을 고친 판이다(고친 판은 from에 적었다)(songs/README.md, 음악 장부). 자음 그림 연상(mnemonic/)과 받침 노래 낱말 그림(words/)은 Codex로 구운 펠트 판에서 오렸다(지시문은 판과 같은 곳).",
   "files": [
     {
       "path": "brand/mongle-curious.webp",
@@ -129,15 +129,21 @@
     },
     {
       "path": "songs/geu-a-ga.mp3",
-      "from": "Suno 644b446b-0387-48f2-a6cc-58163c232f4f · 공식 내려받기 MP3 2026-10-08(유호님 「C로 가자 받아서」) · 옛 곡 61cb6e8e가 후렴에서 음절을 두 번 불러(바바·타타) 줄마다 8음절 가사(후렴 끝 「짝!」)로 다시 만든 네 후보 가운데 유호님이 고름 · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga-v2_644b446b.mp3",
-      "bytes": 1923668,
-      "sha256": "d56d0c4e133f7e2c169a70e8e7b76ee93b4463e976d9bcc097e9e36d85b4f374"
+      "from": "Suno 644b446b-0387-48f2-a6cc-58163c232f4f · 공식 내려받기 MP3 2026-10-08(유호님 「C로 가자 받아서」) · 2026-10-09 v4: 「그 더하기 아는?」·「느 더하기 아는?」 뒤(원곡 32.672 · 35.057초)에 반주만 흐르는 한 마디(2.4초)씩을 끼우고(떠올리기 — 노래 영상 가이드, 유호님 「오케이 이어서 남은것도 전부 하자」) MP3 192kbps로 다시 구움 · 원본 Documents/synk-vendor/hangul-songs/geu-a-ga-v2_644b446b.mp3, 끼운 판·스크립트 Documents/synk-vendor/hangul-songs/geu-a-ga-v4-20261009/",
+      "bytes": 2064428,
+      "sha256": "98204e5f41aac1bb3f0ccd1bc2f1d8f41cd4ebcdd23c02e583b69e5aac70034f"
     },
     {
       "path": "songs/batchim.mp3",
       "from": "Suno c3610361-6e52-41f7-a758-feea28b4ec09 · 공식 내려받기 MP3 2026-10-08(유호님 「A로 가자」) · 받침 하나(ㄴ·ㄹ·ㅁ·ㅇ) 가사로 만든 네 후보 가운데 유호님이 고름 · 원본 Documents/synk-vendor/hangul-songs/batchim_c3610361.mp3",
       "bytes": 1482876,
       "sha256": "d5fc41c339e96deaf5aa813cad629ab9b3e54da8b94fa0e40784f388db5d1c9e"
+    },
+    {
+      "path": "songs/compound-dance.mp3",
+      "from": "Suno 827ae68f-65d7-448f-899e-8d8f0191ed96 · 공식 내려받기 MP3 2026-10-08(유호님 「C로 가자」) · 2026-10-09 v3: 떠올리기 두 곳 앞(원곡 12.73 · 15.21초)에 반주만 흐르는 한 마디씩, 「와!」 뒤(13.17초)에 한 박을 끼우고(유호님 「와가 0.1초만에 지나가는데 조금 0.5초는 있어야」) MP3 192kbps로 구움 · 원본 Documents/synk-vendor/hangul-songs/compound_827ae68f.mp3, 끼운 판·스크립트 Documents/synk-vendor/hangul-songs/compound-dance-v3-20261009/",
+      "bytes": 1177388,
+      "sha256": "9abe7edde9643abe5e6a171fdb2b788d2fef05c884f3da23abcd9449b2078bdf"
     },
     {
       "path": "mnemonic/c-g.webp",

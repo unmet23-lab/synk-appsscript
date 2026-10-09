@@ -11,6 +11,9 @@ const write = (k, v) => { try { localStorage.setItem(k, v); } catch { /* 이번 
 
 let effectsOn = read(EFFECT_KEY, 'on') !== 'off';
 let clips = null;           // 목소리가 정해진 뒤의 파일 목록(없으면 null)
+// 여러 목소리로 듣고 고르기(HVPT, 10-09): 가·카·까 · 받침 ㄱ·ㄷ·ㅂ · ㅓ/ㅗ 음절은 목소리 여럿(talkers.json — 귀로 확인한 것만)을 돌려 쓴다.
+// 근거: docs/한글단계_노래영상_근거점검_20261008.md §4-1(HVPT 메타분석 g=0.67, 목소리 수가 효과를 가름). 굽기 tools/한글단계_여러목소리.cjs.
+let talkers = null;         // [{ name, clips: { "가": "talkers/jinhee/xz4.mp3", … } }] — 없으면 기본 목소리 하나
 let voice = null;           // 기기의 한국어 음성
 let voiceState = 'unknown'; // 'ready' | 'missing' | 'unsupported'
 const listeners = new Set();
@@ -31,6 +34,8 @@ export function initAudio() {
   else { voiceState = 'unsupported'; emit(); }
   fetch('assets/voice/voices.json').then(r => (r.ok ? r.json() : null))
     .then(v => { if (v?.approved === true && v.clips && Object.keys(v.clips).length) { clips = v.clips; emit(); } }).catch(() => {});
+  fetch('assets/voice/talkers.json').then(r => (r.ok ? r.json() : null))
+    .then(v => { if (v?.approved === true && Array.isArray(v.talkers) && v.talkers.length) talkers = v.talkers.map(t => ({ name: t.name, clips: t.clips || {} })); }).catch(() => {});
   // 음성 목록이 늦게 오는 브라우저: 잠시 뒤 한 번 더 본다.
   setTimeout(() => { if (voiceState !== 'ready') chooseVoice(); }, 1200);
 }
@@ -46,11 +51,25 @@ export function stop() {
   try { globalThis.speechSynthesis?.cancel(); } catch { /* 없음 */ }
   if (current) { current.pause(); current = null; }
 }
-/** 글자·음절·낱말 하나를 말한다. 끝까지 났으면 true, 못 냈으면 false로 끝난다. slow는 천천히 다시 듣기. */
-export function say(text, { slow = false } = {}) {
+/** 이 소리를 가진 목소리 번호들: 0은 기본 글자 소리, 1부터는 talkers의 목소리(순수 함수 — 시험용으로도 쓴다). */
+export function voicesFor(text, mainClips, talkerList) {
+  return [mainClips?.[text] ? 0 : null, ...(talkerList || []).map((t, i) => (t.clips?.[text] ? i + 1 : null))].filter(v => v != null);
+}
+/** 여러 목소리 가운데 이 문항이 쓸 목소리 하나(key로 정해진다 — 같은 문항은 다시 들어도 같은 목소리). 목소리가 하나뿐이면 0. */
+export function pickTalker(text, key, mainClips, talkerList) {
+  const have = voicesFor(text, mainClips, talkerList);
+  if (have.length < 2) return 0;
+  let h = 0x811c9dc5;
+  for (const ch of String(key)) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+  return have[h % have.length];
+}
+export const talkerFor = (text, key) => pickTalker(text, key, clips, talkers);
+export const talkerCount = text => voicesFor(text, clips, talkers).length;
+/** 글자·음절·낱말 하나를 말한다. 끝까지 났으면 true, 못 냈으면 false로 끝난다. slow는 천천히 다시 듣기, talker는 여러 목소리 가운데 번호(0 기본). */
+export function say(text, { slow = false, talker = 0 } = {}) {
   stop();
   if (silent) return wait(150).then(() => false);
-  const file = clips?.[text];
+  const file = (talker > 0 ? talkers?.[talker - 1]?.clips?.[text] : null) || clips?.[text];
   if (file) {
     return new Promise(resolve => {
       const a = new Audio(`assets/voice/${file}`); a.playbackRate = slow ? 0.75 : 1; current = a;
