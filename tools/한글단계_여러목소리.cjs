@@ -7,6 +7,7 @@
 // 설정은 기본 글자 소리와 같다(ssfm-v30 · normal · 빠르기 0.9 · seed 1003 · -17 LUFS, 앞뒤 무음 걷고 64k mp3).
 //   node tools/한글단계_여러목소리.cjs              → 없는 것만 굽는다(키는 보안 폴더 파일에서 메모리로만 — 화면·파일에 남기지 않음)
 //   node tools/한글단계_여러목소리.cjs --list       → 대상 음절과 글자 수만
+//   node tools/한글단계_여러목소리.cjs --다시 "효은:깁,뻐;강일:옥" [--seed 1004]  → 그 음절만 시드를 바꿔 저장소 밖 retake-<시드>/에 한 번 더(앱 파일은 그대로)
 //   node tools/한글단계_여러목소리.cjs --approve "유호님 10-1X 귀 확인"  → talkers.candidate.json을 앱이 쓰는 talkers.json으로
 // 원본 wav는 저장소 밖(Documents/synk-vendor/hangul-voice/talkers/), 화면용 mp3는 experiences/hangul-stage/assets/voice/talkers/<이름>/.
 // 앱은 talkers.json의 approved:true일 때만 여러 목소리를 쓴다(09-19 결정 「귀로 확인한 파일만」). 그전에는 기본 목소리 하나다.
@@ -78,6 +79,43 @@ async function main() {
   const left = sub => sub.credits.plan_credits - sub.credits.used_credits;
   const before = await api('/v1/users/me/subscription');
   if (left(before) < 5000) throw Error('월 제공 크레딧이 부족함');
+  const tts = (voiceId, text, seed) => api('/v1/text-to-speech/with-timestamps', 'POST', { seed, model: SETTINGS.model, voice_id: voiceId, text, language: 'kor',
+    output: { audio_format: 'wav', audio_tempo: SETTINGS.tempo, target_lufs: -17 },
+    prompt: { emotion_type: 'preset', emotion_preset: SETTINGS.emotion, emotion_intensity: SETTINGS.intensity } });
+  const toMp3 = (wav, mp3) => execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-af',
+    'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.03,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.06,areverse,apad=pad_dur=0.08',
+    '-ac', '1', '-ar', '44100', '-b:a', '64k', mp3]);
+  // 다시 굽기(10-10 유호님 「1번으로 가자」): 음절 안이 끊기거나 유난히 긴 소리만 시드를 바꿔 한 번 더 굽는다.
+  //   node tools/한글단계_여러목소리.cjs --다시 "효은:깁,뻐;강일:옥" [--seed 1004]
+  //   새 판은 저장소 밖 Documents/synk-vendor/hangul-voice/talkers/<이름>/retake-<시드>/(wav·mp3)에만 둔다 — 후보 목록과 앱 파일은 그대로.
+  //   재서 나은 것을 귀로 확인한 뒤 같은 이름으로 assets/voice/talkers/<이름>/에 바꿔 넣는다.
+  //   기본 글자 소리(하나, voices.json)도 「하나:교,잉」처럼 같은 방법으로 — 새 판은 Documents/synk-vendor/hangul-voice/raw/retake-<시드>/(같은 요청 · 같은 후처리).
+  const redo = arg('--다시');
+  if (redo) {
+    const seed = Number(arg('--seed') || SETTINGS.seed + 1);
+    const MAIN = { slug: null, name: '하나', id: 'tc_61659cc118732016a95fe7c6' };
+    const jobs = redo.split(';').filter(Boolean).flatMap(part => {
+      const [name, list] = part.split(':');
+      const t = name.trim() === MAIN.name ? MAIN : TALKERS.find(x => x.name === name.trim());
+      if (!t) throw Error('모르는 목소리: ' + name);
+      return list.split(',').map(s => s.trim()).filter(Boolean).map(text => ({ t, text }));
+    });
+    const done = [];
+    for (const { t, text } of jobs) {
+      const dir = t.slug ? path.join(rawRoot, t.slug, `retake-${seed}`) : path.join(rawRoot, '..', 'raw', `retake-${seed}`);
+      fs.mkdirSync(dir, { recursive: true });
+      const data = await tts(t.id, text, seed);
+      const bytes = Buffer.from(data.audio || '', 'base64');
+      if (bytes.length < 1000) throw Error('빈 음성: ' + t.name + ' ' + text);
+      const wav = path.join(dir, safe(text) + '.wav');
+      fs.writeFileSync(wav, bytes);
+      toMp3(wav, path.join(dir, safe(text) + '.mp3'));
+      done.push(`${t.name} ${text}`);
+    }
+    key = '';
+    console.log(JSON.stringify({ seed, made: done.length, chars: jobs.reduce((n, j) => n + [...j.text].length, 0), done }));
+    return;
+  }
   const prev = readJson(CANDIDATE, { talkers: [] });
   const out = { note: '후보다. 유호님이 귀로 확인한 뒤 tools/한글단계_여러목소리.cjs --approve로 talkers.json에 옮긴다. 기본 글자 소리(voices.json)와 함께 듣기 문항의 목소리를 돌려 쓴다.',
     settings: SETTINGS, approved: false, syllables: list.length, talkers: [] };
@@ -91,16 +129,12 @@ async function main() {
       for (const text of list) {
         const rel = `talkers/${t.slug}/${safe(text)}.mp3`;
         if (clips[text] === rel && fs.existsSync(path.join(stage, 'assets', 'voice', rel))) continue;
-        const data = await api('/v1/text-to-speech/with-timestamps', 'POST', { seed: SETTINGS.seed, model: SETTINGS.model, voice_id: t.id, text, language: 'kor',
-          output: { audio_format: 'wav', audio_tempo: SETTINGS.tempo, target_lufs: -17 },
-          prompt: { emotion_type: 'preset', emotion_preset: SETTINGS.emotion, emotion_intensity: SETTINGS.intensity } });
+        const data = await tts(t.id, text, SETTINGS.seed);
         const bytes = Buffer.from(data.audio || '', 'base64');
         if (bytes.length < 1000) throw Error('빈 음성: ' + t.name + ' ' + text);
         const wav = path.join(raw, safe(text) + '.wav');
         fs.writeFileSync(wav, bytes);
-        execFileSync('ffmpeg', ['-y', '-loglevel', 'error', '-i', wav, '-af',
-          'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.03,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.06,areverse,apad=pad_dur=0.08',
-          '-ac', '1', '-ar', '44100', '-b:a', '64k', path.join(dir, safe(text) + '.mp3')]);
+        toMp3(wav, path.join(dir, safe(text) + '.mp3'));
         clips[text] = rel; made += 1;
         if (made % 50 === 0) console.log('…', made, t.name, text);
       }
