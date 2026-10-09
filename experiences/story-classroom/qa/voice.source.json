@@ -3,15 +3,15 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps",
- "updatedAt": "2026-10-07T11:21:44.672Z",
+ "updatedAt": "2026-10-09T08:42:04.637Z",
  "voices": {
   "narrator": {
    "label": "해설",
-   "id": "tc_69f2e455ea79fd197aa0476f",
-   "name": "서현",
-   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
-   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
-   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
+   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
+   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
   },
   "mongle": {
    "label": "몽글",
@@ -52,299 +52,299 @@
  "lines": {
   "dialogue-opening-01": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "e3ce75bab6a98adb5e76a10cb0a8c259",
+   "key": "382d724a7d497cd76493825e599dbc41",
    "sha": {
-    "assets/voice/dialogue-opening-01.mp3": "384f042080418aa2"
+    "assets/voice/dialogue-opening-01.mp3": "3879f020b6a0f1b3"
    }
   },
   "dialogue-opening-02": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "9a5f12284da34a381b3ffd7a808be846",
+   "key": "365ba10de8053dc0439da8d72b09963c",
    "sha": {
-    "assets/voice/dialogue-opening-02.mp3": "45fcd989314ee204"
+    "assets/voice/dialogue-opening-02.mp3": "90a46c3d185c0e7e"
    }
   },
   "dialogue-opening-03": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "0fdf8f5c078424be3d8f48c293a6b639",
+   "key": "68afb246aba0bdfb2b924862425daf06",
    "sha": {
-    "assets/voice/dialogue-opening-03.mp3": "1576114770548983"
+    "assets/voice/dialogue-opening-03.mp3": "c6734df2dbe6e877"
    }
   },
   "dialogue-opening-04": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "f580e994b6ef3d28c55c0170ea30db63",
+   "key": "18c6a8e300d849c8239f88a3fd124e2f",
    "sha": {
-    "assets/voice/dialogue-opening-04.mp3": "79816009633a542d"
+    "assets/voice/dialogue-opening-04.mp3": "9849c8cfc06d1243"
    }
   },
   "dialogue-opening-05": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "af3a08eca90b97e0a7263f4e620eacbf",
+   "key": "503b854ade239cdf118a18cb0d46d7b4",
    "sha": {
-    "assets/voice/dialogue-opening-05.mp3": "dbbd0ab0364e93f4"
+    "assets/voice/dialogue-opening-05.mp3": "25d020d5fc9ec7da"
    }
   },
   "dialogue-cleanup-intro-01": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "524b7664d62572ab5b78b005c4408d61",
+   "key": "15adae13757d9cd518c326fd78a2d953",
    "sha": {
-    "assets/voice/dialogue-cleanup-intro-01.mp3": "0aec1cb87b8186fb"
+    "assets/voice/dialogue-cleanup-intro-01.mp3": "865effe850bc8e5b"
    }
   },
   "dialogue-cleanup-intro-02": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "88affbf229681a47d9defabb8c7a220a",
+   "key": "6eff31f748939a5179e580942d6f799e",
    "sha": {
-    "assets/voice/dialogue-cleanup-intro-02.mp3": "849179ea13286a5e"
+    "assets/voice/dialogue-cleanup-intro-02.mp3": "04b20e8aab7f39f6"
    }
   },
   "dialogue-cleanup-intro-03": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "6a7dc902c9fa55280f75226834eb4201",
+   "key": "987eb9bb9039905c2f33bf6aa29a3194",
    "sha": {
-    "assets/voice/dialogue-cleanup-intro-03.mp3": "19cd6ea506306b5a"
+    "assets/voice/dialogue-cleanup-intro-03.mp3": "d04cb05444679f5e"
    }
   },
   "dialogue-cleanup-outro-01": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "1da0a608efe63f71af61b8a1deb9c9b3",
+   "key": "8a0481f63b17b9cac1ad645c0d0d43de",
    "sha": {
-    "assets/voice/dialogue-cleanup-outro-01.mp3": "b54fd9dd11e1b468"
+    "assets/voice/dialogue-cleanup-outro-01.mp3": "e45eeb58a58ea89c"
    }
   },
   "dialogue-cleanup-outro-02": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "2e0166977cbbc4bd5aa86187f96d0b4b",
+   "key": "98239f36440249230c21084468c33557",
    "sha": {
-    "assets/voice/dialogue-cleanup-outro-02.mp3": "c8e03ac5fee6499d"
+    "assets/voice/dialogue-cleanup-outro-02.mp3": "997f008dfea477ab"
    }
   },
   "dialogue-cleanup-outro-03": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "d506c0d703d0cef906566fe851e6bb02",
+   "key": "4177fe778fbf629a75b0a55bf555bad4",
    "sha": {
-    "assets/voice/dialogue-cleanup-outro-03.mp3": "71fe7ac533495d1a"
+    "assets/voice/dialogue-cleanup-outro-03.mp3": "c374dcdee255ada3"
    }
   },
   "dialogue-clue-intro-01": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "83c52b79cae585f3fbee06aadf9203dd",
+   "key": "d3dab088412884b62c8e751812123fc4",
    "sha": {
-    "assets/voice/dialogue-clue-intro-01.mp3": "673198c10f81ae7f"
+    "assets/voice/dialogue-clue-intro-01.mp3": "52ab19955f774206"
    }
   },
   "dialogue-clue-intro-02": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "640e703b3a4e4431f3276245c40aae14",
+   "key": "2aa1e179d006daa4996db266cf4be36c",
    "sha": {
-    "assets/voice/dialogue-clue-intro-02.mp3": "6ea215f157251586"
+    "assets/voice/dialogue-clue-intro-02.mp3": "2f797b2ae0f43639"
    }
   },
   "dialogue-clue-intro-03": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "39fa65a746309d45e5b44f76c1cbcb4b",
+   "key": "d11206db96852933ae2e984a7fd845da",
    "sha": {
-    "assets/voice/dialogue-clue-intro-03.mp3": "61a3f00a3b4c4784"
+    "assets/voice/dialogue-clue-intro-03.mp3": "5de70455b6b591df"
    }
   },
   "dialogue-clue-outro-01": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.92,
-   "key": "a84c77f08754e330659b308fa86bb6c0",
+   "key": "bc11e2dded831854ff97bde9dbb18f59",
    "sha": {
-    "assets/voice/dialogue-clue-outro-01.mp3": "84bdcee2238c6158"
+    "assets/voice/dialogue-clue-outro-01.mp3": "0e1d0eb37c495158"
    }
   },
   "dialogue-clue-outro-02": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "52e971841078e1ce8c30ad081209e7eb",
+   "key": "934162339ae60bdc6e0f60b3ed8b5831",
    "sha": {
-    "assets/voice/dialogue-clue-outro-02.mp3": "7b3e0d6057db3709"
+    "assets/voice/dialogue-clue-outro-02.mp3": "efb466cbe833f709"
    }
   },
   "dialogue-clue-outro-03": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "7fa738b0da51f14bead64e8d4ed93041",
+   "key": "6ebbcfb6077a7225af04d225fc1e60d5",
    "sha": {
-    "assets/voice/dialogue-clue-outro-03.mp3": "4548dd5527c12aa0"
+    "assets/voice/dialogue-clue-outro-03.mp3": "0f922a7b11f52988"
    }
   },
   "dialogue-surprise-intro-01": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "a9a994b348c9410ff1796567e57f9716",
+   "key": "27d0aa5f1813018aa34ec193be2e309d",
    "sha": {
-    "assets/voice/dialogue-surprise-intro-01.mp3": "e5caa74823d08a5f"
+    "assets/voice/dialogue-surprise-intro-01.mp3": "446d3aeef16043b8"
    }
   },
   "dialogue-surprise-intro-02": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "fd0da05e7b00c9c5329995b4cc563c10",
+   "key": "6844a62f4161c4bc7c660bce688dacee",
    "sha": {
-    "assets/voice/dialogue-surprise-intro-02.mp3": "3159040f792e8b47"
+    "assets/voice/dialogue-surprise-intro-02.mp3": "50357a91a1e22db1"
    }
   },
   "dialogue-surprise-intro-03": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "750d59ece823ccf799f909e38b02ffb3",
+   "key": "943c44220fd4ef753d2c33150345feb4",
    "sha": {
-    "assets/voice/dialogue-surprise-intro-03.mp3": "a96a556a614142bd"
+    "assets/voice/dialogue-surprise-intro-03.mp3": "13735e02a96efafa"
    }
   },
   "dialogue-surprise-outro-01": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "6779b55a13132e28b506e3801c68005f",
+   "key": "b3bc6689a67a26d5d1709482e0eea446",
    "sha": {
-    "assets/voice/dialogue-surprise-outro-01.mp3": "fb5f921612c5516f"
+    "assets/voice/dialogue-surprise-outro-01.mp3": "185f81c3e5c0e925"
    }
   },
   "dialogue-surprise-outro-02": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "584fc7a9cafa042a4113d68c293caa61",
+   "key": "27bf1eaf96f9d8c3433f9c40a985de71",
    "sha": {
-    "assets/voice/dialogue-surprise-outro-02.mp3": "894fb17d2d58fa88"
+    "assets/voice/dialogue-surprise-outro-02.mp3": "9221a260b3420282"
    }
   },
   "dialogue-ending-01": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "170d9ab655f1db5702c41203a72f0e41",
+   "key": "ea81279a70aa1dd9bc34ce4ede1e9cee",
    "sha": {
-    "assets/voice/dialogue-ending-01.mp3": "dc9961dea420462a"
+    "assets/voice/dialogue-ending-01.mp3": "3b7471c73e5ae01d"
    }
   },
   "dialogue-ending-02": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "67a76dd5b5b305a42ef4482762bf5fd1",
+   "key": "76673da25016b76714fd7a335c5ad700",
    "sha": {
-    "assets/voice/dialogue-ending-02.mp3": "1f9b203ef1cebcd4"
+    "assets/voice/dialogue-ending-02.mp3": "abd4c8bf58c93558"
    }
   },
   "dialogue-ending-03": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "87746775ac4c84d4c5391ac41da9b628",
+   "key": "7143c8e6604c5a72aa1f8c14f55e9c39",
    "sha": {
-    "assets/voice/dialogue-ending-03.mp3": "6d1bec62f5f4d841"
+    "assets/voice/dialogue-ending-03.mp3": "95a3abb8edf38901"
    }
   },
   "dialogue-ending-04": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "45cfa1e25cb24be88aca53573a5bdac0",
+   "key": "d8e22497275140ec122cae0f9c703ae0",
    "sha": {
-    "assets/voice/dialogue-ending-04.mp3": "55d698f532139a8f"
+    "assets/voice/dialogue-ending-04.mp3": "caf5ec37898344a5"
    }
   },
   "feedback-unavailable-story": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "397d3b69fb09644b1815c37e71a08ed8",
+   "key": "7a2a690ed2a1985a235ae1ca32988256",
    "sha": {
-    "assets/voice/feedback-unavailable-story.mp3": "58948c11c2c0d059"
+    "assets/voice/feedback-unavailable-story.mp3": "a3bef240039107f6"
    }
   },
   "feedback-invalid-destination": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "c7377fbbe8cdf18896e1a7fd150f268a",
+   "key": "3b20ed23cda515d4330143a19fe30b37",
    "sha": {
-    "assets/voice/feedback-invalid-destination.mp3": "9db7411567c7c6d1"
+    "assets/voice/feedback-invalid-destination.mp3": "ae27dc55e2e31654"
    }
   },
   "feedback-selection": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "b1568a2d35491466445638039d052d8c",
+   "key": "1e3ae4a91521c1fa711cfecdc944dc79",
    "sha": {
-    "assets/voice/feedback-selection.mp3": "415cc731bfab5934"
+    "assets/voice/feedback-selection.mp3": "224f9cbfff9c4275"
    }
   },
   "feedback-extra-object": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "231d4508abfda79431611e7e14b7b8d6",
+   "key": "7504be0ebe16e2646abf74f539df2ae6",
    "sha": {
-    "assets/voice/feedback-extra-object.mp3": "a70f142f9b31088d"
+    "assets/voice/feedback-extra-object.mp3": "103fd24746a2ad98"
    }
   },
   "feedback-help-unavailable": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "12dfd3cd77566ee3e41136b0c2723d1d",
+   "key": "237e40e973987f49e4c1855911eb077d",
    "sha": {
-    "assets/voice/feedback-help-unavailable.mp3": "8fff95289fe91db7"
+    "assets/voice/feedback-help-unavailable.mp3": "f00d236667df7db3"
    }
   },
   "feedback-already-marin": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "fc760e5d9622f8da34bb7c807852bc31",
+   "key": "876425df65ddda91fe95e2bc46582697",
    "sha": {
-    "assets/voice/feedback-already-marin.mp3": "68d71528b281ce96"
+    "assets/voice/feedback-already-marin.mp3": "ab06ecdb62844ccb"
    }
   },
   "feedback-already-kkamong": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "819eb7bb97125eecce12253eca08a692",
+   "key": "fef0fd823ff057631047dbd6ac1174e3",
    "sha": {
-    "assets/voice/feedback-already-kkamong.mp3": "3f0f42005b0d28ca"
+    "assets/voice/feedback-already-kkamong.mp3": "74153307c47fabd7"
    }
   },
   "mission-cleanup-snacks": {
@@ -360,45 +360,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "ee52fa63461b23b4f7674dfeac782611",
+   "key": "8d7ac1809c94fc491bacb68447d86c84",
    "sha": {
-    "assets/voice/help-cleanup-snacks.mp3": "3b854b61213a111f"
+    "assets/voice/help-cleanup-snacks.mp3": "5e0b1da942ecdbb2"
    }
   },
   "feedback-cleanup-snacks-success": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "a6a820e364cf5b1f5da083f40f40b258",
+   "key": "8efb389726a2e1199b99e3f822cdcf4a",
    "sha": {
-    "assets/voice/feedback-cleanup-snacks-success.mp3": "3b8a936dc382f529"
+    "assets/voice/feedback-cleanup-snacks-success.mp3": "0fd3b02e81fa0d05"
    }
   },
   "feedback-cleanup-snacks-actor": {
-   "role": "kkamong",
-   "voice": "몽군",
-   "tempo": 0.92,
-   "key": "8d3b8d0f9811cf90c5339bf40ca5ee1d",
+   "role": "marin",
+   "voice": "한결",
+   "tempo": 0.9,
+   "key": "ce91798dd01815b4d49d8ba8736ade8e",
    "sha": {
-    "assets/voice/feedback-cleanup-snacks-actor.mp3": "7fa75a7d52ef90aa"
+    "assets/voice/feedback-cleanup-snacks-actor.mp3": "2b193d1d6390d1b6"
    }
   },
   "feedback-cleanup-snacks-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "3196a74a68d99006125eb52c292cf64d",
+   "key": "a2569b37a39d5c2af5b2ffcd2c33e54f",
    "sha": {
-    "assets/voice/feedback-cleanup-snacks-destination.mp3": "c45f1beefd30cd1c"
+    "assets/voice/feedback-cleanup-snacks-destination.mp3": "47465e8c87aa8d72"
    }
   },
   "feedback-cleanup-snacks-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "6f4a0f822fecd194a8a96a1892e55683",
+   "key": "d8f4576519ab81088e633e2bad00d32d",
    "sha": {
-    "assets/voice/feedback-cleanup-snacks-bin.mp3": "c4979046a515d156"
+    "assets/voice/feedback-cleanup-snacks-bin.mp3": "ac692e719fe3f6ca"
    }
   },
   "mission-cleanup-paper": {
@@ -414,45 +414,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "41d8982bce609462bfbcb539636b254d",
+   "key": "8a15d33826c96e979a9aadc1f1b44c4e",
    "sha": {
-    "assets/voice/help-cleanup-paper.mp3": "beabc9da2afd13d4"
+    "assets/voice/help-cleanup-paper.mp3": "78ee9948f0f9b52d"
    }
   },
   "feedback-cleanup-paper-success": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "34bc04c6b556cf077492a0d4a768ed68",
+   "key": "dfbfb9446c2772be1c3609e5d7364655",
    "sha": {
-    "assets/voice/feedback-cleanup-paper-success.mp3": "f8d30fa0b09b2cbe"
+    "assets/voice/feedback-cleanup-paper-success.mp3": "be9770e2e95a1054"
    }
   },
   "feedback-cleanup-paper-actor": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "10de205647151123d116170fb0618ed8",
+   "key": "4c39cd3013af0656b0d4b841b4408a42",
    "sha": {
-    "assets/voice/feedback-cleanup-paper-actor.mp3": "78f1866f862f8c12"
+    "assets/voice/feedback-cleanup-paper-actor.mp3": "04ed2a6bdb9dd38d"
    }
   },
   "feedback-cleanup-paper-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "c4d3116bc4079b66b70a9b507aa2b2ae",
+   "key": "b1790ea4dcc7ead2960bfd5356473b70",
    "sha": {
-    "assets/voice/feedback-cleanup-paper-destination.mp3": "eda23375d551bf45"
+    "assets/voice/feedback-cleanup-paper-destination.mp3": "34f1c8d493042b4e"
    }
   },
   "feedback-cleanup-paper-bin": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "82934fe616f449cf0a319de3a561af3d",
+   "key": "877d3c0277dcdf959441f4d1fcc5ccaa",
    "sha": {
-    "assets/voice/feedback-cleanup-paper-bin.mp3": "01d4ef27e538ebb0"
+    "assets/voice/feedback-cleanup-paper-bin.mp3": "aacd9fdea61509c6"
    }
   },
   "mission-clue-flowers": {
@@ -468,45 +468,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "5c882da6e04b5c719737a89da67c457b",
+   "key": "9b64909897138ddc93a87fd22d3bf65a",
    "sha": {
-    "assets/voice/help-clue-flowers.mp3": "69a5a63e133e18e1"
+    "assets/voice/help-clue-flowers.mp3": "0aa87da47d62099b"
    }
   },
   "feedback-clue-flowers-success": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "3790ea6da962bf16ad764d2a7800dd13",
+   "key": "44967fd7f134943cd43617321d31a52a",
    "sha": {
-    "assets/voice/feedback-clue-flowers-success.mp3": "87fbead04448b073"
+    "assets/voice/feedback-clue-flowers-success.mp3": "5801c85a34fef9c2"
    }
   },
   "feedback-clue-flowers-actor": {
-   "role": "kkamong",
-   "voice": "몽군",
-   "tempo": 0.92,
-   "key": "8d3b8d0f9811cf90c5339bf40ca5ee1d",
+   "role": "marin",
+   "voice": "한결",
+   "tempo": 0.9,
+   "key": "fbcf1c2e0f3663fe0e0f7cd6a244c098",
    "sha": {
-    "assets/voice/feedback-clue-flowers-actor.mp3": "7fa75a7d52ef90aa"
+    "assets/voice/feedback-clue-flowers-actor.mp3": "f758f3089c51ee5e"
    }
   },
   "feedback-clue-flowers-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "a61c543af543d5551cf4acfdd3cd11b5",
+   "key": "859fb554427418e9ac4160115ccaa604",
    "sha": {
-    "assets/voice/feedback-clue-flowers-destination.mp3": "06fce2d6afe9edf3"
+    "assets/voice/feedback-clue-flowers-destination.mp3": "d26294e9e4afdf54"
    }
   },
   "feedback-clue-flowers-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "2fbc13bccbdff32e1440c1f70d334a48",
+   "key": "33b0d1167d1451c349326e4e64e15f0c",
    "sha": {
-    "assets/voice/feedback-clue-flowers-bin.mp3": "c424ce635892b743"
+    "assets/voice/feedback-clue-flowers-bin.mp3": "4d57247cc3e5b8eb"
    }
   },
   "mission-clue-letter": {
@@ -522,54 +522,54 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "f6ebec6d449fc801b87e9f61f77d49a2",
+   "key": "5b893961dc0c204bfdc29069b41d6e23",
    "sha": {
-    "assets/voice/help-clue-letter.mp3": "7735adf59eb16ff2"
+    "assets/voice/help-clue-letter.mp3": "ae3efaf82bb197a8"
    }
   },
   "feedback-clue-letter-success": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "42a9bed05c9cbb889edf0912029165b5",
+   "key": "79ff22392dbef9d42af0b48136770afa",
    "sha": {
-    "assets/voice/feedback-clue-letter-success.mp3": "be5c91eee3d499a1"
+    "assets/voice/feedback-clue-letter-success.mp3": "fd8b283ea38b4938"
    }
   },
   "feedback-clue-letter-actor": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "10de205647151123d116170fb0618ed8",
+   "key": "b00f017985bf9f67b067301d48bccf0e",
    "sha": {
-    "assets/voice/feedback-clue-letter-actor.mp3": "78f1866f862f8c12"
+    "assets/voice/feedback-clue-letter-actor.mp3": "cee62f8e60812ea5"
    }
   },
   "feedback-clue-letter-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "dd35e9a35ee710b2981b870bc8e811dd",
+   "key": "719ab2f4b32d6cbfe6751b8e07e2e2ba",
    "sha": {
-    "assets/voice/feedback-clue-letter-destination.mp3": "241aab230998d538"
+    "assets/voice/feedback-clue-letter-destination.mp3": "9b77414a95334294"
    }
   },
   "feedback-clue-letter-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "e21a2c733c771a21df69d6a7726127b4",
+   "key": "2c5ce44ad2a186e49f5ecab29a484405",
    "sha": {
-    "assets/voice/feedback-clue-letter-bin.mp3": "c91b0c58808ba1bb"
+    "assets/voice/feedback-clue-letter-bin.mp3": "9d334efc2b6d9f51"
    }
   },
   "feedback-clue-letter-order": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "a1282b0c909f4eda8147e4756f696d10",
+   "key": "a4f9234fd41a98ddebeee8a30e6bc6b0",
    "sha": {
-    "assets/voice/feedback-clue-letter-order.mp3": "003aa6d186056ef6"
+    "assets/voice/feedback-clue-letter-order.mp3": "ca8059ee4e523f99"
    }
   },
   "mission-surprise-cake": {
@@ -585,45 +585,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "0c93ee636e681e7925cdf8fad76f201e",
+   "key": "c042a1babb14283a41e4d5720cb16acc",
    "sha": {
-    "assets/voice/help-surprise-cake.mp3": "7491e7a96981ca33"
+    "assets/voice/help-surprise-cake.mp3": "c07b585dd5936781"
    }
   },
   "feedback-surprise-cake-success": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "7b4a13efed9f54d099a872be2400af09",
+   "key": "d3d6ee3676508dfd327afc429e7ec2af",
    "sha": {
-    "assets/voice/feedback-surprise-cake-success.mp3": "6b18d5b438b5386a"
+    "assets/voice/feedback-surprise-cake-success.mp3": "e7af85cb5168927e"
    }
   },
   "feedback-surprise-cake-actor": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "10de205647151123d116170fb0618ed8",
+   "key": "8c6920fab99a434124af926e466fb7e8",
    "sha": {
-    "assets/voice/feedback-surprise-cake-actor.mp3": "78f1866f862f8c12"
+    "assets/voice/feedback-surprise-cake-actor.mp3": "85818b65cf1b9f28"
    }
   },
   "feedback-surprise-cake-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "a61c543af543d5551cf4acfdd3cd11b5",
+   "key": "e42a1ff5a06492f134741c4c637cee3d",
    "sha": {
-    "assets/voice/feedback-surprise-cake-destination.mp3": "06fce2d6afe9edf3"
+    "assets/voice/feedback-surprise-cake-destination.mp3": "a5690e6ae1604a0d"
    }
   },
   "feedback-surprise-cake-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "ee420e2d77a88ffa12909745d6171e35",
+   "key": "334d825b5ca00908427fe288d643c852",
    "sha": {
-    "assets/voice/feedback-surprise-cake-bin.mp3": "ed380495ea3353ff"
+    "assets/voice/feedback-surprise-cake-bin.mp3": "d45bc93a9e950be0"
    }
   },
   "mission-surprise-ribbon": {
@@ -639,54 +639,54 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "19f8f23df04e730caf445c925272f9c6",
+   "key": "d0ad8db0cbc4475a63b472b65b9f051a",
    "sha": {
-    "assets/voice/help-surprise-ribbon.mp3": "65c7aa5460f586c2"
+    "assets/voice/help-surprise-ribbon.mp3": "e151d2a325f566c8"
    }
   },
   "feedback-surprise-ribbon-success": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "23aba502f378d8bf1c3b2c64094dc48e",
+   "key": "70a2ee793cdf5930960bec2f228fb227",
    "sha": {
-    "assets/voice/feedback-surprise-ribbon-success.mp3": "76af48e06354b5d2"
+    "assets/voice/feedback-surprise-ribbon-success.mp3": "c146ca102c832550"
    }
   },
   "feedback-surprise-ribbon-actor": {
-   "role": "kkamong",
-   "voice": "몽군",
-   "tempo": 0.92,
-   "key": "8d3b8d0f9811cf90c5339bf40ca5ee1d",
+   "role": "marin",
+   "voice": "한결",
+   "tempo": 0.9,
+   "key": "7f7ca91b875344fd4058c9fee3a4b183",
    "sha": {
-    "assets/voice/feedback-surprise-ribbon-actor.mp3": "7fa75a7d52ef90aa"
+    "assets/voice/feedback-surprise-ribbon-actor.mp3": "95067cfe0365a6bd"
    }
   },
   "feedback-surprise-ribbon-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "dd35e9a35ee710b2981b870bc8e811dd",
+   "key": "206779dd3cfb784959956efe34299d5e",
    "sha": {
-    "assets/voice/feedback-surprise-ribbon-destination.mp3": "241aab230998d538"
+    "assets/voice/feedback-surprise-ribbon-destination.mp3": "f32818f9d95145e2"
    }
   },
   "feedback-surprise-ribbon-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "32cbfda6d6d1740a274c4d8d3d673a48",
+   "key": "3bd2c67fc54cbb8937b65c576fc42c8b",
    "sha": {
-    "assets/voice/feedback-surprise-ribbon-bin.mp3": "827a8daadf774de2"
+    "assets/voice/feedback-surprise-ribbon-bin.mp3": "8de0e15c8459fe95"
    }
   },
   "feedback-surprise-ribbon-order": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "ccd17c2529235836528f0c6a091c43de",
+   "key": "e4c6fc497802446af8b610a63d311574",
    "sha": {
-    "assets/voice/feedback-surprise-ribbon-order.mp3": "123dc0d2a1cc323b"
+    "assets/voice/feedback-surprise-ribbon-order.mp3": "5603497ebf638063"
    }
   },
   "mission-review-snacks": {
@@ -702,45 +702,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "9eb089bc2b176414f737e571487d3555",
+   "key": "a21e89a8eea8af4dbbf394c0851e2b1e",
    "sha": {
-    "assets/voice/help-review-snacks.mp3": "b353e70e5a5c26ce"
+    "assets/voice/help-review-snacks.mp3": "85e7fc1978595c2a"
    }
   },
   "feedback-review-snacks-success": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "dc01e263bb130af90fb8a8b765b63335",
+   "key": "1198fa51017ddba57bc390a92349ceec",
    "sha": {
-    "assets/voice/feedback-review-snacks-success.mp3": "5de3131e0690c58d"
+    "assets/voice/feedback-review-snacks-success.mp3": "3e6478ee2c4b30f9"
    }
   },
   "feedback-review-snacks-actor": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "10de205647151123d116170fb0618ed8",
+   "key": "a7301511d0c869a71ac3e99f24f3eab1",
    "sha": {
-    "assets/voice/feedback-review-snacks-actor.mp3": "78f1866f862f8c12"
+    "assets/voice/feedback-review-snacks-actor.mp3": "90e4c32fa58ba9fd"
    }
   },
   "feedback-review-snacks-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "a2a3c185802172a813e10a46550db885",
+   "key": "bb29c36208b1960a55f71b4347006889",
    "sha": {
-    "assets/voice/feedback-review-snacks-destination.mp3": "d948f93bbe5b7a9e"
+    "assets/voice/feedback-review-snacks-destination.mp3": "d0a49607fc3591ea"
    }
   },
   "feedback-review-snacks-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "6f4a0f822fecd194a8a96a1892e55683",
+   "key": "88d3b7b2d8e6178c8122cc9eba76cdeb",
    "sha": {
-    "assets/voice/feedback-review-snacks-bin.mp3": "c4979046a515d156"
+    "assets/voice/feedback-review-snacks-bin.mp3": "4373b3b83661f057"
    }
   },
   "mission-review-paper": {
@@ -756,45 +756,45 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "d83763a8fcc8ba125f4aac72952e5eed",
+   "key": "f45db8ad30badb6316b0d2dc093cc9d7",
    "sha": {
-    "assets/voice/help-review-paper.mp3": "63bcf8f8fa1231b6"
+    "assets/voice/help-review-paper.mp3": "150c799bb4498f34"
    }
   },
   "feedback-review-paper-success": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "502e415bb1ee1398633a3f542404c0cd",
+   "key": "58ae52a4077501853c803694f75e1fd0",
    "sha": {
-    "assets/voice/feedback-review-paper-success.mp3": "a012dcfc3ec50585"
+    "assets/voice/feedback-review-paper-success.mp3": "23eda05ee759a6e1"
    }
   },
   "feedback-review-paper-actor": {
-   "role": "kkamong",
-   "voice": "몽군",
-   "tempo": 0.92,
-   "key": "8d3b8d0f9811cf90c5339bf40ca5ee1d",
+   "role": "marin",
+   "voice": "한결",
+   "tempo": 0.9,
+   "key": "d2a5a216ed76cf12b50738b3dfb2f024",
    "sha": {
-    "assets/voice/feedback-review-paper-actor.mp3": "7fa75a7d52ef90aa"
+    "assets/voice/feedback-review-paper-actor.mp3": "9e229e0e98b3368a"
    }
   },
   "feedback-review-paper-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "3196a74a68d99006125eb52c292cf64d",
+   "key": "f39923f506ff8bd6ef07c8f76f66a9dd",
    "sha": {
-    "assets/voice/feedback-review-paper-destination.mp3": "c45f1beefd30cd1c"
+    "assets/voice/feedback-review-paper-destination.mp3": "1d646f9d6a922107"
    }
   },
   "feedback-review-paper-bin": {
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "eac3aad33bc5950803d12671fb5005b7",
+   "key": "dc93197b85cc5f50a9912b88fac8a68d",
    "sha": {
-    "assets/voice/feedback-review-paper-bin.mp3": "b4a464287af2cc06"
+    "assets/voice/feedback-review-paper-bin.mp3": "bd7f8b16e6a1b409"
    }
   },
   "mission-review-cake": {
@@ -810,54 +810,54 @@
    "role": "teacher",
    "voice": "효은",
    "tempo": 0.92,
-   "key": "74f4f556c005882b2b1d89a55c1ec773",
+   "key": "a6e78b5cb41d6771786b5b89ca089386",
    "sha": {
-    "assets/voice/help-review-cake.mp3": "ef2cf9ad9efc1bd9"
+    "assets/voice/help-review-cake.mp3": "0a045d3b8a474d70"
    }
   },
   "feedback-review-cake-success": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "1c209a0be0ff1da4fb2a960b7bae5f49",
+   "key": "a450d2bda29a8027d7dd5ad760772974",
    "sha": {
-    "assets/voice/feedback-review-cake-success.mp3": "e4f44442418d0e34"
+    "assets/voice/feedback-review-cake-success.mp3": "c8859a4afdcd1bf3"
    }
   },
   "feedback-review-cake-actor": {
-   "role": "kkamong",
-   "voice": "몽군",
-   "tempo": 0.92,
-   "key": "8d3b8d0f9811cf90c5339bf40ca5ee1d",
+   "role": "marin",
+   "voice": "한결",
+   "tempo": 0.9,
+   "key": "3a3583c897c68a6c04d67f4502d321c3",
    "sha": {
-    "assets/voice/feedback-review-cake-actor.mp3": "7fa75a7d52ef90aa"
+    "assets/voice/feedback-review-cake-actor.mp3": "6198004a1e28e2ea"
    }
   },
   "feedback-review-cake-destination": {
    "role": "mongle",
    "voice": "선하",
    "tempo": 0.92,
-   "key": "a2a3c185802172a813e10a46550db885",
+   "key": "67dd2c37dd390f3305c27752c9a054a0",
    "sha": {
-    "assets/voice/feedback-review-cake-destination.mp3": "d948f93bbe5b7a9e"
+    "assets/voice/feedback-review-cake-destination.mp3": "b1821308a7f976bc"
    }
   },
   "feedback-review-cake-bin": {
    "role": "kkamong",
    "voice": "몽군",
    "tempo": 0.92,
-   "key": "ee420e2d77a88ffa12909745d6171e35",
+   "key": "5ba1541886efb8e98242ba48e66f5e7e",
    "sha": {
-    "assets/voice/feedback-review-cake-bin.mp3": "ed380495ea3353ff"
+    "assets/voice/feedback-review-cake-bin.mp3": "4d1629918a984a52"
    }
   },
   "feedback-review-cake-order": {
    "role": "marin",
    "voice": "한결",
    "tempo": 0.9,
-   "key": "ba30898c7a8ed19d293615f031c2030f",
+   "key": "a1adba9c4c8ce0b288d51e872ed3121b",
    "sha": {
-    "assets/voice/feedback-review-cake-order.mp3": "0ae1488ac67b1a73"
+    "assets/voice/feedback-review-cake-order.mp3": "baf844041795ec64"
    }
   }
  }

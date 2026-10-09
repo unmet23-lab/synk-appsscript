@@ -3,421 +3,421 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.23초·끝 0.97초 여백(지금 파일 실측) + 지금 build-narration.py와 같은 loudnorm I=-16 TP=-1 LRA=7 → MP3 mono 24kHz 64kbps",
- "updatedAt": "2026-10-07T11:21:48.305Z",
+ "updatedAt": "2026-10-09T09:11:01.962Z",
  "voices": {
   "narrator": {
    "label": "해설",
-   "id": "tc_69f2e455ea79fd197aa0476f",
-   "name": "서현",
-   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
-   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
-   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
+   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
+   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
   }
  },
  "lines": {
   "t0q0v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "9390c8c9dc57fb7ceb5836a261889977",
+   "key": "660ce0ea3e68736e5990ea475746097f",
    "sha": {
-    "assets/narration/t0q0v0.mp3": "235cb3295607f114"
+    "assets/narration/t0q0v0.mp3": "e6bb1b3719dfe975"
    }
   },
   "t0q0v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "5faeed5bf0628b00118647baa4cf9815",
+   "key": "3f3ccf6e6a8f7671723aefb64a6eaa71",
    "sha": {
-    "assets/narration/t0q0v1.mp3": "f80c2cca81cb5333"
+    "assets/narration/t0q0v1.mp3": "b5e08e90e66a2571"
    }
   },
   "t0q0r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "ba81809f6561679504259ed488ed2816",
+   "key": "8dd48f1e9dc50443c93bda3f3bb93566",
    "sha": {
-    "assets/narration/t0q0r.mp3": "b26e54c20cadbe41"
+    "assets/narration/t0q0r.mp3": "b0716c10bc9f57c8"
    }
   },
   "t0q1v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "f244175509e4dc9eec6bddf0b447feb2",
+   "key": "da3cd56a8cdf04736c9c297d77802c84",
    "sha": {
-    "assets/narration/t0q1v0.mp3": "d8e98675b82b40b2"
+    "assets/narration/t0q1v0.mp3": "3a82a655dd25d83e"
    }
   },
   "t0q1v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "6ba3937393cdd169ebbb8c5eb10cfedb",
+   "key": "b9db011389fb03fac1e6734df9fe75d4",
    "sha": {
-    "assets/narration/t0q1v1.mp3": "abeae87bf8df20ac"
+    "assets/narration/t0q1v1.mp3": "9b5bc3b480daa433"
    }
   },
   "t0q1r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "95ad86011665724136e58ab38537aee3",
+   "key": "4d93b9b1152e8b0a167d8ac67102b11d",
    "sha": {
-    "assets/narration/t0q1r.mp3": "b4e1c4160525f77e"
+    "assets/narration/t0q1r.mp3": "bcf66fe8e0f46a65"
    }
   },
   "t0q2v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "e13da184d9f083f2040295c3ce248b7b",
+   "key": "b9cda6854200ac77e4a8a1cca2fe8358",
    "sha": {
-    "assets/narration/t0q2v0.mp3": "dc2ff6df11ef9ac2"
+    "assets/narration/t0q2v0.mp3": "e56b7d7b176d2fb1"
    }
   },
   "t0q2v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "5e92f3f9d57ee066125f27773e2b2472",
+   "key": "7cb1665a496307210fef23382d751348",
    "sha": {
-    "assets/narration/t0q2v1.mp3": "27617734b16fac1b"
+    "assets/narration/t0q2v1.mp3": "4e77f1ac6869fbc8"
    }
   },
   "t0q2r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "29e58d6f09a9167d9d151e2f9c54a115",
+   "key": "b2e1d10e97250f31a21fc42c56889d98",
    "sha": {
-    "assets/narration/t0q2r.mp3": "1e02f1dfb079a03b"
+    "assets/narration/t0q2r.mp3": "a95d5300e5ac8d1c"
    }
   },
   "t0q3v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "7ca5b876a2bdfe91b8a4dcc8733d7071",
+   "key": "1be5b4057c5c8c12a1d076faef287e12",
    "sha": {
-    "assets/narration/t0q3v0.mp3": "5a5ce5d335b5826c"
+    "assets/narration/t0q3v0.mp3": "0a0e42688526e80c"
    }
   },
   "t0q3v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "c416779fb89e1faef4c95d521154de46",
+   "key": "1c29189c8efce6e52758e97abc71b61a",
    "sha": {
-    "assets/narration/t0q3v1.mp3": "aa85280dfe72c406"
+    "assets/narration/t0q3v1.mp3": "dadbb053b836d446"
    }
   },
   "t0q3r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "3aa1512bf5cf1e11dea6cab9cabf36d2",
+   "key": "460bac542d37b042ecc886725a9fd62a",
    "sha": {
-    "assets/narration/t0q3r.mp3": "3c87e7b35341ce7b"
+    "assets/narration/t0q3r.mp3": "11753064ec9018dc"
    }
   },
   "t0q4v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "793ca87a8fec6c242a446e7f51629c00",
+   "key": "db200a0ba9c4053c277885444142f6a0",
    "sha": {
-    "assets/narration/t0q4v0.mp3": "987dda51ba1cbed2"
+    "assets/narration/t0q4v0.mp3": "ed3b7b712f678667"
    }
   },
   "t0q4v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "66b45d114b46544970461d2e7e859e39",
+   "key": "ab5eb3b75371a73c9f180485a6e454fb",
    "sha": {
-    "assets/narration/t0q4v1.mp3": "ae701f167e70483d"
+    "assets/narration/t0q4v1.mp3": "0e2c7de6d14f03c1"
    }
   },
   "t0q4r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "e5cc49dc9ca042ed57b11b28ea310bd9",
+   "key": "1c7b8f42c780e6f2bed3b4fa6bc4ddf5",
    "sha": {
-    "assets/narration/t0q4r.mp3": "93f38ff5bf8524b5"
+    "assets/narration/t0q4r.mp3": "1789199f8081013d"
    }
   },
   "t1q0v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "d80dffaabcedc1956690cab1a0750be1",
+   "key": "87c5d96ed83411fc4de9e8f158f96fe7",
    "sha": {
-    "assets/narration/t1q0v0.mp3": "2f93a2eec82507f2"
+    "assets/narration/t1q0v0.mp3": "7060c981bf3d91f2"
    }
   },
   "t1q0v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "2ccb4188c0d2857d08312ec611ad7dc0",
+   "key": "450416bb413c4a971c0d89d684c89381",
    "sha": {
-    "assets/narration/t1q0v1.mp3": "90d88a894ab00533"
+    "assets/narration/t1q0v1.mp3": "10e7ee5e67afca74"
    }
   },
   "t1q0r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "ce99a83f59d64faa21fa27b844081ec7",
+   "key": "50122e55b9e0899c9ee4930576a4d72e",
    "sha": {
-    "assets/narration/t1q0r.mp3": "630f709949548bdf"
+    "assets/narration/t1q0r.mp3": "93e854dc717609f7"
    }
   },
   "t1q1v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "45a5322fc7a41c874a28abd951fc0e4f",
+   "key": "0c5c0d709273a876de770519395d461a",
    "sha": {
-    "assets/narration/t1q1v0.mp3": "c7ad58ae93d16241"
+    "assets/narration/t1q1v0.mp3": "449fdb4a5ee528dd"
    }
   },
   "t1q1v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "acbcda3497a9e8b35800963506de4984",
+   "key": "d9cac38bbbd57a0dae14b5013c5b7530",
    "sha": {
-    "assets/narration/t1q1v1.mp3": "c45b6d0b2d120b88"
+    "assets/narration/t1q1v1.mp3": "4135f90014bb0dc0"
    }
   },
   "t1q1r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "278552fba8dcf57d122053d2bc4366d9",
+   "key": "c66faaeb30dba5edc2a8d8e7608ad939",
    "sha": {
-    "assets/narration/t1q1r.mp3": "f1e1ff578028e53c"
+    "assets/narration/t1q1r.mp3": "9b5c819b91607ec6"
    }
   },
   "t1q2v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "931091a498c78eb8f8d7fe8b0ddbee2d",
+   "key": "de740758b58a9cecb86867232b3e4ea7",
    "sha": {
-    "assets/narration/t1q2v0.mp3": "caf38dd0cb936351"
+    "assets/narration/t1q2v0.mp3": "6e4c21c80a4d1575"
    }
   },
   "t1q2v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "a715aeaf294dc1ae386de404a3573984",
+   "key": "1f15117098cd18a106903061f3213c04",
    "sha": {
-    "assets/narration/t1q2v1.mp3": "726a69831fbe11d6"
+    "assets/narration/t1q2v1.mp3": "e790955d44c020c7"
    }
   },
   "t1q2r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "2c17460aa7625230d6125d16cb9f939c",
+   "key": "57b6f622527b0898d01ff0bd8d6b94eb",
    "sha": {
-    "assets/narration/t1q2r.mp3": "b2b750b2c3e7fc5e"
+    "assets/narration/t1q2r.mp3": "5e66af2b6a1f0cd7"
    }
   },
   "t1q3v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "d74552e449b4cdb542cae6ed380120bb",
+   "key": "46cd1f469cdba00566e86c875a36584c",
    "sha": {
-    "assets/narration/t1q3v0.mp3": "88563e2373f0c2f3"
+    "assets/narration/t1q3v0.mp3": "f16910a02346c9e6"
    }
   },
   "t1q3v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "5596d9a7ed3ec97602d505ceb6572745",
+   "key": "55469560b92b05dec37902726e634f2e",
    "sha": {
-    "assets/narration/t1q3v1.mp3": "a509c3b807555d62"
+    "assets/narration/t1q3v1.mp3": "2e1afbeeeea0fce5"
    }
   },
   "t1q3r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "77382fe014984649929023f54712a1e9",
+   "key": "1a81a56f5fc4e982ca99fc381e14bd2d",
    "sha": {
-    "assets/narration/t1q3r.mp3": "46ef98e37007f7d8"
+    "assets/narration/t1q3r.mp3": "c698efbccc73a6b9"
    }
   },
   "t1q4v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "f068757bcf2d6ebbbc80d06af5832ce9",
+   "key": "08fea8857835682d16fc92abcaa163e6",
    "sha": {
-    "assets/narration/t1q4v0.mp3": "d781ad25c507b3d6"
+    "assets/narration/t1q4v0.mp3": "bdec506a4f5388a9"
    }
   },
   "t1q4v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "f93e9bd5ff5ba33f93833ea8af95c76c",
+   "key": "c2173e03460f5cc6d9de70a2abe04dc6",
    "sha": {
-    "assets/narration/t1q4v1.mp3": "837c84b2a9a44cea"
+    "assets/narration/t1q4v1.mp3": "c837ec4d11a6c35a"
    }
   },
   "t1q4r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "e0cb87bf2851460256883b0334b89ffd",
+   "key": "7c32529223367e641ed685448e887a15",
    "sha": {
-    "assets/narration/t1q4r.mp3": "8a30fc13e63ab0a2"
+    "assets/narration/t1q4r.mp3": "5cf3875f2ac554cc"
    }
   },
   "t2q0v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "b4c3d9bb45df30e8666405d1f1abb726",
+   "key": "edb02020aa8061b183434909bd408b4b",
    "sha": {
-    "assets/narration/t2q0v0.mp3": "6e8e636b9e767e16"
+    "assets/narration/t2q0v0.mp3": "b1c497cf54e5fb50"
    }
   },
   "t2q0v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "4a5fe2f8c85fc751b33967b33210f244",
+   "key": "4ac855d3cca408bd58ca9c188f86bbe8",
    "sha": {
-    "assets/narration/t2q0v1.mp3": "2387e42bd0174875"
+    "assets/narration/t2q0v1.mp3": "74e9fa9606877e5c"
    }
   },
   "t2q0r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "646e43bda1ddc5f0af164590109c6099",
+   "key": "d8eb726a3f436cc1a3d5b091df48cf3d",
    "sha": {
-    "assets/narration/t2q0r.mp3": "c6a49d6f8fad3abd"
+    "assets/narration/t2q0r.mp3": "2059401f308963d2"
    }
   },
   "t2q1v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "52b3db889fd568542e0e738084aca090",
+   "key": "f83d4923495c0a9ee2fcc8ae4f954c0b",
    "sha": {
-    "assets/narration/t2q1v0.mp3": "9d5d9d4d70e7b14c"
+    "assets/narration/t2q1v0.mp3": "c854012aa58cc929"
    }
   },
   "t2q1v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "2dbfeed6025f8e1535dc8624424673a7",
+   "key": "5c92787007e896abf133c4ab53ee23bf",
    "sha": {
-    "assets/narration/t2q1v1.mp3": "9c4697d7af134c80"
+    "assets/narration/t2q1v1.mp3": "ff08cb2ac16d45b5"
    }
   },
   "t2q1r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "c6d0535a8064d0403be7b160d0a39e3d",
+   "key": "01ee7775fc14fbe96f6261b42d389916",
    "sha": {
-    "assets/narration/t2q1r.mp3": "be8bf9702f5dbd3f"
+    "assets/narration/t2q1r.mp3": "121db91859f7630a"
    }
   },
   "t2q2v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "42bf09fe64066a3ca6a595dce0c6b77c",
+   "key": "db7210ec0bf72f1dafe7b5c1d0b5317e",
    "sha": {
-    "assets/narration/t2q2v0.mp3": "f9bed1cad13b934c"
+    "assets/narration/t2q2v0.mp3": "ca7bad11c7c76f58"
    }
   },
   "t2q2v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "ac8a6eb091e8e1353d04662bfb98441d",
+   "key": "defcaf7303f7ca44c977cb2fafed7465",
    "sha": {
-    "assets/narration/t2q2v1.mp3": "d50be756cd69870f"
+    "assets/narration/t2q2v1.mp3": "d087148d7ce40d7e"
    }
   },
   "t2q2r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "fcb693b45480f5d31366b9e43d46fdfe",
+   "key": "d84610ca055c9b2c348262861489e4e3",
    "sha": {
-    "assets/narration/t2q2r.mp3": "d3275365111d9ce3"
+    "assets/narration/t2q2r.mp3": "5b37298219f2ffde"
    }
   },
   "t2q3v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "3a6f4a25fc8d472dfd5b6e01b8737acf",
+   "key": "26c17764072fea3fb6f39c49f7f99340",
    "sha": {
-    "assets/narration/t2q3v0.mp3": "506ff41e767b1fcf"
+    "assets/narration/t2q3v0.mp3": "9bb8c3d0c0a891cf"
    }
   },
   "t2q3v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "b3cf7aedd162d543dd545afc925c6d24",
+   "key": "97b3bd196ba66f91a101bc64095a8f4b",
    "sha": {
-    "assets/narration/t2q3v1.mp3": "e5a434916545180e"
+    "assets/narration/t2q3v1.mp3": "637ec0c880fef06e"
    }
   },
   "t2q3r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "155ce9b1fda42406053dcb481023b437",
+   "key": "e4ee1125e4666d6d5bc6869482ffb8ea",
    "sha": {
-    "assets/narration/t2q3r.mp3": "88c5ba830988c396"
+    "assets/narration/t2q3r.mp3": "51f7d63a20244c51"
    }
   },
   "t2q4v0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "600817c5d3fdb5879d9a3e508989831b",
+   "key": "f9930703d46ab8ba4564937e83055175",
    "sha": {
-    "assets/narration/t2q4v0.mp3": "2a785fe467a17a58"
+    "assets/narration/t2q4v0.mp3": "6a22ab50145505c2"
    }
   },
   "t2q4v1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "1f8f913fff9390750522195a2037a201",
+   "key": "0810c9f49f51de6c12240871dfc5d550",
    "sha": {
-    "assets/narration/t2q4v1.mp3": "6475237272ae4b06"
+    "assets/narration/t2q4v1.mp3": "6ffb7ea2906aea27"
    }
   },
   "t2q4r": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "8c9382380d45279b078fffa30e4c9cbb",
+   "key": "f2cece0ed3ca5ff009b2387de433c890",
    "sha": {
-    "assets/narration/t2q4r.mp3": "8b728744bf8f264f"
+    "assets/narration/t2q4r.mp3": "e644504e47388fbd"
    }
   }
  }

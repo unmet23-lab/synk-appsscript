@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps",
- "updatedAt": "2026-10-07T11:21:54.242Z",
+ "updatedAt": "2026-10-09T09:11:09.378Z",
  "voices": {
   "mongle": {
    "label": "몽글",
@@ -15,11 +15,11 @@
   },
   "narrator": {
    "label": "해설",
-   "id": "tc_69f2e455ea79fd197aa0476f",
-   "name": "서현",
-   "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
-   "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
-   "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+   "id": "tc_666a9871abcf27a5169850d0",
+   "name": "소진",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
+   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
+   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
   }
  },
  "lines": {
@@ -448,74 +448,74 @@
   },
   "intro": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "2a4fa0d61392170ac780046a4ffa6586",
+   "key": "c0c7d85cd2bcd5d0cde279147667ab2c",
    "sha": {
-    "assets/narration/intro.mp3": "6dfad0a252555c0c"
+    "assets/narration/intro.mp3": "5a01d2ae84abb9ad"
    }
   },
   "practice-done": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "ebddb3f11446c32258ab637f5e1e69ba",
+   "key": "8fd274029fb20f5f2ff0a00a2519fdc8",
    "sha": {
-    "assets/narration/practice-done.mp3": "822ce8e495d3587c"
+    "assets/narration/practice-done.mp3": "6fd0ee84dd3442b8"
    }
   },
   "daily-intro": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "d6b64d047f9a244b303458e6b3df7672",
+   "key": "6233454a420fd6f258db7b7bc0515184",
    "sha": {
-    "assets/narration/daily-intro.mp3": "65998877a854e710"
+    "assets/narration/daily-intro.mp3": "57cbc8e21fe317a1"
    }
   },
   "daily-best": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "cc9af34cfa129fa65347aaf078cdabe5",
+   "key": "3763e822a529975de53f87c829ceba60",
    "sha": {
-    "assets/narration/daily-best.mp3": "6156b4b7e8df112d"
+    "assets/narration/daily-best.mp3": "5a9e8a2bba51ee06"
    }
   },
   "result-3": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "717b99fda6b5bf234196fbe92a5323b0",
+   "key": "fa0a276cfe009383873311f9fb2c4978",
    "sha": {
-    "assets/narration/result-3.mp3": "e411bb127226a736"
+    "assets/narration/result-3.mp3": "e2d054bc1abee9bb"
    }
   },
   "result-2": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "f90178a7f8160cb3c04fbad83609ccdb",
+   "key": "7b97c2ab0b62a0252fc4beb1a86c9b50",
    "sha": {
-    "assets/narration/result-2.mp3": "678cc7b5a4bba307"
+    "assets/narration/result-2.mp3": "ffef257fbe53fa59"
    }
   },
   "result-1": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "6c5edcb89aa0ad2187f9284b49653b80",
+   "key": "d8cb6249784caa148e7669b71e2f581f",
    "sha": {
-    "assets/narration/result-1.mp3": "99b2ca0ed9b44fbd"
+    "assets/narration/result-1.mp3": "2844315672f5e015"
    }
   },
   "result-0": {
    "role": "narrator",
-   "voice": "서현",
+   "voice": "소진",
    "tempo": 0.94,
-   "key": "2a7c69af7c40adc3a93d52805337e56c",
+   "key": "f34e36ce0975e64dcca599b120d63aca",
    "sha": {
-    "assets/narration/result-0.mp3": "a40b19b4cff424e0"
+    "assets/narration/result-0.mp3": "516e62b84d3c18c5"
    }
   }
  }

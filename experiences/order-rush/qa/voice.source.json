@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.13초·끝 0.83초 여백, -22.5 LUFS 고정 이득 → wav 22050Hz 16bit mono (지금 Windows 음성 파일의 실측과 같게)",
- "updatedAt": "2026-10-07T11:21:59.536Z",
+ "updatedAt": "2026-10-09T09:12:32.637Z",
  "voices": {
   "bear": {
    "label": "곰(김보리, 21살)",
@@ -176,18 +176,18 @@
    "role": "ducks",
    "voice": "은경",
    "tempo": 0.92,
-   "key": "0d1973953172e762926c6b8a5ae51a86",
+   "key": "ad53c75ed3ac00ed2c4c02497f21441b",
    "sha": {
-    "audio/o08.wav": "bd418d40f6a009ec"
+    "audio/o08.wav": "9b49c941e4a8713c"
    }
   },
   "o09": {
    "role": "hedgehog",
    "voice": "주원",
    "tempo": 0.92,
-   "key": "2bfbe75ab8b8902546c91366fce65b04",
+   "key": "9e50813b6570388c715b70de5550edad",
    "sha": {
-    "audio/o09.wav": "e2fcefc6303b9e92"
+    "audio/o09.wav": "210cb457e2e63095"
    }
   },
   "o10": {
@@ -203,9 +203,9 @@
    "role": "penguin",
    "voice": "다은",
    "tempo": 0.92,
-   "key": "107b01e1b00fdab9e611e7a4918f3a23",
+   "key": "fbbf9ed6a94add72011cda8e29bacbb4",
    "sha": {
-    "audio/o11.wav": "02e9259cf3165e1b"
+    "audio/o11.wav": "f51bb27de627c4c1"
    }
   },
   "o12": {
