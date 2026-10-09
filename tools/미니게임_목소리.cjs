@@ -116,10 +116,13 @@ async function auditionTasks(body, casting) {
   for (const l of lines) {
     const job = all.find(j => j.game === l.game && j.id === l.id);
     if (!job) throw Error(`줄 없음: ${l.game}/${l.id}`);
+    // 발음 시험: 소리로 읽을 글을 바꿔 구워 볼 수 있다(text). 같은 줄의 여러 글은 tag로 가른다(파일 이름 <id>~<tag>).
+    const text = l.text ? String(l.text) : job.text, tag = l.tag ? String(l.tag) : '';
+    if (tag && !/^[a-z0-9-]{1,20}$/.test(tag)) throw Error('tag는 영문 소문자·숫자·- 20자까지: ' + tag);
     for (const voice of voices) for (const emotion of emotions) {
       const { previousText, nextText, ...base } = job.voice;
       const v = { ...base, voice: { id: voice.id, name: voice.name }, emotion, ...(emotion === V.SMART ? { previousText: String(l.previous || ''), nextText: String(l.next || '') } : {}) };
-      tasks.push({ name, emotion, job: { ...job, voice: v, key: V.cacheKey(v, job.text) } });
+      tasks.push({ name, emotion, tag, job: { ...job, text, voice: v, key: V.cacheKey(v, text) } });
     }
   }
   return tasks;
@@ -133,10 +136,10 @@ async function buildAudition(tasks) {
     try {
       const r = await adapter.process(t.job, raw, path.join(stageRoot, v.voice.id, t.emotion));
       const main = r.files[t.job.outputs.find(o => o.endsWith('.mp3')) || t.job.outputs[0]];
-      const rel = [v.voice.id, t.emotion, `${t.job.game}__${t.job.id}${path.extname(main)}`].join('/');
+      const rel = [v.voice.id, t.emotion, `${t.job.game}__${t.job.id}${t.tag ? '~' + t.tag : ''}${path.extname(main)}`].join('/');
       fs.mkdirSync(path.dirname(path.join(dir, ...rel.split('/'))), { recursive: true });
       fs.copyFileSync(main, path.join(dir, ...rel.split('/')));
-      index.push({ game: t.job.game, id: t.job.id, role: t.job.role, text: t.job.text, voice: v.voice, emotion: t.emotion, tempo: v.tempo,
+      index.push({ game: t.job.game, id: t.job.id, ...(t.tag ? { tag: t.tag } : {}), role: t.job.role, text: t.job.text, voice: v.voice, emotion: t.emotion, tempo: v.tempo,
         ...(t.emotion === V.SMART ? { previous: v.previousText, next: v.nextText } : {}), seconds: Math.round((await G.probe(main)).duration * 1000) / 1000,
         file: rel, key: t.job.key, problems: adapter.validate(t.job, r.metrics) });
     } catch (e) { say(`들어 보기 후처리 실패 ${t.job.game}/${t.job.id}: ${e.message}`); }

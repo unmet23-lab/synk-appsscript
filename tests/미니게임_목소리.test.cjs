@@ -52,9 +52,15 @@ test('미리보기 합계: 게임마다 줄·글자·출력 파일 수가 지금
   assert.equal(roles, lines, '배역별 줄의 합 = 전체');
 });
 
-test('배역: 해설은 서현, 바람은 혜리, 배역마다 기본 + 후보 둘, 성별·감정 지원, 한 게임 안에서 목소리가 겹치지 않는다', async () => {
+test('배역: 해설은 하나·소진 가운데 게임마다 한 명(섞지 않음), 바람은 혜리, 배역마다 기본 + 후보 둘, 성별·감정 지원, 한 게임 안에서 목소리가 겹치지 않는다', async () => {
   const all = await jobs();
-  assert.equal(casting.roles.narrator.voice.id, 'tc_69f2e455ea79fd197aa0476f');
+  const HANA_SOJIN = ['tc_61659cc118732016a95fe7c6', 'tc_666a9871abcf27a5169850d0'];   // 10-09 유호님 「한 컨텐츠당 하나 OR 소진」
+  assert.ok(HANA_SOJIN.includes(casting.roles.narrator.voice.id));
+  for (const game of new Set(all.filter(j => j.role === 'narrator').map(j => j.game))) {
+    const voices = new Set(all.filter(j => j.game === game && j.role === 'narrator').map(j => j.voice.voice.id));
+    assert.equal(voices.size, 1, `${game}: 해설 목소리는 한 명`);
+    assert.ok(HANA_SOJIN.includes([...voices][0]), `${game}: 해설은 하나 또는 소진`);
+  }
   assert.equal(casting.roles.wind.voice.id, 'tc_62e8f21e979b3860fe2f6a24');
   assert.deepEqual(V.castingProblems(casting, all, catalog), []);
   const used = new Set(all.map(j => j.role));
@@ -82,11 +88,11 @@ test('원본 저장소 열쇠: 목소리·설정·글이 모두 같을 때만 �
 });
 
 test('감정: 프리셋 요청은 모양 그대로(받아 둔 원본 열쇠 유지), smart는 앞뒤 글이 들어가고 열쇠가 다르다', async () => {
-  const job = { game: 'korean-racing', id: 'intro', role: 'narrator', context: { previous: '신호가 바뀌었어요.' } };
+  const job = { game: 'korean-racing', id: 'cue-picture', role: 'narrator', context: { previous: '신호가 바뀌었어요.' } };   // 보통으로 두는 고르기 안내
   const v = V.voiceFor(casting, job);
   assert.deepEqual(V.request(v, '출발!').prompt, { emotion_type: 'preset', emotion_preset: v.emotion, emotion_intensity: v.intensity });
   assert.ok(!('previousText' in v), '프리셋에는 앞뒤 글이 없다');
-  const smart = extra => ({ ...casting, lines: { 'korean-racing/intro': { emotion: V.SMART, ...extra } } });
+  const smart = extra => ({ ...casting, lines: { 'korean-racing/cue-picture': { emotion: V.SMART, ...extra } } });
   const s = V.voiceFor(smart(), job);
   assert.deepEqual(V.request(s, '출발!').prompt, { emotion_type: 'smart', previous_text: '신호가 바뀌었어요.', next_text: '' });
   assert.notEqual(V.cacheKey(s, '출발!'), V.cacheKey(v, '출발!'));
@@ -94,6 +100,18 @@ test('감정: 프리셋 요청은 모양 그대로(받아 둔 원본 열쇠 유�
   assert.equal(V.voiceFor(smart({ previousText: '줄별 앞 글' }), job).previousText, '줄별 앞 글', '줄별 설정이 게임이 준 앞뒤보다 먼저');
   assert.deepEqual(V.castingProblems({ ...casting, defaults: { ...casting.defaults, emotion: V.SMART } }, await jobs(), catalog), [], 'smart는 ssfm-v30 모든 목소리에서');
   if (catalog) assert.match(V.castingProblems({ ...casting, defaults: { ...casting.defaults, emotion: 'excited' } }, await jobs(), catalog).join('\n'), /감정\(excited\)을 지원하지 않음/);
+});
+
+test('해설 연출: 감정(smart)은 앞 글이나 뒤 글이 있는 해설 줄에만, 낱말·보기·문제·풀이·리듬 문장은 보통', async () => {
+  const all = await jobs(), smart = all.filter(j => j.voice.emotion === V.SMART);
+  assert.ok(smart.length > 0);
+  for (const j of smart) {
+    assert.equal(j.role, 'narrator', `${j.game}/${j.id}: 감정은 해설에만(다른 배역은 아직 normal)`);
+    assert.ok((j.voice.previousText || j.voice.nextText || '').length > 0, `${j.game}/${j.id}: 앞뒤 글`);
+  }
+  const plain = all.filter(j => (j.game === 'korean-racing' && /^(w\d+|[cf]\d+q\d+(q|a|o\d+)|lane-.+|cue-.+|answer)$/.test(j.id)) || j.game === 'korean-rhythm');
+  assert.ok(plain.length > 2400);
+  for (const j of plain) assert.notEqual(j.voice.emotion, V.SMART, `${j.game}/${j.id}`);
 });
 
 test('들어 보기: 줄 × 목소리 × 감정마다 하나, smart에만 앞뒤 글, 모르는 줄·감정은 거절', async () => {
@@ -109,6 +127,11 @@ test('들어 보기: 줄 × 목소리 × 감정마다 하나, smart에만 앞뒤
   await assert.rejects(TOOL.auditionTasks({ ...body, lines: [{ game: 'talk-rally', id: 'nope' }] }, casting), /줄 없음/);
   await assert.rejects(TOOL.auditionTasks({ ...body, emotions: ['excited'] }, casting), /모르는 감정/);
   await assert.rejects(TOOL.auditionTasks({ ...body, name: '../x' }, casting), /이름/);
+  // 발음 시험: 소리로 읽을 글을 바꿔 구울 수 있고 tag로 파일을 가른다
+  const variant = await TOOL.auditionTasks({ ...body, voices: [sojin], emotions: ['normal'], lines: [{ game: 'korean-racing', id: 'w0138', text: '이 년.', tag: 'two' }] }, casting);
+  assert.equal(variant.length, 1); assert.equal(variant[0].job.text, '이 년.'); assert.equal(variant[0].tag, 'two');
+  assert.equal(variant[0].job.key, V.cacheKey(variant[0].job.voice, '이 년.'));
+  await assert.rejects(TOOL.auditionTasks({ ...body, lines: [{ game: 'korean-racing', id: 'w0138', tag: 'Bad Tag' }] }, casting), /tag/);
 });
 
 test('샘플: 배역마다 두 줄, 후보까지면 목소리마다 같은 두 줄', async () => {
@@ -160,6 +183,23 @@ test('후처리: 게임마다 지금 파일과 같은 형식(코덱·표본율·
         for (const k of ['codec', 'sampleRate', 'channels', 'bitRate', 'bits']) assert.equal(made[k], now[k], `${game}/${rel} ${k}`);
       }
     }
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test('레이싱 「년」·「년대」: 수를 붙여 구운 원본을 받은 낱말 시각으로 그 낱말부터 잘라 쓴다', { skip: !hasFfmpeg && 'ffmpeg 없음' }, async () => {
+  const all = await jobs(), j = all.find(x => x.game === 'korean-racing' && x.id === 'w0138');
+  assert.deepEqual([j.text, j.keep, j.display], ['이천 년.', '년.', '년'], '소리로 읽을 글·잘라 쓸 낱말·화면 글');
+  assert.equal(all.find(x => x.game === 'korean-racing' && x.id === 'w1001').keep, '년대.');
+  const dir = tmpRoot(), raw = path.join(dir, 'raw.wav'), racing = G.GAMES['korean-racing'];
+  fixtureWav(raw, 2.2);
+  fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '이천', start: 0.3, end: 0.9 }, { text: '년.', start: 1.1, end: 1.9 }] }));
+  try {
+    const whole = await racing.process({ ...j, keep: undefined }, raw, path.join(dir, 'a'));
+    const cut = await racing.process(j, raw, path.join(dir, 'b'));
+    assert.ok(cut.metrics.duration < whole.metrics.duration - 0.6, `잘라 쓴 소리 ${cut.metrics.duration}초 < 통째 ${whole.metrics.duration}초`);
+    assert.deepEqual(racing.validate(j, cut.metrics), []);
+    fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '이천', start: 0.3, end: 0.9 }] }));
+    await assert.rejects(racing.process(j, raw, path.join(dir, 'c')), /낱말 시각/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });
 

@@ -137,9 +137,22 @@ const RACING_SPOKEN = {
   f03q3q: '일정표. 수요일, 청소. 목요일, 장보기. 금요일, 요리. 장을 보는 날은 언제예요?',
   f06q4q: '도서관 행사. 오후 1시, 영화 보기. 오후 3시, 작가와의 만남. 작가와의 만남은 미리 신청한 사람만 참가할 수 있습니다. 지수는 신청하지 않았고 오후 2시에 도착했습니다. 지수에 대한 설명으로 맞는 것은 무엇이에요?',
   // 낱말 하나짜리 중 옛 목소리는 받아쓰기가 알아듣고 새 목소리는 크게 틀린 19개(10-07 로컬 받아쓰기 대조)는 끝에 마침표를 붙여 다시 굽는다.
-  f05q4o1: '집 안.', w1751: '너머.', w0476: '오래.', w1001: '년대.', w1595: '도로.', w1813: '쏟다.', w1416: '무용.', w1217: '모임.', w0397: '일하다.', w0486: '나중.',
-  w0604: '지하.', w0150: '그것.', w1799: '부근.', w1810: '시내.', w0393: '밑.', w1118: '군.', w0138: '년.', w0940: '뿐.', w1708: '오직.',
+  f05q4o1: '집 안.', w1751: '너머.', w0476: '오래.', w1595: '도로.', w1813: '쏟다.', w1416: '무용.', w1217: '모임.', w0397: '일하다.', w0486: '나중.',
+  w0604: '지하.', w0150: '그것.', w1799: '부근.', w1810: '시내.', w0393: '밑.', w1118: '군.', w0940: '뿐.', w1708: '오직.',
 };
+// 「년」(w0138)·「년대」(w1001)는 낱말 하나로 읽으면 두음법칙처럼 「연」으로 읽는다(10-07 서현·진희, 10-09 소진도 — 따옴표·붙임표·띄어쓰기로도 안 됨).
+// 앞에 수를 붙여 「이천 년.」처럼 구운 뒤, 받은 원본의 낱말 시각(words)으로 그 낱말부터 잘라 쓴다(앞 0.02초 여유, 0.015초 페이드 인).
+// 10-09 받아쓰기로 확인: 잘라 여백을 붙인 소리를 「년」·「년대」로 받아 적는다(낱말 하나만 읽은 소리는 「냥」·「연대」).
+const RACING_KEEP = { w0138: { text: '이천 년.', keep: '년.' }, w1001: { text: '이천 년대.', keep: '년대.' } };
+const racingSpoken = id => RACING_KEEP[id]?.text || RACING_SPOKEN[id];
+async function keepWord(raw, word, stage) {
+  const meta = readJson(raw.replace(/\.wav$/, '.json')), w = (meta.words || []).find(x => x.text === word);
+  if (!w) throw Error(`받은 원본에 낱말 시각이 없다: ${word}`);
+  const out = path.join(stage, '_keep', path.basename(raw));
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  await ff(['-ss', Math.max(0, w.start - 0.02).toFixed(3), '-i', raw, '-map_metadata', '-1', '-af', 'afade=t=in:st=0:d=0.015', '-c:a', 'pcm_s16le', out]);
+  return out;
+}
 const racing = {
   id: 'korean-racing', label: '레이싱', speakers: { narrator: 'narrator' },
   post: '앞 0.15초·끝 0.85초 여백, 고정 이득(MP3 -23.5 LUFS) → MP3 mono 24kHz 48kbps (지금 Windows 음성 파일의 실측과 같게)',
@@ -147,18 +160,20 @@ const racing = {
     const dir = gameDir(this.id, repo), out = [];
     for (const [manifest, jobsFile] of RACING_GROUPS)
       for (const j of readJson(path.join(dir, 'audio-source', jobsFile)))
-        out.push(job(this.id, j.id, 'narrator', RACING_SPOKEN[j.id] || j.text, [`assets/narration/${j.id}.mp3`], { group: manifest, ...(RACING_SPOKEN[j.id] ? { display: j.text } : {}) }));
+        out.push(job(this.id, j.id, 'narrator', racingSpoken(j.id) || j.text, [`assets/narration/${j.id}.mp3`],
+          { group: manifest, ...(racingSpoken(j.id) ? { display: j.text } : {}), ...(RACING_KEEP[j.id] ? { keep: RACING_KEEP[j.id].keep } : {}) }));
     return out;
   },
   current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'assets', 'narration'), /\.mp3$/).map(f => 'assets/narration/' + f); },
   shipped(repo = REPO) {
     const dir = path.join(gameDir(this.id, repo), 'assets', 'narration');
-    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: RACING_SPOKEN[c.id] || c.text })));
+    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: racingSpoken(c.id) || c.text })));
   },
   async process(j, raw, stage) {
     const wav = path.join(stage, '_wav', j.id + '.wav'), mp3 = abs(stage, j.outputs[0]);
     fs.mkdirSync(path.dirname(wav), { recursive: true }); fs.mkdirSync(path.dirname(mp3), { recursive: true });
-    const loud = await matchedWav(raw, wav, { edges: EDGE[this.id], lufs: LOUD[this.id], rate: 24000 });
+    const src = j.keep ? await keepWord(raw, j.keep, stage) : raw;
+    const loud = await matchedWav(src, wav, { edges: EDGE[this.id], lufs: LOUD[this.id], rate: 24000 });
     await ff(['-i', wav, '-map_metadata', '-1', '-ac', '1', '-ar', '24000', '-codec:a', 'libmp3lame', '-b:a', '48k', mp3]);
     const w = readWav(wav);
     let sum = 0; for (const s of w.samples) sum += s * s;
@@ -185,7 +200,7 @@ const racing = {
     const clips = old.clips.map(c => {
       const m = updates.get(c.id);
       if (!m) return c;
-      const next = { id: c.id, text: c.text, duration: m.duration, bytes: m.bytes, rms: m.rms };
+      const next = { id: c.id, text: m.text ?? c.text, duration: m.duration, bytes: m.bytes, rms: m.rms };
       if ('mp3Duration' in c || m.mp3Duration !== undefined) Object.assign(next, { mp3Duration: m.mp3Duration, decodedDuration: m.decodedDuration, decodedRms: m.decodedRms, header: m.header, sha256: m.sha256 });
       return next;
     });
@@ -199,7 +214,7 @@ const racing = {
       const mine = results.filter(r => r.job.group === manifest);
       if (!mine.length) continue;
       const file = path.join(dir, 'assets', 'narration', manifest), old = readJson(file);
-      const next = this.buildManifest(old, new Map(mine.map(r => [r.job.id, r.metrics])));
+      const next = this.buildManifest(old, new Map(mine.map(r => [r.job.id, { ...r.metrics, text: r.job.display || r.job.text }])));
       fs.writeFileSync(file, JSON.stringify(next, null, 2));   // encode-narration.py처럼 끝 줄바꿈 없음
       changed.push('assets/narration/' + manifest);
     }
@@ -331,7 +346,7 @@ const rhythm = {
   buildManifest(old, updates) {
     const clips = old.clips.map(c => {
       const m = updates.get(c.id);
-      return m ? { id: c.id, text: c.text, url: `assets/narration/${c.id}.mp3`, duration: m.duration, bytes: m.bytes, sha256: m.sha256, completeDecode: true } : c;
+      return m ? { id: c.id, text: m.text ?? c.text, url: `assets/narration/${c.id}.mp3`, duration: m.duration, bytes: m.bytes, sha256: m.sha256, completeDecode: true } : c;
     });
     return { format: 'MP3 mono 24kHz 64kbps', clips };
   },
@@ -341,7 +356,7 @@ const rhythm = {
   },
   finalize(results, dir) {
     const file = path.join(dir, 'assets', 'narration', 'manifest.json');
-    const next = this.buildManifest(readJson(file), new Map(results.map(r => [r.job.id, r.metrics])));
+    const next = this.buildManifest(readJson(file), new Map(results.map(r => [r.job.id, { ...r.metrics, text: r.job.text }])));
     fs.writeFileSync(file, JSON.stringify(next, null, 2));
     fs.writeFileSync(path.join(dir, 'narration.mjs'), this.narrationModule(next));
     return ['assets/narration/manifest.json', 'narration.mjs'];
@@ -405,7 +420,7 @@ const rally = {
     const lines = old.lines.map(l => {
       const m = updates.get(l.id);
       if (!m) return l;
-      const next = { id: l.id, text: l.text, file: `assets/${group}/${l.id}.mp3`, sha256: m.sha256, bytes: m.bytes, durationSeconds: m.durationSeconds, peakDbfs: m.peakDbfs, rmsDbfs: m.rmsDbfs };
+      const next = { id: l.id, text: m.text ?? l.text, file: `assets/${group}/${l.id}.mp3`, sha256: m.sha256, bytes: m.bytes, durationSeconds: m.durationSeconds, peakDbfs: m.peakDbfs, rmsDbfs: m.rmsDbfs };
       if (group === 'narration') next.integratedLufs = m.integratedLufs;
       return next;
     });
@@ -419,7 +434,7 @@ const rally = {
       const mine = results.filter(r => r.job.group === group);
       if (!mine.length) continue;
       const file = path.join(dir, 'assets', group, 'manifest.json');
-      fs.writeFileSync(file, JSON.stringify(this.buildManifest(readJson(file), group, new Map(mine.map(r => [r.job.id, r.metrics])), now), null, 2) + '\n');
+      fs.writeFileSync(file, JSON.stringify(this.buildManifest(readJson(file), group, new Map(mine.map(r => [r.job.id, { ...r.metrics, text: r.job.text }])), now), null, 2) + '\n');
       changed.push(`assets/${group}/manifest.json`, ...mine.map(r => `assets/${group}/${r.job.id}.source.json`));
     }
     return changed;
@@ -457,7 +472,7 @@ const runner = {
   buildManifest(old, updates) {
     const clips = old.clips.map(c => {
       const m = updates.get(c.id);
-      return m ? { id: c.id, text: c.text, seconds: m.seconds, bytes: m.bytes, sha256: m.sha256, codec: m.codec, sampleRate: m.sampleRate, channels: m.channels } : c;
+      return m ? { id: c.id, text: m.text ?? c.text, seconds: m.seconds, bytes: m.bytes, sha256: m.sha256, codec: m.codec, sampleRate: m.sampleRate, channels: m.channels } : c;
     });
     return { voice: '바람', clips, totalBytes: clips.reduce((n, c) => n + c.bytes, 0) };
   },
@@ -467,7 +482,7 @@ const runner = {
   },
   finalize(results, dir) {
     const file = path.join(dir, 'assets', 'voice', 'manifest.json');
-    const next = this.buildManifest(readJson(file), new Map(results.map(r => [r.job.id, r.metrics])));
+    const next = this.buildManifest(readJson(file), new Map(results.map(r => [r.job.id, { ...r.metrics, text: r.job.text }])));
     fs.writeFileSync(file, JSON.stringify(next, null, 2) + '\n');
     fs.writeFileSync(path.join(dir, 'voice-timing.mjs'), this.timingModule(next));
     return ['assets/voice/manifest.json', 'voice-timing.mjs'];
@@ -501,7 +516,14 @@ const orderRush = {
     if (m.sampleRate !== 22050 || m.channels !== 1 || m.bits !== 16) bad.push('wav 형식 ' + JSON.stringify({ sampleRate: m.sampleRate, channels: m.channels, bits: m.bits }));
     return bad;
   },
-  finalize() { return []; },
+  // 확인 목록(qa/voice-bank.json, 게임은 읽지 않음)의 글을 지금 주문 글로 — 글을 고친 뒤 다시 구우면 따라온다.
+  finalize(results, dir) {
+    const file = path.join(dir, 'qa', 'voice-bank.json');
+    if (!results.length || !fs.existsSync(file)) return [];
+    const now = new Map(results.map(r => [r.job.id, r.job.text]));
+    fs.writeFileSync(file, JSON.stringify(readJson(file).map(o => (now.has(o.id) ? { ...o, text: now.get(o.id) } : o)), null, 2));
+    return ['qa/voice-bank.json'];
+  },
 };
 
 const GAMES = Object.fromEntries([racing, entry, story, rhythm, rally, runner, orderRush].map(g => [g.id, g]));
