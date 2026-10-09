@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "All 10 Korean vowels in one song! 아 야 어 여 오 요 우 유 으 이 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle dance the Korean vowels ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ, drawn in blue, under a white card reading “All 10 Korean vowels in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-09 저녁 유호님 「오케이 이어서 남은것도 전부 하자」(세 곡 새 판 · 겹모음 올리기 · 예약 교체를 정할 것으로 드린 뒤). 새 판: 합쳐지는 조각마다 색(자음 코랄 · 모음 파랑 · 받침 노랑), 모든 한글 칸 아래 로마자, 끝 화면 「읽어 볼까요?」(하나 — 10-09 해설 규칙), 노래 영상 가이드(experiences/hangul-stage/songs/노래영상_가이드.md). 비공개로 올린 뒤 --공개(AI 음악이 중심이라 --합성표시). 모음 댄스 v6: 시각을 노래에서 목소리만 떼어 다시 잼(v5는 0.1~0.5초 일렀음). 공개된 v5(G21IYoeTEPQ)를 바꾸는 판 — 바로 공개, v5는 일부 공개로.",
+ "version": "v6-yt"
+}

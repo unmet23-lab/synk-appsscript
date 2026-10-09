@@ -1,0 +1,33 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "327cde72ac6e60bbb8aaad82620b19142a24f70053618323f384a32b555ccb11",
+      "publicationHash": "b62fc1699338a9b31b5b835c882c6bb205302d54382a9b00432d97b5860aa6c2",
+      "startedAt": "2026-10-09T13:01:11.465Z",
+      "state": "public",
+      "id": "n-_Vp4PYTcw",
+      "url": "https://www.youtube.com/watch?v=n-_Vp4PYTcw",
+      "thumbnail": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDab4werHlcq-ss3n-5_LvZrSBkgLxHRZSzN8gfA-lhF3Rw"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": false,
+        "itemId": "UExZVDh5R2dFNDE0NC4xMkVGQjNCMUM1N0RFNEUx",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
+      },
+      "finishedAt": "2026-10-09T13:01:21.982Z",
+      "publicAt": "2026-10-09T13:01:25.080Z",
+      "publicNote": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 공개된 v5(G21IYoeTEPQ)를 v6로 바꿈: v6 바로 공개, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
+    }
+  }
+}
