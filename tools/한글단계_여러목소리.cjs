@@ -3,11 +3,13 @@
 // 근거: docs/한글단계_노래영상_근거점검_20261008.md §4-1 — 노래 속도에서 안 갈리는 구별(가·카·까, 받침 ㄱ·ㄷ·ㅂ, ㅓ/ㅗ)은
 //   목소리 4~6개로 같은 음절을 들려주고 고른 뒤 바로 정답 소리를 들려준다(HVPT 메타분석 g=0.67, 목소리 수가 효과를 가름).
 // 대상 154음절: 세 소리 열네 자음(ㄱㅋㄲ ㄷㅌㄸ ㅂㅍㅃ ㅈㅊㅉ ㅅㅆ) × 기본 모음 여섯 84 · 받침 ㄱ·ㄷ·ㅂ(앱 받침 틀) 60 · ㅓ/ㅗ 나머지 10.
-// 목소리: 기본 글자 소리(하나)에 더해 넷 — 여자 둘(진희 아나운서 · 효은 교육)과 남자 둘(재영 교육 · 강일 라디오), 음높이 146~267Hz로 넓게.
+// 목소리: 기본 글자 소리(하나)에 더해 둘 — 진희(여자 · 아나운서)와 재영(남자 · 교육). 처음엔 넷(효은 · 강일 더해 음높이 146~267Hz)으로 구웠지만
+//   10-10 유호님이 바꾼 소리까지 들어 보고 「효은이랑 강일이는 문제가 좀 많은데? 특히 강일이는 답이 없다 아예 빼자 효은이는 ㅅ발음 때문에 너무 답답해」
+//   → 둘 다 뺐다(효은도 빼기 — 추천안). 두 목소리의 원본 wav는 저장소 밖에 그대로 있다.
 // 설정은 기본 글자 소리와 같다(ssfm-v30 · normal · 빠르기 0.9 · seed 1003 · -17 LUFS, 앞뒤 무음 걷고 64k mp3).
 //   node tools/한글단계_여러목소리.cjs              → 없는 것만 굽는다(키는 보안 폴더 파일에서 메모리로만 — 화면·파일에 남기지 않음)
 //   node tools/한글단계_여러목소리.cjs --list       → 대상 음절과 글자 수만
-//   node tools/한글단계_여러목소리.cjs --다시 "효은:깁,뻐;강일:옥" [--seed 1004]  → 그 음절만 시드를 바꿔 저장소 밖 retake-<시드>/에 한 번 더(앱 파일은 그대로)
+//   node tools/한글단계_여러목소리.cjs --다시 "진희:곱,기;하나:교" [--seed 1004]  → 그 음절만 시드를 바꿔 저장소 밖 retake-<시드>/에 한 번 더(앱 파일은 그대로)
 //   node tools/한글단계_여러목소리.cjs --approve "유호님 10-1X 귀 확인"  → talkers.candidate.json을 앱이 쓰는 talkers.json으로
 // 원본 wav는 저장소 밖(Documents/synk-vendor/hangul-voice/talkers/), 화면용 mp3는 experiences/hangul-stage/assets/voice/talkers/<이름>/.
 // 앱은 talkers.json의 approved:true일 때만 여러 목소리를 쓴다(09-19 결정 「귀로 확인한 파일만」). 그전에는 기본 목소리 하나다.
@@ -24,9 +26,12 @@ const KEY_FILE = path.join(os.homedir(), 'SYNK_보안', '타입캐스트.txt');
 const SETTINGS = { model: 'ssfm-v30', emotion: 'normal', intensity: 1.0, tempo: 0.9, seed: 1003 };
 const TALKERS = [
   { slug: 'jinhee', name: '진희', id: 'tc_6731b2b2478a48710ecc9158', gender: 'female', why: '아나운서·뉴스 — 느리고 또렷하다(225Hz)' },
-  { slug: 'hyoeun', name: '효은', id: 'tc_691d49ccc47926d741f15913', gender: 'female', why: '교육·라디오 — 선생님 말투(242Hz)' },
   { slug: 'jaeyoung', name: '재영', id: 'tc_65571d3fb22102b993a24350', gender: 'male', why: '교육 — 또박또박(162Hz)' },
-  { slug: 'gangil', name: '강일', id: 'tc_68d4b115f0486108a7eefb37', gender: 'male', why: '라디오·아나운서 — 낮고 또렷하다(146Hz)' },
+];
+// 뺀 목소리(10-10) — 다시 넣지 않는다. --다시로 옛 판을 고칠 일도 없다.
+const DROPPED = [
+  { slug: 'hyoeun', name: '효은', id: 'tc_691d49ccc47926d741f15913', why: 'ㅅ 발음이 답답함(유호님 10-10)' },
+  { slug: 'gangil', name: '강일', id: 'tc_68d4b115f0486108a7eefb37', why: '길고 이상한 소리가 많음 — 「답이 없다 아예 빼자」(유호님 10-10)' },
 ];
 const safe = text => [...text].map(ch => ch.codePointAt(0).toString(36)).join('');
 const readJson = (file, fallback) => { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; } };
@@ -86,7 +91,7 @@ async function main() {
     'silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.03,areverse,silenceremove=start_periods=1:start_threshold=-50dB:start_silence=0.06,areverse,apad=pad_dur=0.08',
     '-ac', '1', '-ar', '44100', '-b:a', '64k', mp3]);
   // 다시 굽기(10-10 유호님 「1번으로 가자」): 음절 안이 끊기거나 유난히 긴 소리만 시드를 바꿔 한 번 더 굽는다.
-  //   node tools/한글단계_여러목소리.cjs --다시 "효은:깁,뻐;강일:옥" [--seed 1004]
+  //   node tools/한글단계_여러목소리.cjs --다시 "진희:곱,기;하나:교" [--seed 1004]
   //   새 판은 저장소 밖 Documents/synk-vendor/hangul-voice/talkers/<이름>/retake-<시드>/(wav·mp3)에만 둔다 — 후보 목록과 앱 파일은 그대로.
   //   재서 나은 것을 귀로 확인한 뒤 같은 이름으로 assets/voice/talkers/<이름>/에 바꿔 넣는다.
   //   기본 글자 소리(하나, voices.json)도 「하나:교,잉」처럼 같은 방법으로 — 새 판은 Documents/synk-vendor/hangul-voice/raw/retake-<시드>/(같은 요청 · 같은 후처리).
@@ -118,7 +123,7 @@ async function main() {
   }
   const prev = readJson(CANDIDATE, { talkers: [] });
   const out = { note: '후보다. 유호님이 귀로 확인한 뒤 tools/한글단계_여러목소리.cjs --approve로 talkers.json에 옮긴다. 기본 글자 소리(voices.json)와 함께 듣기 문항의 목소리를 돌려 쓴다.',
-    settings: SETTINGS, approved: false, syllables: list.length, talkers: [] };
+    settings: SETTINGS, approved: false, syllables: list.length, talkers: [], dropped: DROPPED };
   let made = 0;
   try {
     for (const t of TALKERS) {
