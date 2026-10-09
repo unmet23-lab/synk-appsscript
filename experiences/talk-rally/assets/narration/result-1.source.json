@@ -1,8 +1,8 @@
 {
-  "sourceKey": "d8cb6249784caa148e7669b71e2f581f",
+  "sourceKey": "debad3ac1197d41f9babd60e029bca27",
   "text": "잘했어요! 다음엔 더 많이 받아칠 수 있어요.",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

@@ -1,8 +1,8 @@
 {
-  "sourceKey": "c0c7d85cd2bcd5d0cde279147667ab2c",
+  "sourceKey": "a48bf79ebf0832ce9d8e5e34119c3881",
   "text": "몽글이 말을 걸어요! 알맞은 대답으로 받아쳐요!",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

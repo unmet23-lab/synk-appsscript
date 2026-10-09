@@ -1,8 +1,8 @@
 {
-  "sourceKey": "8fd274029fb20f5f2ff0a00a2519fdc8",
+  "sourceKey": "7a14f395bd3522d9fca660f70d6752cd",
   "text": "좋아요! 이제 진짜 시작이에요.",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

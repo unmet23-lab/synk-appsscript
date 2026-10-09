@@ -1,8 +1,8 @@
 {
-  "sourceKey": "3763e822a529975de53f87c829ceba60",
+  "sourceKey": "e59fc669ce2273db114f8dafb53c6e40",
   "text": "와, 오늘 최고 기록이에요!",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

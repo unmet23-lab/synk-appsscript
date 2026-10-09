@@ -1,8 +1,8 @@
 {
-  "sourceKey": "6233454a420fd6f258db7b7bc0515184",
+  "sourceKey": "8141d7239196423f4daedbe4349fcdc5",
   "text": "하루 도전! 오늘은 모두 같은 공 열두 개예요.",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "normal",

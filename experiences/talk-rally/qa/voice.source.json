@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "몽글: 지금 generate-voice.py와 같은 앞뒤 자르기 + loudnorm I=-18 TP=-2.5 LRA=7 · 안내: generate-narration.py와 같은 자르기·쉼 0.28초 + 재어서 -20.5 LUFS → MP3 mono 24kHz 96kbps",
- "updatedAt": "2026-10-09T09:11:09.378Z",
+ "updatedAt": "2026-10-09T17:59:04.630Z",
  "voices": {
   "mongle": {
    "label": "몽글",
@@ -15,11 +15,11 @@
   },
   "narrator": {
    "label": "해설",
-   "id": "tc_666a9871abcf27a5169850d0",
-   "name": "소진",
-   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
-   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
-   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+   "measure": "음높이 281Hz · 밝기 1433Hz · 억양 폭 17반음 · 빠르기 5.08 · 숏폼",
+   "why": "억양 폭이 가장 넓은 상큼한 목소리, 읽는 속도는 느긋하다"
   }
  },
  "lines": {
@@ -448,74 +448,74 @@
   },
   "intro": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "c0c7d85cd2bcd5d0cde279147667ab2c",
+   "key": "a48bf79ebf0832ce9d8e5e34119c3881",
    "sha": {
-    "assets/narration/intro.mp3": "5a01d2ae84abb9ad"
+    "assets/narration/intro.mp3": "e283b150b0617077"
    }
   },
   "practice-done": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "8fd274029fb20f5f2ff0a00a2519fdc8",
+   "key": "7a14f395bd3522d9fca660f70d6752cd",
    "sha": {
-    "assets/narration/practice-done.mp3": "6fd0ee84dd3442b8"
+    "assets/narration/practice-done.mp3": "2c5a587369b02541"
    }
   },
   "daily-intro": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "6233454a420fd6f258db7b7bc0515184",
+   "key": "8141d7239196423f4daedbe4349fcdc5",
    "sha": {
-    "assets/narration/daily-intro.mp3": "57cbc8e21fe317a1"
+    "assets/narration/daily-intro.mp3": "c892d41709e7ada0"
    }
   },
   "daily-best": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "3763e822a529975de53f87c829ceba60",
+   "key": "e59fc669ce2273db114f8dafb53c6e40",
    "sha": {
-    "assets/narration/daily-best.mp3": "5a9e8a2bba51ee06"
+    "assets/narration/daily-best.mp3": "c7faa5e291d5a225"
    }
   },
   "result-3": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "fa0a276cfe009383873311f9fb2c4978",
+   "key": "f3f948e569b931b31b57a437d61822de",
    "sha": {
-    "assets/narration/result-3.mp3": "e2d054bc1abee9bb"
+    "assets/narration/result-3.mp3": "6bd4ec81205325f1"
    }
   },
   "result-2": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "7b97c2ab0b62a0252fc4beb1a86c9b50",
+   "key": "5fed6b623549537b35396dc02acf95e3",
    "sha": {
-    "assets/narration/result-2.mp3": "ffef257fbe53fa59"
+    "assets/narration/result-2.mp3": "32982203b0b5abaf"
    }
   },
   "result-1": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "d8cb6249784caa148e7669b71e2f581f",
+   "key": "debad3ac1197d41f9babd60e029bca27",
    "sha": {
-    "assets/narration/result-1.mp3": "2844315672f5e015"
+    "assets/narration/result-1.mp3": "411d5f396ff21b01"
    }
   },
   "result-0": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.94,
-   "key": "f34e36ce0975e64dcca599b120d63aca",
+   "key": "2e44709ca1ab46f935fc915b4d5eeb4b",
    "sha": {
-    "assets/narration/result-0.mp3": "516e62b84d3c18c5"
+    "assets/narration/result-0.mp3": "f444ab9f34266849"
    }
   }
  }
