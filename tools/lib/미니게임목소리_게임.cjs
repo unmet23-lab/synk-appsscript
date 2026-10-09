@@ -144,7 +144,10 @@ const RACING_SPOKEN = {
 // 앞에 수를 붙여 「이천 년.」처럼 구운 뒤, 받은 원본의 낱말 시각(words)으로 그 낱말부터 잘라 쓴다(앞 0.02초 여유, 0.015초 페이드 인).
 // 10-09 받아쓰기로 확인: 잘라 여백을 붙인 소리를 「년」·「년대」로 받아 적는다(낱말 하나만 읽은 소리는 「냥」·「연대」).
 const RACING_KEEP = { w0138: { text: '이천 년.', keep: '년.' }, w1001: { text: '이천 년대.', keep: '년대.' } };
-const racingSpoken = id => RACING_KEEP[id]?.text || RACING_SPOKEN[id];
+// 낱말 하나를 외치듯 읽어 흐려진 줄(10-09 소진 받아쓰기 대조)은 끝에 마침표 — 목록은 tools/minigame-voice-racing-period.json.
+const RACING_PERIOD_FILE = path.join(__dirname, '..', 'minigame-voice-racing-period.json');
+const RACING_PERIOD = new Set(fs.existsSync(RACING_PERIOD_FILE) ? readJson(RACING_PERIOD_FILE).ids : []);
+const racingSpoken = (id, text) => RACING_KEEP[id]?.text || RACING_SPOKEN[id] || (RACING_PERIOD.has(id) && !/[.!?…]$/.test(text) ? text + '.' : null);
 async function keepWord(raw, word, stage) {
   const meta = readJson(raw.replace(/\.wav$/, '.json')), w = (meta.words || []).find(x => x.text === word);
   if (!w) throw Error(`받은 원본에 낱말 시각이 없다: ${word}`);
@@ -160,14 +163,14 @@ const racing = {
     const dir = gameDir(this.id, repo), out = [];
     for (const [manifest, jobsFile] of RACING_GROUPS)
       for (const j of readJson(path.join(dir, 'audio-source', jobsFile)))
-        out.push(job(this.id, j.id, 'narrator', racingSpoken(j.id) || j.text, [`assets/narration/${j.id}.mp3`],
-          { group: manifest, ...(racingSpoken(j.id) ? { display: j.text } : {}), ...(RACING_KEEP[j.id] ? { keep: RACING_KEEP[j.id].keep } : {}) }));
+        out.push(job(this.id, j.id, 'narrator', racingSpoken(j.id, j.text) || j.text, [`assets/narration/${j.id}.mp3`],
+          { group: manifest, ...(racingSpoken(j.id, j.text) ? { display: j.text } : {}), ...(RACING_KEEP[j.id] ? { keep: RACING_KEEP[j.id].keep } : {}) }));
     return out;
   },
   current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'assets', 'narration'), /\.mp3$/).map(f => 'assets/narration/' + f); },
   shipped(repo = REPO) {
     const dir = path.join(gameDir(this.id, repo), 'assets', 'narration');
-    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: racingSpoken(c.id) || c.text })));
+    return RACING_GROUPS.flatMap(([m]) => readJson(path.join(dir, m)).clips.map(c => ({ id: c.id, text: racingSpoken(c.id, c.text) || c.text })));
   },
   async process(j, raw, stage) {
     const wav = path.join(stage, '_wav', j.id + '.wav'), mp3 = abs(stage, j.outputs[0]);
