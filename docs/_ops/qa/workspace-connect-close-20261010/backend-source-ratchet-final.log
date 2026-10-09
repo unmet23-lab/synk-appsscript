@@ -1,0 +1,24 @@
+✔ existing account export works before WORLD tables exist (1544.8715ms)
+✔ existing export first page includes owner WORLD inventory, run and immutable receipts without exposing another account (42.3681ms)
+✔ account export continuation is bounded, complete and usable during deletion grace (83.7507ms)
+✔ all Edge manifests using the shared store include its new dependencies and converted ESM imports successfully (53.6633ms)
+✔ JSX 미리보기도 분모에 남고 원문 존재 단언을 실제로 센다 (19.8449ms)
+✔ 옛 픽스처가 그대로 통과한다 — 상위집합으로 갈아도 옛 보장은 안 잃는다 (0.6054ms)
+✔ 사본 7벌이 저마다 지키던 것을 «하나»가 전부 진다 (0.3587ms)
+✔ 앵커를 못 찾으면 «던진다» — 조용한 빈 문자열은 미실행을 초록으로 만든다 (0.4831ms)
+✔ 계수기가 사본을 잡고, 사본이 «아닌 것»은 안 잡는다 (픽스처) (11.3758ms)
+✔ 계수기가 «들여온» 원문 생산자와 함수 선언형 생산자를 따라간다 (픽스처) (2.4917ms)
+✔ 계수기의 세 경계 — SQL 경유는 안전, 매개변수 그늘은 모름, 별칭 재수출은 정제 (픽스처) (2.3998ms)
+✔ 줄맞춰코드만 은 «줄 수»를 원문 그대로 둔다 — 행 번호로 짚는 소비자가 있다 (0.1822ms)
+✔ 두 판이 «같은 렉서»를 쓴다 — 문자열 속 `//` 는 어느 쪽도 안 먹는다 (0.129ms)
+✔ 🔴 주석 제거기 지역 사본이 0벌이다 — 통로는 tests/lib/소스검사.js 하나뿐 (1225.1858ms)
+✔ 계수기가 «존재형»을 방향·언어까지 갈라 센다 (픽스처) (1.1187ms)
+✔ 🔴 [래칫] JS 소스를 «원문으로» 읽고 낱말 존재를 단언하는 자리가 늘지 않는다 (0.311ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1865.6859

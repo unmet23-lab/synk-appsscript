@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-09T21:22:23.585Z",
+  "selftest": {
+    "command": "python -B selftest.py",
+    "exitCode": 0,
+    "output": "................\r\n----------------------------------------------------------------------\r\nRan 16 tests in 1.058s\r\n\r\nOK\r\n"
+  },
+  "nodeSyntax": {
+    "exitCode": 0
+  },
+  "pythonCompilation": {
+    "importedBySelftest": true
+  },
+  "networkActions": "three read-only SSH inspections",
+  "remoteMutations": 0,
+  "productionDBWrites": 0,
+  "stageBuildPerformed": false,
+  "applyPerformed": false,
+  "limitations": [
+    "Docker FROM/build/export comparison not executed yet; stage refuses if any invariant differs.",
+    "Online read-only comparison can conservatively fail on concurrent legitimate business writes.",
+    "Recovery service restart is prepared and statically checked; production recovery has not been executed."
+  ],
+  "ok": true,
+  "packageCheck": {
+    "exitCode": 0
+  },
+  "recoveryChecks": [
+    "before swap, partial swap, after swap, interrupted recovery accepted",
+    "foreign env/current/image rejected",
+    "modified saved parent baseline rejected",
+    "actual verified caddy_file_sha contract: original and pointer-partial parent bind, started candidate bind pass; foreign/writable/duplicate bind and changed bytes reject"
+  ],
+  "recoveryServiceStartPerformed": false,
+  "reviewGateTests": {
+    "exitCode": 0,
+    "output": "{\"cases\":8,\"pass\":8,\"productionActions\":0}\n"
+  },
+  "officialFindingsRegression": [
+    "P2 teacher settings missing/changed and actual runtime teacher mismatch reject before stop",
+    "P2 restrictive umask directory modes normalized to 0755 and file modes/uid/gid copied+verified",
+    "P2 actual completed review PASS and exact input source pin validation; FAIL/findings/other model/denial/partial/foreign scope reject"
+  ],
+  "liveDependencyRead": "live-dependency-read.json"
+}

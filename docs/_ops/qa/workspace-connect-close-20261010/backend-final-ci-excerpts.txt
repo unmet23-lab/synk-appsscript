@@ -1,0 +1,39 @@
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5768174Z ok 339 - real local PostgreSQL export creates private paired/latest inputs accepted by the dating restore gate # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5773051Z ok 340 - latest uses a new central transaction and exposes a new hold missing from the old paired backup # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5781074Z ok 341 - latest preserves the dispatcher timestamps for availability and terminal deletion # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5784597Z ok 342 - transaction rejects real writes, rolls back on error, closes, and leaves no output # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5788894Z ok 343 - database errors and close errors are sanitized and do not publish evidence # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5791989Z ok 344 - product changes during the central read fail instead of exporting a mixed pair # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5819478Z ok 351 - an output race preserves the other file and partial staging writes never publish a final JSON # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:04:29.5822584Z ok 352 - latest refuses changed paired evidence or an old database clock without writing its destination # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다
+verify	커밋 가드 회귀	2026-10-09T21:05:53.8223442Z ok 754 - 생성물이 원본과 같다 (형제 저장소 없으면 skip · F296) # SKIP 형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4089871Z # 전체 통과  26/26
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4090758Z # 판정불가  76건  — 출력없음 76(모델을 안 돌렸다) · 근거없음 0(강사 교정을 더 받아야 한다)
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4091227Z # ⚠ 시험지 102문항 중 76문항은 출력이 없어 **안 재졌다** — 위 점수는 26문항짜리다.
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4222712Z # 전체 통과  26/26
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4223736Z # 판정불가  76건  — 출력없음 76(모델을 안 돌렸다) · 근거없음 0(강사 교정을 더 받아야 한다)
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4224410Z # ⚠ 시험지 102문항 중 76문항은 출력이 없어 **안 재졌다** — 위 점수는 26문항짜리다.
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4321677Z # 전체 통과  26/26
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4322602Z # 판정불가  76건  — 출력없음 76(모델을 안 돌렸다) · 근거없음 0(강사 교정을 더 받아야 한다)
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4323097Z # ⚠ 시험지 102문항 중 76문항은 출력이 없어 **안 재졌다** — 위 점수는 26문항짜리다.
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4416728Z # 전체 통과  26/26
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4417482Z # 판정불가  76건  — 출력없음 76(모델을 안 돌렸다) · 근거없음 0(강사 교정을 더 받아야 한다)
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4417854Z # ⚠ 시험지 102문항 중 76문항은 출력이 없어 **안 재졌다** — 위 점수는 26문항짜리다.
+verify	커밋 가드 회귀	2026-10-09T21:05:59.4434232Z ok 997 - 형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외) # SKIP 형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만
+verify	커밋 가드 회귀	2026-10-09T21:05:59.8317617Z ok 1017 - 계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다 # SKIP 정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다
+verify	커밋 가드 회귀	2026-10-09T21:06:13.3624005Z ok 1417 - 드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다 # SKIP 형제 저장소 부재 — 정본 대조는 로컬에서만
+verify	커밋 가드 회귀	2026-10-09T21:06:33.5921201Z ok 2060 - 재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다 # SKIP 49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)
+verify	커밋 가드 회귀	2026-10-09T21:06:33.5967662Z ok 2081 - ⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip) # SKIP 작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)
+verify	커밋 가드 회귀	2026-10-09T21:06:43.5307061Z ok 2225 - SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일 # SKIP 형제 저장소 부재 — 바이트 대조는 로컬에서만
+verify	커밋 가드 회귀	2026-10-09T21:06:53.2001455Z ok 2362 - 🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다 # SKIP 형제 저장소가 없다 — 대조 «못 했다»
+verify	커밋 가드 회귀	2026-10-09T21:07:37.4721873Z ok 3127 - 반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지) # SKIP 형제 저장소 부재 — 정본 대조는 로컬에서만
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1186852Z # tests 3334
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1226905Z # pass 3317
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1237277Z # fail 0
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1237710Z # cancelled 0
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1238055Z # skipped 17
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1238371Z # todo 0
+verify	커밋 가드 회귀	2026-10-09T21:07:40.1238710Z # duration_ms 290300.82329
+verify	교정 엔진 평가	2026-10-09T21:07:40.2593225Z 전체 통과  26/26
+verify	교정 엔진 평가	2026-10-09T21:07:40.2594020Z 판정불가  76건  — 출력없음 76(모델을 안 돌렸다) · 근거없음 0(강사 교정을 더 받아야 한다)
+verify	교정 엔진 평가	2026-10-09T21:07:40.2594473Z ⚠ 시험지 102문항 중 76문항은 출력이 없어 **안 재졌다** — 위 점수는 26문항짜리다.

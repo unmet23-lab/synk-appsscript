@@ -1,0 +1,6 @@
+{
+  "at": "2026-10-09T21:29:32.289Z",
+  "exitCode": 0,
+  "output": "{\"status\": \"fresh-backup-verified\", \"refreshedExistingService\": true, \"applicationRestarted\": false, \"backup\": {\"verifiedAt\": \"2026-10-09T21:29:31.524Z\", \"invocation\": \"634e313853f04ef9851f58b0f45168f8\", \"exitMonotonicSeconds\": 111022.013689, \"result\": \"success\", \"uploadCompleteObserved\": true, \"attribution\": \"same-boot-unit-cgroup-root-pid-execution-window\", \"journalInvocationPresent\": true, \"journalRecordSHA256\": \"f6483c0afaceac152b62b01a8d734f61245c1a350a01cc2475018c76ba2caca6\"}}\n",
+  "error": null
+}

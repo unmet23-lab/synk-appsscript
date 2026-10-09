@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-09T21:28:59.768Z",
+  "mode": "stage",
+  "exitCode": 0,
+  "output": "{\"status\": \"staged-only\", \"manifestSHA256\": \"d6579a536bdc8ae8a10dfcaa7c60dee2b82aa910a288920a84cea9eea60089de\", \"image\": \"sha256:18c7a86cacbe06d259fa972c843e6675194cdf7f4dc03f55bf30ab2569940402\", \"tag\": \"synk-company-demo:d6579a536bdc\", \"parentImage\": \"sha256:e466fc2866a80f376c7b8e349b4d1f2716793d2ae88c0398a7e9b090ddd857ca\", \"filesystemEntries\": 7586, \"changedFiles\": [\"workspace/docs/\\ub9c8\\ucf00\\ud305/\\uc628\\ub77c\\uc778\\ub9c8\\ucf00\\ud305\\uc9c0\\ub3c4/engagement/company/public/demo-ui.js\"], \"operatingVolumeMounted\": false, \"serviceActions\": 0}\n",
+  "error": null,
+  "secretsPrinted": false
+}

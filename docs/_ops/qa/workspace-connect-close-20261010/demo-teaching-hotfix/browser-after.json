@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-09T21:30:35.219Z",
+  "mode": "after",
+  "isolatedBrowser": true,
+  "existingUserProfileAccessed": false,
+  "nonReadRequestsBlocked": [],
+  "direct": {
+    "http": 200,
+    "url": "https://workspace.synk.im/?tab=teaching",
+    "title": "SYNK Workspace · 싱크 워크스페이스",
+    "missingHelperVisible": false,
+    "loginVisible": true,
+    "referenceError": false,
+    "pageErrors": []
+  },
+  "screenshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\browser-after.png"
+}

@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-09T21:18:45.039Z",
+  "previousCommit": "6ca62432f6eab8856dfdb28883aff4480bde30c8",
+  "commit": "2a69aba126c2cf25bffffe9e4fd2e5d4c2c65486",
+  "changedFiles": [
+    "tools/world-v1-build.js"
+  ],
+  "findings": [],
+  "ok": true,
+  "reviewedChange": "Only construct the same four diagnostic label replacement strings with path.posix.join; input module resolution and generated runtime behavior are unchanged.",
+  "sourceSHA256": "7d48c24c4d89aaf0c3151b1e62a379bb98daa8bd87809182fb90d210b56cb495",
+  "runtimeSHA256": "6a01b17bfabd3e9bea4723c50a93b822de63b75542b63346a21ba0b686e6f05e",
+  "independentWorldBuildCheck": {
+    "command": "node tools/world-v1-build.js --check",
+    "exitCode": 0,
+    "exactOutputMatch": true
+  },
+  "targetedTestLog": "backend-build-label-final.log",
+  "targetedTestLogSHA256": "9846ef74025d011346207eab5f0c214518ab248417632244dfd6f75d3ceb635c",
+  "targetedTests": {
+    "total": 38,
+    "passed": 38,
+    "failed": 0
+  },
+  "previousThreeRuntimeIndependentChecks": "backend-portability-independent-review.json",
+  "productionChanged": false,
+  "filesEditedByReviewer": false
+}

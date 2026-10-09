@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-09T20:57:45.252Z",
+  "parentManifestSHA256": "d5aca354cb985609cfbec848dc8effba7eb1fea23f43428d581c17e1a65acd2b",
+  "manifestSHA256": "d6579a536bdc8ae8a10dfcaa7c60dee2b82aa910a288920a84cea9eea60089de",
+  "files": 558,
+  "unchangedFiles": 557,
+  "changedFiles": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js"
+  ],
+  "old": {
+    "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+    "sha256": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+    "bytes": 6525
+  },
+  "candidate": {
+    "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+    "sha256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+    "bytes": 6719
+  },
+  "oldSHA256": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+  "newSHA256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+  "parentImage": "sha256:e466fc2866a80f376c7b8e349b4d1f2716793d2ae88c0398a7e9b090ddd857ca",
+  "releasePreservation": "all manifest rows except exact demo-ui.js unchanged"
+}

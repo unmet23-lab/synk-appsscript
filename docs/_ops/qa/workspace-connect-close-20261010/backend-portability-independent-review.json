@@ -1,0 +1,146 @@
+{
+  "at": "2026-10-09T20:55:49.661Z",
+  "scope": "Read-only independent review of root CI portability repairs",
+  "root": "C:/Users/q1212/Documents/SYNK-talk-workspace-close-20261010",
+  "ok": true,
+  "findings": [],
+  "files": [
+    {
+      "file": "lib/world-v1-learning.js",
+      "sha256": "1ab10cc542c41ca15ab86e26047a268944dc15476ea20d73b6d8982683f17bd3"
+    },
+    {
+      "file": "tests/modern-town-integration.test.js",
+      "sha256": "ca3ab7813be234702bfdc5727898dc02e469ed7a447dde901025310f5acda59a"
+    },
+    {
+      "file": "tests/synk-classroom-purge.test.js",
+      "sha256": "ce85297365798e04615fcb860b24a02835b91878ae5ea3f786c7b2bd1804e58a"
+    },
+    {
+      "file": "tests/synk-classroom.test.js",
+      "sha256": "a1904f8751cf03948d45f0a4bd5a2460a07018bdd38a5b28ebf2858cc086dc66"
+    },
+    {
+      "file": "tests/world-classroom-integration.test.js",
+      "sha256": "f700bba1923d17555c8e737d73337d19ec3f379418d1d4a50ad0c733751350b6"
+    },
+    {
+      "file": "tests/world-v1-account-export.test.js",
+      "sha256": "2ce3a0944fca5ecda755fb376f3fd6c9878f6ddf88f6535ae2cc88a51fb67077"
+    },
+    {
+      "file": "tests/world-v1-dyes.test.js",
+      "sha256": "6c2855764d222909b45520a81b542ec2394af10b2bbe1e7bc9aa14ddfe7cd527"
+    },
+    {
+      "file": "tools/qa-synk-classroom-fixture.cjs",
+      "sha256": "ff5679ff86fb44d433fcba01f8e87a40a25d7779f4b1c9e8987ba1f8d48abafd"
+    },
+    {
+      "file": "tools/synk-classroom-build.js",
+      "sha256": "e930f542a32b6c90554ab24fda42c49eb466b37fa797a0a1ab992a3dcbeaada4"
+    },
+    {
+      "file": "tools/synk-town-build.js",
+      "sha256": "e805c91babb90a85b8bc46c4cd19a583f792614ab709f4eaf21041d517182eb5"
+    },
+    {
+      "file": "tools/world-v1-build.js",
+      "sha256": "cf3db466f232cf782876f1b11117dcb6f69a7357370d63e38cb52dc5723f592f"
+    },
+    {
+      "file": "tests/fixtures/world-client.mjs",
+      "sha256": "8e1b196d708afb055136f75dceabe6b5b199e648beee4dfc1b1ae61ae236e062"
+    },
+    {
+      "file": "tests/fixtures/world-client.provenance.json",
+      "sha256": "d0ea8d7e0d4b2d016f47b86f799ebc7c80ad1baa268dc73f8ae3660a9a2ac7fb"
+    }
+  ],
+  "checks": {
+    "testAssertionsRemovedOrWeakened": false,
+    "worldClientFixtureMatchesApprovedPublicHash": "8e1b196d708afb055136f75dceabe6b5b199e648beee4dfc1b1ae61ae236e062",
+    "allThreeRuntimeBuildCheckExitCodes": [
+      0,
+      0,
+      0
+    ],
+    "allThreeGeneratedRuntimeOutputsUnchanged": true,
+    "productionBehaviorChangeObserved": false,
+    "cliUnknownOrPositionalArgumentsRejectedBeforeBuild": true
+  },
+  "notes": [
+    "Library imports use the existing local Atlas sources; exact WORLD bundle --check confirms unchanged generated runtime bytes.",
+    "Classroom/Town tests use actual committed deployment model exports and preserve existing assertions.",
+    "Browser-only harness/static file resolution and Playwright load on actual browser use; API/DB fixture paths keep their prior handlers.",
+    "World client test fixture is byte-identical to the approved public source; production source is not replaced.",
+    "Reviewed only the listed diff and fixture provenance; root owns full-suite result and CI reruns."
+  ],
+  "scopeFlags": {
+    "productFilesModifiedByReviewer": false,
+    "gitIndexTouched": false,
+    "liveDatabaseAccess": false,
+    "deployed": false
+  },
+  "followup": {
+    "at": "2026-10-09T21:00:07.431Z",
+    "previousReport": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-portability-independent-review-v1.json",
+    "previousReportSHA256": "da7e6697436cebac7849b3a7afa789534fa0b2fed988c4ef7efee57ca1ee5878",
+    "changedFiles": [
+      "tests/world-v1-account-export.test.js",
+      "tools/synk-classroom-build.js",
+      "tools/synk-town-build.js",
+      "tools/world-v1-build.js"
+    ],
+    "findings": [],
+    "worldDiagnosticLabelsLiteralReplacementPreservesExactBundle": true,
+    "threeBuilderExactCheckExitCodes": [
+      0,
+      0,
+      0
+    ],
+    "argumentRejections": [
+      {
+        "builder": "synk-classroom-build",
+        "arg": "--unknown-review-option",
+        "exitCode": 2
+      },
+      {
+        "builder": "synk-classroom-build",
+        "arg": "unexpected-position",
+        "exitCode": 2
+      },
+      {
+        "builder": "synk-town-build",
+        "arg": "--unknown-review-option",
+        "exitCode": 2
+      },
+      {
+        "builder": "synk-town-build",
+        "arg": "unexpected-position",
+        "exitCode": 2
+      },
+      {
+        "builder": "world-v1-build",
+        "arg": "--unknown-review-option",
+        "exitCode": 2
+      },
+      {
+        "builder": "world-v1-build",
+        "arg": "unexpected-position",
+        "exitCode": 2
+      }
+    ],
+    "manifestFilter": {
+      "JSONParseAndRequireSameSlugs": true,
+      "slugs": [
+        "synk-account",
+        "synk-learning",
+        "tutor"
+      ]
+    },
+    "testAssertionsUnchanged": true,
+    "productSourceEditedByReviewer": false
+  }
+}

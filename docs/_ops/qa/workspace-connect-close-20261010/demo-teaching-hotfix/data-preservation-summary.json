@@ -1,0 +1,17 @@
+{
+  "at": "2026-10-09T21:32:18.860Z",
+  "status": "existing-business-data-preserved",
+  "issues": [],
+  "privateSourceCopiesUnchanged": true,
+  "decryptionPerformed": false,
+  "allowedChanges": {
+    "tokensExpiredBeforeBootDeleted": 0,
+    "customerSessionsExpiredBeforeBootDeleted": 0,
+    "staffCiphertextReencryptedSamePlaintext": 0,
+    "schemaChanges": 0
+  },
+  "captureMethod": "one offline before; read-only SQLite online backups after; concurrent changes require review",
+  "secondRestartPerformed": false,
+  "fullPrivateReportSHA256": "e24a5c1225a698dae94918eedd63eba4df09f78026c7a29054670daf1c35519c",
+  "readsOnly": true
+}

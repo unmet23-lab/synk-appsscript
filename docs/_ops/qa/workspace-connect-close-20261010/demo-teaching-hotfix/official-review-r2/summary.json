@@ -1,0 +1,19 @@
+{
+  "normalCompleted": true,
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "permissionDenialCount": 0,
+  "exitCode": 0,
+  "terminalReason": "completed",
+  "stopReason": "end_turn",
+  "verdict": "PASS",
+  "findings": [],
+  "reviewJsonlSHA256": "37d1858f2b1d671105a201b4befb9aa529c30a7c6f41e0bd371b73cecd87c26d",
+  "reviewResultSHA256": "36557f2d56897b0e2d1c30e88c49de8cab99bb66832f651f1a1ac70744e69d6d",
+  "completedSHA256": "60d4b732d69d0656f2ed55fcd8ed9eb76acf7fccd692603b7d21c5e6d9111980",
+  "pinnedInputsSHA256": "c5507d9a34f00f2f5ca55f1af86deeb2e7db0beb7c44119772a8879cba150487",
+  "inputsUnchanged": true
+}

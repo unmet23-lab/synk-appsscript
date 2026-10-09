@@ -1,0 +1,165 @@
+{
+  "at": "2026-10-09T21:34:34.357Z",
+  "status": "production-verified",
+  "operationalVerificationAt": "2026-10-09T21:30:01.055Z",
+  "operationalVerificationKST": "2026-10-10 06:30 KST",
+  "initialReview": {
+    "verdict": "FAIL",
+    "findings": 3,
+    "priorities": [
+      "P2",
+      "P2",
+      "P2"
+    ],
+    "phase": "before-production",
+    "resolvedBeforeApply": true
+  },
+  "finalReview": {
+    "verdict": "PASS",
+    "findings": 0,
+    "normalCompleted": true,
+    "actualModels": [
+      "claude-opus-5-5"
+    ],
+    "effort": "max",
+    "summarySHA256": "9047b3fc10922e5816192081118c3acb1394b11b5f70a368b9595b7d64237ed7"
+  },
+  "stage": {
+    "image": "sha256:18c7a86cacbe06d259fa972c843e6675194cdf7f4dc03f55bf30ab2569940402",
+    "manifestSHA256": "d6579a536bdc8ae8a10dfcaa7c60dee2b82aa910a288920a84cea9eea60089de",
+    "filesystemEntries": 7586,
+    "changedFiles": [
+      "workspace/docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js"
+    ],
+    "operatingVolumeMounted": false
+  },
+  "backup": {
+    "verifiedAt": "2026-10-09T21:29:31.524Z",
+    "result": "success",
+    "uploadCompleteObserved": true
+  },
+  "apply": {
+    "stopStartCycles": 1,
+    "databaseWritesByOperator": 0
+  },
+  "verify": {
+    "dataPreserved": true,
+    "secondRestartPerformed": false,
+    "operationalDatabaseWrites": 0
+  },
+  "dataPreservation": {
+    "status": "existing-business-data-preserved",
+    "issues": [],
+    "allowedChanges": {
+      "tokensExpiredBeforeBootDeleted": 0,
+      "customerSessionsExpiredBeforeBootDeleted": 0,
+      "staffCiphertextReencryptedSamePlaintext": 0,
+      "schemaChanges": 0
+    },
+    "decryptionPerformed": false,
+    "fullPrivateReportSHA256": "e24a5c1225a698dae94918eedd63eba4df09f78026c7a29054670daf1c35519c"
+  },
+  "finalStatus": {
+    "at": "2026-10-09T21:31:53.484Z",
+    "health": "healthy",
+    "image": "sha256:18c7a86cacbe06d259fa972c843e6675194cdf7f4dc03f55bf30ab2569940402",
+    "manifestSHA256": "d6579a536bdc8ae8a10dfcaa7c60dee2b82aa910a288920a84cea9eea60089de"
+  },
+  "public": {
+    "handlerChecksPassed": 7,
+    "demoSHA256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+    "appSHA256Unchanged": true,
+    "beforeMissingHelperVisible": true,
+    "afterMissingHelperVisible": false,
+    "finalURL": "https://workspace.synk.im/?tab=teaching",
+    "loginVisible": true,
+    "pageErrors": []
+  },
+  "scope": {
+    "existingUserProfileAccessed": false,
+    "realUserSessionAccessed": false,
+    "studentAccountAcceptancePerformed": false,
+    "liveBroadcastTestPerformed": false,
+    "concurrent16StudentTestPerformed": false
+  },
+  "evidence": [
+    {
+      "file": "operator/receipt-stage-1791581339817.json",
+      "sha256": "f65228e2675ed14aadeba391271cbe6d843e199b428b99296eb62014608d970b"
+    },
+    {
+      "file": "operator/backup-final.json",
+      "sha256": "1b73b1164a06fa1e2e307e3d959d96c9b725a4d13cc23451ccdcf7ffc6c0a51b"
+    },
+    {
+      "file": "operator/receipt-apply-1791581393839.json",
+      "sha256": "2bed44da82442a71f0c31bd8694b77a70eccf038af7181e3802ab4e955e672f0"
+    },
+    {
+      "file": "operator/receipt-verify-1791581401056.json",
+      "sha256": "2d5cdaa450ab200122a9596be550dd59bc1a2330db08530db0cbed3d114c654b"
+    },
+    {
+      "file": "operator/receipt-status-1791581513486.json",
+      "sha256": "46080dc72542671841417541233c5e94a688295d7a3187cb57d0e9c629bccba5"
+    },
+    {
+      "file": "data-preservation-summary.json",
+      "sha256": "1c24f692aeb8ad92feadcc35cfc3aa3e6ab567c5dcd55cece9ec4b8778fefc65"
+    },
+    {
+      "file": "public-final.json",
+      "sha256": "4fbda9e287a693cb99f67bbfd18a99429204c0f5df62e60343457dd41a80f467"
+    },
+    {
+      "file": "browser-before.json",
+      "sha256": "eb3da50bfc85f62bcdb7e6ca55006edbbe41b584c0335b45b39ae9877e397333"
+    },
+    {
+      "file": "browser-after.json",
+      "sha256": "94455e6e09bc176044c942a8bfcd967ff2b62a21f2dbf066e16795b9496bdb4e"
+    },
+    {
+      "file": "browser-before.png",
+      "sha256": "8ca6fca4dd5f22995756af78992656ca6ccfdaad6909748acb9ee53618280d5b"
+    },
+    {
+      "file": "browser-after.png",
+      "sha256": "30b4025edaf806d60d15938f4f6162288574378a280d4ec262aef1656b6c4c54"
+    },
+    {
+      "file": "proof.json",
+      "sha256": "fe408c9c3d5d60b1f93f55576dadbef96b1ee29f7e713ccc7b7236c79444c2c7"
+    },
+    {
+      "file": "manifest-delta.json",
+      "sha256": "6371e3e85197fa3e18e0e3bc616029300773be720789c6265a912d507b0f464b"
+    },
+    {
+      "file": "operator/local-checks.json",
+      "sha256": "bb67a7aaf34cf1f6331eeda29af2bc58b2be06bfb2723abe3e17ea396134ce02"
+    },
+    {
+      "file": "official-review/summary.json",
+      "sha256": "e692b06ee7dc63e2d2860a1f7613f5adf417dbc4e8fb44fb6c714431440f568f"
+    },
+    {
+      "file": "official-review/review-result.txt",
+      "sha256": "ce8f59ed0ac04a60653ca318ca181cb555844a86978b3f615ea9591741afa441"
+    },
+    {
+      "file": "official-review-r2/summary.json",
+      "sha256": "9047b3fc10922e5816192081118c3acb1394b11b5f70a368b9595b7d64237ed7"
+    },
+    {
+      "file": "official-review-r2/review-result.txt",
+      "sha256": "36557f2d56897b0e2d1c30e88c49de8cab99bb66832f651f1a1ac70744e69d6d"
+    }
+  ],
+  "limitations": [
+    "This is receipt, hash and browser evidence review, not a fresh direct database inspection.",
+    "Public handler checks and isolated-browser login entry are separate evidence; authenticated student/teacher acceptance remains deferred.",
+    "Original before-browser JSON reports a visible missing-helper message with no uncaught page error.",
+    "Initial FAIL and local proof retain their original historical pre-deployment state; the final review and later receipts supersede those statuses."
+  ]
+}

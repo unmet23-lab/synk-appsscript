@@ -1,0 +1,44 @@
+{
+  "normalCompleted": true,
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "actualModels": [
+    "claude-opus-5-5"
+  ],
+  "permissionDenialCount": 0,
+  "exitCode": 0,
+  "terminalReason": "completed",
+  "stopReason": "end_turn",
+  "verdict": "FAIL",
+  "findings": [
+    {
+      "priority": "P2",
+      "file": ".tmp/workspace-connect-close-20261010/demo-teaching-hotfix/operator/hotfix.py",
+      "line": 168,
+      "brokenBehavior": "apply(168행)와 recover(223행)는 재사용한 start_original_stack으로 서비스를 기동한다. 이 함수는 기동 뒤 verify_runtime_contract→teacher_settings()로 이 패키지 밖의 옛 e01 파일(/srv/synk/workspace-connect-operator-20261009-e01fe60531bc/teacher-settings.json, root 0600, SHA 4c7f957d…)이 있고 실행 중 컨테이너의 SYNK_ID_TEACHER_CLIENT_ID가 그 값과 같아야 통과한다. 정지 전 parent_state(59-71행)는 이 조건을 확인하지 않는다. 그 파일이 없거나 바뀌었거나 live 교사 client가 다르면, apply는 정지·cold copy·env/link 교체·후보 기동·health 확인까지 마친 뒤에 실패한다. 이때 health·backup·backup-watch timer는 꺼진 채 남는다. recover도 같은 함수로 부모를 기동한 뒤 같은 지점에서 실패해 timer를 되살리지 못하고, 다시 실행해도 같은 결과가 반복된다.",
+      "evidence": "verified-deploy.py 36행(TEACHER_CONFIG 경로)·35행(SHA 고정), 392행(verify_runtime_contract가 teacher_settings 호출), 550-553행(파일 존재·권한·SHA 요구), 704행(start_original_stack 안에서 호출). hotfix.py는 168·223행에서 IMAGE/TARGET만 바꾸고 verify_runtime_contract나 TEACHER_CONFIG는 바꾸거나 미리 검사하지 않는다. gate files 7개, live-runtime-read.json(플래그 6개와 키 개수만 있음), live-parent-read.json 어디에도 이 파일이나 교사 client 일치 증거가 없다. README 20행도 동적으로 바꾸는 값을 IMAGE/TARGET/창/crypto image로만 적는다.",
+      "requiredFix": "정지 전 parent_state에서 d.teacher_settings()와 d.verify_runtime_contract(docker inspect synk-company-company-1 결과)를 실행해, 불일치하면 운영 변경 전에 거절한다. 또는 정지 전에 실행 중 부모 컨테이너의 계약 값을 기록해 두고, 기동 후 그 기록과 비교하는 hotfix 전용 계약으로 바꾼다. 의존 파일을 쓴다면 그 SHA를 gate/패키지에 묶는다."
+    },
+    {
+      "priority": "P2",
+      "file": ".tmp/workspace-connect-close-20261010/demo-teaching-hotfix/operator/hotfix.py",
+      "line": 127,
+      "brokenBehavior": "stage가 만드는 새 release(/opt/synk/releases/d6579a536bdc)의 모든 디렉터리가 0700 root 전용이 된다. main()이 umask 0o077을 건 뒤(280행) target.mkdir(mode=0o755)(127행)와 file.parent.mkdir(mode=0o755,parents=True)(130행)를 호출하기 때문이다. 검증된 설치기는 같은 상황에서 디렉터리를 0755로 되돌린다. apply가 /opt/synk/current를 이 트리로 바꾸면, 부모 release와 달리 root가 아닌 사용자는 release 안을 읽을 수 없다. verify_release와 verify 모드는 디렉터리 권한을 보지 않아 이 차이를 잡지 못한다.",
+      "evidence": "verified-deploy.py 103행 주석 'release source still needs UID1000 read access'와 install_release 504-505행 os.chmod(directory, 0o755). hotfix.py stage 127-133행에는 이 정규화가 없다. d.write_new(…, 0o644)은 파일에만 fchmod한다.",
+      "requiredFix": "release 작성 직후 install_release와 같이 모든 디렉터리를 0755로 chmod한다. 바뀐 한 파일의 내용을 빼고 디렉터리·파일의 mode/uid/gid가 부모 release와 같은지 확인한다."
+    },
+    {
+      "priority": "P2",
+      "file": ".tmp/workspace-connect-close-20261010/demo-teaching-hotfix/operator/hotfix.py",
+      "line": 54,
+      "brokenBehavior": "공식 검수 증거를 해시로만 묶고 내용은 검사하지 않는다. authorized()는 root가 authorization.json에 적은 model/effort/completed/officialReviewPassed 값과 official-review.json의 SHA 일치만 확인한다. verdict, findings, 정상 완료 여부, 검수 입력 pin, 실제 사용 모델은 보지 않는다. operator.cjs도 마찬가지다. 그래서 FAIL 검수나 다른 범위의 검수 기록을 실수로 pin해도 stage/apply/recover가 통과한다.",
+      "evidence": "hotfix.py 54-56행. operator.cjs 18-20행에는 assert.equal(sha(review), gate.review.sha256)만 있다. run-official-review.cjs 16-21행이 만드는 summary에는 normalCompleted·verdict·findings·actualModels·permissionDenialCount·pinnedInputsSHA256이 있지만 gate가 읽지 않는다.",
+      "requiredFix": "official-review.json을 run-official-review.cjs의 summary/completed 형식으로 고정한다. 그리고 normalCompleted true, verdict 'PASS', findings [], actualModels ['claude-opus-5-5'], permissionDenialCount 0을 코드로 요구한다. pinnedInputsSHA256이 가리키는 검수 입력의 파일 SHA가 현재 gate.files·config와 같은지도 확인한다."
+    }
+  ],
+  "reviewJsonlSHA256": "1429c8cb5e11d24b90e7150b2424af0e190de51ecc32f20c1117871dc24fb400",
+  "reviewResultSHA256": "ce8f59ed0ac04a60653ca318ca181cb555844a86978b3f615ea9591741afa441",
+  "completedSHA256": "2fd67fcc9115b04a752ef01bd07fc7c2d9166a6459a131f62f469a3a57698645",
+  "pinnedInputsSHA256": "a012379f19625204407c42817e1aac488a719efaaf14c9cc3d87ba8402c6d900",
+  "inputsUnchanged": true
+}

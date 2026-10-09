@@ -1,0 +1,6 @@
+# Keep audit evidence byte-identical so its recorded checksums survive checkout.
+* -text
+*.md text eol=lf
+# Raw tool transcripts intentionally retain their original whitespace.
+*.log -diff
+*.tap -diff

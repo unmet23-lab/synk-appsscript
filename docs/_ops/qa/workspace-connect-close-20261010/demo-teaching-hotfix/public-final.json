@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-09T21:30:05.805Z",
+  "status": "public-artifact-and-executed-handler-verified",
+  "reads": [
+    {
+      "path": "/demo-ui.js",
+      "status": 200,
+      "sha256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+      "bytes": 6719
+    },
+    {
+      "path": "/app.js",
+      "status": 200,
+      "sha256": "15d93a3fe1d3ae6bbd1fa1633b7df0e9ac4c5cf42e2590cbf692d84c7ab432b3",
+      "bytes": 134281
+    }
+  ],
+  "checks": [
+    {
+      "name": "public direct teaching helper returns real account entry",
+      "pass": true
+    },
+    {
+      "name": "public demo teaching click redirects once without notice",
+      "pass": true
+    },
+    {
+      "name": "existing home redirect remains unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing workroom redirect remains unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing handbook redirect remains unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing messenger redirect remains unchanged",
+      "pass": true
+    },
+    {
+      "name": "real account click remains outside demo handler",
+      "pass": true
+    }
+  ],
+  "realUserSessionAccessed": false,
+  "operationalWrites": 0,
+  "browserEndToEnd": false
+}

@@ -1,0 +1,256 @@
+{
+  "at": "2026-10-09T21:18:45.046Z",
+  "sourceCopies": [
+    {
+      "file": "backend-final-ci.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci.json",
+      "sha256": "c303bb3f816ffb1ab6737202d8815e31d3132144a93fed790e1d74957dd8b155",
+      "bytes": 10837
+    },
+    {
+      "file": "backend-postcheck-repair.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-postcheck-repair.json",
+      "sha256": "005f5458abf75033124665ad6ceeec95b405124ea4584361705b97068ac895f7",
+      "bytes": 20770
+    },
+    {
+      "file": "backend-portability-independent-review.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-portability-independent-review.json",
+      "sha256": "9940e6bef92a78378cf359c2885213ab5f2c94adb7e27a16af3e66ada807c617",
+      "bytes": 4978
+    },
+    {
+      "file": "backend-final-ci-metadata.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci-metadata.json",
+      "sha256": "743af0849aa4752d2af37452f2427bccdcc101aecdd8c1e4a8b4e36946b20f42",
+      "bytes": 2231
+    },
+    {
+      "file": "backend-final-db-metadata.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-db-metadata.json",
+      "sha256": "9172f9ea427cd0d9c3d94575e40962edb8001673281c874057c4b703c190e3bb",
+      "bytes": 2335
+    },
+    {
+      "file": "backend-postcheck-tests-final.tap",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-postcheck-tests-final.tap",
+      "sha256": "35b95d7af0f64694e329c591c0cde2719363e8cd34fc3dd8437014e09017b063",
+      "bytes": 7944
+    },
+    {
+      "file": "backend-build-label-final.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-build-label-final.log",
+      "sha256": "9846ef74025d011346207eab5f0c214518ab248417632244dfd6f75d3ceb635c",
+      "bytes": 4648
+    },
+    {
+      "file": "backend-source-ratchet-final.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-source-ratchet-final.log",
+      "sha256": "7dc70ded87a2f2660990af8d9a798c26be018b2326ec6d719019d37befa7779c",
+      "bytes": 1903
+    },
+    {
+      "file": "backend-flags-final.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-flags-final.log",
+      "sha256": "5bc5297eee4f1adf596c56e9466ac3e2a19a43efc4633ac9fe9cf7f34c0fb7f0",
+      "bytes": 3078
+    },
+    {
+      "file": "backend-local-deps-final.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-local-deps-final.log",
+      "sha256": "d556120cdc63d6a6eac6682386dce9a92501a73c05593663e06aa9ed749513d8",
+      "bytes": 1487
+    },
+    {
+      "file": "backend-eval-final.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-eval-final.log",
+      "sha256": "83cb1ef17c445b10d3f993bde35b9d8f54dbd07db01e4bb6ecbbdc3fc65113a8",
+      "bytes": 16501
+    },
+    {
+      "file": "apps-commit.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\apps-commit.json",
+      "sha256": "070d62837832805beade8e10022e004ac06b5c713379ced6bf2593fc85fc8f3b",
+      "bytes": 300
+    },
+    {
+      "file": "backend-repair-commit.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-repair-commit.json",
+      "sha256": "ab1d8f3af9d179ecb54132b5dd361f845e9e8e1fb738b90ef9150ac7c182aeb6",
+      "bytes": 183
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/receipt-stage-1791581339817.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\receipt-stage-1791581339817.json",
+      "sha256": "f65228e2675ed14aadeba391271cbe6d843e199b428b99296eb62014608d970b",
+      "bytes": 726
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/backup-final.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\backup-final.json",
+      "sha256": "1b73b1164a06fa1e2e307e3d959d96c9b725a4d13cc23451ccdcf7ffc6c0a51b",
+      "bytes": 614
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/receipt-apply-1791581393839.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\receipt-apply-1791581393839.json",
+      "sha256": "2bed44da82442a71f0c31bd8694b77a70eccf038af7181e3802ab4e955e672f0",
+      "bytes": 455
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/receipt-verify-1791581401056.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\receipt-verify-1791581401056.json",
+      "sha256": "2d5cdaa450ab200122a9596be550dd59bc1a2330db08530db0cbed3d114c654b",
+      "bytes": 460
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/receipt-status-1791581513486.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\receipt-status-1791581513486.json",
+      "sha256": "46080dc72542671841417541233c5e94a688295d7a3187cb57d0e9c629bccba5",
+      "bytes": 406
+    },
+    {
+      "file": "demo-teaching-hotfix/data-preservation-summary.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\data-preservation-summary.json",
+      "sha256": "1c24f692aeb8ad92feadcc35cfc3aa3e6ab567c5dcd55cece9ec4b8778fefc65",
+      "bytes": 635
+    },
+    {
+      "file": "demo-teaching-hotfix/public-final.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\public-final.json",
+      "sha256": "4fbda9e287a693cb99f67bbfd18a99429204c0f5df62e60343457dd41a80f467",
+      "bytes": 1239
+    },
+    {
+      "file": "demo-teaching-hotfix/browser-before.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\browser-before.json",
+      "sha256": "eb3da50bfc85f62bcdb7e6ca55006edbbe41b584c0335b45b39ae9877e397333",
+      "bytes": 572
+    },
+    {
+      "file": "demo-teaching-hotfix/browser-after.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\browser-after.json",
+      "sha256": "94455e6e09bc176044c942a8bfcd967ff2b62a21f2dbf066e16795b9496bdb4e",
+      "bytes": 563
+    },
+    {
+      "file": "demo-teaching-hotfix/browser-before.png",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\browser-before.png",
+      "sha256": "8ca6fca4dd5f22995756af78992656ca6ccfdaad6909748acb9ee53618280d5b",
+      "bytes": 15282
+    },
+    {
+      "file": "demo-teaching-hotfix/browser-after.png",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\browser-after.png",
+      "sha256": "30b4025edaf806d60d15938f4f6162288574378a280d4ec262aef1656b6c4c54",
+      "bytes": 51543
+    },
+    {
+      "file": "demo-teaching-hotfix/proof.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\proof.json",
+      "sha256": "fe408c9c3d5d60b1f93f55576dadbef96b1ee29f7e713ccc7b7236c79444c2c7",
+      "bytes": 2247
+    },
+    {
+      "file": "demo-teaching-hotfix/manifest-delta.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\manifest-delta.json",
+      "sha256": "6371e3e85197fa3e18e0e3bc616029300773be720789c6265a912d507b0f464b",
+      "bytes": 1130
+    },
+    {
+      "file": "demo-teaching-hotfix/operator/local-checks.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\operator\\local-checks.json",
+      "sha256": "bb67a7aaf34cf1f6331eeda29af2bc58b2be06bfb2723abe3e17ea396134ce02",
+      "bytes": 1880
+    },
+    {
+      "file": "demo-teaching-hotfix/official-review/summary.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\official-review\\summary.json",
+      "sha256": "e692b06ee7dc63e2d2860a1f7613f5adf417dbc4e8fb44fb6c714431440f568f",
+      "bytes": 5518
+    },
+    {
+      "file": "demo-teaching-hotfix/official-review/review-result.txt",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\official-review\\review-result.txt",
+      "sha256": "ce8f59ed0ac04a60653ca318ca181cb555844a86978b3f615ea9591741afa441",
+      "bytes": 10154
+    },
+    {
+      "file": "demo-teaching-hotfix/official-review-r2/summary.json",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\official-review-r2\\summary.json",
+      "sha256": "9047b3fc10922e5816192081118c3acb1394b11b5f70a368b9595b7d64237ed7",
+      "bytes": 673
+    },
+    {
+      "file": "demo-teaching-hotfix/official-review-r2/review-result.txt",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\official-review-r2\\review-result.txt",
+      "sha256": "36557f2d56897b0e2d1c30e88c49de8cab99bb66832f651f1a1ac70744e69d6d",
+      "bytes": 6074
+    }
+  ],
+  "generatedFiles": [
+    {
+      "file": "apps-final-ci-metadata.json",
+      "sha256": "536dd725a2347d1e78a39469709beb7a68ce03ace230dbe1b45e62aa39902168",
+      "bytes": 480
+    },
+    {
+      "file": "backend-final-ci-excerpts.txt",
+      "sha256": "f4540199b1e3225b850098067aab60a96c7fdd05a2aa0abe3c838cb286ca920c",
+      "bytes": 6866
+    },
+    {
+      "file": "backend-final-db-excerpts.txt",
+      "sha256": "8ee8dd8e5696f30a53513edac04892d0bbd7139e2b61c6db200f8d363f3705c2",
+      "bytes": 1245
+    },
+    {
+      "file": "backend-build-label-independent-review.json",
+      "sha256": "6846d0f7ee0a2429b4742d0797125e8645334e3a11da602355199d1571cdb287",
+      "bytes": 1122
+    },
+    {
+      "file": "README.md",
+      "sha256": "d54a58f7e1cb710732bb41dc224334f64258e3bba4db24827de10f7372cc810f",
+      "bytes": 8864
+    },
+    {
+      "file": "demo-teaching-hotfix/final-acceptance.json",
+      "sha256": "05766ff47f0101fbc342cb113f6d82ce04733c235fb235810b2b45f99b3fd529",
+      "bytes": 5723
+    }
+  ],
+  "rawLogProvenance": [
+    {
+      "file": "backend-final-ci.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci.log",
+      "sha256": "2c5d8052783605ab2fccabe7fc50c6fdb76f25f5cfc06180ea511a12bc17c9ac",
+      "durableExcerpt": "backend-final-ci-excerpts.txt",
+      "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37990850653"
+    },
+    {
+      "file": "backend-final-db.log",
+      "original": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-db.log",
+      "sha256": "ce94faa12724d4032914b993ec46b9bb0b1d18764e0e6a9bf240ae1c506a6151",
+      "durableExcerpt": "backend-final-db-excerpts.txt",
+      "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37990775904"
+    }
+  ],
+  "notes": [
+    "Copied reports preserve original bytes and their original temporary evidence paths; the same basenames above are the durable copies in this folder.",
+    "Large raw GitHub logs remain in the original temporary evidence location. This folder retains metadata and exact result/skip excerpts; full runs are linked.",
+    "Hotfix initial FAIL and r2 PASS summary/result originals preserve the pre-production review history. All three P2 findings were fixed before the final PASS and deployment.",
+    "Hotfix production verification completed at 2026-10-10 06:30 KST. Receipts, redacted data-preservation summary, public checks and before/after browser screenshots are copied byte-for-byte; personal account acceptance remains deferred."
+  ],
+  "scope": {
+    "changesOnlyInThisDirectory": true,
+    "primaryModified": false,
+    "gitIndexTouched": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "documentedHotfixDeploymentCompleted": true,
+    "deploymentPerformedByThisDocumentationTask": false
+  },
+  "updatedAt": "2026-10-09T21:34:34.379Z"
+}

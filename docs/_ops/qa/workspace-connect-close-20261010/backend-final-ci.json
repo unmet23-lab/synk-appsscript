@@ -1,0 +1,254 @@
+{
+  "at": "2026-10-09T21:10:40.916Z",
+  "repository": "unmet23-lab/SYNK-talk",
+  "ok": true,
+  "latestRemoteMaster": "2a69aba126c2cf25bffffe9e4fd2e5d4c2c65486",
+  "ci": {
+    "databaseId": 37990850653,
+    "headSha": "2a69aba126c2cf25bffffe9e4fd2e5d4c2c65486",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37990850653",
+    "createdAt": "2026-10-09T21:01:26Z",
+    "updatedAt": "2026-10-09T21:07:43Z",
+    "jobs": [
+      {
+        "name": "verify",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-09T21:02:23Z",
+        "completedAt": "2026-10-09T21:07:43Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run npm ci",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "커밋 가드 회귀",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "교정 엔진 평가",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      },
+      {
+        "name": "build",
+        "status": "completed",
+        "conclusion": "skipped",
+        "startedAt": "2026-10-09T21:07:43Z",
+        "completedAt": "2026-10-09T21:07:43Z",
+        "steps": []
+      }
+    ]
+  },
+  "db": {
+    "databaseId": 37990775904,
+    "headSha": "6ca62432f6eab8856dfdb28883aff4480bde30c8",
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/unmet23-lab/SYNK-talk/actions/runs/37990775904",
+    "createdAt": "2026-10-09T21:00:47Z",
+    "updatedAt": "2026-10-09T21:05:05Z",
+    "jobs": [
+      {
+        "name": "supabase",
+        "status": "completed",
+        "conclusion": "success",
+        "startedAt": "2026-10-09T21:00:50Z",
+        "completedAt": "2026-10-09T21:05:04Z",
+        "steps": [
+          {
+            "name": "Set up job",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/checkout@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run actions/setup-node@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Run supabase/setup-cli@v3",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "로컬 Supabase 시작",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "기준선 마이그레이션 회귀",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "로컬 Supabase 종료",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run supabase/setup-cli@v3",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/setup-node@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Post Run actions/checkout@v5",
+            "status": "completed",
+            "conclusion": "success"
+          },
+          {
+            "name": "Complete job",
+            "status": "completed",
+            "conclusion": "success"
+          }
+        ]
+      }
+    ]
+  },
+  "testSummary": {
+    "tests": 3334,
+    "pass": 3317,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 17,
+    "todo": 0,
+    "duration_ms": 290300.82329
+  },
+  "skippedTests": [
+    "ok 339 - real local PostgreSQL export creates private paired/latest inputs accepted by the dating restore gate # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 340 - latest uses a new central transaction and exposes a new hold missing from the old paired backup # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 341 - latest preserves the dispatcher timestamps for availability and terminal deletion # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 342 - transaction rejects real writes, rolls back on error, closes, and leaves no output # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 343 - database errors and close errors are sanitized and do not publish evidence # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 344 - product changes during the central read fail instead of exporting a mixed pair # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 351 - an output race preserves the other file and partial staging writes never publish a final JSON # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 352 - latest refuses changed paired evidence or an old database clock without writing its destination # SKIP 형제 저장소 SYNK-appsscript 의 experiences/atlas-lab 이 없다",
+    "ok 754 - 생성물이 원본과 같다 (형제 저장소 없으면 skip · F296) # SKIP 형제 저장소가 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — as: 원문을 못 읽는다. 낡음은 «안 쟀다».",
+    "ok 997 - 형제 저장소 SYNK-appsscript의 계약 파일이 이것과 같다 (줄바꿈만 제외) # SKIP 형제 저장소 SYNK-appsscript가 이 기계에 없다 — 실물 대조는 로컬에서만",
+    "ok 1017 - 계약 사본이 정본(SYNK-appsscript)과 같은 바이트다 — 이 사본이 낡으면 문항 급수 검증이 낡은 자로 초록이 된다 # SKIP 정본 저장소가 이 기계에 없다(/home/runner/work/SYNK-talk/SYNK-appsscript) — CI 자리. 교차 대조는 이 기계의 스위트·배포 게이트가 진다",
+    "ok 1417 - 드리프트 — 형제 저장소가 있으면 정본 수식이 내는 값과 전량이 같다 # SKIP 형제 저장소 부재 — 정본 대조는 로컬에서만",
+    "ok 2060 - 재현 — 49d4feb 직전을 기준으로 두면 그 커밋이 낡힌 다섯 함수가 나온다 # SKIP 49d4feb 이 이 사본의 이력에 없다 — 재료 없음(F296)",
+    "ok 2081 - ⑧ 실저장소 — git 밖 폴더에 배포 명령이 안 나가고 따로 한 줄로 뜬다 · --json 칸은 그대로 (재료 없으면 skip) # SKIP 작업본에 git 밖 함수 폴더가 없다 — 잴 재료가 없다(F296)",
+    "ok 2225 - SFX ③ — 21종이 있고, 형제 저장소가 있으면 사운드킷과 바이트 동일 # SKIP 형제 저장소 부재 — 바이트 대조는 로컬에서만",
+    "ok 2362 - 🔴 형제(SYNK-appsscript)의 문자 클래스와 갈라지지 않았다 # SKIP 형제 저장소가 없다 — 대조 «못 했다»",
+    "ok 3127 - 반입 — 형제 저장소가 있으면 정본과 문구 전량이 같다(사본 드리프트 탐지) # SKIP 형제 저장소 부재 — 정본 대조는 로컬에서만"
+  ],
+  "evaluation": {
+    "fixtureTotal": 102,
+    "measured": 26,
+    "passed": 26,
+    "failed": 0,
+    "unmeasured": 76,
+    "missingModelOutputs": 76,
+    "missingInstructorEvidence": 0,
+    "scope": "Score applies to the 26 measured stored outputs only. The other 76 fixtures were not measured."
+  },
+  "databaseCoverage": {
+    "earlierRunCommit": "6ca62432f6eab8856dfdb28883aff4480bde30c8",
+    "latestCommit": "2a69aba126c2cf25bffffe9e4fd2e5d4c2c65486",
+    "changedFiles": [
+      "tools/world-v1-build.js"
+    ],
+    "allDBWorkflowInputPathsIdentical": true,
+    "newDBWorkflowRequiredByPathFilter": false,
+    "stages": [
+      "Empty DB migration application and cumulative postcheck",
+      "Identical-version rerun preserves history/schema/data",
+      "Mismatched checksum rejected",
+      "Pre-commit failure rolls back",
+      "Rollback path and reapplication",
+      "Exact c3/c4 bootstrap preserves existing data",
+      "Supabase reset restores empty database",
+      "Two synthetic local Auth users exercise JWT sub, RLS, write denial and zero grants"
+    ],
+    "finalLog": "Supabase 실행층 ①~⑥ 전부 통과",
+    "productionDatabaseExercised": false
+  },
+  "buildJob": {
+    "status": "skipped",
+    "reason": "Push event; native/Expo build job runs only on workflow_dispatch.",
+    "claimedAsPassed": false
+  },
+  "evidence": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci-metadata.json",
+      "sha256": "743af0849aa4752d2af37452f2427bccdcc101aecdd8c1e4a8b4e36946b20f42"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-db-metadata.json",
+      "sha256": "9172f9ea427cd0d9c3d94575e40962edb8001673281c874057c4b703c190e3bb"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci.log",
+      "sha256": "2c5d8052783605ab2fccabe7fc50c6fdb76f25f5cfc06180ea511a12bc17c9ac"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-db.log",
+      "sha256": "ce94faa12724d4032914b993ec46b9bb0b1d18764e0e6a9bf240ae1c506a6151"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-ci-watch.log",
+      "sha256": "6514d254e045eca0f9eff372e0994f974ac0af92ff06c073bcc68fad051c42a1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-final-db-watch.log",
+      "sha256": "51f24bd144ec04c1af33c5a099f280fe1dbb7463cb6709bca9ecc84481e2bac1"
+    }
+  ],
+  "scope": {
+    "readOnly": true,
+    "codeModified": false,
+    "committed": false,
+    "pushed": false,
+    "workflowDispatched": false,
+    "deployed": false,
+    "liveDatabaseAccess": false
+  },
+  "failures": []
+}

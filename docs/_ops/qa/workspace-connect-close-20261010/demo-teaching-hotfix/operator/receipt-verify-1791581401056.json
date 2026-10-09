@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-09T21:30:01.055Z",
+  "mode": "verify",
+  "exitCode": 0,
+  "output": "{\"status\": \"verified\", \"manifestSHA256\": \"d6579a536bdc8ae8a10dfcaa7c60dee2b82aa910a288920a84cea9eea60089de\", \"image\": \"sha256:18c7a86cacbe06d259fa972c843e6675194cdf7f4dc03f55bf30ab2569940402\", \"dataPreserved\": true, \"stopStartCycles\": 1, \"secondRestartPerformed\": false, \"operationalDatabaseWrites\": 0}\n",
+  "error": null,
+  "secretsPrinted": false
+}
