@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-09T20:01:19.684Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Korean double vowels in one song! 와 워 위 의 #learnkorean",
+      "text": "Sing and move along with Mongle — Korean double vowels in one song.\n\nTwo vowels glide into one:\n오 + 아 = 와 (wa) · 우 + 어 = 워 (wo) · 우 + 이 = 위 (wi) · 으 + 이 = 의 (ui)\nWith a consonant: 과 (gwa, as in 사과 apple) · 귀 (gwi, ear) · 쥐 (jwi, mouse) · 뭐 (mwo, what?)\nThe first vowel is coral, the second is blue — watch them join.\n\n\"오 더하기 아는?\" (o + a = ?) — say the answer before the song does!\nRomanization appears under every letter, and English captions (CC) have the lyrics.\nAt the end, try reading 봐 · 줘 · 쉬 before you hear them!\n\nHangul for Beginners · 한글 초보단계 #4 — after the vowel (#1), consonant (#2) and batchim (#3) songs.\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #koreanvowels",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle join two Korean vowels into one (오 + 아 = 와), first part coral and second part blue, under a white card reading “Korean double vowels in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/원고.json",
+          "bytes": 1502,
+          "sha256": "1f0741a2bfb134940f4b402c108433f742a4b3da38f784e66bb80350d9c4bb79",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/제목.txt",
+          "bytes": 63,
+          "sha256": "8355352a43b1547407bc61045f0dd61923c802cd653d51b0e7aecdcbc45c3c27",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 788,
+          "sha256": "03af26a02610e64d89ea50a88ba0506c686310e0935d38031617f0fdc4360770",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/video.mp4",
+          "bytes": 15597264,
+          "sha256": "2680a0e43e6d8321705162cd8ab485ce6e03712d14994e4ec2bc3d7d098da09c",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 2142,
+          "sha256": "5a57f566caba93a84b8ea5594cacd4c84840d4adaa4f37df7700feb5d73d47d0",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "4bd0a4b2a479c9bf0f3b8741886fb729a7129ef46b7217143424a489d043ff6c",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "4bd0a4b2a479c9bf0f3b8741886fb729a7129ef46b7217143424a489d043ff6c",
+        "publicationHash": "6eab6fe60cff8459d408f8aebd1e8db2b8e94272388802e7bd03e64785b5ef34",
+        "approvedAt": "2026-10-09T20:01:19.895Z",
+        "note": "유호님 10-10 04:4x 그 아 가 혜리 끝 화면을 보고 「마지막 음성은 지금 목소리로 하자. 혜리로 하자」, 유튜브 교체는 「네 편 다 바꾸기」"
+      },
+      "errors": []
+    }
+  ]
+}

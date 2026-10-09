@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "All 10 Korean vowels in one song! 아 야 어 여 오 요 우 유 으 이 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle dance the Korean vowels ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ, drawn in blue, under a white card reading “All 10 Korean vowels in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-10 유호님 「범수로 하니까 너무 처지네」 → 그 아 가 혜리 판을 보고 「마지막 음성은 지금 목소리로 하자. 혜리로 하자」, 유튜브 교체는 「네 편 다 바꾸기」. 끝 화면 「읽어 볼까요?」와 답 소리만 혜리(10-09 처음 끝 화면 목소리, Typecast 같은 설정)로 바꾼 판 — 노래 · 화면은 10-09 판과 같다. 비공개로 올린 뒤 --공개(AI 음악이 중심이라 --합성표시). 공개된 하나 끝 화면 판(n-_Vp4PYTcw)을 바꾸는 판 — 바로 공개, 하나 판은 일부 공개로(조회수 · 댓글 · 공유 링크는 옛 영상에 남음).",
+ "version": "v6-yt-hyeri"
+}
