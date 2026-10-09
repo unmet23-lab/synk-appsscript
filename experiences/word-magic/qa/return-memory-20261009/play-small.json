@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-09T13:22:44.119Z",
+  "url": "http://127.0.0.1:49321/word-magic/",
+  "results": [
+    {
+      "name": "small",
+      "pass": true,
+      "errors": [],
+      "findings": [
+        "18 scenes + 6 genuine MP3 checkpoints, one wrong first choice and one assisted answer separated",
+        "Six v2 meaning-based Atlas items: 4 independent correct, 1 independent incorrect, 1 assisted; no repeated correction",
+        "Each opposite pair has pixel-identical neutral pre-answer stage; no Korean choice spelling in either UI language; shuffled positions remain stable on rerender",
+        "PNG download 960 × 612, actual transformed scene",
+        "Reload restores 18/18 and free-play state",
+        "Picture preview has separate unsaved progress; reset cancellation preserves progress",
+        "Actual play earns 15 completion coins per chapter once; reload of ending and picture preview never duplicate the shared reward"
+      ],
+      "shots": [
+        "small-home.png",
+        "small-teach-0.png",
+        "small-scene-1.png",
+        "small-scene-4.png",
+        "small-before-check-size-0.png",
+        "small-check-size-0.png",
+        "small-before-check-size-1.png",
+        "small-check-size-1.png",
+        "small-ending-0.png",
+        "small-teach-1.png",
+        "small-scene-7.png",
+        "small-scene-10.png",
+        "small-before-check-doors-0.png",
+        "small-check-doors-0.png",
+        "small-before-check-doors-1.png",
+        "small-check-doors-1.png",
+        "small-ending-1.png",
+        "small-teach-2.png",
+        "small-scene-13.png",
+        "small-scene-16.png",
+        "small-scene-18.png",
+        "small-before-check-sky-1.png",
+        "small-check-sky-1.png",
+        "small-before-check-sky-0.png",
+        "small-check-sky-0.png",
+        "small-ending-2.png",
+        "small-lab.png"
+      ]
+    }
+  ]
+}

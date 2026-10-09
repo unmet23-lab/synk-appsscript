@@ -1,0 +1,21 @@
+{
+  "at": "2026-10-09T13:02:29.888Z",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\beginner-shop.mjs",
+  "sourceSha256": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+  "scope": "Actual beginner-shop module and native Chrome DOM/dialog/input; isolated Chrome context with a fresh page per case; gated local synthetic wallet operations and reads; no account, real wallet, audio or remote requests",
+  "checks": [
+    "Keyboard purchase captures the requested item once, reports the decoration purchase and moves to its Use action.",
+    "Keyboard equip preserves the requested slot and returns to the selected owned card when its action disappears.",
+    "Delayed decoration purchase survives close/reopen without claiming a picnic purchase, changing the new selection or stealing its Close focus.",
+    "An accepted delayed equip still applies its original slot but cannot overwrite a newly opened default preview or its focus/message.",
+    "Moving focus to another live button while purchase saves is preserved after refresh.",
+    "Clicking a blank nonfocusable face cancels deferred focus; purchase completion preserves the native dialog/body focus.",
+    "Async read refresh restores the same keyboard-selected card after rebuilding its DOM.",
+    "Out-of-order open/read completion cannot reset the latest requested selection or its focus.",
+    "Goal save/clear keeps its original request and keyboard continuation while respecting a later blank-face click.",
+    "Rejected storage preserves coins, ownership and appearance, keeps Retry by purchase keyboard focus, and fits at 320px."
+  ],
+  "errors": [],
+  "remoteRequests": [],
+  "audioRequests": []
+}

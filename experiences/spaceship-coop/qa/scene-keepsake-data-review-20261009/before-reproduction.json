@@ -1,0 +1,49 @@
+{
+  "at": "2026-10-09T14:58:06.217Z",
+  "frozenSourceSHA": {
+    "experiences/word-magic/app.mjs": "540d3565b8399dd0a5b5654a6b4dac028735de65ddcb48a6cb3a1f674f26db8a",
+    "experiences/word-magic/core.mjs": "fecbd5a7601c33eb5cfcc620e11cd9f73f8c783d6cf9fc1de59e5b61da526a38",
+    "experiences/word-magic/keepsakes.mjs": "1a3196d74e838f4c0e3d1ddcdcadf9bc8beab299daeb110c2ae8e4d37ea2dc2a",
+    "experiences/word-magic/keepsake-view.mjs": "9b1c94e0df754f72f8691a92052d44b2b08cf64cda8d8ca020b88b9128185fa0"
+  },
+  "actualAccountHost": true,
+  "currentAppPersistExecuted": true,
+  "beforeProvenance": "Function text preserved from the exact pre-freeze tool output. Full old WIP app SHA unavailable.",
+  "externalWrites": 0,
+  "productEdits": 0,
+  "productionWrites": 0,
+  "realAccounts": 0,
+  "voiceGeneration": 0,
+  "modelCalls": 0,
+  "results": [
+    {
+      "scenario": "before-unsafe",
+      "acceptedChanges": [
+        {
+          "previousCompleted": [
+            "size-1",
+            "size-2",
+            "size-3",
+            "size-4",
+            "size-5",
+            "size-6"
+          ],
+          "nextCompleted": []
+        }
+      ],
+      "completedBefore": [
+        "size-1",
+        "size-2",
+        "size-3",
+        "size-4",
+        "size-5",
+        "size-6"
+      ],
+      "completedAfter": [],
+      "keepsakesAfter": 0,
+      "languageAfter": "ko",
+      "saveLabel": "계정 저장 상태는 화면 위에서 확인해요",
+      "passed": true
+    }
+  ]
+}

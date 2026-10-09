@@ -1,0 +1,20 @@
+✖ entry after a replaced playing session permits recall while the active cooperative screen blocks it (90.8628ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 363.4492
+
+✖ failing tests:
+
+test at experiences\spaceship-coop\recovery.test.mjs:55:1
+✖ entry after a replaced playing session permits recall while the active cooperative screen blocks it (90.8628ms)
+  ReferenceError: AbortController is not defined
+      at Object.stream [as startStream] (evalmachine.<anonymous>:72:5)
+      at TestContext.<anonymous> (file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/spaceship-coop/recovery.test.mjs:59:11)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)

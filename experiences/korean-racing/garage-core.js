@@ -1,9 +1,12 @@
 // The shared play collection's ledger: items, wallet, equipment and the mini-game reward. Every SYNK
 // LAB mini-game loads this through play-common/collection.js; racing adds its missions and race reward
 // on top (garage.js). It holds no learning data and no racing course data.
-// This collection belongs to this browser origin. It is ready for other mini-games
-// to share, but is not an account wallet or a server-side purchase system.
+// WORLD uses these same rules in the authenticated synk-play server transaction.
+// Standalone guest play keeps a separate browser collection until explicit import.
 export const GARAGE_KEY = 'SYNK_PLAY_COLLECTION_V1';
+import {PLAY_GAMES,PLAY_ACHIEVEMENTS,GAME_SHOP_ITEMS} from './play-catalog.js';
+import {BEGINNER_ITEMS,BEGINNER_DEFAULTS,BEGINNER_GAMES} from './beginner-catalog.js';
+export {PLAY_GAMES,PLAY_ACHIEVEMENTS,GAME_SHOP_ITEMS,BEGINNER_ITEMS};
 export const VEHICLES = [
   {id:'coast',kind:'coast',name:'코스트 GT',price:0,description:'첫 바다 여행을 함께하는 스포츠카',color:'#8dc9bc'},
   {id:'open',kind:'open',name:'브리즈 로드스터',price:120,description:'열린 지붕으로 바람을 만나는 로드스터',color:'#e4b79a'},
@@ -50,17 +53,17 @@ export const SHOP_ITEMS = [
   ...catalogue('vehicle',VEHICLES),...catalogue('paint',PAINTS),
   ...catalogue('wheels',WHEELS).map(item=>item.value==='blossom'?{...item,id:'wheel-blossom'}:item),
   ...catalogue('trail',TRAILS),badge,
-  ...catalogue('racket',RACKETS),...catalogue('ball',BALLS)
+  ...catalogue('racket',RACKETS),...catalogue('ball',BALLS),...GAME_SHOP_ITEMS,...BEGINNER_ITEMS
 ];
 export const FINALE_REWARDS = Object.freeze({1:'paint-aurora',2:'wheel-blossom',3:'trail-starlight',4:'badge-coast',5:'paint-sunset',6:'vehicle-finale'});
 const BY_ID = Object.fromEntries(SHOP_ITEMS.map(item=>[item.id,item]));
 const itemById = id => typeof id==='string'&&Object.hasOwn(BY_ID,id)?BY_ID[id]:null;
 const FREE_ITEMS = SHOP_ITEMS.filter(item=>item.price===0).map(item=>item.id);
 // A wallet saved before a kind existed simply gets that kind's free default (normalizeGarage restores field by field).
-export const DEFAULT_EQUIPMENT = Object.freeze({vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null,racket:'coral',ball:'cream'});
+export const DEFAULT_EQUIPMENT = Object.freeze({vehicle:'coast',paint:'mint',wheels:'silver',trail:'lime',badge:null,racket:'coral',ball:'cream',...BEGINNER_DEFAULTS});
 export const REWARDS = Object.freeze({finish:15,correct:2,firstClear:10,correction:5,mission:15,dailyRaceLimit:10,miniGameAccuracy:10});
 // Mini-games that share this wallet. Each pays only after its own complete-round condition.
-export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush']);
+export const MINI_GAMES = Object.freeze(['rhythm','runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop']);
 export const integer = (value,fallback=0,max=1_000_000_000) => typeof value==='number'&&Number.isFinite(value)?Math.max(0,Math.min(max,Math.floor(value))):fallback;
 export const object = value => value&&typeof value==='object'&&!Array.isArray(value)?value:{};
 export const safeKey = key => typeof key==='string'&&key.length>0&&key.length<=180&&!['__proto__','prototype','constructor'].includes(key);
@@ -71,7 +74,9 @@ export const seoulDate = (now=Date.now()) => new Date(validTime(now)+9*60*60*100
 
 export const emptyGarage = () => ({
   version:1,coins:0,totalEarned:0,owned:[...FREE_ITEMS],equipped:{...DEFAULT_EQUIPMENT},
-  wish:'open',rewardedRounds:{},firstClears:{},corrections:{},dailyRaceCounts:{},missions:{}
+  wish:'open',rewardedRounds:{},firstClears:{},corrections:{},dailyRaceCounts:{},missions:{},
+  gameEquipment:Object.fromEntries(PLAY_GAMES.map(g=>[g.id,{style:'default',title:null}])),
+  gameStats:Object.fromEntries(PLAY_GAMES.map(g=>[g.id,{rounds:0,correct:0,total:0,perfectRounds:0,bestCombo:0}])),achievements:{},gameWishes:{},beginnerWishes:{}
 });
 
 // Racing's daily missions are stored in the same record. Without racing's courses a mini-game cannot
@@ -94,6 +99,16 @@ export function normalizeGarage(saved,mission=keepMission) {
     const item=knownItem(kind,equipment[kind]);
     if(item&&result.owned.includes(item.id))result.equipped[kind]=item.value;
   }
+  for(const game of PLAY_GAMES){
+    const equipped=object(object(saved.gameEquipment)[game.id]);
+    for(const slot of ['style','title']){const item=GAME_SHOP_ITEMS.find(i=>i.game===game.id&&i.slot===slot&&i.value===equipped[slot]);if(item&&result.owned.includes(item.id))result.gameEquipment[game.id][slot]=item.value;}
+    const stats=object(object(saved.gameStats)[game.id]),target=result.gameStats[game.id];
+    for(const key of Object.keys(target))target[key]=integer(stats[key],0,key==='bestCombo'?10000:1e9);
+    target.correct=Math.min(target.correct,target.total);target.perfectRounds=Math.min(target.perfectRounds,target.rounds);
+    const wish=itemById(object(saved.gameWishes)[game.id]);if(wish?.game===game.id&&wish.slot&&!wish.unlockOnly&&!result.owned.includes(wish.id))result.gameWishes[game.id]=wish.id;
+  }
+  for(const game of BEGINNER_GAMES){const wish=BEGINNER_ITEMS.find(i=>i.id===object(saved.beginnerWishes)[game]&&i.game===game&&i.price>0);if(wish)result.beginnerWishes[game]=wish.id;}
+  for(const badge of PLAY_ACHIEVEMENTS)if(object(saved.achievements)[badge.id]===true&&result.owned.includes(badge.rewardId))result.achievements[badge.id]=true;
   result.wish=VEHICLES.some(v=>v.id===saved.wish&&!v.unlockOnly)?saved.wish:saved.wish===null?null:'open';
   result.firstClears=boolRecord(saved.firstClears);result.corrections=boolRecord(saved.corrections);
   result.rewardedRounds=Object.fromEntries(Object.entries(object(saved.rewardedRounds)).filter(([key])=>safeKey(key)).map(([key,r])=>[key,{
@@ -131,7 +146,9 @@ export function equipItem(state,itemId) {
   const next=normalizeGarage(state),item=itemById(itemId);
   if(!item)return {state:next,ok:false,reason:'unknown'};
   if(!next.owned.includes(itemId))return {state:next,ok:false,reason:'unowned'};
-  next.equipped[item.kind]=item.value;
+  if(item.ownershipOnly)return {state:next,ok:false,reason:'use-in-game'};
+  if(item.slot&&next.gameEquipment[item.game])next.gameEquipment[item.game][item.slot]=item.value;
+  else next.equipped[item.kind]=item.value;
   return {state:next,ok:true,reason:null};
 }
 
@@ -145,7 +162,7 @@ export function setWish(state,vehicleId) {
 // Other mini-games call this only after their own complete-round condition.
 // Sharing one ledger prevents switching games to bypass the daily replay limit. The answer bonus
 // follows accuracy, not round length, so a perfect round pays the same in every game (15 + 10).
-export function awardMiniGame(state,{game,total,correct,completed=false,automatic=false,now=Date.now(),roundId}={}) {
+export function awardMiniGame(state,{game,total,correct,completed=false,automatic=false,now=Date.now(),roundId,metrics}={}) {
   const next=normalizeGarage(state),date=seoulDate(now),breakdown=[];
   const noReward=reason=>({state:next,coins:0,breakdown,reason});
   if(automatic)return noReward('automatic');
@@ -162,5 +179,63 @@ export function awardMiniGame(state,{game,total,correct,completed=false,automati
   const coins=breakdown.reduce((sum,line)=>sum+line.coins,0);
   next.coins=Math.min(1_000_000_000,next.coins+coins);next.totalEarned=Math.min(1_000_000_000,next.totalEarned+coins);
   next.rewardedRounds[roundId]={date,coins};
-  return {state:next,coins,breakdown,reason:open?null:'daily-limit'};
+  const newAchievements=recordGameMilestones(next,{game,total,correct,metrics});
+  return {state:next,coins,breakdown,newAchievements,reason:open?null:'daily-limit'};
+}
+
+// Goals are chosen by the player, never assigned. Keep a purchased goal so the
+// game can celebrate it and offer its actual use; a later goal replaces it.
+export function setBeginnerGoal(state,game,itemId){
+  const next=normalizeGarage(state);
+  if(!BEGINNER_GAMES.includes(game))return {state:next,ok:false,reason:'unknown-game'};
+  if(itemId===null){delete next.beginnerWishes[game];return {state:next,ok:true,reason:null};}
+  const item=BEGINNER_ITEMS.find(i=>i.id===itemId&&i.game===game&&i.price>0);
+  if(!item)return {state:next,ok:false,reason:'invalid-item'};
+  next.beginnerWishes[game]=item.id;return {state:next,ok:true,reason:null};
+}
+export function beginnerProgress(state,game,now=Date.now()){
+  const next=normalizeGarage(state),available=BEGINNER_GAMES.includes(game);
+  const items=available?BEGINNER_ITEMS.filter(i=>i.game===game).map(i=>({...i,owned:next.owned.includes(i.id),equipped:!i.ownershipOnly&&next.equipped[i.kind]===i.value})):[];
+  const goal=items.find(i=>i.id===next.beginnerWishes[game])||null;
+  return {game,available,coins:next.coins,items,goal,remaining:goal&&!goal.owned?Math.max(0,goal.price-next.coins):0,affordable:!!goal&&!goal.owned&&next.coins>=goal.price,owned:!!goal?.owned,practiceClaimed:Object.hasOwn(next.rewardedRounds,`beginner-practice:${game}:${seoulDate(now)}`)};
+}
+// Optional word play rewards listening and varied, successful scene changes,
+// not language accuracy. Receipts come from this local game's audio/action flow;
+// they are not server-verified assessment or a tamper-proof currency.
+export function awardBeginnerPractice(state,{game,completed=false,preview=false,actions,now=Date.now()}={}){
+  const next=normalizeGarage(state),date=seoulDate(now),breakdown=[];
+  const no=reason=>({state:next,coins:0,breakdown,reason});
+  if(game!=='word-magic')return no('invalid-round');
+  if(preview===true)return no('automatic');
+  if(completed!==true||!Array.isArray(actions)||actions.length>64)return no('unfinished');
+  const spells=new Set(['grow','shrink','open','close','up','down']);
+  const usable=actions.filter(a=>a&&spells.has(a.spell)&&safeKey(a.objectId)&&a.heard===true&&a.changed===true);
+  if(new Set(usable.map(a=>`${a.spell}:${a.objectId}`)).size<3||new Set(usable.map(a=>a.spell)).size<2||new Set(usable.map(a=>a.objectId)).size<2)return no('unfinished');
+  const id=`beginner-practice:${game}:${date}`;
+  if(Object.hasOwn(next.rewardedRounds,id))return no('duplicate-round');
+  const count=next.dailyRaceCounts[date]||0;
+  if(count>=REWARDS.dailyRaceLimit)return no('daily-limit');
+  const coins=5;next.coins=Math.min(1e9,next.coins+coins);next.totalEarned=Math.min(1e9,next.totalEarned+coins);
+  next.dailyRaceCounts[date]=count+1;next.rewardedRounds[id]={date,coins};breakdown.push({id:'word-play',label:'배운 말로 실험',coins});
+  return {state:next,coins,breakdown,reason:null};
+}
+
+export function recordGameMilestones(state,{game,total,correct,metrics}={}){
+  if(!Object.hasOwn(state.gameStats,game))return [];
+  const stats=state.gameStats[game],add=(key,n)=>{stats[key]=Math.min(1e9,stats[key]+n);};
+  add('rounds',1);add('total',total);add('correct',correct);if(correct===total)add('perfectRounds',1);
+  const combo=object(metrics).bestCombo;if(Number.isInteger(combo)&&combo>=0&&combo<=10000)stats.bestCombo=Math.max(stats.bestCombo,combo);
+  const unlocked=[];for(const a of PLAY_ACHIEVEMENTS.filter(a=>a.game===game))if(stats[a.metric]>=a.target&&!state.achievements[a.id]){state.achievements[a.id]=true;if(!state.owned.includes(a.rewardId))state.owned.push(a.rewardId);unlocked.push({...a,current:a.target,unlocked:true});}
+  return unlocked;
+}
+export function setGameGoal(state,game,itemId){
+  const next=normalizeGarage(state);if(!PLAY_GAMES.some(g=>g.id===game))return {state:next,ok:false,reason:'unknown-game'};
+  if(itemId===null){delete next.gameWishes[game];return {state:next,ok:true,reason:null};}
+  const item=itemById(itemId);if(!item||item.game!==game||!item.slot||item.unlockOnly)return {state:next,ok:false,reason:'invalid-item'};
+  if(next.owned.includes(itemId))return {state:next,ok:false,reason:'owned'};next.gameWishes[game]=itemId;return {state:next,ok:true,reason:null};
+}
+export function gameProgress(state,game){
+  const next=normalizeGarage(state);if(!PLAY_GAMES.some(g=>g.id===game))return {game,available:false,coins:next.coins,stats:null,equipment:null,items:[],achievements:[],wish:null,nextAchievement:null};
+  const stats={...next.gameStats[game]},equipment={...next.gameEquipment[game]},items=GAME_SHOP_ITEMS.filter(i=>i.game===game).map(i=>({...i,owned:next.owned.includes(i.id),equipped:next.owned.includes(i.id)&&equipment[i.slot]===i.value})),achievements=PLAY_ACHIEVEMENTS.filter(a=>a.game===game).map(a=>({...a,current:Math.min(a.target,stats[a.metric]),unlocked:next.achievements[a.id]===true}));
+  return {game,available:true,coins:next.coins,stats,equipment,items,achievements,wish:items.find(i=>i.id===next.gameWishes[game])||null,nextAchievement:achievements.find(a=>!a.unlocked)||null};
 }

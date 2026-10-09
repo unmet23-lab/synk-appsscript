@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-09T15:19:24.344Z",
+  "candidateSHA256": "edeb400083f4c1992292482a3fe3bb457c5277a2a103475578b88ad854e3bc5f",
+  "completed": false,
+  "actualModel": null,
+  "outcome": null,
+  "reason": "direct-user-deferral",
+  "humanDeferralVerified": true,
+  "humanEvidenceSHA256": "4f6eff1fe73d73be078afa2807ed1bd85b421b48cefbfc9fe8f7a65495569fde",
+  "currentDirectHumanInstruction": "오케이. 지금 검수 받을 필요 없어. 한번 니가 직접 검수하고 어떤거 더 하면 좋을지 알려줘",
+  "releaseAuthorization": "User continued after the explicit scene-keepsake and public-release proposal.",
+  "releaseAllowed": true,
+  "externalModelCalls": 0,
+  "automaticRetryScheduled": false
+}

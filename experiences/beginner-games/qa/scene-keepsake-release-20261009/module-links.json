@@ -1,0 +1,63 @@
+{
+  "evaluated": false,
+  "candidateRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\beginner-games\\qa\\scene-keepsake-release-20261009",
+  "baselineRevision": "31d4fd561897b8c84b1fa49caf590f9966cbee84",
+  "entries": [
+    {
+      "entry": "racing/index.html",
+      "modules": 50,
+      "pass": true
+    },
+    {
+      "entry": "runner/index.html",
+      "modules": 12,
+      "pass": true
+    },
+    {
+      "entry": "rhythm/index.html",
+      "modules": 9,
+      "pass": true
+    },
+    {
+      "entry": "order-rush/index.html",
+      "modules": 9,
+      "pass": true
+    },
+    {
+      "entry": "entry-check/index.html",
+      "modules": 9,
+      "pass": true
+    },
+    {
+      "entry": "blank-slice/index.html",
+      "modules": 10,
+      "pass": true
+    },
+    {
+      "entry": "talk-rally/index.html",
+      "modules": 13,
+      "pass": true
+    },
+    {
+      "entry": "story-classroom/index.html",
+      "modules": 9,
+      "pass": true
+    },
+    {
+      "entry": "word-magic/index.html",
+      "modules": 11,
+      "pass": true
+    },
+    {
+      "entry": "spaceship-coop/index.html",
+      "modules": 4,
+      "pass": true
+    },
+    {
+      "entry": "order-rush/beginner.html",
+      "modules": 7,
+      "pass": true
+    }
+  ],
+  "pass": true
+}

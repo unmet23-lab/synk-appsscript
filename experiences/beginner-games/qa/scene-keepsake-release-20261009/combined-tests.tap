@@ -1,0 +1,1048 @@
+TAP version 13
+# Subtest: real WORLD host restores named scenes on a separate fresh storage while preserving adventure and wallet
+ok 1 - real WORLD host restores named scenes on a separate fresh storage while preserving adventure and wallet
+  ---
+  duration_ms: 33.5177
+  type: 'test'
+  ...
+# Subtest: a second device cannot overwrite a scene change until the existing account conflict is resolved
+ok 2 - a second device cannot overwrite a scene change until the existing account conflict is resolved
+  ---
+  duration_ms: 6.9337
+  type: 'test'
+  ...
+# Subtest: logout closes the old keepsake handle and another account restores no previous scene
+ok 3 - logout closes the old keepsake handle and another account restores no previous scene
+  ---
+  duration_ms: 8.3719
+  type: 'test'
+  ...
+# Subtest: actual public-transformed bundles never prefix the next learning route twice
+ok 4 - actual public-transformed bundles never prefix the next learning route twice
+  ---
+  duration_ms: 46.1367
+  type: 'test'
+  ...
+# Subtest: public daily experiment and free fallback use exactly one /try prefix
+ok 5 - public daily experiment and free fallback use exactly one /try prefix
+  ---
+  duration_ms: 22.7694
+  type: 'test'
+  ...
+# Subtest: source hosting and public nested racing hosting remain valid after canonical generation
+ok 6 - source hosting and public nested racing hosting remain valid after canonical generation
+  ---
+  duration_ms: 25.9453
+  type: 'test'
+  ...
+# Subtest: last local source reconstructs the double-prefix failure before the release fix
+ok 7 - last local source reconstructs the double-prefix failure before the release fix
+  ---
+  duration_ms: 26.1586
+  type: 'test'
+  ...
+# Subtest: reward guidance cannot change the running first-shop game’s CAS observation
+ok 8 - reward guidance cannot change the running first-shop game’s CAS observation
+  ---
+  duration_ms: 35.4249
+  type: 'test'
+  ...
+# Subtest: the prior guidance read reproduces a silently accepted stale first-shop overwrite
+ok 9 - the prior guidance read reproduces a silently accepted stale first-shop overwrite
+  ---
+  duration_ms: 14.1275
+  type: 'test'
+  ...
+# Subtest: read-only account records exclude unknown keys and become unavailable after logout
+ok 10 - read-only account records exclude unknown keys and become unavailable after logout
+  ---
+  duration_ms: 4.4162
+  type: 'test'
+  ...
+# Subtest: beginner speech comes from 26 exact requests with approved narrator and matching game bytes
+ok 11 - beginner speech comes from 26 exact requests with approved narrator and matching game bytes
+  ---
+  duration_ms: 3567.8784
+  type: 'test'
+  ...
+# Subtest: only named game assets are served, not repository files or QA artifacts
+ok 12 - only named game assets are served, not repository files or QA artifacts
+  ---
+  duration_ms: 1.3344
+  type: 'test'
+  ...
+# Subtest: the Atlas lab serves named consultation rules and optional Core capabilities only
+ok 13 - the Atlas lab serves named consultation rules and optional Core capabilities only
+  ---
+  duration_ms: 1.2562
+  type: 'test'
+  ...
+# Subtest: account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private
+ok 14 - account classrooms serve teacher UI and Town assets while model, answer keys and stored state stay private
+  ---
+  duration_ms: 0.8921
+  type: 'test'
+  ...
+# Subtest: beginner games expose playable assets but keep cooperative authority and QA private
+ok 15 - beginner games expose playable assets but keep cooperative authority and QA private
+  ---
+  duration_ms: 271.4122
+  type: 'test'
+  ...
+# Subtest: shared origin serves executable common bundles with nosniff-safe MIME
+ok 16 - shared origin serves executable common bundles with nosniff-safe MIME
+  ---
+  duration_ms: 266.6304
+  type: 'test'
+  ...
+# Subtest: WORLD wardrobe serves its CSS, lazy ESM bundle and exact image assets without exposing source or QA
+ok 17 - WORLD wardrobe serves its CSS, lazy ESM bundle and exact image assets without exposing source or QA
+  ---
+  duration_ms: 573.907
+  type: 'test'
+  ...
+# Subtest: picnic reuses only taught expressions and exact approved voice lines
+ok 18 - picnic reuses only taught expressions and exact approved voice lines
+  ---
+  duration_ms: 4.5755
+  type: 'test'
+  ...
+# Subtest: picnic scene reveals delivered food only after each serving
+ok 19 - picnic scene reveals delivered food only after each serving
+  ---
+  duration_ms: 0.6571
+  type: 'test'
+  ...
+# Subtest: same-level repeat visits change both orders and friend order without introducing untaught content
+ok 20 - same-level repeat visits change both orders and friend order without introducing untaught content
+  ---
+  duration_ms: 228.2577
+  type: 'test'
+  ...
+# Subtest: variation history continues after reload and failed writes only affect reload continuity
+ok 21 - variation history continues after reload and failed writes only affect reload continuity
+  ---
+  duration_ms: 1.1307
+  type: 'test'
+  ...
+# Subtest: varied scenes keep each delivered order below the actual invited friend
+ok 22 - varied scenes keep each delivered order below the actual invited friend
+  ---
+  duration_ms: 0.4775
+  type: 'test'
+  ...
+# Subtest: free festivals change both order and guest sequence across reloads without changing taught recipes or story
+ok 23 - free festivals change both order and guest sequence across reloads without changing taught recipes or story
+  ---
+  duration_ms: 261.3467
+  type: 'test'
+  ...
+# Subtest: legacy progress gains optional history only; invalid or overlong histories cannot inject target content
+ok 24 - legacy progress gains optional history only; invalid or overlong histories cannot inject target content
+  ---
+  duration_ms: 1.0915
+  type: 'test'
+  ...
+# Subtest: memory selects at most two actual assisted orders and excludes demos, failed audio, invented or now-independent answers
+ok 25 - memory selects at most two actual assisted orders and excludes demos, failed audio, invented or now-independent answers
+  ---
+  duration_ms: 1.5146
+  type: 'test'
+  ...
+# Subtest: memory gives the same familiar request to new guests and different layouts without modifying story or creating results
+ok 26 - memory gives the same familiar request to new guests and different layouts without modifying story or creating results
+  ---
+  duration_ms: 8.7989
+  type: 'test'
+  ...
+# Subtest: reward links use the verified route only and daily-limit or unavailable fallback never promises coins
+ok 27 - reward links use the verified route only and daily-limit or unavailable fallback never promises coins
+  ---
+  duration_ms: 1.3362
+  type: 'test'
+  ...
+# Subtest: a zero-Korean learner meets two nouns before requests and quantities; every request has exact audio
+ok 28 - a zero-Korean learner meets two nouns before requests and quantities; every request has exact audio
+  ---
+  duration_ms: 13.7407
+  type: 'test'
+  ...
+# Subtest: serving requires both the requested item and quantity, not simply tray length
+ok 29 - serving requires both the requested item and quantity, not simply tray length
+  ---
+  duration_ms: 0.498
+  type: 'test'
+  ...
+# Subtest: demo, replay, help, resumed and corrected attempts never become independent listening wins
+ok 30 - demo, replay, help, resumed and corrected attempts never become independent listening wins
+  ---
+  duration_ms: 0.7033
+  type: 'test'
+  ...
+# Subtest: resume preserves the first wrong submission and cannot unlock later chapters out of order
+ok 31 - resume preserves the first wrong submission and cannot unlock later chapters out of order
+  ---
+  duration_ms: 0.678
+  type: 'test'
+  ...
+# Subtest: resume restores a partial tray and picture help, ignoring invalid or excess saved items
+ok 32 - resume restores a partial tray and picture help, ignoring invalid or excess saved items
+  ---
+  duration_ms: 0.3786
+  type: 'test'
+  ...
+# Subtest: voices must be approved Typecast, complete and exact; no fallback engine is accepted
+ok 33 - voices must be approved Typecast, complete and exact; no fallback engine is accepted
+  ---
+  duration_ms: 14.3361
+  type: 'test'
+  ...
+# Subtest: Atlas keeps action answers separate from drink composition and word meaning separate from request details
+ok 34 - Atlas keeps action answers separate from drink composition and word meaning separate from request details
+  ---
+  duration_ms: 0.4759
+  type: 'test'
+  ...
+# Subtest: actual Atlas accepts beginner action observations without creating cup-composition evidence
+ok 35 - actual Atlas accepts beginner action observations without creating cup-composition evidence
+  ---
+  duration_ms: 137.6278
+  type: 'test'
+  ...
+# Subtest: a fresh device restores progress, wallet purchases and equipment from the account
+ok 36 - a fresh device restores progress, wallet purchases and equipment from the account
+  ---
+  duration_ms: 46.6742
+  type: 'test'
+  ...
+# Subtest: lost acknowledgement replays one id without paying or spending twice
+ok 37 - lost acknowledgement replays one id without paying or spending twice
+  ---
+  duration_ms: 8.7307
+  type: 'test'
+  ...
+# Subtest: two devices conflicting on the same progress preserve both until explicit choice
+ok 38 - two devices conflicting on the same progress preserve both until explicit choice
+  ---
+  duration_ms: 4.5652
+  type: 'test'
+  ...
+# Subtest: favorite removal survives a fresh device and unrelated records survive CAS
+ok 39 - favorite removal survives a fresh device and unrelated records survive CAS
+  ---
+  duration_ms: 2.6702
+  type: 'test'
+  ...
+# Subtest: logout invalidates old references and pending records never enter a different account
+ok 40 - logout invalidates old references and pending records never enter a different account
+  ---
+  duration_ms: 2.7757
+  type: 'test'
+  ...
+# Subtest: guest data is never imported without the explicit import command
+ok 41 - guest data is never imported without the explicit import command
+  ---
+  duration_ms: 1.6247
+  type: 'test'
+  ...
+# Subtest: late responses after logout cannot restore an ended account
+ok 42 - late responses after logout cannot restore an ended account
+  ---
+  duration_ms: 0.7612
+  type: 'test'
+  ...
+# Subtest: the save contract excludes credentials, unknown keys and oversized values
+ok 43 - the save contract excludes credentials, unknown keys and oversized values
+  ---
+  duration_ms: 4.0262
+  type: 'test'
+  ...
+# Subtest: an open game cannot silently overwrite remote progress after a foreground refresh
+ok 44 - an open game cannot silently overwrite remote progress after a foreground refresh
+  ---
+  duration_ms: 4.2754
+  type: 'test'
+  ...
+# Subtest: outbox storage failure cannot claim account save or dispatch a purchase
+ok 45 - outbox storage failure cannot claim account save or dispatch a purchase
+  ---
+  duration_ms: 1.7082
+  type: 'test'
+  ...
+# Subtest: an import racing another device cannot replace account data or block future saves
+ok 46 - an import racing another device cannot replace account data or block future saves
+  ---
+  duration_ms: 3.7905
+  type: 'test'
+  ...
+# Subtest: a failed latest-state read reports NETWORK and does not remain saved
+ok 47 - a failed latest-state read reports NETWORK and does not remain saved
+  ---
+  duration_ms: 3.8783
+  type: 'test'
+  ...
+# Subtest: a failed latest-state read reports SESSION_REVOKED and does not remain saved
+ok 48 - a failed latest-state read reports SESSION_REVOKED and does not remain saved
+  ---
+  duration_ms: 2.3832
+  type: 'test'
+  ...
+# Subtest: a failed latest-state read reports AUTH_SESSION_MISSING and does not remain saved
+ok 49 - a failed latest-state read reports AUTH_SESSION_MISSING and does not remain saved
+  ---
+  duration_ms: 2.1049
+  type: 'test'
+  ...
+# Subtest: session revocation during conflict resolution closes the old storage reference
+ok 50 - session revocation during conflict resolution closes the old storage reference
+  ---
+  duration_ms: 4.2523
+  type: 'test'
+  ...
+# Subtest: a confirmed wallet result does not need another network request
+ok 51 - a confirmed wallet result does not need another network request
+  ---
+  duration_ms: 1.9809
+  type: 'test'
+  ...
+# Subtest: a later queued failure preserves the confirmed wallet result and the pending error
+ok 52 - a later queued failure preserves the confirmed wallet result and the pending error
+  ---
+  duration_ms: 2.9961
+  type: 'test'
+  ...
+# Subtest: concurrent wallet calls each receive their own confirmed result without extra requests
+ok 53 - concurrent wallet calls each receive their own confirmed result without extra requests
+  ---
+  duration_ms: 7.9409
+  type: 'test'
+  ...
+# Subtest: a receipt completed by another tab is retrieved with the same id
+ok 54 - a receipt completed by another tab is retrieved with the same id
+  ---
+  duration_ms: 5.0891
+  type: 'test'
+  ...
+# Subtest: a receipt completed by another tab reports revocation
+ok 55 - a receipt completed by another tab reports revocation
+  ---
+  duration_ms: 2.0256
+  type: 'test'
+  ...
+# Subtest: a definitively rejected wallet is preserved and cannot block later account progress
+ok 56 - a definitively rejected wallet is preserved and cannot block later account progress
+  ---
+  duration_ms: 3.4204
+  type: 'test'
+  ...
+# Subtest: a restored rejected request is archived before the next command and stays account scoped
+ok 57 - a restored rejected request is archived before the next command and stays account scoped
+  ---
+  duration_ms: 2.8913
+  type: 'test'
+  ...
+# Subtest: another tab can preserve a rejected wallet without a second send or a false save
+ok 58 - another tab can preserve a rejected wallet without a second send or a false save
+  ---
+  duration_ms: 2.3073
+  type: 'test'
+  ...
+# Subtest: failure to preserve a rejected command leaves its original outbox entry intact
+ok 59 - failure to preserve a rejected command leaves its original outbox entry intact
+  ---
+  duration_ms: 3.12
+  type: 'test'
+  ...
+# Subtest: SERVICE_UNAVAILABLE is not discarded as command rejection
+ok 60 - SERVICE_UNAVAILABLE is not discarded as command rejection
+  ---
+  duration_ms: 1.9556
+  type: 'test'
+  ...
+# Subtest: COMMAND_CAPACITY is not discarded as command rejection
+ok 61 - COMMAND_CAPACITY is not discarded as command rejection
+  ---
+  duration_ms: 1.9015
+  type: 'test'
+  ...
+# Subtest: REVISION_CONFLICT is not discarded as command rejection
+ok 62 - REVISION_CONFLICT is not discarded as command rejection
+  ---
+  duration_ms: 1.596
+  type: 'test'
+  ...
+# Subtest: invalid acknowledgement after a commit preserves the same command for receipt retry
+ok 63 - invalid acknowledgement after a commit preserves the same command for receipt retry
+  ---
+  duration_ms: 3.2
+  type: 'test'
+  ...
+# Subtest: goals are opt-in, game-specific and independent from the existing Order Rush goal
+ok 64 - goals are opt-in, game-specific and independent from the existing Order Rush goal
+  ---
+  duration_ms: 18.5322
+  type: 'test'
+  ...
+# Subtest: goal affordability follows the real shared balance and purchase stays visible as achieved
+ok 65 - goal affordability follows the real shared balance and purchase stays visible as achieved
+  ---
+  duration_ms: 3.2793
+  type: 'test'
+  ...
+# Subtest: permanent playsets buy once and never displace existing equipment or learning records
+ok 66 - permanent playsets buy once and never displace existing equipment or learning records
+  ---
+  duration_ms: 2.3029
+  type: 'test'
+  ...
+# Subtest: legacy normalization only adds a free toy set and rejects invalid or foreign goals
+ok 67 - legacy normalization only adds a free toy set and rejects invalid or foreign goals
+  ---
+  duration_ms: 0.9865
+  type: 'test'
+  ...
+# Subtest: optional word play requires completed audio and three varied, effective changes
+ok 68 - optional word play requires completed audio and three varied, effective changes
+  ---
+  duration_ms: 12.3146
+  type: 'test'
+  ...
+# Subtest: practice is claimed once per Seoul day and uses the same ten-reward allowance as other games
+ok 69 - practice is claimed once per Seoul day and uses the same ten-reward allowance as other games
+  ---
+  duration_ms: 10.7536
+  type: 'test'
+  ...
+# Subtest: a new learner is sent to a reachable first chapter without changing any stored state
+ok 70 - a new learner is sent to a reachable first chapter without changing any stored state
+  ---
+  duration_ms: 6.065
+  type: 'test'
+  ...
+# Subtest: an unfinished listening checkpoint is eligible even when all six discoveries are already saved
+ok 71 - an unfinished listening checkpoint is eligible even when all six discoveries are already saved
+  ---
+  duration_ms: 2.8389
+  type: 'test'
+  ...
+# Subtest: a received chapter reward is never offered again and later locked chapters are not skipped
+ok 72 - a received chapter reward is never offered again and later locked chapters are not skipped
+  ---
+  duration_ms: 10.8435
+  type: 'test'
+  ...
+# Subtest: daily practice requires a introduced pair and its unpaid daily receipt
+ok 73 - daily practice requires a introduced pair and its unpaid daily receipt
+  ---
+  duration_ms: 13.6523
+  type: 'test'
+  ...
+# Subtest: paid first-shop repetition never promises another completion reward
+ok 74 - paid first-shop repetition never promises another completion reward
+  ---
+  duration_ms: 4.9301
+  type: 'test'
+  ...
+# Subtest: finished first-shop reward retry needs its complete record and round identity
+ok 75 - finished first-shop reward retry needs its complete record and round identity
+  ---
+  duration_ms: 15.4521
+  type: 'test'
+  ...
+# Subtest: the shared ten-reward cap offers free play without a payout promise
+ok 76 - the shared ten-reward cap offers free play without a payout promise
+  ---
+  duration_ms: 12.3361
+  type: 'test'
+  ...
+# Subtest: restored account progress guides the next task instead of empty guest storage
+ok 77 - restored account progress guides the next task instead of empty guest storage
+  ---
+  duration_ms: 7.1471
+  type: 'test'
+  ...
+# Subtest: offline, unresolved and ended account snapshots do not promise another payout
+ok 78 - offline, unresolved and ended account snapshots do not promise another payout
+  ---
+  duration_ms: 7.8012
+  type: 'test'
+  ...
+# Subtest: a missing account storage handle never falls back to a guest reward route
+ok 79 - a missing account storage handle never falls back to a guest reward route
+  ---
+  duration_ms: 2.0744
+  type: 'test'
+  ...
+# Subtest: storage failure and unknown games never claim eligible coins
+ok 80 - storage failure and unknown games never claim eligible coins
+  ---
+  duration_ms: 1.5927
+  type: 'test'
+  ...
+# Subtest: public, nested and local guidance uses the same hosting prefix
+ok 81 - public, nested and local guidance uses the same hosting prefix
+  ---
+  duration_ms: 2.7684
+  type: 'test'
+  ...
+# Subtest: invalid saved versions and malformed chapter fields fall back to a playable first task
+ok 82 - invalid saved versions and malformed chapter fields fall back to a playable first task
+  ---
+  duration_ms: 1.2418
+  type: 'test'
+  ...
+# Subtest: the generated browser adapter uses one wallet while preserving racing milestones and missions
+ok 83 - the generated browser adapter uses one wallet while preserving racing milestones and missions
+  ---
+  duration_ms: 25.8042
+  type: 'test'
+  ...
+# Subtest: demos, incomplete tours and failed storage never show an awarded coin balance
+ok 84 - demos, incomplete tours and failed storage never show an awarded coin balance
+  ---
+  duration_ms: 8.674
+  type: 'test'
+  ...
+# Subtest: changing games does not reset the common ten-round daily replay limit
+ok 85 - changing games does not reset the common ten-round daily replay limit
+  ---
+  duration_ms: 12.1463
+  type: 'test'
+  ...
+# Subtest: the coast badge is visible only when owned and equipped and garage links follow the hosting path
+ok 86 - the coast badge is visible only when owned and equipped and garage links follow the hosting path
+  ---
+  duration_ms: 17.9643
+  type: 'test'
+  ...
+# Subtest: every coin-paying mini-game ships byte-identical copies of the generated canonical rules
+ok 87 - every coin-paying mini-game ships byte-identical copies of the generated canonical rules
+  ---
+  duration_ms: 89.1382
+  type: 'test'
+  ...
+# Subtest: the three reading games pay from the same wallet, by accuracy rather than round length
+ok 88 - the three reading games pay from the same wallet, by accuracy rather than round length
+  ---
+  duration_ms: 4.7938
+  type: 'test'
+  ...
+# Subtest: Talk Rally pays from the same wallet once a round of twelve exchanges is finished
+ok 89 - Talk Rally pays from the same wallet once a round of twelve exchanges is finished
+  ---
+  duration_ms: 6.3549
+  type: 'test'
+  ...
+# Subtest: Order Rush pays from the same wallet once the cafe shift is finished
+ok 90 - Order Rush pays from the same wallet once the cafe shift is finished
+  ---
+  duration_ms: 5.3273
+  type: 'test'
+  ...
+# Subtest: buy() spends coins with the garage rule, saves only a valid purchase, and the bought racket or ball can then be equipped
+ok 91 - buy() spends coins with the garage rule, saves only a valid purchase, and the bought racket or ball can then be equipped
+  ---
+  duration_ms: 8.0495
+  type: 'test'
+  ...
+# Subtest: an older saved wallet keeps every field through the shared adapter and only gains new free defaults
+ok 92 - an older saved wallet keeps every field through the shared adapter and only gains new free defaults
+  ---
+  duration_ms: 3.9714
+  type: 'test'
+  ...
+# Subtest: beginner shops preserve existing hub cosmetics, titles, wishes and Talk Rally equipment through purchase and reload
+ok 93 - beginner shops preserve existing hub cosmetics, titles, wishes and Talk Rally equipment through purchase and reload
+  ---
+  duration_ms: 6.606
+  type: 'test'
+  ...
+# Subtest: new games share the same reward cap and cannot mint coins through duplicate endings or previews
+ok 94 - new games share the same reward cap and cannot mint coins through duplicate endings or previews
+  ---
+  duration_ms: 8.7255
+  type: 'test'
+  ...
+# Subtest: failed storage writes never claim ownership, equipment or spent coins
+ok 95 - failed storage writes never claim ownership, equipment or spent coins
+  ---
+  duration_ms: 7.6436
+  type: 'test'
+  ...
+# Subtest: the daily limit says so, and the badge is named in words
+ok 96 - the daily limit says so, and the badge is named in words
+  ---
+  duration_ms: 11.6765
+  type: 'test'
+  ...
+# Subtest: beginner goals and optional practice survive generated-adapter reload without changing legacy goals
+ok 97 - beginner goals and optional practice survive generated-adapter reload without changing legacy goals
+  ---
+  duration_ms: 22.7592
+  type: 'test'
+  ...
+# Subtest: failed writes cannot claim a goal, playset or practice reward
+ok 98 - failed writes cannot claim a goal, playset or practice reward
+  ---
+  duration_ms: 12.4021
+  type: 'test'
+  ...
+# Subtest: leaving before an audio context resumes never starts the queued voice
+ok 99 - leaving before an audio context resumes never starts the queued voice
+  ---
+  duration_ms: 2.4102
+  type: 'test'
+  ...
+# Subtest: a newer sound cancels an older pending resume without cancelling itself
+ok 100 - a newer sound cancels an older pending resume without cancelling itself
+  ---
+  duration_ms: 0.4059
+  type: 'test'
+  ...
+# Subtest: normal collaborative state updates close only an open solo recall overlay
+ok 101 - normal collaborative state updates close only an open solo recall overlay
+  ---
+  duration_ms: 142.3694
+  type: 'test'
+  ...
+# Subtest: entry after a replaced playing session permits recall while the active cooperative screen blocks it
+ok 102 - entry after a replaced playing session permits recall while the active cooperative screen blocks it
+  ---
+  duration_ms: 18.4736
+  type: 'test'
+  ...
+# Subtest: lost join response retries the same request and restores the original participant
+ok 103 - lost join response retries the same request and restores the original participant
+  ---
+  duration_ms: 59.704
+  type: 'test'
+  ...
+# Subtest: lost create response recovers one original room instead of creating another
+ok 104 - lost create response recovers one original room instead of creating another
+  ---
+  duration_ms: 13.2256
+  type: 'test'
+  ...
+# Subtest: reload after lost join response keeps the pending request and original seat
+ok 105 - reload after lost join response keeps the pending request and original seat
+  ---
+  duration_ms: 18.8423
+  type: 'test'
+  ...
+# Subtest: choosing a different room never reuses a lost request from another room
+ok 106 - choosing a different room never reuses a lost request from another room
+  ---
+  duration_ms: 46.2797
+  type: 'test'
+  ...
+# Subtest: explicitly forgetting entry information clears the pending request
+ok 107 - explicitly forgetting entry information clears the pending request
+  ---
+  duration_ms: 14.763
+  type: 'test'
+  ...
+# Subtest: an explicit server rejection clears pending entry rather than replaying it forever
+ok 108 - an explicit server rejection clears pending entry rather than replaying it forever
+  ---
+  duration_ms: 48.164
+  type: 'test'
+  ...
+# Subtest: malformed pending storage is ignored and cannot supply the request ID
+ok 109 - malformed pending storage is ignored and cannot supply the request ID
+  ---
+  duration_ms: 14.3566
+  type: 'test'
+  ...
+# Subtest: failed sound preparation still creates no request or pending room
+ok 110 - failed sound preparation still creates no request or pending room
+  ---
+  duration_ms: 3.4741
+  type: 'test'
+  ...
+# Subtest: failed leave request preserves the original session so leaving can be retried
+ok 111 - failed leave request preserves the original session so leaving can be retried
+  ---
+  duration_ms: 59.3212
+  type: 'test'
+  ...
+# Subtest: leave confirmation during another pending action keeps the participant and sends no termination
+ok 112 - leave confirmation during another pending action keeps the participant and sends no termination
+  ---
+  duration_ms: 30.3576
+  type: 'test'
+  ...
+# Subtest: rate limiting after a lost join response preserves its ID until the original seat recovers
+ok 113 - rate limiting after a lost join response preserves its ID until the original seat recovers
+  ---
+  duration_ms: 452.0957
+  type: 'test'
+  ...
+# Subtest: lost successful leave response still exits when the next request confirms CLOSED without SSE
+ok 114 - lost successful leave response still exits when the next request confirms CLOSED without SSE
+  ---
+  duration_ms: 76.6905
+  type: 'test'
+  ...
+# Subtest: temporary server rejections preserve an accepted entry ID rather than losing its participant
+ok 115 - temporary server rejections preserve an accepted entry ID rather than losing its participant
+  ---
+  duration_ms: 236.3005
+  type: 'test'
+  ...
+# Subtest: confirmed missing room permits departure after expiration even without SSE
+ok 116 - confirmed missing room permits departure after expiration even without SSE
+  ---
+  duration_ms: 29.8087
+  type: 'test'
+  ...
+# Subtest: AUTH or ORIGIN rejection cannot masquerade as confirmed room closure
+ok 117 - AUTH or ORIGIN rejection cannot masquerade as confirmed room closure
+  ---
+  duration_ms: 139.7938
+  type: 'test'
+  ...
+# Subtest: a CLOSED label on an unauthorized response is not a confirmed termination
+ok 118 - a CLOSED label on an unauthorized response is not a confirmed termination
+  ---
+  duration_ms: 32.3922
+  type: 'test'
+  ...
+# Subtest: confirming WORLD departure after the room was forgotten still follows the selected destination
+ok 119 - confirming WORLD departure after the room was forgotten still follows the selected destination
+  ---
+  duration_ms: 29.0148
+  type: 'test'
+  ...
+# Subtest: return recall uses only words from a validated completed expedition
+ok 120 - return recall uses only words from a validated completed expedition
+  ---
+  duration_ms: 4.9982
+  type: 'test'
+  ...
+# Subtest: an unfinished, malformed or target-only record cannot create return practice
+ok 121 - an unfinished, malformed or target-only record cannot create return practice
+  ---
+  duration_ms: 0.4722
+  type: 'test'
+  ...
+# Subtest: reused room codes never reuse a completion reward identity
+ok 122 - reused room codes never reuse a completion reward identity
+  ---
+  duration_ms: 2.2124
+  type: 'test'
+  ...
+# Subtest: only a complete eighteen-repair expedition receives finish-only reward data
+ok 123 - only a complete eighteen-repair expedition receives finish-only reward data
+  ---
+  duration_ms: 2.7339
+  type: 'test'
+  ...
+# Subtest: cosmetic values accept only known scene and badge assets
+ok 124 - cosmetic values accept only known scene and badge assets
+  ---
+  duration_ms: 0.5036
+  type: 'test'
+  ...
+# Subtest: only complete server-projected records are stored and sensitive fields are omitted
+ok 125 - only complete server-projected records are stored and sensitive fields are omitted
+  ---
+  duration_ms: 9.2519
+  type: 'test'
+  ...
+# Subtest: repeated completion never adds a copy and only the newest six expeditions remain
+ok 126 - repeated completion never adds a copy and only the newest six expeditions remain
+  ---
+  duration_ms: 2.5539
+  type: 'test'
+  ...
+# Subtest: invalid rounds and stage words cannot become a keepsake
+ok 127 - invalid rounds and stage words cannot become a keepsake
+  ---
+  duration_ms: 1.0647
+  type: 'test'
+  ...
+# Subtest: unavailable storage is reported without inventing saved records
+ok 128 - unavailable storage is reported without inventing saved records
+  ---
+  duration_ms: 0.7538
+  type: 'test'
+  ...
+# Subtest: one corrupt record never hides other valid expeditions
+ok 129 - one corrupt record never hides other valid expeditions
+  ---
+  duration_ms: 0.4915
+  type: 'test'
+  ...
+# Subtest: constellation shape preserves actual expression order deterministically
+ok 130 - constellation shape preserves actual expression order deterministically
+  ---
+  duration_ms: 0.7582
+  type: 'test'
+  ...
+# Subtest: existing six records load unchanged and favorites survive later completions
+ok 131 - existing six records load unchanged and favorites survive later completions
+  ---
+  duration_ms: 4.9466
+  type: 'test'
+  ...
+# Subtest: unpin keeps an older record immediately and on reload; only a new completion prunes
+ok 132 - unpin keeps an older record immediately and on reload; only a new completion prunes
+  ---
+  duration_ms: 3.8315
+  type: 'test'
+  ...
+# Subtest: failed favorite or release cannot falsely change the saved status
+ok 133 - failed favorite or release cannot falsely change the saved status
+  ---
+  duration_ms: 1.0063
+  type: 'test'
+  ...
+# Subtest: corrupt favorite keys never hide valid recent or favorite records
+ok 134 - corrupt favorite keys never hide valid recent or favorite records
+  ---
+  duration_ms: 26.0511
+  type: 'test'
+  ...
+# Subtest: independent favorites and completions merge without replacing another favorite
+ok 135 - independent favorites and completions merge without replacing another favorite
+  ---
+  duration_ms: 0.9405
+  type: 'test'
+  ...
+# Subtest: first prepare requests audio resume synchronously before fetching the voice manifest
+ok 136 - first prepare requests audio resume synchronously before fetching the voice manifest
+  ---
+  duration_ms: 2.0867
+  type: 'test'
+  ...
+# Subtest: already prepared but suspended voice bank still resumes, without another fetch
+ok 137 - already prepared but suspended voice bank still resumes, without another fetch
+  ---
+  duration_ms: 0.2568
+  type: 'test'
+  ...
+# Subtest: all 18 authored scenes start unsolved and each intended semantic action changes a real object
+ok 138 - all 18 authored scenes start unsolved and each intended semantic action changes a real object
+  ---
+  duration_ms: 2.0994
+  type: 'test'
+  ...
+# Subtest: an unrelated object change never completes a two-part puzzle
+ok 139 - an unrelated object change never completes a two-part puzzle
+  ---
+  duration_ms: 0.3229
+  type: 'test'
+  ...
+# Subtest: semantic transformations are reversible, bounded, and cannot open a living animal
+ok 140 - semantic transformations are reversible, bounded, and cannot open a living animal
+  ---
+  duration_ms: 0.3903
+  type: 'test'
+  ...
+# Subtest: chapter unlocks require all six discoveries and replay cannot duplicate completion
+ok 141 - chapter unlocks require all six discoveries and replay cannot duplicate completion
+  ---
+  duration_ms: 1.2966
+  type: 'test'
+  ...
+# Subtest: malformed persistence cannot inject objects, expressions, huge scale, or unknown scenes
+ok 142 - malformed persistence cannot inject objects, expressions, huge scale, or unknown scenes
+  ---
+  duration_ms: 1.089
+  type: 'test'
+  ...
+# Subtest: each chapter checks both distinct meanings; assistance and retries never become independent success
+ok 143 - each chapter checks both distinct meanings; assistance and retries never become independent success
+  ---
+  duration_ms: 0.9933
+  type: 'test'
+  ...
+# Subtest: Atlas adapter uses the registered word/action contract and never repeats a first answer
+ok 144 - Atlas adapter uses the registered word/action contract and never repeats a first answer
+  ---
+  duration_ms: 0.413
+  type: 'test'
+  ...
+# Subtest: missing or broken Atlas never prevents core play
+ok 145 - missing or broken Atlas never prevents core play
+  ---
+  duration_ms: 0.2519
+  type: 'test'
+  ...
+# Subtest: opposite listening requests have identical pre-answer visuals and never expose Korean spelling
+ok 146 - opposite listening requests have identical pre-answer visuals and never expose Korean spelling
+  ---
+  duration_ms: 0.6049
+  type: 'test'
+  ...
+# Subtest: all six corrected listening items use meaning-based v2 item and family identity, separate from visually cued v1
+ok 147 - all six corrected listening items use meaning-based v2 item and family identity, separate from visually cued v1
+  ---
+  duration_ms: 0.2472
+  type: 'test'
+  ...
+# Subtest: each round independently shuffles the request order and fixed choice positions while covering both meanings
+ok 148 - each round independently shuffles the request order and fixed choice positions while covering both meanings
+  ---
+  duration_ms: 0.8293
+  type: 'test'
+  ...
+# Subtest: resume preserves unfinished object changes without accepting foreign assets, positions, or locked chapters
+ok 149 - resume preserves unfinished object changes without accepting foreign assets, positions, or locked chapters
+  ---
+  duration_ms: 0.4996
+  type: 'test'
+  ...
+# Subtest: checkpoint resume keeps its shuffled prompt and first-answer status, but never restores a heard claim
+ok 150 - checkpoint resume keeps its shuffled prompt and first-answer status, but never restores a heard claim
+  ---
+  duration_ms: 0.4653
+  type: 'test'
+  ...
+# Subtest: old progress restores an empty optional collection and valid scenes survive reload
+ok 151 - old progress restores an empty optional collection and valid scenes survive reload
+  ---
+  duration_ms: 8.6003
+  type: 'test'
+  ...
+# Subtest: semantic snapshots never accept injected assets, positions, pixel files or impossible transforms
+ok 152 - semantic snapshots never accept injected assets, positions, pixel files or impossible transforms
+  ---
+  duration_ms: 3.8049
+  type: 'test'
+  ...
+# Subtest: six chosen scenes have no automatic eviction; replacement and removal affect only the chosen ID
+ok 153 - six chosen scenes have no automatic eviction; replacement and removal affect only the chosen ID
+  ---
+  duration_ms: 10.3351
+  type: 'test'
+  ...
+# Subtest: typed names are data, retries keep one scene, and missing IDs never replace a different scene
+ok 154 - typed names are data, retries keep one scene, and missing IDs never replace a different scene
+  ---
+  duration_ms: 1.8681
+  type: 'test'
+  ...
+# Subtest: unintroduced sounds, unavailable storage, thrown writes and silent writes cannot claim a saved scene
+ok 155 - unintroduced sounds, unavailable storage, thrown writes and silent writes cannot claim a saved scene
+  ---
+  duration_ms: 1.6195
+  type: 'test'
+  ...
+# Subtest: mutations read the latest whole envelope so another tab and unrelated progress are preserved
+ok 156 - mutations read the latest whole envelope so another tab and unrelated progress are preserved
+  ---
+  duration_ms: 1.0854
+  type: 'test'
+  ...
+# Subtest: account completion labels require synced, no pending requests and no rejected requests
+ok 157 - account completion labels require synced, no pending requests and no rejected requests
+  ---
+  duration_ms: 0.3273
+  type: 'test'
+  ...
+# Subtest: the canonical account storage carries scenes to a second synthetic host without a new key or wallet change
+ok 158 - the canonical account storage carries scenes to a second synthetic host without a new key or wallet change
+  ---
+  duration_ms: 11.3882
+  type: 'test'
+  ...
+# Subtest: practice requires heard changes, distinct word/object pairs, two words and two objects
+ok 159 - practice requires heard changes, distinct word/object pairs, two words and two objects
+  ---
+  duration_ms: 2.1265
+  type: 'test'
+  ...
+# Subtest: sets preserve separate transforms and migrate old default scenes without foreign objects
+ok 160 - sets preserve separate transforms and migrate old default scenes without foreign objects
+  ---
+  duration_ms: 1.1844
+  type: 'test'
+  ...
+# Subtest: an unfinished adventure remains independent from the lab and never restores heard evidence
+ok 161 - an unfinished adventure remains independent from the lab and never restores heard evidence
+  ---
+  duration_ms: 0.6835
+  type: 'test'
+  ...
+# Subtest: actual app persist rejects refreshed other-device progress after language
+ok 162 - actual app persist rejects refreshed other-device progress after language
+  ---
+  duration_ms: 19.4672
+  type: 'test'
+  ...
+# Subtest: actual app persist rejects refreshed other-device progress after adventure
+ok 163 - actual app persist rejects refreshed other-device progress after adventure
+  ---
+  duration_ms: 3.3333
+  type: 'test'
+  ...
+# Subtest: actual app persist rejects refreshed other-device progress after reset
+ok 164 - actual app persist rejects refreshed other-device progress after reset
+  ---
+  duration_ms: 3.7058
+  type: 'test'
+  ...
+# Subtest: actual app persist rejects refreshed other-device progress after album-read-then-save
+ok 165 - actual app persist rejects refreshed other-device progress after album-read-then-save
+  ---
+  duration_ms: 2.4515
+  type: 'test'
+  ...
+# Subtest: actual app persist accepts its own normal progress change with the original observation
+ok 166 - actual app persist accepts its own normal progress change with the original observation
+  ---
+  duration_ms: 5.4317
+  type: 'test'
+  ...
+# Subtest: a refreshed collection-only change is merged without changing the current cached adventure
+ok 167 - a refreshed collection-only change is merged without changing the current cached adventure
+  ---
+  duration_ms: 7.9191
+  type: 'test'
+  ...
+# Subtest: the observed unsafe old branch reproduces a silently accepted stale adventure overwrite
+ok 168 - the observed unsafe old branch reproduces a silently accepted stale adventure overwrite
+  ---
+  duration_ms: 2.9148
+  type: 'test'
+  ...
+# Subtest: discoveries do not claim listening confirmation or change existing unlocks
+ok 169 - discoveries do not claim listening confirmation or change existing unlocks
+  ---
+  duration_ms: 2.1778
+  type: 'test'
+  ...
+# Subtest: optional recall uses only introduced meanings, never writes the source progress
+ok 170 - optional recall uses only introduced meanings, never writes the source progress
+  ---
+  duration_ms: 0.6859
+  type: 'test'
+  ...
+# Subtest: recall prefers a previous miss but cannot introduce an unknown chapter
+ok 171 - recall prefers a previous miss but cannot introduce an unknown chapter
+  ---
+  duration_ms: 0.2253
+  type: 'test'
+  ...
+# Subtest: two alternative pictures contain no target, spelling or meaning cue before first answer
+ok 172 - two alternative pictures contain no target, spelling or meaning cue before first answer
+  ---
+  duration_ms: 2.5778
+  type: 'test'
+  ...
+# Subtest: recall choices remain fixed across replays and use fresh objects for each chapter
+ok 173 - recall choices remain fixed across replays and use fresh objects for each chapter
+  ---
+  duration_ms: 0.4534
+  type: 'test'
+  ...
+1..173
+# tests 173
+# suites 0
+# pass 173
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 3825.0952

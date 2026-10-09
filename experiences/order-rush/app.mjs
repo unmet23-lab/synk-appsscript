@@ -12,6 +12,10 @@ import { CafeAudio } from './audio.mjs';
 import { customerOf, customerName, cupLabel } from './cafe.mjs';
 import { $, $$, el, esc, preloadImages, bindSoundToggles } from './kit/lab.mjs';
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+const progressStorage = globalThis.SynkPlayAccount.storage();
+
 const QA = new URLSearchParams(location.search).has('qa');
 const reduced = () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 const announce = (text) => { const n = $('#sr-live'); n.textContent = ''; requestAnimationFrame(() => { n.textContent = text; }); };
@@ -30,8 +34,8 @@ const hosted = (() => { try { return typeof coach?.assignment === 'function'; } 
 /* ── 아틀라스 순간 맞춤: 손님 속도·주문 종류를 이 사람에 맞춘다(입구에서 끌 수 있다) ── */
 const FLOW_KEY = 'synk.order-rush.flow-mode';
 let live = null, flowStart = null, flowSpec = null, flowTimer = 0;
-function flowMode() { try { return localStorage.getItem(FLOW_KEY) === 'fixed' ? 'fixed' : 'auto'; } catch { return 'auto'; } }
-function setFlowMode(mode) { try { localStorage.setItem(FLOW_KEY, mode); } catch { /* 이번 페이지에서만 */ } renderFlowChoice(); }
+function flowMode() { try { return progressStorage.getItem(FLOW_KEY) === 'fixed' ? 'fixed' : 'auto'; } catch { return 'auto'; } }
+function setFlowMode(mode) { try { progressStorage.setItem(FLOW_KEY, mode); } catch { /* 이번 페이지에서만 */ } renderFlowChoice(); }
 function renderFlowChoice() {
   const auto = flowMode() === 'auto', b = $('#flow-toggle');
   b.setAttribute('aria-pressed', String(auto));

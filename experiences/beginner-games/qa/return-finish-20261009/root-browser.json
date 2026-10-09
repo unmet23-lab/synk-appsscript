@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-09T13:23:33.890Z",
+  "guestOrigin": "http://127.0.0.1:49321",
+  "checks": [
+    {
+      "viewport": 320,
+      "copy": "아직 받지 않은 첫 완주 보상 15코인 · 도움 무료\nFirst completion reward: 15 coins. Help is free.",
+      "route": "/word-magic/?chapter=0",
+      "scrollWidth": 305,
+      "width": 305
+    },
+    {
+      "viewport": 390,
+      "copy": "아직 받지 않은 첫 완주 보상 15코인 · 도움 무료\nFirst completion reward: 15 coins. Help is free.",
+      "route": "/word-magic/?chapter=0",
+      "scrollWidth": 375,
+      "width": 375
+    },
+    {
+      "viewport": 1280,
+      "copy": "아직 받지 않은 첫 완주 보상 15코인 · 도움 무료\nFirst completion reward: 15 coins. Help is free.",
+      "route": "/word-magic/?chapter=0",
+      "scrollWidth": 1265,
+      "width": 1265
+    }
+  ],
+  "errors": [],
+  "realAccountsChanged": 0
+}

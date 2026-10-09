@@ -1,0 +1,81 @@
+{
+  "at": "2026-10-09T13:32:46.351Z",
+  "status": "local-implementation-and-self-qa-complete",
+  "sourceSha256": {
+    "play-common/collection-adapter.js": "484d169e432a1bf5289092aa1a38a2223813378691aeb7b583e25c09ddc79e51",
+    "play-common/beginner-route.test.mjs": "e949d2fd575054945868ca542d4453b4f772d608cafce11f29bc5b73d04d73f6",
+    "play-common/account-client.mjs": "070ee7742487cef73f5f85bae051304950f073fcc78d2bc8f43bfa9bebf00f03",
+    "play-common/play-data.mjs": "d9ef2439e84198d6b6f5641d126cda48fa0c1b0d66f2205cb8847912d122dbb3",
+    "korean-racing/garage-core.js": "2314ad2e983a0656f22dae1ff818590bb622ca9c4cfc460fac10e35c8a190772",
+    "word-magic/app.mjs": "a5d80938778d3d554b818c277a312e6c3979f5559a9a79f47f57d071c9f71eb9",
+    "word-magic/core.mjs": "30f4b8a31ea32b72e0515801887b3f90d84c0c9bd571a86060068808b0f2e4d2",
+    "word-magic/recall.mjs": "f9a156036051c7703d92d8e524d5c4df1566e11532265eed3e417fc70a6f56d9",
+    "word-magic/recall.test.mjs": "f455f0e5b2bfdc9b0f3a813cd0c5ff4c72bcf7ec393f1bc0631719bd88e12780",
+    "word-magic/index.html": "0cd954f7a30021ca0814711ecdaceef665f0f5ae022e87e33960a25053738c1e",
+    "word-magic/style.css": "9b0b1dfe3e290eddb93179098f23f0eb3d6c7e81a5e79be356f22c996dbb69ef",
+    "word-magic/shop.mjs": "683bcab66d6724ffee6c627afa628a908690e2be2d21b16498b87b0cfbaac09b",
+    "order-rush/beginner.mjs": "39f9114c86dd6e35ed97bedfcce8c6f28b788cc38dbc0e58030148f52afa0423",
+    "order-rush/beginner-core.mjs": "0fc666e2d63a4a9b77f219c61a98e4b527c0674a243b3cd8f9b816500e5d36f9",
+    "order-rush/beginner-return.mjs": "e14204d9b9e1d365ff41a9ad5e1ba73392b93d5ea152dc11d7c1a5ee013f5339",
+    "order-rush/beginner-return.test.mjs": "90aee33a4e41c84a15c8a92d01459c224a448b9f8c3e92cd9063465616e4dac0",
+    "order-rush/beginner-shop.mjs": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+    "order-rush/beginner.css": "ff174f6b2ee9b19e0e353f6d9b0fdf5ccd0ee5ec6d5fc09cf24a50d382197ac0",
+    "spaceship-coop/app.mjs": "10ad207d8858ad4832d85b23bdbe668fdcffede41401385432fa7bf9ab7b7abe",
+    "spaceship-coop/starbook.mjs": "6f0498ae089527864ab8b24ece2b70abf17bdc36e11743338d0a8407fe5f1aa5",
+    "spaceship-coop/starbook.test.mjs": "19029785d83df0532795b75a9acc5999b45ce40fede61df9e60fa3698a433ec3",
+    "spaceship-coop/style.css": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5",
+    "spaceship-coop/shop.mjs": "1315b69a45f1d5c8350ef9728e47ea0b61e5f4dc222892c844de09c69c3ccb47",
+    "spaceship-coop/shop.css": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063",
+    "spaceship-coop/return-recall.test.mjs": "09ee515dc009c7e6939ddfcb98bef2a236d88f16e7dd0f5b738032fc24f6b360",
+    "spaceship-coop/recovery.test.mjs": "d9279215f2f7da0f6e525482cc86cb1411dcf1036401bf9beeeb3e4bd2ee8e57",
+    "learning-hub/collection-page.js": "88378559d4846e55bde7ead8c9e5045041cf04973cf4da4c0dbca449caaf6f6d",
+    "learning-hub/beginner-cards.css": "79c9bb61a6a8a39e85ca26002dbe66085d8ef12b16cc46b5e75f9cd2dfcc4e87"
+  },
+  "canonicalBundle": {
+    "sha256": "bbe1ba3a5121302ee9e2e8f5f83a67b0dd2774d4d1195f0480715d18d7a7a30b",
+    "bytes": 96113,
+    "copies": [
+      "korean-racing",
+      "korean-rhythm",
+      "korean-runner",
+      "blank-slice",
+      "entry-check",
+      "story-classroom",
+      "talk-rally",
+      "order-rush",
+      "word-magic",
+      "spaceship-coop",
+      "learning-hub"
+    ],
+    "allIdentical": true
+  },
+  "nodeTests": {
+    "passed": 147,
+    "total": 147
+  },
+  "rootBrowser": {
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "horizontalOverflow": 0,
+    "errors": 0,
+    "origin": "http://127.0.0.1:49321"
+  },
+  "qa": [
+    "experiences/word-magic/qa/return-memory-20261009",
+    "experiences/order-rush/qa/return-loop-20261009",
+    "experiences/spaceship-coop/qa/return-recall-20261009"
+  ],
+  "officialReview": "deferred-by-user",
+  "publicDeployment": false,
+  "realAccountWrites": 0,
+  "operatingDbWrites": 0,
+  "realParticipants": 0,
+  "physicalPhones": 0,
+  "newVoiceGeneration": 0,
+  "newImageGeneration": 0,
+  "voiceRerecordingDeferred": true,
+  "preview": "http://127.0.0.1:4340/learning-hub/#beginner-title"
+}

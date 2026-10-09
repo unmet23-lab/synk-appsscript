@@ -1,0 +1,95 @@
+{
+  "at": "2026-10-09T13:31:00.514Z",
+  "files": [
+    {
+      "path": "experiences/spaceship-coop/app.mjs",
+      "bytes": 41108,
+      "sha256": "10ad207d8858ad4832d85b23bdbe668fdcffede41401385432fa7bf9ab7b7abe"
+    },
+    {
+      "path": "experiences/spaceship-coop/starbook.mjs",
+      "bytes": 29396,
+      "sha256": "6f0498ae089527864ab8b24ece2b70abf17bdc36e11743338d0a8407fe5f1aa5"
+    },
+    {
+      "path": "experiences/spaceship-coop/shop.mjs",
+      "bytes": 15237,
+      "sha256": "1315b69a45f1d5c8350ef9728e47ea0b61e5f4dc222892c844de09c69c3ccb47"
+    },
+    {
+      "path": "experiences/spaceship-coop/style.css",
+      "bytes": 36346,
+      "sha256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5"
+    },
+    {
+      "path": "experiences/spaceship-coop/shop.css",
+      "bytes": 14745,
+      "sha256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063"
+    },
+    {
+      "path": "experiences/spaceship-coop/README.md",
+      "bytes": 27152,
+      "sha256": "9ab41fe2bb5be3640d01ba74d6ce5e3e6dc8e8b16952f03c1d0d5e2351332756"
+    },
+    {
+      "path": "experiences/spaceship-coop/recovery.test.mjs",
+      "bytes": 16642,
+      "sha256": "d9279215f2f7da0f6e525482cc86cb1411dcf1036401bf9beeeb3e4bd2ee8e57"
+    },
+    {
+      "path": "experiences/spaceship-coop/return-recall.test.mjs",
+      "bytes": 1071,
+      "sha256": "09ee515dc009c7e6939ddfcb98bef2a236d88f16e7dd0f5b738032fc24f6b360"
+    },
+    {
+      "path": "experiences/spaceship-coop/qa/ui.cjs",
+      "bytes": 21314,
+      "sha256": "76651d460a3ea3d33997cca4188b67dd0fa688d8c14c92814fdf61a2389a3498"
+    }
+  ],
+  "audio": [
+    {
+      "path": "experiences/spaceship-coop/assets/audio/blue.mp3",
+      "sha256": "78ef880f626eddddece4fb64f2846f4affcc3a586883060163d03951b4d50e2e",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/down.mp3",
+      "sha256": "72f21491333cfbffddda211710bc566b5c13a259bed9f0268b1509d278aab761",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/manifest.json",
+      "sha256": "ad58f6904e4c8921facc1a376ecd35d1ffff24a4ca9c74b6f10dd3dec648851a",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/one.mp3",
+      "sha256": "b3ac93d2139f8743e2f7a4e0f1a3e449c6f039b0ce3d192795a5a0a864598b8c",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/red.mp3",
+      "sha256": "7c30f846c15f0bfbc779b515991d665097d6dbdf74b80bb8996ad2d0843c0a75",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/three.mp3",
+      "sha256": "cd5d859b72764e72e178643ac347139d6c666893a217a233782c3db933625f3e",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/two.mp3",
+      "sha256": "e727dc460968c0d6d5be3d89fb4337ade8120088abd2f50ab2288e49fc4f5239",
+      "unchanged": true
+    },
+    {
+      "path": "experiences/spaceship-coop/assets/audio/up.mp3",
+      "sha256": "a0e93cdf40769fcda7d1147ac6c0f096fb7222c43994fe9717a8d7251c4aedea",
+      "unchanged": true
+    }
+  ],
+  "serverCodeChanged": false,
+  "collectionBridgeOwnedByParent": true,
+  "sourceFrozen": true
+}

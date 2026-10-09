@@ -1,0 +1,708 @@
+{
+  "at": "2026-10-09T13:14:38.020Z",
+  "checks": [
+    {
+      "name": "unapproved audio blocks room creation",
+      "passed": true
+    },
+    {
+      "name": "corrupt voice cannot silently start",
+      "passed": true
+    },
+    {
+      "name": "lobby-desktop fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "lobby-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "blocked clipboard selects the code, not the link",
+      "passed": true
+    },
+    {
+      "name": "blocked clipboard offers the invite URL",
+      "passed": true
+    },
+    {
+      "name": "hub navigation can be cancelled without ending the expedition",
+      "passed": true
+    },
+    {
+      "name": "shop stays out of cooperative listening turns",
+      "passed": true
+    },
+    {
+      "name": "tutorial-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "round 0 isolated target",
+      "passed": true
+    },
+    {
+      "name": "manual-desktop fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "controls-phone-waiting fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "matching wrong instruction is distinguished",
+      "passed": true
+    },
+    {
+      "name": "help-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "closing the sound guide returns keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "visibility event interrupts audio and keeps answers locked",
+      "passed": true
+    },
+    {
+      "name": "returning requires hearing the whole sound again",
+      "passed": true
+    },
+    {
+      "name": "repair-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "successful repair moves keyboard focus to the next action",
+      "passed": true
+    },
+    {
+      "name": "round 1 isolated target",
+      "passed": true
+    },
+    {
+      "name": "partner-disconnected fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "refresh resumes own slot",
+      "passed": true
+    },
+    {
+      "name": "back navigation reconnects the same expedition",
+      "passed": true
+    },
+    {
+      "name": "back navigation restoration mode",
+      "persisted": false,
+      "passed": true
+    },
+    {
+      "name": "persisted page lifecycle events reconnect the live stream",
+      "passed": true
+    },
+    {
+      "name": "answers locked during actual voice",
+      "passed": true
+    },
+    {
+      "name": "round 2 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 3 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 4 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 5 isolated target",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "round 6 isolated target",
+      "passed": true
+    },
+    {
+      "name": "antenna-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "round 7 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 8 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 9 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 10 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 11 isolated target",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "round 12 isolated target",
+      "passed": true
+    },
+    {
+      "name": "fuel-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "round 13 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 14 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 15 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 16 isolated target",
+      "passed": true
+    },
+    {
+      "name": "round 17 isolated target",
+      "passed": true
+    },
+    {
+      "name": "launch-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "one launch click does not finish",
+      "passed": true
+    },
+    {
+      "name": "complete-desktop fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "complete-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "shared launch awards exactly 15 finish coins on each browser",
+      "passed": true
+    },
+    {
+      "name": "record storage failure offers retry without blocking launch",
+      "passed": true
+    },
+    {
+      "name": "record retry saves the actual expedition",
+      "passed": true
+    },
+    {
+      "name": "completed record is saved without tokens or invite codes",
+      "passed": true
+    },
+    {
+      "name": "all eighteen repaired",
+      "passed": true
+    },
+    {
+      "name": "replay and help tracked separately",
+      "passed": true
+    },
+    {
+      "name": "non-owner can read the expedition and all seven sounds",
+      "passed": true
+    },
+    {
+      "name": "starbook preview explicitly marks its example",
+      "passed": true
+    },
+    {
+      "name": "actual finish leaves the goal 15 coins away",
+      "passed": true
+    },
+    {
+      "name": "result shows the selected collection goal",
+      "passed": true
+    },
+    {
+      "name": "purchase immediately opens three actual six-star constellations",
+      "passed": true
+    },
+    {
+      "name": "30 coins buys ownership without changing ship equipment",
+      "passed": true
+    },
+    {
+      "name": "actual keepsake PNG is 1200 by 1050",
+      "passed": true
+    },
+    {
+      "name": "PNG failure preserves the actual collection and offers retry",
+      "passed": true
+    },
+    {
+      "name": "starbook at 320 has no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "the non-owning friend remains on the same completed expedition",
+      "passed": true
+    },
+    {
+      "name": "collected goal remains and offers immediate use",
+      "passed": true
+    },
+    {
+      "name": "recall-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "solo recall 0 keeps listening focus after audio",
+      "passed": true
+    },
+    {
+      "name": "solo replay keeps keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "solo recall 0 reaches an answer by Tab",
+      "passed": true
+    },
+    {
+      "name": "solo recall 0 focuses the next action",
+      "passed": true
+    },
+    {
+      "name": "solo recall 1 keeps listening focus after audio",
+      "passed": true
+    },
+    {
+      "name": "solo recall 1 reaches an answer by Tab",
+      "passed": true
+    },
+    {
+      "name": "solo recall 1 focuses the next action",
+      "passed": true
+    },
+    {
+      "name": "solo recall 2 keeps listening focus after audio",
+      "passed": true
+    },
+    {
+      "name": "solo recall 2 reaches an answer by Tab",
+      "passed": true
+    },
+    {
+      "name": "solo recall 2 focuses the next action",
+      "passed": true
+    },
+    {
+      "name": "three solo recall prompts complete",
+      "passed": true
+    },
+    {
+      "name": "completed recall focuses the return action",
+      "passed": true
+    },
+    {
+      "name": "returning to the result focuses solo recall",
+      "passed": true
+    },
+    {
+      "name": "complete-320-reduced fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "completed and solo recall screens link to beginner games",
+      "passed": true
+    },
+    {
+      "name": "new expedition focuses the creation action",
+      "passed": true
+    },
+    {
+      "name": "a new expedition preserves the friend’s completed result",
+      "passed": true
+    },
+    {
+      "name": "approved Korean audio actually played",
+      "passed": true
+    },
+    {
+      "name": "all audio contexts were running",
+      "passed": true
+    },
+    {
+      "name": "owned starbook and the completed expedition survive reload",
+      "passed": true
+    },
+    {
+      "name": "resuming the same completed expedition does not duplicate the starbook",
+      "passed": true
+    },
+    {
+      "name": "completed expedition reload cannot award coins again",
+      "passed": true
+    },
+    {
+      "name": "no browser errors",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "audio": {
+    "desktop": {
+      "starts": 23,
+      "ends": 23,
+      "durations": [
+        0.9414583333333333,
+        0.9414583333333333,
+        1.1042291666666666,
+        1.1042291666666666,
+        1.1042291666666666,
+        0.6496666666666666,
+        1.4825,
+        0.6496666666666666,
+        0.6496666666666666,
+        0.6496666666666666,
+        1.4825,
+        1.4825,
+        0.6496666666666666,
+        1.1793541666666667,
+        0.8631041666666667,
+        0.8419375,
+        1.1793541666666667,
+        0.8631041666666667,
+        0.8631041666666667,
+        0.8419375,
+        0.8419375,
+        1.1793541666666667,
+        1.1042291666666666
+      ],
+      "states": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ]
+    },
+    "mobileSinceResume": {
+      "starts": 32,
+      "ends": 32,
+      "durations": [
+        1.1042291666666666,
+        0.9414583333333333,
+        0.9414583333333333,
+        1.1042291666666666,
+        1.1042291666666666,
+        1.1042291666666666,
+        0.9414583333333333,
+        0.9414583333333333,
+        1.1042291666666666,
+        1.1042291666666666,
+        1.1042291666666666,
+        0.6496666666666666,
+        1.4825,
+        0.6496666666666666,
+        0.6496666666666666,
+        0.6496666666666666,
+        1.4825,
+        1.4825,
+        0.6496666666666666,
+        1.1793541666666667,
+        0.8631041666666667,
+        0.8419375,
+        1.1793541666666667,
+        0.8631041666666667,
+        0.8631041666666667,
+        0.8419375,
+        0.8419375,
+        1.1793541666666667,
+        0.9414583333333333,
+        0.9414583333333333,
+        1.4825,
+        0.8419375
+      ],
+      "states": [
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running",
+        "running"
+      ]
+    }
+  },
+  "result": {
+    "code": "TF6GFD",
+    "expeditionId": "c5e114ad3fc72ad14ed161c307909583",
+    "revision": 84,
+    "phase": "complete",
+    "slot": 1,
+    "role": "pilot",
+    "round": 18,
+    "total": 18,
+    "stage": {
+      "id": "count",
+      "name": "별빛 연료를 채워요",
+      "en": "Pump the starlight fuel",
+      "index": 2,
+      "words": [
+        "one",
+        "two",
+        "three"
+      ]
+    },
+    "players": [
+      {
+        "slot": 0,
+        "present": true,
+        "connected": true,
+        "ready": false,
+        "launch": true
+      },
+      {
+        "slot": 1,
+        "present": true,
+        "connected": true,
+        "ready": false,
+        "launch": true
+      }
+    ],
+    "connected": true,
+    "partnerConnected": true,
+    "paused": false,
+    "studied": [
+      "one",
+      "two",
+      "three"
+    ],
+    "stats": {
+      "listeningAttempts": 10,
+      "listeningCorrect": 10,
+      "firstTry": 8,
+      "replays": 2,
+      "help": 1,
+      "signals": 9,
+      "matchingSignals": 9
+    },
+    "feedback": null,
+    "expiresAt": 1791553452407,
+    "serverTime": 1791551656897,
+    "summary": {
+      "repaired": 18,
+      "completedAt": 1791551652407,
+      "firstTry": 17,
+      "expressions": 7,
+      "teamReplays": 2,
+      "teamHelp": 1
+    },
+    "records": [
+      {
+        "round": 0,
+        "stage": "color",
+        "word": "red",
+        "firstTry": false,
+        "attempts": 2
+      },
+      {
+        "round": 1,
+        "stage": "color",
+        "word": "blue",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 2,
+        "stage": "color",
+        "word": "blue",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 3,
+        "stage": "color",
+        "word": "red",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 4,
+        "stage": "color",
+        "word": "red",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 5,
+        "stage": "color",
+        "word": "red",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 6,
+        "stage": "position",
+        "word": "up",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 7,
+        "stage": "position",
+        "word": "up",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 8,
+        "stage": "position",
+        "word": "up",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 9,
+        "stage": "position",
+        "word": "down",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 10,
+        "stage": "position",
+        "word": "down",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 11,
+        "stage": "position",
+        "word": "up",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 12,
+        "stage": "count",
+        "word": "one",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 13,
+        "stage": "count",
+        "word": "two",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 14,
+        "stage": "count",
+        "word": "two",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 15,
+        "stage": "count",
+        "word": "three",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 16,
+        "stage": "count",
+        "word": "three",
+        "firstTry": true,
+        "attempts": 1
+      },
+      {
+        "round": 17,
+        "stage": "count",
+        "word": "one",
+        "firstTry": true,
+        "attempts": 1
+      }
+    ]
+  }
+}

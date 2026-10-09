@@ -1,0 +1,10 @@
+{
+  "stage": "Compare temporary tree changes before commit and push",
+  "error": "The actual Git output was sorted by path; expected rows were sorted by change type and path.",
+  "actualScope": "31 exact requested files, 4 added and 27 modified",
+  "commitCreated": false,
+  "remotePushAttempted": false,
+  "worktreeWrites": 0,
+  "defaultIndexWrites": 0,
+  "fix": "Sort both complete lists before exact comparison; keep the same file limit and A/M checks."
+}

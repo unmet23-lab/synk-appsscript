@@ -25,7 +25,15 @@ async function cells() {
   const order = await import(new URL('order-rush/learning.mjs', games)), orders = await import(new URL('order-rush/core.mjs', games));
   for (const o of [...orders.ORDERS, ...orders.REVIEW]) add('order', order.orderMetadata(o));
   const entry = await import(new URL('entry-check/learning.mjs', games)), venues = await import(new URL('entry-check/content.mjs', games));
-  for (const venue of venues.VENUES) for (const c of venue.cases) add('entry', entry.caseMetadata(c));
+  // The hub opens free practice, whose real ranking path excludes confirmation-only guests.
+  // Those guests need an earlier wrong/helped answer or an explicit WORLD assignment;
+  // they cannot keep this entry "unseen" after its ordinary first tries are spent.
+  for (const venue of venues.VENUES) {
+    let offered = null;
+    entry.rankCases({ recommend(candidates) { offered = candidates; return { status: 'unavailable' }; } }, venue.cases);
+    assert.ok(offered?.length, `${venue.id}: free-shift ranking offers no guests`);
+    for (const candidate of offered) add('entry', { ...candidate, skillId: candidate.skillIds[0] });
+  }
   const story = await import(new URL('story-classroom/learning.mjs', games)), episode = await import(new URL('story-classroom/story.mjs', games));
   const E = episode.EPISODE || episode.default?.EPISODE;
   for (const m of [...E.acts.flatMap(a => a.missions), ...E.review]) add('story', { responseFormat: 'action', ...story.missionMetadata(m) });
@@ -47,7 +55,7 @@ test('every ability the hub names exists in its game at that difficulty and resp
   }
 });
 
-// Each entry also names the item families its game has in those cells. Once all were presented the game
+// Each entry also names the first-try item families its free practice has in those cells. Once all were presented the game
 // can give no new first try there, so Core puts the entry behind those that still can (learning.js).
 // Through JSON: values made in the vm context have that context's prototypes.
 const families = JSON.parse(JSON.stringify(vm.runInNewContext(`(${source.match(/const families = (\{[\s\S]*?\n\});/)[1]})`)));
@@ -78,4 +86,28 @@ test('a game spent in that cell goes behind one that can still give a first try'
   const spent = coach.recommend(entries, { audioAvailable: true });
   assert.notEqual(spent.selected.id, 'reading-story-classroom', 'every family of that cell was presented: another entry first');
   assert.ok(spent.alternatives.some(e => e.id === 'reading-story-classroom'), 'still available when chosen');
+});
+
+test('unseen confirmation-only guests do not keep a spent free entry shift ahead of fresh practice', async () => {
+  const { createRequire } = await import('node:module');
+  const require = createRequire(import.meta.url);
+  const { createGame } = require('../../atlas/game-learning.js'), { createMap } = require('../../strata/index.js');
+  const entry = await import(new URL('entry-check/learning.mjs', games)), { VENUES } = await import(new URL('entry-check/content.mjs', games));
+  const map = createMap(require('../../strata/topik-i.js').topikMap());
+  let t = Date.parse('2026-10-09T09:00:00Z'); const store = new Map();
+  const coach = createGame({ gameId: 'learning-hub', map, storage: { getItem: k => store.get(k) ?? null, setItem: (k, v) => store.set(k, v) }, clock: () => new Date(t += 60000).toISOString() });
+  const entries = catalog.filter(e => ['reading-entry-check', 'reading-blank-slice'].includes(e.id))
+    .map(e => ({ ...e, familyKeys: families[e.id] }));
+  const hubEntry = entries[0];
+  const inCell = c => hubEntry.skillIds.includes(c.skill) && c.difficulty === hubEntry.difficulty;
+  const ordinary = VENUES.flatMap(v => v.cases).filter(c => !c.followupOnly && inCell(c));
+  const confirmations = VENUES.flatMap(v => v.cases).filter(c => c.followupOnly && inCell(c));
+  assert.ok(confirmations.length, 'the fixture must retain confirmation-only guests in this cell');
+  coach.answer(coach.present(entry.caseMetadata(ordinary[0])), { correct: false, assessable: true });
+  assert.equal(coach.recommend(entries, { audioAvailable: true }).selected.id, 'reading-entry-check', 'an error can still lead to ordinary new guests');
+  for (const c of ordinary.slice(1)) coach.answer(coach.present(entry.caseMetadata(c)), { correct: false, assessable: true });
+  assert.ok(confirmations.every(c => coach.exposure(entry.caseMetadata(c)).seen === false), 'confirmation-only guests remain unseen');
+  const spent = coach.recommend(entries, { audioAvailable: true });
+  assert.equal(spent.selected.id, 'reading-blank-slice', 'all ordinary first tries were presented, so offer fresh practice');
+  assert.ok(spent.alternatives.some(e => e.id === 'reading-entry-check'), 'the spent free shift remains selectable');
 });

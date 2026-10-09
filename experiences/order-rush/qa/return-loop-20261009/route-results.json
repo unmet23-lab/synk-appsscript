@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-09T13:07:28.213Z",
+  "scope": "Actual shop module and final CSS in native Chrome; isolated local synthetic route and wallet metadata; no account or purchase writes",
+  "checks": [
+    "Available reward route shows the verified href and label, a real cream felt CTA with readable dark text, keyboard focus and 320px fit.",
+    "Daily coin limit exposes a free route with no coin promise and retains keyboard continuation.",
+    "An old adapter without route metadata falls back to the free beginner hub and promises no reward.",
+    "Out-of-order route reads cannot replace the newer route, current product preview or keyboard focus."
+  ],
+  "style": {
+    "background": "url(\"http://127.0.0.1:58750/kit/felt/slab-cream-long.webp\")",
+    "color": "rgb(37, 34, 32)",
+    "height": 77.484375,
+    "width": 272
+  },
+  "errors": [],
+  "external": [],
+  "audio": [],
+  "sourceSha256": {
+    "beginner-shop.mjs": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+    "beginner.css": "ff174f6b2ee9b19e0e353f6d9b0fdf5ccd0ee5ec6d5fc09cf24a50d382197ac0"
+  }
+}

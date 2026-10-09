@@ -1,0 +1,10 @@
+{
+  "server4436": "Owned process and listening port verified, then stopped",
+  "publicAndSharedServer4340Modified": false,
+  "rootServersModified": false,
+  "finalFunctionalityBrowserExitCode": 0,
+  "finalLayoutBrowserExitCode": 0,
+  "existingMP3ActionBrowserExitCode": 0,
+  "browserCleanup": "Each isolated browser closed in its QA finally block; all corresponding commands completed",
+  "productSourceChangesAfterFreeze": false
+}

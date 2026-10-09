@@ -12,9 +12,10 @@ const bundled=esbuild.buildSync({
   format:'iife',globalName:'SynkCollectionEconomy',platform:'browser',target:'es2022',minify:true
 }).outputFiles[0].text;
 const adapter=await readFile(path.join(here,'collection-adapter.js'),'utf8');
+const account=esbuild.buildSync({entryPoints:[path.join(here,'account-client.mjs')],bundle:true,write:false,format:'iife',platform:'browser',target:'es2022',minify:true}).outputFiles[0].text;
 const output=path.join(here,'collection.js');
-await writeFile(output,'// Generated from korean-racing/garage-core.js and collection-adapter.js. Run node experiences/play-common/build-collection.mjs.\n'+bundled+'\n'+adapter);
+await writeFile(output,'// Generated account bridge + canonical play economy. Run node experiences/play-common/build-collection.mjs.\n'+account+'\n'+bundled+'\n'+adapter);
 // Every mini-game that pays common coins loads the same bytes.
-const GAMES=['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush'];
+const GAMES=['korean-racing','korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'];
 for(const game of GAMES)await copyFile(output,path.join(root,'experiences',game,'collection.js'));
-console.log(`Canonical shared collection built and copied to ${GAMES.join(' / ')} (${Buffer.byteLength(bundled+adapter)} bytes).`);
+console.log(`Canonical shared collection built and copied to ${GAMES.join(' / ')} (${Buffer.byteLength(await readFile(output))} bytes).`);

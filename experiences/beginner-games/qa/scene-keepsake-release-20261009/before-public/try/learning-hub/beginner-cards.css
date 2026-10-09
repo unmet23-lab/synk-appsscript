@@ -1,0 +1,38 @@
+/* Beginner game covers: scene first, quiet reading surface, tactile action. */
+.beginner,.beginner-shops{margin:0 0 56px}
+.beginner>p,.beginner-shops>p{max-width:680px;color:#536072;font-size:15px;line-height:1.8}
+.beginner [lang=en],.beginner-shops [lang=en]{color:#596575}
+#beginner-title,#beginner-shops-title{scroll-margin-top:28px;letter-spacing:-.035em}
+#beginner-title>span{display:block;font-size:18px;font-weight:550;letter-spacing:0;margin-top:8px}
+.beginner-note{margin:16px 0 0}.beginner-note [lang=en]{font-size:13px}
+.beginner-games,#beginner-shop-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px;margin-top:26px}
+.beginner-games>a,#beginner-shop-cards>.beginner-shop-card{display:flex;flex-direction:column;position:relative;min-width:0;padding:0 22px 24px;border:1px solid #e2e7ed;border-radius:22px;overflow:hidden;text-decoration:none;color:#10131a;background:#fff;box-shadow:0 8px 26px #16294508;isolation:isolate}
+.beginner-card-art{display:block;position:relative;height:206px;margin:0 -22px 22px;overflow:hidden;background:#eef2f7}
+.beginner-card-art::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 -24px 35px -30px #14254980}
+.beginner-card-art img{position:absolute;object-fit:contain;filter:drop-shadow(0 10px 8px #10204730);width:112px;height:140px;bottom:12px;left:calc(50% - 56px)}
+.beginner-card-art.art-magic{background:url('/try/entry-check/assets/scenes/library-m.webp') center 48%/cover}
+.art-magic::before{content:'';position:absolute;left:0;right:0;bottom:0;height:30%;background:url('/try/word-magic/kit/felt/wide-cream.webp') center/600px auto;box-shadow:0 -2px 12px #2b332b24}
+.beginner-card-art.art-magic img{height:140px;width:100px;left:calc(50% - 35px);bottom:10px}
+.beginner-card-art.art-magic img.art-companion{height:75px;width:80px;left:calc(50% - 106px);bottom:13px;transform:rotate(-9deg)}
+.beginner-card-art.art-order{background:url('/try/order-rush/assets/cafe.webp') center 44%/cover}
+.art-order::before{content:'';position:absolute;inset:0;background:linear-gradient(0deg,#fff8ee90,transparent 50%)}
+.beginner-card-art.art-order img{height:137px;width:120px;left:calc(50% - 64px);bottom:5px}
+.beginner-card-art.art-order img.art-companion{width:80px;height:75px;left:calc(50% + 33px);bottom:12px;transform:rotate(5deg)}
+.beginner-card-art.art-ship{background:radial-gradient(ellipse at 60% 30%,#23477630,transparent 65%),url('/try/spaceship-coop/assets/felt/wide-black.webp') center/680px auto;background-color:#101526}
+.art-ship::before{content:'';position:absolute;width:85px;height:85px;right:20px;top:20px;background:url('/try/spaceship-coop/assets/felt/disc-lapis.webp') center/contain no-repeat;opacity:.65}
+.beginner-card-art.art-ship img{height:186px;width:132px;left:calc(50% - 69px);bottom:8px;transform:rotate(-12deg);filter:drop-shadow(0 12px 12px #0005)}
+.beginner-card-art.art-ship img.art-companion{width:28px;height:28px;left:23%;bottom:auto;top:28px;transform:rotate(12deg)}
+.beginner-games .beginner-meta{font-size:12px;line-height:1.6;color:#315487;font-weight:700;min-height:38px}
+.beginner-meta>[lang=en]{display:block;font-weight:500;font-size:12px}
+.beginner-games h3,#beginner-shop-cards h3{font-size:23px;line-height:1.35;letter-spacing:-.035em;margin:12px 0 0;min-height:65px}
+.beginner-games h3>[lang=en],#beginner-shop-cards h3>[lang=en]{display:block;font-size:14px;letter-spacing:0;font-weight:500;margin-top:5px}
+.beginner-games p,#beginner-shop-cards p{font-size:14px;line-height:1.8;margin:12px 0 20px}
+.beginner-games p [lang=en],#beginner-shop-cards p [lang=en]{font-size:13px}
+.beginner-games strong,#beginner-shop-cards strong{font-size:14px;line-height:1.6;text-align:center;font-weight:750;padding:15px 12px 18px;margin-top:auto;min-height:52px;background:url('./assets/slab-cream-long.webp') center/100% 100% no-repeat}
+.beginner-games strong [lang=en],#beginner-shop-cards strong [lang=en]{font-size:inherit;color:inherit}
+#beginner-shop-cards .shop-owned{font-size:12px;color:#526176;margin:0 0 18px;padding:0;background:none}
+.beginner-games>a:focus-visible,#beginner-shop-cards a:focus-visible{outline:3px solid #24448c;outline-offset:4px}
+.beginner-games>a:active,#beginner-shop-cards>a:active{transform:translateY(2px)}
+@media(hover:hover) and (prefers-reduced-motion:no-preference){.beginner-games>a,#beginner-shop-cards>a{transition:transform .2s ease,box-shadow .2s ease}.beginner-games>a:hover,#beginner-shop-cards>a:hover{transform:translateY(-4px);box-shadow:0 14px 30px #16294512}}
+@media(max-width:760px){.beginner-games,#beginner-shop-cards{grid-template-columns:1fr;gap:22px}.beginner-games>a,#beginner-shop-cards>.beginner-shop-card{padding:0 22px 22px}.beginner-card-art{height:185px}.beginner-games h3,#beginner-shop-cards h3{min-height:0;max-width:100%;font-size:24px}.beginner-games .beginner-meta{min-height:0;max-width:100%}.beginner-games p{max-width:100%}.beginner-games strong,#beginner-shop-cards strong{margin-top:0}.beginner-card-art.art-ship img{height:169px}.beginner-games .beginner-meta>[lang=en]{display:inline;margin-left:8px}.beginner-games h3>[lang=en]{font-size:14px}.beginner-games{margin-top:22px}.beginner>p,.beginner-shops>p{font-size:14px}}
+.shop-visit{display:block;color:inherit;text-decoration:none;margin-top:auto}.shop-visit strong{display:block}.shop-play-owned{margin:0 0 18px}.shop-play-owned[hidden]{display:none}.owned-play-label{display:block;font-size:12px;color:#36584d;margin:0 0 8px;font-weight:700}.shop-use{display:flex;align-items:center;gap:6px;min-height:84px;padding:14px 16px;color:#152b35;text-decoration:none;background:url('/try/word-magic/kit/felt/slab-blush-long.webp') center/100% 100% no-repeat}.shop-use>img{width:48px;height:54px;object-fit:contain;flex:none;filter:drop-shadow(0 3px 3px #2c322c20)}.shop-use>span{min-width:0;display:grid;gap:3px}.shop-use b{font-size:14px;line-height:1.5}.shop-use [lang=en]{font-size:12px;line-height:1.5}.shop-use:active,.shop-visit:active{transform:translateY(2px)}.shop-play-owned:not([hidden])~.shop-goal{font-size:13px}#beginner-shop-cards .shop-play-owned:not([hidden])~.shop-visit strong{font-size:13px;background:none;text-decoration:underline;text-underline-offset:4px;padding:10px 8px;min-height:44px}

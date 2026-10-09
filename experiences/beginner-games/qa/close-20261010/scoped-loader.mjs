@@ -1,0 +1,3 @@
+import {readFile} from 'node:fs/promises';
+const snapshots={"file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/learning-hub/server.mjs":"C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\beginner-games\\qa\\close-20261010\\server.staged.mjs","file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/learning-hub/server.test.mjs":"C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\beginner-games\\qa\\close-20261010\\server-test.staged.mjs"};
+export async function load(url,context,nextLoad){if(snapshots[url])return {format:'module',source:await readFile(snapshots[url],'utf8'),shortCircuit:true};return nextLoad(url,context);}

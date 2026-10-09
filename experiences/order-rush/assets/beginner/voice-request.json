@@ -1,0 +1,65 @@
+{
+  "provider": "typecast",
+  "lines": [
+    {
+      "id": "water",
+      "text": "물"
+    },
+    {
+      "id": "bread",
+      "text": "빵"
+    },
+    {
+      "id": "apple",
+      "text": "사과"
+    },
+    {
+      "id": "count-1",
+      "text": "한 개"
+    },
+    {
+      "id": "count-2",
+      "text": "두 개"
+    },
+    {
+      "id": "count-3",
+      "text": "세 개"
+    },
+    {
+      "id": "water-please",
+      "text": "물 주세요."
+    },
+    {
+      "id": "bread-please",
+      "text": "빵 주세요."
+    },
+    {
+      "id": "apple-please",
+      "text": "사과 주세요."
+    },
+    {
+      "id": "bread-1",
+      "text": "빵 한 개 주세요."
+    },
+    {
+      "id": "bread-2",
+      "text": "빵 두 개 주세요."
+    },
+    {
+      "id": "bread-3",
+      "text": "빵 세 개 주세요."
+    },
+    {
+      "id": "apple-1",
+      "text": "사과 한 개 주세요."
+    },
+    {
+      "id": "apple-2",
+      "text": "사과 두 개 주세요."
+    },
+    {
+      "id": "apple-3",
+      "text": "사과 세 개 주세요."
+    }
+  ]
+}

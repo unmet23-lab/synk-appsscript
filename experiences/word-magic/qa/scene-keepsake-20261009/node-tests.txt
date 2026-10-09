@@ -1,0 +1,46 @@
+✔ first prepare requests audio resume synchronously before fetching the voice manifest (2.0196ms)
+✔ already prepared but suspended voice bank still resumes, without another fetch (0.4015ms)
+✔ all 18 authored scenes start unsolved and each intended semantic action changes a real object (1.9697ms)
+✔ an unrelated object change never completes a two-part puzzle (0.256ms)
+✔ semantic transformations are reversible, bounded, and cannot open a living animal (0.3193ms)
+✔ chapter unlocks require all six discoveries and replay cannot duplicate completion (1.3348ms)
+✔ malformed persistence cannot inject objects, expressions, huge scale, or unknown scenes (0.8141ms)
+✔ each chapter checks both distinct meanings; assistance and retries never become independent success (0.2844ms)
+✔ Atlas adapter uses the registered word/action contract and never repeats a first answer (1.0227ms)
+✔ missing or broken Atlas never prevents core play (0.2846ms)
+✔ opposite listening requests have identical pre-answer visuals and never expose Korean spelling (0.6545ms)
+✔ all six corrected listening items use meaning-based v2 item and family identity, separate from visually cued v1 (0.2525ms)
+✔ each round independently shuffles the request order and fixed choice positions while covering both meanings (0.8873ms)
+✔ resume preserves unfinished object changes without accepting foreign assets, positions, or locked chapters (0.3075ms)
+✔ checkpoint resume keeps its shuffled prompt and first-answer status, but never restores a heard claim (0.2841ms)
+✔ old progress restores an empty optional collection and valid scenes survive reload (3.6492ms)
+✔ semantic snapshots never accept injected assets, positions, pixel files or impossible transforms (1.5083ms)
+✔ six chosen scenes have no automatic eviction; replacement and removal affect only the chosen ID (2.1943ms)
+✔ typed names are data, retries keep one scene, and missing IDs never replace a different scene (0.7079ms)
+✔ unintroduced sounds, unavailable storage, thrown writes and silent writes cannot claim a saved scene (0.5894ms)
+✔ mutations read the latest whole envelope so another tab and unrelated progress are preserved (0.6482ms)
+✔ account completion labels require synced, no pending requests and no rejected requests (0.1723ms)
+✔ the canonical account storage carries scenes to a second synthetic host without a new key or wallet change (8.7836ms)
+✔ practice requires heard changes, distinct word/object pairs, two words and two objects (1.5816ms)
+✔ sets preserve separate transforms and migrate old default scenes without foreign objects (0.974ms)
+✔ an unfinished adventure remains independent from the lab and never restores heard evidence (0.6135ms)
+✔ actual app persist rejects refreshed other-device progress after language (13.4118ms)
+✔ actual app persist rejects refreshed other-device progress after adventure (2.0903ms)
+✔ actual app persist rejects refreshed other-device progress after reset (3.5897ms)
+✔ actual app persist rejects refreshed other-device progress after album-read-then-save (1.8894ms)
+✔ actual app persist accepts its own normal progress change with the original observation (4.0486ms)
+✔ a refreshed collection-only change is merged without changing the current cached adventure (4.4629ms)
+✔ the observed unsafe old branch reproduces a silently accepted stale adventure overwrite (1.8544ms)
+✔ discoveries do not claim listening confirmation or change existing unlocks (2.3118ms)
+✔ optional recall uses only introduced meanings, never writes the source progress (0.6788ms)
+✔ recall prefers a previous miss but cannot introduce an unknown chapter (0.2116ms)
+✔ two alternative pictures contain no target, spelling or meaning cue before first answer (2.317ms)
+✔ recall choices remain fixed across replays and use fresh objects for each chapter (0.4107ms)
+ℹ tests 38
+ℹ suites 0
+ℹ pass 38
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 180.7647

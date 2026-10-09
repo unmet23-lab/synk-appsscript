@@ -1,0 +1,12 @@
+{
+  "server4436": "Stopped after verifying this task's PID and listening port; no longer listening",
+  "rootServers4340And49321": "Not stopped or modified",
+  "finalBrowserCheckExitCode": 0,
+  "shopFocusCheckExitCode": 0,
+  "fullAdventureCheckExitCode": 0,
+  "isolatedThreeQuestionCheckExitCode": 0,
+  "qaNodePid13496Remaining": false,
+  "isolatedHeadlessBrowserPid40916Remaining": false,
+  "headlessStopAttempt": "Ownership was verified; process had already exited when Stop-Process ran. No successful force-stop is claimed.",
+  "qaNodeStopAttempt": "Ownership lookup showed it was already closed; no force-stop performed."
+}

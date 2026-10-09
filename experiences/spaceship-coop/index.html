@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#ffffff">
+<title>둘이서 우주선 고치기 · SYNK WORLD</title><meta name="description" content="그림 설명서와 조종판, 서로 다른 두 화면. 한국어 소리를 주고받으며 친구와 우주선을 고치는 완전 입문 협동 게임.">
+<link rel="icon" href="assets/felt/sparkle.webp" type="image/webp"><link rel="preload" href="assets/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="shop.css"><script defer src="collection.js"></script><script type="module" src="app.mjs"></script></head>
+<body><a class="skip-link" href="#main">본문으로 / Skip to game</a>
+<header class="topbar"><a href="/learning-hub/#beginner-title" id="world-link" class="brand" aria-label="입문 놀이로 / More beginner games"><img src="assets/brand/logo-lab.webp" width="106" height="38" alt="SYNK LAB"><span>WORLD / CO-OP</span></a><div class="top-actions"><button id="ship-shop-open" class="felt cream shop-entry">내 우주선 <small lang="en">Customize</small></button><button id="leave-top" class="text-button" hidden>탐험 그만두기 <span lang="en">Leave</span></button></div></header>
+<main id="main" tabindex="-1"></main><p id="live" class="sr" role="status" aria-live="polite"></p><div id="toast" role="status" hidden></div>
+<dialog id="ship-shop" aria-labelledby="ship-shop-title"></dialog>
+<dialog id="starbook" aria-labelledby="starbook-title"></dialog>
+<dialog id="leave-dialog"><h2>둘의 탐험을 마칠까요?</h2><p>친구의 탐험도 함께 끝나요. 잠깐 자리를 비울 때는 창을 그대로 두어도 돼요.</p><p lang="en">Leaving ends this expedition for both players.</p><div class="button-row"><button class="felt cream" data-dialog="cancel">계속하기 / Stay</button><button class="felt coral" data-dialog="confirm">그만두기 / Leave</button></div></dialog>
+<dialog id="copy-dialog"><h2>선택한 내용을 복사해요</h2><p lang="en">Copy the selected text and send it to your friend.</p><label class="sr" for="copy-value">복사할 내용 / Text to copy</label><input id="copy-value" class="inline-input" readonly><form method="dialog"><button class="felt cream">닫기 / Close</button></form></dialog>
+<noscript>이 협동 게임에는 JavaScript가 필요해요. / Enable JavaScript to play.</noscript></body></html>

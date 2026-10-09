@@ -1,0 +1,44 @@
+✔ leaving before an audio context resumes never starts the queued voice (3.9891ms)
+✔ a newer sound cancels an older pending resume without cancelling itself (0.3872ms)
+✔ normal collaborative state updates close only an open solo recall overlay (488.6782ms)
+✔ lost join response retries the same request and restores the original participant (69.482ms)
+✔ lost create response recovers one original room instead of creating another (62.2371ms)
+✔ reload after lost join response keeps the pending request and original seat (41.4689ms)
+✔ choosing a different room never reuses a lost request from another room (64.6242ms)
+✔ explicitly forgetting entry information clears the pending request (8.2199ms)
+✔ an explicit server rejection clears pending entry rather than replaying it forever (72.3027ms)
+✔ malformed pending storage is ignored and cannot supply the request ID (33.3429ms)
+✔ failed sound preparation still creates no request or pending room (9.0807ms)
+✔ failed leave request preserves the original session so leaving can be retried (79.6674ms)
+✔ leave confirmation during another pending action keeps the participant and sends no termination (50.9532ms)
+✔ rate limiting after a lost join response preserves its ID until the original seat recovers (484.4031ms)
+✔ lost successful leave response still exits when the next request confirms CLOSED without SSE (69.2614ms)
+✔ temporary server rejections preserve an accepted entry ID rather than losing its participant (244.1505ms)
+✔ confirmed missing room permits departure after expiration even without SSE (27.6541ms)
+✔ AUTH or ORIGIN rejection cannot masquerade as confirmed room closure (105.5557ms)
+✔ a CLOSED label on an unauthorized response is not a confirmed termination (17.1126ms)
+✔ confirming WORLD departure after the room was forgotten still follows the selected destination (31.364ms)
+✔ return recall uses only words from a validated completed expedition (12.4658ms)
+✔ an unfinished, malformed or target-only record cannot create return practice (0.4855ms)
+✔ reused room codes never reuse a completion reward identity (2.5984ms)
+✔ only a complete eighteen-repair expedition receives finish-only reward data (6.2115ms)
+✔ cosmetic values accept only known scene and badge assets (0.3628ms)
+✔ only complete server-projected records are stored and sensitive fields are omitted (12.3294ms)
+✔ repeated completion never adds a copy and only the newest six expeditions remain (3.6487ms)
+✔ invalid rounds and stage words cannot become a keepsake (0.6147ms)
+✔ unavailable storage is reported without inventing saved records (0.4828ms)
+✔ one corrupt record never hides other valid expeditions (1.3604ms)
+✔ constellation shape preserves actual expression order deterministically (0.9647ms)
+✔ existing six records load unchanged and favorites survive later completions (16.7692ms)
+✔ unpin keeps an older record immediately and on reload; only a new completion prunes (4.2916ms)
+✔ failed favorite or release cannot falsely change the saved status (1.5762ms)
+✔ corrupt favorite keys never hide valid recent or favorite records (1.7441ms)
+✔ independent favorites and completions merge without replacing another favorite (1.4165ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2814.5362

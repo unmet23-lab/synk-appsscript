@@ -1,0 +1,244 @@
+{
+  "at": "2026-10-09T15:14:58.570Z",
+  "parent": "31d4fd561897b8c84b1fa49caf590f9966cbee84",
+  "files": [
+    {
+      "path": "try/word-magic/app.js",
+      "beforeSource": "word-magic/qa/return-memory-20261009/source/app.mjs.before",
+      "reconstructed": null,
+      "actualSHA256": "bf7d2ec6b19d5efbffc543fb98272e3c5bc195aed70de53177c2a6e7250c9374",
+      "reproducedSHA256": "bf7d2ec6b19d5efbffc543fb98272e3c5bc195aed70de53177c2a6e7250c9374",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/core.js",
+      "beforeSource": "word-magic/qa/return-memory-20261009/source/core.mjs.before",
+      "reconstructed": null,
+      "actualSHA256": "0064fd3e0d06cec86b771d624984511d4f983c52ecbdd13bd669f0f0ffea24bd",
+      "reproducedSHA256": "0064fd3e0d06cec86b771d624984511d4f983c52ecbdd13bd669f0f0ffea24bd",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/index.html",
+      "beforeSource": "word-magic/qa/return-memory-20261009/source/index.html.before",
+      "reconstructed": null,
+      "actualSHA256": "d076663285fa5fc5354cb03d551ced99c6b8187f148bf2d1c11ccf351ebbc806",
+      "reproducedSHA256": "d076663285fa5fc5354cb03d551ced99c6b8187f148bf2d1c11ccf351ebbc806",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/style.css",
+      "beforeSource": "word-magic/qa/return-memory-20261009/source/style.css.before",
+      "reconstructed": null,
+      "actualSHA256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913",
+      "reproducedSHA256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/shop.js",
+      "beforeSource": "beginner-games/qa/return-finish-20261009/source/magic-shop.before.mjs",
+      "reconstructed": null,
+      "actualSHA256": "7cd75577234cbd2a1f5a616f3855dbb4f9a46e4bb97d81aad94a7ba8790da1a7",
+      "reproducedSHA256": "7cd75577234cbd2a1f5a616f3855dbb4f9a46e4bb97d81aad94a7ba8790da1a7",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/recall.js",
+      "new": true,
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/keepsakes.js",
+      "new": true,
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/keepsake-view.js",
+      "new": true,
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/beginner.js",
+      "beforeSource": "order-rush/qa/return-loop-20261009/source/beginner.before.mjs",
+      "reconstructed": null,
+      "actualSHA256": "bea0bc8fba3418ffe7708d56298173fbe7febd246142d683642d826e239f3bb5",
+      "reproducedSHA256": "bea0bc8fba3418ffe7708d56298173fbe7febd246142d683642d826e239f3bb5",
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/beginner-core.js",
+      "beforeSource": "order-rush/qa/return-loop-20261009/source/beginner-core.before.mjs",
+      "reconstructed": null,
+      "actualSHA256": "561f88d1b64b3b06af196240021f7cea2fcb1cbe0d8f949a6d487bc18aab7be6",
+      "reproducedSHA256": "561f88d1b64b3b06af196240021f7cea2fcb1cbe0d8f949a6d487bc18aab7be6",
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/beginner-shop.js",
+      "beforeSource": "order-rush/qa/return-loop-20261009/source/beginner-shop.before.mjs",
+      "reconstructed": null,
+      "actualSHA256": "96d8ddbdd3cc6d39d5fb16b7324271ec0bf765d7073d048975c4ba4c3536fda3",
+      "reproducedSHA256": "96d8ddbdd3cc6d39d5fb16b7324271ec0bf765d7073d048975c4ba4c3536fda3",
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/beginner.css",
+      "beforeSource": "order-rush/qa/return-loop-20261009/source/beginner.before.css",
+      "reconstructed": null,
+      "actualSHA256": "ba0a9b6c5f3da47693c993b2082e1f1188518645649ed0e834e91c730b3b6760",
+      "reproducedSHA256": "ba0a9b6c5f3da47693c993b2082e1f1188518645649ed0e834e91c730b3b6760",
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/beginner-return.js",
+      "new": true,
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/app.js",
+      "beforeSource": "spaceship-coop/qa/return-recall-20261009/app.mjs.before",
+      "reconstructed": null,
+      "actualSHA256": "9e571273b831e1cec757c3b986ce9f69cf8a0ef5f15cd0961abbfdd7a93ad3b3",
+      "reproducedSHA256": "9e571273b831e1cec757c3b986ce9f69cf8a0ef5f15cd0961abbfdd7a93ad3b3",
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/starbook.js",
+      "beforeSource": "spaceship-coop/qa/return-recall-20261009/starbook.mjs.before",
+      "reconstructed": null,
+      "actualSHA256": "664463af41180fdafc2cefb9bcf98db54a3c9631c2270bd953009587286afdef",
+      "reproducedSHA256": "664463af41180fdafc2cefb9bcf98db54a3c9631c2270bd953009587286afdef",
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/shop.js",
+      "beforeSource": "spaceship-coop/qa/return-recall-20261009/shop.mjs.before",
+      "reconstructed": null,
+      "actualSHA256": "c02c5c8c50c723c4ce8d19a5f12ccc33f32d9707d499562be62cb8a0c7a4a26b",
+      "reproducedSHA256": "c02c5c8c50c723c4ce8d19a5f12ccc33f32d9707d499562be62cb8a0c7a4a26b",
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/style.css",
+      "beforeSource": "spaceship-coop/qa/return-recall-20261009/style.css.before",
+      "reconstructed": null,
+      "actualSHA256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda",
+      "reproducedSHA256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda",
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/shop.css",
+      "beforeSource": "spaceship-coop/qa/return-recall-20261009/shop.css.before",
+      "reconstructed": null,
+      "actualSHA256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b",
+      "reproducedSHA256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b",
+      "pass": true
+    },
+    {
+      "path": "try/learning-hub/collection-page.js",
+      "beforeSource": "beginner-games/qa/return-finish-20261009/source/collection-page.before.js",
+      "reconstructed": null,
+      "actualSHA256": "a1c7373515cdd11ef86ec3f900711b25fc3ec079fba3835f7787aecd74947cce",
+      "reproducedSHA256": "a1c7373515cdd11ef86ec3f900711b25fc3ec079fba3835f7787aecd74947cce",
+      "pass": true
+    },
+    {
+      "path": "try/learning-hub/beginner-cards.css",
+      "beforeSource": null,
+      "reconstructed": "remove-owned-shop-next-rule",
+      "actualSHA256": "47e12b0990729e17743bfa5608ee670dc4945022d51fae5a5bbb9940bffa123f",
+      "reproducedSHA256": "47e12b0990729e17743bfa5608ee670dc4945022d51fae5a5bbb9940bffa123f",
+      "pass": true
+    },
+    {
+      "path": "try/racing/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/rhythm/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/runner/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/blank-slice/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/entry-check/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/story-classroom/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/talk-rally/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/order-rush/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/word-magic/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/spaceship-coop/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    },
+    {
+      "path": "try/learning-hub/collection.js",
+      "beforeSource": null,
+      "reconstructed": "canonical-prefix-and-preserved-adapter",
+      "actualSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "reproducedSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "pass": true
+    }
+  ],
+  "passed": true,
+  "readsOnly": true
+}

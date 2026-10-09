@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-09T15:43:19.803Z",
+  "status": "implemented-locally-published-and-publicly-verified",
+  "commit": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+  "publicFiles": 31,
+  "nodeTests": 173,
+  "moduleEntries": 11,
+  "linkChecks": 268,
+  "publicCanonicalHashesAndMimeMatched": true,
+  "pages": {
+    "status": "built",
+    "commit": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+    "createdAt": "2026-10-09T15:26:48Z",
+    "updatedAt": "2026-10-09T15:27:59Z",
+    "error": null
+  },
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 37951794795,
+      "headSha": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37951794795"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37951794946,
+      "headSha": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+      "name": "synk.im 배포 점검",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37951794946"
+    }
+  ],
+  "publicBrowser": {
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "overflow": 0,
+    "errors": 0,
+    "actualAccountWrites": 0
+  },
+  "accountBackendAndSchemaChanged": false,
+  "accountRuntimeRebuilt": false,
+  "commonReadOnlyRecordBridgeAdded": true,
+  "sourceAndPayloadHashesMatch": true,
+  "physicalPhoneTests": 0,
+  "realParticipants": 0,
+  "voiceGeneration": 0,
+  "imageGeneration": 0,
+  "officialReviewCompleted": false,
+  "officialReviewDeferredByUser": true,
+  "knownCleanupLimitation": "Automatic approval review blocked deletion of the failed temporary Git pack. Command-only disabled auto-maintenance allowed normal publication; the pack remains."
+}

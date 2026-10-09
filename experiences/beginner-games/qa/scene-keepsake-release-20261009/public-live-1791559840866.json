@@ -1,0 +1,378 @@
+{
+  "at": "2026-10-09T15:30:40.805Z",
+  "commit": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+  "canonicalHTTP": [
+    {
+      "path": "try/word-magic/app.js",
+      "url": "https://synk.im/try/word-magic/app.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 59251,
+      "sha256": "5c2bede786e3333d2b19fb1602e1b1641d7ae62524ac9f0f3700f50e96fb7f10",
+      "expectedSHA256": "5c2bede786e3333d2b19fb1602e1b1641d7ae62524ac9f0f3700f50e96fb7f10",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/core.js",
+      "url": "https://synk.im/try/word-magic/core.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 7859,
+      "sha256": "a1f99703335d1be24c937175d825c00e605aef945c14352791b1bafebfe33862",
+      "expectedSHA256": "a1f99703335d1be24c937175d825c00e605aef945c14352791b1bafebfe33862",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/index.html",
+      "url": "https://synk.im/try/word-magic/index.html",
+      "status": 200,
+      "mime": "text/html; charset=utf-8",
+      "bytes": 9825,
+      "sha256": "bb163488f4e1166a7b9cf8c664fdb0b51608d17fc39cb2785ce936f0f32e8646",
+      "expectedSHA256": "bb163488f4e1166a7b9cf8c664fdb0b51608d17fc39cb2785ce936f0f32e8646",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/style.css",
+      "url": "https://synk.im/try/word-magic/style.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "bytes": 40823,
+      "sha256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444",
+      "expectedSHA256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/shop.js",
+      "url": "https://synk.im/try/word-magic/shop.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 18894,
+      "sha256": "3e7f275a1376997fcdf497294ffca3bddc2da8ee54e97fcf0e64fcf6df3844e8",
+      "expectedSHA256": "3e7f275a1376997fcdf497294ffca3bddc2da8ee54e97fcf0e64fcf6df3844e8",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/recall.js",
+      "url": "https://synk.im/try/word-magic/recall.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 1362,
+      "sha256": "df30dad63d679aaa33ae9b08081944972b15a0f4dbe081bf2dc183f72c99ac1a",
+      "expectedSHA256": "df30dad63d679aaa33ae9b08081944972b15a0f4dbe081bf2dc183f72c99ac1a",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/keepsakes.js",
+      "url": "https://synk.im/try/word-magic/keepsakes.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 5918,
+      "sha256": "2f12fe3200ccc61df816c7dde3415b32e2547e88575d6190f601b8697bb401f9",
+      "expectedSHA256": "2f12fe3200ccc61df816c7dde3415b32e2547e88575d6190f601b8697bb401f9",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/keepsake-view.js",
+      "url": "https://synk.im/try/word-magic/keepsake-view.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 15728,
+      "sha256": "9df8fc255f7d75559fee0e7192e7b2f369e7fb0d23772500da921aa4e9e108d5",
+      "expectedSHA256": "9df8fc255f7d75559fee0e7192e7b2f369e7fb0d23772500da921aa4e9e108d5",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/beginner.js",
+      "url": "https://synk.im/try/order-rush/beginner.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 52860,
+      "sha256": "63f61f0cf4b601cf33cfbe4ac31d35c3ae186648cec8e6fad89e5328f8fbe550",
+      "expectedSHA256": "63f61f0cf4b601cf33cfbe4ac31d35c3ae186648cec8e6fad89e5328f8fbe550",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/beginner-core.js",
+      "url": "https://synk.im/try/order-rush/beginner-core.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 10209,
+      "sha256": "fbe9fe346aaaf15c0e928b473ecca1ca35d54f60765525a216926e2b2a7b4c85",
+      "expectedSHA256": "fbe9fe346aaaf15c0e928b473ecca1ca35d54f60765525a216926e2b2a7b4c85",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/beginner-shop.js",
+      "url": "https://synk.im/try/order-rush/beginner-shop.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 17792,
+      "sha256": "e49ac7a4f3398d04e071e94b21edbbbd885d8576e332a624d1e907ee08aa6272",
+      "expectedSHA256": "e49ac7a4f3398d04e071e94b21edbbbd885d8576e332a624d1e907ee08aa6272",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/beginner.css",
+      "url": "https://synk.im/try/order-rush/beginner.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "bytes": 21214,
+      "sha256": "8f1cb48e48149798f314eacd1e102701f5869a481f020ff9ef2b51e51b2162fb",
+      "expectedSHA256": "8f1cb48e48149798f314eacd1e102701f5869a481f020ff9ef2b51e51b2162fb",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/beginner-return.js",
+      "url": "https://synk.im/try/order-rush/beginner-return.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 3893,
+      "sha256": "7a17cba09cb16a9b24285be6fd2d58b17950111eaa7d6a9b4b4be5c090665e43",
+      "expectedSHA256": "7a17cba09cb16a9b24285be6fd2d58b17950111eaa7d6a9b4b4be5c090665e43",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/app.js",
+      "url": "https://synk.im/try/spaceship-coop/app.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 41118,
+      "sha256": "ee01209c8cb04bd4cdcf907b56104d65ebeb99ae8527c846331f8b404835da3a",
+      "expectedSHA256": "ee01209c8cb04bd4cdcf907b56104d65ebeb99ae8527c846331f8b404835da3a",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/starbook.js",
+      "url": "https://synk.im/try/spaceship-coop/starbook.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 29395,
+      "sha256": "052ec98bdfffd9215fe7b6b23e9d956fa5046a0cef84bb964d10c8e562c0eef9",
+      "expectedSHA256": "052ec98bdfffd9215fe7b6b23e9d956fa5046a0cef84bb964d10c8e562c0eef9",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/shop.js",
+      "url": "https://synk.im/try/spaceship-coop/shop.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 15244,
+      "sha256": "a01a58714250e60de4beabf963eb9f7c6a64c81166541988c11db91a1597548e",
+      "expectedSHA256": "a01a58714250e60de4beabf963eb9f7c6a64c81166541988c11db91a1597548e",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/style.css",
+      "url": "https://synk.im/try/spaceship-coop/style.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "bytes": 36346,
+      "sha256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5",
+      "expectedSHA256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/shop.css",
+      "url": "https://synk.im/try/spaceship-coop/shop.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "bytes": 14745,
+      "sha256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063",
+      "expectedSHA256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/learning-hub/collection-page.js",
+      "url": "https://synk.im/try/learning-hub/collection-page.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 12044,
+      "sha256": "0a210cfeaee1643113ddcfbc750a23e54d2e7bbc219deee41db90bfafadbaf5a",
+      "expectedSHA256": "0a210cfeaee1643113ddcfbc750a23e54d2e7bbc219deee41db90bfafadbaf5a",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/learning-hub/beginner-cards.css",
+      "url": "https://synk.im/try/learning-hub/beginner-cards.css",
+      "status": 200,
+      "mime": "text/css; charset=utf-8",
+      "bytes": 6665,
+      "sha256": "830d2bdcedeab9a0ff8cb93bcc8812fa3e6ec7262e92308a8537a96d4a41be5d",
+      "expectedSHA256": "830d2bdcedeab9a0ff8cb93bcc8812fa3e6ec7262e92308a8537a96d4a41be5d",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/racing/collection.js",
+      "url": "https://synk.im/try/racing/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/rhythm/collection.js",
+      "url": "https://synk.im/try/rhythm/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/runner/collection.js",
+      "url": "https://synk.im/try/runner/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/blank-slice/collection.js",
+      "url": "https://synk.im/try/blank-slice/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/entry-check/collection.js",
+      "url": "https://synk.im/try/entry-check/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/story-classroom/collection.js",
+      "url": "https://synk.im/try/story-classroom/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/talk-rally/collection.js",
+      "url": "https://synk.im/try/talk-rally/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/order-rush/collection.js",
+      "url": "https://synk.im/try/order-rush/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/word-magic/collection.js",
+      "url": "https://synk.im/try/word-magic/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/spaceship-coop/collection.js",
+      "url": "https://synk.im/try/spaceship-coop/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    },
+    {
+      "path": "try/learning-hub/collection.js",
+      "url": "https://synk.im/try/learning-hub/collection.js",
+      "status": 200,
+      "mime": "application/javascript; charset=utf-8",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "expectedSHA256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "matches": true,
+      "cacheBuster": false
+    }
+  ],
+  "filesPassed": 31,
+  "runs": [
+    {
+      "conclusion": "",
+      "databaseId": 37951794946,
+      "headSha": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+      "name": "synk.im 배포 점검",
+      "status": "in_progress",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37951794946"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 37951794795,
+      "headSha": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37951794795"
+    }
+  ],
+  "pages": {
+    "status": "built",
+    "commit": "10493b5a15a0815c5bf64f5483b9d1824a3bfc92",
+    "createdAt": "2026-10-09T15:26:48Z",
+    "updatedAt": "2026-10-09T15:27:59Z",
+    "error": null
+  },
+  "passed": false,
+  "realAccountWrites": 0,
+  "operatingDbWrites": 0,
+  "physicalPhone": false,
+  "narrationGenerated": 0
+}

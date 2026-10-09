@@ -1,0 +1,285 @@
+{
+  "at": "2026-10-09T13:31:00.601Z",
+  "files": [
+    {
+      "path": "app.mjs.before",
+      "bytes": 39393,
+      "sha256": "ec29ff71507a6d90bec44133e7daadda4930c4eaed9c6d0eeecdf497104dd328"
+    },
+    {
+      "path": "audio-before.json",
+      "bytes": 1654,
+      "sha256": "1bd31f6782af407883a42ddbabb4f725a82ebac03c128d469b35e4a093b81bd2"
+    },
+    {
+      "path": "browser-failure.json",
+      "bytes": 1515,
+      "sha256": "f6cef1f16e8086b70f074b1465519a4a1e13605154734a193797785773b08e7b"
+    },
+    {
+      "path": "browser-proof.cjs",
+      "bytes": 17418,
+      "sha256": "514fbe60b2a6fceb90dc74bb8d5d9541d52f03a1b3b1bdd8572664c0a7deb30e"
+    },
+    {
+      "path": "browser-result.json",
+      "bytes": 3777,
+      "sha256": "195ab3e594d2f9ba85698cdfdc7e14c9820967bf980361b23834b9c309c25f73"
+    },
+    {
+      "path": "cleanup-limitation.json",
+      "bytes": 1094,
+      "sha256": "087fe04b794a09e4e6796d2088b46a2a8017a479f9669eb836d269049f06cd4b"
+    },
+    {
+      "path": "completion.json",
+      "bytes": 2331,
+      "sha256": "1c780aca8fccf2ed35cc6fa78131a6d2357062e24a99247137d3f89447a2380f"
+    },
+    {
+      "path": "downloaded-starbook.png",
+      "bytes": 2421279,
+      "sha256": "2de7bd4120b016527e99bc0f9a93022330e6795bfce3b4733c4f30d467208ae5"
+    },
+    {
+      "path": "finalize.cjs",
+      "bytes": 7806,
+      "sha256": "f0f5f18c50e9755b03b853b1dee7b96edbcfcd52c45dd900043ae525997f5ff6"
+    },
+    {
+      "path": "first-browser-blocked-module.json",
+      "bytes": 1333,
+      "sha256": "46677bf7c01a559a692224f1ecf594e893bf580c5dad29f2a14058c72be9f113"
+    },
+    {
+      "path": "first-return-recall-blocked-module.mjs",
+      "bytes": 7619,
+      "sha256": "72d1904dd00e13d899e7c13b88696bac12ec84a9722d372e987e5dfd5944ac30"
+    },
+    {
+      "path": "first-starbook-syntax-failure.mjs",
+      "bytes": 21534,
+      "sha256": "3a58c4e2afe4e57c4af9f756ab87b90ab709ea53354806d4163457c21713cb60"
+    },
+    {
+      "path": "font-proof.json",
+      "bytes": 568,
+      "sha256": "5f911208566f3dacb14111fe58a99e71e36c3147abbc683706478b429489c68f"
+    },
+    {
+      "path": "full-coop/antenna-phone.png",
+      "bytes": 1203877,
+      "sha256": "01c4d2b29ee66be9f92714c93521cce0a0e165c72bb0ef02c065c10d147c4320"
+    },
+    {
+      "path": "full-coop/complete-320-reduced.png",
+      "bytes": 1331151,
+      "sha256": "67942a909831911fdefbeee9b739eebc8f2bf3712aadd261327c16ca08826dd6"
+    },
+    {
+      "path": "full-coop/complete-desktop.png",
+      "bytes": 774919,
+      "sha256": "f9f00b8adef2c2fdbef319d3b0ec0f34f38b2233ed4e0ad97e5cce9272db389c"
+    },
+    {
+      "path": "full-coop/complete-phone.png",
+      "bytes": 1602040,
+      "sha256": "b4e869ad6b8e2508cc3956ea735e6ffe2e190d536593152f1d398708f56e3ba1"
+    },
+    {
+      "path": "full-coop/controls-phone-waiting.png",
+      "bytes": 870026,
+      "sha256": "aace030dc498e365a6d814dfdc94711709117d9f0c76d47d364fa7f38a380ed1"
+    },
+    {
+      "path": "full-coop/first-navigation-timeout.json",
+      "bytes": 2428,
+      "sha256": "239a736c77759b3c5db40dc4477631d2078a614810fc2e344555cf6ab162a914"
+    },
+    {
+      "path": "full-coop/fuel-phone.png",
+      "bytes": 944529,
+      "sha256": "41ab655b75992791f74194aa95dbf2eab404660039c465015ae736a37e32a3d5"
+    },
+    {
+      "path": "full-coop/help-phone.png",
+      "bytes": 1198761,
+      "sha256": "44912b94c017e0ec979eb7c1807e0f91e39dc4e98d797c40f5f0a82ffc3025cb"
+    },
+    {
+      "path": "full-coop/launch-phone.png",
+      "bytes": 972382,
+      "sha256": "72bced33f864510f0510485430b653184b11c93cf882d123801fbc5c63ec9cf9"
+    },
+    {
+      "path": "full-coop/lobby-desktop.png",
+      "bytes": 869242,
+      "sha256": "0094bc0ddf7fe834bc2b26f77515af776ba4ffdac060cb3d9237365003b22926"
+    },
+    {
+      "path": "full-coop/lobby-phone.png",
+      "bytes": 1311372,
+      "sha256": "5a5b5d6790e6ece659bad189e0eb3f9facccff47af92e3dbf64172cfdbb302c5"
+    },
+    {
+      "path": "full-coop/manual-desktop.png",
+      "bytes": 652581,
+      "sha256": "8db885480cd1d468e519994d198bbfc8e59fe8e5e839a17ae3a96c4f01924825"
+    },
+    {
+      "path": "full-coop/partner-disconnected.png",
+      "bytes": 934974,
+      "sha256": "45314a620178940154ad987e01ae4105a8ba90505f7096cea8920b23698100ec"
+    },
+    {
+      "path": "full-coop/recall-phone.png",
+      "bytes": 414182,
+      "sha256": "7a3d26d6d00cf66a99e5cb24e8e5a6a6e76906e886e27209046cedca4516480d"
+    },
+    {
+      "path": "full-coop/repair-phone.png",
+      "bytes": 1145178,
+      "sha256": "be8c02457ca5da5a56fdac716cc777eb131f1b92c802ef939dd4edc877100bec"
+    },
+    {
+      "path": "full-coop/starbook-320.png",
+      "bytes": 143985,
+      "sha256": "7a1903bbca10a37e71685c41dc364aa71242ad19c5a402d4aea693fb7f2742cd"
+    },
+    {
+      "path": "full-coop/starbook-actual.png",
+      "bytes": 2431612,
+      "sha256": "f90349f90a4fd5e0222ad5bd9ec93bb311b1ecbbecb7f47d6d4e8748a7554ec5"
+    },
+    {
+      "path": "full-coop/starbook-desktop.png",
+      "bytes": 1130059,
+      "sha256": "c76b2c07c1581a26a395c1c607d1da594fe04211ddf0785939f75f7a0a8e3e3b"
+    },
+    {
+      "path": "full-coop/tutorial-phone.png",
+      "bytes": 573300,
+      "sha256": "cfb9bbb6fb5117ae72bdd1247d6db587451b5a2a156ae217181c48948bcd3ec1"
+    },
+    {
+      "path": "full-coop/ui-failure.json",
+      "bytes": 2428,
+      "sha256": "239a736c77759b3c5db40dc4477631d2078a614810fc2e344555cf6ab162a914"
+    },
+    {
+      "path": "full-coop/ui-results.json",
+      "bytes": 15129,
+      "sha256": "7fe4ca2ffd47dbd8109c1c2d677db85e2e26721f7d3c0f765494dcf2fbe91a0c"
+    },
+    {
+      "path": "full-coop.cjs",
+      "bytes": 21558,
+      "sha256": "2fa7b1f3e192f74223b72ee511b620e3b2e6834b5b4cf6ce9d4a737145e107b1"
+    },
+    {
+      "path": "node-regression.txt",
+      "bytes": 3368,
+      "sha256": "049a125d9afa61b1c4fd4146dd762fc8a7bb74c6f1c34ce1cc00e75c548dceeb"
+    },
+    {
+      "path": "png-before-390.png",
+      "bytes": 473684,
+      "sha256": "90c7b92362fba3af5211c0fb94edc08775175856c00ddcb5002a34d6e54c6424"
+    },
+    {
+      "path": "png-before.json",
+      "bytes": 182,
+      "sha256": "07a64c710aff3f19a67db1a969606c5a1331b56817922a6288a30b4a6600367a"
+    },
+    {
+      "path": "png-link-dialog-390.png",
+      "bytes": 272529,
+      "sha256": "37b5b6f68515bda66b038a1418823187df3e3fb4cda9cc51658d48de53b670c2"
+    },
+    {
+      "path": "png-ready-390.png",
+      "bytes": 474173,
+      "sha256": "08958c81495a5ad1b0bcae9e88b7e16ce06f073745154552da7f823725204cd5"
+    },
+    {
+      "path": "png-rotation-result.json",
+      "bytes": 584,
+      "sha256": "8a143b467666f343feb12dbccbefc2e91079ce365e01fbf9abc2cfd186e4bbf4"
+    },
+    {
+      "path": "png-rotation.cjs",
+      "bytes": 4474,
+      "sha256": "361169d3882b6ee7893e68c6db3bd7e07ab848f670f52137ee213d67083ca8eb"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4107,
+      "sha256": "01deca862b835c238ff6a846d04f9de346fdc3e4e2688560223b6a6336792d79"
+    },
+    {
+      "path": "README.md.before",
+      "bytes": 25035,
+      "sha256": "92d2143119e0a6b869c312e96c0b549b4d09c2cb99ffd1b84a1b557a58edfe88"
+    },
+    {
+      "path": "recall-count-320.png",
+      "bytes": 380742,
+      "sha256": "fcae11a075331506d32169c5829f38279ad369e83fe2966a49ac2ea1b79d903d"
+    },
+    {
+      "path": "recall-dialog-390.png",
+      "bytes": 109759,
+      "sha256": "698eebab9f208a1cc36dbbfbb48bdb5528ab65c8b2ae17fed49c7b1cd6f2b0e4"
+    },
+    {
+      "path": "recall-finish-320.png",
+      "bytes": 367107,
+      "sha256": "9e2044eea8470900d3bcb3d70e54783fb147f305f2552d69b047aa955ffaf3ea"
+    },
+    {
+      "path": "recall-question-390.png",
+      "bytes": 483218,
+      "sha256": "34eb4914788a80b8d014ce4f541372d96a0f3c6e761dad5c54f3d486e646586d"
+    },
+    {
+      "path": "second-browser-empty-png-failure.json",
+      "bytes": 1515,
+      "sha256": "f6cef1f16e8086b70f074b1465519a4a1e13605154734a193797785773b08e7b"
+    },
+    {
+      "path": "server-regression.txt",
+      "bytes": 1601,
+      "sha256": "d86fb41752a15845f1a4009526cf00b222b417e7d7e5421584788b6bbc71cd73"
+    },
+    {
+      "path": "shop.css.before",
+      "bytes": 13607,
+      "sha256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b"
+    },
+    {
+      "path": "shop.mjs.before",
+      "bytes": 13970,
+      "sha256": "7a617ae6e9575c9b2c44af2f488fb31c09c2ad0ac65a2f4345fd91ce13ad47cf"
+    },
+    {
+      "path": "source-change.json",
+      "bytes": 3232,
+      "sha256": "b2dd1f712781c87ca5899dd47fb5650bb7950560a9967a95e1936e967ef27d41"
+    },
+    {
+      "path": "starbook.mjs.before",
+      "bytes": 20089,
+      "sha256": "3f05af84b4a8412c1d147cc5b09be312e7e46be91fd26f78c0021822ada15096"
+    },
+    {
+      "path": "style.css.before",
+      "bytes": 34119,
+      "sha256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda"
+    },
+    {
+      "path": "ui.cjs.before",
+      "bytes": 21257,
+      "sha256": "9cfdaa2cc0e79220306d51d889d4ac3054766cbf679805e0967620aee53c49c4"
+    }
+  ]
+}

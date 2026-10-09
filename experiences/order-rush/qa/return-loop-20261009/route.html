@@ -1,0 +1,8 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="stylesheet" href="../../kit/lab.css"><link rel="stylesheet" href="../../beginner.css"><link rel="stylesheet" href="../../beginner-visual.css"><link rel="stylesheet" href="../../beginner-picnic.css"></head><body><button id="open" class="chip-btn">상점 열기</button><script type="module">
+import { createBeginnerShop } from '../../beginner-shop.mjs';
+let route = { available: true, href: '/word-magic/?chapter=0', label: '마법의 첫 장 이어 하기', labelEn: 'Continue magic chapter 1', description: '아직 받지 않은 첫 장 보상을 향해 소리로 장면을 완성해요.', descriptionEn: 'Finish the first sound chapter toward its unclaimed reward.' }, gates = [], gate = false;
+const catalog = [{id:'order-playset-picnic',kind:'order-playset',value:'picnic',price:15},{id:'order-stall-blush',kind:'order-stall',value:'blush',price:15},{id:'order-stall-default',kind:'order-stall',value:'default',price:0}];
+const api = { load: async () => ({coins:0,owned:['order-stall-default'],equipped:{'order-stall':'default','order-tray':'cream'}}), catalog: async () => catalog, beginnerProgress: async () => ({goal:catalog[0]}), beginnerRewardRoute: async () => { const snapshot = structuredClone(route); if (gate) await new Promise(resolve => gates.push(resolve)); return snapshot; } };
+window.__setRoute = value => route = value; window.__gate = value => gate = value; window.__pending = () => gates.length; window.__release = index => gates[index]?.();
+window.__shop = createBeginnerShop({api}); document.querySelector('#open').onclick = event => __shop.open(event.currentTarget); window.__ready = true;
+</script></body></html>

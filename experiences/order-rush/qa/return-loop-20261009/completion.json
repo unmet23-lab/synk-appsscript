@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-09T13:09:48.143Z",
+  "status": "local-implementation-and-self-qa-complete",
+  "sourceSha256": {
+    "beginner.mjs": "39f9114c86dd6e35ed97bedfcce8c6f28b788cc38dbc0e58030148f52afa0423",
+    "beginner-core.mjs": "0fc666e2d63a4a9b77f219c61a98e4b527c0674a243b3cd8f9b816500e5d36f9",
+    "beginner-return.mjs": "e14204d9b9e1d365ff41a9ad5e1ba73392b93d5ea152dc11d7c1a5ee013f5339",
+    "beginner-shop.mjs": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+    "beginner.css": "ff174f6b2ee9b19e0e353f6d9b0fdf5ccd0ee5ec6d5fc09cf24a50d382197ac0",
+    "beginner-return.test.mjs": "90aee33a4e41c84a15c8a92d01459c224a448b9f8c3e92cd9063465616e4dac0",
+    "README.md": "02bb15123f173960f28107ce7938e6ceb8e2cbece471224e07e0486bb1978682"
+  },
+  "nodeTests": 49,
+  "browserConditions": 6,
+  "realExistingMp3Ended": 16,
+  "finalRouteUiConditions": 4,
+  "shopRegressionConditions": 10,
+  "sourceFrozen": true,
+  "officialReview": false,
+  "publicDeployment": false,
+  "realAccountWrites": 0,
+  "operatingDbWrites": 0,
+  "realParticipants": 0,
+  "physicalPhones": 0,
+  "newVoiceGeneration": 0,
+  "newImageGeneration": 0,
+  "voiceRerecordingDeferred": true
+}

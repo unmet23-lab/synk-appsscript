@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f96859"><title>처음 여는 가게 · 주문 폭주</title>
+  <meta name="description" content="한국어를 처음 만나는 작은 가게. 물과 빵부터 그림과 소리로 배우고 손님에게 직접 건네 주세요.">
+  <link rel="icon" href="kit/felt/sparkle.webp" type="image/webp">
+  <link rel="preload" href="kit/fonts/SUIT-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="kit/lab.css"><link rel="stylesheet" href="beginner.css"><link rel="stylesheet" href="beginner-visual.css"><link rel="stylesheet" href="beginner-picnic.css">
+  <script src="atlas-learning.js"></script><script src="collection.js"></script>
+  <script type="module" src="beginner.mjs"></script>
+</head>
+<body>
+  <div class="beginner-wrap">
+    <header class="beginner-bar"><a href="./" aria-label="주문 폭주 전체 메뉴 · All cafe modes"><img src="kit/brand/logo-lab.webp" width="96" height="30" alt="SYNK LAB"></a><span>ORDER RUSH · FIRST WORDS</span><button class="chip-btn" id="menu-button" hidden>잠깐 쉬기 · Pause</button></header>
+    <main id="beginner" tabindex="-1"></main>
+    <footer class="beginner-footer"><details><summary>연습 내용과 기록 안내 · About this practice</summary><p>TOPIK I 듣기 전 기초 어휘·수량·짧은 요청 연습 · 시범과 도움 받은 답은 혼자 듣고 이해한 기록과 나눠요.<br>학생 대상 학습 효과와 TOPIK 점수 향상은 아직 검증하지 않았어요.</p></details></footer>
+    <p id="b-live" class="sr" aria-live="polite"></p>
+  </div>
+  <dialog id="b-pause" class="paper lab-dialog"><span class="kicker">TAKE A BREAK</span><h2>가게도 잠깐 쉬어요</h2><p id="b-pause-status">천천히 해도 괜찮아요. 지금까지의 진도와 쟁반을 저장했어요.<small class="b-en">Take your time. Your progress and tray are saved.</small></p><div class="dialog-actions"><button class="felt-cta coral" id="b-resume">이어서 하기 · Resume</button><button class="chip-btn" id="b-decor-open">가게 꾸미기 · Decorate</button><button class="chip-btn" id="b-home">가게 입구로 · Home</button></div></dialog>
+  <noscript>이 게임에는 자바스크립트가 필요해요.</noscript>
+</body>
+</html>

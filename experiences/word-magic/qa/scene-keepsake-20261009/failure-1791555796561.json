@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-09T14:23:17.551Z",
+  "error": "page.waitForFunction: ReferenceError: __wordMagic is not defined\n    at eval (eval at predicate (eval at evaluate (:311:30)), <anonymous>:1:16)\n    at predicate (eval at evaluate (:311:30), <anonymous>:7:27)\n    at next (eval at evaluate (:311:30), <anonymous>:29:33)\n    at eval (eval at evaluate (:311:30), <anonymous>:42:13)\n    at UtilityScript.evaluate (<anonymous>:313:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n    at ready (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\word-magic\\qa\\scene-keepsake-20261009\\check.cjs:8:60)\n    at seed (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\word-magic\\qa\\scene-keepsake-20261009\\check.cjs:10:1032)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\word-magic\\qa\\scene-keepsake-20261009\\check.cjs:34:44",
+  "diagnostic": {
+    "html": "",
+    "focus": ""
+  },
+  "checks": [
+    {
+      "width": 320,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "width": 390,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "width": 1200,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "case": "six-scene limit requires an explicit selected replacement; no other scene evicted"
+    },
+    {
+      "case": "picnic scene is blocked without real wallet ownership; owned fixture opens without purchase/equip/coins/progress mutation"
+    },
+    {
+      "case": "late wallet response after close/reopen cannot launch or replace the newer collection view"
+    },
+    {
+      "case": "storage failure shows no save completion; typed draft survives and retry creates exactly one scene"
+    }
+  ],
+  "errors": [
+    "ReferenceError: __wordMagic is not defined"
+  ]
+}

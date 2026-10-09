@@ -1,0 +1,709 @@
+{
+  "at": "2026-10-09T15:15:28.267Z",
+  "baselineRoot": "C:/Users/q1212/Documents/synk-policy",
+  "baselineRevision": "31d4fd561897b8c84b1fa49caf590f9966cbee84",
+  "baselineCommit": "31d4fd561897b8c84b1fa49caf590f9966cbee84",
+  "files": [
+    {
+      "path": "try/word-magic/app.js",
+      "target": "try/word-magic/app.js",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/app.mjs",
+      "sourceSHA256": "540d3565b8399dd0a5b5654a6b4dac028735de65ddcb48a6cb3a1f674f26db8a",
+      "beforeSHA256": "bf7d2ec6b19d5efbffc543fb98272e3c5bc195aed70de53177c2a6e7250c9374",
+      "sha256": "5c2bede786e3333d2b19fb1602e1b1641d7ae62524ac9f0f3700f50e96fb7f10",
+      "bytes": 59251
+    },
+    {
+      "path": "try/word-magic/core.js",
+      "target": "try/word-magic/core.js",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/core.mjs",
+      "sourceSHA256": "fecbd5a7601c33eb5cfcc620e11cd9f73f8c783d6cf9fc1de59e5b61da526a38",
+      "beforeSHA256": "0064fd3e0d06cec86b771d624984511d4f983c52ecbdd13bd669f0f0ffea24bd",
+      "sha256": "a1f99703335d1be24c937175d825c00e605aef945c14352791b1bafebfe33862",
+      "bytes": 7859
+    },
+    {
+      "path": "try/word-magic/index.html",
+      "target": "try/word-magic/index.html",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/index.html",
+      "sourceSHA256": "5d7b1a33736accb7d39f04ad7ba6c863bb52cd121f5b4fbe8a95dc9c31a5636e",
+      "beforeSHA256": "d076663285fa5fc5354cb03d551ced99c6b8187f148bf2d1c11ccf351ebbc806",
+      "sha256": "bb163488f4e1166a7b9cf8c664fdb0b51608d17fc39cb2785ce936f0f32e8646",
+      "bytes": 9825
+    },
+    {
+      "path": "try/word-magic/style.css",
+      "target": "try/word-magic/style.css",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/style.css",
+      "sourceSHA256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444",
+      "beforeSHA256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913",
+      "sha256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444",
+      "bytes": 40823
+    },
+    {
+      "path": "try/word-magic/shop.js",
+      "target": "try/word-magic/shop.js",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/shop.mjs",
+      "sourceSHA256": "683bcab66d6724ffee6c627afa628a908690e2be2d21b16498b87b0cfbaac09b",
+      "beforeSHA256": "7cd75577234cbd2a1f5a616f3855dbb4f9a46e4bb97d81aad94a7ba8790da1a7",
+      "sha256": "3e7f275a1376997fcdf497294ffca3bddc2da8ee54e97fcf0e64fcf6df3844e8",
+      "bytes": 18894
+    },
+    {
+      "path": "try/word-magic/recall.js",
+      "target": "try/word-magic/recall.js",
+      "change": "A",
+      "sourcePath": "experiences/word-magic/recall.mjs",
+      "sourceSHA256": "f9a156036051c7703d92d8e524d5c4df1566e11532265eed3e417fc70a6f56d9",
+      "beforeSHA256": null,
+      "sha256": "df30dad63d679aaa33ae9b08081944972b15a0f4dbe081bf2dc183f72c99ac1a",
+      "bytes": 1362
+    },
+    {
+      "path": "try/word-magic/keepsakes.js",
+      "target": "try/word-magic/keepsakes.js",
+      "change": "A",
+      "sourcePath": "experiences/word-magic/keepsakes.mjs",
+      "sourceSHA256": "1a3196d74e838f4c0e3d1ddcdcadf9bc8beab299daeb110c2ae8e4d37ea2dc2a",
+      "beforeSHA256": null,
+      "sha256": "2f12fe3200ccc61df816c7dde3415b32e2547e88575d6190f601b8697bb401f9",
+      "bytes": 5918
+    },
+    {
+      "path": "try/word-magic/keepsake-view.js",
+      "target": "try/word-magic/keepsake-view.js",
+      "change": "A",
+      "sourcePath": "experiences/word-magic/keepsake-view.mjs",
+      "sourceSHA256": "9b1c94e0df754f72f8691a92052d44b2b08cf64cda8d8ca020b88b9128185fa0",
+      "beforeSHA256": null,
+      "sha256": "9df8fc255f7d75559fee0e7192e7b2f369e7fb0d23772500da921aa4e9e108d5",
+      "bytes": 15728
+    },
+    {
+      "path": "try/order-rush/beginner.js",
+      "target": "try/order-rush/beginner.js",
+      "change": "M",
+      "sourcePath": "experiences/order-rush/beginner.mjs",
+      "sourceSHA256": "39f9114c86dd6e35ed97bedfcce8c6f28b788cc38dbc0e58030148f52afa0423",
+      "beforeSHA256": "bea0bc8fba3418ffe7708d56298173fbe7febd246142d683642d826e239f3bb5",
+      "sha256": "63f61f0cf4b601cf33cfbe4ac31d35c3ae186648cec8e6fad89e5328f8fbe550",
+      "bytes": 52860
+    },
+    {
+      "path": "try/order-rush/beginner-core.js",
+      "target": "try/order-rush/beginner-core.js",
+      "change": "M",
+      "sourcePath": "experiences/order-rush/beginner-core.mjs",
+      "sourceSHA256": "0fc666e2d63a4a9b77f219c61a98e4b527c0674a243b3cd8f9b816500e5d36f9",
+      "beforeSHA256": "561f88d1b64b3b06af196240021f7cea2fcb1cbe0d8f949a6d487bc18aab7be6",
+      "sha256": "fbe9fe346aaaf15c0e928b473ecca1ca35d54f60765525a216926e2b2a7b4c85",
+      "bytes": 10209
+    },
+    {
+      "path": "try/order-rush/beginner-shop.js",
+      "target": "try/order-rush/beginner-shop.js",
+      "change": "M",
+      "sourcePath": "experiences/order-rush/beginner-shop.mjs",
+      "sourceSHA256": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+      "beforeSHA256": "96d8ddbdd3cc6d39d5fb16b7324271ec0bf765d7073d048975c4ba4c3536fda3",
+      "sha256": "e49ac7a4f3398d04e071e94b21edbbbd885d8576e332a624d1e907ee08aa6272",
+      "bytes": 17792
+    },
+    {
+      "path": "try/order-rush/beginner.css",
+      "target": "try/order-rush/beginner.css",
+      "change": "M",
+      "sourcePath": "experiences/order-rush/beginner.css",
+      "sourceSHA256": "ff174f6b2ee9b19e0e353f6d9b0fdf5ccd0ee5ec6d5fc09cf24a50d382197ac0",
+      "beforeSHA256": "ba0a9b6c5f3da47693c993b2082e1f1188518645649ed0e834e91c730b3b6760",
+      "sha256": "8f1cb48e48149798f314eacd1e102701f5869a481f020ff9ef2b51e51b2162fb",
+      "bytes": 21214
+    },
+    {
+      "path": "try/order-rush/beginner-return.js",
+      "target": "try/order-rush/beginner-return.js",
+      "change": "A",
+      "sourcePath": "experiences/order-rush/beginner-return.mjs",
+      "sourceSHA256": "e14204d9b9e1d365ff41a9ad5e1ba73392b93d5ea152dc11d7c1a5ee013f5339",
+      "beforeSHA256": null,
+      "sha256": "7a17cba09cb16a9b24285be6fd2d58b17950111eaa7d6a9b4b4be5c090665e43",
+      "bytes": 3893
+    },
+    {
+      "path": "try/spaceship-coop/app.js",
+      "target": "try/spaceship-coop/app.js",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/app.mjs",
+      "sourceSHA256": "393d42588b4a51ca5a5f8dd08eba981b1804b725896ded6824b229fe831c19cc",
+      "beforeSHA256": "9e571273b831e1cec757c3b986ce9f69cf8a0ef5f15cd0961abbfdd7a93ad3b3",
+      "sha256": "ee01209c8cb04bd4cdcf907b56104d65ebeb99ae8527c846331f8b404835da3a",
+      "bytes": 41118
+    },
+    {
+      "path": "try/spaceship-coop/starbook.js",
+      "target": "try/spaceship-coop/starbook.js",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/starbook.mjs",
+      "sourceSHA256": "6f0498ae089527864ab8b24ece2b70abf17bdc36e11743338d0a8407fe5f1aa5",
+      "beforeSHA256": "664463af41180fdafc2cefb9bcf98db54a3c9631c2270bd953009587286afdef",
+      "sha256": "052ec98bdfffd9215fe7b6b23e9d956fa5046a0cef84bb964d10c8e562c0eef9",
+      "bytes": 29395
+    },
+    {
+      "path": "try/spaceship-coop/shop.js",
+      "target": "try/spaceship-coop/shop.js",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/shop.mjs",
+      "sourceSHA256": "1315b69a45f1d5c8350ef9728e47ea0b61e5f4dc222892c844de09c69c3ccb47",
+      "beforeSHA256": "c02c5c8c50c723c4ce8d19a5f12ccc33f32d9707d499562be62cb8a0c7a4a26b",
+      "sha256": "a01a58714250e60de4beabf963eb9f7c6a64c81166541988c11db91a1597548e",
+      "bytes": 15244
+    },
+    {
+      "path": "try/spaceship-coop/style.css",
+      "target": "try/spaceship-coop/style.css",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/style.css",
+      "sourceSHA256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5",
+      "beforeSHA256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda",
+      "sha256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5",
+      "bytes": 36346
+    },
+    {
+      "path": "try/spaceship-coop/shop.css",
+      "target": "try/spaceship-coop/shop.css",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/shop.css",
+      "sourceSHA256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063",
+      "beforeSHA256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b",
+      "sha256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063",
+      "bytes": 14745
+    },
+    {
+      "path": "try/learning-hub/collection-page.js",
+      "target": "try/learning-hub/collection-page.js",
+      "change": "M",
+      "sourcePath": "experiences/learning-hub/collection-page.js",
+      "sourceSHA256": "88378559d4846e55bde7ead8c9e5045041cf04973cf4da4c0dbca449caaf6f6d",
+      "beforeSHA256": "a1c7373515cdd11ef86ec3f900711b25fc3ec079fba3835f7787aecd74947cce",
+      "sha256": "0a210cfeaee1643113ddcfbc750a23e54d2e7bbc219deee41db90bfafadbaf5a",
+      "bytes": 12044
+    },
+    {
+      "path": "try/learning-hub/beginner-cards.css",
+      "target": "try/learning-hub/beginner-cards.css",
+      "change": "M",
+      "sourcePath": "experiences/learning-hub/beginner-cards.css",
+      "sourceSHA256": "79c9bb61a6a8a39e85ca26002dbe66085d8ef12b16cc46b5e75f9cd2dfcc4e87",
+      "beforeSHA256": "47e12b0990729e17743bfa5608ee670dc4945022d51fae5a5bbb9940bffa123f",
+      "sha256": "830d2bdcedeab9a0ff8cb93bcc8812fa3e6ec7262e92308a8537a96d4a41be5d",
+      "bytes": 6665
+    },
+    {
+      "path": "try/racing/collection.js",
+      "target": "try/racing/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/korean-racing/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/rhythm/collection.js",
+      "target": "try/rhythm/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/korean-rhythm/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/runner/collection.js",
+      "target": "try/runner/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/korean-runner/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/blank-slice/collection.js",
+      "target": "try/blank-slice/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/blank-slice/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/entry-check/collection.js",
+      "target": "try/entry-check/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/entry-check/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/story-classroom/collection.js",
+      "target": "try/story-classroom/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/story-classroom/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/talk-rally/collection.js",
+      "target": "try/talk-rally/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/talk-rally/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/order-rush/collection.js",
+      "target": "try/order-rush/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/order-rush/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/word-magic/collection.js",
+      "target": "try/word-magic/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/word-magic/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/spaceship-coop/collection.js",
+      "target": "try/spaceship-coop/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/spaceship-coop/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    },
+    {
+      "path": "try/learning-hub/collection.js",
+      "target": "try/learning-hub/collection.js",
+      "change": "M",
+      "sourcePath": "experiences/learning-hub/collection.js",
+      "sourceSHA256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0",
+      "beforeSHA256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c",
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c",
+      "bytes": 96553
+    }
+  ],
+  "dependencies": [
+    {
+      "path": "try/entry-check/assets/scenes/library-m.webp",
+      "sha256": "5be9e3399178dbb192c1b1349bc4114dd6b4f0d7b2cc443c05242c9f69530463"
+    },
+    {
+      "path": "try/learning-hub/assets/slab-cream-long.webp",
+      "sha256": "bcbf6a82edf7d3b01a360e76e776d46e8c1a0e45cd0885581f17263b10d09db9"
+    },
+    {
+      "path": "try/learning-hub/index.html",
+      "sha256": "ba0adb8ee85672525903f28ac0d40d58718f6c357b6e8acfbf018d9f56f9b8e5"
+    },
+    {
+      "path": "try/order-rush/assets/cafe.webp",
+      "sha256": "e0e60f83fd04e8d2bf5a2bfaaf382cccb80dbd7e29730078f8650f26b2668c94"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/beginner/apple.webp",
+      "sha256": "15e8efa233e65ab962c9ca0732d334749c95279e879f65ea6a1766fa78434920"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/beginner/bread.webp",
+      "sha256": "805d6eda70f6323005d610a336808a72d5e4d6e8425f890893a9b5d138daa621"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/beginner/water.webp",
+      "sha256": "fcc76f18053c18df3559cf7b109b166c3f5cac40d6896b2b311857a705e0f8ba"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/cafe.webp",
+      "sha256": "e0e60f83fd04e8d2bf5a2bfaaf382cccb80dbd7e29730078f8650f26b2668c94"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/cast/face/rabbit.webp",
+      "sha256": "c2280530b765f6b0935eaac0471b61a03c1e432fde5c76d605de32af320c8fb3"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/felt/cushion-blush-tile.webp",
+      "sha256": "79ca9ea29c9447bfbd8822232452c52393f0dac77acd02112e85a3c3ebd8a34c"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/felt/cushion-cream-mid.webp",
+      "sha256": "10a68dee772c5e42b47def99f167d21b402aeeac6e27371fbad067df3e5564e1"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/felt/cushion-cream-phone.webp",
+      "sha256": "af74f49358ff06c88a9902a4ebcff43f186cb12a0d7d07f2cf8520afa227c292"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+      "sha256": "c3b814f3333caf4c9553bb5ea2397c8595a627eb7779e10cf295faac6ca16623"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+      "sha256": "413462e8e08ca042e30f3ae83f4d5d4f081de65f185bb785d770d422508c0fec"
+    },
+    {
+      "path": "try/order-rush/beginner-assets/progress/lantern.webp",
+      "sha256": "835821d7b98e2f8f25943a29e3d750107567f2e32fdd05dacf0930432cc7acde"
+    },
+    {
+      "path": "try/order-rush/beginner-effects.js",
+      "sha256": "baf96500dd32572293e43ddcbcce7ec33cf39c5a83e942243d0457290818cbc0"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "sha256": "6c755a113a4e11a28e4d894a83400ba9afd16d6f019cd2d55fd1e9248ad17ead"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "sha256": "3a24744f0d6207706d2fce116fe7795a1fa24b6e6749ad17b631655488142229"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/badge-check.webp",
+      "sha256": "acd42a9c54fb6b8de373cad94054ec753827e4fb737738801555c56ba400943d"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/badge-coral.webp",
+      "sha256": "b83aef15e27ed17fe1a7179abb8935bb1acb8fbbae70a180ebc46f61261689d2"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/badge-cream.webp",
+      "sha256": "9d791e8f21381ffeb1214bcd523523717db881499ae6220bcb15bb7618a8f01d"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/chip-blush-long.webp",
+      "sha256": "8f4f938682c8b047f00d186d95b804355cbb9e5f96d9bbc8e3b3689d567d98b8"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/cushion-blush-phone.webp",
+      "sha256": "580d83b3bd7a7e5e413247be413f91dd479b2ff5299e9a90d0f2293572f778e7"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/cushion-blush-strip.webp",
+      "sha256": "42863a6cff0b0c293b7743b10ae91fb1c2723b7483cf28e6456e2612f9a57f75"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/cushion-blush-wide.webp",
+      "sha256": "ca0ac0b5c8c99b7c116bd8100ab89ed73f76c954299c3b95588160c468a9e894"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+      "sha256": "4b4155e423eeb98cf24e27c8f295190238e26528f12e500e3abb498eab1030d1"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/cushion-lapis-strip.webp",
+      "sha256": "adc7fb2634b557a71d3faf4e35aa047edf1a8cdf7326b674757f6e3ea62d89cb"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/slab-blush-long.webp",
+      "sha256": "d28bece617250a03745173b311dd0de187f9ef8e259c0b7573b86279c94cfa50"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/slab-coral-long.webp",
+      "sha256": "04abd854673ca854af927c46e65baf8243a5d5dd44f54edb54b9e8c9a92654f7"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "sha256": "5807744d5189f4c9e6efa6824f124d13c298dacb9057b2e098924a3685544eee"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/tag-cream.webp",
+      "sha256": "0f54b059c986d0d192b32fdb8bd46d0e093e60c60a18a334884bac573ce6287d"
+    },
+    {
+      "path": "try/order-rush/beginner-kit/felt/wide-cream.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d"
+    },
+    {
+      "path": "try/order-rush/beginner-picnic.js",
+      "sha256": "a7514fa663b52636d0ce4767595bbeadc8d6c5937d8f94c693d7f7f6325b1b70"
+    },
+    {
+      "path": "try/order-rush/beginner-voice.js",
+      "sha256": "93c2c9bf0dd9063f7cb4faa68a3face14112784b02db3a2a4ad583a13389db17"
+    },
+    {
+      "path": "try/order-rush/index.html",
+      "sha256": "fb7f98bab0bf0a26d5fbd5d1cb6644223d3ae1a8a4603f27260caad645b9117b"
+    },
+    {
+      "path": "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "sha256": "ac46c520104346c6db9541b6b9878a72656a83268db091077cbaf8acd872dfce"
+    },
+    {
+      "path": "try/spaceship-coop/assets/brand/mongle-smile.webp",
+      "sha256": "3a24744f0d6207706d2fce116fe7795a1fa24b6e6749ad17b631655488142229"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "sha256": "acd42a9c54fb6b8de373cad94054ec753827e4fb737738801555c56ba400943d"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "sha256": "9d791e8f21381ffeb1214bcd523523717db881499ae6220bcb15bb7618a8f01d"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/cushion-butter-mid.webp",
+      "sha256": "69ac3e335df599ddef65d93cc4cd0c0785ed82709babae012a23aeca7915c630"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/cushion-butter.webp",
+      "sha256": "dc486164a9ab23d960b290f9daaccb52e7a02348a2ed39f31f6ca21c3a340563"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "sha256": "6f5d6593da6f7e845a33f3579f684be82ef8b81dc7a80555962261824a442c1a"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/cushion-lapis-mid.webp",
+      "sha256": "49c947d38b7d7709e85137bcd971ef3d7ddf6bda632ce79b1cd76a5b02d9bd09"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/cushion-lapis.webp",
+      "sha256": "481a1ce5732c8398317467248c3e05564ac84e37d58cdc95622ae7669758d05c"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/disc-coral.webp",
+      "sha256": "6d8c637b8d1b9e7d1c2ac2f983e89ca89624dd174b8534d4e812f4d97b0d8abc"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "sha256": "7668f923d1b4913ab07c0dd549c9146e6c949d791c4ae23d65497e49cb94bd92"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "sha256": "00e81cdbde27f87f037efbcccc59262acf6904c13bb104db1fb5c94a6cc2dccf"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "sha256": "d28bece617250a03745173b311dd0de187f9ef8e259c0b7573b86279c94cfa50"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/slab-coral-long.webp",
+      "sha256": "04abd854673ca854af927c46e65baf8243a5d5dd44f54edb54b9e8c9a92654f7"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "sha256": "5807744d5189f4c9e6efa6824f124d13c298dacb9057b2e098924a3685544eee"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "sha256": "95ae2294e457250e5465ebee3637d043c488e185fb7eedc8f3093469f77fc611"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/wide-black.webp",
+      "sha256": "1fede8c6c14e4c7814f384141a7c66fdbfdc5c8d6d114428830ae3b831f96752"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/wide-coral.webp",
+      "sha256": "a6fe0f01a7457a84b1817a75f3933be201e9f61e59ee45363fe12aea63802235"
+    },
+    {
+      "path": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312"
+    },
+    {
+      "path": "try/spaceship-coop/assets/fonts/DMMono-Medium.woff2",
+      "sha256": "845728ef62631a81b4bdcd05a8157fdb3fac058bf6b23a93b838206a265da8b8"
+    },
+    {
+      "path": "try/spaceship-coop/assets/fonts/InterTight-Medium.woff2",
+      "sha256": "96e4aed140e19fcd3fe23bfe644f9ae502dda547a7e207b31581aae72d037db0"
+    },
+    {
+      "path": "try/spaceship-coop/assets/fonts/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "path": "try/spaceship-coop/audio.js",
+      "sha256": "be3b3848d2fc4e0680fd48f688015586352b8863444bd2354e3f4dc286166afe"
+    },
+    {
+      "path": "try/word-magic/assets/objects/bear.webp",
+      "sha256": "efd7d37170d463ce63b99a9bed024ef781295b4c2dd59f10f639ba58d4d9190d"
+    },
+    {
+      "path": "try/word-magic/assets/objects/book.webp",
+      "sha256": "98601e0ee25557d39c26a676418d7fc445d62847b1a1b78b21adf4331aa3aa28"
+    },
+    {
+      "path": "try/word-magic/assets/objects/camera.webp",
+      "sha256": "8a363e6f5047ab30691208270391aaf0074fccce233ad76c5fa6ae11f1a705c3"
+    },
+    {
+      "path": "try/word-magic/assets/objects/rabbit.webp",
+      "sha256": "c2c33003ee78ec7070966cc46bca0410c84bcfe77ab389ec0b94e58365cf1a9f"
+    },
+    {
+      "path": "try/word-magic/assets/scenes/village.webp",
+      "sha256": "e30d8e27819d7a6c702a1cd1efbb2ecc739527a291dc2b68618621d1efca4e3f"
+    },
+    {
+      "path": "try/word-magic/assets/wide-butter.webp",
+      "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e"
+    },
+    {
+      "path": "try/word-magic/assets/wide-coral.webp",
+      "sha256": "a6fe0f01a7457a84b1817a75f3933be201e9f61e59ee45363fe12aea63802235"
+    },
+    {
+      "path": "try/word-magic/assets/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312"
+    },
+    {
+      "path": "try/word-magic/atlas-learning.js",
+      "sha256": "43f511c88e014a014ef0f835031474dcb44d6ab936cb17cb9e3cdaac545f2f98"
+    },
+    {
+      "path": "try/word-magic/audio.js",
+      "sha256": "33c0ed96a028869bee5f674ecf59f6aff1af1e58be4d60c286ccc1b69eb14a3e"
+    },
+    {
+      "path": "try/word-magic/content.js",
+      "sha256": "5b32f84a9655d74f063cfe9ac73dd6d18b7cbe6f5070094b25d7d7c8be49b457"
+    },
+    {
+      "path": "try/word-magic/kit/brand/logo-lab.webp",
+      "sha256": "b03e8e83842f2cf5744310054a181fa277ffecf1900be5124fa0522e555a2ecb"
+    },
+    {
+      "path": "try/word-magic/kit/felt/badge-check.webp",
+      "sha256": "acd42a9c54fb6b8de373cad94054ec753827e4fb737738801555c56ba400943d"
+    },
+    {
+      "path": "try/word-magic/kit/felt/badge-coral.webp",
+      "sha256": "b83aef15e27ed17fe1a7179abb8935bb1acb8fbbae70a180ebc46f61261689d2"
+    },
+    {
+      "path": "try/word-magic/kit/felt/badge-cream.webp",
+      "sha256": "9d791e8f21381ffeb1214bcd523523717db881499ae6220bcb15bb7618a8f01d"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-blush-mid.webp",
+      "sha256": "90151bba1de82fc4bdaa7b10a17b0111941bbc564aaf95015ca0e2726db75230"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-blush-phone.webp",
+      "sha256": "580d83b3bd7a7e5e413247be413f91dd479b2ff5299e9a90d0f2293572f778e7"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-blush-strip.webp",
+      "sha256": "42863a6cff0b0c293b7743b10ae91fb1c2723b7483cf28e6456e2612f9a57f75"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-blush-wide.webp",
+      "sha256": "ca0ac0b5c8c99b7c116bd8100ab89ed73f76c954299c3b95588160c468a9e894"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-butter-mid.webp",
+      "sha256": "69ac3e335df599ddef65d93cc4cd0c0785ed82709babae012a23aeca7915c630"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-butter-phone.webp",
+      "sha256": "d8fd532d8f78bd8defcd3481c3d69efc7ce5245b6d8e93358b85818e87290921"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-butter-strip.webp",
+      "sha256": "c983a7cb1ec51c34c2f88b6850d4867aa4f5a9f2d3be1e6f221fb3380df1743f"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-butter-wide.webp",
+      "sha256": "4b4155e423eeb98cf24e27c8f295190238e26528f12e500e3abb498eab1030d1"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-lapis-mid.webp",
+      "sha256": "49c947d38b7d7709e85137bcd971ef3d7ddf6bda632ce79b1cd76a5b02d9bd09"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-lapis-strip.webp",
+      "sha256": "adc7fb2634b557a71d3faf4e35aa047edf1a8cdf7326b674757f6e3ea62d89cb"
+    },
+    {
+      "path": "try/word-magic/kit/felt/cushion-lapis-wide.webp",
+      "sha256": "4db078adf673bcbf00b75a620b58bf3b433a8f6279572cbe5bbe0b342d412f89"
+    },
+    {
+      "path": "try/word-magic/kit/felt/slab-blush-long.webp",
+      "sha256": "d28bece617250a03745173b311dd0de187f9ef8e259c0b7573b86279c94cfa50"
+    },
+    {
+      "path": "try/word-magic/kit/felt/slab-coral-long.webp",
+      "sha256": "04abd854673ca854af927c46e65baf8243a5d5dd44f54edb54b9e8c9a92654f7"
+    },
+    {
+      "path": "try/word-magic/kit/felt/slab-cream-long.webp",
+      "sha256": "5807744d5189f4c9e6efa6824f124d13c298dacb9057b2e098924a3685544eee"
+    },
+    {
+      "path": "try/word-magic/kit/felt/tex-coral.webp",
+      "sha256": "c6eea0ddf76860f7a5ca4db54c6948bbb8071fe23eec7106307fe484f6053800"
+    },
+    {
+      "path": "try/word-magic/kit/felt/wide-cream.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d"
+    },
+    {
+      "path": "try/word-magic/kit/lab.css",
+      "sha256": "d2ef9bbd896b455e6928a95c970dbdab152315ed74f79b70c5489af74bf30c0c"
+    },
+    {
+      "path": "try/word-magic/learning.js",
+      "sha256": "b5653c2ff6959ed93d38fae02b10e1060448c7524323f91adfae0d59c7d1254d"
+    },
+    {
+      "path": "try/word-magic/practice.js",
+      "sha256": "d78ae1eae8d8e591b41dfb27ef6358616e76ce24eeefa0f2846c7508e5c6b980"
+    },
+    {
+      "path": "try/word-magic/stage.js",
+      "sha256": "6a96809c2a664a4feac3e990780b96b847a74d5efab5edaa3c965260944cac58"
+    }
+  ],
+  "linkChecks": 268,
+  "transform": {
+    "source": "C:/Users/q1212/Documents/SYNK-website/prepare-play-candidate.mjs",
+    "snapshot": "public-transform-source.mjs",
+    "sha256": "12d6e234d532f7f9358744d29241c7887877ae0a7f8631f1a2b132513a6e1f9e",
+    "exports": [
+      "publicText",
+      "outputRelative",
+      "inspectLinks"
+    ],
+    "fullPackageRun": false
+  },
+  "scope": "Beginner revisit, optional named scene storage, cooperative stopped-entry recall and canonical reward routing only.",
+  "accountBuildRun": false,
+  "accountSchemaChanged": false,
+  "serverChanged": false,
+  "narrationGenerated": 0
+}

@@ -1,0 +1,24 @@
+✔ public mode fails closed without explicit origins, hosts, proxy and room cap (3.849ms)
+✔ only the public game origin can preflight GET/POST room requests without cookies (54.6676ms)
+✔ public host restriction and static isolation preserve the internal health probe (15.2054ms)
+✔ verified Caddy addresses have independent room limits; forged chains fail (9.2262ms)
+✔ forwarded IPs from an untrusted peer cannot bypass a room limit (2.8894ms)
+✔ room and rate registries stay bounded and expiry frees capacity (3.5924ms)
+✔ public room token works independently of arbitrary account or company cookies (5.6572ms)
+✔ cross-origin SSE retains CORS headers, private role views and shutdown notification (5.3136ms)
+✔ two real clients repair all eighteen devices, alternate roles and jointly launch (3699.0429ms)
+✔ command ids are idempotent, stale revisions reject and forged role data rejects (133.1761ms)
+✔ duplicate join recovers only its original join id and third player cannot enter (45.9508ms)
+✔ same token in a new tab replaces the old stream without disconnecting the player (36.7135ms)
+✔ disconnect pauses actions; authenticated reconnect preserves exact game state (138.7039ms)
+✔ room expiry, leaving, origin protection and static source isolation (269.5501ms)
+✔ wrong navigator sound differs from pilot mishearing; help and replay stay separate (0.9775ms)
+✔ new stages require each sound before ready; both players encounter all meanings (2.3041ms)
+ℹ tests 16
+ℹ suites 0
+ℹ pass 16
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4466.9316

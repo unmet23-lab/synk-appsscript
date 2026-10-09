@@ -1,0 +1,800 @@
+{
+  "at": "2026-10-09T15:43:20.233Z",
+  "artifacts": [
+    {
+      "path": "README.md",
+      "bytes": 7187,
+      "sha256": "bc14b684cd711d9e91f66a075495e2a440ab9069b2f1f146d5682e2e6b9c75ae"
+    },
+    {
+      "path": "account-baseline.json",
+      "bytes": 928,
+      "sha256": "021a8448dac9be1eab85bb3eb4cc1ab32de452e8a5d2903f417328b22966385f"
+    },
+    {
+      "path": "account-client.before.mjs",
+      "bytes": 5364,
+      "sha256": "070ee7742487cef73f5f85bae051304950f073fcc78d2bc8f43bfa9bebf00f03"
+    },
+    {
+      "path": "account-keepsake-first-failure.txt",
+      "bytes": 2201,
+      "sha256": "677e84b35e424c1f6797a391b03323d2e10df5dca701b1d659a77f9e9a14367d"
+    },
+    {
+      "path": "account-keepsake.test.mjs",
+      "bytes": 4922,
+      "sha256": "b1667199078b9c6ad100a525b52e642098daa4a28c37863d6e25dc62b067156f"
+    },
+    {
+      "path": "baseline-preflight.json",
+      "bytes": 10452,
+      "sha256": "e2b303184619436ae64f1da817f7be5b2d6aaf08e7052fc5de17a23c8d2a6c51"
+    },
+    {
+      "path": "before-public/try/blank-slice/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/entry-check/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/learning-hub/beginner-cards.css",
+      "bytes": 6275,
+      "sha256": "47e12b0990729e17743bfa5608ee670dc4945022d51fae5a5bbb9940bffa123f"
+    },
+    {
+      "path": "before-public/try/learning-hub/collection-page.js",
+      "bytes": 10489,
+      "sha256": "a1c7373515cdd11ef86ec3f900711b25fc3ec079fba3835f7787aecd74947cce"
+    },
+    {
+      "path": "before-public/try/learning-hub/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/order-rush/beginner-core.js",
+      "bytes": 9117,
+      "sha256": "561f88d1b64b3b06af196240021f7cea2fcb1cbe0d8f949a6d487bc18aab7be6"
+    },
+    {
+      "path": "before-public/try/order-rush/beginner-shop.js",
+      "bytes": 16274,
+      "sha256": "96d8ddbdd3cc6d39d5fb16b7324271ec0bf765d7073d048975c4ba4c3536fda3"
+    },
+    {
+      "path": "before-public/try/order-rush/beginner.css",
+      "bytes": 20166,
+      "sha256": "ba0a9b6c5f3da47693c993b2082e1f1188518645649ed0e834e91c730b3b6760"
+    },
+    {
+      "path": "before-public/try/order-rush/beginner.js",
+      "bytes": 47798,
+      "sha256": "bea0bc8fba3418ffe7708d56298173fbe7febd246142d683642d826e239f3bb5"
+    },
+    {
+      "path": "before-public/try/order-rush/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/racing/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/rhythm/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/runner/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/app.js",
+      "bytes": 39394,
+      "sha256": "9e571273b831e1cec757c3b986ce9f69cf8a0ef5f15cd0961abbfdd7a93ad3b3"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/shop.css",
+      "bytes": 13607,
+      "sha256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/shop.js",
+      "bytes": 13973,
+      "sha256": "c02c5c8c50c723c4ce8d19a5f12ccc33f32d9707d499562be62cb8a0c7a4a26b"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/starbook.js",
+      "bytes": 20088,
+      "sha256": "664463af41180fdafc2cefb9bcf98db54a3c9631c2270bd953009587286afdef"
+    },
+    {
+      "path": "before-public/try/spaceship-coop/style.css",
+      "bytes": 34119,
+      "sha256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda"
+    },
+    {
+      "path": "before-public/try/story-classroom/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/talk-rally/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/word-magic/app.js",
+      "bytes": 43769,
+      "sha256": "bf7d2ec6b19d5efbffc543fb98272e3c5bc195aed70de53177c2a6e7250c9374"
+    },
+    {
+      "path": "before-public/try/word-magic/collection.js",
+      "bytes": 90274,
+      "sha256": "6908d9435720911bc263ed64c07cdaab5ff80f998d7938d8c459bac03cf0c60c"
+    },
+    {
+      "path": "before-public/try/word-magic/core.js",
+      "bytes": 6996,
+      "sha256": "0064fd3e0d06cec86b771d624984511d4f983c52ecbdd13bd669f0f0ffea24bd"
+    },
+    {
+      "path": "before-public/try/word-magic/index.html",
+      "bytes": 8689,
+      "sha256": "d076663285fa5fc5354cb03d551ced99c6b8187f148bf2d1c11ccf351ebbc806"
+    },
+    {
+      "path": "before-public/try/word-magic/shop.js",
+      "bytes": 18265,
+      "sha256": "7cd75577234cbd2a1f5a616f3855dbb4f9a46e4bb97d81aad94a7ba8790da1a7"
+    },
+    {
+      "path": "before-public/try/word-magic/style.css",
+      "bytes": 33981,
+      "sha256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913"
+    },
+    {
+      "path": "candidate.json",
+      "bytes": 30082,
+      "sha256": "edeb400083f4c1992292482a3fe3bb457c5277a2a103475578b88ad854e3bc5f"
+    },
+    {
+      "path": "collection.before-read-record.js",
+      "bytes": 96200,
+      "sha256": "85d42dd058d47de09296b2033f7b981ffb1ab8dafe6292d977beedbe2387c68a"
+    },
+    {
+      "path": "combined-tests.tap",
+      "bytes": 40425,
+      "sha256": "211cc67599865eaf6e2cd76433a22b850ad2517f3ef8322892d13868b71cca8a"
+    },
+    {
+      "path": "completion.json",
+      "bytes": 1767,
+      "sha256": "b397d591c5e7d99366f6406ca82a235bedef38f681c25c946328f925e0887187"
+    },
+    {
+      "path": "finalize.cjs",
+      "bytes": 2573,
+      "sha256": "432afcc7095ae66727d33b13ab0ac15435bf6c34f588f1a56bd723ce61f19fb8"
+    },
+    {
+      "path": "link-checks.json",
+      "bytes": 61493,
+      "sha256": "2d3db2fb4a409a66c136e6bb849a79e5058bc19fbed2d7a4f7fe0926a7c23201"
+    },
+    {
+      "path": "local-validation.json",
+      "bytes": 1434,
+      "sha256": "d0459ffb7afb5abc31b2b2460a329009369aacc07441c685bb26e9f6aa60376c"
+    },
+    {
+      "path": "manifest.json",
+      "bytes": 30082,
+      "sha256": "edeb400083f4c1992292482a3fe3bb457c5277a2a103475578b88ad854e3bc5f"
+    },
+    {
+      "path": "module-links.json",
+      "bytes": 1278,
+      "sha256": "9806d887be1984eaf40dc7ad327f5d9325750c5301b0a100d69269605d627e36"
+    },
+    {
+      "path": "payload/try/blank-slice/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/entry-check/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/learning-hub/beginner-cards.css",
+      "bytes": 6665,
+      "sha256": "830d2bdcedeab9a0ff8cb93bcc8812fa3e6ec7262e92308a8537a96d4a41be5d"
+    },
+    {
+      "path": "payload/try/learning-hub/collection-page.js",
+      "bytes": 12044,
+      "sha256": "0a210cfeaee1643113ddcfbc750a23e54d2e7bbc219deee41db90bfafadbaf5a"
+    },
+    {
+      "path": "payload/try/learning-hub/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/order-rush/beginner-core.js",
+      "bytes": 10209,
+      "sha256": "fbe9fe346aaaf15c0e928b473ecca1ca35d54f60765525a216926e2b2a7b4c85"
+    },
+    {
+      "path": "payload/try/order-rush/beginner-return.js",
+      "bytes": 3893,
+      "sha256": "7a17cba09cb16a9b24285be6fd2d58b17950111eaa7d6a9b4b4be5c090665e43"
+    },
+    {
+      "path": "payload/try/order-rush/beginner-shop.js",
+      "bytes": 17792,
+      "sha256": "e49ac7a4f3398d04e071e94b21edbbbd885d8576e332a624d1e907ee08aa6272"
+    },
+    {
+      "path": "payload/try/order-rush/beginner.css",
+      "bytes": 21214,
+      "sha256": "8f1cb48e48149798f314eacd1e102701f5869a481f020ff9ef2b51e51b2162fb"
+    },
+    {
+      "path": "payload/try/order-rush/beginner.js",
+      "bytes": 52860,
+      "sha256": "63f61f0cf4b601cf33cfbe4ac31d35c3ae186648cec8e6fad89e5328f8fbe550"
+    },
+    {
+      "path": "payload/try/order-rush/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/racing/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/rhythm/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/runner/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/spaceship-coop/app.js",
+      "bytes": 41118,
+      "sha256": "ee01209c8cb04bd4cdcf907b56104d65ebeb99ae8527c846331f8b404835da3a"
+    },
+    {
+      "path": "payload/try/spaceship-coop/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/spaceship-coop/shop.css",
+      "bytes": 14745,
+      "sha256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063"
+    },
+    {
+      "path": "payload/try/spaceship-coop/shop.js",
+      "bytes": 15244,
+      "sha256": "a01a58714250e60de4beabf963eb9f7c6a64c81166541988c11db91a1597548e"
+    },
+    {
+      "path": "payload/try/spaceship-coop/starbook.js",
+      "bytes": 29395,
+      "sha256": "052ec98bdfffd9215fe7b6b23e9d956fa5046a0cef84bb964d10c8e562c0eef9"
+    },
+    {
+      "path": "payload/try/spaceship-coop/style.css",
+      "bytes": 36346,
+      "sha256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5"
+    },
+    {
+      "path": "payload/try/story-classroom/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/talk-rally/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/word-magic/app.js",
+      "bytes": 59251,
+      "sha256": "5c2bede786e3333d2b19fb1602e1b1641d7ae62524ac9f0f3700f50e96fb7f10"
+    },
+    {
+      "path": "payload/try/word-magic/collection.js",
+      "bytes": 96553,
+      "sha256": "a05d613e19a47b5455aa6452ffd5acad4572da9f34ff40b2681c01ce916d8c4c"
+    },
+    {
+      "path": "payload/try/word-magic/core.js",
+      "bytes": 7859,
+      "sha256": "a1f99703335d1be24c937175d825c00e605aef945c14352791b1bafebfe33862"
+    },
+    {
+      "path": "payload/try/word-magic/index.html",
+      "bytes": 9825,
+      "sha256": "bb163488f4e1166a7b9cf8c664fdb0b51608d17fc39cb2785ce936f0f32e8646"
+    },
+    {
+      "path": "payload/try/word-magic/keepsake-view.js",
+      "bytes": 15728,
+      "sha256": "9df8fc255f7d75559fee0e7192e7b2f369e7fb0d23772500da921aa4e9e108d5"
+    },
+    {
+      "path": "payload/try/word-magic/keepsakes.js",
+      "bytes": 5918,
+      "sha256": "2f12fe3200ccc61df816c7dde3415b32e2547e88575d6190f601b8697bb401f9"
+    },
+    {
+      "path": "payload/try/word-magic/recall.js",
+      "bytes": 1362,
+      "sha256": "df30dad63d679aaa33ae9b08081944972b15a0f4dbe081bf2dc183f72c99ac1a"
+    },
+    {
+      "path": "payload/try/word-magic/shop.js",
+      "bytes": 18894,
+      "sha256": "3e7f275a1376997fcdf497294ffca3bddc2da8ee54e97fcf0e64fcf6df3844e8"
+    },
+    {
+      "path": "payload/try/word-magic/style.css",
+      "bytes": 40823,
+      "sha256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444"
+    },
+    {
+      "path": "prepare.cjs",
+      "bytes": 6954,
+      "sha256": "2a616cf58e1453b88d5626622c05656b0693cbd0be06d7e58b45a0450f14959b"
+    },
+    {
+      "path": "public-book-1280.jpg",
+      "bytes": 56963,
+      "sha256": "4ef08002bf78f3033c6bf63a6995b281fea6aa5f24a15273c140eb26613a8d05"
+    },
+    {
+      "path": "public-book-320.jpg",
+      "bytes": 28897,
+      "sha256": "adb323e82b79a977987c7ea2bf6ac55105663abf57e6ffab6422de6fe3ead185"
+    },
+    {
+      "path": "public-book-390.jpg",
+      "bytes": 30654,
+      "sha256": "a82a8ba7e7b558ff8d0e3df0eab81ada61e94a2c88c589bb900f2efa7d14556a"
+    },
+    {
+      "path": "public-browser.json",
+      "bytes": 865,
+      "sha256": "bed8abdb3f30be0a998172cdf457121c7bc1e7d35a073b0c9184d7fa49f33347"
+    },
+    {
+      "path": "public-live-1791559840866.json",
+      "bytes": 14715,
+      "sha256": "550268a8d0e406f5bc51e282c91627b455fabb5c369c78d221d525d24db7e30c"
+    },
+    {
+      "path": "public-live-1791560496953.json",
+      "bytes": 14719,
+      "sha256": "227830c611919261f179abd17644eb1a9f23390877b4509701a055755102383f"
+    },
+    {
+      "path": "public-prepush.json",
+      "bytes": 15743,
+      "sha256": "05c68bb751da0609b78522c5811460be1af813b3b96ef9f43372ea63317ff4d6"
+    },
+    {
+      "path": "public-published.json",
+      "bytes": 1825,
+      "sha256": "42e346b76c9c35b0a5c6849ede75d1c8952e4225b6ae3d833b061ced913be8b9"
+    },
+    {
+      "path": "public-push.txt",
+      "bytes": 112,
+      "sha256": "95e4c3a104b938878e2930592d8aae8f8be7aa110a763d85a8b0772114751c72"
+    },
+    {
+      "path": "public-route.test.mjs",
+      "bytes": 3396,
+      "sha256": "a43ac7995bf5578ed7a5924c86335a130c4b82323b1cf71248423e1c7391af32"
+    },
+    {
+      "path": "public-transform-source.mjs",
+      "bytes": 17462,
+      "sha256": "12d6e234d532f7f9358744d29241c7887877ae0a7f8631f1a2b132513a6e1f9e"
+    },
+    {
+      "path": "public-transform.before.mjs",
+      "bytes": 17391,
+      "sha256": "0ddeedc7ee6a188e7cfbb8febd2977dc56b3aac90ca943d5dc362bc876244608"
+    },
+    {
+      "path": "public-verified.json",
+      "bytes": 14719,
+      "sha256": "227830c611919261f179abd17644eb1a9f23390877b4509701a055755102383f"
+    },
+    {
+      "path": "publication-disk-failure.json",
+      "bytes": 584,
+      "sha256": "51bcd97413204f0e0e5a8142ad20b6c718a2e430693cb389944a4181bae188d4"
+    },
+    {
+      "path": "publication-first-preflight-failure.json",
+      "bytes": 459,
+      "sha256": "a1ac972f8486dbdae17c3f13c8f59c8bf61e5dcc07ef5d45a85ac8ff82c6521c"
+    },
+    {
+      "path": "publish.before-sort-fix.cjs",
+      "bytes": 6637,
+      "sha256": "3c904e01429c045549bd2c942ae74b43fdf8f1cdd873a4bf7451b492bc10b5f5"
+    },
+    {
+      "path": "publish.cjs",
+      "bytes": 6696,
+      "sha256": "0047c15b67816c01d646c30b63c35b447f20d0c7801e1b4d7ae8096e0a5289b2"
+    },
+    {
+      "path": "record-validation.cjs",
+      "bytes": 2776,
+      "sha256": "516e15958f56c00d8f8d2a9c7fe36e1c2b09af91da1c1d2a5a3e59585d05d402"
+    },
+    {
+      "path": "review-status.json",
+      "bytes": 710,
+      "sha256": "fb3808e676d35afe9d5012701a77df8bd79483d564f2e0e25126c865ce89985a"
+    },
+    {
+      "path": "reward-cas.test.mjs",
+      "bytes": 3430,
+      "sha256": "7da515fd05702ec08f98ffdbb9d66f2fb9c31d434634eca1350d90b7ab20c77a"
+    },
+    {
+      "path": "root-candidate-book-1280.jpg",
+      "bytes": 59366,
+      "sha256": "32e6e0b98379f6032710ebd85ecaa37bd5b0f6e9246f8f63aee11b169dbccf75"
+    },
+    {
+      "path": "root-candidate-book-320.jpg",
+      "bytes": 36209,
+      "sha256": "8ed53082f074e44e38c1674f6357bd2519a5403e0ba6fc3d0b3081c0e17429b8"
+    },
+    {
+      "path": "root-candidate-book-390.jpg",
+      "bytes": 42903,
+      "sha256": "b54a4177cbf17bb3fb1389ef72daedb2383a494ec0075c789d1ac24fbd4c845e"
+    },
+    {
+      "path": "root-candidate-browser.json",
+      "bytes": 1031,
+      "sha256": "bf25fdf76ca610ad2a951d26749dd81f3141248b008411fd5c0748ede4c4434e"
+    },
+    {
+      "path": "root-final-candidate-book-390.jpg",
+      "bytes": 39538,
+      "sha256": "10a8c075a84746fae2c54e4a860762614f2c2ec577bb84f79b64139ee2adffa7"
+    },
+    {
+      "path": "server.cjs",
+      "bytes": 2271,
+      "sha256": "6747058775653cbd2265ee70534860e49ee6ff9465972895060f118538fba7a2"
+    },
+    {
+      "path": "source-after/try/blank-slice/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/entry-check/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/learning-hub/beginner-cards.css",
+      "bytes": 6641,
+      "sha256": "79c9bb61a6a8a39e85ca26002dbe66085d8ef12b16cc46b5e75f9cd2dfcc4e87"
+    },
+    {
+      "path": "source-after/try/learning-hub/collection-page.js",
+      "bytes": 11564,
+      "sha256": "88378559d4846e55bde7ead8c9e5045041cf04973cf4da4c0dbca449caaf6f6d"
+    },
+    {
+      "path": "source-after/try/learning-hub/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/order-rush/beginner-core.js",
+      "bytes": 10182,
+      "sha256": "0fc666e2d63a4a9b77f219c61a98e4b527c0674a243b3cd8f9b816500e5d36f9"
+    },
+    {
+      "path": "source-after/try/order-rush/beginner-return.js",
+      "bytes": 3894,
+      "sha256": "e14204d9b9e1d365ff41a9ad5e1ba73392b93d5ea152dc11d7c1a5ee013f5339"
+    },
+    {
+      "path": "source-after/try/order-rush/beginner-shop.js",
+      "bytes": 17708,
+      "sha256": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6"
+    },
+    {
+      "path": "source-after/try/order-rush/beginner.css",
+      "bytes": 20872,
+      "sha256": "ff174f6b2ee9b19e0e353f6d9b0fdf5ccd0ee5ec6d5fc09cf24a50d382197ac0"
+    },
+    {
+      "path": "source-after/try/order-rush/beginner.js",
+      "bytes": 52671,
+      "sha256": "39f9114c86dd6e35ed97bedfcce8c6f28b788cc38dbc0e58030148f52afa0423"
+    },
+    {
+      "path": "source-after/try/order-rush/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/racing/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/rhythm/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/runner/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/app.js",
+      "bytes": 41117,
+      "sha256": "393d42588b4a51ca5a5f8dd08eba981b1804b725896ded6824b229fe831c19cc"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/shop.css",
+      "bytes": 14745,
+      "sha256": "884aed63191f8370471dbe90185d5bbaeeb7bff7401be79878a4c73e5da45063"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/shop.js",
+      "bytes": 15237,
+      "sha256": "1315b69a45f1d5c8350ef9728e47ea0b61e5f4dc222892c844de09c69c3ccb47"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/starbook.js",
+      "bytes": 29396,
+      "sha256": "6f0498ae089527864ab8b24ece2b70abf17bdc36e11743338d0a8407fe5f1aa5"
+    },
+    {
+      "path": "source-after/try/spaceship-coop/style.css",
+      "bytes": 36346,
+      "sha256": "d3554e9137367df7eb06fba9edbd5c88076f123c7eec53358e4377addb8078e5"
+    },
+    {
+      "path": "source-after/try/story-classroom/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/talk-rally/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/word-magic/app.js",
+      "bytes": 59261,
+      "sha256": "540d3565b8399dd0a5b5654a6b4dac028735de65ddcb48a6cb3a1f674f26db8a"
+    },
+    {
+      "path": "source-after/try/word-magic/collection.js",
+      "bytes": 96561,
+      "sha256": "8a61d47a529662ac2faba1a9ae4e90df198f7c5ea5f2a08b964c2d8b71e2f1d0"
+    },
+    {
+      "path": "source-after/try/word-magic/core.js",
+      "bytes": 7861,
+      "sha256": "fecbd5a7601c33eb5cfcc620e11cd9f73f8c783d6cf9fc1de59e5b61da526a38"
+    },
+    {
+      "path": "source-after/try/word-magic/index.html",
+      "bytes": 9752,
+      "sha256": "5d7b1a33736accb7d39f04ad7ba6c863bb52cd121f5b4fbe8a95dc9c31a5636e"
+    },
+    {
+      "path": "source-after/try/word-magic/keepsake-view.js",
+      "bytes": 15731,
+      "sha256": "9b1c94e0df754f72f8691a92052d44b2b08cf64cda8d8ca020b88b9128185fa0"
+    },
+    {
+      "path": "source-after/try/word-magic/keepsakes.js",
+      "bytes": 5919,
+      "sha256": "1a3196d74e838f4c0e3d1ddcdcadf9bc8beab299daeb110c2ae8e4d37ea2dc2a"
+    },
+    {
+      "path": "source-after/try/word-magic/recall.js",
+      "bytes": 1364,
+      "sha256": "f9a156036051c7703d92d8e524d5c4df1566e11532265eed3e417fc70a6f56d9"
+    },
+    {
+      "path": "source-after/try/word-magic/shop.js",
+      "bytes": 18894,
+      "sha256": "683bcab66d6724ffee6c627afa628a908690e2be2d21b16498b87b0cfbaac09b"
+    },
+    {
+      "path": "source-after/try/word-magic/style.css",
+      "bytes": 40823,
+      "sha256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444"
+    },
+    {
+      "path": "source-before/try/blank-slice/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/entry-check/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/learning-hub/beginner-cards.css",
+      "bytes": 6251,
+      "sha256": "7835e23005a5f712cf46385f79478d53eadde8881336fe033fb64c60c1d87875"
+    },
+    {
+      "path": "source-before/try/learning-hub/collection-page.js",
+      "bytes": 10013,
+      "sha256": "7c14f306ca33546e0aba7887777a0cfddfd82993f0a4ccffda6fdac5475d37c2"
+    },
+    {
+      "path": "source-before/try/learning-hub/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/order-rush/beginner-core.js",
+      "bytes": 9090,
+      "sha256": "ac76ff715d305ec1d2ad949cb4c9a0c3756b18e9ab2c1aa881b6e5960da5fafd"
+    },
+    {
+      "path": "source-before/try/order-rush/beginner-shop.js",
+      "bytes": 16194,
+      "sha256": "2d65f9b6f717276c6f50f0b8a2dad721f8337c3da96f838312d3ba2ecc88eba1"
+    },
+    {
+      "path": "source-before/try/order-rush/beginner.css",
+      "bytes": 19833,
+      "sha256": "7a8161a64c86775cb32bb711edd87d8691ab72d6d4192d18707229cd4927d2cb"
+    },
+    {
+      "path": "source-before/try/order-rush/beginner.js",
+      "bytes": 47635,
+      "sha256": "1de0ca026c0ba8a025232d14205cc6daf8ca2c2b1f849a90d710f6752a817a50"
+    },
+    {
+      "path": "source-before/try/order-rush/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/racing/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/rhythm/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/runner/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/app.js",
+      "bytes": 39393,
+      "sha256": "ec29ff71507a6d90bec44133e7daadda4930c4eaed9c6d0eeecdf497104dd328"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/shop.css",
+      "bytes": 13607,
+      "sha256": "f5420c74f38466c8dc0847ba3c6d4939fce6f1208fac05006ecd8b375210692b"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/shop.js",
+      "bytes": 13970,
+      "sha256": "7a617ae6e9575c9b2c44af2f488fb31c09c2ad0ac65a2f4345fd91ce13ad47cf"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/starbook.js",
+      "bytes": 20089,
+      "sha256": "3f05af84b4a8412c1d147cc5b09be312e7e46be91fd26f78c0021822ada15096"
+    },
+    {
+      "path": "source-before/try/spaceship-coop/style.css",
+      "bytes": 34119,
+      "sha256": "8d1049fad26c062d3fe3459e43cc0c7ee74c448ca82d6bee6d483af2d4334dda"
+    },
+    {
+      "path": "source-before/try/story-classroom/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/talk-rally/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/word-magic/app.js",
+      "bytes": 43776,
+      "sha256": "bcf3bd45b6cd2e8df799c5371fb85d3a3e953ce16ac21e316654457eedf77a61"
+    },
+    {
+      "path": "source-before/try/word-magic/collection.js",
+      "bytes": 90282,
+      "sha256": "4dc389de8804f5cdc05635e904cb3e7451f64ae575db39354af76aec5391c4a1"
+    },
+    {
+      "path": "source-before/try/word-magic/core.js",
+      "bytes": 6997,
+      "sha256": "81fea2f650f1e4dc14231299b13c77eced8358a16c84c95bf2acb87a9aeea3d4"
+    },
+    {
+      "path": "source-before/try/word-magic/index.html",
+      "bytes": 8616,
+      "sha256": "347df32a471bddc4c191358ffca5b522707522525864c778b62c161524b8c588"
+    },
+    {
+      "path": "source-before/try/word-magic/shop.js",
+      "bytes": 18267,
+      "sha256": "0926928c8d3fb53c93e3f3789e83761d8580ae80c01e1633ef58cfb4cbed68ed"
+    },
+    {
+      "path": "source-before/try/word-magic/style.css",
+      "bytes": 33981,
+      "sha256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913"
+    },
+    {
+      "path": "verify-live.cjs",
+      "bytes": 2598,
+      "sha256": "591c3a975589cf7fc70d0e9ffe1d665be0c21ca371b4a80a65027c7376263b41"
+    }
+  ]
+}

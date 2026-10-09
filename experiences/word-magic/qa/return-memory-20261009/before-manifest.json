@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-09T12:54:10.478Z",
+  "files": [
+    {
+      "path": "app.mjs",
+      "bytes": 43776,
+      "sha256": "bcf3bd45b6cd2e8df799c5371fb85d3a3e953ce16ac21e316654457eedf77a61"
+    },
+    {
+      "path": "core.mjs",
+      "bytes": 6997,
+      "sha256": "81fea2f650f1e4dc14231299b13c77eced8358a16c84c95bf2acb87a9aeea3d4"
+    },
+    {
+      "path": "index.html",
+      "bytes": 8616,
+      "sha256": "347df32a471bddc4c191358ffca5b522707522525864c778b62c161524b8c588"
+    },
+    {
+      "path": "style.css",
+      "bytes": 33981,
+      "sha256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913"
+    },
+    {
+      "path": "README.md",
+      "bytes": 19608,
+      "sha256": "958543ac4a9ca1778b97e7bd80e511a4ddf9493a91bf5a9c3ab51a9cf100662d"
+    }
+  ]
+}

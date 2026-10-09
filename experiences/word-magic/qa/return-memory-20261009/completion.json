@@ -1,0 +1,104 @@
+{
+  "at": "2026-10-09T13:30:47.238Z",
+  "status": "local-implementation-and-targeted-validation-complete",
+  "productSources": [
+    {
+      "path": "app.mjs",
+      "bytes": 53988,
+      "sha256": "a5d80938778d3d554b818c277a312e6c3979f5559a9a79f47f57d071c9f71eb9",
+      "beforeSHA256": "bcf3bd45b6cd2e8df799c5371fb85d3a3e953ce16ac21e316654457eedf77a61",
+      "new": false,
+      "changed": true
+    },
+    {
+      "path": "core.mjs",
+      "bytes": 7748,
+      "sha256": "30f4b8a31ea32b72e0515801887b3f90d84c0c9bd571a86060068808b0f2e4d2",
+      "beforeSHA256": "81fea2f650f1e4dc14231299b13c77eced8358a16c84c95bf2acb87a9aeea3d4",
+      "new": false,
+      "changed": true
+    },
+    {
+      "path": "index.html",
+      "bytes": 9128,
+      "sha256": "0cd954f7a30021ca0814711ecdaceef665f0f5ae022e87e33960a25053738c1e",
+      "beforeSHA256": "347df32a471bddc4c191358ffca5b522707522525864c778b62c161524b8c588",
+      "new": false,
+      "changed": true
+    },
+    {
+      "path": "style.css",
+      "bytes": 35469,
+      "sha256": "9b0b1dfe3e290eddb93179098f23f0eb3d6c7e81a5e79be356f22c996dbb69ef",
+      "beforeSHA256": "4afc8800845da6e96f60c3962878f1f43a464e06bfb25a308b02ff494ea9c913",
+      "new": false,
+      "changed": true
+    },
+    {
+      "path": "README.md",
+      "bytes": 22208,
+      "sha256": "bec78b1d9a7c8b96e276641090810e62ac64f0d3e3b205faad99c85432613ebd",
+      "beforeSHA256": "958543ac4a9ca1778b97e7bd80e511a4ddf9493a91bf5a9c3ab51a9cf100662d",
+      "new": false,
+      "changed": true
+    },
+    {
+      "path": "recall.mjs",
+      "bytes": 1364,
+      "sha256": "f9a156036051c7703d92d8e524d5c4df1566e11532265eed3e417fc70a6f56d9",
+      "beforeSHA256": null,
+      "new": true,
+      "changed": true
+    },
+    {
+      "path": "recall.test.mjs",
+      "bytes": 3205,
+      "sha256": "f455f0e5b2bfdc9b0f3a813cd0c5ff4c72bcf7ec393f1bc0631719bd88e12780",
+      "beforeSHA256": null,
+      "new": true,
+      "changed": true
+    }
+  ],
+  "nodeTests": {
+    "passed": 23,
+    "failed": 0
+  },
+  "finalUI": {
+    "passed": 11,
+    "failed": 0,
+    "at": "2026-10-09T13:25:06.386Z",
+    "widths": [
+      320,
+      390
+    ]
+  },
+  "shopFocus": {
+    "passed": 12,
+    "failed": 0,
+    "sourceSHA256": "683bcab66d6724ffee6c627afa628a908690e2be2d21b16498b87b0cfbaac09b"
+  },
+  "fullAdventure": {
+    "viewport": 320,
+    "scenes": 18,
+    "listeningChecks": 6,
+    "pass": true,
+    "at": "2026-10-09T13:22:44.119Z",
+    "sourceTiming": "Full adventure was started before the final card-only partial-resume branch; final UI follows final app source."
+  },
+  "audioTimeout": {
+    "preserved": true,
+    "independentRetryPassed": true,
+    "causeConfirmed": false,
+    "generatedReplacement": false
+  },
+  "realParticipants": 0,
+  "physicalPhones": 0,
+  "humanSpeakerQualityChecks": 0,
+  "accountOrDBWrites": 0,
+  "officialModelCalls": 0,
+  "publicDeployment": false,
+  "newStorageKeys": 0,
+  "newProgressSchemaFields": 0,
+  "memoryGameLearningWrites": 0,
+  "memoryGameCoinWrites": 0
+}

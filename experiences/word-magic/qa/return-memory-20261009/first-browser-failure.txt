@@ -1,0 +1,25 @@
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+... Skipped lines
+
+  {
++   attempt: 0,
++   checkIndex: 0,
++   checkRound: [],
++   labSet: 'default',
+    objects: [
+      {
+        asset: 'rabbit',
+        id: 'rabbit',
+        level: 0,
+...
+    ],
++   pendingLab: false,
+    sceneIndex: 0,
+    screen: 'puzzle',
+    selected: 'chair',
+    spell: 'shrink',
++   tutorSeen: []
+  }
+
+    at C:\Users\q1212\Documents\SYNK-appsscript\experiences\word-magic\qa\return-memory-20261009\check.cjs:24:1319

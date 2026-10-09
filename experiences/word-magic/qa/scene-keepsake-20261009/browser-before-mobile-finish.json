@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-09T14:45:00.081Z",
+  "url": "http://127.0.0.1:4436/",
+  "fixtures": "fresh guest storage and clearly synthetic account status; no real account or payment",
+  "realParticipants": 0,
+  "physicalPhones": 0,
+  "productionAccountWrites": 0,
+  "voiceGeneration": 0,
+  "imageGeneration": 0,
+  "checks": [
+    {
+      "width": 320,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "width": 390,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "width": 1200,
+      "case": "empty guest / focus / real lab snapshot / literal names / delete confirmation / photo entry / reload / canonical scene replay / progress-learning-wallet unchanged"
+    },
+    {
+      "case": "six-scene limit requires an explicit selected replacement; no other scene evicted"
+    },
+    {
+      "case": "picnic scene is blocked without real wallet ownership; owned fixture opens without purchase/equip/coins/progress mutation"
+    },
+    {
+      "case": "late wallet response after close/reopen cannot launch or replace the newer collection view"
+    },
+    {
+      "case": "storage failure shows no save completion; typed draft survives and retry creates exactly one scene"
+    },
+    {
+      "case": "late save after close/reopen refreshes the current list without stale success, input or disabled controls; pending status becomes saved only after synthetic acknowledgment"
+    },
+    {
+      "case": "deferred canonical thumbnail cannot paint or revive the closed first view; only the reopened second scene renders"
+    },
+    {
+      "case": "synthetic account stopped: offline retains own scene; conflict is explicit; revoked/changed owner clears DOM, drafts and old collection without guest fallback"
+    },
+    {
+      "case": "synthetic account owner: offline retains own scene; conflict is explicit; revoked/changed owner clears DOM, drafts and old collection without guest fallback"
+    }
+  ],
+  "errors": [],
+  "remoteRequests": [],
+  "writeRequests": []
+}

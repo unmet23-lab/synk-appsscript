@@ -1,0 +1,96 @@
+{
+  "at": "2026-10-09T14:59:03.320Z",
+  "status": "product-frozen-local-validation-complete-root-publication-pending",
+  "nodeTests": {
+    "passed": 38,
+    "failed": 0
+  },
+  "UI": {
+    "passed": 11,
+    "errors": 0,
+    "at": "2026-10-09T14:45:00.081Z"
+  },
+  "finalLayout": {
+    "widths": [
+      320,
+      390,
+      1200
+    ],
+    "languages": [
+      "ko",
+      "en"
+    ],
+    "mobileColumns": 1,
+    "desktopColumns": 3,
+    "overflow": 0,
+    "clipping": 0,
+    "minimumButtonPixels": 44,
+    "at": "2026-10-09T14:49:29.549Z"
+  },
+  "realMP3Action": {
+    "pass": true,
+    "at": "2026-10-09T14:55:27.572Z"
+  },
+  "accountEvidence": "canonical host and model with synthetic server/storage; no real account operation",
+  "realParticipants": 0,
+  "physicalPhones": 0,
+  "humanAudioQualityChecks": 0,
+  "newStorageKeys": 0,
+  "pixelOrFileUpload": false,
+  "voiceGeneration": 0,
+  "imageGeneration": 0,
+  "productionAccountWrites": 0,
+  "backendChanges": 0,
+  "publicDeployment": false,
+  "rootOwnedFilesModified": [],
+  "files": [
+    {
+      "path": "app.mjs",
+      "bytes": 59261,
+      "sha256": "540d3565b8399dd0a5b5654a6b4dac028735de65ddcb48a6cb3a1f674f26db8a",
+      "beforeSHA256": "a5d80938778d3d554b818c277a312e6c3979f5559a9a79f47f57d071c9f71eb9"
+    },
+    {
+      "path": "core.mjs",
+      "bytes": 7861,
+      "sha256": "fecbd5a7601c33eb5cfcc620e11cd9f73f8c783d6cf9fc1de59e5b61da526a38",
+      "beforeSHA256": "30f4b8a31ea32b72e0515801887b3f90d84c0c9bd571a86060068808b0f2e4d2"
+    },
+    {
+      "path": "index.html",
+      "bytes": 9752,
+      "sha256": "5d7b1a33736accb7d39f04ad7ba6c863bb52cd121f5b4fbe8a95dc9c31a5636e",
+      "beforeSHA256": "0cd954f7a30021ca0814711ecdaceef665f0f5ae022e87e33960a25053738c1e"
+    },
+    {
+      "path": "style.css",
+      "bytes": 40823,
+      "sha256": "b33fbd775a2887460187cfdefa53835c49d9498d1c29080b7791efcb63e61444",
+      "beforeSHA256": "9b0b1dfe3e290eddb93179098f23f0eb3d6c7e81a5e79be356f22c996dbb69ef"
+    },
+    {
+      "path": "README.md",
+      "bytes": 25214,
+      "sha256": "1402099bc5bd7dba49b65ab6d099879ebf64f9f0767b114d078e697ad18e0a48",
+      "beforeSHA256": "bec78b1d9a7c8b96e276641090810e62ac64f0d3e3b205faad99c85432613ebd"
+    },
+    {
+      "path": "keepsakes.mjs",
+      "bytes": 5919,
+      "sha256": "1a3196d74e838f4c0e3d1ddcdcadf9bc8beab299daeb110c2ae8e4d37ea2dc2a",
+      "beforeSHA256": null
+    },
+    {
+      "path": "keepsake-view.mjs",
+      "bytes": 15731,
+      "sha256": "9b1c94e0df754f72f8691a92052d44b2b08cf64cda8d8ca020b88b9128185fa0",
+      "beforeSHA256": null
+    },
+    {
+      "path": "keepsakes.test.mjs",
+      "bytes": 7377,
+      "sha256": "5b5b7a3987181a870d2cf0dabe512c3ee2b66be23f4b0c38256f5105d2902604",
+      "beforeSHA256": null
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "at": "2026-10-09T14:07:31.648Z",
+  "status": "related-source-fix-verified-not-published",
+  "productFiles": [
+    {
+      "path": "experiences/spaceship-coop/app.mjs",
+      "sha256": "393d42588b4a51ca5a5f8dd08eba981b1804b725896ded6824b229fe831c19cc",
+      "bytes": 41117
+    }
+  ],
+  "testFiles": [
+    {
+      "path": "experiences/spaceship-coop/recovery.test.mjs",
+      "sha256": "c93f6ab79fa53b42717e0ef8898c614f8c932be82e88ee0398391f05ab184486",
+      "bytes": 17666
+    }
+  ],
+  "nodeRelatedTest": 1,
+  "browserConditions": 8,
+  "browserErrors": 0,
+  "approvedMP3": 7,
+  "voiceGeneration": 0,
+  "modelCalls": 0,
+  "productionWrites": 0,
+  "serverEdits": 0,
+  "accountSchemaEdits": 0
+}

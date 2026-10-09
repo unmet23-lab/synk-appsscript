@@ -1,0 +1,45 @@
+{
+  "at": "2026-10-09T13:19:35.897Z",
+  "pass": true,
+  "case": "3-question cap and previous miss priority; generic help; reload progress unchanged",
+  "audio": [
+    {
+      "state": "running",
+      "time": 1.112
+    }
+  ],
+  "visibility": "visible",
+  "requests": [
+    {
+      "url": "/word-magic/audio/manifest.json",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/grow.mp3",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/open.mp3",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/shrink.mp3",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/up.mp3",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/close.mp3",
+      "status": 200
+    },
+    {
+      "url": "/word-magic/audio/down.mp3",
+      "status": 200
+    }
+  ],
+  "errors": [],
+  "actualParticipants": 0,
+  "physicalPhone": 0
+}

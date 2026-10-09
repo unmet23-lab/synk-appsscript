@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-09T13:31:00.517Z",
+  "confirmedSuccessfulConditionOutputs": [
+    {
+      "session": 20584,
+      "conditions": 95
+    },
+    {
+      "session": 2535,
+      "conditions": 29
+    },
+    {
+      "session": 4055,
+      "conditions": 31
+    },
+    {
+      "session": 57280,
+      "conditions": 4
+    }
+  ],
+  "processesStayedRunningDuringCleanup": true,
+  "termination": "Explicit Ctrl-C only to the four owned QA sessions after their success artifacts had been written",
+  "terminatedExitCode": 1,
+  "observedNodePids": [
+    12716,
+    29140,
+    56136,
+    38204
+  ],
+  "remainingOwnedNodeProcessCheck": "No matching QA Node processes after termination",
+  "ownedBrowserCleanup": {
+    "pid": 53344,
+    "parentPid": 38204,
+    "verifiedName": "chrome.exe",
+    "terminationAttempt": "Stop-Process reported no such process",
+    "getProcessFound": false,
+    "cimEntryStillReported": true,
+    "inventoryMismatch": true
+  },
+  "distinction": "Condition assertions passed; these UI CLI runs were manually terminated during cleanup and are not claimed as normal exit-0 runs."
+}

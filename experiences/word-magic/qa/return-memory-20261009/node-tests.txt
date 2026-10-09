@@ -1,0 +1,31 @@
+✔ first prepare requests audio resume synchronously before fetching the voice manifest (24.9733ms)
+✔ already prepared but suspended voice bank still resumes, without another fetch (0.3608ms)
+✔ all 18 authored scenes start unsolved and each intended semantic action changes a real object (4.6001ms)
+✔ an unrelated object change never completes a two-part puzzle (0.2914ms)
+✔ semantic transformations are reversible, bounded, and cannot open a living animal (0.325ms)
+✔ chapter unlocks require all six discoveries and replay cannot duplicate completion (1.0085ms)
+✔ malformed persistence cannot inject objects, expressions, huge scale, or unknown scenes (5.0881ms)
+✔ each chapter checks both distinct meanings; assistance and retries never become independent success (0.2973ms)
+✔ Atlas adapter uses the registered word/action contract and never repeats a first answer (0.3972ms)
+✔ missing or broken Atlas never prevents core play (1.0192ms)
+✔ opposite listening requests have identical pre-answer visuals and never expose Korean spelling (0.7113ms)
+✔ all six corrected listening items use meaning-based v2 item and family identity, separate from visually cued v1 (0.2853ms)
+✔ each round independently shuffles the request order and fixed choice positions while covering both meanings (0.8961ms)
+✔ resume preserves unfinished object changes without accepting foreign assets, positions, or locked chapters (0.4754ms)
+✔ checkpoint resume keeps its shuffled prompt and first-answer status, but never restores a heard claim (0.3863ms)
+✔ practice requires heard changes, distinct word/object pairs, two words and two objects (1.3701ms)
+✔ sets preserve separate transforms and migrate old default scenes without foreign objects (2.1101ms)
+✔ an unfinished adventure remains independent from the lab and never restores heard evidence (0.7188ms)
+✔ discoveries do not claim listening confirmation or change existing unlocks (7.5634ms)
+✔ optional recall uses only introduced meanings, never writes the source progress (1.0626ms)
+✔ recall prefers a previous miss but cannot introduce an unknown chapter (0.4085ms)
+✔ two alternative pictures contain no target, spelling or meaning cue before first answer (3.1872ms)
+✔ recall choices remain fixed across replays and use fresh objects for each chapter (0.7085ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 786.0733

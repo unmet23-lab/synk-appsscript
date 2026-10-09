@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-09T15:19:24.341Z",
+  "candidateSHA256": "edeb400083f4c1992292482a3fe3bb457c5277a2a103475578b88ad854e3bc5f",
+  "passed": true,
+  "nodeTests": {
+    "passed": 173,
+    "total": 173
+  },
+  "moduleEntries": 11,
+  "linkChecks": 268,
+  "publicFiles": 31,
+  "newModules": 4,
+  "sourceAndPayloadHashesMatch": true,
+  "rootBrowser": {
+    "checks": [
+      {
+        "viewport": 320,
+        "dialogOpen": true,
+        "namedScene": "작은 세상, 다시 만나기",
+        "playAction": "이 장면으로 놀기",
+        "scrollWidth": 305,
+        "width": 305
+      },
+      {
+        "viewport": 390,
+        "dialogOpen": true,
+        "namedScene": "작은 세상, 다시 만나기",
+        "playAction": "이 장면으로 놀기",
+        "scrollWidth": 375,
+        "width": 375
+      },
+      {
+        "viewport": 1280,
+        "dialogOpen": true,
+        "namedScene": "작은 세상, 다시 만나기",
+        "playAction": "이 장면으로 놀기",
+        "scrollWidth": 1265,
+        "width": 1265
+      }
+    ],
+    "errors": [],
+    "guest": true
+  },
+  "magicQA": "experiences/word-magic/qa/scene-keepsake-20261009/completion.json",
+  "magicQASHA256": "95ab5c8ba996c7189c879cccb8a6e6057b986da568137b4f812e817d5e3889fa",
+  "independentReview": "experiences/spaceship-coop/qa/scene-keepsake-data-review-20261009/README.md",
+  "realAccountWrites": 0,
+  "physicalPhones": 0,
+  "narrationGenerated": 0
+}

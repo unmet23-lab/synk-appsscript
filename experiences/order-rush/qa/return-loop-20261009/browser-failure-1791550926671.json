@@ -1,0 +1,89 @@
+{
+  "at": "2026-10-09T13:01:34.745Z",
+  "evidence": "Isolated Chrome, local guest and synthetic progress only; current approved MP3 ended events; not human listening or physical device proof",
+  "checks": [
+    "A fresh guest gets the free first lesson; no invented missed expressions or required memory gate appear.",
+    "Two familiar requests reuse approved audio, new customers and a changed shelf. First answers reveal no target picture/text; wrong/help correction is available; pause keeps the partial tray. Story, coins and Atlas counts are unchanged and completion has no independent score.",
+    "Returning from memory retains the main chapter, partial tray, help and original first wrong answer.",
+    "Three free festival entries change both voice and guest sequences, including after reload; all nine familiar recipes remain. A full nine-order replay is untimed, earns no coins and preserves main story records/seed.",
+    "Blocked existing-key history writes show a truthful warning, retain persisted state and keep free replay usable."
+  ],
+  "errors": [],
+  "remoteRequests": [],
+  "audioEvents": null,
+  "festivalSequences": [
+    {
+      "voices": [
+        "bread-3",
+        "apple-3",
+        "bread-2",
+        "apple-2",
+        "bread-1",
+        "apple-1",
+        "bread-please",
+        "apple-please",
+        "water-please"
+      ],
+      "guests": [
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit",
+        "penguin",
+        "squirrel"
+      ]
+    },
+    {
+      "voices": [
+        "bread-2",
+        "bread-please",
+        "apple-please",
+        "bread-1",
+        "water-please",
+        "bread-3",
+        "apple-1",
+        "apple-3",
+        "apple-2"
+      ],
+      "guests": [
+        "squirrel",
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit",
+        "penguin"
+      ]
+    },
+    {
+      "voices": [
+        "bread-1",
+        "bread-please",
+        "apple-please",
+        "bread-3",
+        "apple-1",
+        "apple-3",
+        "bread-2",
+        "apple-2",
+        "water-please"
+      ],
+      "guests": [
+        "penguin",
+        "squirrel",
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit"
+      ]
+    }
+  ],
+  "error": "locator.getAttribute: Error: strict mode violation: locator('[data-decor-learn]') resolved to 2 elements:\n    1) <a data-decor-learn=\"\" class=\"felt-cta b-bilingual\" href=\"/learning-hub/#beginner-title\">…</a> aka locator('#beginner').getByRole('link', { name: '무료 입문 놀이 찾아보기 Explore free' })\n    2) <a data-decor-learn=\"\" class=\"felt-cta b-bilingual\" href=\"/learning-hub/#beginner-title\">…</a> aka getByLabel('소풍·가게 상점Picnic and shop').getByRole('link', { name: '무료 입문 놀이 찾아보기 Explore free' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-decor-learn]')\u001b[22m\n\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\browser.cjs:59:271"
+}

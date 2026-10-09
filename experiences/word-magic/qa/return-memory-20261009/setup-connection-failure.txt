@@ -1,0 +1,6 @@
+page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4340/word-magic/?qa
+Call log:
+[2m  - navigating to "http://127.0.0.1:4340/word-magic/?qa", waiting until "load"[22m
+
+    at pageFor (C:\Users\q1212\Documents\SYNK-appsscript\experiences\word-magic\qa\return-memory-20261009\check.cjs:7:491)
+    at async C:\Users\q1212\Documents\SYNK-appsscript\experiences\word-magic\qa\return-memory-20261009\check.cjs:16:27

@@ -1,0 +1,29 @@
+{
+  "files": [
+    {
+      "path": "after-reproduction.json",
+      "bytes": 1901,
+      "sha256": "aeaedffb95f102b82b5f9784780f875b4030332d322b3efa228255aa18678078"
+    },
+    {
+      "path": "before-reproduction.json",
+      "bytes": 1482,
+      "sha256": "6d9de60b7511e85621c5b4c26f6f07575cd944d967bf0b13b20501acc9066536"
+    },
+    {
+      "path": "observed-unsafe-persist.cjs",
+      "bytes": 783,
+      "sha256": "e634cacf3339260931bb2a9382e9e02458f5da8b491f2c6c1bb87911e0aceb33"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1918,
+      "sha256": "0bc4565227f0ccb16d7d435b35f6577605db9b9c47be8b6ff96bd75ae0d554e8"
+    },
+    {
+      "path": "review.cjs",
+      "bytes": 6394,
+      "sha256": "14f93be3c04da6fd494d19edf5f2dd296075dae057f0b66fddb8b415fbf9a017"
+    }
+  ]
+}

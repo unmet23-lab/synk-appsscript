@@ -1,0 +1,99 @@
+{
+  "at": "2026-10-09T13:04:28.911Z",
+  "evidence": "Isolated Chrome, local guest and synthetic progress only; current approved MP3 ended events; not human listening or physical device proof",
+  "checks": [
+    "A fresh guest gets the free first lesson; no invented missed expressions or required memory gate appear.",
+    "Two familiar requests reuse approved audio, new customers and a changed shelf. First answers reveal no target picture/text; wrong/help correction is available; pause keeps the partial tray. Story, coins and Atlas counts are unchanged and completion has no independent score.",
+    "Returning from memory retains the main chapter, partial tray, help and original first wrong answer.",
+    "Three free festival entries change both voice and guest sequences, including after reload; all nine familiar recipes remain. A full nine-order replay is untimed, earns no coins and preserves main story records/seed.",
+    "Blocked existing-key history writes show a truthful warning, retain persisted state and keep free replay usable.",
+    "An unaffordable playset exposes a keyboard reachable next-learning/free route using the existing felt CTA; the basic game remains available."
+  ],
+  "errors": [],
+  "remoteRequests": [],
+  "audioEvents": {
+    "plays": 16,
+    "ended": 16
+  },
+  "festivalSequences": [
+    {
+      "voices": [
+        "bread-3",
+        "apple-3",
+        "bread-2",
+        "apple-2",
+        "bread-1",
+        "apple-1",
+        "bread-please",
+        "apple-please",
+        "water-please"
+      ],
+      "guests": [
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit",
+        "penguin",
+        "squirrel"
+      ]
+    },
+    {
+      "voices": [
+        "bread-2",
+        "bread-please",
+        "apple-please",
+        "bread-1",
+        "water-please",
+        "bread-3",
+        "apple-1",
+        "apple-3",
+        "apple-2"
+      ],
+      "guests": [
+        "squirrel",
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit",
+        "penguin"
+      ]
+    },
+    {
+      "voices": [
+        "bread-1",
+        "bread-please",
+        "apple-please",
+        "bread-3",
+        "apple-1",
+        "apple-3",
+        "bread-2",
+        "apple-2",
+        "water-please"
+      ],
+      "guests": [
+        "penguin",
+        "squirrel",
+        "otter",
+        "deer",
+        "fox",
+        "panda",
+        "hedgehog",
+        "bear",
+        "rabbit"
+      ]
+    }
+  ],
+  "sourceSha256": {
+    "beginner.mjs": "39f9114c86dd6e35ed97bedfcce8c6f28b788cc38dbc0e58030148f52afa0423",
+    "beginner-core.mjs": "0fc666e2d63a4a9b77f219c61a98e4b527c0674a243b3cd8f9b816500e5d36f9",
+    "beginner-return.mjs": "e14204d9b9e1d365ff41a9ad5e1ba73392b93d5ea152dc11d7c1a5ee013f5339",
+    "beginner-shop.mjs": "913e34ccb322d30da45e8431c20fd0f18f53b75aec5bc5083bda8e810b63dbf6",
+    "beginner.css": "ffcda6e92a2f2d4b458bd01a0105894423d188b84c5b5b7c5acc2ba541b778e4"
+  }
+}

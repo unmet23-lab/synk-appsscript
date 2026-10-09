@@ -1,0 +1,36 @@
+{
+  "at": "2026-10-09T15:18:13.037Z",
+  "origin": "http://127.0.0.1:49322",
+  "kind": "Frozen public overlay plus published baseline",
+  "guest": true,
+  "realAccountWrites": 0,
+  "flow": "Opened collection, learned two words with approved clips, kept a named scene, reopened on a fresh tab after final bundle replacement",
+  "checks": [
+    {
+      "viewport": 320,
+      "dialogOpen": true,
+      "namedScene": "작은 세상, 다시 만나기",
+      "playAction": "이 장면으로 놀기",
+      "scrollWidth": 305,
+      "width": 305
+    },
+    {
+      "viewport": 390,
+      "dialogOpen": true,
+      "namedScene": "작은 세상, 다시 만나기",
+      "playAction": "이 장면으로 놀기",
+      "scrollWidth": 375,
+      "width": 375
+    },
+    {
+      "viewport": 1280,
+      "dialogOpen": true,
+      "namedScene": "작은 세상, 다시 만나기",
+      "playAction": "이 장면으로 놀기",
+      "scrollWidth": 1265,
+      "width": 1265
+    }
+  ],
+  "errors": [],
+  "earlierLocal49323CdpActionTimeouts": 2
+}

@@ -1,0 +1,95 @@
+{
+  "at": "2026-10-09T13:10:55.811Z",
+  "checks": [
+    {
+      "name": "unapproved audio blocks room creation",
+      "passed": true
+    },
+    {
+      "name": "corrupt voice cannot silently start",
+      "passed": true
+    },
+    {
+      "name": "lobby-desktop fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "lobby-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "blocked clipboard selects the code, not the link",
+      "passed": true
+    },
+    {
+      "name": "blocked clipboard offers the invite URL",
+      "passed": true
+    },
+    {
+      "name": "hub navigation can be cancelled without ending the expedition",
+      "passed": true
+    },
+    {
+      "name": "shop stays out of cooperative listening turns",
+      "passed": true
+    },
+    {
+      "name": "tutorial-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "word practice restores keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "round 0 isolated target",
+      "passed": true
+    },
+    {
+      "name": "manual-desktop fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "controls-phone-waiting fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "matching wrong instruction is distinguished",
+      "passed": true
+    },
+    {
+      "name": "help-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "closing the sound guide returns keyboard focus",
+      "passed": true
+    },
+    {
+      "name": "visibility event interrupts audio and keeps answers locked",
+      "passed": true
+    },
+    {
+      "name": "returning requires hearing the whole sound again",
+      "passed": true
+    },
+    {
+      "name": "repair-phone fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "successful repair moves keyboard focus to the next action",
+      "passed": true
+    },
+    {
+      "name": "round 1 isolated target",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "error": "page.reload: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for navigation until \"load\"\u001b[22m\n\u001b[2m    - navigated to \"http://127.0.0.1:61998/experiences/spaceship-coop/\"\u001b[22m\n\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\spaceship-coop\\qa\\return-recall-20261009\\full-coop.cjs:53:21"
+}

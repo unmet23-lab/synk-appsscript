@@ -13,3 +13,4 @@ body.sb-page{background:#fff;color:#10131a;font-family:var(--sans);word-break:ke
 @media(max-width:620px){.today-choices{grid-template-columns:repeat(2,1fr)}}
 .help-choices{grid-template-columns:repeat(3,1fr)}
 @media(max-width:620px){.help-choices{grid-template-columns:1fr}}
+.beginner-jump{display:block;width:fit-content;max-width:100%;min-height:52px;margin:22px 0 0;padding:14px 24px;color:#293d42;text-decoration:none;font-size:14px;font-weight:750;line-height:1.6;background:url('./assets/slab-cream-long.webp') center/100% 100% no-repeat}.beginner-jump span{display:block;font-size:13px}.beginner-jump:active{transform:translateY(3px)}

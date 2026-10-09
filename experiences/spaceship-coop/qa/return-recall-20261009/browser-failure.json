@@ -1,0 +1,50 @@
+{
+  "at": "2026-10-09T13:07:31.946Z",
+  "checks": [
+    {
+      "name": "png-before-390 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "PNG says prepared rather than claiming device save",
+      "passed": true
+    },
+    {
+      "name": "PNG preview renders inside the existing image CSP",
+      "passed": true
+    },
+    {
+      "name": "png-ready-390 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "direct PNG link downloads a real 1200 by 1050 PNG",
+      "passed": true
+    },
+    {
+      "name": "changing the expedition revokes the prior PNG",
+      "passed": true
+    },
+    {
+      "name": "late PNG cannot show another expedition or steal history focus",
+      "passed": true
+    },
+    {
+      "name": "late export from a closed view cannot announce or focus a reopened view",
+      "passed": true
+    },
+    {
+      "name": "closing the collection releases its PNG URL",
+      "passed": true
+    },
+    {
+      "name": "no finished record creates no solo recall target",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "The requested module './starbook.mjs' does not provide an export named 'createReturnRecall'",
+    "Cannot read properties of null (reading 'preview')"
+  ],
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#starbook[open]') to be visible\u001b[22m\n\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\spaceship-coop\\qa\\return-recall-20261009\\browser-proof.cjs:53:274"
+}

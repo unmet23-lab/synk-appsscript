@@ -1,0 +1,28 @@
+{
+  "korean": {
+    "fonts": [
+      {
+        "familyName": "SUIT Variable Thin",
+        "postScriptName": "SUITVariable-Bold",
+        "isCustomFont": true,
+        "glyphCount": 12
+      },
+      {
+        "familyName": "Inter Tight Medium",
+        "postScriptName": "InterTight-Medium",
+        "isCustomFont": true,
+        "glyphCount": 3
+      }
+    ]
+  },
+  "latin": {
+    "fonts": [
+      {
+        "familyName": "Inter Tight Medium",
+        "postScriptName": "InterTight-Medium",
+        "isCustomFont": true,
+        "glyphCount": 32
+      }
+    ]
+  }
+}

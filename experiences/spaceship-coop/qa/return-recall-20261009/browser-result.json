@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-09T13:16:13.767Z",
+  "checks": [
+    {
+      "name": "png-before-390 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "PNG says prepared rather than claiming device save",
+      "passed": true
+    },
+    {
+      "name": "PNG preview renders inside the existing image CSP",
+      "passed": true
+    },
+    {
+      "name": "png-ready-390 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "direct PNG link downloads a real 1200 by 1050 PNG",
+      "passed": true
+    },
+    {
+      "name": "changing the expedition revokes the prior PNG",
+      "passed": true
+    },
+    {
+      "name": "late PNG cannot show another expedition or steal history focus",
+      "passed": true
+    },
+    {
+      "name": "late export from a closed view cannot announce or focus a reopened view",
+      "passed": true
+    },
+    {
+      "name": "closing the collection releases its PNG URL",
+      "passed": true
+    },
+    {
+      "name": "no finished record creates no solo recall target",
+      "passed": true
+    },
+    {
+      "name": "empty record collection still keeps seven free sounds",
+      "passed": true
+    },
+    {
+      "name": "answers are locked before sound completes",
+      "passed": true
+    },
+    {
+      "name": "first question hides Korean target and first answer feedback",
+      "passed": true
+    },
+    {
+      "name": "recall-question-390 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "actual Korean and English use the bundled brand fonts",
+      "passed": true
+    },
+    {
+      "name": "listening retains keyboard focus on the listen action",
+      "passed": true
+    },
+    {
+      "name": "wrong first answer stays visibly selected with correction",
+      "passed": true
+    },
+    {
+      "name": "close and reopen keeps the previous recall answer",
+      "passed": true
+    },
+    {
+      "name": "recall-count-320 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "missed expression returns once for another action",
+      "passed": true
+    },
+    {
+      "name": "retry is not merged into first answer score",
+      "passed": true
+    },
+    {
+      "name": "recall-finish-320 fits horizontally",
+      "passed": true
+    },
+    {
+      "name": "targets come only from words in the selected completed record",
+      "passed": true
+    },
+    {
+      "name": "return recall never rewrites the completion or wallet",
+      "passed": true
+    },
+    {
+      "name": "free collection can open selected older expedition recall",
+      "passed": true
+    },
+    {
+      "name": "selected older expedition uses its own completed sounds",
+      "passed": true
+    },
+    {
+      "name": "closing solo sound preserves active room and participant",
+      "passed": true
+    },
+    {
+      "name": "recommended next practice respects existing room leave confirmation",
+      "passed": true
+    },
+    {
+      "name": "friend beginning expedition closes the overlay and interrupts recall sound",
+      "passed": true
+    },
+    {
+      "name": "actual approved clips decode to audible duration",
+      "passed": true
+    },
+    {
+      "name": "no browser runtime errors",
+      "passed": true
+    }
+  ],
+  "passed": 31,
+  "errors": [],
+  "localPostRequests": [
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:52423/api/spaceship/rooms"
+    },
+    {
+      "method": "POST",
+      "url": "http://127.0.0.1:52423/api/spaceship/rooms/H2J7B8/commands"
+    }
+  ],
+  "realAccountWrites": 0,
+  "productionWrites": 0,
+  "voiceGeneration": 0,
+  "actualPeople": 0,
+  "physicalPhoneTests": 0,
+  "scope": "Isolated local Chrome, synthetic valid completion fixtures, actual approved MP3 playback and local HTTP/SSE. Not human learning effects or real device restoration."
+}

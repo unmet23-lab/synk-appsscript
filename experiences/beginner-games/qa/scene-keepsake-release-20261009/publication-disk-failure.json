@@ -1,0 +1,8 @@
+{
+  "stage": "Fetch auto-maintenance and temporary index before commit/push",
+  "error": "Out of diskspace while Git geometric repack wrote tmp_pack_ElAWY3 and read-tree wrote the task temporary index.",
+  "commitCreated": false,
+  "remotePushAttempted": false,
+  "cleanup": "Not completed. The first attempt found active Git processes; the next found read-only access denial; automatic approval review blocked the force-removal attempt. The pack remains.",
+  "commandOnlyRecovery": "Disable automatic Git maintenance for this publication command; no permanent Git setting change."
+}

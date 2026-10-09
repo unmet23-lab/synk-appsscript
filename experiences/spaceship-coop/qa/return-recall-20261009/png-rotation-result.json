@@ -1,0 +1,26 @@
+{
+  "at": "2026-10-09T13:23:24.292Z",
+  "checks": [
+    {
+      "name": "new completion selects a current record after pruning the old one",
+      "passed": true
+    },
+    {
+      "name": "new selected record is not stuck preparing the old PNG",
+      "passed": true
+    },
+    {
+      "name": "late export creates no stale link, blob or focus change",
+      "passed": true
+    },
+    {
+      "name": "no browser runtime errors",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "passed": 4,
+  "syntheticGuestCompletionWrite": 1,
+  "realAccountWrites": 0,
+  "productionWrites": 0
+}

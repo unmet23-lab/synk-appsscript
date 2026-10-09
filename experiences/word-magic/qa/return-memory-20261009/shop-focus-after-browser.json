@@ -1,0 +1,161 @@
+{
+  "at": "2026-10-09T13:11:40.985Z",
+  "mode": "after",
+  "sourceSHA": "683bcab66d6724ffee6c627afa628a908690e2be2d21b16498b87b0cfbaac09b",
+  "isolated": true,
+  "fixture": "Fresh guest browser contexts; purchase contexts use local fixture wallet funding of 100 coins. No learner completion is claimed.",
+  "results": [
+    {
+      "name": "keyboard preview stays on the selected item",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-toys-picnic",
+        "preview": true
+      }
+    },
+    {
+      "name": "Tab continues forward after preview",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-toys-picnic",
+        "goal": "magic-toys-picnic",
+        "preview": false
+      }
+    },
+    {
+      "name": "keyboard goal stays on the selected item",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-toys-picnic",
+        "goal": "magic-toys-picnic",
+        "preview": false
+      }
+    },
+    {
+      "name": "removed clear action has a visible fallback",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      }
+    },
+    {
+      "name": "goal response preserves button pointer destination",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      },
+      "pointerBefore": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      }
+    },
+    {
+      "name": "goal response preserves blank pointer destination",
+      "pass": true,
+      "focus": {
+        "tag": "DIALOG",
+        "id": "shop-dialog",
+        "preview": false
+      },
+      "pointerBefore": {
+        "tag": "DIALOG",
+        "id": "shop-dialog",
+        "preview": false
+      }
+    },
+    {
+      "name": "purchase response returns to its item",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-frame-coral",
+        "preview": true
+      },
+      "pointerBefore": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      }
+    },
+    {
+      "name": "purchase response preserves button pointer destination",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      },
+      "pointerBefore": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      }
+    },
+    {
+      "name": "purchase response preserves blank pointer destination",
+      "pass": true,
+      "focus": {
+        "tag": "DIALOG",
+        "id": "shop-dialog",
+        "preview": false
+      },
+      "pointerBefore": {
+        "tag": "DIALOG",
+        "id": "shop-dialog",
+        "preview": false
+      }
+    },
+    {
+      "name": "old purchase refresh keeps the same view's new preview and focus",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-scene-night",
+        "preview": true
+      },
+      "previewBeforeSHA": "06171b6063c3f2a87a19be323573be83fb7cabcc41645381351df8330d5b3887",
+      "previewAfterSHA": "06171b6063c3f2a87a19be323573be83fb7cabcc41645381351df8330d5b3887"
+    },
+    {
+      "name": "old purchase refresh keeps the reopened view's new preview and focus",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "",
+        "item": "magic-scene-night",
+        "preview": true
+      },
+      "previewBeforeSHA": "3bc8cc4fdcb95c66755621c446192a7f63e065601dba7abb4cc01c40699b862f",
+      "previewAfterSHA": "3bc8cc4fdcb95c66755621c446192a7f63e065601dba7abb4cc01c40699b862f"
+    },
+    {
+      "name": "old goal response does not announce success in a reopened view",
+      "pass": true,
+      "focus": {
+        "tag": "BUTTON",
+        "id": "shop-language",
+        "preview": false
+      },
+      "feedback": ""
+    }
+  ],
+  "passed": 12,
+  "total": 12,
+  "errors": [],
+  "audioRequests": 0,
+  "remoteRequests": [],
+  "writeRequests": []
+}

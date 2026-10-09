@@ -1,0 +1,1708 @@
+{
+  "checks": [
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./core.js",
+      "target": "try/word-magic/core.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./audio.js",
+      "target": "try/word-magic/audio.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./stage.js",
+      "target": "try/word-magic/stage.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./learning.js",
+      "target": "try/word-magic/learning.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./shop.js",
+      "target": "try/word-magic/shop.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./practice.js",
+      "target": "try/word-magic/practice.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./recall.js",
+      "target": "try/word-magic/recall.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./keepsakes.js",
+      "target": "try/word-magic/keepsakes.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "./keepsake-view.js",
+      "target": "try/word-magic/keepsake-view.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "assets/objects/bear.webp",
+      "target": "try/word-magic/assets/objects/bear.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/app.js",
+      "reference": "assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/core.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/core.js",
+      "reference": "./keepsakes.js",
+      "target": "try/word-magic/keepsakes.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "kit/brand/logo-lab.webp",
+      "target": "try/word-magic/kit/brand/logo-lab.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "kit/lab.css",
+      "target": "try/word-magic/kit/lab.css",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "style.css",
+      "target": "try/word-magic/style.css",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "kit/brand/logo-lab.webp",
+      "target": "try/word-magic/kit/brand/logo-lab.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/book.webp",
+      "target": "try/word-magic/assets/objects/book.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/book.webp",
+      "target": "try/word-magic/assets/objects/book.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "atlas-learning.js",
+      "target": "try/word-magic/atlas-learning.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "collection.js",
+      "target": "try/word-magic/collection.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/index.html",
+      "reference": "app.js",
+      "target": "try/word-magic/app.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/slab-cream-long.webp",
+      "target": "try/word-magic/kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/slab-coral-long.webp",
+      "target": "try/word-magic/kit/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/slab-blush-long.webp",
+      "target": "try/word-magic/kit/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "assets/wide-butter.webp",
+      "target": "try/word-magic/assets/wide-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-lapis-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-lapis-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/badge-cream.webp",
+      "target": "try/word-magic/kit/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/slab-cream-long.webp",
+      "target": "try/word-magic/kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-wide.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-lapis-wide.webp",
+      "target": "try/word-magic/kit/felt/cushion-lapis-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-wide.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/badge-check.webp",
+      "target": "try/word-magic/kit/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "assets/wide-butter.webp",
+      "target": "try/word-magic/assets/wide-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/tex-coral.webp",
+      "target": "try/word-magic/kit/felt/tex-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "assets/wide-lapis.webp",
+      "target": "try/word-magic/assets/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/wide-cream.webp",
+      "target": "try/word-magic/kit/felt/wide-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "assets/wide-coral.webp",
+      "target": "try/word-magic/assets/wide-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-strip.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-lapis-strip.webp",
+      "target": "try/word-magic/kit/felt/cushion-lapis-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-strip.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-strip.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/badge-cream.webp",
+      "target": "try/word-magic/kit/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/badge-coral.webp",
+      "target": "try/word-magic/kit/felt/badge-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-strip.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/slab-cream-long.webp",
+      "target": "try/word-magic/kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-lapis-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-lapis-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-phone.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-phone.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-phone.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-phone.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-phone.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-phone.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "assets/wide-lapis.webp",
+      "target": "try/word-magic/assets/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-butter-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-butter-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/style.css",
+      "reference": "kit/felt/cushion-blush-mid.webp",
+      "target": "try/word-magic/kit/felt/cushion-blush-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/shop.js",
+      "reference": "./stage.js",
+      "target": "try/word-magic/stage.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/shop.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/shop.js",
+      "reference": "assets/scenes/village.webp",
+      "target": "try/word-magic/assets/scenes/village.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/shop.js",
+      "reference": "assets/scenes/village.webp",
+      "target": "try/word-magic/assets/scenes/village.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/recall.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/recall.js",
+      "reference": "./core.js",
+      "target": "try/word-magic/core.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/word-magic/keepsakes.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/keepsake-view.js",
+      "reference": "./content.js",
+      "target": "try/word-magic/content.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/keepsake-view.js",
+      "reference": "./stage.js",
+      "target": "try/word-magic/stage.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/word-magic/keepsake-view.js",
+      "reference": "./keepsakes.js",
+      "target": "try/word-magic/keepsakes.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-core.js",
+      "target": "try/order-rush/beginner-core.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-voice.js",
+      "target": "try/order-rush/beginner-voice.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-effects.js",
+      "target": "try/order-rush/beginner-effects.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-shop.js",
+      "target": "try/order-rush/beginner-shop.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-picnic.js",
+      "target": "try/order-rush/beginner-picnic.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./beginner-return.js",
+      "target": "try/order-rush/beginner-return.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./",
+      "target": "try/order-rush/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./",
+      "target": "try/order-rush/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/badge-check.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/cast/face/rabbit.webp",
+      "target": "try/order-rush/beginner-assets/cast/face/rabbit.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/progress/lantern.webp",
+      "target": "try/order-rush/beginner-assets/progress/lantern.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "./",
+      "target": "try/order-rush/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-smile.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/picnic/rolled-mat.webp",
+      "target": "try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/cushion-blush-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-blush-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/cushion-lapis-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-lapis-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/felt/cushion-cream-mid.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/cushion-butter-wide.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/slab-coral-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/felt/badge-check.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/cast/face/rabbit.webp",
+      "target": "try/order-rush/beginner-assets/cast/face/rabbit.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-assets/progress/lantern.webp",
+      "target": "try/order-rush/beginner-assets/progress/lantern.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-smile.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-smile.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.js",
+      "reference": "beginner-kit/brand/mongle-cheer.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-core.js",
+      "reference": "beginner-assets/beginner/water.webp",
+      "target": "try/order-rush/beginner-assets/beginner/water.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-core.js",
+      "reference": "beginner-assets/beginner/bread.webp",
+      "target": "try/order-rush/beginner-assets/beginner/bread.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-core.js",
+      "reference": "beginner-assets/beginner/apple.webp",
+      "target": "try/order-rush/beginner-assets/beginner/apple.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "./beginner-picnic.js",
+      "target": "try/order-rush/beginner-picnic.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/brand/mongle-smile.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-assets/beginner/bread.webp",
+      "target": "try/order-rush/beginner-assets/beginner/bread.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/felt/cushion-blush-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-blush-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/felt/cushion-lapis-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-lapis-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-assets/felt/cushion-cream-mid.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/felt/cushion-butter-wide.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/felt/slab-coral-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-assets/picnic/rolled-mat.webp",
+      "target": "try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-kit/brand/mongle-smile.webp",
+      "target": "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-shop.js",
+      "reference": "beginner-assets/beginner/bread.webp",
+      "target": "try/order-rush/beginner-assets/beginner/bread.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/wide-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/wide-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/badge-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/chip-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/chip-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/cafe.webp",
+      "target": "try/order-rush/beginner-assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/cafe.webp",
+      "target": "try/order-rush/beginner-assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/cafe.webp",
+      "target": "try/order-rush/beginner-assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/cafe.webp",
+      "target": "try/order-rush/beginner-assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/chip-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/chip-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/badge-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/badge-coral.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/badge-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-blush-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-blush-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-butter-wide.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-blush-wide.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-blush-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/tag-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/tag-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/chip-blush-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/chip-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/tag-cream.webp",
+      "target": "try/order-rush/beginner-kit/felt/tag-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-blush-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-blush-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-lapis-strip.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-lapis-strip.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-mid.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-butter-wide.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-coral-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/cafe.webp",
+      "target": "try/order-rush/beginner-assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-blush-tile.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-blush-tile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-assets/felt/cushion-cream-phone.webp",
+      "target": "try/order-rush/beginner-assets/felt/cushion-cream-phone.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/cushion-blush-phone.webp",
+      "target": "try/order-rush/beginner-kit/felt/cushion-blush-phone.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner.css",
+      "reference": "beginner-kit/felt/slab-cream-long.webp",
+      "target": "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/order-rush/beginner-return.js",
+      "reference": "./beginner-core.js",
+      "target": "try/order-rush/beginner-core.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "./audio.js",
+      "target": "try/spaceship-coop/audio.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "./shop.js",
+      "target": "try/spaceship-coop/shop.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "./starbook.js",
+      "target": "try/spaceship-coop/starbook.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "assets/art/felt-rocket-v2.webp",
+      "target": "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/app.js",
+      "reference": "assets/art/felt-rocket-v2.webp",
+      "target": "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "./audio.js",
+      "target": "try/spaceship-coop/audio.js",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/art/felt-rocket-v2.webp",
+      "target": "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/starbook.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.js",
+      "reference": "./starbook.js",
+      "target": "try/spaceship-coop/starbook.js",
+      "source": "payload"
+    },
+    {
+      "from": "try/spaceship-coop/shop.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.js",
+      "reference": "/try/learning-hub/#beginner-title",
+      "target": "try/learning-hub/index.html",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.js",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/fonts/SUIT-Variable.woff2",
+      "target": "try/spaceship-coop/assets/fonts/SUIT-Variable.woff2",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/fonts/InterTight-Medium.woff2",
+      "target": "try/spaceship-coop/assets/fonts/InterTight-Medium.woff2",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/fonts/DMMono-Medium.woff2",
+      "target": "try/spaceship-coop/assets/fonts/DMMono-Medium.woff2",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-cream-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-coral-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-cream-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-blush-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-blush-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-blush-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/disc-coral.webp",
+      "target": "try/spaceship-coop/assets/felt/disc-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/disc-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-butter-mid.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-butter-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-lapis-mid.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-lapis-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/disc-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/ring-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-cream-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-coral-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-coral-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/ring-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-lapis-mid.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-lapis-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-cream-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/ring-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/disc-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/cushion-lapis-mid.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-lapis-mid.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/ring-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/ring-butter.webp",
+      "target": "try/spaceship-coop/assets/felt/ring-butter.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/slab-cream-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/style.css",
+      "reference": "assets/felt/badge-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-coral.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-black.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-black.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/slab-blush-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/badge-check.webp",
+      "target": "try/spaceship-coop/assets/felt/badge-check.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-coral.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-black.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-black.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-coral.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-coral.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-black.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-black.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/cushion-cream.webp",
+      "target": "try/spaceship-coop/assets/felt/cushion-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/wide-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/spaceship-coop/shop.css",
+      "reference": "assets/felt/slab-blush-long.webp",
+      "target": "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/word-magic/assets/objects/rabbit.webp",
+      "target": "try/word-magic/assets/objects/rabbit.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/word-magic/assets/objects/camera.webp",
+      "target": "try/word-magic/assets/objects/camera.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/spaceship-coop/assets/brand/mongle-smile.webp",
+      "target": "try/spaceship-coop/assets/brand/mongle-smile.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/order-rush/beginner-assets/beginner/bread.webp",
+      "target": "try/order-rush/beginner-assets/beginner/bread.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "target": "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/spaceship-coop/assets/felt/sparkle.webp",
+      "target": "try/spaceship-coop/assets/felt/sparkle.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/word-magic/assets/objects/bear.webp",
+      "target": "try/word-magic/assets/objects/bear.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/collection-page.js",
+      "reference": "/try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+      "target": "try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/entry-check/assets/scenes/library-m.webp",
+      "target": "try/entry-check/assets/scenes/library-m.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/word-magic/kit/felt/wide-cream.webp",
+      "target": "try/word-magic/kit/felt/wide-cream.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/order-rush/assets/cafe.webp",
+      "target": "try/order-rush/assets/cafe.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/spaceship-coop/assets/felt/wide-black.webp",
+      "target": "try/spaceship-coop/assets/felt/wide-black.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "target": "try/spaceship-coop/assets/felt/disc-lapis.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "./assets/slab-cream-long.webp",
+      "target": "try/learning-hub/assets/slab-cream-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "/try/word-magic/kit/felt/slab-blush-long.webp",
+      "target": "try/word-magic/kit/felt/slab-blush-long.webp",
+      "source": "published-baseline"
+    },
+    {
+      "from": "try/learning-hub/beginner-cards.css",
+      "reference": "./assets/slab-cream-long.webp",
+      "target": "try/learning-hub/assets/slab-cream-long.webp",
+      "source": "published-baseline"
+    }
+  ],
+  "missing": [],
+  "baselineDependencies": [
+    "try/entry-check/assets/scenes/library-m.webp",
+    "try/learning-hub/assets/slab-cream-long.webp",
+    "try/learning-hub/index.html",
+    "try/order-rush/assets/cafe.webp",
+    "try/order-rush/beginner-assets/beginner/apple.webp",
+    "try/order-rush/beginner-assets/beginner/bread.webp",
+    "try/order-rush/beginner-assets/beginner/water.webp",
+    "try/order-rush/beginner-assets/cafe.webp",
+    "try/order-rush/beginner-assets/cast/face/rabbit.webp",
+    "try/order-rush/beginner-assets/felt/cushion-blush-tile.webp",
+    "try/order-rush/beginner-assets/felt/cushion-cream-mid.webp",
+    "try/order-rush/beginner-assets/felt/cushion-cream-phone.webp",
+    "try/order-rush/beginner-assets/felt/cushion-cream-tile.webp",
+    "try/order-rush/beginner-assets/picnic/rolled-mat.webp",
+    "try/order-rush/beginner-assets/progress/lantern.webp",
+    "try/order-rush/beginner-effects.js",
+    "try/order-rush/beginner-kit/brand/mongle-cheer.webp",
+    "try/order-rush/beginner-kit/brand/mongle-smile.webp",
+    "try/order-rush/beginner-kit/felt/badge-check.webp",
+    "try/order-rush/beginner-kit/felt/badge-coral.webp",
+    "try/order-rush/beginner-kit/felt/badge-cream.webp",
+    "try/order-rush/beginner-kit/felt/chip-blush-long.webp",
+    "try/order-rush/beginner-kit/felt/cushion-blush-phone.webp",
+    "try/order-rush/beginner-kit/felt/cushion-blush-strip.webp",
+    "try/order-rush/beginner-kit/felt/cushion-blush-wide.webp",
+    "try/order-rush/beginner-kit/felt/cushion-butter-wide.webp",
+    "try/order-rush/beginner-kit/felt/cushion-lapis-strip.webp",
+    "try/order-rush/beginner-kit/felt/slab-blush-long.webp",
+    "try/order-rush/beginner-kit/felt/slab-coral-long.webp",
+    "try/order-rush/beginner-kit/felt/slab-cream-long.webp",
+    "try/order-rush/beginner-kit/felt/tag-cream.webp",
+    "try/order-rush/beginner-kit/felt/wide-cream.webp",
+    "try/order-rush/beginner-picnic.js",
+    "try/order-rush/beginner-voice.js",
+    "try/order-rush/index.html",
+    "try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+    "try/spaceship-coop/assets/brand/mongle-smile.webp",
+    "try/spaceship-coop/assets/felt/badge-check.webp",
+    "try/spaceship-coop/assets/felt/badge-cream.webp",
+    "try/spaceship-coop/assets/felt/cushion-butter-mid.webp",
+    "try/spaceship-coop/assets/felt/cushion-butter.webp",
+    "try/spaceship-coop/assets/felt/cushion-cream.webp",
+    "try/spaceship-coop/assets/felt/cushion-lapis-mid.webp",
+    "try/spaceship-coop/assets/felt/cushion-lapis.webp",
+    "try/spaceship-coop/assets/felt/disc-coral.webp",
+    "try/spaceship-coop/assets/felt/disc-lapis.webp",
+    "try/spaceship-coop/assets/felt/ring-butter.webp",
+    "try/spaceship-coop/assets/felt/slab-blush-long.webp",
+    "try/spaceship-coop/assets/felt/slab-coral-long.webp",
+    "try/spaceship-coop/assets/felt/slab-cream-long.webp",
+    "try/spaceship-coop/assets/felt/sparkle.webp",
+    "try/spaceship-coop/assets/felt/wide-black.webp",
+    "try/spaceship-coop/assets/felt/wide-coral.webp",
+    "try/spaceship-coop/assets/felt/wide-lapis.webp",
+    "try/spaceship-coop/assets/fonts/DMMono-Medium.woff2",
+    "try/spaceship-coop/assets/fonts/InterTight-Medium.woff2",
+    "try/spaceship-coop/assets/fonts/SUIT-Variable.woff2",
+    "try/spaceship-coop/audio.js",
+    "try/word-magic/assets/objects/bear.webp",
+    "try/word-magic/assets/objects/book.webp",
+    "try/word-magic/assets/objects/camera.webp",
+    "try/word-magic/assets/objects/rabbit.webp",
+    "try/word-magic/assets/scenes/village.webp",
+    "try/word-magic/assets/wide-butter.webp",
+    "try/word-magic/assets/wide-coral.webp",
+    "try/word-magic/assets/wide-lapis.webp",
+    "try/word-magic/atlas-learning.js",
+    "try/word-magic/audio.js",
+    "try/word-magic/content.js",
+    "try/word-magic/kit/brand/logo-lab.webp",
+    "try/word-magic/kit/felt/badge-check.webp",
+    "try/word-magic/kit/felt/badge-coral.webp",
+    "try/word-magic/kit/felt/badge-cream.webp",
+    "try/word-magic/kit/felt/cushion-blush-mid.webp",
+    "try/word-magic/kit/felt/cushion-blush-phone.webp",
+    "try/word-magic/kit/felt/cushion-blush-strip.webp",
+    "try/word-magic/kit/felt/cushion-blush-wide.webp",
+    "try/word-magic/kit/felt/cushion-butter-mid.webp",
+    "try/word-magic/kit/felt/cushion-butter-phone.webp",
+    "try/word-magic/kit/felt/cushion-butter-strip.webp",
+    "try/word-magic/kit/felt/cushion-butter-wide.webp",
+    "try/word-magic/kit/felt/cushion-lapis-mid.webp",
+    "try/word-magic/kit/felt/cushion-lapis-strip.webp",
+    "try/word-magic/kit/felt/cushion-lapis-wide.webp",
+    "try/word-magic/kit/felt/slab-blush-long.webp",
+    "try/word-magic/kit/felt/slab-coral-long.webp",
+    "try/word-magic/kit/felt/slab-cream-long.webp",
+    "try/word-magic/kit/felt/tex-coral.webp",
+    "try/word-magic/kit/felt/wide-cream.webp",
+    "try/word-magic/kit/lab.css",
+    "try/word-magic/learning.js",
+    "try/word-magic/practice.js",
+    "try/word-magic/stage.js"
+  ]
+}

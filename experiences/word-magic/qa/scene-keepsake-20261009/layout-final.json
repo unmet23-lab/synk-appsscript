@@ -1,0 +1,291 @@
+{
+  "at": "2026-10-09T14:49:29.549Z",
+  "fixture": "synthetic kept scenes, no learning or account claim",
+  "results": [
+    {
+      "width": 320,
+      "dimensions": {
+        "overflow": false,
+        "dialogOverflow": false,
+        "columns": 1,
+        "pictureWidth": 254,
+        "pictureHeight": 142.875,
+        "cardWidth": 272,
+        "controls": [
+          {
+            "width": 50.984375,
+            "height": 46
+          },
+          {
+            "width": 129.015625,
+            "height": 48.796875
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 254,
+            "height": 54
+          },
+          {
+            "width": 124,
+            "height": 46
+          },
+          {
+            "width": 124,
+            "height": 46
+          }
+        ]
+      },
+      "errors": [],
+      "audioRequests": 0
+    },
+    {
+      "width": 390,
+      "dimensions": {
+        "overflow": false,
+        "dialogOverflow": false,
+        "columns": 1,
+        "pictureWidth": 324,
+        "pictureHeight": 182.25,
+        "cardWidth": 342,
+        "controls": [
+          {
+            "width": 50.984375,
+            "height": 46
+          },
+          {
+            "width": 129.015625,
+            "height": 48.796875
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 324,
+            "height": 54
+          },
+          {
+            "width": 159,
+            "height": 46
+          },
+          {
+            "width": 159,
+            "height": 46
+          }
+        ]
+      },
+      "errors": [],
+      "audioRequests": 0
+    },
+    {
+      "width": 1200,
+      "dimensions": {
+        "overflow": false,
+        "dialogOverflow": false,
+        "columns": 3,
+        "pictureWidth": 275.328125,
+        "pictureHeight": 154.859375,
+        "cardWidth": 301.328125,
+        "controls": [
+          {
+            "width": 66.734375,
+            "height": 49
+          },
+          {
+            "width": 135.578125,
+            "height": 50.34375
+          },
+          {
+            "width": 275.328125,
+            "height": 54
+          },
+          {
+            "width": 134.65625,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 275.328125,
+            "height": 54
+          },
+          {
+            "width": 134.65625,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 275.34375,
+            "height": 54
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 275.328125,
+            "height": 54
+          },
+          {
+            "width": 134.65625,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 275.328125,
+            "height": 54
+          },
+          {
+            "width": 134.65625,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 275.34375,
+            "height": 54
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          },
+          {
+            "width": 134.671875,
+            "height": 46
+          }
+        ]
+      },
+      "errors": [],
+      "audioRequests": 0
+    }
+  ]
+}

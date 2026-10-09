@@ -1,0 +1,3 @@
+page.waitForFunction: Timeout 30000ms exceeded.
+    at heard (C:\Users\q1212\Documents\SYNK-appsscript\experiences\word-magic\qa\return-memory-20261009\check.cjs:10:25)
+    at C:\Users\q1212\Documents\SYNK-appsscript\experiences\word-magic\qa\return-memory-20261009\check.cjs:27:191

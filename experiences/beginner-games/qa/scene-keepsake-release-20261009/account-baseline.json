@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-09T14:34:56.542Z",
+  "baselineCommit": "31d4fd561897b8c84b1fa49caf590f9966cbee84",
+  "runtime": {
+    "path": "account/dist/client.js",
+    "bytes": 202878,
+    "sha256": "97774f540732ed63125c0340e09ebaff2d1e3c5acfcc83c9eae315a08e05d9fb"
+  },
+  "frozenCandidateRow": {
+    "path": "account/dist/client.js",
+    "beforeSHA256": "3eebe64ec8563d0401c3c515e20754ad52b44a7bcb077e1066557eecb3688241",
+    "beforeBytes": 202691,
+    "sha256": "97774f540732ed63125c0340e09ebaff2d1e3c5acfcc83c9eae315a08e05d9fb",
+    "bytes": 202878
+  },
+  "originalRelease": "44e05a95d58ab69875ad825dd6fbf640eedf97e7",
+  "sourceGraphFile": "experiences/beginner-games/qa/nonvoice-finish-20261009/releases/r3/source-graph.json",
+  "sourceGraphSHA256": "3a92936708b4e89bf20f7b6994a383132f310b83af5ddd1550080e7638530557",
+  "sourceGraphShape": [
+    "inputs",
+    "changed",
+    "unchanged"
+  ],
+  "candidateScopeExcludesAccount": true
+}

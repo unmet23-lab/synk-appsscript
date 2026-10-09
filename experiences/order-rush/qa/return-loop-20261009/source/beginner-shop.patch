@@ -1,0 +1,64 @@
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-shop.before.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-shop.after.mjs"
+index ff5943661..d7c503599 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-shop.before.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-shop.after.mjs"
+@@ -11,6 +11,15 @@ const PICKS = Object.freeze([
+   { id: PICNIC_ID, kind: 'order-playset', value: 'picnic', ko: '소풍 친구 초대 세트', en: 'Picnic with friends', image: 'assets/picnic/rolled-mat.webp' },
+ ]);
+ const tr = (ko, en) => `${ko}<small class="b-en" lang="en">${en}</small>`;
++const escapeText = value => String(value ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
++export function beginnerRewardLink(route) {
++  const valid = route?.available && typeof route.href === 'string' && /^\/(?!\/)/.test(route.href);
++  const href = valid ? route.href : '/learning-hub/#beginner-title';
++  const label = valid ? route.label : '무료 입문 놀이 찾아보기', labelEn = valid ? route.labelEn : 'Explore free beginner games';
++  const description = valid ? route.description : route?.reason === 'daily-limit' ? '오늘 받을 수 있는 코인은 다 모았어요. 무료 연습은 계속할 수 있어요.' : '기본 가게와 다른 입문 놀이는 무료예요. 복습 반복은 추가 코인을 주지 않아요.';
++  const descriptionEn = valid ? route.descriptionEn : route?.reason === 'daily-limit' ? 'You reached today’s coin limit. Free practice is still available.' : 'Your basic shop and other beginner games are free. Review repeats earn no extra coins.';
++  return `<div class="b-reward-route"><p>${tr(escapeText(description), escapeText(descriptionEn))}</p><a class="felt-cta b-bilingual" data-decor-learn href="${escapeText(href)}">${tr(escapeText(label), escapeText(labelEn))}</a></div>`;
++}
+ 
+ export function createBeginnerShop({ beforeOpen = () => {}, onPlayPicnic = () => {}, onCollectionChange = () => {}, api = globalThis.SynkPlayCollection } = {}) {
+   const dialog = document.createElement('dialog');
+@@ -23,7 +32,7 @@ export function createBeginnerShop({ beforeOpen = () => {}, onPlayPicnic = () =>
+     <p class="b-practice-note">27개 첫 주문을 마치면 공통 코인이 모여요. 다른 미니게임에서 모은 코인도 함께 써요. 구매는 선택이며 기본 가게와 그림 도움은 계속 무료예요.<small class="b-en" lang="en">Complete all 27 first orders to earn shared coins. Coins from other minigames work here too. Your basic shop and picture help stay free. Sign in with SYNK ID to keep purchases across devices. Check the account save status above.</small></p>`;
+   document.body.append(dialog);
+   const rows = dialog.querySelector('[data-decor-items]'), action = dialog.querySelector('[data-decor-action]'), note = dialog.querySelector('[data-decor-note]');
+-  let wallet = null, catalog = [], selected = PICNIC_ID, goalInfo = null, busy = false, opener = null, revision = 0, viewRevision = 0, focusRevision = 0;
++  let wallet = null, catalog = [], selected = PICNIC_ID, goalInfo = null, rewardRoute = null, busy = false, opener = null, revision = 0, viewRevision = 0, focusRevision = 0;
+   const owned = item => !!wallet?.owned?.includes(item.id);
+   const equipped = item => wallet?.equipped?.[item.kind] === item.value;
+   function say(ko = '', en = '') { note.replaceChildren(); if (ko) { note.append(ko); const sub = document.createElement('small'); sub.className = 'b-en'; sub.lang = 'en'; sub.textContent = en; note.append(sub); } }
+@@ -33,7 +42,7 @@ export function createBeginnerShop({ beforeOpen = () => {}, onPlayPicnic = () =>
+       document.body.dataset[key] = item?.value || fallback;
+     }
+   }
+-  const controlAttributes = ['data-decor-close', 'data-decor-pick', 'data-decor-play', 'data-decor-equip', 'data-decor-buy', 'data-decor-goal-toggle', 'data-decor-retry'];
++  const controlAttributes = ['data-decor-close', 'data-decor-pick', 'data-decor-play', 'data-decor-equip', 'data-decor-buy', 'data-decor-goal-toggle', 'data-decor-retry', 'data-decor-learn'];
+   function rememberFocus() {
+     const node = document.activeElement, attribute = controlAttributes.find(name => dialog.contains(node) && node.hasAttribute(name));
+     return attribute ? { node, attribute, value: node.getAttribute(attribute), selected, view: viewRevision, interaction: focusRevision } : null;
+@@ -68,7 +77,7 @@ export function createBeginnerShop({ beforeOpen = () => {}, onPlayPicnic = () =>
+     else if (playset && owned(picked)) cta = `<button class="felt-cta coral" data-decor-play ${busy ? 'disabled' : ''}>${tr('친구 3명 초대하기', 'Play three picnic orders')}</button>`;
+     else if (equipped(picked)) cta = `<p>${tr('지금 이 모습으로 놀고 있어요', 'This decoration is already in use.')}</p>`;
+     else if (owned(picked)) cta = `<button class="felt-cta coral" data-decor-equip ${busy ? 'disabled' : ''}>${tr('이 모습 적용하기', 'Use this decoration')}</button>`;
+-    else if (wallet.coins < item.price) cta = `<p>${tr(`${item.price - wallet.coins}코인 더 모으면 살 수 있어요`, `You need ${item.price - wallet.coins} more coins.`)}</p>`;
++    else if (wallet.coins < item.price) cta = `<p>${tr(`${item.price - wallet.coins}코인 더 모으면 살 수 있어요`, `You need ${item.price - wallet.coins} more coins.`)}</p>${beginnerRewardLink(rewardRoute)}`;
+     else cta = `<button class="felt-cta coral" data-decor-buy ${busy ? 'disabled' : ''}>${tr(`${item.price}코인으로 구매하기`, `Buy for ${item.price} coins`)}</button>`;
+     action.innerHTML = `<p><strong>${tr(picked.ko, picked.en)}</strong></p>${cta}${wallet && item && (!owned(picked) || goal?.id === picked.id) ? `<button class="chip-btn" data-decor-goal-toggle ${busy ? 'disabled' : ''}>${tr(goal?.id === picked.id ? '목표 해제하기' : '이걸 목표로 모으기', goal?.id === picked.id ? 'Clear this goal' : 'Save for this goal')}</button>` : ''}`;
+     restoreFocus(focused);
+@@ -76,12 +85,12 @@ export function createBeginnerShop({ beforeOpen = () => {}, onPlayPicnic = () =>
+   async function refresh({ resetSelection = false } = {}) {
+     const token = ++revision, view = viewRevision;
+     let loaded = null, items = [];
+-    let nextGoal = null;
+-    try { [loaded, items, nextGoal] = await Promise.all([api?.load(), api?.catalog(), api?.beginnerProgress?.('order-rush')]); } catch { /* Keep playable defaults. */ }
++    let nextGoal = null, nextRoute = null;
++    try { [loaded, items, nextGoal, nextRoute] = await Promise.all([api?.load(), api?.catalog(), api?.beginnerProgress?.('order-rush'), Promise.resolve(api?.beginnerRewardRoute?.('order-rush')).catch(() => null)]); } catch { /* Keep playable defaults. */ }
+     if (token !== revision) return false;
+-    wallet = loaded || null; catalog = Array.isArray(items) ? items : []; goalInfo = nextGoal || null;
++    wallet = loaded || null; catalog = Array.isArray(items) ? items : []; goalInfo = nextGoal || null; rewardRoute = nextRoute || null;
+     if (resetSelection && view === viewRevision) selected = goalInfo?.goal?.id || PICNIC_ID;
+-    apply(); onCollectionChange({ wallet, goalInfo }); if (dialog.open) render(); return true;
++    apply(); onCollectionChange({ wallet, goalInfo, rewardRoute }); if (dialog.open) render(); return true;
+   }
+   function fail(reason, purchased = false) {
+     const prefix = purchased ? ['구매는 저장됐어요. ', 'Your purchase was saved. '] : ['', ''];

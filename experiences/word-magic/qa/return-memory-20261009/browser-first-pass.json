@@ -1,0 +1,57 @@
+{
+  "at": "2026-10-09T13:08:02.931Z",
+  "url": "http://127.0.0.1:49321/word-magic/",
+  "browser": "isolated Chrome, default audio autoplay policy",
+  "fixtures": "anonymous synthetic progress only",
+  "realParticipants": 0,
+  "physicalPhone": 0,
+  "externalOrApiRequests": [],
+  "voiceGeneration": 0,
+  "checks": [
+    {
+      "width": 390,
+      "case": "first visit has no unintroduced recall"
+    },
+    {
+      "width": 390,
+      "case": "6 discoveries / 2 sound checks shown separately; direct remaining check preserves first response and grants existing completion reward once"
+    },
+    {
+      "width": 390,
+      "case": "chapter link opens completed ending without repeating coins; no audio before start click"
+    },
+    {
+      "width": 320,
+      "case": "first visit has no unintroduced recall"
+    },
+    {
+      "width": 320,
+      "case": "6 discoveries / 2 sound checks shown separately; direct remaining check preserves first response and grants existing completion reward once"
+    },
+    {
+      "width": 320,
+      "case": "chapter link opens completed ending without repeating coins; no audio before start click"
+    },
+    {
+      "chapter": 0,
+      "width": 390,
+      "case": "introduced-only recall on fresh object; neutral paired scene / picture-only choices; wrong first response correction; replay and finish add no progress, Atlas, wallet changes; prior puzzle restored"
+    },
+    {
+      "chapter": 1,
+      "width": 320,
+      "case": "introduced-only recall on fresh object; neutral paired scene / picture-only choices; wrong first response correction; replay and finish add no progress, Atlas, wallet changes; prior puzzle restored"
+    },
+    {
+      "chapter": 2,
+      "width": 390,
+      "case": "introduced-only recall on fresh object; neutral paired scene / picture-only choices; wrong first response correction; replay and finish add no progress, Atlas, wallet changes; prior puzzle restored"
+    },
+    {
+      "case": "3-question cap prioritizes a previous miss; generic help contains no revealed answer; reload leaves canonical progress intact"
+    },
+    {
+      "case": "manifest failure preserves prior adventure and allows retry; sound interruption must complete replay before a choice"
+    }
+  ]
+}

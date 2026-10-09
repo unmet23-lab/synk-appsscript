@@ -1,0 +1,30 @@
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-core.before.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-core.after.mjs"
+index 288667980..a91bf1ef2 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-core.before.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\order-rush\\qa\\return-loop-20261009\\source\\beginner-core.after.mjs"
+@@ -70,7 +70,15 @@ export function metadata(order) {
+     skillId: Object.hasOwn(ITEMS, order.voice) ? 'ko.listening.word' : 'ko.listening.detail', difficulty: /-[123]$/.test(order.voice) ? 2 : 1, modality: 'listening', responseFormat: 'action', audioRequired: true, confounded: false, conceptIds: [] };
+ }
+ export function newProgress(seed = Date.now() % 1000000) {
+-  return { version: 1, seed: Math.max(1, Math.trunc(seed)), stage: 0, completed: [], records: [], checkpoint: null, roundId: null, finished: false };
++  return { version: 1, seed: Math.max(1, Math.trunc(seed)), stage: 0, completed: [], records: [], checkpoint: null, roundId: null, finished: false, festivalPractice: { visits: 0, previous: null }, memoryPractice: { visits: 0, previous: null } };
++}
++// Optional replay history lives inside the existing account-backed chapter key.
++// It never unlocks a stage, changes the story seed or adds a listening result.
++export function readPracticeHistory(value, count) {
++  const visits = Number.isSafeInteger(value?.visits) && value.visits >= 0 ? Math.min(value.visits, Number.MAX_SAFE_INTEGER - 1) : 0;
++  const previous = value?.previous;
++  const valid = Array.isArray(previous?.voices) && previous.voices.length > 0 && previous.voices.length <= count && previous.voices.every(id => VOICE_LINES.some(line => line.id === id)) && Array.isArray(previous?.guests) && previous.guests.length === previous.voices.length && previous.guests.every(id => GUESTS.some(guest => guest.id === id));
++  return { visits, previous: valid ? { voices: [...previous.voices], guests: [...previous.guests] } : null };
+ }
+ export function readProgress(value) {
+   if (!value || value.version !== 1 || !Number.isInteger(value.seed) || value.seed < 1 || value.seed > 1e12) return newProgress();
+@@ -82,6 +90,8 @@ export function readProgress(value) {
+   out.finished = out.completed.length === STAGES.length;
+   out.records = Array.isArray(value.records) ? value.records.filter(r => r && !r.demo && Number.isInteger(r.stage) && r.stage >= 0 && r.stage < STAGES.length && VOICE_LINES.some(v => v.id === r.voice)).slice(0, 300) : [];
+   out.roundId = typeof value.roundId === 'string' && value.roundId.length < 180 ? value.roundId : null;
++  out.festivalPractice = readPracticeHistory(value.festivalPractice, STAGES[3].rounds);
++  out.memoryPractice = readPracticeHistory(value.memoryPractice, 2);
+   const c = value.checkpoint;
+   if (!out.finished && c && c.stage === out.stage && ['demo', 'order'].includes(c.phase) && Number.isInteger(c.index) && c.index >= 0 && c.index < (c.phase === 'demo' ? STAGES[out.stage].demos.length : STAGES[out.stage].rounds)) out.checkpoint = { phase: c.phase, index: c.index, stage: c.stage, touched: c.touched === true, attempts: Number.isInteger(c.attempts) ? Math.max(0, Math.min(999, c.attempts)) : 0, firstCorrect: typeof c.firstCorrect === 'boolean' ? c.firstCorrect : null, helped: c.helped === true, replayed: c.replayed === true, hint: c.hint === true, tray: Array.isArray(c.tray) ? c.tray.filter(item => STAGES[out.stage].items.includes(item)).slice(0, 3) : [] };
+   return out;
