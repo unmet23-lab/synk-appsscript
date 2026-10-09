@@ -1,0 +1,50 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 1400,
+        "height": 720
+      },
+      "dpr": 1,
+      "drawCalls": 153,
+      "triangles": 263648,
+      "lines": 10849,
+      "instancedFoliage": 1503,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  },
+  {
+    "name": "mobile",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 585,
+        "height": 697
+      },
+      "dpr": 1.5,
+      "drawCalls": 125,
+      "triangles": 219536,
+      "lines": 6898,
+      "instancedFoliage": 1294,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  }
+]

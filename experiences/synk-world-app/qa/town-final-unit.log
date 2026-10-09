@@ -1,0 +1,36 @@
+✔ logout invalidates slow decoded responses (6.1081ms)
+✔ server snapshot revision never moves backward (0.5513ms)
+✔ appearance broadcasts only invalidate distinct server state and can be disabled for a receiving bridge (0.8793ms)
+✔ network failure retains exact outfit request for replay (0.4449ms)
+✔ conflict does not silently rebase and overwrite (0.2946ms)
+✔ failed server logout does not silently re-login on restart (0.3342ms)
+✔ pending outfit belongs only to its account (0.1591ms)
+✔ a different tab login cannot redirect an existing tab outfit write to the shared-cookie account (15.5543ms)
+✔ a restored tab pins its restored identity before another tab changes the cookie (0.4492ms)
+✔ a late superseded login cookie cannot replace the latest identity before or after reload (1.0013ms)
+✔ logging out one tab leaves a different tab account usable (0.3047ms)
+✔ a late old logout must not clear a newly signed-in account token (0.2772ms)
+✔ default browser fetch keeps its Window receiver (0.1026ms)
+✔ tab identifiers survive reload without placing credentials in either storage (0.3702ms)
+﹣ real browser tabs retain separate accounts across reload and logout (0.0968ms) # SKIP
+✔ logout during a delayed appearance refresh immediately clears the published avatar and rejects late state (4.1908ms)
+✔ A to B account switch during a refresh ends the old visit before any command can reach either account (0.9016ms)
+✔ a second same-account revision notice during a refresh triggers a trailing authoritative read (0.6347ms)
+✔ Town API 401 clears and publishes the avatar immediately (0.6221ms)
+✔ Town 409 preserves its string error code and Korean recovery message without ending the account (1.4297ms)
+✔ a namespace change while a Town response is pending cannot publish or return the old visit result (0.5816ms)
+✔ disposing a bridge removes event resources and suppresses delayed appearance results (0.3667ms)
+✔ town host rejects missing or path-shaped identities (0.8311ms)
+✔ authenticated accounts own separate durable town fixtures (23.6716ms)
+✔ restarting a host preserves the same account and leaves another unchanged (4.8295ms)
+✔ rejected commands cannot change revision or another account (1.3234ms)
+✔ appearance only renders known slots with server-returned ownership (0.2149ms)
+✔ unauthenticated appearance is empty and not verified (0.0925ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 164.0128

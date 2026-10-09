@@ -1,0 +1,121 @@
+{
+  "checkedAt": "2026-10-08T20:04:54.699Z",
+  "base": "http://127.0.0.1:4396",
+  "passed": 12,
+  "checks": [
+    "home A opens the authenticated same-origin Town frame",
+    "Town uses the shared v3 avatar with both server-owned items",
+    "phone adds a close camera while retaining the walk view",
+    "phone joystick controls the shared avatar in the close view",
+    "independent account B never receives account A scarf in its Town renderer",
+    "open Town updates its actual meshes after a confirmed home outfit change",
+    "logging out clears Town clothing and disables its active game actions",
+    "logging out A leaves independently signed-in B connected",
+    "PC restores the same server-owned combined outfit and close view",
+    "PC keyboard controls the restored shared avatar in the close view",
+    "connected Town has no runtime errors",
+    "connected Town has no missing assets"
+  ],
+  "errors": [],
+  "assets": [],
+  "metrics": [
+    {
+      "label": "mobile-A-initial",
+      "worldLinked": true,
+      "connected": true,
+      "appearanceVerified": true,
+      "playerAvatar": {
+        "avatarVersion": "mongle-v3",
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "productionAsset": false
+      },
+      "camera": "follow",
+      "drawCalls": 137,
+      "triangles": 502349,
+      "assetFailures": [],
+      "physicalDeviceVerified": false
+    },
+    {
+      "label": "mobile-A-close",
+      "worldLinked": true,
+      "connected": true,
+      "appearanceVerified": true,
+      "playerAvatar": {
+        "avatarVersion": "mongle-v3",
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "productionAsset": false
+      },
+      "camera": "close",
+      "drawCalls": 106,
+      "triangles": 413653,
+      "assetFailures": [],
+      "physicalDeviceVerified": false
+    },
+    {
+      "label": "desktop-B",
+      "worldLinked": true,
+      "connected": true,
+      "appearanceVerified": true,
+      "playerAvatar": {
+        "avatarVersion": "mongle-v3",
+        "outfit": "none",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "productionAsset": false
+      },
+      "camera": "follow",
+      "drawCalls": 179,
+      "triangles": 596747,
+      "assetFailures": [],
+      "physicalDeviceVerified": false
+    },
+    {
+      "label": "desktop-A-close",
+      "worldLinked": true,
+      "connected": true,
+      "appearanceVerified": true,
+      "playerAvatar": {
+        "avatarVersion": "mongle-v3",
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "productionAsset": false
+      },
+      "camera": "close",
+      "drawCalls": 143,
+      "triangles": 520533,
+      "assetFailures": [],
+      "physicalDeviceVerified": false
+    }
+  ],
+  "limits": [
+    "Local synthetic identity and real browser WebGL only",
+    "No physical-device, Unity build, production login, or TOPIK access verification"
+  ],
+  "finalVisualReview": {
+    "checkedAt": "2026-10-08T20:05:24.2688610Z",
+    "reviewed": [
+      "town-connected-mobile390.png",
+      "town-connected-desktop.png"
+    ],
+    "finding": "The previously visible straight translucent bench/frame bands across the right eye, cheek, scarf and apron are absent in both final front-facing close-view captures. Face and combined costume are unobstructed in these tested views.",
+    "scope": "Visual review of these two final browser captures, not every camera pose or physical device.",
+    "daySceneSha256": "946d0f7de6b52a823f4605d1236d8ce0e23231bb170c140304da57666eb0db7c"
+  }
+}

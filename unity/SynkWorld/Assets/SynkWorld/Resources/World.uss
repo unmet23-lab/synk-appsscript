@@ -1,0 +1,41 @@
+.app { flex-grow: 1; background-color: white; color: rgb(36, 35, 32); font-size: 16px; }
+.shell { flex-grow: 1; flex-direction: row; }
+.main { flex-grow: 1; flex-shrink: 1; }
+.header { height: 84px; flex-shrink: 0; flex-direction: row; align-items: center; padding-left: 40px; padding-right: 40px; }
+.logo { width: 85px; height: 42px; }
+.wordmark { font-size: 13px; letter-spacing: 3px; margin-left: 12px; }
+.scroll { flex-grow: 1; }
+.content { width: 100%; max-width: 1120px; align-self: center; padding-left: 40px; padding-right: 40px; padding-bottom: 64px; }
+Label { white-space: normal; }
+.rehearsal { color: rgb(91, 99, 91); font-size: 12px; margin-bottom: 20px; }
+.title { font-size: 36px; -unity-font-style: bold; margin-bottom: 12px; }
+.subtitle { font-size: 17px; color: rgb(84, 90, 81); margin-bottom: 24px; }
+.muted { color: rgb(93, 96, 89); font-size: 13px; margin-top: 12px; margin-bottom: 12px; }
+.hero { height: 400px; border-radius: 24px; overflow: hidden; margin-bottom: 24px; background-color: rgb(235, 242, 237); }
+.scene { flex-grow: 1; }
+.hero-tools { position: absolute; right: 16px; bottom: 16px; flex-direction: row; }
+.button { background-image: resource('Brand/button-white'); -unity-background-scale-mode: stretch-to-fill; background-color: rgba(255,255,255,0); color: rgb(39, 40, 36); border-width: 0; padding-left: 24px; padding-right: 24px; padding-top: 12px; padding-bottom: 14px; min-height: 54px; font-size: 16px; margin-top: 6px; margin-bottom: 6px; white-space: normal; }
+.button:hover { -unity-background-image-tint-color: rgb(250, 241, 225); }
+.button:focus { border-bottom-width: 2px; border-bottom-color: rgb(22, 59, 119); }
+.button:active { translate: 0 2px; }
+.button:disabled { opacity: .6; }
+.primary { background-image: resource('Brand/button-coral'); color: white; -unity-font-style: bold; min-height: 64px; }
+.primary:hover { -unity-background-image-tint-color: white; }
+.selected { -unity-background-image-tint-color: rgb(244, 196, 171); -unity-font-style: bold; }
+.small-button { min-height: 44px; height: 44px; font-size: 13px; margin-left: 6px; padding-left: 20px; padding-right: 20px; }
+.card { border-radius: 20px; background-color: rgb(248, 249, 246); padding: 24px; margin-top: 12px; margin-bottom: 12px; }
+.card > Label { margin-bottom: 10px; }
+.question { font-size: 22px; -unity-font-style: bold; }
+.error { padding: 20px; background-color: rgb(255, 239, 232); color: rgb(131, 49, 27); border-radius: 16px; margin-top: 12px; }
+.status { padding: 20px; background-color: rgb(235, 243, 235); border-radius: 16px; margin-top: 12px; }
+.nav { width: 180px; flex-shrink: 0; padding: 18px; padding-top: 100px; border-right-width: 1px; border-right-color: rgb(236, 238, 233); }
+.nav-button { font-size: 16px; }
+.mobile .header { height: 70px; padding-left: 20px; padding-right: 20px; }
+.mobile .content { padding-left: 20px; padding-right: 20px; padding-bottom: 28px; }
+.mobile .title { font-size: 28px; }
+.mobile .subtitle { font-size: 15px; }
+.mobile .hero { height: 330px; border-radius: 22px; }
+.mobile .card { padding: 18px; }
+.mobile .question { font-size: 19px; }
+.mobile .nav { width: auto; height: 78px; flex-direction: row; border-top-width: 1px; border-top-color: rgb(236,238,233); padding: 6px; }
+.mobile .nav-button { flex-grow: 1; flex-basis: 0; min-width: 0; padding-left: 3px; padding-right: 3px; font-size: 12px; margin-left: 1px; margin-right: 1px; }

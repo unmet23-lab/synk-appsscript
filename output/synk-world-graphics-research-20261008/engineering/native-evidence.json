@@ -1,0 +1,291 @@
+{
+  "checkedAt": "2026-10-09 (Asia/Seoul)",
+  "scope": "기존 시제품과 코드 재사용에 가중치를 주지 않고, Galaxy S25·iPhone 15 기본형과 PC를 대상으로 새로 설계하는 네이티브 게임 제작 기술 조사. 실제 엔진 설치·게임 빌드·기기 벤치마크는 수행하지 않음.",
+  "versions": [
+    {
+      "engine": "Unity",
+      "latestSupported": "6.6",
+      "releaseDate": "2026-09-01",
+      "status": "Supported production release; 다음 6.7 출시까지 지원",
+      "latestLTS": "6.3 LTS",
+      "ltsSupportUntil": "2027-12 (일반 2년 지원)",
+      "sources": [
+        "https://discussions.unity.com/t/unity-6-6-is-now-available/1735357",
+        "https://unity.com/releases/unity-6/support"
+      ],
+      "qualification": "패치 번호는 확정하지 않음. 설치 시 해당 계열 최신 패치와 필수 플러그인 호환성을 확인. 6.7/Unity7 문서의 존재를 정식 출시로 해석하지 않음."
+    },
+    {
+      "engine": "Unreal Engine",
+      "latestStable": "5.8",
+      "releaseDate": "2026-06-23",
+      "status": "정식 출시. 엔진 안의 개별 기능은 Production-Ready/Beta/Experimental이 서로 다름",
+      "sources": [
+        "https://www.unrealengine.com/news/unreal-engine-5-8-is-now-available"
+      ],
+      "qualification": "정해진 LTS 종료 날짜를 확인하지 못함. 공식 발표는 UE5 버그·회귀 지원 지속을 명시."
+    }
+  ],
+  "findings": [
+    {
+      "id": "unity-release-choice",
+      "claim": "신규 제작에서 Unity 최신 Supported 계열을 쓰는 것은 미리보기 버전 도입과 다르다. Unity는 신규·중기 제작에 Update 계열을 권장하고, 출시를 앞두거나 버전을 고정할 서비스에 LTS를 권장한다.",
+      "supportConditions": "SYNK 초기 기술 검증은 6.6 최신 패치로 시작하고 플러그인·OS 빌드 검증 후 고정. 6.3을 무조건 더 안정적이라 단정하지 않음.",
+      "urls": [
+        "https://unity.com/releases/unity-6/support",
+        "https://discussions.unity.com/t/unity-6-6-is-now-available/1735357"
+      ]
+    },
+    {
+      "id": "unity-66-workflow",
+      "claim": "6.6은 새 프로젝트의 Play 모드 진입 기본값을 Scene-only reload로 바꾸고, Dictionary 직렬화·URP 설정 분석·GRD 프로파일러 등 제작 반복과 문제 진단을 개선한다.",
+      "supportConditions": "도메인 리로드를 생략하면 정적 상태 초기화 규칙을 지켜야 한다. 새 기능 모두를 일괄 적용하지 않는다.",
+      "urls": [
+        "https://discussions.unity.com/t/unity-6-6-is-now-available/1735357",
+        "https://docs.unity.com/en-us/engine/6000.6/manual/whats-new/unity66"
+      ]
+    },
+    {
+      "id": "render-graph",
+      "claim": "Render Graph는 사용하지 않는 패스를 제거하고 자원을 재사용한다. 모바일 타일 기반 GPU에서는 패스를 묶어 타일 메모리를 유지해 대역폭과 렌더링 비용을 줄일 수 있다.",
+      "supportConditions": "효과는 실제 패스 구성과 기기에 따라 다름. 새 커스텀 렌더 패스는 Render Graph 경로로 작성하고 구형 Compatibility mode 의존을 피한다.",
+      "urls": [
+        "https://docs.unity3d.com/6000.3/Documentation/Manual/urp/render-graph-introduction.html"
+      ]
+    },
+    {
+      "id": "forwardplus",
+      "claim": "Forward+는 화면 타일별로 영향을 주는 광원을 가려 물체당 조명 계산을 줄이고 물체당 광원 제한을 제거한다. 카메라별 제한은 남는다.",
+      "supportConditions": "최신이므로 무조건 빠르다는 의미가 아님. 적은 광원·베이크 조명의 Forward와 함께 실제 장면 비교. 16명이라는 인원만으로 렌더 경로를 결정할 수 없음.",
+      "urls": [
+        "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/rendering/forward-rendering-paths.html"
+      ]
+    },
+    {
+      "id": "grd-conditions",
+      "claim": "6.6 GRD는 Forward+ 또는 Deferred+, compute shader 지원 API, MeshRenderer와 BRG 호환 재질을 요구한다. OpenGL ES와 VisionOS는 제외된다. MaterialPropertyBlock 등에도 제약이 있다.",
+      "supportConditions": "반복되는 집·소품·식물의 CPU draw-call 병목 후보. SkinnedMeshRenderer 코스튬·캐릭터가 자동으로 합쳐지고 최적화된다고 주장할 수 없음. 6.3의 Forward+만 지원한다는 문구를 6.6에 그대로 적용하지 않는다.",
+      "urls": [
+        "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer.html"
+      ]
+    },
+    {
+      "id": "grd-not-magic",
+      "claim": "GRD는 CPU 부담을 줄이는 대신 GPU 작업을 소폭 늘린다. GPU가 병목이면 전체 프레임 시간이 악화될 수 있다고 Unity가 명시한다.",
+      "supportConditions": "S25/iPhone15 각각 CPU·GPU 시간을 켠 상태와 끈 상태로 비교한 뒤 채택. 인스턴싱+같은 mesh+같은 shader variant가 많은 장면에서 기대효과가 높음.",
+      "urls": [
+        "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer-performance.html"
+      ]
+    },
+    {
+      "id": "apv",
+      "claim": "Adaptive Probe Volumes는 자동 배치한 빛 샘플을 픽셀마다 사용하여 베이크 간접광을 제공하고, 스트리밍과 여러 조명 시나리오를 지원한다.",
+      "supportConditions": "실시간 무제한 GI가 아니다. 가구 이동·건물 수정의 새 간접광을 자동 재계산해주지 않는다. 정적 배경의 빛과 움직이는 캐릭터의 조화에 유리하며, 메모리·밀도·빛샘을 검증한다.",
+      "urls": [
+        "https://docs.unity.com/en-us/engine/6000.3/manual/lighting-overview/lighting/probevolumes/concept"
+      ]
+    },
+    {
+      "id": "apv-sky",
+      "claim": "APV sky occlusion은 미리 구운 차폐 데이터와 런타임 하늘색으로 낮밤 변화의 간접광을 근사할 수 있다.",
+      "supportConditions": "GPU lightmapper 필요, 베이크 시간·런타임 메모리 증가 가능. 차폐는 정적이며 창문·잎의 투과와 표면색 처리 한계가 있다.",
+      "urls": [
+        "https://docs.unity.com/en-us/engine/6000.5/manual/lighting-overview/lighting/probevolumes/probe-volumes-change-lighting-at-runtime/skyocclusion"
+      ]
+    },
+    {
+      "id": "ue-mobile-path",
+      "claim": "UE5.8은 Mobile Forward와 Mobile Deferred를 제공한다. Epic은 베이크 조명에 Forward, 복잡한 동적 조명과 타일 GPU에는 Deferred의 장점을 설명한다.",
+      "supportConditions": "Deferred는 MSAA를 지원하지 않고 일부 shading model 제약이 있다. 휴대폰에서도 UE 게임 제작은 충분히 가능하나 PC 기본 렌더 설정을 그대로 목표로 잡을 수 없다.",
+      "urls": [
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/mobile-rendering-and-shading-modes-for-unreal-engine"
+      ]
+    },
+    {
+      "id": "ue-nanite-lumen",
+      "claim": "UE5.8 모바일 기능표에서 Mobile Forward/Deferred는 Nanite와 하드웨어 레이트레이싱, Virtual Shadow Maps를 지원하지 않는다. Lumen 모바일은 고급 Android의 Vulkan SM5 desktop renderer에서 Experimental이며 iOS에서는 동작하지 않는다고 명시한다.",
+      "supportConditions": "iPhone15와 S25 공통 출시 화질을 Nanite+Lumen으로 설계하면 안 됨. PC 전용 고화질 옵션은 별도 검증 가능.",
+      "urls": [
+        "https://dev.epicgames.com/documentation/unreal-engine/rendering-features-reference",
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-lumen-global-illumination-on-mobile-in-unreal-engine"
+      ]
+    },
+    {
+      "id": "ue-desktop-mobile",
+      "claim": "모바일에서 UE desktop renderer는 iOS Beta·Android Experimental이며 Epic은 출시 프로젝트에 권하지 않는다.",
+      "supportConditions": "휴대폰 최고급 기종이라는 이유로 해당 실험 경로를 기본값으로 추천하지 않음.",
+      "urls": [
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-the-desktop-renderer-on-mobile-in-unreal-engine"
+      ]
+    },
+    {
+      "id": "ue-58-authoring",
+      "claim": "UE5.8의 Chaos Cloth와 Dataflow는 Production-Ready로 발표되었지만 Toon Shader와 MetaHuman Collections는 Experimental이다.",
+      "supportConditions": "제작 도구의 안정화가 S25/iPhone15에서 많은 의상의 실시간 천 시뮬레이션을 저비용으로 보장하지는 않는다. SYNK 마스코트와 MetaHuman 자동제작은 다른 문제.",
+      "urls": [
+        "https://www.unrealengine.com/news/unreal-engine-5-8-is-now-available"
+      ]
+    },
+    {
+      "id": "generic-mascot",
+      "claim": "Unity Generic rig는 humanoid 규칙을 따르지 않는 모델의 정식 애니메이션 경로다. Animation Rigging은 장식·갑옷의 보조 움직임이나 상호작용 제약을 지원한다.",
+      "supportConditions": "팔 없는 몽글을 인간형 자동 리타게팅에 억지로 맞추지 않고 캐릭터별 Generic skeleton을 설계한다. 체형이 다르면 의상 fitting과 skin weight 작업은 남는다.",
+      "urls": [
+        "https://docs.unity3d.com/6000.6/Documentation/Manual/GenericAnimations.html",
+        "https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html"
+      ]
+    },
+    {
+      "id": "modular-costume-tradeoff",
+      "claim": "UE 공식 모듈 캐릭터 문서는 Leader Pose, Copy Pose, Skeletal Mesh Merge의 제작·CPU·렌더 비용이 다름을 설명한다. 여러 옷 파츠를 붙인다고 draw call이 자동 감소하지 않는다.",
+      "supportConditions": "같은 뼈대를 공유하고 고정 장식은 소켓에 부착. 조립형 옷은 필요 시 캐시된 mesh 결합을 사용하되 머리 표정 morph와 합치는 부위는 분리 설계. UE merge는 morph 이전을 기본 지원하지 않아 추가 구현이 필요.",
+      "urls": [
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/working-with-modular-characters-in-unreal-engine"
+      ]
+    },
+    {
+      "id": "profiling",
+      "claim": "Unity Profiler와 UE Insights는 목표 기기의 앱에서 성능을 수집한다. 에디터 화면은 실제 기기 성능 증거가 아니다.",
+      "supportConditions": "개발빌드로 병목을 찾고 릴리스빌드로 부팅·메모리·프레임·30분 발열·앱복귀·다수캐릭터·의상교체를 검증한다. 30분은 이번 제안의 시험 설계이며 엔진 공식 보장 시간이 아님.",
+      "urls": [
+        "https://docs.unity.com/en-us/engine/6000.7/manual/analysis/profiler/profiling-applications/profiling-target-device",
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/building-multi-platform-games-in-unreal-engine"
+      ]
+    },
+    {
+      "id": "ue-low-overhead",
+      "claim": "Epic의 모바일 최소부담 프로젝트 안내는 먼저 필요 기능만 남긴 뒤 효과를 단계적으로 추가하라고 권한다.",
+      "supportConditions": "UE는 시각 상한만 보고 기본옵션으로 시작하면 높은 최적화·패키징 부담이 생길 수 있음. 실제 프로젝트 규모와 제작 경험에 따라 비교해야 함.",
+      "urls": [
+        "https://dev.epicgames.com/documentation/en-us/unreal-engine/creating-a-lowoverhead-mobile-project"
+      ]
+    }
+  ],
+  "recommendation": {
+    "status": "근거 기반 설계 추천이며 성능 측정에 의한 우승 판정은 아님",
+    "primary": "처음부터 만든다면 Unity 6.6 Supported 최신 패치 + URP + Render Graph + 네이티브 iOS/Android·PC 공통 프로젝트를 1순위로 추천.",
+    "why": "SYNK의 인형형 마스코트·생활마을·코스튬·소규모 멀티플레이에는 실시간 광추적보다 아트 파이프라인·반복작업·기기별 품질관리 효율이 중요하다. Unity의 Generic rig·단계별 URP 기능·네이티브 공통 제작과 최신 반복작업 개선이 이 조건에 잘 맞는다. 기존 코드 재사용은 판단에 반영하지 않았다.",
+    "renderPlan": "Forward/Forward+ 두 경로를 동일 장면으로 비교. 기본은 제한된 동적 광원·그림자 + 베이크 조명/APV, 필요 장면만 후처리. GRD는 정적 반복 소품의 CPU 병목이 확인될 때. 자산 LOD, material 수, 텍스처 streaming 및 메모리·shader variant 관리가 함께 필요.",
+    "costumePlan": "캐릭터별 Generic rig 하나, 의상은 해당 rig 공유, 고정 장식은 anchor/socket, 움직이는 장식은 제한된 보조 bone. 몸 가림 mask와 의상 충돌 규칙, 체형별 fitting, LOD, 옷 변경 후 캐시가 조합폭증을 제어한다. 3D펠트는 미세normal/roughness/수공예 실루엣을 우선하고 매 섬유의 동적 시뮬레이션을 기본으로 삼지 않는다.",
+    "ueAlternative": "팀이 UE 제작·프로파일링에 능숙하거나 PC의 복잡한 동적 조명·대규모 월드·시네마틱이 핵심이면 UE5.8이 강한 대안. SYNK 모바일 공통기준에서는 Mobile Forward/Deferred로 설계하며 Lumen/Nanite를 핵심 품질 전제로 삼지 않는다.",
+    "versionPolicy": "초기검증은 최신 Supported, 출시 고정 시점에 현재 안정성과 지원창을 재평가해 LTS로 고정 가능. 아직 출시되지 않은 6.7/Unity7 기능을 전제로 일정 수립하지 않는다.",
+    "notRecommendedDefaults": [
+      "Unity HDRP를 모바일 공통경로로 가정",
+      "모든 최신 GPU 기능 일괄 켜기",
+      "DOTS/ECS 전체 전환을 16인 마을의 선행조건으로 삼기",
+      "UE Lumen/Nanite/실시간 cloth를 휴대폰 기본 품질로 약속",
+      "한 번 만든 옷이 서로 다른 체형에 무검수 자동적용된다고 약속"
+    ],
+    "nextProof": "동일 아트의 캐릭터 16명 최대밀집 장면, 모듈의상 동시착용, 실내외 이동, 낮밤, 영상→타운 복귀를 포함해 두 목표폰 네이티브 빌드 비교. 60fps 도전과 30fps 고화질 선택은 실측으로 결정."
+  },
+  "risks": [
+    "엔진 최신 버전과 엔진 내 최신 기능의 성숙도는 다르다.",
+    "Unity 최신Supported 업그레이드 주기는 LTS보다 짧으므로 버전·패키지 고정 및 회귀검사가 필요.",
+    "공식 문서만으로 SYNK의 fps, 발열, 초기 다운로드 크기, 제작 인월을 계산할 수 없음.",
+    "GPU가 병목인 장면에서 CPU 최적화 기능만 추가하면 성능이 더 나빠질 수 있음.",
+    "코스튬 모듈화는 조합별 모델 제작을 줄이지만 조합 호환성 검수와 체형별 작업을 없애지 않음.",
+    "지금 확인한 가격 수치를 이 문서에 포함하지 않았으며 결제나 라이선스 구매를 수행하지 않음."
+  ],
+  "sources": [
+    {
+      "url": "https://discussions.unity.com/t/unity-6-6-is-now-available/1735357",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://unity.com/releases/unity-6/support",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://www.unrealengine.com/news/unreal-engine-5-8-is-now-available",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity.com/en-us/engine/6000.6/manual/whats-new/unity66",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/6000.3/Documentation/Manual/urp/render-graph-introduction.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/rendering/forward-rendering-paths.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer-performance.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity.com/en-us/engine/6000.3/manual/lighting-overview/lighting/probevolumes/concept",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity.com/en-us/engine/6000.5/manual/lighting-overview/lighting/probevolumes/probe-volumes-change-lighting-at-runtime/skyocclusion",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/mobile-rendering-and-shading-modes-for-unreal-engine",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/unreal-engine/rendering-features-reference",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-lumen-global-illumination-on-mobile-in-unreal-engine",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-the-desktop-renderer-on-mobile-in-unreal-engine",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/GenericAnimations.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/working-with-modular-characters-in-unreal-engine",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://docs.unity.com/en-us/engine/6000.7/manual/analysis/profiler/profiling-applications/profiling-target-device",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/building-multi-platform-games-in-unreal-engine",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    },
+    {
+      "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/creating-a-lowoverhead-mobile-project",
+      "type": "공식 1차 출처",
+      "checkedAt": "2026-10-09 (Asia/Seoul)"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "verifiedOn": "2026-10-09",
+  "environment": "Local Microsoft Edge headless via Playwright, 390 x 844 viewport",
+  "scope": "scene-v2.mjs repeated mount and disposal; no physical-device performance claim",
+  "procedure": "Four independent mounts in a 390 x 500 container with reducedMotion=true. Set scarf-apron, alternate day/sunset, capture, call dispose twice, inspect the original WebGL2 context and canvas.",
+  "results": [
+    { "iteration": 1, "contextLost": true, "canvasRemoved": true },
+    { "iteration": 2, "contextLost": true, "canvasRemoved": true },
+    { "iteration": 3, "contextLost": true, "canvasRemoved": true },
+    { "iteration": 4, "contextLost": true, "canvasRemoved": true }
+  ],
+  "remainingCanvases": 0,
+  "pageErrors": [],
+  "consoleWarningsOrErrors": [],
+  "passed": true,
+  "evidence": "Captured output of local exec session 67856. This file records the executed result; the inline Playwright script was not saved separately."
+}

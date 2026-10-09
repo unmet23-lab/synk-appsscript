@@ -1,0 +1,124 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v6",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1,
+      "shadowMapSize": 2048,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 6.400000002235174,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": true,
+        "quality": "balanced",
+        "mobile": false,
+        "passCount": 6,
+        "aoSamples": 8,
+        "beautySize": [
+          1400,
+          720
+        ],
+        "aoSize": [
+          700,
+          360
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 45360000,
+        "drawCalls": 427,
+        "triangles": 585088,
+        "cpuSubmissionMs": 6.400000002235174,
+        "allocations": 1,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 1400,
+        "height": 720
+      },
+      "dpr": 1,
+      "drawCalls": 427,
+      "triangles": 585088,
+      "lines": 8376,
+      "instancedFoliage": 1360,
+      "frameCount": 3,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  },
+  {
+    "name": "mobile",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v6",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1.5,
+      "shadowMapSize": 1024,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 7.199999999254942,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": false,
+        "quality": "balanced",
+        "mobile": true,
+        "passCount": 1,
+        "aoSamples": 0,
+        "beautySize": null,
+        "aoSize": null,
+        "msaaSamples": 0,
+        "estimatedTargetBytes": 0,
+        "drawCalls": 253,
+        "triangles": 367526,
+        "cpuSubmissionMs": 7.199999999254942,
+        "allocations": 0,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 585,
+        "height": 697
+      },
+      "dpr": 1.5,
+      "drawCalls": 253,
+      "triangles": 367526,
+      "lines": 5421,
+      "instancedFoliage": 1180,
+      "frameCount": 3,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  }
+]

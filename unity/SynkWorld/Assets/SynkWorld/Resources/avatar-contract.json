@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "mongle",
+  "renderVersion": 3,
+  "materialRevision": 4,
+  "assetStatus": "procedural-candidate",
+  "units": "meters",
+  "origin": "feet",
+  "forward": "+Z",
+  "height": 1.85,
+  "webModule": "avatar-v3.mjs",
+  "nativeAsset": "scene-assets/graphics-v4/mongle-v4.glb",
+  "authoringSource": "scene-assets/graphics-v4/mongle-v4.blend",
+  "staticOutfit": "scarf-apron",
+  "staticContactShading": "combined-outfit-baked; native runtime adaptation required for equipment changes",
+  "rigged": false,
+  "nativeImportVerified": false,
+  "bodyBounds": {"width": 1.80048, "height": 1.83423, "depth": 1.60915},
+  "slots": {
+    "body": ["mongle-apron-starter"],
+    "neck": ["mongle-scarf-first-steps"]
+  },
+  "outfits": {
+    "none": {"body": "", "neck": ""},
+    "apron": {"body": "mongle-apron-starter", "neck": ""},
+    "scarf": {"body": "", "neck": "mongle-scarf-first-steps"},
+    "scarf-apron": {"body": "mongle-apron-starter", "neck": "mongle-scarf-first-steps"}
+  },
+  "notes": "Shared rendering contract only. Ownership and rewards are verified by the WORLD server. This is not a production-approved model or a native performance result."
+}

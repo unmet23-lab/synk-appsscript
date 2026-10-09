@@ -1,0 +1,46 @@
+[
+  {
+    "width": 320,
+    "overflow": false,
+    "quality": "detail",
+    "buttons": [
+      {
+        "name": "가볍게작은 화면과 긴 사용에",
+        "pressed": "false",
+        "height": 101.171875
+      },
+      {
+        "name": "균형선명도와 여유를 함께",
+        "pressed": "false",
+        "height": 101.171875
+      },
+      {
+        "name": "선명하게질감과 그림자를 또렷하게",
+        "pressed": "true",
+        "height": 101.171875
+      }
+    ]
+  },
+  {
+    "width": 390,
+    "overflow": false,
+    "quality": "detail",
+    "buttons": [
+      {
+        "name": "가볍게작은 화면과 긴 사용에",
+        "pressed": "false",
+        "height": 88
+      },
+      {
+        "name": "균형선명도와 여유를 함께",
+        "pressed": "false",
+        "height": 88
+      },
+      {
+        "name": "선명하게질감과 그림자를 또렷하게",
+        "pressed": "true",
+        "height": 88
+      }
+    ]
+  }
+]

@@ -1,0 +1,468 @@
+{
+  "checkedAt": "2026-10-08T21:56:26.700Z",
+  "baselineFixture": "before-garden.mjs",
+  "sourceSha256": {
+    "scene": "c05786487ddf3c68f235fd3142b6f78d7d2d3e3b017f9bdb221575dbe077ba4a",
+    "beforeGarden": "9f2f5d175a3316f2d029562dde33f9c2e0e701ddb2c0eaa11cb261e44a50bfad",
+    "afterGarden": "e4a51d2ca53df7522d9e5d05eba3c58039fa66f2b0f3192b623362624c494326"
+  },
+  "views": [
+    {
+      "name": "desktop",
+      "version": "before",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v6",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 4.800000000745058,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": true,
+          "quality": "balanced",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 8,
+          "beautySize": [
+            1400,
+            720
+          ],
+          "aoSize": [
+            700,
+            360
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 45360000,
+          "drawCalls": 417,
+          "triangles": 575540,
+          "cpuSubmissionMs": 4.800000000745058,
+          "allocations": 1,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1400,
+          "height": 720
+        },
+        "dpr": 1,
+        "drawCalls": 417,
+        "triangles": 575540,
+        "lines": 8376,
+        "instancedFoliage": 1360,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 4.100000001490116,
+        "min": 3.199999999254942,
+        "max": 4.900000002235174
+      }
+    },
+    {
+      "name": "desktop",
+      "version": "after",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v6",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 3.300000000745058,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": true,
+          "quality": "balanced",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 8,
+          "beautySize": [
+            1400,
+            720
+          ],
+          "aoSize": [
+            700,
+            360
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 45360000,
+          "drawCalls": 423,
+          "triangles": 594596,
+          "cpuSubmissionMs": 3.300000000745058,
+          "allocations": 1,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1400,
+          "height": 720
+        },
+        "dpr": 1,
+        "drawCalls": 423,
+        "triangles": 594596,
+        "lines": 8376,
+        "instancedFoliage": 1360,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 3.099999997764826,
+        "min": 2.300000000745058,
+        "max": 3.300000000745058
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "before",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v6",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 1.5,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": false,
+          "quality": "balanced",
+          "mobile": true,
+          "passCount": 1,
+          "aoSamples": 0,
+          "beautySize": null,
+          "aoSize": null,
+          "msaaSamples": 0,
+          "estimatedTargetBytes": 0,
+          "drawCalls": 245,
+          "triangles": 364330,
+          "cpuSubmissionMs": 1.5,
+          "allocations": 0,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 585,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 245,
+        "triangles": 364330,
+        "lines": 5421,
+        "instancedFoliage": 1180,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 2.300000000745058,
+        "min": 1.5,
+        "max": 6
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "after",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v6",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 2.800000000745058,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": false,
+          "quality": "balanced",
+          "mobile": true,
+          "passCount": 1,
+          "aoSamples": 0,
+          "beautySize": null,
+          "aoSize": null,
+          "msaaSamples": 0,
+          "estimatedTargetBytes": 0,
+          "drawCalls": 249,
+          "triangles": 377034,
+          "cpuSubmissionMs": 2.800000000745058,
+          "allocations": 0,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 585,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 249,
+        "triangles": 377034,
+        "lines": 5421,
+        "instancedFoliage": 1180,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 2.899999998509884,
+        "min": 1.800000000745058,
+        "max": 4.300000000745058
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "check": "desktop: no runtime or shader errors",
+      "pass": true,
+      "errors": []
+    },
+    {
+      "check": "desktop: exactly one live scene",
+      "pass": true
+    },
+    {
+      "check": "positionsFinite",
+      "pass": true
+    },
+    {
+      "check": "normalsFinite",
+      "pass": true
+    },
+    {
+      "check": "matricesFinite",
+      "pass": true
+    },
+    {
+      "check": "sharedWater",
+      "pass": true
+    },
+    {
+      "check": "deterministic",
+      "pass": true
+    },
+    {
+      "check": "mobile: no runtime or shader errors",
+      "pass": true,
+      "errors": []
+    },
+    {
+      "check": "mobile: exactly one live scene",
+      "pass": true
+    },
+    {
+      "check": "desktop: triangles at most 4% above baseline",
+      "pass": true,
+      "before": 575540,
+      "after": 594596
+    },
+    {
+      "check": "desktop: at most two added batches per geometry pass",
+      "pass": true,
+      "geometryPasses": 3,
+      "before": 417,
+      "after": 423
+    },
+    {
+      "check": "mobile: triangles at most 4% above baseline",
+      "pass": true,
+      "before": 364330,
+      "after": 377034
+    },
+    {
+      "check": "mobile: at most two added batches per geometry pass",
+      "pass": true,
+      "geometryPasses": 2,
+      "before": 245,
+      "after": 249
+    },
+    {
+      "check": "Building and canopy counts do not increase",
+      "pass": true
+    },
+    {
+      "check": "Window count is lower than v5",
+      "pass": true
+    }
+  ],
+  "contract": {
+    "stats": {
+      "buildings": 70,
+      "windowPanes": 1270,
+      "treeCanopies": 185,
+      "nearTreeCanopies": 82,
+      "farTreeCanopies": 103,
+      "architectureParts": 110,
+      "structureParts": 30,
+      "trimParts": 657
+    },
+    "meshes": [
+      {
+        "name": "layered-mountain",
+        "positions": -2274687.226005107,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "layered-mountain",
+        "positions": -1927371.3418431534,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "layered-mountain",
+        "positions": -1527055.517812407,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": 3.7365425787866116,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -39.089003309607506,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -12.511683011427522,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -37.01918809860945,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": 78,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "han-river-water",
+        "positions": 90,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "beveled-riverfront-architecture",
+        "positions": 144.91589814424515,
+        "matrices": -50040.44661321136,
+        "instances": 110
+      },
+      {
+        "name": "riverfront-infrastructure",
+        "positions": -12.5,
+        "matrices": -4097.439973600209,
+        "instances": 30
+      },
+      {
+        "name": "terraces-promenade-bridge",
+        "positions": -12.5,
+        "matrices": -249196.31955554325,
+        "instances": 657
+      },
+      {
+        "name": "riverfront-window-panes",
+        "positions": -3,
+        "matrices": -639817.2246684292,
+        "instances": 1270
+      },
+      {
+        "name": "riverfront-branching-canopies",
+        "positions": 154.89638892002404,
+        "matrices": -36261.78232017589,
+        "instances": 82
+      },
+      {
+        "name": "distant-forest-canopies",
+        "positions": 45.60181465744972,
+        "matrices": -61618.21840820165,
+        "instances": 103
+      }
+    ],
+    "positionsFinite": true,
+    "normalsFinite": true,
+    "matricesFinite": true,
+    "shadowCasters": 4,
+    "sharedWater": true,
+    "deterministic": true
+  },
+  "limits": [
+    "Headless desktop browser only; no physical phone or sustained thermal measurement.",
+    "CPU render submission is not a GPU timer or an FPS guarantee.",
+    "Both landscape revisions use the same captured current scene, courtyard and cached avatar, not different historical lighting or near foliage."
+  ]
+}

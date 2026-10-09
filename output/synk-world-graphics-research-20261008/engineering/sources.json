@@ -1,0 +1,462 @@
+[
+  {
+    "url": "https://discussions.unity.com/t/unity-6-6-is-now-available/1735357",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://unity.com/releases/unity-6/support",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://www.unrealengine.com/news/unreal-engine-5-8-is-now-available",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity.com/en-us/engine/6000.6/manual/whats-new/unity66",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/6000.3/Documentation/Manual/urp/render-graph-introduction.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/rendering/forward-rendering-paths.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/urp/gpu-resident-drawer-performance.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity.com/en-us/engine/6000.3/manual/lighting-overview/lighting/probevolumes/concept",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity.com/en-us/engine/6000.5/manual/lighting-overview/lighting/probevolumes/probe-volumes-change-lighting-at-runtime/skyocclusion",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/mobile-rendering-and-shading-modes-for-unreal-engine",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/unreal-engine/rendering-features-reference",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-lumen-global-illumination-on-mobile-in-unreal-engine",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/using-the-desktop-renderer-on-mobile-in-unreal-engine",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/6000.6/Documentation/Manual/GenericAnimations.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/working-with-modular-characters-in-unreal-engine",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://docs.unity.com/en-us/engine/6000.6/manual/analysis/profiler/profiling-applications/profiling-target-device",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/building-multi-platform-games-in-unreal-engine",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "url": "https://dev.epicgames.com/documentation/en-us/unreal-engine/creating-a-lowoverhead-mobile-project",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09 (Asia/Seoul)"
+  },
+  {
+    "id": "godot-archive",
+    "title": "Godot official release archive",
+    "url": "https://godotengine.org/download/archive/",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-renderers",
+    "title": "Godot renderer feature matrix",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-import",
+    "title": "Godot 3D import formats",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-profiler",
+    "title": "Godot debugger and profilers",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/debug/debugger_panel.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-cli",
+    "title": "Godot command-line workflow",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-ios",
+    "title": "Godot iOS export and C# limitation",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_ios.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-license",
+    "title": "Godot MIT license",
+    "url": "https://docs.godotengine.org/en/latest/about/complying_with_licenses.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "godot-attachments",
+    "title": "Godot soft-body and bone attachment workflow",
+    "url": "https://docs.godotengine.org/en/stable/tutorials/physics/soft_body.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "cocos-updates",
+    "title": "Cocos official release notes",
+    "url": "https://www.cocos.com/en/update",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "cocos-native",
+    "title": "Cocos native development",
+    "url": "https://docs.cocos.com/creator/3.8/manual/en/native/overview.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "cocos-platforms",
+    "title": "Cocos publishing architecture",
+    "url": "https://docs.cocos.com/creator/3.8/manual/en/editor/publish/index.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "cocos-skeletal",
+    "title": "Cocos skeletal animation and sockets",
+    "url": "https://docs.cocos.com/creator/3.8/manual/en/animation/skeletal-animation.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "cocos-profiler",
+    "title": "Cocos native profiler",
+    "url": "https://docs.cocos.com/creator/3.8/manual/en/advanced-topics/profiler.html",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "babylon-release",
+    "title": "Babylon.js 9.0 official release announcement",
+    "url": "https://forum.babylonjs.com/t/welcome-to-babylon-js-9-0/62940",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "babylon-native",
+    "title": "Babylon Native official repository status",
+    "url": "https://github.com/BabylonJS/BabylonNative",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "playcanvas-engine",
+    "title": "PlayCanvas engine and editor features",
+    "url": "https://playcanvas.com/products/engine",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "playcanvas-release",
+    "title": "PlayCanvas 2.23.1 release",
+    "url": "https://github.com/playcanvas/engine/releases/tag/v2.23.1",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "playcanvas-browsers",
+    "title": "PlayCanvas browser backends",
+    "url": "https://developer.playcanvas.com/user-manual/engine/supported-browsers/",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "playcanvas-cordova",
+    "title": "PlayCanvas mobile wrapper publishing",
+    "url": "https://developer.playcanvas.com/user-manual/editor/publishing/mobile/cordova/",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "three-release",
+    "title": "Three.js r186 official release",
+    "url": "https://github.com/mrdoob/three.js/releases/tag/r186",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "three-webgpu",
+    "title": "Three.js WebGPURenderer production caveats",
+    "url": "https://threejs.org/manual/pages/webgpurenderer",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "webgpu-chrome",
+    "title": "Chrome WebGPU overview",
+    "url": "https://developer.chrome.com/docs/web-platform/webgpu/overview",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "webgpu-safari",
+    "title": "Safari 26.0 WebGPU",
+    "url": "https://webkit.org/blog/17333/webkit-features-in-safari-26-0/",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "webgpu-performance",
+    "title": "Chrome WebGPU troubleshooting",
+    "url": "https://developer.chrome.com/docs/web-platform/webgpu/troubleshooting-tips",
+    "kind": "official",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "id": "unity-skinned",
+    "title": "Unity 6.3 GPU instancing",
+    "url": "https://docs.unity3d.com/6000.3/Documentation/Manual/GPUInstancing.html",
+    "verifiedClaim": "일반 prebuilt material GPU instancing은 Skinned Mesh Renderer를 지원하지 않는다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "unity-srp",
+    "title": "Unity 6.3 SRP Batcher",
+    "url": "https://docs.unity3d.com/6000.3/Documentation/Manual/SRPBatcher.html",
+    "verifiedClaim": "동일 shader variant의 draw 호출 사이 render state 설정 비용을 줄인다. draw 수 자동 통합 기능으로 해석하지 않는다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "unity-character",
+    "title": "Unity 6.3 Character model optimization",
+    "url": "https://docs.unity3d.com/6000.3/Documentation/Manual/ModelingOptimizedCharacters.html",
+    "verifiedClaim": "재질 수와 bones, skinned mesh 수를 줄이라고 권고한다. 문서의 배수 예시는 SYNK 측정값이 아니다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "unity-cloth",
+    "title": "Unity Cloth",
+    "url": "https://docs.unity.com/en-us/engine/6000.5/manual/physics-section/physics-overview/class-cloth",
+    "verifiedClaim": "자체·상호 충돌이 전체 simulation 시간의 큰 부분을 쓸 수 있다. 지정된 sphere/capsule 계열 collider만 사용하며 arbitrary scene geometry와 자동 충돌하지 않는다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "blender-transfer",
+    "title": "Blender Data Transfer",
+    "url": "https://docs.blender.org/manual/en/4.3/modeling/modifiers/modify/data_transfer.html",
+    "verifiedClaim": "mesh 간 vertex groups, UV, normals 등 데이터 전송. 공간 mapping과 interpolation을 사용한다. 이번 확인은 4.3 공식 문서; 최신 endpoint 도구 접근 실패.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "blender-shapes",
+    "title": "Blender 4.5 Shape Keys",
+    "url": "https://docs.blender.org/manual/en/4.5/animation/shape_keys/introduction.html",
+    "verifiedClaim": "표정과 변형을 여러 shape key로 분리·혼합할 수 있다. 검색 인덱스에서 공식 내용 확인, direct open은 실패.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "android-material",
+    "title": "Android Developers Materials and Shaders",
+    "url": "https://developer.android.com/games/optimize/materials?hl=en",
+    "verifiedClaim": "모바일에서 transparency 비용이 상대적으로 크며 다중 겹침을 피하라고 권고.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "android-geometry",
+    "title": "Android Developers Geometry",
+    "url": "https://developer.android.com/games/optimize/geometry",
+    "verifiedClaim": "실제 작은 화면에서 보이는 크기를 기준으로 geometry와 LOD를 관리한다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "astc",
+    "title": "Unity texture format by platform",
+    "url": "https://docs.unity.cn/6000.2/Documentation/Manual/texture-choose-format-by-platform.html",
+    "verifiedClaim": "iOS A8 이상 ASTC 추천; 기기와 플랫폼별 압축 포맷 선택.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "meshy-rig",
+    "title": "Meshy Rigging Guide",
+    "url": "https://docs.meshy.ai/en/webapp/guides/3d-model/rigging",
+    "verifiedClaim": "humanoid/quadruped 리깅, 복잡한 custom skeleton·face·tail은 DCC 수작업 권고.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "meshy-smart",
+    "title": "Meshy Auto Rigging workflow 2026",
+    "url": "https://www.meshy.ai/tutorials/character-auto-rigging-workflow",
+    "verifiedClaim": "비표준형 Smart Rig Beta도 제공한다고 튜토리얼에 명시. 일반 가이드와 기능 범위 표현이 달라 몽글 성공 보장으로 쓰지 않는다.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "meshy-rights",
+    "title": "Meshy asset ownership",
+    "url": "https://help.meshy.ai/en/articles/10137554-what-is-the-ownership-of-the-generated-models",
+    "verifiedClaim": "2026-08-27 도움말. 유료 비공개 자산 소유권/업로드 참조물 권리 조건, 무료 CC BY 4.0.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "meshy-price",
+    "title": "Meshy pricing",
+    "url": "https://www.meshy.ai/pricing",
+    "verifiedClaim": "웹앱 월간 credits와 영구 credits 구별. 무료100/월 Pro1000/월. 요금 카드 숫자는 동적 페이지에서 확인되지 않아 달러 추정 생략.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "tripo-rig",
+    "title": "Tripo Auto Rig API",
+    "url": "https://developers.tripo3d.ai/en/docs/animations-rig",
+    "verifiedClaim": "v1.0 biped; v2.5-20260210은 quadruped/hexapod/octopod/serpentine/aquatic/avian. rig-check 우선 권고. FBX/GLB 출력.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "tripo-price",
+    "title": "Tripo pricing",
+    "url": "https://www.tripo3d.ai/pricing",
+    "verifiedClaim": "무료 Public Models/Non-Commercial, 유료 Private/Commercial 표기. Pro 연간240달러=월환산20달러 및3000credits. 월간/연간표현 혼재하므로 결제액 단정 대신 재확인.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "tripo-terms",
+    "title": "Tripo Terms",
+    "url": "https://www.tripo3d.ai/terms",
+    "verifiedClaim": "2025-07-11 약관 §5.2 무료/유료 권리를 다르게 명시. Paid broad rights와 서비스 제공 사용허락; 배타적 유일성 보장 없음.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "rodin-features",
+    "title": "Hyper3D game assets",
+    "url": "https://hyper3d.ai/use-cases/game-development",
+    "verifiedClaim": "Rodin 이미지/텍스트, PBR, target polycount, optional LODs와 rigging-ready export를 제공한다고 명시. 실제 animation-ready 품질 검증과 구별.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "id": "rodin-price",
+    "title": "Hyper3D pricing",
+    "url": "https://hyper3d.ai/pricing?lang=en",
+    "verifiedClaim": "Creator 월30달러/연288달러. 다중참조·SmartLowPoly·baked normals 제공. API는Business. 실제비용은 confirm/redo/후처리까지 포함해 측정 필요.",
+    "checkedAt": "2026-10-09",
+    "type": "official"
+  },
+  {
+    "title": "Unity 공식 CLI와 AI 도구",
+    "url": "https://unity.com/features/ai",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "Unity CLI 전환과 기능",
+    "url": "https://docs.unity.com/en-us/unity-cli/replace-mcp-server-unity-cli",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "Unity 공식 플러그인",
+    "url": "https://docs.unity.com/en-us/ai/unity-plugin/about-unity-plugin",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "UI 비교",
+    "url": "https://docs.unity.com/en-us/engine/6000.6/manual/uitoolkits/ui-system-compare",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "Addressables",
+    "url": "https://docs.unity.com/en-us/engine/6000.6/manual/packages-list/packages-all/pack-safe/com-unity-addressables",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "VideoPlayer",
+    "url": "https://docs.unity3d.com/6000.6/Documentation/ScriptReference/Video.VideoPlayer.html",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "iOS 빌드",
+    "url": "https://docs.unity.com/en-us/engine/6000.6/manual/platform-specific/iphone/getting-started/ios-environment-setup",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  },
+  {
+    "title": "Apple 성능 분석",
+    "url": "https://developer.apple.com/documentation/xcode/analyzing-the-performance-of-your-metal-app/",
+    "type": "공식 1차 출처",
+    "checkedAt": "2026-10-09"
+  }
+]

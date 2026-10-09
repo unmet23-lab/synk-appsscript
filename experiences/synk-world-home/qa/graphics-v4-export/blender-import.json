@@ -1,0 +1,128 @@
+{
+  "blender": "5.2.1 LTS",
+  "sourceGlbSha256": "770b5651d13eacbfa41f3222f9db95fd9935761f5feaeca6992e026124a56732",
+  "meshObjects": 12,
+  "materials": [
+    {
+      "name": "surface-0",
+      "images": [
+        "direct",
+        "wool-occlusion-R-roughness-G",
+        "wool-micro-normal",
+        "wool-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-1",
+      "images": [],
+      "normalMap": false,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-10",
+      "images": [],
+      "normalMap": false,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-2",
+      "images": [],
+      "normalMap": false,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-3",
+      "images": [],
+      "normalMap": false,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-4",
+      "images": [
+        "knit-low-contrast-colour",
+        "knit-occlusion-R-roughness-G",
+        "knit-micro-normal",
+        "knit-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-5",
+      "images": [
+        "knit-low-contrast-colour",
+        "knit-occlusion-R-roughness-G",
+        "knit-micro-normal",
+        "knit-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-6",
+      "images": [
+        "cotton-low-contrast-colour",
+        "cotton-occlusion-R-roughness-G",
+        "cotton-micro-normal",
+        "cotton-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-7",
+      "images": [],
+      "normalMap": false,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-8",
+      "images": [
+        "cotton-low-contrast-colour",
+        "cotton-occlusion-R-roughness-G",
+        "cotton-micro-normal",
+        "cotton-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    },
+    {
+      "name": "surface-9",
+      "images": [
+        "cotton-low-contrast-colour",
+        "cotton-occlusion-R-roughness-G",
+        "cotton-micro-normal",
+        "cotton-occlusion-R-roughness-G"
+      ],
+      "normalMap": true,
+      "vertexColour": true
+    }
+  ],
+  "images": 9,
+  "triangles": 44940,
+  "nodes": [
+    "base-surface-0",
+    "base-surface-1",
+    "base-surface-2",
+    "base-surface-3",
+    "body-surface-10",
+    "body-surface-11",
+    "body-surface-7",
+    "body-surface-8",
+    "body-surface-9",
+    "mongle-apron-starter",
+    "mongle-body",
+    "mongle-scarf-first-steps",
+    "mongle-v4",
+    "neck-surface-4",
+    "neck-surface-5",
+    "neck-surface-6"
+  ],
+  "finiteVertices": true,
+  "vertexColorMeshes": 12,
+  "uvMeshes": 12,
+  "rigged": false,
+  "validated": "GLB import, embedded textures, material nodes, colour attributes, UVs and editable file only; not Unity rendering or device performance"
+}

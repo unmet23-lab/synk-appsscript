@@ -1,0 +1,113 @@
+{
+  "checkedAt": "2026-10-08T20:14:30.886Z",
+  "base": "http://127.0.0.1:4396",
+  "observations": [
+    {
+      "id": "quality-controls",
+      "observed": "Current settings labels",
+      "labels": "취향에 맞게 홈 화면을 조절해요.\n\n움직임 줄이기\n몽글과 소품의 반복 움직임을 줄여요.\n테라스의 시간\n따뜻한 노을도 만나보세요.\n노을로 보기\n휴대폰 화면\nPC 화면"
+    },
+    {
+      "id": "photo-native-size",
+      "observed": "Actual current photo size on 390px viewport and deviceScaleFactor 3",
+      "pixels": {
+        "width": 525,
+        "height": 697,
+        "opaquePixels": 1024,
+        "colors": 751
+      },
+      "scene": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 525,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 68,
+        "triangles": 194824,
+        "lines": 6898,
+        "instancedFoliage": 1294,
+        "frameCount": 15,
+        "outfit": "none",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": false,
+        "productionAsset": false
+      }
+    },
+    {
+      "id": "home-behind-town",
+      "observed": "Home and Town frame counters while the fullscreen Town dialog covers the home",
+      "durationMs": 1200,
+      "homeFrames": 38,
+      "townFrames": 37,
+      "homePaused": false,
+      "dialogOpen": true
+    },
+    {
+      "id": "lost-context-photo",
+      "observed": "Real WebGL context deliberately lost through its extension, then the normal Photo button clicked",
+      "lost": {
+        "ready": false,
+        "available": true,
+        "loadingHidden": true,
+        "buttons": [
+          "첫 놀이 시작 →",
+          "",
+          "",
+          "인사하기",
+          "사진 찍기",
+          "옷 갈아입기"
+        ]
+      },
+      "photo": {
+        "width": 525,
+        "height": 697,
+        "opaquePixels": 0,
+        "colors": 1
+      },
+      "toast": ""
+    },
+    {
+      "id": "context-restoration",
+      "observed": "Context restored through its extension without reloading the app",
+      "state": {
+        "ready": false,
+        "available": true,
+        "canvasCount": 1
+      }
+    },
+    {
+      "id": "stalled-assets-settings",
+      "observed": "One sky request is held in flight; changing the ordinary motion setting before it returns",
+      "heldRequests": 1,
+      "state": {
+        "available": false,
+        "canvasCount": 2,
+        "loading": true,
+        "loadingText": "몽글이 준비하고 있어요"
+      }
+    },
+    {
+      "id": "stalled-assets-released",
+      "observed": "The held request is allowed to finish",
+      "state": {
+        "available": true,
+        "canvasCount": 1
+      }
+    }
+  ],
+  "errors": [],
+  "limits": [
+    "Isolated existing synthetic QA server, no production accounts changed",
+    "Browser fault injection is not a real phone GPU-loss or thermal measurement",
+    "Runtime source is under active development; hashes identify the starting files"
+  ],
+  "sourceSha256": {
+    "app-shell.mjs": "99829d24ab45495d879123dd2ce1a1c915c3a89b76aab84aac3115204d7375ee",
+    "app.mjs": "c9b4d17cc67b8485511c8fe90bbf1afea91a139889107066aa990bc642352afc",
+    "scene-v3.mjs": "67a698a18dbb23e599cd0d59e35fa7c259d8f8dbf9556579903505fbaff735bf"
+  }
+}

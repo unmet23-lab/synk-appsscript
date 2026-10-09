@@ -1,0 +1,21 @@
+{
+  "checkedAtUtc": "2026-10-08T19:50:35.4300398Z",
+  "passed": 5,
+  "checks": [
+    "PowerShell parse: build.ps1",
+    "PowerShell parse: check-environment.ps1",
+    "PowerShell parse: sync-avatar-contract.ps1",
+    "Shared avatar JSON copy matches source SHA256",
+    "Build guard rejects Unity CLI as Editor"
+  ],
+  "contract": {
+    "contractId": "mongle",
+    "renderVersion": 3,
+    "sha256": "BB20569E80E34B6186FB87A7528F31C04B029591D1B0E3B00E2DE8C237F22CBF",
+    "identical": true,
+    "nativeAssetAvailable": true,
+    "nativeRendered": false,
+    "note": "Identity and slot contract only. The procedural Unity scene has not been replaced by the shared web model."
+  },
+  "nativeBuildRun": false
+}

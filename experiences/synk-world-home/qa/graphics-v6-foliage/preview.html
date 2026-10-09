@@ -1,0 +1,22 @@
+<!doctype html><html><meta charset="utf-8"><style>html,body{margin:0;background:#d6ded5}canvas{display:block}</style><script type="module">
+import * as THREE from '/scene-assets/three.module.js';
+import {createLeafGeometry,buildTerraceTree} from '/foliage-v6.mjs';
+import {createGardenBreeze} from '/garden-breeze-v5.mjs';
+const mobile=innerWidth<600,renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;document.body.append(renderer.domElement);
+const scene=new THREE.Scene();scene.background=new THREE.Color('#d6ded5');
+const camera=new THREE.PerspectiveCamera(31,innerWidth/innerHeight,.05,50);camera.position.set(mobile?3:3.4,2.5,mobile?8.4:5.9);camera.lookAt(0,1.30,0);
+scene.add(new THREE.HemisphereLight('#dcebf0','#646b44',1.45));const light=new THREE.DirectionalLight('#fff0d5',3);light.position.set(-2.5,5,3);light.castShadow=true;light.shadow.mapSize.set(1024,1024);light.shadow.camera.left=-3;light.shadow.camera.right=3;light.shadow.camera.top=4;light.shadow.camera.bottom=-3;light.shadow.normalBias=.015;scene.add(light);
+const foliage=new THREE.MeshStandardMaterial({color:'#ffffff',roughness:.59,side:THREE.DoubleSide}),bark=new THREE.MeshStandardMaterial({color:'#776853',roughness:.91});
+const group=new THREE.Group();group.position.y=.34;scene.add(group);const tree=buildTerraceTree(group,{foliage,bark},{mobile});
+const pot=new THREE.Mesh(new THREE.CylinderGeometry(.34,.25,.36,32),new THREE.MeshStandardMaterial({color:'#bfa088',roughness:.67}));pot.position.y=.18;pot.castShadow=pot.receiveShadow=true;scene.add(pot);
+const soil=new THREE.Mesh(new THREE.CircleGeometry(.32,32),new THREE.MeshStandardMaterial({color:'#393c28',roughness:1}));soil.rotation.x=-Math.PI/2;soil.position.y=.365;scene.add(soil);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(30,30),new THREE.MeshStandardMaterial({color:'#c9cabe',roughness:.83}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;scene.add(floor);
+const breeze=createGardenBreeze(scene,foliage);breeze.update(0,true);renderer.render(scene,camera);
+const checks=[];const check=(name,pass)=>{checks.push({name,pass});if(!pass)throw new Error(name)};
+check('two tree draw calls',tree.group.children.length===2);check('leaf tip UV anchored',createLeafGeometry(mobile).getAttribute('uv').getY(0)===0);
+for(const small of [false,true]){const g=createLeafGeometry(small),p=g.getAttribute('position'),uv=g.getAttribute('uv');check('leaf triangle budget '+small,g.index.count/3===(small?48:64));check('finite normals '+small,[...g.getAttribute('normal').array].every(Number.isFinite));check('finite positions '+small,[...p.array].every(Number.isFinite));check('uv from root to tip '+small,Math.min(...[...uv.array].filter((_,i)=>i%2))===0&&Math.max(...[...uv.array].filter((_,i)=>i%2))===1);g.dispose()}
+const oldTriangles=mobile?330*64+16*16*6*2:495*80+16*16*6*2;check('tree triangle reduction',tree.metrics.leafTriangles+tree.metrics.branchTriangles<oldTriangles*.66);check('bounded connected canopy',tree.group.children[1].boundingSphere.radius<2);
+window.proof={mobile,checks,metrics:tree.metrics,oldTreeTriangles:oldTriangles,renderer:{calls:renderer.info.render.calls,triangles:renderer.info.render.triangles}};
+window.inspectLeaf=()=>{tree.group.visible=false;pot.visible=soil.visible=false;const leaf=new THREE.Mesh(createLeafGeometry(mobile),foliage.clone());leaf.material.color.set('#678448');leaf.position.set(-.35,.38,0);leaf.scale.setScalar(1.5);leaf.rotation.set(.13,-.3,-.22);scene.add(leaf);camera.position.set(1.0,1.4,3.0);camera.lookAt(0,1.06,0);renderer.render(scene,camera)};
+</script></html>

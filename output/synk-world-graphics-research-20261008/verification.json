@@ -1,0 +1,132 @@
+{
+  "checkedAt": "2026-10-08T15:07:07.880Z",
+  "checks": [
+    {
+      "label": "54 unique comparison rows",
+      "pass": true,
+      "detail": 54
+    },
+    {
+      "label": "4989 unique catalog apps",
+      "pass": true,
+      "detail": 4989
+    },
+    {
+      "label": "all review ratios correct",
+      "pass": true,
+      "detail": 52
+    },
+    {
+      "label": "unreleased distinguished",
+      "pass": true,
+      "detail": [
+        "Loftia",
+        "My Time at Evershine"
+      ]
+    },
+    {
+      "label": "pixel classes repaired",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "required game descriptions present",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "54 game title visible",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "pixel filter works",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "game search works",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "detail opens",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "catalog search works",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "ten official screenshots load",
+      "pass": true,
+      "detail": [
+        {
+          "alt": "Cozy Caravan 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Hello Kitty Island Adventure 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "FANTASY LIFE i: The Girl Who Steals Time 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Tiny Bookshop 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Tiny Glade 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Fields of Mistria 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Infinity Nikki 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Heartopia 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Go-Go Town! 공식 Steam 스크린샷",
+          "loaded": true
+        },
+        {
+          "alt": "Townscaper 공식 Steam 스크린샷",
+          "loaded": true
+        }
+      ]
+    },
+    {
+      "label": "mobile no document horizontal overflow",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "mobile filter works",
+      "pass": true,
+      "detail": true
+    },
+    {
+      "label": "no runtime errors",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "unperformed": [
+    "Galaxy S25 / iPhone 15 actual game runtime",
+    "costume 3D prototype",
+    "full playthrough of surveyed games"
+  ],
+  "result": "passed",
+  "finalBuildCheckedAt": "2026-10-08T15:08:49.543Z",
+  "finalBuild": "complete, 54 game heading verified"
+}

@@ -1,0 +1,150 @@
+{
+  "checkedAt": "2026-10-08T17:38:24.151Z",
+  "results": [
+    {
+      "name": "desktop: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "desktop: all visible images loaded",
+      "passed": true
+    },
+    {
+      "name": "desktop: Korean font loaded",
+      "passed": true
+    },
+    {
+      "name": "desktop: video excluded from initial network",
+      "passed": true
+    },
+    {
+      "name": "mobile: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile: all visible images loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile: Korean font loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile: video excluded from initial network",
+      "passed": true
+    },
+    {
+      "name": "mobile settings entry visible",
+      "passed": true
+    },
+    {
+      "name": "motion preference reaches renderer",
+      "passed": true
+    },
+    {
+      "name": "costume reaches real mesh",
+      "passed": true
+    },
+    {
+      "name": "dialog restores focus",
+      "passed": true
+    },
+    {
+      "name": "sunset reaches renderer",
+      "passed": true
+    },
+    {
+      "name": "costume and lighting persist",
+      "passed": true
+    },
+    {
+      "name": "video vowel-dance decoded and advancing",
+      "passed": true,
+      "detail": {
+        "duration": 54.766667
+      }
+    },
+    {
+      "name": "video vowel-dance removed on close",
+      "passed": true
+    },
+    {
+      "name": "video geu-a-ga decoded and advancing",
+      "passed": true,
+      "detail": {
+        "duration": 81.166667
+      }
+    },
+    {
+      "name": "video geu-a-ga removed on close",
+      "passed": true
+    },
+    {
+      "name": "video batchim decoded and advancing",
+      "passed": true,
+      "detail": {
+        "duration": 61.2
+      }
+    },
+    {
+      "name": "video batchim removed on close",
+      "passed": true
+    },
+    {
+      "name": "town does not fake unlock",
+      "passed": true
+    },
+    {
+      "name": "mobile-small: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile-small: all visible images loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile-small: Korean font loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile-small: video excluded from initial network",
+      "passed": true
+    },
+    {
+      "name": "mobile-on-pc: no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "mobile-on-pc: all visible images loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile-on-pc: Korean font loaded",
+      "passed": true
+    },
+    {
+      "name": "mobile-on-pc: video excluded from initial network",
+      "passed": true
+    },
+    {
+      "name": "WebGL unavailable keeps approved mascot",
+      "passed": true
+    },
+    {
+      "name": "WebGL unavailable keeps main CTA",
+      "passed": true
+    },
+    {
+      "name": "no uncaught JS errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "result": "passed",
+  "limitations": [
+    "Browser viewport testing, not physical S25/iPhone15",
+    "Existing video decoding/playback checked, full listening not performed",
+    "Procedural art study; no Unity native client or account migration"
+  ]
+}

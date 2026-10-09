@@ -1,0 +1,1 @@
+{"name":"Synk.World.Editor","rootNamespace":"Synk.World.Editor","references":["Synk.World.Core","Synk.World.Runtime","Unity.RenderPipelines.Universal.Runtime"],"includePlatforms":["Editor"],"autoReferenced":true}

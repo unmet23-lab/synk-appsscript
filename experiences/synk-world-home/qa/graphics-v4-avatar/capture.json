@@ -1,0 +1,369 @@
+{
+  "checkedAtUtc": "2026-10-08T20:25:55.836Z",
+  "results": [
+    {
+      "name": "desktop",
+      "time": "day",
+      "outfit": "none",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "none",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 8,
+        "triangles": 21650,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "day",
+      "outfit": "scarf",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 41,
+        "triangles": 34270,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "day",
+      "outfit": "apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 22,
+        "triangles": 32322,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "day",
+      "outfit": "scarf-apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 55,
+        "triangles": 44942,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "sunset",
+      "outfit": "none",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "none",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 8,
+        "triangles": 21650,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "sunset",
+      "outfit": "scarf",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 41,
+        "triangles": 34270,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "sunset",
+      "outfit": "apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 22,
+        "triangles": 32322,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "time": "sunset",
+      "outfit": "scarf-apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 558.2999999970198,
+        "drawCalls": 55,
+        "triangles": 44942,
+        "textures": 13
+      }
+    },
+    {
+      "name": "desktop",
+      "errors": [],
+      "contract": {
+        "finiteVertices": true,
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "reducedMotion": true,
+        "allOutfits": true
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "day",
+      "outfit": "none",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "none",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 8,
+        "triangles": 21650,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "day",
+      "outfit": "scarf",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 41,
+        "triangles": 34270,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "day",
+      "outfit": "apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 22,
+        "triangles": 32322,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "day",
+      "outfit": "scarf-apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 55,
+        "triangles": 44942,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "sunset",
+      "outfit": "none",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "none",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 8,
+        "triangles": 21650,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "sunset",
+      "outfit": "scarf",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 41,
+        "triangles": 34270,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "sunset",
+      "outfit": "apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 22,
+        "triangles": 32322,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "time": "sunset",
+      "outfit": "scarf-apron",
+      "metrics": {
+        "avatarVersion": "mongle-v3",
+        "materialRevision": 4,
+        "outfit": "scarf-apron",
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "assetFailures": [],
+        "productionAsset": false,
+        "avatarCreateMs": 422.3999999985099,
+        "drawCalls": 55,
+        "triangles": 44942,
+        "textures": 13
+      }
+    },
+    {
+      "name": "mobile",
+      "errors": [],
+      "contract": {
+        "finiteVertices": true,
+        "bodyBounds": {
+          "width": 1.8004822731018066,
+          "height": 1.8342324290424585,
+          "depth": 1.609148919582367
+        },
+        "reducedMotion": true,
+        "allOutfits": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,188 @@
+{
+  "checkedAt": "2026-10-09T01:50:17.664Z",
+  "scope": "Isolated latest origin/master plus this chat source/assets and design additions; shared working trees unchanged",
+  "base": "87a7dff104af250e8a6e3baec13e2aef4cd76f29",
+  "backendCommit": "62a0e06cfbbcd565f4aacf1e3d280898126b1da9",
+  "checks": {
+    "backend": {
+      "passed": 18,
+      "failed": 0
+    },
+    "app": {
+      "command": "node --test qa/client.test.mjs qa/town-host.test.mjs qa/town-bridge.test.mjs",
+      "total": 28,
+      "passed": 27,
+      "failed": 0,
+      "skipped": 1,
+      "skipReason": "SYNK_WORLD_QA_URL not set; browser account test was not rerun in the closeout check"
+    },
+    "documents": {
+      "localLinks": 119,
+      "errors": 0
+    },
+    "whitespace": "Authored app, Unity code and design docs checked; vendor library/license and raw/generated research files preserved byte-for-byte"
+  },
+  "sourceBlobs": [
+    {
+      "path": "experiences/synk-world-home/app.mjs",
+      "gitBlob": "1ff140de9a14da7a9274eb8b9662574348e4b374"
+    },
+    {
+      "path": "experiences/synk-world-home/avatar-textiles.mjs",
+      "gitBlob": "7a36fab4a30354de76dcf58e53ccc336c5bacaac"
+    },
+    {
+      "path": "experiences/synk-world-home/avatar-v3.mjs",
+      "gitBlob": "616176ed464a4867cb190c149a2243d7602d79d9"
+    },
+    {
+      "path": "experiences/synk-world-home/contact-light-v6.mjs",
+      "gitBlob": "83558d72e880c9bf5de2cde86d71ffb79627a721"
+    },
+    {
+      "path": "experiences/synk-world-home/courtyard-details-v5.mjs",
+      "gitBlob": "eca2f1c8b6ef61664f676ec95428d05c13f008d3"
+    },
+    {
+      "path": "experiences/synk-world-home/environment-optics-v7.mjs",
+      "gitBlob": "3efef5bbbc9b564f05ea373206b381822eec0db4"
+    },
+    {
+      "path": "experiences/synk-world-home/environment-v4.mjs",
+      "gitBlob": "bb517d6dca751688f73f6d5a39cdbac67eceba46"
+    },
+    {
+      "path": "experiences/synk-world-home/foliage-v6.mjs",
+      "gitBlob": "8cc8f6ffee09c0e6dc257119b1cf456e99cd21da"
+    },
+    {
+      "path": "experiences/synk-world-home/garden-breeze-v5.mjs",
+      "gitBlob": "41fde8f92819303816f5f5782abd25d3dac66e84"
+    },
+    {
+      "path": "experiences/synk-world-home/graphics.mjs",
+      "gitBlob": "701c307935800d62b32497ea222ee5c89e3d3637"
+    },
+    {
+      "path": "experiences/synk-world-home/river-life-v8.mjs",
+      "gitBlob": "c167e40824a8c9d4efedc883720655b8ad56d554"
+    },
+    {
+      "path": "experiences/synk-world-home/roof-craft-v7.mjs",
+      "gitBlob": "56c549004c273e5cb6de0c214f16b6927837148b"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-v2-garden.mjs",
+      "gitBlob": "be95de3efc31eda5a349906bea1024fb95ab4d59"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-v2.mjs",
+      "gitBlob": "644b13d803c324e56f7ebb5db1253a5b7863d62c"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-v3-garden.mjs",
+      "gitBlob": "36c5e09085351c1430a1f0ed05487427e1ed41d6"
+    },
+    {
+      "path": "experiences/synk-world-home/scene-v3.mjs",
+      "gitBlob": "3f087d801a40174f0f1e953fd47a1a4ec1cec0cf"
+    },
+    {
+      "path": "experiences/synk-world-home/scene.mjs",
+      "gitBlob": "f703342df5aea5d62bd1a789024500529f545eb2"
+    },
+    {
+      "path": "experiences/synk-world-home/server.mjs",
+      "gitBlob": "c232dbe056d51febd92e982a535acb238c61b38c"
+    },
+    {
+      "path": "experiences/synk-world-home/songs.mjs",
+      "gitBlob": "c78426921ea782094fd87532c1942669db95e3da"
+    },
+    {
+      "path": "experiences/synk-world-home/surface-library-v6.mjs",
+      "gitBlob": "21a0437db78fc3c364a1cd0f1e8fd0c8c0f5ad9e"
+    },
+    {
+      "path": "experiences/synk-world-app/app-shell.mjs",
+      "gitBlob": "2aa3f708c721a6af679e388e20160449ef9231c1"
+    },
+    {
+      "path": "experiences/synk-world-app/server.mjs",
+      "gitBlob": "8f5c130b0d5d5696fff61cc524008a37dfa94639"
+    },
+    {
+      "path": "experiences/synk-world-app/town-host.mjs",
+      "gitBlob": "b733180958065ab6597fa765c0e80c0506564e5a"
+    },
+    {
+      "path": "experiences/synk-world-app/world-client.mjs",
+      "gitBlob": "1cc0742033cf4b1c042eac53fc48753e71d00dce"
+    },
+    {
+      "path": "experiences/synk-world-app/world-town-client.mjs",
+      "gitBlob": "8298547720cdbdf0bebc9cea4ca43656c97ad8f0"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Core/Synk.World.Core.asmdef",
+      "gitBlob": "170f8b656859e6ebf92e2b32b9e196cb62a98257"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Core/WorldAvatarContract.cs",
+      "gitBlob": "e44bd2d339dd79ebaf1a310d052c69c9a63e3902"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Core/WorldContracts.cs",
+      "gitBlob": "7f152d239474e63ab32b42d132f5375e81baba10"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Core/WorldFlow.cs",
+      "gitBlob": "a7c7ceb8dc74e904798a824ae60d865b13be9639"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Core/WorldPendingCompletion.cs",
+      "gitBlob": "fa17dced87ea50f1bf836d6edd215398a1db1137"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Editor/Synk.World.Editor.asmdef",
+      "gitBlob": "c84418f137cc284f9c8cd4710665d8af3367a518"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Editor/WorldProjectSetup.cs",
+      "gitBlob": "b2a7894584321ccf60f2cfdf95bc94b442b48a6f"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Runtime/Synk.World.Runtime.asmdef",
+      "gitBlob": "0ff9544a5ded7d3d1fffd02e35f04bee3955965f"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Runtime/WorldApiClient.cs",
+      "gitBlob": "ef3cf6959bbeb3b7383c35820113b603a3cc83d6"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Runtime/WorldApp.cs",
+      "gitBlob": "93fd139af4f6cf6e597b5e28baff88c8bebaefa7"
+    },
+    {
+      "path": "unity/SynkWorld/Assets/SynkWorld/Runtime/WorldHomeScene.cs",
+      "gitBlob": "c84628d7893e5da431d65dd57e106bfeab83b501"
+    },
+    {
+      "path": "unity/SynkWorld/CoreTests/Program.cs",
+      "gitBlob": "aa9638532a78e8abec60a68a715a5ae209c6d3c3"
+    }
+  ],
+  "notVerified": [
+    "new public deployment",
+    "remote DB application",
+    "Unity Editor/native rendering",
+    "Galaxy S25/iPhone 15 sustained performance"
+  ],
+  "designOnly": [
+    "scheduled bus",
+    "destination-specific materials",
+    "animal pets",
+    "life assistant",
+    "fishing"
+  ]
+}

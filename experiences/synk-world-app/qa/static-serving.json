@@ -1,0 +1,153 @@
+{
+  "checkedAtUtc": "2026-10-08T20:00:33.317Z",
+  "baseUrl": "http://127.0.0.1:4296",
+  "authentication": "none; no cookies or authorization headers",
+  "scope": "Narrow static serving regression and unauthenticated Town gate; no device or native build validation",
+  "priorFailure": {
+    "description": "Before the fix, Windows case-insensitive lookup plus an encoded backslash traversed the Town static allowlist.",
+    "routes": [
+      {
+        "path": "/town/assets/..%5cSERVER.mjs",
+        "status": 200,
+        "bytes": 12398
+      },
+      {
+        "path": "/SERVER.mjs",
+        "status": 200,
+        "bytes": 2531
+      }
+    ]
+  },
+  "passed": 17,
+  "failed": 0,
+  "checks": [
+    {
+      "path": "/town/assets/..%5cSERVER.mjs",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/SERVER.mjs",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/town/assets/..%2fSERVER.mjs",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/town/assets/%00server.mjs",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/town/day-app.mjs/extra",
+      "expectedStatus": 404,
+      "status": 404,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/town/server.mjs",
+      "expectedStatus": 404,
+      "status": 404,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/.local/db-v1.json",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/town/assets/..%5c..%5csynk-world-app%5cserver.mjs",
+      "expectedStatus": 403,
+      "status": 403,
+      "bytes": 0,
+      "passed": true
+    },
+    {
+      "path": "/api/world/town/state",
+      "expectedStatus": 401,
+      "status": 401,
+      "bytes": 45,
+      "passed": true
+    },
+    {
+      "path": "/mobile.html",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 10036,
+      "passed": true
+    },
+    {
+      "path": "/desktop.html",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 10036,
+      "passed": true
+    },
+    {
+      "path": "/town/day.html",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 9622,
+      "passed": true
+    },
+    {
+      "path": "/town/day-app.mjs",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 37439,
+      "passed": true
+    },
+    {
+      "path": "/world-town-client.mjs",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 4087,
+      "passed": true
+    },
+    {
+      "path": "/world-client.mjs",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 6413,
+      "passed": true
+    },
+    {
+      "path": "/avatar-v3.mjs",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "text/javascript; charset=utf-8",
+      "bytes": 12964,
+      "passed": true
+    },
+    {
+      "path": "/scene-assets/graphics-v3/mongle-v3.glb",
+      "expectedStatus": 200,
+      "status": 200,
+      "contentType": "model/gltf-binary",
+      "bytes": 3153872,
+      "signature": "glTF",
+      "passed": true
+    }
+  ]
+}

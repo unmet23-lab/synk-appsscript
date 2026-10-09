@@ -1,0 +1,65 @@
+{
+  "checkedAt": "2026-10-08T15:24:10.165Z",
+  "checks": [
+    {
+      "name": "stable artifact identity",
+      "pass": true
+    },
+    {
+      "name": "previous research preserved",
+      "pass": true
+    },
+    {
+      "name": "7 greenfield paths",
+      "pass": true
+    },
+    {
+      "name": "prototype weight zero",
+      "pass": true
+    },
+    {
+      "name": "new recommendation rendered",
+      "pass": true
+    },
+    {
+      "name": "old prototype recommendation absent",
+      "pass": true
+    },
+    {
+      "name": "no unsupported performance claim",
+      "pass": true
+    },
+    {
+      "name": "all paths table rendered",
+      "pass": true
+    },
+    {
+      "name": "inpage navigation works",
+      "pass": true
+    },
+    {
+      "name": "mobile width",
+      "pass": true
+    },
+    {
+      "name": "previous visual report remains",
+      "pass": true
+    },
+    {
+      "name": "no runtime error",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "result": "passed",
+  "unperformed": [
+    "engine installation",
+    "mobile native game benchmark",
+    "paid AI generation"
+  ],
+  "finalBuild": {
+    "status": "complete",
+    "browserVerifiedAt": "2026-10-08T15:28:03.629Z",
+    "updatingIndicatorAbsent": true
+  }
+}

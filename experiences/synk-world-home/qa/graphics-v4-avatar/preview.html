@@ -1,0 +1,17 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#d6dcda}canvas{display:block;width:100%;height:100%}</style></head><body><canvas></canvas><script type="module">
+import * as THREE from '/scene-assets/three.module.js';
+import {createMongleAvatar} from '/avatar-v3.mjs';
+const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true,preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.08;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene();scene.background=new THREE.Color('#d8dfdd');
+const camera=new THREE.PerspectiveCamera(34,innerWidth/innerHeight,.05,30);camera.position.set(.25,1.75,4.30);camera.lookAt(0,.96,0);
+const sky=await new THREE.TextureLoader().loadAsync('/scene-assets/graphics-v2/azure-sky-v3-mobile.jpg');sky.mapping=THREE.EquirectangularReflectionMapping;sky.colorSpace=THREE.SRGBColorSpace;
+const pmrem=new THREE.PMREMGenerator(renderer),env=pmrem.fromEquirectangular(sky);scene.environment=env.texture;
+const key=new THREE.DirectionalLight('#fff0d1',2.5);key.position.set(-3.5,6,4.5);key.castShadow=true;key.shadow.mapSize.set(2048,2048);Object.assign(key.shadow.camera,{left:-2,right:2,top:3,bottom:-1,near:.1,far:15});key.shadow.normalBias=.014;key.shadow.bias=-.0001;key.shadow.radius=4;scene.add(key);
+const ambient=new THREE.HemisphereLight('#d6e9f5','#8e8066',1.02);scene.add(ambient);const bounce=new THREE.DirectionalLight('#ead6ba',.28);bounce.position.set(0,1,5);scene.add(bounce);
+const floor=new THREE.Mesh(new THREE.PlaneGeometry(20,20),new THREE.MeshStandardMaterial({color:'#c9d2cc',roughness:1}));floor.rotation.x=-Math.PI/2;floor.position.y=-.005;floor.receiveShadow=true;scene.add(floor);
+const avatarCreateStart=performance.now(),avatar=await createMongleAvatar({mobile:innerWidth<600,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy())});const avatarCreateMs=performance.now()-avatarCreateStart;scene.add(avatar.group);avatar.group.rotation.y=-.07;
+function render(){renderer.render(scene,camera);}
+window.avatarStudy={avatar,scene,renderer,camera,setOutfit(value){avatar.setOutfit(value);render();},setTime(value){const sunset=value==='sunset';key.color.set(sunset?'#ffc18b':'#fff0d1');key.intensity=sunset?2.6:2.5;key.position.set(sunset?-6:-3.5,sunset?3.2:6,sunset?3:4.5);ambient.color.set(sunset?'#c6c9e5':'#d6e9f5');ambient.groundColor.set(sunset?'#907561':'#8e8066');ambient.intensity=sunset?.9:1.02;scene.background.set(sunset?'#dccfc7':'#d8dfdd');render();},turn(yaw){avatar.group.rotation.y=yaw;render();},metrics(){return {...avatar.metrics(),avatarCreateMs,drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures};}};
+avatarStudy.setOutfit('scarf-apron');render();window.ready=true;
+</script></body></html>

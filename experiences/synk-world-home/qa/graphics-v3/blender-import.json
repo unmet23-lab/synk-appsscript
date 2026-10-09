@@ -1,0 +1,25 @@
+{
+  "blender": "5.2.1 LTS",
+  "meshObjects": 9,
+  "materials": 8,
+  "images": 4,
+  "triangles": 43252,
+  "nodes": [
+    "base-surface-0",
+    "base-surface-1",
+    "base-surface-2",
+    "base-surface-3",
+    "body-surface-7",
+    "body-surface-8",
+    "mongle-apron-starter",
+    "mongle-body",
+    "mongle-scarf-first-steps",
+    "mongle-v3",
+    "neck-surface-4",
+    "neck-surface-5",
+    "neck-surface-6"
+  ],
+  "finiteVertices": true,
+  "rigged": false,
+  "validated": "GLB import only, not native rendering or game-device performance"
+}

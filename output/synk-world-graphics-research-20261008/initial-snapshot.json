@@ -1,0 +1,216 @@
+{
+  "surface": "report",
+  "title": "SYNK WORLD 그래픽 선택: 모바일과 코스튬을 함께 검토",
+  "generatedAt": "2026-10-08T14:44:29.466Z",
+  "buildStatus": "creating",
+  "status": "reviewed",
+  "filters": [],
+  "queries": {
+    "games": {
+      "rows": [
+        {
+          "appid": 2456740,
+          "name": "inZOI",
+          "release": "27 Mar, 2025",
+          "comingSoon": false,
+          "positive": 25776,
+          "total": 33292,
+          "positivePct": 77.4,
+          "url": "https://store.steampowered.com/app/2456740/"
+        },
+        {
+          "appid": 1084600,
+          "name": "My Time at Sandrock",
+          "release": "2 Nov, 2023",
+          "comingSoon": false,
+          "positive": 25682,
+          "total": 29136,
+          "positivePct": 88.1,
+          "url": "https://store.steampowered.com/app/1084600/"
+        },
+        {
+          "appid": 666140,
+          "name": "My Time at Portia",
+          "release": "15 Jan, 2019",
+          "comingSoon": false,
+          "positive": 40552,
+          "total": 44336,
+          "positivePct": 91.5,
+          "url": "https://store.steampowered.com/app/666140/"
+        },
+        {
+          "appid": 3199500,
+          "name": "My Time at Evershine",
+          "release": "2027",
+          "comingSoon": true,
+          "positive": 0,
+          "total": 0,
+          "positivePct": null,
+          "url": "https://store.steampowered.com/app/3199500/"
+        },
+        {
+          "appid": 2707930,
+          "name": "Palia",
+          "release": "25 Mar, 2024",
+          "comingSoon": false,
+          "positive": 38475,
+          "total": 44701,
+          "positivePct": 86.1,
+          "url": "https://store.steampowered.com/app/2707930/"
+        },
+        {
+          "appid": 1401590,
+          "name": "Disney Dreamlight Valley",
+          "release": "5 Dec, 2023",
+          "comingSoon": false,
+          "positive": 23047,
+          "total": 25016,
+          "positivePct": 92.1,
+          "url": "https://store.steampowered.com/app/1401590/"
+        },
+        {
+          "appid": 2495100,
+          "name": "Hello Kitty Island Adventure",
+          "release": "30 Jan, 2025",
+          "comingSoon": false,
+          "positive": 11849,
+          "total": 12614,
+          "positivePct": 93.9,
+          "url": "https://store.steampowered.com/app/2495100/"
+        },
+        {
+          "appid": 1062520,
+          "name": "Dinkum",
+          "release": "22 Apr, 2025",
+          "comingSoon": false,
+          "positive": 26778,
+          "total": 29179,
+          "positivePct": 91.8,
+          "url": "https://store.steampowered.com/app/1062520/"
+        },
+        {
+          "appid": 2195120,
+          "name": "Go-Go Town!",
+          "release": "16 Jul, 2026",
+          "comingSoon": false,
+          "positive": 2618,
+          "total": 2800,
+          "positivePct": 93.5,
+          "url": "https://store.steampowered.com/app/2195120/"
+        },
+        {
+          "appid": 1158160,
+          "name": "Coral Island",
+          "release": "14 Nov, 2023",
+          "comingSoon": false,
+          "positive": 24719,
+          "total": 27779,
+          "positivePct": 89,
+          "url": "https://store.steampowered.com/app/1158160/"
+        },
+        {
+          "appid": 2230110,
+          "name": "Fae Farm",
+          "release": "8 Sep, 2023",
+          "comingSoon": false,
+          "positive": 2878,
+          "total": 3599,
+          "positivePct": 80,
+          "url": "https://store.steampowered.com/app/2230110/"
+        },
+        {
+          "appid": 593150,
+          "name": "Ooblets",
+          "release": "5 Oct, 2023",
+          "comingSoon": false,
+          "positive": 1424,
+          "total": 1558,
+          "positivePct": 91.4,
+          "url": "https://store.steampowered.com/app/593150/"
+        },
+        {
+          "appid": 3164330,
+          "name": "Infinity Nikki",
+          "release": "28 Apr, 2025",
+          "comingSoon": false,
+          "positive": 6077,
+          "total": 10584,
+          "positivePct": 57.4,
+          "url": "https://store.steampowered.com/app/3164330/"
+        },
+        {
+          "appid": 4025700,
+          "name": "Heartopia",
+          "release": "16 Jan, 2026",
+          "comingSoon": false,
+          "positive": 10655,
+          "total": 16089,
+          "positivePct": 66.2,
+          "url": "https://store.steampowered.com/app/4025700/"
+        },
+        {
+          "appid": 1118520,
+          "name": "Paralives",
+          "release": "25 May, 2026",
+          "comingSoon": false,
+          "positive": 19491,
+          "total": 21722,
+          "positivePct": 89.7,
+          "url": "https://store.steampowered.com/app/1118520/"
+        },
+        {
+          "appid": 2320980,
+          "name": "Loftia",
+          "release": "3 Nov, 2026",
+          "comingSoon": true,
+          "positive": 0,
+          "total": 0,
+          "positivePct": null,
+          "url": "https://store.steampowered.com/app/2320980/"
+        },
+        {
+          "appid": 824000,
+          "name": "Hokko Life",
+          "release": "27 Sep, 2022",
+          "comingSoon": false,
+          "positive": 1768,
+          "total": 2670,
+          "positivePct": 66.2,
+          "url": "https://store.steampowered.com/app/824000/"
+        },
+        {
+          "appid": 2788520,
+          "name": "Cozy Caravan",
+          "release": "7 Jan, 2026",
+          "comingSoon": false,
+          "positive": 1372,
+          "total": 1461,
+          "positivePct": 93.9,
+          "url": "https://store.steampowered.com/app/2788520/"
+        }
+      ],
+      "source": {
+        "type": "api",
+        "name": "Steam 공식 상점과 사용자 리뷰",
+        "files": [
+          "output/synk-world-research-20261008/steam-3d/summary.json"
+        ],
+        "evidenceFlow": [
+          {
+            "title": "Steam 리뷰 조회",
+            "detail": "language=all, purchase_type=all, review_type=all, filter=all. 게임 종합 평가이며 그래픽 선호 측정이 아님."
+          }
+        ],
+        "metricDefinitions": [
+          {
+            "label": "리뷰 긍정률",
+            "definition": "해당 조건 긍정 리뷰 수 / 전체 리뷰 수 × 100. 출시 전·0건은 결측.",
+            "componentIds": [
+              "games-table"
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "date": "2026-10-08T21:49:25.317Z",
+  "sourceSha256": "35ee09de28f4933bd9a1bdffa6d23f308a3e92ce0e59faa52c8af3789092a5bf",
+  "records": [
+    {
+      "name": "desktop",
+      "errors": [],
+      "mobile": false,
+      "checks": [
+        {
+          "name": "two tree draw calls",
+          "pass": true
+        },
+        {
+          "name": "leaf tip UV anchored",
+          "pass": true
+        },
+        {
+          "name": "leaf triangle budget false",
+          "pass": true
+        },
+        {
+          "name": "finite normals false",
+          "pass": true
+        },
+        {
+          "name": "finite positions false",
+          "pass": true
+        },
+        {
+          "name": "uv from root to tip false",
+          "pass": true
+        },
+        {
+          "name": "leaf triangle budget true",
+          "pass": true
+        },
+        {
+          "name": "finite normals true",
+          "pass": true
+        },
+        {
+          "name": "finite positions true",
+          "pass": true
+        },
+        {
+          "name": "uv from root to tip true",
+          "pass": true
+        },
+        {
+          "name": "tree triangle reduction",
+          "pass": true
+        },
+        {
+          "name": "bounded connected canopy",
+          "pass": true
+        }
+      ],
+      "metrics": {
+        "revision": 6,
+        "leafCount": 352,
+        "branchCount": 41,
+        "drawCalls": 2,
+        "leafTriangles": 22528,
+        "branchTriangles": 2822
+      },
+      "oldTreeTriangles": 42672,
+      "renderer": {
+        "calls": 5,
+        "triangles": 25512
+      }
+    },
+    {
+      "name": "mobile",
+      "errors": [],
+      "mobile": true,
+      "checks": [
+        {
+          "name": "two tree draw calls",
+          "pass": true
+        },
+        {
+          "name": "leaf tip UV anchored",
+          "pass": true
+        },
+        {
+          "name": "leaf triangle budget false",
+          "pass": true
+        },
+        {
+          "name": "finite normals false",
+          "pass": true
+        },
+        {
+          "name": "finite positions false",
+          "pass": true
+        },
+        {
+          "name": "uv from root to tip false",
+          "pass": true
+        },
+        {
+          "name": "leaf triangle budget true",
+          "pass": true
+        },
+        {
+          "name": "finite normals true",
+          "pass": true
+        },
+        {
+          "name": "finite positions true",
+          "pass": true
+        },
+        {
+          "name": "uv from root to tip true",
+          "pass": true
+        },
+        {
+          "name": "tree triangle reduction",
+          "pass": true
+        },
+        {
+          "name": "bounded connected canopy",
+          "pass": true
+        }
+      ],
+      "metrics": {
+        "revision": 6,
+        "leafCount": 216,
+        "branchCount": 33,
+        "drawCalls": 2,
+        "leafTriangles": 10368,
+        "branchTriangles": 1548
+      },
+      "oldTreeTriangles": 24192,
+      "renderer": {
+        "calls": 5,
+        "triangles": 12078
+      }
+    }
+  ]
+}

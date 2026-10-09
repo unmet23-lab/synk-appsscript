@@ -1,0 +1,68 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v4",
+      "quality": "balanced",
+      "pixelRatio": 1,
+      "shadowMapSize": 2048,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 20,
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 1400,
+        "height": 720
+      },
+      "dpr": 1,
+      "drawCalls": 156,
+      "triangles": 246708,
+      "lines": 8376,
+      "instancedFoliage": 1503,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  },
+  {
+    "name": "mobile",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v4",
+      "quality": "balanced",
+      "pixelRatio": 1.5,
+      "shadowMapSize": 1024,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 7.699999999254942,
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 585,
+        "height": 697
+      },
+      "dpr": 1.5,
+      "drawCalls": 128,
+      "triangles": 202020,
+      "lines": 5421,
+      "instancedFoliage": 1294,
+      "frameCount": 3,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  }
+]

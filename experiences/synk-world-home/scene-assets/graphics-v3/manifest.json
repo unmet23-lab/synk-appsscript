@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "version": "mongle-v3-20261009",
+  "productionApproved": false,
+  "runtime": "avatar-v3.mjs",
+  "staticCandidate": "scene-assets/graphics-v3/mongle-v3.glb",
+  "editableImport": "scene-assets/graphics-v3/mongle-v3.blend",
+  "coordinates": {
+    "glb": {
+      "front": "+Z",
+      "up": "+Y",
+      "origin": "feet"
+    },
+    "blend": "Blender glTF importer axis conversion, native Blender Z up"
+  },
+  "bodyBounds": {
+    "width": 1.8004822731,
+    "height": 1.834232429,
+    "depth": 1.6091489196
+  },
+  "slots": {
+    "neck": "mongle-scarf-first-steps",
+    "body": "mongle-apron-starter"
+  },
+  "files": [
+    {
+      "path": "avatar-v3.mjs",
+      "bytes": 12964,
+      "sha256": "2fbdc3ff7bdced9549419aedbb30f6550f0e3b679bf60a3e1fd271dae07d30c1"
+    },
+    {
+      "path": "scene-v3.mjs",
+      "bytes": 25167,
+      "sha256": "67a698a18dbb23e599cd0d59e35fa7c259d8f8dbf9556579903505fbaff735bf"
+    },
+    {
+      "path": "scene-v3-garden.mjs",
+      "bytes": 17691,
+      "sha256": "f4e9630817e2dca656b070f52bf602685ca1e7d49fa266307d8af43c684f2b53"
+    },
+    {
+      "path": "scene-assets/graphics-v3/mongle-v3.glb",
+      "bytes": 3153872,
+      "sha256": "5117b727f27c022d96f7b794e056aa77fb008dd906a6d8b9457c30e17a93a457"
+    },
+    {
+      "path": "scene-assets/graphics-v3/mongle-v3.blend",
+      "bytes": 2694045,
+      "sha256": "ee35fbd95b3f2a3dfc89c719440e9c72157d26cbc40f4bf127255c8881846d34"
+    },
+    {
+      "path": "scene-assets/graphics-v3/terrain.jpg",
+      "bytes": 201314,
+      "sha256": "0577a26e7d9252ac6f6fa312cb14539796788333a5477e2787458fcd304d3986"
+    }
+  ],
+  "externalTexture": {
+    "file": "terrain.jpg",
+    "source": "experiences/korean-racing/assets/terrain.jpg",
+    "origin": "https://polyhaven.com/a/rocky_terrain_02",
+    "license": "CC0-1.0",
+    "method": "Existing local asset copied without pixel edits"
+  },
+  "reusedTextureProvenance": "../graphics-v2/provenance.json",
+  "brandFeltTexture": "../../assets/felt-coral.webp",
+  "newImageGeneration": false,
+  "limitations": [
+    "Static GLB contains no rig or animation",
+    "Runtime bump shader and short nap lines are not transported to GLB",
+    "Blender import success is not Unity URP rendering verification",
+    "No physical mobile sustained performance verification",
+    "User approved art direction only, not production quality"
+  ]
+}

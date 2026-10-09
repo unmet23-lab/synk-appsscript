@@ -1,0 +1,50 @@
+{
+  "files": [
+    {
+      "sourceSHA256": "abd6d6114ad52db3040362d55a13d25d601d8fb8615f66ce130e11bbe9a740e5",
+      "file": "SSAOPass.js",
+      "source": "experiences\\synk-town\\rendering\\SSAOPass.js",
+      "sha256": "9834203b7f056a9d4c8a4ce30bfb91ff331de63d3d3586d412e537c8f981d65d"
+    },
+    {
+      "sourceSHA256": "8a52fe985b195b5865292650288af9d6276a71b5aa9c06772260fcc7536428b6",
+      "file": "SSAOShader.js",
+      "source": "experiences\\synk-town\\rendering\\SSAOShader.js",
+      "sha256": "3ac4dd7db5e5dbfbe82ac3deb1f090832f78ce42622522d931545268ac1a2ad9"
+    },
+    {
+      "sourceSHA256": "7cebe392a77c573f9f6c075daef1ba7160bff220d03052d2c528f0de59a2d02a",
+      "file": "Pass.js",
+      "source": "experiences\\synk-town\\rendering\\Pass.js",
+      "sha256": "b6a0438d059fb2e8357b77345d5a8efc2de1373d4e107685d5643c8ef1182ee8"
+    },
+    {
+      "sourceSHA256": "0da20033a6542de4bbdd6b0470fd1b1bb3b8a33023e2f1b656e8c9ff5e279de6",
+      "file": "SimplexNoise.js",
+      "source": "experiences\\synk-town\\rendering\\SimplexNoise.js",
+      "sha256": "0da20033a6542de4bbdd6b0470fd1b1bb3b8a33023e2f1b656e8c9ff5e279de6"
+    },
+    {
+      "sourceSHA256": "8dd28d636ec38e0966190cb53e473141d607439da276ac7a8fdb4c79810fc72c",
+      "file": "CopyShader.js",
+      "source": "experiences\\synk-town\\rendering\\CopyShader.js",
+      "sha256": "8dd28d636ec38e0966190cb53e473141d607439da276ac7a8fdb4c79810fc72c"
+    },
+    {
+      "sourceSHA256": "7f495a6a29241d82b69db649e4f47f72d2069c56a475fce63222f53af7b8d7e6",
+      "file": "OutputPass.js",
+      "source": "experiences\\synk-town\\rendering\\OutputPass.js",
+      "sha256": "ad8805fb7e39edbdb1f2e1fa93bfa853bff2b78401a54a5f18420f33a40df96b"
+    },
+    {
+      "sourceSHA256": "b96c7d82bd2dbdc94a9dbdcb9234c7989a7891db023ab249505acfc75ac83a8e",
+      "file": "OutputShader.js",
+      "source": "experiences\\synk-town\\rendering\\OutputShader.js",
+      "sha256": "b96c7d82bd2dbdc94a9dbdcb9234c7989a7891db023ab249505acfc75ac83a8e"
+    }
+  ],
+  "modification": "Only core Three import path changed to ../three.module.js. SSAOPass source already excludes transparent meshes, points, lines and sprites.",
+  "source": "Existing repository copy from experiences/synk-town/rendering; no network download",
+  "license": "MIT; THREE-LICENSE.txt",
+  "library": "Three.js r180"
+}

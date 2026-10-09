@@ -1,0 +1,29 @@
+{
+  "checkedAtUtc": "2026-10-08T19:35:57.2271022Z",
+  "scope": "Read-only environment check; no installation, account change, license acceptance, build, or device launch.",
+  "expectedEditorVersion": "6000.6.2f1",
+  "editorExecutableExists": false,
+  "registeredEditorCount": 0,
+  "unityCliAvailable": true,
+  "unitySignedIn": false,
+  "activeLicenseCount": 0,
+  "freeDiskBytes": 709914624,
+  "editorOnlyDownloadBytes": 3859176200,
+  "editorDownloadEvidence": "unity --json --non-interactive install 6000.6.2f1 --dry-run --no-wait; checked 2026-10-09",
+  "adbAvailable": true,
+  "androidDevices": [],
+  "blenderVersion": "Blender 5.2.1 LTS",
+  "platforms": {
+    "Windows": "not built",
+    "Android": "not built or run",
+    "iOS": "not exported; signing/running requires macOS and Xcode"
+  },
+  "blockers": [
+    "Unity Editor executable is absent; an install metadata folder is not an installed Editor.",
+    "Unity CLI has no signed-in user.",
+    "No active Unity license was reported.",
+    "Free space is below the Editor-only download size (3,859,176,200 bytes); unpacking and platform modules need additional space.",
+    "No authorized Android device is connected."
+  ],
+  "userScope": "2026-10-09: code and browser verification only; installation and physical-device verification deferred."
+}

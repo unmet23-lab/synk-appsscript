@@ -1,0 +1,313 @@
+{
+  "checkedAt": "2026-10-08T21:29:59.580Z",
+  "passed": 44,
+  "checks": [
+    "pc five controls remain touch sized",
+    "pc controls stay inside viewport",
+    "pc controls do not overlap",
+    "pc detail button reflects current view",
+    "pc detail has different rendered camera pixels",
+    "pc title does not cover close face",
+    "pc reduced motion settles after view change",
+    "pc keyboard orbit renders",
+    "pc time switch preserves orbit",
+    "pc time switch retains detail view",
+    "pc close photo preserves full resolution",
+    "pc photo pauses home",
+    "pc return reveals home title",
+    "pc one canvas and no horizontal overflow",
+    "phone five controls remain touch sized",
+    "phone controls stay inside viewport",
+    "phone controls do not overlap",
+    "phone detail button reflects current view",
+    "phone detail has different rendered camera pixels",
+    "phone title does not cover close face",
+    "phone reduced motion settles after view change",
+    "phone keyboard orbit renders",
+    "phone time switch preserves orbit",
+    "phone time switch retains detail view",
+    "phone close photo preserves full resolution",
+    "phone photo pauses home",
+    "phone return reveals home title",
+    "phone one canvas and no horizontal overflow",
+    "small five controls remain touch sized",
+    "small controls stay inside viewport",
+    "small controls do not overlap",
+    "small detail button reflects current view",
+    "small detail has different rendered camera pixels",
+    "small title does not cover close face",
+    "small reduced motion settles after view change",
+    "small keyboard orbit renders",
+    "small time switch preserves orbit",
+    "small time switch retains detail view",
+    "small close photo preserves full resolution",
+    "small photo pauses home",
+    "small return reveals home title",
+    "small one canvas and no horizontal overflow",
+    "no runtime errors",
+    "sources stayed unchanged throughout inspection"
+  ],
+  "errors": [],
+  "observations": [
+    {
+      "name": "pc",
+      "photo": {
+        "width": 1920,
+        "height": 887
+      },
+      "buttons": [
+        {
+          "label": "낮으로 보기",
+          "x": 958.234375,
+          "y": 262.890625,
+          "w": 44,
+          "h": 44,
+          "right": 1002.234375
+        },
+        {
+          "label": "노을로 보기",
+          "x": 1005.234375,
+          "y": 262.890625,
+          "w": 44,
+          "h": 44,
+          "right": 1049.234375
+        },
+        {
+          "label": "몽글과 인사하기",
+          "x": 1064.234375,
+          "y": 262.890625,
+          "w": 99.953125,
+          "h": 44,
+          "right": 1164.1875
+        },
+        {
+          "label": "몽글과 옷감을 가까이 보기",
+          "x": 1174.1875,
+          "y": 262.890625,
+          "w": 89.46875,
+          "h": 44,
+          "right": 1263.65625
+        },
+        {
+          "label": "지금 차림으로 사진 찍기",
+          "x": 1273.65625,
+          "y": 262.890625,
+          "w": 102.34375,
+          "h": 44,
+          "right": 1376
+        }
+      ],
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 2.5,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1168,
+          "height": 540
+        },
+        "dpr": 1,
+        "drawCalls": 117,
+        "triangles": 234664,
+        "lines": 8376,
+        "instancedFoliage": 1503,
+        "frameCount": 21,
+        "outfit": "none",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      }
+    },
+    {
+      "name": "phone",
+      "photo": {
+        "width": 1398,
+        "height": 1858
+      },
+      "buttons": [
+        {
+          "label": "낮으로 보기",
+          "x": 261,
+          "y": 213.296875,
+          "w": 44,
+          "h": 44,
+          "right": 305
+        },
+        {
+          "label": "노을로 보기",
+          "x": 307,
+          "y": 213.296875,
+          "w": 44,
+          "h": 44,
+          "right": 351
+        },
+        {
+          "label": "몽글과 인사하기",
+          "x": 267,
+          "y": 549.296875,
+          "w": 88,
+          "h": 44,
+          "right": 355
+        },
+        {
+          "label": "몽글과 옷감을 가까이 보기",
+          "x": 79,
+          "y": 549.296875,
+          "w": 80,
+          "h": 44,
+          "right": 159
+        },
+        {
+          "label": "지금 차림으로 사진 찍기",
+          "x": 169,
+          "y": 549.296875,
+          "w": 88,
+          "h": 44,
+          "right": 257
+        }
+      ],
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 2.199999999254942,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 525,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 70,
+        "triangles": 182028,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 22,
+        "outfit": "none",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      }
+    },
+    {
+      "name": "small",
+      "photo": {
+        "width": 1160,
+        "height": 1540
+      },
+      "buttons": [
+        {
+          "label": "낮으로 보기",
+          "x": 196,
+          "y": 210.890625,
+          "w": 44,
+          "h": 44,
+          "right": 240
+        },
+        {
+          "label": "노을로 보기",
+          "x": 242,
+          "y": 210.890625,
+          "w": 44,
+          "h": 44,
+          "right": 286
+        },
+        {
+          "label": "몽글과 인사하기",
+          "x": 202,
+          "y": 476.890625,
+          "w": 88,
+          "h": 44,
+          "right": 290
+        },
+        {
+          "label": "몽글과 옷감을 가까이 보기",
+          "x": 36,
+          "y": 476.890625,
+          "w": 74,
+          "h": 44,
+          "right": 110
+        },
+        {
+          "label": "지금 차림으로 사진 찍기",
+          "x": 120,
+          "y": 476.890625,
+          "w": 80,
+          "h": 44,
+          "right": 200
+        }
+      ],
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 2.399999998509884,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 435,
+          "height": 577
+        },
+        "dpr": 1.5,
+        "drawCalls": 56,
+        "triangles": 156260,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 21,
+        "outfit": "none",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      }
+    }
+  ],
+  "startHashes": {
+    "scene-v3.mjs": "b04f31d6be657515cb1e75a8e8cf9b78d4e2e8aac800f503a5b85bb7c9abb8a4",
+    "scene-v3-garden.mjs": "b405710d9d61a4c529c067a3bf6f7fcd18cc15bbe14d11349b2b13bda65e5cc5",
+    "courtyard-details-v5.mjs": "3991c40e036311b26642da09d3e668695096516b4fa44024c7302d768ccab556",
+    "garden-breeze-v5.mjs": "3f557ca9efcd940eb2f49b158b9322926463e644c889e94cc7b03f0b442e6fa0",
+    "app.mjs": "e550e08c90c6613a419bb4337efdb5057e1fd88f7edcb577dd4b0a0c64f5e2e5",
+    "graphics-home.css": "0731df5d980c04ad65b94f7b45d17778a4eac902281d7ce635c264b746f3bcda"
+  },
+  "endHashes": {
+    "scene-v3.mjs": "b04f31d6be657515cb1e75a8e8cf9b78d4e2e8aac800f503a5b85bb7c9abb8a4",
+    "scene-v3-garden.mjs": "b405710d9d61a4c529c067a3bf6f7fcd18cc15bbe14d11349b2b13bda65e5cc5",
+    "courtyard-details-v5.mjs": "3991c40e036311b26642da09d3e668695096516b4fa44024c7302d768ccab556",
+    "garden-breeze-v5.mjs": "3f557ca9efcd940eb2f49b158b9322926463e644c889e94cc7b03f0b442e6fa0",
+    "app.mjs": "e550e08c90c6613a419bb4337efdb5057e1fd88f7edcb577dd4b0a0c64f5e2e5",
+    "graphics-home.css": "0731df5d980c04ad65b94f7b45d17778a4eac902281d7ce635c264b746f3bcda"
+  },
+  "physicalDevices": 0
+}

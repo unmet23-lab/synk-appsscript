@@ -1,0 +1,158 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v7",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1,
+      "shadowMapSize": 2048,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 35,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": true,
+        "quality": "balanced",
+        "mobile": false,
+        "passCount": 6,
+        "aoSamples": 8,
+        "beautySize": [
+          1400,
+          720
+        ],
+        "aoSize": [
+          700,
+          360
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 45360000,
+        "drawCalls": 427,
+        "triangles": 623812,
+        "cpuSubmissionMs": 34.899999998509884,
+        "allocations": 1,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "optics": {
+        "revision": 7,
+        "waterTime": 0,
+        "reflectionAtlas": [
+          512,
+          128
+        ],
+        "reflectedBuildings": 70,
+        "reflectedFacadeParts": 110,
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "disposed": false
+      },
+      "roofCraft": {
+        "tiles": 96,
+        "triangles": 6528
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 1400,
+        "height": 720
+      },
+      "dpr": 1,
+      "drawCalls": 427,
+      "triangles": 623812,
+      "lines": 8376,
+      "instancedFoliage": 1360,
+      "frameCount": 3,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  },
+  {
+    "name": "mobile",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v7",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1.5,
+      "shadowMapSize": 1024,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 27.799999997019768,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": false,
+        "quality": "balanced",
+        "mobile": true,
+        "passCount": 1,
+        "aoSamples": 0,
+        "beautySize": null,
+        "aoSize": null,
+        "msaaSamples": 0,
+        "estimatedTargetBytes": 0,
+        "drawCalls": 253,
+        "triangles": 390270,
+        "cpuSubmissionMs": 27.699999999254942,
+        "allocations": 0,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "optics": {
+        "revision": 7,
+        "waterTime": 0,
+        "reflectionAtlas": [
+          512,
+          128
+        ],
+        "reflectedBuildings": 70,
+        "reflectedFacadeParts": 110,
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "disposed": false
+      },
+      "roofCraft": {
+        "tiles": 96,
+        "triangles": 4992
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 585,
+        "height": 697
+      },
+      "dpr": 1.5,
+      "drawCalls": 253,
+      "triangles": 390270,
+      "lines": 5421,
+      "instancedFoliage": 1180,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  }
+]

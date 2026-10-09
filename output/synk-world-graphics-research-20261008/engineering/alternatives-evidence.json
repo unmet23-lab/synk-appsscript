@@ -1,0 +1,357 @@
+{
+  "checkedAt": "2026-10-09 (Asia/Seoul)",
+  "scope": {
+    "existingPrototypeReuseWeight": 0,
+    "primary": [
+      "Galaxy S25 기본형 Android 앱",
+      "iPhone 15 기본형 iOS 앱"
+    ],
+    "secondary": [
+      "PC"
+    ],
+    "browserRequired": false,
+    "browserRequirementStatus": "사용자가 필수라고 확정하지 않음",
+    "product": "16인 생활 3D / 반복 출시하는 모듈형 펠트 코스튬",
+    "evidenceLimit": "공식 기능·릴리스·파이프라인 문서 조사. SYNK 대표 장면의 실기기 벤치마크는 미실시. 추천은 총 제작·검수·출시 유지 비용에 관한 판단."
+  },
+  "versions": [
+    {
+      "engine": "Godot",
+      "stable": "4.7.2",
+      "released": "2026-08-18",
+      "preview": "4.8-dev7 (2026-09-29), 본 제작 기본값 제외",
+      "sourceId": "godot-archive"
+    },
+    {
+      "engine": "Cocos Creator",
+      "stable": "3.8.8 LTS",
+      "released": "2025-12-16",
+      "sourceId": "cocos-updates",
+      "note": "공식 배포 페이지에서 확인한 최신판. 검색 날짜가 새롭다고 엔진판도 새롭다는 뜻은 아님."
+    },
+    {
+      "engine": "Babylon.js",
+      "stable": "9.0 major",
+      "released": "2026-03-26",
+      "sourceId": "babylon-release",
+      "note": "major 릴리스 확인. 최신 9.x patch 번호는 이 조사에서 고정하지 않음."
+    },
+    {
+      "engine": "Babylon Native",
+      "stable": null,
+      "status": "공식 README: source-only public preview, 호환 계약 변화 가능",
+      "sourceId": "babylon-native"
+    },
+    {
+      "engine": "PlayCanvas",
+      "stable": "2.23.1",
+      "sourceId": "playcanvas-release"
+    },
+    {
+      "engine": "Three.js",
+      "stable": "r186",
+      "sourceId": "three-release",
+      "note": "WebGPURenderer는 공식 문서에서 여전히 experimental이라고 표시"
+    }
+  ],
+  "candidates": [
+    {
+      "engine": "Godot 4.7.2 Mobile renderer",
+      "role": "가장 강한 네이티브 대안",
+      "facts": [
+        "Mobile renderer는 Vulkan·Metal·Direct3D 12 기반이며 새 모바일과 데스크톱에 적합하다. Forward+는 공식적으로 데스크톱용이다.",
+        "Mobile renderer는 LightmapGI·ReflectionProbe·그림자·Glow·Decal·DOF 등을 제공하지만 기본 제공 SSAO·SSR·SSS·볼륨 안개·TAA·FSR2는 없다. 커스텀 shader/effect로 보완할 수 있는 범위와 비용은 따로 검증한다.",
+        "glTF 2.0 권장, FBX ufbx importer, Blender import 지원. BoneAttachment3D 및 Skeleton 계열로 장식과 의상을 만들 수 있다.",
+        "CPU/GPU visual profiler, 스크립트 profiler, 네트워크 profiler, VRAM 모니터, 명령행 export 기능이 있다.",
+        "iOS export는 macOS/Xcode가 필요하다. C# iOS 지원은 문서상 experimental이므로 안정 우선이면 GDScript 경로를 우선 검토한다."
+      ],
+      "authoringEfficiency": "작은 프로젝트 구조, 텍스트 scene/resource와 GDScript, headless/CLI 작업은 AI 코드·검사 자동화와 잘 맞는다. 이것이 의상 피팅·재질 조정·Apple/Android QA를 없애지는 않는다.",
+      "costumeEfficiency": "공통 Skeleton과 mesh 교체·장식 anchor·body hide 규칙은 구현 가능. 코스튬 catalog/import validation과 fitting 도구를 팀이 갖춰야 한다.",
+      "whyNotDefault": "SYNK가 요구하는 촉감 표현과 넓은 미래 풍경을 모바일/PC에서 함께 유지하려면 렌더러 차이와 커스텀 마감 비용이 늘 수 있다. 기본 효과 부재가 미적 품질 불가능을 의미하지는 않는다.",
+      "beatsUnityWhen": "MIT·소스 통제·설치/빌드 단순성을 매우 중시하고, baked lighting·제한된 동적 효과로도 원하는 미감이 달성되며, GDScript와 자체 도구 제작을 팀이 감당할 때. 동일 자산 실기기 시험에서 제작시간·프레임 안정성·메모리가 동등 이상이면 선정할 근거가 충분하다.",
+      "sourceIds": [
+        "godot-archive",
+        "godot-renderers",
+        "godot-import",
+        "godot-profiler",
+        "godot-cli",
+        "godot-ios",
+        "godot-license",
+        "godot-attachments"
+      ]
+    },
+    {
+      "engine": "Cocos Creator 3.8.8",
+      "role": "TypeScript 중심 팀의 조건부 네이티브 후보",
+      "facts": [
+        "공식 dual-core 구조는 native용 C++ core와 web/minigame용 TypeScript core를 구분한다. iOS·Android·Windows·macOS native export를 지원한다.",
+        "FBX/glTF와 skeletal animation, socket, baked animation 및 realtime 계산 모드가 있다. baked 모드는 GPU texture 기반 skinning과 instancing을 위한 성능 경로를 제공한다.",
+        "실시간 골격 계산은 blendshape·animation blending/masking·IK·secondary effects를 지원한다. 두 경로는 표현력과 최적화 제약이 다르다.",
+        "native profiler는 렌더 시간·draw calls·triangle·메모리·코드 구간 통계를 보여준다.",
+        "3.8.8은 Android 16KB page size, WebGL2/WebGPU MSAA, custom pipeline render pass merging 개선을 포함한다."
+      ],
+      "authoringEfficiency": "TypeScript로 gameplay·UI·데이터 로직을 통일할 수 있고 scene/prefab 에디터를 제공한다. 네이티브 SDK 연결 및 특수 3D 마감에서 C++/Objective-C/Java 작업은 남는다.",
+      "costumeEfficiency": "socket 장식과 skin 교체가 가능한 실제 후보다. baked crowd animation은 16인 공간에서 유용한 후보지만 사용자별 의상/material 차이로 실제 batching 이익은 측정해야 한다.",
+      "whyNotDefault": "네이티브 출시와 3D 기능은 충분히 실재한다. 다만 SYNK 수준의 3D 생활 게임에서 필요한 제작 보조 도구와 다수 코스튬의 검수 흐름까지 포함한 효율 우위가 아직 입증되지 않았다.",
+      "beatsUnityWhen": "TypeScript 숙련이 강하고 작은 구역·정형 애니메이션·미니게임 비중이 크며 web/minigame 배포도 핵심일 때. 완성 의상 1벌 추가부터 두 플랫폼 native build까지 반복 시간을 비교해 결정한다.",
+      "sourceIds": [
+        "cocos-updates",
+        "cocos-native",
+        "cocos-platforms",
+        "cocos-skeletal",
+        "cocos-profiler"
+      ]
+    },
+    {
+      "engine": "Babylon.js 9 + WebGPU/WebGL2",
+      "role": "브라우저 우선 시 재상승하는 후보",
+      "facts": [
+        "Babylon.js 9는 2026-03-26 공식 발표되었다.",
+        "WebGPU를 지원하는 web engine과, OS graphics API를 쓰는 Babylon Native는 다른 배포/검수 경로다.",
+        "Babylon Native 공식 README는 public preview/source only 및 backward compatibility 미보장 상태를 명시한다.",
+        "Native 문서는 일부 GUI·input·postprocessing 기능 지원 차이 및 HTML 기반 Inspector/Node Material Editor/Profiler의 범위 차이를 명시한다."
+      ],
+      "authoringEfficiency": "TypeScript와 코드 기반 scene 생성은 빠르며 web 디버깅에 친화적이다. 완성 네이티브 생활 게임을 공급하려면 wrapper 또는 Native 통합·자산 갱신·app lifecycle·성능 진단 도구를 함께 책임져야 한다.",
+      "costumeEfficiency": "모듈 mesh·skeleton·PBR/glTF 기반 의상 자체는 충분히 가능하다. 불이익의 중심은 의상 가능 여부가 아니라 출시 전체 파이프라인의 추가 책임이다.",
+      "whyNotDefault": "브라우저 필수가 아닌 휴대폰 native 주력에서 web runtime과 wrapper QA를 도입할 추가 사업 이점이 아직 없다. 기존 시제품 유무는 이 판단에 반영하지 않는다.",
+      "beatsUnityWhen": "설치 없이 링크 공유하는 WORLD가 가장 중요하고, 한 번의 web 배포 속도가 native 3D 편집·최적화 도구보다 큰 가치를 만들 때.",
+      "sourceIds": [
+        "babylon-release",
+        "babylon-native",
+        "webgpu-chrome",
+        "webgpu-safari"
+      ]
+    },
+    {
+      "engine": "PlayCanvas 2.23.1",
+      "role": "에디터가 필요한 웹 우선 대안",
+      "facts": [
+        "WebGL2 기본과 opt-in WebGPU 및 WebGL2 fallback을 공식 지원한다.",
+        "브라우저 기반 scene/asset collaborative editor와 MIT engine을 제공한다.",
+        "공식 모바일 앱 배포 안내는 Cordova wrapper 경로이며 iOS는 WKWebView를 사용한다."
+      ],
+      "authoringEfficiency": "Three.js보다 완성 scene 편집 흐름을 빨리 확보할 수 있는 웹 후보. pure code 친화성과 시각 편집을 함께 쓸 수 있다.",
+      "costumeEfficiency": "일반적인 mesh/animation/material pipeline으로 조립형 의상을 구축할 수 있지만 엔진 도입만으로 캐릭터별 fitting/충돌 규칙이 해결되지는 않는다.",
+      "whyNotDefault": "native 앱 wrapper가 native renderer의 지속 성능·메모리 제어와 같은 의미가 아니다. iPhone/Android WebView별 검수가 추가되며 브라우저 배포 이점이 현재 필수 요구가 아니다.",
+      "beatsUnityWhen": "web-first 공동 편집·즉시 배포가 주력이고 browser runtime으로 품질 목표를 충족할 때.",
+      "sourceIds": [
+        "playcanvas-engine",
+        "playcanvas-release",
+        "playcanvas-browsers",
+        "playcanvas-cordova"
+      ]
+    },
+    {
+      "engine": "Three.js r186 / WebGPURenderer",
+      "role": "독자 웹 경험·도구 제작용",
+      "facts": [
+        "WebGPURenderer는 WebGPU를 기본으로 사용하고 WebGL2 fallback을 제공한다.",
+        "공식 문서는 아직 experimental이며 장면에 따라 누락 기능 또는 WebGLRenderer보다 나쁜 성능 가능성을 명시한다.",
+        "기존 ShaderMaterial·onBeforeCompile·EffectComposer 코드는 새 TSL/node material 및 postprocessing 경로로 별도 작업이 필요하다."
+      ],
+      "authoringEfficiency": "렌더링 코드 자체는 유연하고 웹/React 개발자에게 친숙하다. 그러나 생활 게임용 scene workflow·animation state·inventory tools·build/update pipeline을 조립하는 비용까지 계산해야 한다.",
+      "costumeEfficiency": "가능하다. 하지만 Three.js를 쓰는 것만으로 3D 게임 제작 에디터와 의상 생산 도구가 제공되는 것은 아니다.",
+      "whyNotDefault": "렌더링 라이브러리를 선택하는 것과 출시 가능한 생활 게임 제작 환경을 선택하는 것은 범위가 다르다. 새 GPU API 채택 그 자체가 총 제작 시간을 줄인다는 근거는 없다.",
+      "beatsUnityWhen": "상호작용 웹사이트/프로모션·작은 독자 3D 경험이 핵심이고 필요한 게임 tooling이 매우 적을 때.",
+      "sourceIds": [
+        "three-release",
+        "three-webgpu"
+      ]
+    }
+  ],
+  "webgpuCaveats": [
+    "Safari 26.0부터 iOS/macOS WebGPU가 정식 포함된다. iPhone 15 하드웨어 이름만으로 OS·browser·WKWebView 조건을 확정하지 않는다.",
+    "Chrome Android는 Chrome 121/Android 12 이상 Qualcomm·ARM GPU에서 시작했으며 호환 범위를 확장 중이다. Chrome 지원을 Android System WebView 지원 보장으로 확장하지 않는다.",
+    "웹뷰 지원 여부는 실제 배포 wrapper의 secure context, navigator.gpu, requestAdapter/device, device loss, suspend/resume 및 동일 장면으로 확인한다.",
+    "WebGPU는 향상된 API이지 자동 성능 승수 아니다. 공식 Chrome 문서도 WebGPU가 WebGL보다 느릴 수 있는 원인을 안내한다.",
+    "Godot web export는 현재 Compatibility renderer 경로다. native Mobile renderer의 같은 기능/품질을 web에 자동 이식한다고 보고하지 않는다."
+  ],
+  "recommendation": {
+    "verdict": "기존 코드 가치 0으로 평가해도 현재 요구에서 WebGPU 엔진을 본 제작 1순위로 밀어 올릴 근거는 부족하다. strongest native challenger는 Godot 4.7.2 Mobile이다. TypeScript 및 여러 minigame/web 배포를 핵심 생산 방식으로 삼으면 Cocos 3.8.8을 동등하게 시험할 가치가 있다.",
+    "againstUnityComplacency": "Unity가 자동으로 최고 품질·최고 FPS인 것은 아니다. 같은 자산, 같은 camera, 같은 실기기, 같은 cosmetic 변경 작업으로 성능과 반복 제작 시간을 함께 비교해야 한다.",
+    "requiredDecisionEvidence": [
+      "새 의상 1벌과 장식 1개 추가/피팅/검수/두 플랫폼 빌드에 걸린 실제 시간",
+      "1·8·16 캐릭터의 프레임타임 분포 및 30분 열화",
+      "홈→옷장→타운 전환의 메모리·재개·asset unload",
+      "앱 크기·추가 의상 다운로드·revision 호환·rollback",
+      "아트 담당자가 코드 수정 없이 재질/장식/아이템 설정을 유지할 수 있는 범위"
+    ],
+    "doNotUse": [
+      "엔진 무료 여부만으로 총효율 결정",
+      "AI가 TypeScript를 잘 쓰니 web engine이 언제나 효율적이라는 추정",
+      "최신 dev판을 stable보다 우선",
+      "Gaussian splat/AI 생성 mesh를 착용 가능한 production character로 오인",
+      "native 설치 앱 포장을 native rendering과 동일시"
+    ]
+  },
+  "sources": [
+    {
+      "id": "godot-archive",
+      "title": "Godot official release archive",
+      "url": "https://godotengine.org/download/archive/",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-renderers",
+      "title": "Godot renderer feature matrix",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/rendering/renderers.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-import",
+      "title": "Godot 3D import formats",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/assets_pipeline/importing_3d_scenes/available_formats.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-profiler",
+      "title": "Godot debugger and profilers",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/debug/debugger_panel.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-cli",
+      "title": "Godot command-line workflow",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/editor/command_line_tutorial.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-ios",
+      "title": "Godot iOS export and C# limitation",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/export/exporting_for_ios.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-license",
+      "title": "Godot MIT license",
+      "url": "https://docs.godotengine.org/en/latest/about/complying_with_licenses.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "godot-attachments",
+      "title": "Godot soft-body and bone attachment workflow",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/physics/soft_body.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "cocos-updates",
+      "title": "Cocos official release notes",
+      "url": "https://www.cocos.com/en/update",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "cocos-native",
+      "title": "Cocos native development",
+      "url": "https://docs.cocos.com/creator/3.8/manual/en/native/overview.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "cocos-platforms",
+      "title": "Cocos publishing architecture",
+      "url": "https://docs.cocos.com/creator/3.8/manual/en/editor/publish/index.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "cocos-skeletal",
+      "title": "Cocos skeletal animation and sockets",
+      "url": "https://docs.cocos.com/creator/3.8/manual/en/animation/skeletal-animation.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "cocos-profiler",
+      "title": "Cocos native profiler",
+      "url": "https://docs.cocos.com/creator/3.8/manual/en/advanced-topics/profiler.html",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "babylon-release",
+      "title": "Babylon.js 9.0 official release announcement",
+      "url": "https://forum.babylonjs.com/t/welcome-to-babylon-js-9-0/62940",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "babylon-native",
+      "title": "Babylon Native official repository status",
+      "url": "https://github.com/BabylonJS/BabylonNative",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "playcanvas-engine",
+      "title": "PlayCanvas engine and editor features",
+      "url": "https://playcanvas.com/products/engine",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "playcanvas-release",
+      "title": "PlayCanvas 2.23.1 release",
+      "url": "https://github.com/playcanvas/engine/releases/tag/v2.23.1",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "playcanvas-browsers",
+      "title": "PlayCanvas browser backends",
+      "url": "https://developer.playcanvas.com/user-manual/engine/supported-browsers/",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "playcanvas-cordova",
+      "title": "PlayCanvas mobile wrapper publishing",
+      "url": "https://developer.playcanvas.com/user-manual/editor/publishing/mobile/cordova/",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "three-release",
+      "title": "Three.js r186 official release",
+      "url": "https://github.com/mrdoob/three.js/releases/tag/r186",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "three-webgpu",
+      "title": "Three.js WebGPURenderer production caveats",
+      "url": "https://threejs.org/manual/pages/webgpurenderer",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "webgpu-chrome",
+      "title": "Chrome WebGPU overview",
+      "url": "https://developer.chrome.com/docs/web-platform/webgpu/overview",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "webgpu-safari",
+      "title": "Safari 26.0 WebGPU",
+      "url": "https://webkit.org/blog/17333/webkit-features-in-safari-26-0/",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    },
+    {
+      "id": "webgpu-performance",
+      "title": "Chrome WebGPU troubleshooting",
+      "url": "https://developer.chrome.com/docs/web-platform/webgpu/troubleshooting-tips",
+      "kind": "official",
+      "checkedAt": "2026-10-09"
+    }
+  ]
+}

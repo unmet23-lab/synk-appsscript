@@ -1,0 +1,70 @@
+{
+  "checkedAt": "2026-10-08T20:24:08.760Z",
+  "results": [
+    {
+      "name": "desktop",
+      "version": "before",
+      "avatarModuleSha256": "b03b98d10a7f7474ca2144c51797d0c1e9f2a9a3821fca88396de014a6cafd24",
+      "drawCalls": 155,
+      "triangles": 265336,
+      "lines": 8376,
+      "pixels": 1008000,
+      "cpuRenderSubmissionMs": {
+        "median": 2.5,
+        "min": 1.800000000745058,
+        "max": 3.5,
+        "samples": 9
+      }
+    },
+    {
+      "name": "desktop",
+      "version": "after",
+      "avatarModuleSha256": "b03b98d10a7f7474ca2144c51797d0c1e9f2a9a3821fca88396de014a6cafd24",
+      "drawCalls": 156,
+      "triangles": 246708,
+      "lines": 8376,
+      "pixels": 1008000,
+      "cpuRenderSubmissionMs": {
+        "median": 2.099999997764826,
+        "min": 1.800000000745058,
+        "max": 3.199999999254942,
+        "samples": 9
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "before",
+      "avatarModuleSha256": "b03b98d10a7f7474ca2144c51797d0c1e9f2a9a3821fca88396de014a6cafd24",
+      "drawCalls": 127,
+      "triangles": 221224,
+      "lines": 5421,
+      "pixels": 407745,
+      "cpuRenderSubmissionMs": {
+        "median": 3.399999998509884,
+        "min": 1.699999999254942,
+        "max": 5,
+        "samples": 9
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "after",
+      "avatarModuleSha256": "b03b98d10a7f7474ca2144c51797d0c1e9f2a9a3821fca88396de014a6cafd24",
+      "drawCalls": 128,
+      "triangles": 202020,
+      "lines": 5421,
+      "pixels": 407745,
+      "cpuRenderSubmissionMs": {
+        "median": 3.5,
+        "min": 2.600000001490116,
+        "max": 4.199999999254942,
+        "samples": 9
+      }
+    }
+  ],
+  "limits": [
+    "Same avatar module is reused within each before/after document",
+    "Render submission wall time is not GPU timer or sustained frame rate",
+    "Headless desktop browser; real-device performance remains unverified"
+  ]
+}

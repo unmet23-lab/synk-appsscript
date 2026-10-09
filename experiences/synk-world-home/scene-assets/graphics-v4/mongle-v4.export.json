@@ -1,0 +1,513 @@
+{
+  "bytes": 3684424,
+  "meshes": 12,
+  "materials": 11,
+  "images": 9,
+  "triangles": 44940,
+  "bodyBounds": {
+    "width": 1.8004822731018066,
+    "height": 1.8342324290424585,
+    "depth": 1.609148919582367
+  },
+  "textureReport": [
+    {
+      "image": 0,
+      "name": "",
+      "width": 353,
+      "height": 351,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": "srgb"
+    },
+    {
+      "image": 1,
+      "name": "wool-micro-normal",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    },
+    {
+      "image": 2,
+      "name": "wool-occlusion-R-roughness-G",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    },
+    {
+      "image": 3,
+      "name": "knit-low-contrast-colour",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": "srgb"
+    },
+    {
+      "image": 4,
+      "name": "knit-micro-normal",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    },
+    {
+      "image": 5,
+      "name": "knit-occlusion-R-roughness-G",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    },
+    {
+      "image": 6,
+      "name": "cotton-low-contrast-colour",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": "srgb"
+    },
+    {
+      "image": 7,
+      "name": "cotton-micro-normal",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    },
+    {
+      "image": 8,
+      "name": "cotton-occlusion-R-roughness-G",
+      "width": 512,
+      "height": 512,
+      "kind": "direct",
+      "flipYBaked": true,
+      "colorSpace": ""
+    }
+  ],
+  "materialReport": [
+    {
+      "index": 0,
+      "uuid": "eac6769e-dd90-495b-8cf3-510f70a26824",
+      "name": "surface-0",
+      "baseColor": [
+        1,
+        0.8713671191959567,
+        0.8148465722120952,
+        1
+      ],
+      "normalScale": [
+        0.46,
+        0.46
+      ],
+      "roughness": 1,
+      "aoStrength": 1,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          8.8,
+          3.3
+        ],
+        "normalMap": [
+          8.8,
+          3.3
+        ],
+        "roughnessMap": [
+          8.8,
+          3.3
+        ],
+        "aoMap": [
+          8.8,
+          3.3
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "uuid": "81610f46-48b2-4a28-a13e-e9a3b495d98e",
+      "name": "surface-1",
+      "baseColor": [
+        0.0009105809505882353,
+        0.0009105809505882353,
+        0.0009105809505882353,
+        1
+      ],
+      "normalScale": null,
+      "roughness": 0.22,
+      "aoStrength": null,
+      "vertexColors": false,
+      "mapRepeats": {}
+    },
+    {
+      "index": 2,
+      "uuid": "64c8135c-98d3-48fa-9fa0-fa6a54a3a5b5",
+      "name": "surface-2",
+      "baseColor": [
+        1,
+        0.9473065367320066,
+        0.8631572134510892,
+        1
+      ],
+      "normalScale": null,
+      "aoStrength": null,
+      "vertexColors": false,
+      "mapRepeats": {}
+    },
+    {
+      "index": 3,
+      "uuid": "10c0405a-1c24-40fe-9c8f-6d8b094713a0",
+      "name": "surface-3",
+      "baseColor": [
+        0.8148465722120952,
+        0.4452011945063733,
+        0.3231432091022285,
+        1
+      ],
+      "normalScale": null,
+      "roughness": 0.97,
+      "aoStrength": null,
+      "vertexColors": false,
+      "mapRepeats": {}
+    },
+    {
+      "index": 4,
+      "uuid": "26a15fea-cfd9-47c0-b46a-e2c1ac422e19",
+      "name": "surface-4",
+      "baseColor": [
+        0.8468732315065057,
+        0.775822218312646,
+        0.6375968739867731,
+        1
+      ],
+      "normalScale": [
+        0.24,
+        0.24
+      ],
+      "roughness": 1,
+      "aoStrength": 0.28,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          8.2,
+          0.29
+        ],
+        "normalMap": [
+          8.2,
+          0.29
+        ],
+        "roughnessMap": [
+          8.2,
+          0.29
+        ],
+        "aoMap": [
+          8.2,
+          0.29
+        ]
+      }
+    },
+    {
+      "index": 5,
+      "uuid": "ece7ff1e-cff8-4ca5-8ffc-e7bc0abb26af",
+      "name": "surface-5",
+      "baseColor": [
+        0.8468732315065057,
+        0.775822218312646,
+        0.6375968739867731,
+        1
+      ],
+      "normalScale": [
+        0.24,
+        0.24
+      ],
+      "roughness": 1,
+      "aoStrength": 0.28,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          0.38,
+          1
+        ],
+        "normalMap": [
+          0.38,
+          1
+        ],
+        "roughnessMap": [
+          0.38,
+          1
+        ],
+        "aoMap": [
+          0.38,
+          1
+        ]
+      }
+    },
+    {
+      "index": 6,
+      "uuid": "4d41813d-bd6b-407f-a8cf-ac98530c64f9",
+      "name": "surface-6",
+      "baseColor": [
+        0.23455058215026167,
+        0.3277780980458375,
+        0.24228112245478564,
+        1
+      ],
+      "normalScale": [
+        0.58,
+        0.58
+      ],
+      "roughness": 1,
+      "aoStrength": 0.35,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          1.8,
+          1.3
+        ],
+        "normalMap": [
+          1.8,
+          1.3
+        ],
+        "roughnessMap": [
+          1.8,
+          1.3
+        ],
+        "aoMap": [
+          1.8,
+          1.3
+        ]
+      }
+    },
+    {
+      "index": 7,
+      "uuid": "bc762430-69ef-4198-a9a8-dd06443886c7",
+      "name": "surface-7",
+      "baseColor": [
+        0.36130677977297226,
+        0.4286904966038916,
+        0.3139887133649649,
+        1
+      ],
+      "normalScale": null,
+      "roughness": 0.97,
+      "aoStrength": null,
+      "vertexColors": false,
+      "mapRepeats": {}
+    },
+    {
+      "index": 8,
+      "uuid": "8ec97e66-ebf2-433f-8dd9-2f8fcf0aafb8",
+      "name": "surface-8",
+      "baseColor": [
+        0.23455058215026167,
+        0.3277780980458375,
+        0.24228112245478564,
+        1
+      ],
+      "normalScale": [
+        0.58,
+        0.58
+      ],
+      "roughness": 1,
+      "aoStrength": 0.35,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          0.09,
+          4.7
+        ],
+        "normalMap": [
+          0.09,
+          4.7
+        ],
+        "roughnessMap": [
+          0.09,
+          4.7
+        ],
+        "aoMap": [
+          0.09,
+          4.7
+        ]
+      }
+    },
+    {
+      "index": 9,
+      "uuid": "15fe7395-3e2a-424e-a035-e4cb8b85339e",
+      "name": "surface-9",
+      "baseColor": [
+        0.23455058215026167,
+        0.3277780980458375,
+        0.24228112245478564,
+        1
+      ],
+      "normalScale": [
+        0.58,
+        0.58
+      ],
+      "roughness": 1,
+      "aoStrength": 0.35,
+      "vertexColors": true,
+      "mapRepeats": {
+        "map": [
+          0.62,
+          0.47
+        ],
+        "normalMap": [
+          0.62,
+          0.47
+        ],
+        "roughnessMap": [
+          0.62,
+          0.47
+        ],
+        "aoMap": [
+          0.62,
+          0.47
+        ]
+      }
+    },
+    {
+      "index": 10,
+      "uuid": "c9efceb9-4f30-470c-a0eb-28765c4d7951",
+      "name": "surface-10",
+      "baseColor": [
+        0.061246054224174035,
+        0.10461648408208657,
+        0.061246054224174035,
+        1
+      ],
+      "normalScale": null,
+      "roughness": 1,
+      "aoStrength": null,
+      "vertexColors": false,
+      "mapRepeats": {}
+    }
+  ],
+  "omittedHairLines": 8376,
+  "uvConvention": "Geometry UV unchanged; texture.flipY baked into image rows; no additional normal Y inversion",
+  "packedProperties": "Occlusion from R and roughness from G share the original image; metallic factor remains zero",
+  "limitations": [
+    "Static candidate with no bones or animations",
+    "Runtime subpixel short nap line segments are omitted",
+    "Body COLOR_0 contains contact tint for the combined scarf-apron outfit; runtime recomputes this when equipment changes",
+    "Runtime per-material envMapIntensity has no standard glTF equivalent and requires native lighting tuning",
+    "Blender/GLTFLoader import does not verify Unity URP rendering"
+  ],
+  "createdAt": "2026-10-08T20:32:13.554Z",
+  "sha256": "770b5651d13eacbfa41f3222f9db95fd9935761f5feaeca6992e026124a56732",
+  "rigged": false,
+  "productionApproved": false,
+  "source": [
+    {
+      "path": "avatar-v3.mjs",
+      "sha256": "1474c6a57ec2d3a694fa30122a3909856f01c66c4b1ebf514abdc98eef776cf7"
+    },
+    {
+      "path": "avatar-textiles.mjs",
+      "sha256": "9e7a37e0d8624ed28409c5d61ea3349aaeec0f5001df07be6bc3c74539c885ed"
+    }
+  ],
+  "roundtrip": {
+    "passed": 82,
+    "checks": [
+      "material 0 retains base colour",
+      "material 0 retains tangent normal scale",
+      "material 0 retains roughness texture",
+      "material 0 retains occlusion strength",
+      "material 0 retains sheen",
+      "material 0 shares AO-R and roughness-G image",
+      "material 0 map retains texture transform",
+      "material 0 normalMap retains texture transform",
+      "material 0 roughnessMap retains texture transform",
+      "material 0 aoMap retains texture transform",
+      "material 1 retains base colour",
+      "material 1 retains eye specular intensity",
+      "material 1 retains clearcoat",
+      "material 2 retains base colour",
+      "material 3 retains base colour",
+      "material 4 retains base colour",
+      "material 4 retains tangent normal scale",
+      "material 4 retains roughness texture",
+      "material 4 retains occlusion strength",
+      "material 4 retains sheen",
+      "material 4 shares AO-R and roughness-G image",
+      "material 4 map retains texture transform",
+      "material 4 normalMap retains texture transform",
+      "material 4 roughnessMap retains texture transform",
+      "material 4 aoMap retains texture transform",
+      "material 5 retains base colour",
+      "material 5 retains tangent normal scale",
+      "material 5 retains roughness texture",
+      "material 5 retains occlusion strength",
+      "material 5 retains sheen",
+      "material 5 shares AO-R and roughness-G image",
+      "material 5 map retains texture transform",
+      "material 5 normalMap retains texture transform",
+      "material 5 roughnessMap retains texture transform",
+      "material 5 aoMap retains texture transform",
+      "material 6 retains base colour",
+      "material 6 retains tangent normal scale",
+      "material 6 retains roughness texture",
+      "material 6 retains occlusion strength",
+      "material 6 retains sheen",
+      "material 6 shares AO-R and roughness-G image",
+      "material 6 map retains texture transform",
+      "material 6 normalMap retains texture transform",
+      "material 6 roughnessMap retains texture transform",
+      "material 6 aoMap retains texture transform",
+      "material 7 retains base colour",
+      "material 8 retains base colour",
+      "material 8 retains tangent normal scale",
+      "material 8 retains roughness texture",
+      "material 8 retains occlusion strength",
+      "material 8 retains sheen",
+      "material 8 shares AO-R and roughness-G image",
+      "material 8 map retains texture transform",
+      "material 8 normalMap retains texture transform",
+      "material 8 roughnessMap retains texture transform",
+      "material 8 aoMap retains texture transform",
+      "material 9 retains base colour",
+      "material 9 retains tangent normal scale",
+      "material 9 retains roughness texture",
+      "material 9 retains occlusion strength",
+      "material 9 retains sheen",
+      "material 9 shares AO-R and roughness-G image",
+      "material 9 map retains texture transform",
+      "material 9 normalMap retains texture transform",
+      "material 9 roughnessMap retains texture transform",
+      "material 9 aoMap retains texture transform",
+      "material 10 retains base colour",
+      "base-surface-0 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "base-surface-1 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "base-surface-2 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "base-surface-3 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "neck-surface-4 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "neck-surface-5 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "neck-surface-6 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "body-surface-7 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "body-surface-8 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "body-surface-9 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "body-surface-10 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "body-surface-11 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+      "combined outfit retains contact shading vertices",
+      "body and neck remain independently addressable nodes",
+      "same-light render is close to the runtime material result"
+    ],
+    "vertices": 27252,
+    "colouredVertices": 6267,
+    "imageDifference": {
+      "meanAbsoluteRgbError": 0.7646446759259259,
+      "pixelsAboveMean5": 7023,
+      "totalPixels": 288000,
+      "maxChannelDifference": 54
+    },
+    "loader": "Existing experiences/korean-racing/vendor/GLTFLoader.js",
+    "loaderSha256": "6851a68b2c32cd98162948d11be66b5ac2027a96a3923e67457826eff1c5e715"
+  }
+}

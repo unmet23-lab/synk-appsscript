@@ -1,0 +1,338 @@
+{
+  "checkedAt": "2026-10-08T21:25:56.857Z",
+  "sourceSha256": {
+    "scene": "e91706046bb4f4d89a1cfb1619dac117dd8a316fdfc22f943f133911b6d4f596",
+    "beforeGarden": "56eee487d6a0c4ed1f7c3f6da56e2d4becc5c9f3c72f63cfbc165119c2db5955",
+    "afterGarden": "b405710d9d61a4c529c067a3bf6f7fcd18cc15bbe14d11349b2b13bda65e5cc5"
+  },
+  "views": [
+    {
+      "name": "desktop",
+      "version": "before",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 3.699999999254942,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1400,
+          "height": 720
+        },
+        "dpr": 1,
+        "drawCalls": 168,
+        "triangles": 252776,
+        "lines": 8376,
+        "instancedFoliage": 1503,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 3.699999999254942,
+        "min": 3.199999999254942,
+        "max": 3.899999998509884
+      }
+    },
+    {
+      "name": "desktop",
+      "version": "after",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 3.5,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1400,
+          "height": 720
+        },
+        "dpr": 1,
+        "drawCalls": 166,
+        "triangles": 258724,
+        "lines": 8376,
+        "instancedFoliage": 1503,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 4.199999999254942,
+        "min": 3.5,
+        "max": 5
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "before",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 3.199999999254942,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 585,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 134,
+        "triangles": 203792,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 15,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 3.699999999254942,
+        "min": 2.800000000745058,
+        "max": 4.199999999254942
+      }
+    },
+    {
+      "name": "mobile",
+      "version": "after",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 4.199999999254942,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 585,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 132,
+        "triangles": 209740,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 14,
+        "outfit": "scarf-apron",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "cpuSubmissionMs": {
+        "samples": 7,
+        "median": 4,
+        "min": 3.300000000745058,
+        "max": 5
+      }
+    }
+  ],
+  "assertions": [
+    {
+      "check": "desktop: no runtime or shader errors",
+      "pass": true,
+      "errors": []
+    },
+    {
+      "check": "desktop: exactly one live scene",
+      "pass": true
+    },
+    {
+      "check": "positionsFinite",
+      "pass": true
+    },
+    {
+      "check": "normalsFinite",
+      "pass": true
+    },
+    {
+      "check": "matricesFinite",
+      "pass": true
+    },
+    {
+      "check": "sharedWater",
+      "pass": true
+    },
+    {
+      "check": "deterministic",
+      "pass": true
+    },
+    {
+      "check": "mobile: no runtime or shader errors",
+      "pass": true,
+      "errors": []
+    },
+    {
+      "check": "mobile: exactly one live scene",
+      "pass": true
+    },
+    {
+      "check": "desktop: triangles at most 4% above baseline",
+      "pass": true,
+      "before": 252776,
+      "after": 258724
+    },
+    {
+      "check": "desktop: draw calls at most two above baseline",
+      "pass": true,
+      "before": 168,
+      "after": 166
+    },
+    {
+      "check": "mobile: triangles at most 4% above baseline",
+      "pass": true,
+      "before": 203792,
+      "after": 209740
+    },
+    {
+      "check": "mobile: draw calls at most two above baseline",
+      "pass": true,
+      "before": 134,
+      "after": 132
+    }
+  ],
+  "contract": {
+    "stats": {
+      "buildings": 70,
+      "windowPanes": 2872,
+      "treeCanopies": 185,
+      "structureParts": 140,
+      "trimParts": 425
+    },
+    "meshes": [
+      {
+        "name": "layered-mountain",
+        "positions": -2073304.8906512791,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "layered-mountain",
+        "positions": -1757344.4342314806,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "layered-mountain",
+        "positions": -1394504.6346038934,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": 3.7365425787866116,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -39.089003309607506,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -12.511683011427522,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": -37.01918809860945,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "",
+        "positions": 78,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "han-river-water",
+        "positions": 90,
+        "matrices": null,
+        "instances": 1
+      },
+      {
+        "name": "riverfront-architecture",
+        "positions": -12.5,
+        "matrices": -54815.63526069233,
+        "instances": 140
+      },
+      {
+        "name": "terraces-promenade-bridge",
+        "positions": -12.5,
+        "matrices": -136563.80148310773,
+        "instances": 425
+      },
+      {
+        "name": "riverfront-window-panes",
+        "positions": -3,
+        "matrices": -1698963.755621766,
+        "instances": 2872
+      },
+      {
+        "name": "riverfront-tree-canopies",
+        "positions": -105.44153515994549,
+        "matrices": -97083.85482001005,
+        "instances": 185
+      }
+    ],
+    "positionsFinite": true,
+    "normalsFinite": true,
+    "matricesFinite": true,
+    "shadowCasters": 4,
+    "sharedWater": true,
+    "deterministic": true
+  },
+  "limits": [
+    "Headless desktop browser only; no physical phone or sustained thermal measurement.",
+    "CPU render submission is not a GPU timer or an FPS guarantee.",
+    "Both landscape revisions use the same captured current scene source and cached avatar, not different historical lighting."
+  ]
+}

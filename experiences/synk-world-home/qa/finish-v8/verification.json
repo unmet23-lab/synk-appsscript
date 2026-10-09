@@ -1,0 +1,63 @@
+{
+  "checkedAt": "2026-10-08T23:38:34.575Z",
+  "passed": 16,
+  "checks": [
+    "craft uses fewer draw calls",
+    "craft does not add triangles",
+    "rug has no open or nonmanifold welded edges",
+    "rug normals are finite and normalized",
+    "rug has no zero-area faces",
+    "pot has no open or nonmanifold welded edges",
+    "pot normals are finite and normalized",
+    "pot has no zero-area faces",
+    "rug top and underside normals face outward",
+    "pot outer and basin normals face outward from clay",
+    "rug underside contacts actual beveled deck with one millimeter clearance",
+    "rug stays below previous floating surface",
+    "integrated pot keeps original ground contact",
+    "all generated normal textures use CanvasTexture flipY",
+    "leaf normal green follows upward texture V on both slopes",
+    "browser module execution has no errors"
+  ],
+  "errors": [],
+  "result": {
+    "old": {
+      "draws": 76,
+      "triangles": 116520
+    },
+    "current": {
+      "draws": 73,
+      "triangles": 116344
+    },
+    "rug": {
+      "triangles": 512,
+      "invalidNormals": 0,
+      "degenerate": 0,
+      "openOrNonManifoldEdges": 0,
+      "minY": 0.31199999994784583,
+      "maxY": 0.3240000000521542
+    },
+    "pot": {
+      "triangles": 1728,
+      "invalidNormals": 0,
+      "degenerate": 0,
+      "openOrNonManifoldEdges": 0,
+      "minY": 0.2399999952316284,
+      "maxY": 0.7570000147819519
+    },
+    "deck": {
+      "maxY": 0.3110000016093254
+    },
+    "normalInfo": {
+      "allFlipY": true,
+      "descendingCanvasSlopeGreen": 125,
+      "ascendingCanvasSlopeGreen": 131
+    },
+    "facing": {
+      "rugTopZ": 1,
+      "rugBottomZ": -1,
+      "potOuterX": 0.9857356548309326,
+      "potInnerX": -0.9599485397338867
+    }
+  }
+}

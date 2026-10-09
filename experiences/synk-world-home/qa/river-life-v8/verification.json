@@ -1,0 +1,155 @@
+{
+  "checks": [
+    {
+      "label": "one named boat",
+      "pass": true
+    },
+    {
+      "label": "four opaque material batches",
+      "pass": true
+    },
+    {
+      "label": "five additional draw calls",
+      "pass": true
+    },
+    {
+      "label": "mesh triangle count below 3500",
+      "pass": true
+    },
+    {
+      "label": "initial route position",
+      "pass": true
+    },
+    {
+      "label": "no new targets lights or textures",
+      "pass": true
+    },
+    {
+      "label": "reduced motion freezes",
+      "pass": true
+    },
+    {
+      "label": "motion advances gently right",
+      "pass": true
+    },
+    {
+      "label": "long frame delta clamped",
+      "pass": true
+    },
+    {
+      "label": "invalid deltas ignored",
+      "pass": true
+    },
+    {
+      "label": "water decal stays planar",
+      "pass": true
+    },
+    {
+      "label": "water and vessel share route group",
+      "pass": true
+    },
+    {
+      "label": "wake clock follows vessel clock",
+      "pass": true
+    },
+    {
+      "label": "water decal over water surface",
+      "pass": true
+    },
+    {
+      "label": "sunset palette",
+      "pass": true
+    },
+    {
+      "label": "renderer compiled programs and five vessel draws",
+      "pass": true
+    },
+    {
+      "label": "wrap occurs at outer route bounds",
+      "pass": true
+    },
+    {
+      "label": "route loops",
+      "pass": true
+    },
+    {
+      "label": "position stays in route",
+      "pass": true
+    },
+    {
+      "label": "disposal stops updates",
+      "pass": true
+    },
+    {
+      "label": "disposal idempotent",
+      "pass": true
+    }
+  ],
+  "initial": {
+    "revision": 8,
+    "vesselCount": 1,
+    "drawCalls": 5,
+    "triangles": 1324,
+    "elapsed": 0,
+    "position": [
+      -1.2,
+      -1.16,
+      -22.2
+    ],
+    "routeSpeed": 0.235,
+    "routeZ": -22.2,
+    "routeBounds": [
+      -52,
+      52
+    ],
+    "initialX": -1.2,
+    "waterEffects": [
+      "contact-shadow",
+      "approximate-reflection",
+      "stern-wash",
+      "diverging-wake"
+    ],
+    "extraRenderTargets": 0,
+    "extraLights": 0,
+    "textureCount": 0,
+    "mobile": false,
+    "time": "day",
+    "disposed": false
+  },
+  "final": {
+    "revision": 8,
+    "vesselCount": 1,
+    "drawCalls": 5,
+    "triangles": 1324,
+    "elapsed": 310.2,
+    "position": [
+      -32.303,
+      -1.16,
+      -22.2
+    ],
+    "routeSpeed": 0.235,
+    "routeZ": -22.2,
+    "routeBounds": [
+      -52,
+      52
+    ],
+    "initialX": -1.2,
+    "waterEffects": [
+      "contact-shadow",
+      "approximate-reflection",
+      "stern-wash",
+      "diverging-wake"
+    ],
+    "extraRenderTargets": 0,
+    "extraLights": 0,
+    "textureCount": 0,
+    "mobile": false,
+    "time": "sunset",
+    "disposed": true
+  },
+  "renderer": {
+    "calls": 6,
+    "triangles": 1326
+  },
+  "errors": []
+}

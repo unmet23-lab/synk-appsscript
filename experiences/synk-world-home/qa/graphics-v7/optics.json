@@ -1,0 +1,188 @@
+{
+  "checkedAt": "2026-10-08T22:38:05.732Z",
+  "passed": 21,
+  "checks": [
+    "pc new materials compile without more draw calls",
+    "pc whole-frame triangle growth stays below 8 percent",
+    "pc no new render target or light for optics",
+    "pc reflection represents the existing 70 buildings",
+    "pc reduced motion holds identical rendered pixels",
+    "pc running scene renders evolving pixels",
+    "pc inactive scene freezes water and export pixels",
+    "pc time and photo preserve canvas and interactive size",
+    "pc reflection texture is released exactly once",
+    "phone new materials compile without more draw calls",
+    "phone whole-frame triangle growth stays below 8 percent",
+    "phone no new render target or light for optics",
+    "phone reflection represents the existing 70 buildings",
+    "phone balanced retains zero AO buffers",
+    "phone reduced motion holds identical rendered pixels",
+    "phone running scene renders evolving pixels",
+    "phone inactive scene freezes water and export pixels",
+    "phone time and photo preserve canvas and interactive size",
+    "phone reflection texture is released exactly once",
+    "new water shader failure rejects, reports once and releases canvas",
+    "normal flows have no browser or shader errors"
+  ],
+  "errors": [],
+  "observations": [
+    {
+      "name": "pc",
+      "initial": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v7",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1,
+        "shadowMapSize": 2048,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 3.2999999970197678,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": true,
+          "quality": "balanced",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 8,
+          "beautySize": [
+            1400,
+            720
+          ],
+          "aoSize": [
+            700,
+            360
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 45360000,
+          "drawCalls": 421,
+          "triangles": 623740,
+          "cpuSubmissionMs": 3.2999999970197678,
+          "allocations": 1,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "optics": {
+          "revision": 7,
+          "waterTime": 0,
+          "reflectionAtlas": [
+            512,
+            128
+          ],
+          "reflectedBuildings": 70,
+          "reflectedFacadeParts": 110,
+          "extraRenderTargets": 0,
+          "extraLights": 0,
+          "disposed": false
+        },
+        "roofCraft": {
+          "tiles": 96,
+          "triangles": 6528
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 1400,
+          "height": 720
+        },
+        "dpr": 1,
+        "drawCalls": 421,
+        "triangles": 623740,
+        "lines": 8376,
+        "instancedFoliage": 1360,
+        "frameCount": 2,
+        "outfit": "scarf-apron",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      }
+    },
+    {
+      "name": "phone",
+      "initial": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v7",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "balanced",
+        "pixelRatio": 1.5,
+        "shadowMapSize": 1024,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 5.5,
+        "renderStatsIncludeShadows": true,
+        "contactLight": {
+          "enabled": false,
+          "quality": "balanced",
+          "mobile": true,
+          "passCount": 1,
+          "aoSamples": 0,
+          "beautySize": null,
+          "aoSize": null,
+          "msaaSamples": 0,
+          "estimatedTargetBytes": 0,
+          "drawCalls": 247,
+          "triangles": 390198,
+          "cpuSubmissionMs": 5.300000000745058,
+          "allocations": 0,
+          "releases": 0,
+          "disposed": false
+        },
+        "surfaceMaps": {
+          "textures": 9,
+          "edge": 256
+        },
+        "optics": {
+          "revision": 7,
+          "waterTime": 0,
+          "reflectionAtlas": [
+            512,
+            128
+          ],
+          "reflectedBuildings": 70,
+          "reflectedFacadeParts": 110,
+          "extraRenderTargets": 0,
+          "extraLights": 0,
+          "disposed": false
+        },
+        "roofCraft": {
+          "tiles": 96,
+          "triangles": 4992
+        },
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 585,
+          "height": 697
+        },
+        "dpr": 1.5,
+        "drawCalls": 247,
+        "triangles": 390198,
+        "lines": 5421,
+        "instancedFoliage": 1180,
+        "frameCount": 2,
+        "outfit": "scarf-apron",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      }
+    }
+  ],
+  "limits": [
+    "Distant facade reflection atlas is an approximation; it does not reflect nearby or moving objects",
+    "Browser emulation, not physical mobile GPU/FPS/thermal measurement"
+  ]
+}

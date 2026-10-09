@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko" data-layout="desktop">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff"><meta name="description" content="몽글과 놀고, 입고, 살아가는 한국어 세상. SYNK WORLD 홈 프론트 미리보기.">
+  <title>SYNK WORLD · 나의 작은 세계</title>
+  <link rel="icon" href="assets/mongle.webp"><link rel="preload" href="assets/SUIT.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css"><link rel="stylesheet" href="graphics-home.css">
+  <script>document.documentElement.dataset.layout=location.pathname.includes('mobile')||innerWidth<800?'mobile':'desktop';document.documentElement.dataset.preview=location.pathname.includes('mobile')?'mobile':'auto';</script>
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">본문으로 건너뛰기</a>
+<div class="app-shell">
+  <aside class="sidebar" aria-label="주 메뉴">
+    <a class="brand" href="desktop.html" aria-label="SYNK WORLD 홈"><img src="assets/logo.webp" alt="synk" width="104" height="50"><span>WORLD</span></a>
+    <p class="nav-eyebrow">나의 작은 세계</p>
+    <nav class="side-links">
+      <button data-nav="home" class="nav-item is-active" aria-current="page"><span data-icon="home"></span><span>홈</span></button>
+      <button data-nav="games" class="nav-item"><span data-icon="game"></span><span>미니게임</span></button>
+      <button data-nav="wardrobe" class="nav-item"><span data-icon="hanger"></span><span>나의 옷장</span></button>
+      <button data-nav="town" class="nav-item"><span data-icon="town"></span><span>싱크 타운</span></button>
+      <button data-nav="songs" class="nav-item"><span data-icon="music"></span><span>노래로 배우기</span></button>
+    </nav>
+    <div class="sidebar-bottom"><button class="nav-item" data-action="settings"><span data-icon="settings"></span><span>화면 설정</span></button><div class="local-note"><span class="status-dot"></span>홈 미리보기</div></div>
+  </aside>
+  <div class="main-shell">
+    <header class="topbar">
+      <a class="mobile-brand" href="mobile.html" aria-label="SYNK WORLD 홈"><img src="assets/logo.webp" alt="synk"><span>WORLD</span></a>
+      <div class="breadcrumb">나의 월드 <span>/</span> <strong>홈</strong></div>
+      <div class="top-actions"><span class="preview-label">미리보기</span><button class="icon-button mobile-settings" data-action="settings" aria-label="화면 설정"><span data-icon="settings"></span></button><button class="icon-button" data-action="notifications" aria-label="새 소식"><span data-icon="bell"></span><i class="notification-dot"></i></button><button class="profile-button" data-action="profile" aria-label="내 프로필"><img src="assets/mongle-smile.webp" alt=""></button></div>
+    </header>
+    <main id="main" tabindex="-1">
+      <div class="page-heading"><div><p class="eyebrow">A LITTLE PLAY, A BIG WORLD</p><h1>오늘도, 나답게 놀아봐.</h1></div><span class="date-label" id="today-label"></span></div>
+      <section class="hero" aria-labelledby="hero-title" data-time="day">
+        <div class="hero-copy"><div class="place-label"><span data-icon="sun"></span><span id="place-label">햇살 좋은 나의 테라스</span></div><h2 id="hero-title">작은 놀이가<br>나의 세상이 되는 곳.</h2><p>몽글과 놀고, 꾸미고,<br class="desktop-break"> 한국어로 조금 더 가까워져요.</p><button class="felt-button" data-action="quickplay"><span data-icon="play"></span>오늘의 놀이 시작<span data-icon="arrow"></span></button><span class="hero-footnote">가볍게 한 판, 90초부터</span></div>
+        <div id="home-scene" class="home-scene" role="group" aria-label="팔 없는 몽글이 있는 입체 테라스. 드래그나 방향키로 둘러보고, 아래 버튼으로 인사와 차림을 바꿀 수 있습니다."><img class="scene-fallback" src="assets/mongle.webp" alt="펠트 몽글"><div class="scene-loading" id="scene-loading"><span></span>몽글이 준비하고 있어요</div></div>
+        <div class="scene-recovery" id="scene-recovery" role="status" hidden><p>3D 화면이 잠시 쉬고 있어요.<br>차림과 놀이 기록은 그대로예요.</p><button class="felt-button" id="scene-retry">3D 다시 불러오기</button></div>
+        <div class="hero-tools"><div class="time-control" role="group" aria-label="테라스 시간"><button class="is-active" data-time="day" aria-pressed="true" aria-label="낮으로 보기"><span data-icon="sun"></span></button><button data-time="sunset" aria-pressed="false" aria-label="노을로 보기"><span data-icon="sunset"></span></button></div><button class="glass-button" data-action="greet" aria-label="몽글과 인사하기"><span data-icon="sparkle"></span><span>인사하기</span></button><button class="glass-button view-button" data-action="view" aria-pressed="false" aria-label="몽글과 옷감을 가까이 보기"><span data-icon="search"></span><span>가까이</span></button><button class="glass-button photo-button" data-action="photo" aria-label="지금 차림으로 사진 찍기"><span data-icon="camera"></span><span>사진 찍기</span></button></div>
+        <div class="hero-caption"><span class="status-dot"></span><span id="outfit-caption">몽글 · 기본 차림</span><button data-action="wardrobe">옷 갈아입기 <span data-icon="arrow"></span></button></div>
+      </section>
+      <div class="content-grid">
+        <section id="games-section" class="games-section" aria-labelledby="games-title"><div class="section-heading"><div><p class="eyebrow">PLAY & LEARN</p><h2 id="games-title">한 판만 해볼까?</h2></div><button class="text-button" data-action="games">모두 보기 <span data-icon="arrow"></span></button></div>
+          <div class="game-grid"><button class="game-card" data-game="runner"><div class="game-art runner-art"><img src="assets/runner.jpg" alt="바람길의 입체 달리기 코스" loading="lazy"><span class="game-duration">90초</span><span class="round-play" data-icon="play"></span></div><div class="game-info"><span class="category-label">듣고 움직이기</span><h3>바람길 <span data-icon="arrow"></span></h3><p>짧은 부탁을 듣고, 길을 달려요.</p></div></button>
+          <button class="game-card" data-game="rhythm"><div class="game-art"><img src="assets/rhythm.webp" alt="펠트 리본과 빛으로 표현한 음악 콘텐츠 표지" loading="lazy"><span class="game-duration">리듬 · 듣기</span><span class="round-play" data-icon="play"></span></div><div class="game-info"><span class="category-label">음악과 한국어</span><h3>말의 리듬 <span data-icon="arrow"></span></h3><p>박자를 타고, 듣고 O/X로 답해요.</p></div></button></div>
+        </section>
+        <section class="closet-card" aria-labelledby="closet-title"><div class="closet-copy"><p class="eyebrow">MY WARDROBE</p><h2 id="closet-title">오늘의 나를<br> 골라봐.</h2><p>작은 차림 하나로<br>달라지는 하루.</p><button class="text-button" data-action="wardrobe">옷장 열기 <span data-icon="arrow"></span></button></div><img class="scarf-object" src="assets/scarf.webp" alt="음표 장식이 달린 하얀 펠트 목도리" loading="lazy"><span class="item-tag">포근한 목도리</span></section>
+        <section id="town-section" class="town-card" aria-labelledby="town-title"><img src="assets/town.webp" alt="미래 한국의 산과 도서관 광장" loading="lazy"><div class="town-copy"><p class="eyebrow">SYNK TOWN</p><h2 id="town-title">한국어가 생활이 되는<br>우리 동네.</h2><p>내 집을 꾸미고, 이웃과 이야기를 나눠요.</p><button class="glass-button" data-action="town"><span data-icon="lock"></span>싱크 타운 둘러보기<span data-icon="arrow"></span></button><span class="town-condition">TOPIK 1급+를 통과하면 열려요</span></div></section>
+        <section id="songs-section" class="songs-card" aria-labelledby="songs-title"><div class="section-heading"><div><p class="eyebrow">SING ALONG</p><h2 id="songs-title">입에 맴도는 한국어.</h2></div><span class="felt-note" data-icon="music"></span></div><p class="song-intro">짧은 노래로 글자와 소리를 친근하게.</p><div class="song-list"><button class="song-row" data-song="vowel-dance"><span class="song-letter coral">아</span><span><strong>모음 댄스</strong><small>모음 소리 · 55초</small></span><span class="song-play" data-icon="play"></span></button><button class="song-row" data-song="geu-a-ga"><span class="song-letter blue">가</span><span><strong>그 아 가</strong><small>자음과 모음 · 1분 21초</small></span><span class="song-play" data-icon="play"></span></button><button class="song-row" data-song="batchim"><span class="song-letter butter">안</span><span><strong>받침 노래</strong><small>받침 소리 · 1분 1초</small></span><span class="song-play" data-icon="play"></span></button></div></section>
+      </div>
+      <footer class="page-footer"><span>나만의 속도로, 나만의 세계를.</span><button class="text-button" data-action="about">미리보기 안내 <span data-icon="info"></span></button></footer>
+    </main>
+  </div>
+  <nav class="bottom-nav" aria-label="휴대폰 주 메뉴"><button data-nav="home" class="is-active" aria-current="page"><span data-icon="home"></span><span>홈</span></button><button data-nav="games"><span data-icon="game"></span><span>놀이</span></button><button data-nav="wardrobe"><span data-icon="hanger"></span><span>옷장</span></button><button data-nav="town"><span data-icon="town"></span><span>타운</span></button><button data-nav="songs"><span data-icon="music"></span><span>노래</span></button></nav>
+</div>
+<dialog id="panel" class="panel-dialog" aria-labelledby="panel-title"><div class="dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="icon-button dialog-close" aria-label="닫기"><span data-icon="close"></span></button></div><div id="panel-content"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<audio id="song-audio" preload="none"></audio>
+</body></html>

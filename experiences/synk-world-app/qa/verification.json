@@ -1,0 +1,73 @@
+{
+  "checkedAt": "2026-10-08T18:01:47.013Z",
+  "scope": "Local SYNK WORLD first-run and reward-to-outfit slice",
+  "browser": {
+    "checkedAt": "2026-10-08T17:38:04.810Z",
+    "passed": 20,
+    "results": [
+      "first launch shows welcome",
+      "guest can explore approved home",
+      "first login loads server inventory",
+      "game completion grants server-owned scarf",
+      "two costume slots reach real 3D meshes",
+      "preview settings cannot overwrite server-owned outfit",
+      "refresh restores HTTP-only session and outfit",
+      "no credentials stored in browser localStorage",
+      "independent PC browser session restores same account",
+      "independent PC session renders same outfit",
+      "concurrent device edit surfaces conflict",
+      "offline outfit kept pending",
+      "retry applies stored command and clears pending",
+      "unowned scarf stays disabled after state refresh",
+      "second account cannot see first account scarf",
+      "no overflow at 320",
+      "no overflow at 390",
+      "no overflow at 1440",
+      "no browser runtime errors",
+      "no missing asset responses"
+    ],
+    "errors": [],
+    "failures": [],
+    "limits": [
+      "Two browser sessions, not physical phones",
+      "Synthetic local identities, not production OAuth",
+      "Native Unity build not covered"
+    ]
+  },
+  "client": {
+    "passed": 14,
+    "failed": 0,
+    "skipped": 0,
+    "command": "$env:SYNK_WORLD_QA_URL='http://127.0.0.1:4296'; node --test experiences/synk-world-app/qa/client.test.mjs",
+    "coverage": "Includes actual Edge tabs sharing one browser context, account restore and isolated logout",
+    "finalDurationSeconds": 43.73,
+    "browserCleanup": "Graceful shutdown is bounded; only the test-owned BrowserServer process is terminated if close stalls. Final test exited 0."
+  },
+  "existingHome": {
+    "passed": 32,
+    "failed": 0,
+    "evidence": "../../synk-world-home/qa/verification.json"
+  },
+  "backend": {
+    "passed": 105,
+    "failed": 0,
+    "evidence": "../../../../SYNK-talk/qa/world-v1-20261009/backend-verification.json"
+  },
+  "unity": {
+    "flowCompiledChecks": 12,
+    "syntaxChecks": 6,
+    "editorCompilation": false,
+    "evidence": "../../../unity/SynkWorld/qa/core-tests.json"
+  },
+  "environment": {
+    "unityAuthenticated": false,
+    "unityActiveLicenses": 0,
+    "unityInstalledEditors": 0
+  },
+  "notVerified": [
+    "Production OAuth and remote migrations",
+    "Native Unity rendering, APK or EXE",
+    "Physical S25/iPhone 15 sustained performance",
+    "Town/photo shared costume integration"
+  ]
+}
