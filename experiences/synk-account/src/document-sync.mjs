@@ -29,7 +29,7 @@ const messages = {
 export const documentSyncErrorMessage = error => messages[error?.code] || error?.message || '계정에 저장하지 못했어요. 연결을 확인한 뒤 다시 시도해 주세요.';
 
 /** A verified account owns a separate cache and outbox. Guest state is never imported implicitly. */
-export function createDocumentSync({ transport, storage, onState = () => {}, onStatus = () => {}, onSaved = () => {}, onRemoved = () => {}, validateState, emptyState, requiresConflictReview = () => false, scope, resource = null, cachePrefix, operations = { load: 'careLoad', save: 'careSave', delete: 'careDelete' } }) {
+export function createDocumentSync({ transport, storage, onState = () => {}, onStatus = () => {}, onSaved = () => {}, onRemoved = () => {}, validateState, emptyState, requiresConflictReview = () => false, preferRemoteOnOpen = false, scope, resource = null, cachePrefix, operations = { load: 'careLoad', save: 'careSave', delete: 'careDelete' } }) {
   if (typeof validateState !== 'function' || typeof emptyState !== 'function' || typeof requiresConflictReview !== 'function' || !scope || !cachePrefix) throw new TypeError('제품 기록 계약이 필요해요.');
   const clone = value => validateState(value);
   const PREFIX = cachePrefix;
@@ -181,7 +181,7 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
   }
   function reportFailure(context, error) {
     if (!isCurrent(context)) return false;
-    if (error?.code === 'REVISION_CONFLICT') {
+    if (['REVISION_CONFLICT', 'LOCAL_CHANGED_DURING_REFRESH'].includes(error?.code)) {
       context.conflict = true;
       if (validRevision(error.revision)) context.revision = error.revision;
       persist(context); emit(context, 'conflict', error);
@@ -218,6 +218,14 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
     const before = context.sequence;
     emit(context, 'loading');
     const remote = await request(context, operations.load);
+    if (mode === 'remote' && before !== context.sequence) {
+      context.conflict = true; persist(context); emit(context, 'conflict', failure('LOCAL_CHANGED_DURING_REFRESH')); return false;
+    }
+    // A server read must not replace the only copy of an unsaved edit. Keep
+    // that edit intact unless its immutable recovery copy is safely retained.
+    if (mode === 'remote' && context.pending && !persist(context)) {
+      emit(context, 'storage-error', failure('LOCAL_STORAGE_UNAVAILABLE')); return false;
+    }
     context.known = true; context.revision = remote.revision;
     if (context.localChoice && mode !== 'remote') {
       context.state = remote.state; context.baseRevision = remote.revision;
@@ -227,9 +235,6 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
       // Only this explicitly requested path may move an edited outbox onto a newer remote revision.
       context.baseRevision = remote.revision; context.pending = true; context.conflict = false;
       persist(context); return true;
-    }
-    if (mode === 'remote' && before !== context.sequence) {
-      context.conflict = true; persist(context); emit(context, 'conflict', failure('LOCAL_CHANGED_DURING_REFRESH')); return false;
     }
     if (mode !== 'remote' && context.pending) {
       if (context.baseRevision === null && remote.empty && remote.revision === 0) context.baseRevision = 0;
@@ -289,7 +294,9 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
     try {
       const choices = draftGroups(context, true);
       context.invalidCache = [...records.values()].some(record => record.corrupt && record.accountId===accountId);
-      if(choices.length)context.localChoice=true;
+      // Optional recovery stays discoverable without locking the verified
+      // server document. It is never adopted or sent without explicit selection.
+      if(choices.length&&!preferRemoteOnOpen)context.localChoice=true;
     } catch { context.storageError = true; emit(context, 'storage-error'); }
     emitState(context);
     context.storageListener=event=>{
@@ -324,7 +331,12 @@ export function createDocumentSync({ transport, storage, onState = () => {}, onS
   }
   function resolveRemote() {
     const context = active; stopTimer(context);
-    return enqueue(context, () => load(context, 'remote'));
+    return enqueue(context, () => {
+      if (context.pending && !persist(context)) {
+        emit(context, 'storage-error', failure('LOCAL_STORAGE_UNAVAILABLE')); return false;
+      }
+      return load(context, 'remote');
+    });
   }
   function resolveLocal() {
     const context = active; stopTimer(context);

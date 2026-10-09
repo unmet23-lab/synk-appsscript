@@ -1,0 +1,56 @@
+{
+  "at": "2026-10-09T20:11:14.199Z",
+  "ok": true,
+  "manifestPath": ".tmp/desktop-native-workspace-connect-final-20261010-v4/manifest.json",
+  "manifestSHA256": "db4a2194cb5f539fe5db5bacce0780043a8c931ac9c5cca9ec312b4a0b9898c4",
+  "filesVerified": 6,
+  "unchangedExecutablesVerified": 3,
+  "rows": [
+    {
+      "clientId": "world",
+      "asarSHA256": "0840f2e6f7f698b887b6ad0eb39b4bad11dc40db9d6854168e15590df770f170",
+      "metadataSHA256": "b04342ce0915b6b0a92e85b0fc2b99e2ea4ef1ef5a2ebf83b75b4bda943f392a",
+      "executableSHA256": "64eb5f2bfcb0da4e714c065c9c7715b49e27554be1c553f45736a7a546ac1d78",
+      "appId": "im.synk.world.preview",
+      "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179",
+      "allPinnedBytesMatch": true
+    },
+    {
+      "clientId": "messenger",
+      "asarSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+      "metadataSHA256": "e7e89d34fd6a52c09bc4887a37a38f310479605c7941330c901cf2ec2c07829e",
+      "executableSHA256": "f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481",
+      "appId": "im.synk.messenger.preview",
+      "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179",
+      "allPinnedBytesMatch": true
+    },
+    {
+      "clientId": "platform",
+      "asarSHA256": "1acaf762ff06a606d6ad9e91972f286a980f657e45fee4b2e2842b8ec84f4f39",
+      "metadataSHA256": "0a59c4b1469049143425218e4ba556120779183a6a147ea7b9627e28c1c42b12",
+      "executableSHA256": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+      "appId": "im.synk.platform.preview",
+      "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179",
+      "allPinnedBytesMatch": true
+    }
+  ],
+  "platformChildPins": [
+    {
+      "clientId": "world",
+      "installedAsarSHA256": "0840f2e6f7f698b887b6ad0eb39b4bad11dc40db9d6854168e15590df770f170",
+      "installedExecutableSHA256": "64eb5f2bfcb0da4e714c065c9c7715b49e27554be1c553f45736a7a546ac1d78",
+      "exactMatch": true
+    },
+    {
+      "clientId": "messenger",
+      "installedAsarSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+      "installedExecutableSHA256": "f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481",
+      "exactMatch": true
+    }
+  ],
+  "productFilesModified": false,
+  "appsLaunched": false,
+  "additionalTestsRun": false,
+  "standardProfilesAccessed": false,
+  "vaultAccessed": false
+}

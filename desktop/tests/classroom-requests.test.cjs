@@ -3,11 +3,11 @@ const test=require('node:test'),assert=require('node:assert/strict');
 const {requestSpec}=require('../src/account-requests.cjs');
 const spec=(params,product='world')=>requestSpec('classroom',params,'0.4.0',product);
 test('classroom IPC maps every known action to a fixed endpoint and class query',()=>{
-  const entries={classes:['classes',false],workspace:['workspace',false],account:['world/account',false],student:['student',false],practice:['world/practice',false],practiceSubmit:['world/practice',true],submit:['submissions',true],sharing:['world/sharing',true],startRun:['world/runs/start',true],stopRun:['world/runs/stop',true],learningGet:['world/learning',false],learningPost:['world/learning',true],townRead:['world/town',false],townCommand:['world/town/command',true],assignments:['assignments',true],assignmentUpdate:['assignments/update',true],assignmentCancel:['assignments/cancel',true],observations:['observations',true]};
+  const entries={classes:['classes',false],teacherOverview:['teacher/overview',false],care:['teacher/care',false],careSave:['teacher/care',true],townMembership:['world/town/membership',false],townSharing:['world/town/sharing',true],townActivity:['world/town/activity',true],workspace:['workspace',false],account:['world/account',false],student:['student',false],practice:['world/practice',false],practiceSubmit:['world/practice',true],submit:['submissions',true],sharing:['world/sharing',true],startRun:['world/runs/start',true],stopRun:['world/runs/stop',true],learningGet:['world/learning',false],learningPost:['world/learning',true],townRead:['world/town',false],townCommand:['world/town/command',true],assignments:['assignments',true],assignmentUpdate:['assignments/update',true],assignmentCancel:['assignments/cancel',true],observations:['observations',true]};
   for(const product of ['world','platform'])for(const [operation,[route,post]]of Object.entries(entries)){
-    const params={operation,...(operation==='classes'?{}:{classId:'class-one'}),...(post?{body:{}}:{}),...(operation==='learningGet'?{query:{after:7,revision:2}}:{})};
+    const unscoped=['classes','teacherOverview'].includes(operation),params={operation,...(unscoped?{}:{classId:'class-one'}),...(post?{body:{}}:{}),...(operation==='learningGet'?{query:{after:7,revision:2}}:{})};
     const value=spec(params,product),url=new URL(value.path,'https://synthetic.invalid/functions/v1/');
-    assert.equal(url.pathname,'/functions/v1/synk-classroom/api/'+route);assert.equal(url.searchParams.get('classId'),operation==='classes'?null:'class-one');assert.equal(value.body!==undefined,post);
+    assert.equal(url.pathname,'/functions/v1/synk-classroom/api/'+route);assert.equal(url.searchParams.get('classId'),unscoped?null:'class-one');assert.equal(value.body!==undefined,post);
     if(operation==='learningGet'){assert.equal(url.searchParams.get('after'),'7');assert.equal(url.searchParams.get('revision'),'2');}
   }
 });
@@ -18,6 +18,7 @@ test('classroom rejects unknown routes, raw URLs, headers, method injection and 
 test('class scope is required for reads and writes and cannot disagree with a model body',()=>{
   for(const classId of [undefined,null,'','../class','class&role=teacher','x'.repeat(129),2])assert.throws(()=>spec({operation:'student',classId}),{code:'INVALID_REQUEST'});
   assert.throws(()=>spec({operation:'classes',classId:'unexpected'}),{code:'INVALID_REQUEST'});
+  assert.throws(()=>spec({operation:'teacherOverview',classId:'unexpected'}),{code:'INVALID_REQUEST'});
   assert.throws(()=>spec({operation:'assignments',classId:'a',body:{classId:'b'}}),{code:'INVALID_REQUEST'});
   assert.deepEqual(spec({operation:'assignments',classId:'a',body:{classId:'a',title:'숙제'}}),{path:'synk-classroom/api/assignments?classId=a',body:{classId:'a',title:'숙제'}});
 });

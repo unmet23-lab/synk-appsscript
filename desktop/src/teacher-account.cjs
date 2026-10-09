@@ -2,7 +2,7 @@
 const {assertTeacherSender,teacherDocument,TEACHER}=require('./teacher-preview.cjs');
 const {publicError}=require('./auth-service.cjs');
 const ACCOUNT=new Set(['load','release','updateProfile','revokeSession','revokeAll','requestDeletion','exportPage']);
-const CLASSROOM=new Set(['classes','workspace','assignments','assignmentUpdate','assignmentCancel','observations']);
+const CLASSROOM=new Set(['classes','teacherOverview','workspace','care','careSave','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations']);
 function teacherAccountRequest(auth,operation,params={}){
   if(!ACCOUNT.has(operation)&&!(operation==='classroom'&&params&&CLASSROOM.has(params.operation)))
     return Promise.resolve({ok:false,error:{code:'INVALID_REQUEST',message:'교사 앱에서 지원하는 요청을 확인해 주세요.',retryable:false}});

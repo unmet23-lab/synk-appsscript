@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-09T20:38:32.230Z",
+  "target": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript",
+  "manifestPath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\manifest.json",
+  "manifestSHA256": "51499d3d89c53ed578af684d66971f26fa11423b49ef1cca773e562bc4b92a30",
+  "copied": [
+    {
+      "file": "experiences/brand-opening/assets/felt-world-scene-desktop-v6.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\felt-world-scene-desktop-v6.webp",
+      "sha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac",
+      "bytes": 626284,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/felt-world-scene-mobile-v6.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\felt-world-scene-mobile-v6.webp",
+      "sha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9",
+      "bytes": 573138,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/InterTight.woff2",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\InterTight.woff2",
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+      "bytes": 18680,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/mongle.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\mongle.webp",
+      "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051",
+      "bytes": 238072,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/opening-candidate.wav",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\opening-candidate.wav",
+      "sha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6",
+      "bytes": 33560,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/sound-off.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\sound-off.webp",
+      "sha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29",
+      "bytes": 17994,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/sound-on.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\sound-on.webp",
+      "sha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793",
+      "bytes": 18310,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/SUIT.woff2",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\SUIT.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/synk-paper.webp",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\synk-paper.webp",
+      "sha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170",
+      "bytes": 308740,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/world-menu-desktop-omni11-v6-web.mp4",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\world-menu-desktop-omni11-v6-web.mp4",
+      "sha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08",
+      "bytes": 14346803,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/assets/world-menu-mobile-omni11-v6-web.mp4",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\world-menu-mobile-omni11-v6-web.mp4",
+      "sha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c",
+      "bytes": 14040698,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/opening.css",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\opening.css",
+      "sha256": "798ab12eea3bcbc0cac8367ad16f02a4be327179df59e0410db8a08162c2b0c5",
+      "bytes": 6559,
+      "sourceEqualsApprovedPayload": true
+    },
+    {
+      "file": "experiences/brand-opening/opening.mjs",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\opening.mjs",
+      "sha256": "1ff67428879c262c6ae3f08acb0e409bc68f164b9728bbf0de93c8b411528af6",
+      "bytes": 8705,
+      "sourceEqualsApprovedPayload": true
+    }
+  ],
+  "filesCopied": 13,
+  "bytesCopied": 30862079,
+  "builderSHA256": "602c984c28541a672b89f9b751724b897a80a346269b63c2dfa3e6ff7fb71eb8",
+  "builderChanged": false,
+  "primaryChanged": false,
+  "gitIndexTouched": false,
+  "deployed": false,
+  "gameSourcesChanged": false,
+  "homeHtmlRequiredByApprovedBuilder": false
+}

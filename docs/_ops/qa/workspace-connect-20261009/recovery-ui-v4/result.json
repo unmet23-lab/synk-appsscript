@@ -1,0 +1,65 @@
+{
+  "at": "2026-10-09T19:54:11.411Z",
+  "ok": true,
+  "scope": "Actual isolated Electron DOM with frozen renderer; synthetic auth snapshots only. No real account, production API or installed profile.",
+  "pins": {
+    "renderer/platform-continuity.mjs": "5d0f91669df3890b15e68f3ea512aeac1304b5c0d5247490169b631e6d7f558b",
+    "renderer/launcher.mjs": "78e993c0b39f8294a2d54f69f04f558cc9740c850ada95679a3e8bfb84f66990"
+  },
+  "checks": [
+    {
+      "name": "retry-preserves-unfinished-note",
+      "ok": true
+    },
+    {
+      "name": "retry-does-not-open-oauth-or-write",
+      "ok": true
+    },
+    {
+      "name": "guidance-mobile-no-horizontal-overflow",
+      "ok": true
+    },
+    {
+      "name": "same-account-recovery-clears-guide-retains-draft",
+      "ok": true
+    },
+    {
+      "name": "different-account-conceals-previous-draft",
+      "ok": true
+    },
+    {
+      "name": "launcher-storage-message-preserves-login-and-gives-recovery",
+      "ok": true
+    },
+    {
+      "name": "launcher-account-dialog-open",
+      "ok": true
+    },
+    {
+      "name": "launcher-success-clears-recovery-guidance",
+      "ok": true
+    },
+    {
+      "name": "no-auth-writes-external-network",
+      "ok": true
+    },
+    {
+      "name": "no-renderer-errors",
+      "ok": true
+    },
+    {
+      "name": "pinned-source-stable:renderer/platform-continuity.mjs",
+      "ok": true
+    },
+    {
+      "name": "pinned-source-stable:renderer/launcher.mjs",
+      "ok": true
+    }
+  ],
+  "oauth": 0,
+  "writes": 0,
+  "loads": 3,
+  "externalRequests": [],
+  "errors": [],
+  "profile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\recovery-ui-final-20261010\\isolated-profile"
+}

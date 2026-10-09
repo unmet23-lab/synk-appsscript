@@ -27,6 +27,7 @@ function demoScreenUrl(enabled, persona = '') {
 function demoHomeUrl(){const url=new URL(location.href);url.search='?tab=home';url.hash='';return url.pathname+url.search;}
 function demoWorkroomUrl(){const url=new URL(location.href);url.search='?tab=workroom';url.hash='';return url.pathname+url.search;}
 function demoHandbookUrl(){const url=new URL(location.href);url.search='?tab=handbook';url.hash='';return url.pathname+url.search;}
+function demoTeachingUrl(){const url=new URL(location.href);url.search='?tab=teaching';url.hash='';return url.pathname+url.search;}
 function demoMessengerUrl() {
   const url = new URL(location.href);
   url.search = '?tab=messenger';
@@ -51,10 +52,10 @@ function demoAllowsAction(action,target) {
 document.addEventListener('click',event=>{
   if(!isDemoMode())return;
   const target=event.target.closest?.('[data-action]');
-  if(target&&!target.disabled&&['tab','command-tab'].includes(target.dataset.action)&&['messenger','home','workroom','handbook'].includes(target.dataset.tab)){
+  if(target&&!target.disabled&&['tab','command-tab'].includes(target.dataset.action)&&['messenger','home','workroom','handbook','teaching'].includes(target.dataset.tab)){
     event.preventDefault();event.stopImmediatePropagation();
     // Reload real identity and workspace data before mounting the messenger.
-    location.href=target.dataset.tab==='home'?demoHomeUrl():target.dataset.tab==='workroom'?demoWorkroomUrl():target.dataset.tab==='handbook'?demoHandbookUrl():demoMessengerUrl();return;
+    location.href=target.dataset.tab==='teaching'?demoTeachingUrl():target.dataset.tab==='home'?demoHomeUrl():target.dataset.tab==='workroom'?demoWorkroomUrl():target.dataset.tab==='handbook'?demoHandbookUrl():demoMessengerUrl();return;
   }
   if(target&&!demoAllowsAction(target.dataset.action,target)){
     event.preventDefault();event.stopImmediatePropagation();notify('데모에서는 현황과 그래프를 확인할 수 있어요. 다른 기능은 실제 데이터 화면에서 이용해 주세요.');

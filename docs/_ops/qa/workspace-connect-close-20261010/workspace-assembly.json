@@ -1,0 +1,288 @@
+{
+  "at": "2026-10-09T20:27:46.781Z",
+  "status": "passed-source-assembly",
+  "target": "C:/Users/q1212/.codex/worktrees/workspace-integration-close/SYNK-appsscript",
+  "parent": "4127b4bc5d639a058ae85aec2a57b0c96ad9fe49",
+  "primarySourceUnmodified": true,
+  "gitIndexTouched": false,
+  "deploymentPerformed": false,
+  "files": [
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js",
+      "beforeSHA256": "9c9f322e5f26790b5fac0545917c1779e61a17d267b2b48ce9d7949de46bac2f",
+      "afterSHA256": "15d93a3fe1d3ae6bbd1fa1633b7df0e9ac4c5cf42e2590cbf692d84c7ab432b3",
+      "bytes": 134281,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/manifest.webmanifest",
+      "beforeSHA256": "90cffc93a5aa93c7bd17977ab9a10d3dc28ad30597fa90ff6a1f0ab9d9226fe4",
+      "afterSHA256": "16939eeb6c13baa7a4b5faeeb15854d7032e85bfd78e8735bd0c357b0f0c53ee",
+      "bytes": 557,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/synk-id.js",
+      "beforeSHA256": "f30db5bbe4c2b074e3d966d108fe0147ab21b30a5ab205fcbbf80f471f4d0048",
+      "afterSHA256": "dd699970cba2a851fdfaf431d177646336917cf73b1704a54244f3fa9ffe092a",
+      "bytes": 28632,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/teaching-host.js",
+      "beforeSHA256": null,
+      "afterSHA256": "7fbfc0d5738c6966790345a486d0aee302c0745acbedb6bac72f4807c7e5b24b",
+      "bytes": 37714,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/teaching.css",
+      "beforeSHA256": null,
+      "afterSHA256": "f42ddc5ff3f4ff29037a8362c6d4d0cadc2511041d37e872cd87d27f72064010",
+      "bytes": 5126,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/teaching.js",
+      "beforeSHA256": null,
+      "afterSHA256": "81cb8645c6e7ac2e1d9023e6f581c8a70bea30929d157a305e7c8f08f4b6de52",
+      "bytes": 7745,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-native-generation-client.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "e6b534fedf861eb709211c2d952b0046484d3af9dcba336c6289e6efcb0090f7",
+      "bytes": 26305,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/teaching-restoring-client.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "8940c0e70b7a29409e16f040d3a9d150fc8777415b62fbd6340761fcf8fee9f0",
+      "bytes": 1679,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/teaching-service.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "d10da38152e68d73c9289f88c173fd32a5d2454d10ba89a18bf51230e91953b0",
+      "bytes": 23210,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/teaching-service.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "0b8396a140277889f75f7847bb04f931702aa825114c7653375c46a651621754",
+      "bytes": 21801,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/app.mjs",
+      "beforeSHA256": "8d7879cdf78f1cf6a0b75646c0a1c7beee1256469a85e272e6aa97d90ebb3908",
+      "afterSHA256": "58311ba09e389d9839811b3ae43e422b6123373eb8ddca2024db11161bcd2bc1",
+      "bytes": 44837,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/index.html",
+      "beforeSHA256": "99df81842f70041a088064c36265e0a6b8b0514e1fe89de8e185ac4ce2b2d1cd",
+      "afterSHA256": "52b93d6e054f1783ed9e9fdee10f7252d4ccab139a1070cc64d50b0854784112",
+      "bytes": 10698,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/sharing-fence.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "22e299c0f70c634c34c64deaa43aebd3082a8ad65ac17c55aab0b5d2500932b0",
+      "bytes": 8492,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/style.css",
+      "beforeSHA256": "88f33c45afb1782327a238e10aacbaf5ba8b07506cde7ba02ae65eb1bfaaafa1",
+      "afterSHA256": "da4b936d43984038efab652fdcf112b12867f8efed259ce0e000b7f362b2d748",
+      "bytes": 17790,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/workspace-overview.css",
+      "beforeSHA256": null,
+      "afterSHA256": "0ac4aab61c84c7f455aa3c68b97a3fc314559fac78e41b59054f34e338c612f8",
+      "bytes": 6165,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/workspace-overview.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "f2f7f6dd1314c6fcf8a23779de27fee9b32b82750bc6056cab956530d1a3eeeb",
+      "bytes": 11313,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-identity.mjs",
+      "beforeSHA256": "763e7b3799bd8bd40de81904986affaef9de0ad7de3ab3e0ecfa79f72ac5c4ce",
+      "afterSHA256": "d3cf2b490b7ca5ec43bb7fc4222e894173f4e56b086bc952d2cd9cc7a235092e",
+      "bytes": 25203,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+      "beforeSHA256": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+      "afterSHA256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+      "bytes": 6719,
+      "provenance": "required-demo-navigation-source-primary"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-native-entry-client.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "a7933a2bf6188fd5ae696bf11c0d7cbc0ca6392c2e29c46eb769aa91c0f4a71a",
+      "bytes": 20852,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/synk-platform-entry-client.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "2c914c337ae63567ffcd58b7f915381ddad9e0a0d7552caa38b987580d596bfd",
+      "bytes": 5826,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server-synk-identity.test.mjs",
+      "beforeSHA256": "705f606446de59c5798aca57fa48dd64c993b679c5526df6361ec6e1fdce8997",
+      "afterSHA256": "4aab289985501e3dfff5d3fdb1b23009f67b72998402cc610a39776fc5ebe7ae",
+      "bytes": 51045,
+      "provenance": "approved-v6-frozen"
+    },
+    {
+      "path": "experiences/teacher-world/workspace-overview.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "3f3d20320147106057f03721dcad4a675876482a7dfbc9a59fbd0cdc7fe08a05",
+      "bytes": 4990,
+      "provenance": "focused-test-source-primary"
+    },
+    {
+      "path": "experiences/teacher-world/sharing-fence.test.mjs",
+      "beforeSHA256": null,
+      "afterSHA256": "d41200c217e0da00715ee48d643a5c4b3f16bf67bade147065343e3491c57685",
+      "bytes": 7052,
+      "provenance": "focused-test-source-primary"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile",
+      "beforeSHA256": "02143f28039c9a9c148197ff33be74aa61a3805abd500dc2b97d207f463de8dd",
+      "afterSHA256": "585ac773849cfefd3a5459cbe61e6be0e5a7dd27d9fdad4b64f12c938cd8589a",
+      "bytes": 13078,
+      "provenance": "selective-approved-hunks-on-origin"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/Dockerfile.dockerignore",
+      "beforeSHA256": "a1cfd4ee94d26b6fe3f4041bcf4a8f9b6f56bc7d94db6443625bf103c43ea9d5",
+      "afterSHA256": "d4be7a33f0199a6ac4221f26e279a9909acbbe915776122e188f4f679dc00d2b",
+      "bytes": 9041,
+      "provenance": "selective-approved-hunks-on-origin"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html",
+      "beforeSHA256": "f6e426e4c9cf15b1713a5f579ae30126d9054012e33aa80a0049790a372c0cbd",
+      "afterSHA256": "327348b996190921e9b1e63646b94ce500f3b6be5f9702daa57d1f1f5bbe3ab9",
+      "bytes": 4270,
+      "provenance": "selective-approved-hunks-on-origin"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/workspace.js",
+      "beforeSHA256": "317a8a8bf20eb3137555ab2ef8cc4698c3527bb307682fa9d60072434e47c739",
+      "afterSHA256": "7f26ccfa3e356293e7407dd29d04f75484321c60b0ceac2c4f67e8f9511113db",
+      "bytes": 30063,
+      "provenance": "selective-approved-hunks-on-origin"
+    },
+    {
+      "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+      "beforeSHA256": "c803cdd37b1f7d05ef0faca39de17bbd9fe06e0820ad8ec58cd9f71ad7b25ce9",
+      "afterSHA256": "b9fad1f68c261b1847ebb820f061b09bb2a7689563e8269e225db3fa77e2c619",
+      "bytes": 113564,
+      "provenance": "selective-approved-hunks-on-origin"
+    }
+  ],
+  "preservationChecks": [
+    {
+      "name": "origin customer constructor unchanged",
+      "pass": true
+    },
+    {
+      "name": "no customer dispose introduced",
+      "pass": true
+    },
+    {
+      "name": "no independent research events or drive sync introduced",
+      "pass": true
+    },
+    {
+      "name": "origin practice lines retained public/index.html",
+      "pass": true
+    },
+    {
+      "name": "origin practice lines retained public/workspace.js",
+      "pass": true
+    },
+    {
+      "name": "origin handbook primary tab retained",
+      "pass": true
+    }
+  ],
+  "tests": [
+    {
+      "file": "workspace-client-tests.tap",
+      "scope": "6 client/teacher files",
+      "exitCode": 0,
+      "pass": 74,
+      "fail": 0,
+      "sha256": "84d501f4a34759500a291cdc301538b5eb0a0fc9f0cd55f61f03a35c2372d26b"
+    },
+    {
+      "file": "workspace-server-tests.tap",
+      "scope": "teacher service and common identity account binding/restart/shutdown",
+      "exitCode": 0,
+      "pass": 15,
+      "fail": 0,
+      "sha256": "e3ff4629be17b19510c69f6ebc0c696deba9bd9c003f8a05ae65ec54295e64c0"
+    },
+    {
+      "file": "workspace-server-remaining.tap",
+      "scope": "remaining 8 teacher service lifecycle/race cases",
+      "exitCode": 0,
+      "pass": 8,
+      "fail": 0,
+      "sha256": "c1d9a2ace302033319b1cf8b3914794b8d70c0eeb5f5f8a6ae390a4c888316ad"
+    },
+    {
+      "name": "approved teaching-host build --check",
+      "exitCode": 0,
+      "pass": true,
+      "scope": "isolated worktree tools/build-messenger-teaching.cjs with existing local dependencies"
+    },
+    {
+      "name": "live demo regression and proposed fix",
+      "file": "demo-teaching-hotfix/proof.json",
+      "checks": 9,
+      "pass": true,
+      "scope": "2 confirmed live failure checks; 7 fixed/preservation checks; no account access"
+    },
+    {
+      "name": "git diff --check (company and teacher-world; repository line-ending settings)",
+      "exitCode": 0,
+      "pass": true
+    }
+  ],
+  "primaryOwnedHashesUnchanged": true,
+  "nodeTestsPassed": 97,
+  "completedAt": "2026-10-09T20:37:19.060Z",
+  "liveHotfix": {
+    "required": true,
+    "file": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+    "proof": "demo-teaching-hotfix/proof.json",
+    "sha256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+    "status": "awaiting-root-operator-and-official-review",
+    "operationalWrites": 0
+  }
+}

@@ -1,6 +1,7 @@
 'use strict';
 const path=require('node:path');
-const {PLATFORM_ENTRY}=require('./catalog.cjs');
+const {PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY}=require('./catalog.cjs');
+const {PUBLIC_APP_URLS}=require('./public-apps.cjs');
 const importMapHash=require('node:crypto').createHash('sha256').update(JSON.stringify({imports:{three:'./vendor/three.module.js'}})).digest('base64');
 function contentSecurityPolicy(resourceType) {
   return "default-src 'self'; script-src 'self' 'sha256-"+importMapHash+"'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; media-src 'self' data: blob: https:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors "+(resourceType==='subFrame'?"'self'":"'none'");
@@ -10,7 +11,8 @@ function isNativeEntry(value){try{const u=new URL(value);return u.protocol==='sy
 function allowedUrl(value,entry,allowedOrigins=[]) {
   try {const u=new URL(value),base=new URL(entry);return !u.username&&!u.password&&(u.origin===base.origin||allowedOrigins.includes(u.origin))&&['http:','https:'].includes(u.protocol);}catch{return false;}
 }
-function safeEntry(value,mode) {
+function safeEntry(value,mode,{clientId,messengerCloudPreview=false}={}) {
+  if(messengerCloudPreview!==false)return messengerCloudPreview===true&&clientId==='messenger'&&mode==='development'&&value===MESSENGER_CLOUD_PREVIEW_ENTRY;
   try {const u=new URL(value);if(u.username||u.password||u.hash)return false;
     if(value===PLATFORM_ENTRY)return ['development','release'].includes(mode);
     if(mode==='development')return u.protocol==='http:'&&u.hostname==='127.0.0.1'&&['4280','4191'].includes(u.port);
@@ -39,6 +41,8 @@ function allowedNavigation(value,entry,clientId) {
 }
 function externalDestination(value,entry,clientId,mode) {
   try {const u=new URL(value),base=new URL(entry);if(u.username||u.password)return null;
+    if(clientId==='platform'&&Object.values(PUBLIC_APP_URLS).includes(value))return value;
+    if(clientId==='world'&&value==='https://synk.im/world/')return value;
     const paths=clientId==='platform'?['/learning-hub/']:clientId==='world'?['/synk-account/platform.html','/synk-account/index.html']:[];
     if(u.origin===base.origin&&paths.includes(u.pathname))return new URL(u.pathname,base.origin).href;
     if(clientId==='platform'&&mode==='development'&&u.origin==='http://127.0.0.1:4191'&&u.pathname==='/')return 'http://127.0.0.1:4191/?tab=messenger';

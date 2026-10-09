@@ -260,6 +260,7 @@ export async function mountHomeScene(container, { onReady = () => {}, onError = 
   function contextLost(event) { event.preventDefault(); contextIsLost=true; cancelAnimationFrame(raf); raf = 0; onError(new Error('3D 그래픽 연결이 잠시 끊겼어요. 새로고침하면 다시 볼 수 있어요.')); }
   canvas.addEventListener('webglcontextlost', contextLost);
   function setOutfit(value) { outfit = avatar.setOutfit(value); forceFrame(); return outfit; }
+  function setDyes(value={}) { const dyes=avatar.setDyes(value);forceFrame();return dyes; }
   function setTime(value) {
     time = value === 'sunset' ? 'sunset' : 'day'; const sunset = time === 'sunset';
     scene.fog.color.set(sunset ? '#d6b8a5' : '#c1d5d8');
@@ -275,7 +276,7 @@ export async function mountHomeScene(container, { onReady = () => {}, onError = 
     renderer.toneMappingExposure = sunset ? .97 : 1.0;
     forceFrame(); return time;
   }
-  function metrics() { return { renderer: `Three.js r${THREE.REVISION}`, graphicsVersion: 3, visualRevision:'environment-v8', view, cameraYaw:Number(yaw.toFixed(4)), cameraMoving, quality, pixelRatio:renderer.getPixelRatio(), shadowMapSize:key.shadow.mapSize.x, active, contextLost:contextIsLost, shaderError:shaderFailed, renderSubmissionMs, renderStatsIncludeShadows:true, contactLight:contactLight.metrics(), surfaceMaps:surfaces.stats, optics:optics.metrics(), riverLife:riverLife.metrics, roofCraft:garden.roofCraft, assetFailures:[...assetFailures,...(avatar.metrics().assetFailures||[])], avatarVersion: avatar.metrics().avatarVersion, drawingBuffer: { width: canvas.width, height: canvas.height }, dpr: renderer.getPixelRatio(), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, lines: renderer.info.render.lines, instancedFoliage: garden.foliageCount, frameCount, outfit, time, paused: !active || contextIsLost || shaderFailed || !visible || document.hidden, reducedMotion: minimizeMotion, productionAsset: false }; }
+  function metrics() { return { renderer: `Three.js r${THREE.REVISION}`, graphicsVersion: 3, visualRevision:'environment-v8', view, cameraYaw:Number(yaw.toFixed(4)), cameraMoving, quality, pixelRatio:renderer.getPixelRatio(), shadowMapSize:key.shadow.mapSize.x, active, contextLost:contextIsLost, shaderError:shaderFailed, renderSubmissionMs, renderStatsIncludeShadows:true, contactLight:contactLight.metrics(), surfaceMaps:surfaces.stats, optics:optics.metrics(), riverLife:riverLife.metrics, roofCraft:garden.roofCraft, assetFailures:[...assetFailures,...(avatar.metrics().assetFailures||[])], avatarVersion: avatar.metrics().avatarVersion, drawingBuffer: { width: canvas.width, height: canvas.height }, dpr: renderer.getPixelRatio(), drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, lines: renderer.info.render.lines, instancedFoliage: garden.foliageCount, frameCount, outfit, dyes:avatar.getDyes(), time, paused: !active || contextIsLost || shaderFailed || !visible || document.hidden, reducedMotion: minimizeMotion, productionAsset: false }; }
   function setView(value) { const next = value === 'detail' ? 'detail' : 'home'; if (next === view) return view; view = next; targetYaw = yaw = 0; frameCamera(); forceFrame(); return view; }
   function setReducedMotion(value){requestedReducedMotion=Boolean(value);minimizeMotion=requestedReducedMotion||motionQuery.matches;forceFrame();return minimizeMotion;}
   function setActive(value){active=Boolean(value);if(!active){cancelAnimationFrame(raf);raf=0;}else{previousTime=0;forceFrame();}return active;}
@@ -312,7 +313,7 @@ export async function mountHomeScene(container, { onReady = () => {}, onError = 
     geometries.forEach(g => g.dispose()); materialSet.forEach(m => m.dispose()); textures.forEach(t => t.dispose()); envTarget.dispose(); Object.values(skyTargets).forEach(t => t.dispose());
     renderer.dispose(); renderer.forceContextLoss(); canvas.remove();
   }
-  const api = { setOutfit, setTime, setQuality, setView, setActive, setReducedMotion, greet, capture, dispose, metrics };
+  const api = { setOutfit, setDyes, getDyes:()=>avatar.getDyes(), setTime, setQuality, setView, setActive, setReducedMotion, greet, capture, dispose, metrics };
   try {
     setTime('day'); setQuality(quality); resize(); contactLight.render();
     if (shaderFailed) throw new Error('SCENE_SHADER_ERROR');

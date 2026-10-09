@@ -1,6 +1,6 @@
 'use strict';
 const path=require('node:path');
-const TEACHER=Object.freeze({id:'teacher',name:'SYNK WORLD · 교사',appId:'im.synk.teacher.preview',sessionScope:'im.synk.teacher.preview',entry:'http://127.0.0.1:4280/synk-account/teacher.html'});
+const TEACHER=Object.freeze({id:'teacher',name:'SYNK Workspace · 내 수업',appId:'im.synk.teacher.preview',sessionScope:'im.synk.teacher.preview',entry:'http://127.0.0.1:4280/synk-account/teacher.html'});
 function teacherPreviewAvailable({packaged,mode,clientId}){return packaged===false&&mode==='development'&&clientId==='platform';}
 function createTeacherPreview({packaged,mode,clientId,executable,appRoot,spawn,authConfigPath}){
   let pending=null;
@@ -10,10 +10,10 @@ function createTeacherPreview({packaged,mode,clientId,executable,appRoot,spawn,a
       if(!teacherPreviewAvailable({packaged,mode,clientId}))return Promise.resolve({ok:false,code:'PREVIEW_DEVELOPMENT_ONLY'});
       if(pending)return pending;
       pending=(async()=>{try{
-        const args=[path.join(appRoot,'src','teacher-main.cjs'),'--synk-teacher-preview'];
+        const args=[path.join(appRoot,'src','main.cjs'),'--synk-dev','--client=messenger','--view=teaching'];
         if(authConfigPath)args.push('--auth-config='+path.resolve(authConfigPath));
         await new Promise((resolve,reject)=>{const child=spawn(executable,args,{shell:false,detached:true,stdio:'ignore',windowsHide:true});child.once('error',reject);child.once('spawn',()=>{child.unref();resolve();});});
-        return {ok:true,preview:true,separateClient:true};
+        return {ok:true,preview:true,separateClient:false,clientId:'messenger',view:'teaching'};
       }catch{return {ok:false,code:'PREVIEW_LAUNCH_FAILED'};}finally{pending=null;}})();
       return pending;
     },

@@ -1,0 +1,85 @@
+{
+  "at": "2026-10-09T20:36:10.870Z",
+  "origin": "https://workspace.synk.im",
+  "operationalReadsOnly": true,
+  "realSessionsAccessed": false,
+  "operationalWrites": 0,
+  "reads": [
+    {
+      "route": "/app.js",
+      "http": 200,
+      "sha256": "15d93a3fe1d3ae6bbd1fa1633b7df0e9ac4c5cf42e2590cbf692d84c7ab432b3",
+      "bytes": 134281
+    },
+    {
+      "route": "/demo-ui.js",
+      "http": 200,
+      "sha256": "fb249ecdbdd7cc6684b24adf18fdf94ec68e37f50a558ac72deae76db32efd1e",
+      "bytes": 6525
+    }
+  ],
+  "liveEqualsApprovedV6Demo": true,
+  "reproduction": {
+    "directDemoTeachingEntry": {
+      "name": "ReferenceError",
+      "message": "demoTeachingUrl is not defined"
+    },
+    "capturedTeachingTabClick": {
+      "noticeCount": 1,
+      "navigated": false
+    }
+  },
+  "candidate": {
+    "relativePath": "docs/마케팅/온라인마케팅지도/engagement/company/public/demo-ui.js",
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\demo-teaching-hotfix\\candidate\\demo-ui.js",
+    "sha256": "7f73c1f3389348b20819afebd3d64466e880e2bf54db349d865b14e21c66779c",
+    "bytes": 6719,
+    "equalsExistingPrimary": true
+  },
+  "delta": {
+    "files": 1,
+    "addedLines": 3,
+    "removedLines": 2
+  },
+  "checks": [
+    {
+      "name": "live initializer references missing helper",
+      "pass": true
+    },
+    {
+      "name": "live demo teaching click remains blocked",
+      "pass": true
+    },
+    {
+      "name": "fixed direct teaching entry removes all demo query and hash",
+      "pass": true
+    },
+    {
+      "name": "fixed demo teaching click redirects once without notice",
+      "pass": true
+    },
+    {
+      "name": "existing home redirect is unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing workroom redirect is unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing handbook redirect is unchanged",
+      "pass": true
+    },
+    {
+      "name": "existing messenger redirect is unchanged",
+      "pass": true
+    },
+    {
+      "name": "non-demo teaching click is untouched",
+      "pass": true
+    }
+  ],
+  "status": "reproduced-and-fixed-locally",
+  "review": "pending-root-static-only-operator",
+  "deploymentPerformed": false
+}

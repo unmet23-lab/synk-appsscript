@@ -18,6 +18,14 @@ const goalLabels={explore:'새로운 공간 살펴보기',study:'한국어 학�
 const defaults={textSize:'standard',explanation:'standard',motion:'full'};
 const now=()=>new Date().toISOString();
 
+// Choosing a purpose can guide this window without writing a consented profile.
+export function previewPurpose(state,context,appIds=APP_IDS){
+  if(!Object.hasOwn(CONTEXTS,context))return state;
+  const allowed=APP_IDS.filter(id=>appIds.includes(id));
+  const order=[...new Set([...CONTEXTS[context].ids,...(state.order||[]),...allowed])].filter(id=>allowed.includes(id));
+  return {...state,active:true,sessionOnly:true,context,values:{...state.values,goal:CONTEXTS[context].goal},order,selected:order[0]||null,reason:'선택한 목적에 맞는 공간을 이 창에서 먼저 보여 드려요. 다음 방문에도 기억하려면 따로 저장할 수 있어요.'};
+}
+
 // Local, voluntary preferences are partitioned by the verified account ID.
 // They neither read product records nor determine access to an app.
 export function createPlatformPersonalization(engine,storage,{clock=now,scope=PLATFORM_SCOPE,key=PERSONAL_KEY}={}){

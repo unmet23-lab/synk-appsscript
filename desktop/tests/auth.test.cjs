@@ -7,7 +7,7 @@ const close=server=>new Promise(r=>{server.closeAllConnections();server.close(r)
 const secure={isEncryptionAvailable:()=>true,encryptString:text=>{const cipher=crypto.createCipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));return Buffer.concat([cipher.update(text),cipher.final(),cipher.getAuthTag()]);},decryptString:data=>{const decipher=crypto.createDecipheriv('aes-256-gcm',Buffer.alloc(32,7),Buffer.alloc(12,9));decipher.setAuthTag(data.subarray(-16));return Buffer.concat([decipher.update(data.subarray(0,-16)),decipher.final()]).toString();}};
 async function fixture(t,{product='platform',secureStorage=secure,openFail=false}={}){
   const directory=await fs.mkdtemp(path.join(os.tmpdir(),'synk-auth-test-'));const portProbe=http.createServer(),callbackPort=await listen(portProbe);await close(portProbe);
-  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[];
+  let opened,clock=1000000,serial=0,codeCount=0,refreshCount=0,logoutCount=0,delayToken=null,tokenStatus=200,wrongSubject=false,accountStatus=200,userStatus=200,nonJson=false,accountPayload={account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'합성 계정'}},memberships:[],entitlements:[]};const requests=[],codes=new Map(),active=new Set(),userResponses=[],accountResponses=[],classroomResponses=[],fortuneResponses=[],careResponses=[],personalResponses=[],playResponses=[];
   const server=http.createServer(async(req,res)=>{
     const u=new URL(req.url,'http://127.0.0.1');let body='';for await(const chunk of req)body+=chunk;
     const reply=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json'});res.end(JSON.stringify(data));};requests.push({path:u.pathname,query:Object.fromEntries(u.searchParams),method:req.method,headers:req.headers,body});
@@ -16,15 +16,16 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
       const values=new URLSearchParams(body);if(values.get('grant_type')==='authorization_code'){codeCount++;const stored=codes.get(values.get('code'));if(!stored||stored.challenge!==crypto.createHash('sha256').update(values.get('code_verifier')).digest('base64url')||stored.client!==values.get('client_id')||stored.redirect!==values.get('redirect_uri'))return reply(400,{error:'invalid_grant'});codes.delete(values.get('code'));}else{refreshCount++;if(!active.has(values.get('refresh_token')))return reply(400,{error:'invalid_grant'});active.delete(values.get('refresh_token'));}
       if(delayToken)await delayToken;if(tokenStatus!==200)return reply(tokenStatus,{error:'synthetic_failure'});serial++;active.add('synthetic-refresh-'+serial);reply(200,{token_type:'bearer',access_token:'synthetic-access-'+serial,refresh_token:'synthetic-refresh-'+serial,expires_in:3600});return;
     }
-    if(u.pathname==='/auth/v1/user'){if(nonJson&&userStatus!==200){res.writeHead(userStatus);res.end('<html>Temporary unavailable</html>');return;}return reply(userStatus,{id:wrongSubject?'different-user':'synthetic-auth-user'});}
+    if(u.pathname==='/auth/v1/user'){const queued=userResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data??{id:'synthetic-auth-user'});}if(nonJson&&userStatus!==200){res.writeHead(userStatus);res.end('<html>Temporary unavailable</html>');return;}return reply(userStatus,{id:wrongSubject?'different-user':'synthetic-auth-user'});}
     if(u.pathname==='/auth/v1/logout'){logoutCount++;active.clear();res.writeHead(204);res.end();return;}
     if(u.pathname==='/functions/v1/synk-account'){
       if(nonJson&&accountStatus!==200){res.writeHead(accountStatus);res.end('<html>Temporary unavailable</html>');return;}
       if(body&&JSON.parse(body).action==='revoke-session')return reply(200,{ok:true,current:true});
-      const queued=accountResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}
+      const queued=accountResponses.shift();if(queued){await queued.wait;if(queued.disconnect){res.destroy();return;}return reply(queued.status??200,queued.data);}
       return reply(accountStatus,accountStatus===200?{ok:true,...accountPayload,sessions:[{id:'00000000-0000-4000-8000-000000000001',current:true,revoked:false}],access_token:'must-be-redacted'}:{ok:false,error:{code:accountStatus===503?'UNAVAILABLE':'SESSION_REVOKED'}});
     }
     if(u.pathname==='/functions/v1/synk-learning')return reply(200,{ok:true,events:[],cursor:0,revision:1});
+    if(u.pathname==='/functions/v1/synk-play'){const queued=playResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-play',accountId:accountPayload.account.synk_user_id,revision:0,state:{wallet:{version:1},records:{},imported:false},nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname==='/functions/v1/synk-care'){const queued=careResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-care',accountId:accountPayload.account.synk_user_id,revision:0,updatedAt:null,state:null,nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname==='/functions/v1/synk-personal'){const queued=personalResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,scope:'synk-personal',resource:product,accountId:accountPayload.account.synk_user_id,revision:0,updatedAt:null,state:null,nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
     if(u.pathname==='/functions/v1/synk-fortune'){const queued=fortuneResponses.shift();if(queued){await queued.wait;return reply(queued.status??200,queued.data);}return reply(200,{ok:true,account:{synk_user_id:'stable-synthetic-id'},revision:0,state:{version:1,profile:null,preferences:{mode:'western',signId:null},entries:[]},nested:{access_token:'must-not-reach-renderer',refresh_token:'must-not-reach-renderer'}});}
@@ -35,9 +36,75 @@ async function fixture(t,{product='platform',secureStorage=secure,openFail=false
   const config=configuration(raw,product,'development');const store=()=>createTokenStore({directory,safeStorage:secureStorage,scope:product,configFingerprint:config.fingerprint,platform:'win32'});const services=[];
   const create=()=>{const service=createAuthService({config,store:store(),now:()=>clock,openExternal:async url=>{if(openFail)throw Error('SYNTHETIC_OPEN_FAILED');opened=url;},timeoutMs:3000});services.push(service);return service;};
   const service=create();t.after(async()=>{for(const s of services)s.dispose();await close(server);await fs.rm(directory,{recursive:true,force:true});});
-  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
+  return {service,create,store,config,raw,directory,requests,get opened(){return opened;},get codeCount(){return codeCount;},get refreshCount(){return refreshCount;},get logoutCount(){return logoutCount;},setClock:value=>{clock=value;},delay:promise=>{delayToken=promise;},tokenStatus:value=>{tokenStatus=value;},wrongSubject:()=>{wrongSubject=true;},accountStatus:value=>{accountStatus=value;},accountPayload:value=>{accountPayload={...accountPayload,...value};},queueUser:value=>userResponses.push(value),queueAccount:value=>accountResponses.push(value),queueClassroom:value=>classroomResponses.push(value),queueFortune:value=>fortuneResponses.push(value),queueCare:value=>careResponses.push(value),queuePersonal:value=>personalResponses.push(value),queuePlay:value=>playResponses.push(value),userStatus:value=>{userStatus=value;},nonJson:()=>{nonJson=true;},async login(){await service.initialize();await service.signIn();const response=await fetch(opened);assert.equal(response.status,200);await waitFor(()=>service.status().signedIn);}};
 }
 
+test('platform account expectation reuses verified matching identity and blocks another account before API access',async t=>{
+  const f=await fixture(t,{product:'messenger'});f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});await f.login();
+  assert.equal(f.service.status().account.synk_user_id,'stable-synthetic-id');
+  f.service.bindPlatform({status:'signed-in',accountId:'different-platform-id',generation:'platform:2'});
+  assert.equal(f.service.status().signedIn,false);assert.equal(f.service.status().account,null);
+  const count=f.requests.length;await assert.rejects(f.service.getAccessToken(),{code:'AUTH_CHANGED'});assert.equal(f.requests.length,count);
+});
+test('fresh OAuth cannot expose a browser account different from the platform expectation',async t=>{
+  const f=await fixture(t,{product:'world'});f.service.bindPlatform({status:'signed-in',accountId:'another-account',generation:'platform:1'});
+  await f.service.initialize();await f.service.signIn();assert.equal((await fetch(f.opened)).status,200);await waitFor(()=>f.service.status().error);
+  assert.equal(f.service.status().signedIn,false);assert.equal(f.service.status().account,null);
+  for(let n=0;n<100&&await f.store().load();n++)await new Promise(resolve=>setTimeout(resolve,5));
+  assert.equal(await f.store().load(),null);
+});
+
+test('temporary metadata failure preserves pending OAuth and completes its original callback',async t=>{
+  const {createSuiteFollower}=require('../src/suite-session.cjs'),f=await fixture(t,{product:'messenger'});
+  let record={status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1',updatedAt:1000};
+  const follower=createSuiteFollower({store:{read:()=>record},auth:f.service,now:()=>1000,schedule:()=>1,unschedule(){}});t.after(()=>follower.dispose());
+  await follower.start();const first=f.opened;assert.equal(f.service.status().status,'signing-in');
+  record={...record,status:'checking',accountId:null};await follower.refresh();assert.equal(f.service.status().signedIn,false);
+  record={...record,status:'signed-in',accountId:'stable-synthetic-id'};await follower.refresh();assert.equal(f.opened,first);
+  assert.equal((await fetch(f.opened)).status,200);await waitFor(()=>f.service.status().signedIn);assert.equal(f.codeCount,1);
+});
+
+test('platform exit retains verified app access; unreadable selection masks it without clearing its vault',async t=>{
+  const {createSuiteFollower}=require('../src/suite-session.cjs'),f=await fixture(t,{product:'world'});await f.login();
+  let unavailable=false;const record={status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1',updatedAt:1000};
+  const follower=createSuiteFollower({store:{read:()=>{if(unavailable)throw Error('temporary storage failure');return record;}},auth:f.service,schedule:()=>1,unschedule(){}});t.after(()=>follower.dispose());
+  await follower.start();assert.equal(f.service.status().signedIn,true);const saved=await f.store().load();
+  await follower.refresh();assert.equal(await f.service.getAccessToken(),'synthetic-access-1');
+  unavailable=true;await follower.refresh();assert.equal(f.service.status().signedIn,false);await assert.rejects(f.service.getAccessToken(),{code:'AUTH_SERVER_UNAVAILABLE'});assert.deepEqual(await f.store().load(),saved);
+  unavailable=false;await follower.refresh();assert.equal(f.service.status().signedIn,true);assert.equal(f.codeCount,1);
+});
+test('platform logout fences an in-flight account response and prevents another OAuth prompt',async t=>{
+  const f=await fixture(t);f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});await f.login();let release;
+  f.queueAccount({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,account:{synk_user_id:'stable-synthetic-id',profile:{display_name:'old private name'}},memberships:[],entitlements:[]}});
+  const count=f.requests.length,pending=f.service.accountRequest('load');await waitFor(()=>f.requests.length>count);
+  f.service.bindPlatform({status:'signed-out',generation:'platform:2'});release();const result=await pending;
+  assert.equal(result.ok,false);assert.equal(result.account,undefined);assert.equal(f.service.status().signedIn,false);assert.equal(f.service.status().account,null);
+  await assert.rejects(f.service.signIn(),{code:'PLATFORM_AUTH_REQUIRED'});
+});
+
+test('platform refresh and exit do not interrupt a child refresh-token rotation or reopen OAuth',async t=>{
+  const {suiteKey,createSuitePublisher,createSuiteFollower}=require('../src/suite-session.cjs'),f=await fixture(t,{product:'world'});await f.login();
+  let saved=null;const publisher=createSuitePublisher({store:{read:()=>saved,write:value=>{saved=value;}},key:suiteKey(f.config,'development')});
+  publisher.publish(f.service.status());const follower=createSuiteFollower({store:{read:()=>saved},auth:f.service,schedule:()=>1,unschedule(){}});t.after(()=>{publisher.dispose();follower.dispose();});await follower.start();
+  let release;f.delay(new Promise(resolve=>{release=resolve;}));f.setClock(4_600_001);const refreshed=f.service.getAccessToken();await waitFor(()=>f.refreshCount===1);
+  publisher.publish({status:'restoring',signedIn:false,sessionGeneration:1});await follower.refresh();publisher.dispose();await follower.refresh();release();
+  assert.equal(await refreshed,'synthetic-access-2');assert.equal(f.service.status().signedIn,true);assert.equal(f.codeCount,1);assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');
+});
+
+test('temporary metadata read failure does not discard an already rotated refresh token',async t=>{
+  const {createSuiteFollower}=require('../src/suite-session.cjs'),f=await fixture(t,{product:'world'});await f.login();
+  let unreadable=false;const chosen={status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'};
+  const follower=createSuiteFollower({store:{read:()=>{if(unreadable)throw Error('temporary read failure');return chosen;}},auth:f.service,schedule:()=>1,unschedule(){}});t.after(()=>follower.dispose());await follower.start();
+  let release;f.delay(new Promise(resolve=>{release=resolve;}));f.setClock(4_600_001);const refreshing=f.service.getAccessToken();const rejected=assert.rejects(refreshing,error=>error.retryable===true);await waitFor(()=>f.refreshCount===1);
+  unreadable=true;await follower.refresh();release();await rejected;
+  assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');assert.equal(f.service.status().signedIn,false);
+  unreadable=false;await follower.refresh();assert.equal(await f.service.getAccessToken(),'synthetic-access-2');assert.equal(f.codeCount,1);assert.equal(f.refreshCount,1);
+});
+test('platform temporary verification hides identity but restores the same app session without a fresh OAuth grant',async t=>{
+  const f=await fixture(t);f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});await f.login();const codeCount=f.codeCount;
+  f.service.bindPlatform({status:'checking',generation:'platform:1'});assert.equal(f.service.status().account,null);await assert.rejects(f.service.getAccessToken(),{code:'AUTH_SERVER_UNAVAILABLE'});
+  f.service.bindPlatform({status:'signed-in',accountId:'stable-synthetic-id',generation:'platform:1'});assert.equal(f.service.status().signedIn,true);assert.equal((await f.service.accountRequest('load')).ok,true);assert.equal(f.codeCount,codeCount);
+});
 test('personal apps reuse real PKCE, main-held tokens and fixed per-client data resources',async t=>{
   for(const product of ['path','rehearsal','family-album']){
     const f=await fixture(t,{product});await f.login();assert.equal(f.config.product,'platform');assert.equal(f.config.clientKey,product);
@@ -141,6 +208,12 @@ test('classroom requests use main credentials, product identity and class URL wi
     const request=f.requests.find(r=>r.path==='/functions/v1/synk-classroom/api/world/learning');
     assert.equal(request.method,'POST');assert.deepEqual(request.query,{classId:'class-one'});assert.equal(request.headers.authorization,'Bearer synthetic-access-1');assert.equal(request.headers['x-synk-product'],product);assert.equal(request.headers['x-synk-contract'],'1');assert.deepEqual(JSON.parse(request.body),{runId:'run-one',revision:2,events:[]});
   }
+});
+test('teacher enrollment code survives the real native HTTP transport but credentials do not',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();
+  f.queueClassroom({data:{ok:true,invite:{token:'a'.repeat(32),access_token:'synthetic'},nested:{token:'synthetic',refresh_token:'synthetic'}}});
+  const result=await f.service.accountRequest('classroom',{operation:'enrollmentInvite',classId:'class-one',body:{learnerId:'learner-one'}});
+  assert.equal(result.invite.token,'a'.repeat(32));assert.equal(result.invite.access_token,undefined);assert.deepEqual(result.nested,{});
 });
 test('WORLD memory and Atlas use native account credentials and Messenger cannot dispatch them',async t=>{
   const f=await fixture(t,{product:'world'});await f.login();
@@ -280,4 +353,94 @@ test('an account ID change on a reload is rejected and cannot carry rights acros
   const f=await fixture(t);f.accountPayload({memberships:[{kind:'learner',role:'student',learner_id:'synthetic'}]});await f.login();
   f.accountPayload({account:{synk_user_id:'unexpected-other-account',status:'active'},entitlements:[{product:'platform',key:'library.messenger'}]});
   assert.equal((await f.service.accountRequest('load')).error.code,'AUTH_REQUIRED');assert.equal(f.service.status().signedIn,false);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+});
+
+test('an account load returning during token verification cannot discard the rotated recovery token',async t=>{
+  const f=await fixture(t);await f.login();let releaseLoad,releaseUser;
+  f.queueAccount({wait:new Promise(resolve=>{releaseLoad=resolve;}),data:{ok:true,account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'이전 이름'}},memberships:[{kind:'staff',role:'teacher',staff_id:'synthetic-staff'}],entitlements:[]}});
+  const loading=f.service.accountRequest('load');await waitFor(()=>f.requests.filter(r=>r.path==='/functions/v1/synk-account').length===2);
+  f.queueUser({wait:new Promise(resolve=>{releaseUser=resolve;})});
+  f.queueClassroom({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  const refreshing=f.service.accountRequest('classroom',{operation:'classes'});await waitFor(()=>f.requests.filter(r=>r.path==='/auth/v1/user').length===2);
+  assert.equal(f.service.status().status,'restoring');releaseLoad();assert.equal((await loading).ok,true);
+  assert.equal(f.service.status().status,'restoring');assert.equal(f.service.status().account,null);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');releaseUser();assert.equal((await refreshing).ok,true);
+  assert.equal(f.service.status().signedIn,true);assert.equal(f.service.status().account.display_name,'합성 계정');assert.deepEqual(f.service.status().library,{status:'ready',appIds:[]});
+  assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');
+});
+
+test('a pre-refresh load cannot overwrite the account and library verified with a new token',async t=>{
+  const f=await fixture(t);await f.login();let releaseLoad;
+  f.queueAccount({wait:new Promise(resolve=>{releaseLoad=resolve;}),data:{ok:true,account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'이전 이름'}},memberships:[{kind:'staff',role:'teacher',staff_id:'synthetic-staff'}],entitlements:[]}});
+  const loading=f.service.accountRequest('load');await waitFor(()=>f.requests.filter(r=>r.path==='/functions/v1/synk-account').length===2);
+  f.accountPayload({account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'갱신된 이름'}},entitlements:[{product:'platform',key:'library.messenger'}]});
+  f.queueClassroom({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});assert.equal((await f.service.accountRequest('classroom',{operation:'classes'})).ok,true);
+  releaseLoad();assert.equal((await loading).ok,true);assert.equal(f.service.status().signedIn,true);
+  assert.equal(f.service.status().account.display_name,'갱신된 이름');assert.deepEqual(f.service.status().library,{status:'ready',appIds:['messenger']});
+});
+
+for(const response of [
+  {name:'server failure',status:503,data:{ok:false,error:{code:'UNAVAILABLE'}}},
+  {name:'session rejection',status:403,data:{ok:false,error:{code:'SESSION_REVOKED'}}},
+  {name:'transport failure',disconnect:true},
+])test(`a pre-refresh load ${response.name} cannot clear the newly verified session or library`,async t=>{
+  const f=await fixture(t);await f.login();let releaseLoad;
+  f.queueAccount({...response,wait:new Promise(resolve=>{releaseLoad=resolve;})});
+  const loading=f.service.accountRequest('load');await waitFor(()=>f.requests.filter(r=>r.path==='/functions/v1/synk-account').length===2);
+  f.accountPayload({account:{synk_user_id:'stable-synthetic-id',status:'active',profile:{display_name:'갱신된 이름'}},entitlements:[{product:'platform',key:'library.messenger'}]});
+  f.queueClassroom({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});assert.equal((await f.service.accountRequest('classroom',{operation:'classes'})).ok,true);
+  assert.deepEqual(f.service.status().library,{status:'ready',appIds:['messenger']});
+  releaseLoad();const result=await loading;assert.equal(result.ok,false);assert.equal(result.error.code,'AUTH_CHANGED');
+  assert.equal(f.service.status().signedIn,true);assert.equal(f.service.status().account.display_name,'갱신된 이름');
+  assert.deepEqual(f.service.status().library,{status:'ready',appIds:['messenger']});
+  assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');
+});
+
+test('a rejected old load cannot discard a replacement token while its identity verification is pending',async t=>{
+  const f=await fixture(t);await f.login();let releaseLoad,releaseUser;
+  f.queueAccount({wait:new Promise(resolve=>{releaseLoad=resolve;}),status:403,data:{ok:false,error:{code:'SESSION_REVOKED'}}});
+  const loading=f.service.accountRequest('load');await waitFor(()=>f.requests.filter(r=>r.path==='/functions/v1/synk-account').length===2);
+  f.queueUser({wait:new Promise(resolve=>{releaseUser=resolve;})});
+  f.queueClassroom({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  const refreshing=f.service.accountRequest('classroom',{operation:'classes'});await waitFor(()=>f.requests.filter(r=>r.path==='/auth/v1/user').length===2);
+  assert.equal(f.service.status().status,'restoring');assert.equal(f.service.status().account,null);
+  releaseLoad();assert.equal((await loading).error.code,'AUTH_CHANGED');
+  assert.equal(f.service.status().status,'restoring');assert.equal((await f.store().load()).refreshToken,'synthetic-refresh-2');
+  releaseUser();assert.equal((await refreshing).ok,true);assert.equal(f.service.status().signedIn,true);
+});
+
+test('revocation of the currently held token still closes auth and removes encrypted recovery',async t=>{
+  const f=await fixture(t);await f.login();
+  f.queueAccount({status:403,data:{ok:false,error:{code:'SESSION_REVOKED'}}});
+  assert.equal((await f.service.accountRequest('load')).error.code,'SESSION_REVOKED');
+  assert.equal(f.service.status().signedIn,false);assert.deepEqual(f.service.status().library,{status:'unavailable',appIds:[]});
+  assert.equal(await f.store().load(),null);
+});
+
+
+test('WORLD play uses the existing account token and fixed wallet/progress/import operations',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();
+  assert.equal((await f.service.accountRequest('playLoad')).ok,true);
+  const id='00000000-0000-4000-8000-000000000001';
+  for(const body of [{action:'wallet',id,method:'buyItem',args:['ship-keepsake-starbook']},{action:'progress',id,changes:[{key:'synk.word-magic.progress.v1',previous:null,value:'{}'}]},{action:'import',id,expected_revision:0,state:{wallet:{},records:{}}}]) assert.equal((await f.service.accountRequest('playMutate',body)).ok,true);
+  const requests=f.requests.filter(row=>row.path==='/functions/v1/synk-play');assert.equal(requests.length,4);assert.equal(requests[0].method,'GET');
+  for(const row of requests){assert.equal(row.headers.authorization,'Bearer synthetic-access-1');assert.equal(row.headers['x-synk-product'],'world');}
+  assert.deepEqual((await f.service.accountRequest('playLoad')).nested,{});
+  for(const [operation,params]of [['playLoad',{url:'https://example.invalid'}],['playMutate',{action:'wallet',id,method:'setCoins',args:[999]}],['playMutate',{action:'progress',id,changes:[{key:'x',previous:undefined,value:'{}'}]}]])assert.equal((await f.service.accountRequest(operation,params)).error.code,'INVALID_REQUEST');
+  const platform=await fixture(t);await platform.login();assert.equal((await platform.service.accountRequest('playLoad')).error.code,'INVALID_REQUEST');
+});
+
+test('WORLD play refresh, conflict, owner mismatch and logout keep the native identity boundary',async t=>{
+  const f=await fixture(t,{product:'world'});await f.login();f.queuePlay({status:401,data:{ok:false,error:{code:'AUTH_REQUIRED'}}});
+  assert.equal((await f.service.accountRequest('playLoad')).ok,true);assert.equal(f.refreshCount,1);
+  f.queuePlay({status:409,data:{ok:false,error:{code:'REVISION_CONFLICT'},revision:8}});const conflict=await f.service.accountRequest('playLoad');assert.equal(conflict.error.code,'REVISION_CONFLICT');assert.equal(conflict.revision,8);
+  let release;f.queuePlay({wait:new Promise(resolve=>{release=resolve;}),data:{ok:true,scope:'synk-play',accountId:'stable-synthetic-id',revision:0,state:{}}});
+  const pending=f.service.accountRequest('playLoad');await waitFor(()=>f.requests.filter(row=>row.path==='/functions/v1/synk-play').length===4);await f.service.signOut();release();assert.equal((await pending).ok,false);
+  await f.login();f.queuePlay({data:{ok:true,scope:'synk-play',accountId:'other-account',revision:0,state:{}}});const wrong=await f.service.accountRequest('playLoad');assert.equal(wrong.ok,false);assert.equal(wrong.state,undefined);assert.equal(f.service.status().signedIn,false);
+});
+
+test('WORLD gateway HTTP errors stay retryable while real account rejection codes are preserved',async t=>{
+ const f=await fixture(t,{product:'world'});await f.login();
+ for(const status of [429,500,502,503,504])for(const data of [null,{code:'BOOT_ERROR',message:'worker limit'}]){f.queuePlay({status,data});const result=await f.service.accountRequest('playLoad');assert.equal(result.error.code,'SERVICE_UNAVAILABLE');assert.equal(result.error.retryable,true);assert.equal(result.error.status,status);assert.equal(f.service.status().signedIn,true);}
+ f.queuePlay({status:403,data:{ok:false,error:{code:'ACCOUNT_UNAVAILABLE'}}});const inactive=await f.service.accountRequest('playLoad');assert.equal(inactive.error.code,'ACCOUNT_UNAVAILABLE');assert.equal(inactive.error.retryable,false);
 });

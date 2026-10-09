@@ -1,4 +1,4 @@
-
+import { createPlatformEntry } from './platform-entry.mjs';
 const AUTH_ERRORS = new Set(['AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED']);
 const fault = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 const missingAsset = error => ['ASSET_NOT_FOUND','ASSET_NOT_CONFIRMED'].includes(error?.code) && typeof error?.assetId === 'string' && /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(error.assetId) ? { assetId:error.assetId } : {};
@@ -20,14 +20,16 @@ export function createProductAccount({
   navigate = url => globalThis.location.assign(url),
   loadCore = () => import('./core.mjs'), now = Date.now, cryptoAPI,
 } = {}) {
-  if (!['care', 'path', 'rehearsal', 'family-album'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('제품 계정 계약을 확인해 주세요.');
+  if (!['care', 'path', 'path-travel', 'rehearsal', 'family-album'].includes(clientKey) || !['synk-care', 'synk-personal'].includes(endpoint) || typeof validateState !== 'function') throw new TypeError('제품 계정 계약을 확인해 주세요.');
   const LIMIT = (resource === 'family-album' ? 32 : 4) * 1024 * 1024 + 32768;
   const SESSION_KEY = `synk.oauth.session.${clientKey}`;
   const OPERATIONS = new Set(Object.values(operations));
   const bridgeRequest = bridge?.accountRequest || bridge?.request;
   const native = typeof bridgeRequest === 'function' && typeof bridge?.authStatus === 'function';
+  const platformEntry = native ? null : createPlatformEntry({ clientKey, getUrl, replaceUrl });
+  let automaticNavigations = 0;
   let snapshot = { configured: false, signedIn: false, status: 'unconfigured', accountId: null, account: null, sessionGeneration: 0, error: null };
-  let config, core, session = null, epoch = 0, disposed = false, starting, refreshing, unsubscribe, nativeIdentity = null, nativeLoad = null, nativeGeneration = -1;
+  let config, core, session = null, pendingExchange = null, epoch = 0, loginIntent = 0, disposed = false, starting, started = false, refreshing, unsubscribe, nativeIdentity = null, nativeLoad = null, nativeGeneration = -1;
   const controllers = new Set();
   const status = () => ({ ...snapshot, account: snapshot.account ? { ...snapshot.account } : null, error: snapshot.error ? { ...snapshot.error } : null });
   const emit = patch => { snapshot = { ...snapshot, ...patch, sessionGeneration: epoch }; if (!disposed) onStatus(status()); return status(); };
@@ -35,7 +37,7 @@ export function createProductAccount({
   const binding = () => [config.supabaseUrl, config.accountApiUrl, config.clients[clientKey].clientId, config.clients[clientKey].redirectUri].join('|');
   function stopRequests() { for (const controller of controllers) controller.abort(); }
   function clearSession(error, nextStatus = 'signed-out') {
-    epoch++; session = null; nativeIdentity = null; nativeLoad = null; stopRequests();
+    epoch++; session = null; pendingExchange = null; nativeIdentity = null; nativeLoad = null; stopRequests();
     if (!native) { try { storage?.removeItem(SESSION_KEY); } catch { error ||= fault('STORAGE', '화면의 로그인은 종료했지만 저장을 지우지 못했어요. 이 창을 닫아 주세요.'); } }
     return emit({ signedIn: false, status: snapshot.configured ? nextStatus : 'unconfigured', accountId: null, account: null, error: error ? publicError(error) : null });
   }
@@ -172,32 +174,52 @@ export function createProductAccount({
     try { return await promise; } finally { if (nativeLoad === promise) nativeLoad = null; }
   }
   async function begin() {
+    const expected = epoch;
+    platformEntry?.capture(storage);
     if (native) {
       const environment = await bridge.getEnvironment();
+      guard(expected);
       if (environment?.clientId !== clientKey) throw fault('INVALID_BRIDGE', '제품 앱의 로그인 연결을 확인해 주세요.');
       if (disposed) return status();
+      unsubscribe?.();
       unsubscribe = bridge.onAuthChanged(source => { void nativeStatus(source).catch(() => {}); });
-      return nativeStatus(await bridge.authStatus());
+      const source = await bridge.authStatus(); guard(expected);
+      return nativeStatus(source);
     }
-    core = await loadCore();
-    const expected = epoch;
+    try { core = await loadCore(); }
+    catch { throw fault('NETWORK', '로그인 연결을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.', { retryable: true }); }
+    guard(expected);
     let raw;
     const configEndpoint = new URL(configUrl, getUrl());
     if (configEndpoint.origin !== new URL(getUrl()).origin || configEndpoint.username || configEndpoint.password || configEndpoint.hash) throw fault('AUTH_CONFIG', '이 앱의 계정 설정 주소를 확인해 주세요.');
     const abort = new AbortController(), timer = setTimeout(() => abort.abort(), 8000); controllers.add(abort);
-    try { const response = await fetcher(configEndpoint.href, { cache: 'no-store', credentials: 'omit', signal: abort.signal, redirect: 'error' }); if (response.ok) raw = await response.json(); }
-    catch { /* 설정이 없으면 로컬 수첩을 그대로 사용한다. */ }
+    try {
+      const response = await fetcher(configEndpoint.href, { cache: 'no-store', credentials: 'omit', signal: abort.signal, redirect: 'error' });
+      if (response.ok) raw = await response.json();
+      else if (response.status !== 404) throw fault('AUTH_CONFIG', '계정 연결 설정을 불러오지 못했어요. 다시 확인해 주세요.', { status: response.status, retryable: response.status === 429 || response.status >= 500 });
+    }
+    catch (error) { if (error.code) throw error; throw fault('NETWORK', '계정 연결 설정을 불러오지 못했어요. 연결이 돌아오면 다시 확인해 주세요.', { retryable: true }); }
     finally { clearTimeout(timer); controllers.delete(abort); }
     guard(expected); config = core.readConfig(raw || { version: 1 }, getUrl());
     const configured = !!(config.configured && config.clients[clientKey]?.clientId && config.clients[clientKey]?.redirectUri);
-    if (!configured) return emit({ configured: false, status: 'unconfigured', error: null });
-    emit({ configured: true, status: 'signed-out', error: null });
+    if (!configured) { pendingExchange = null; return emit({ configured: false, status: 'unconfigured', error: null }); }
+    // A saved session or callback is still being checked. Consumers must not
+    // discard their account drafts as if the user explicitly signed out.
+    emit({ configured: true, status: 'restoring', error: null });
+    platformEntry.restore(storage);
+    if (platformEntry.isCancelled()) { session = null;pendingExchange = null;return emit({ signedIn: false, status: 'signed-out', accountId: null, account: null, error: null }); }
     const url = new URL(getUrl());
     if (url.searchParams.has('code') || url.searchParams.has('error')) {
-      let fields;
-      try { fields = core.consumeCallback({ config, product: clientKey, url: url.href, storage, now: now() }); }
+      platformEntry.stop();
+      try { pendingExchange = { fields: core.consumeCallback({ config, product: clientKey, url: url.href, storage, now: now() }), configKey: binding() }; }
       finally { for (const key of ['code', 'state', 'error', 'error_description']) url.searchParams.delete(key); replaceUrl(url.href); }
-      const next = await core.tokenRequest(config, fields, fetcher); guard(expected); saveSession(next);
+    }
+    if (pendingExchange) {
+      // consumeCallback has already removed the URL and one-time PKCE record.
+      // Retain only this verified request in memory across a temporary outage.
+      if (pendingExchange.configKey !== binding()) throw fault('AUTH_REQUIRED', '로그인 연결 설정이 바뀌었어요. SYNK ID로 다시 로그인해 주세요.');
+      const next = await core.tokenRequest(config, pendingExchange.fields, fetcher); guard(expected);
+      pendingExchange = null; saveSession(next);
     } else {
       try {
         const text = storage.getItem(SESSION_KEY);
@@ -209,26 +231,79 @@ export function createProductAccount({
         }
       } catch { storage.removeItem(SESSION_KEY); session = null; }
     }
-    if (!session) return status();
+    if (!session) return await automaticSignIn(expected) || emit({ signedIn: false, status: 'signed-out', accountId: null, account: null, error: null });
     emit({ status: 'restoring' });
-    const data = await dispatch(operations.load, {}, expected, null); guard(expected);
+    let data;
+    try { data = await dispatch(operations.load, {}, expected, platformEntry.accountId());guard(expected); }
+    catch (error) {
+      guard(expected);
+      if (!platformEntry.accountId() || ![...AUTH_ERRORS, 'ACCOUNT_CHANGED'].includes(error.code)) throw error;
+      session = null;storage.removeItem(SESSION_KEY);
+      const redirected = await automaticSignIn(expected);if (redirected) return redirected;
+      platformEntry.assertAccount(null);throw error;
+    }
+    platformEntry.assertAccount(data.accountId);platformEntry.stop();
     return emit({ signedIn: true, status: 'signed-in', accountId: data.accountId, account: { synk_user_id: data.accountId, display_name: '' }, error: null });
+  }
+  async function automaticSignIn(expected) {
+    if (!platformEntry.beginAttempt()) return null;
+    emit({ signedIn: false, accountId: null, account: null, status: 'signing-in', error: null });
+    const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI });guard(expected);
+    automaticNavigations++;navigate(url);return status();
   }
   async function start() {
     if (disposed) throw fault('ACCOUNT_CHANGED', '계정 연결이 종료됐어요.');
-    if (!starting) { const expected = epoch; starting = begin().catch(error => { if (!disposed && expected === epoch) return clearSession(error, 'error'); return status(); }); }
-    return starting;
+    if (starting) return starting;
+    if (started && !snapshot.error?.retryable) return status();
+    started = true;
+    const expected = epoch;
+    emit({ status: 'restoring', error: null });
+    const operation = begin().catch(error => {
+      if (disposed || expected !== epoch) return status();
+      // A temporary read failure does not revoke a valid login. Keep credentials
+      // private, but publish no identity or write capability before verification.
+      if (!native && error.retryable === true && !AUTH_ERRORS.has(error.code) && error.code !== 'ACCOUNT_CHANGED')
+        return emit({ signedIn: false, accountId: null, account: null, status: 'error', error: publicError(error) });
+      return clearSession(error, 'error');
+    });
+    starting = operation;
+    try { return await operation; } finally { if (starting === operation) starting = null; }
   }
   async function signIn() {
+    const intent = ++loginIntent;
+    const before = automaticNavigations;
     await start();
+    if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
+    if (snapshot.signedIn || automaticNavigations !== before) return status();
+    if (native && snapshot.error?.retryable) {
+      // authStatus is read-only; load asks main to retry its private saved token.
+      // authSignIn would discard that token and start a new OAuth transaction.
+      let result;
+      try { result = await bridgeRequest.call(bridge, 'load', {}); }
+      catch { result = { ok: false, error: { code: 'NETWORK', message: '계정 연결을 다시 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.', retryable: true } }; }
+      if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
+      const source = await bridge.authStatus();
+      if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
+      await nativeStatus(source);
+      if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
+      if (snapshot.signedIn) return status();
+      const error = snapshot.error || result?.error || { code: 'AUTH_REQUIRED', message: '저장된 로그인을 확인하지 못했어요. SYNK ID로 다시 로그인해 주세요.', retryable: false };
+      if (!snapshot.error) emit({ signedIn: false, accountId: null, account: null, status: 'error', error: publicError(error) });
+      throw Object.assign(new Error(error.message), error);
+    }
+    if (snapshot.error?.retryable) throw Object.assign(new Error(snapshot.error.message), snapshot.error);
     if (!snapshot.configured) throw fault('AUTH_CONFIG', 'SYNK ID 연결 설정을 준비하고 있어요. 지금은 이 기기의 수첩을 사용할 수 있어요.');
-    if (native) { const result = await bridge.authSignIn(); if (result?.ok === false) throw Object.assign(new Error(result.error?.message), result.error); return nativeStatus(result); }
+    if (native) { const result = await bridge.authSignIn(); if (disposed || intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.'); if (result?.ok === false) throw Object.assign(new Error(result.error?.message), result.error); return nativeStatus(result); }
     const expected = epoch;
+    platformEntry.resume();
     const url = await core.beginOAuth({ config, product: clientKey, storage, now: now(), cryptoAPI }); guard(expected);
+    if (intent !== loginIntent) throw fault('ACCOUNT_CHANGED', '계정 연결이 바뀌었어요.');
     emit({ status: 'signing-in', error: null }); navigate(url); return status();
   }
   async function signOut() {
-    const old = session; clearSession();
+    loginIntent++;
+    let entryError;try { platformEntry?.cancel(); } catch (error) { entryError = error; }
+    const old = session; clearSession(entryError);
     if (native) { const result = await bridge.authSignOut(); await nativeStatus(await bridge.authStatus()); return result; }
     let serverSessionRevoked = !old, refreshRevoked = !old;
     if (old?.access_token && config) {
@@ -236,9 +311,17 @@ export function createProductAccount({
       try {
         const loaded = await send(accountUrl, old.access_token);
         const current = loaded.data?.sessions?.find(item => item.current && !item.revoked);
-        if (current?.id) { const revoked = await send(accountUrl, old.access_token, { action: 'revoke-session', session_id: current.id }); serverSessionRevoked = revoked.response.ok && revoked.data?.ok === true; }
+        if (current?.id) {
+          const revoked = await send(accountUrl, old.access_token, { action: 'revoke-session', session_id: current.id });
+          serverSessionRevoked = revoked.response.ok && revoked.data?.ok === true;
+          // The central service may already revoke this provider session.
+          // Keep its explicit current-session confirmation instead of logging out twice.
+          refreshRevoked = serverSessionRevoked && revoked.data.current === true && revoked.data.refreshRevoked === true;
+        }
       } catch { /* 로컬 로그인은 먼저 종료했다. 서버 종료 상태는 반환값으로 구분한다. */ }
-      try { const result = await send(new URL('/auth/v1/logout?scope=local', config.supabaseUrl).href, old.access_token, {}, { logout: true }); refreshRevoked = result.response.ok || result.response.status === 404 || serverSessionRevoked && result.response.status === 401; } catch {}
+      if (!refreshRevoked) {
+        try { const result = await send(new URL('/auth/v1/logout?scope=local', config.supabaseUrl).href, old.access_token, {}, { logout: true }); refreshRevoked = result.response.ok || result.response.status === 404 || serverSessionRevoked && result.response.status === 401; } catch {}
+      }
     }
     return { ok: !snapshot.error, status: status(), serverRevoked: serverSessionRevoked && refreshRevoked, serverSessionRevoked, refreshRevoked };
   }
@@ -279,6 +362,6 @@ export function createProductAccount({
       return { ok: true, scope: data.scope, accountId: ownerId, enabled: data.enabled, hour: data.hour, minute: data.minute, timeZone: data.timeZone, publicKey: data.publicKey, ...(typeof data.deviceId === 'string' ? { deviceId: data.deviceId } : {}) };
     } catch (error) { if (expected === epoch && (AUTH_ERRORS.has(error.code) || error.code === 'ACCOUNT_CHANGED')) clearSession(error); throw error; }
   }
-  function dispose() { disposed = true; epoch++; session = null; nativeIdentity = null; unsubscribe?.(); stopRequests(); }
+  function dispose() { disposed = true; epoch++; loginIntent++; session = null; pendingExchange = null; nativeIdentity = null; unsubscribe?.(); stopRequests(); }
   return Object.freeze({ start, status, signIn, signOut, request, requestPush, dispose });
 }

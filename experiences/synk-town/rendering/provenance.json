@@ -1,0 +1,66 @@
+{
+  "license": "MIT",
+  "source": "Existing local Three.js addons",
+  "changes": [
+    "Local imports rebased to same r180 renderer",
+    "SSAO disposal releases shader and noise texture",
+    "Sprites, lines and transparent overlays excluded from AO normals"
+  ],
+  "files": [
+    {
+      "file": "Pass.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/Pass.js",
+      "sourceSha256": "444b409c235ead986893c472e720da1b779a56985c7d10b279c7944b52bd61c5"
+    },
+    {
+      "file": "RenderPass.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/RenderPass.js",
+      "sourceSha256": "fd91229aacc5830e3984b0f2bdefcf566163ea028f4c1f1ab233fa6665a133ac"
+    },
+    {
+      "file": "EffectComposer.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/EffectComposer.js",
+      "sourceSha256": "4b8c855f28eed2570bed898adc0ab89c585a8a281ecb6d905c09d00697f9f50a"
+    },
+    {
+      "file": "ShaderPass.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/ShaderPass.js",
+      "sourceSha256": "e2500a5913b26bbf5148ceaae644c6edcff06a18b01494ee37bf856353d2ab9d"
+    },
+    {
+      "file": "MaskPass.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/MaskPass.js",
+      "sourceSha256": "7cd08eee9d5d6f5578beaddbdcbe9c384f6873810af27f22ab7db3ceeb127aa3"
+    },
+    {
+      "file": "OutputPass.js",
+      "source": "experiences/20260909/pulse/vendor/addons/postprocessing/OutputPass.js",
+      "sourceSha256": "f5b81c96e76b6b28b4b3ba8c41c4aeb982b1e03f3d82883242d951b2ab082fa2"
+    },
+    {
+      "file": "CopyShader.js",
+      "source": "experiences/20260909/pulse/vendor/addons/shaders/CopyShader.js",
+      "sourceSha256": "a33057d5ac91c43304c186ac0e8816e62bb2ed471d3a00ff3018dfd5c0389718"
+    },
+    {
+      "file": "OutputShader.js",
+      "source": "experiences/20260909/pulse/vendor/addons/shaders/OutputShader.js",
+      "sourceSha256": "353479f77a8d7e2629d49ccac9fc2f5dbfdda5442e0adf867b00377a2fcb0cb2"
+    },
+    {
+      "file": "SSAOPass.js",
+      "source": "experiences/20260909/pulse/scene-assets/ssao/SSAOPass.js",
+      "sourceSha256": "8a5b6b9bf93c28b00eab09485b515f677501c49f47b5179655a929a80b108c44"
+    },
+    {
+      "file": "SSAOShader.js",
+      "source": "experiences/20260909/pulse/scene-assets/ssao/SSAOShader.js",
+      "sourceSha256": "57ec7cc10ad3b6a8aafa97be21eca12972c5597ebc3023de1b37102a56c6b23b"
+    },
+    {
+      "file": "SimplexNoise.js",
+      "source": "experiences/20260909/pulse/scene-assets/ssao/SimplexNoise.js",
+      "sourceSha256": "dd1f3c42c1bc9fa1b76c1c0796d352521accf0a3a95cc7d0caf479abc5a444a2"
+    }
+  ]
+}

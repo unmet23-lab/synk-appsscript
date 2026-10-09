@@ -11,6 +11,7 @@ export const REASON_WORDS = { culture: '드라마·음악·웹툰', travel: '한
 // names none. These links are a draft for teacher review. `slug` is the same game's folder under
 // synk.im/try/, where it stays published without a link from the site (2026-10-05).
 export const WORLD_GAMES = Object.freeze([
+  { path: 'learning-hub', slug: 'learning-hub', label: '모든 미니게임과 상점', situations: [] },
   { path: 'korean-racing', slug: 'racing', label: '한국어 레이싱', situations: [] },
   { path: 'korean-runner', slug: 'runner', label: '바람길', situations: ['sit-travel-directions', 'sit-work-instructions'] },
   { path: 'korean-rhythm', slug: 'rhythm', label: '한국어 리듬', situations: [] },

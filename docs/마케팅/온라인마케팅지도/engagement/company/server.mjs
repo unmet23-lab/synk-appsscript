@@ -43,6 +43,7 @@ import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
 import { createCustomerIdentity, customerIdentityConfig } from './customer-identity.mjs';
 import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
 import { createCustomerRoutes } from './customer-routes.mjs';
+import { createTeachingService, teachingServiceConfig } from './teaching-service.mjs';
 
 // This service also loads Domain. Wait until the interpretation runtime has
 // observed its source through the static service dependency before sharing it.
@@ -91,6 +92,7 @@ export function createCompanyApp(options={}) {
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
   let messenger,clientNotifications;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
+  const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
   messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
@@ -398,6 +400,21 @@ export function createCompanyApp(options={}) {
   const server=createServer(async(req,res)=>{try{
     if(req.headers.host!==originUrl.host&&!(options.allowTestHost&&req.headers.host?.startsWith('127.0.0.1:')))throw httpError('등록된 회사 주소로 접속해 주세요.',403);
     const url=new URL(req.url,origin),path=url.pathname,method=req.method;
+    // WORLD teaching is a separate capability. Its cookie never creates or
+    // substitutes the employee cookie used by the company APIs below.
+    if(path.startsWith('/api/teaching/')){
+      if(method==='GET'&&path==='/api/teaching/callback'){
+        try{await teaching.callback(req,res,url);res.writeHead(302,{Location:'/?tab=teaching&teachingConnected=1','Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
+        catch(error){res.writeHead(302,{Location:'/?tab=teaching&teachingError='+encodeURIComponent(error.code||'TEACHING_AUTH_REQUIRED'),'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
+      }
+      if(method==='GET'&&path==='/api/teaching/status')return send(res,200,await teaching.status(req,res));
+      if(method==='POST'&&['/api/teaching/start','/api/teaching/cancel','/api/teaching/logout','/api/teaching/request'].includes(path)){
+        const input=await body(req,{maxBytes:40000,maxChars:12000});
+        const operation=path.slice('/api/teaching/'.length);
+        return send(res,200,operation==='request'?await teaching.request(req,input):await teaching[operation](req,res));
+      }
+      throw httpError('수업 요청을 찾을 수 없습니다.',404);
+    }
     // Customer capabilities never create a staff session or grant workspace access.
     if(path.startsWith('/pulse/api/')){
       const customerToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_session=([A-Za-z0-9_-]+)/)?.[1];
@@ -432,7 +449,7 @@ export function createCompanyApp(options={}) {
     if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
-    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,needsSetup:store.all('users').length===0,platformUrl});
+    if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
     if(path==='/api/device-notifications'||path.startsWith('/api/device-notifications/')){
       if(!auth)throw httpError('회사 계정으로 로그인해 주세요.',401);
       if(url.search)throw httpError('기기 알림 주소를 확인해 주세요.');
@@ -780,6 +797,15 @@ export function createCompanyApp(options={}) {
     }
     const files={'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
+    Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
+    if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}
+    files['/teacher-world/']=['../../../../../experiences/teacher-world/index.html','text/html; charset=utf-8'];
+    for(const file of ['app.mjs','personalization-ui.mjs','style.css','personalization.css','workspace-overview.css','workspace-overview.mjs','sharing-fence.mjs'])files['/teacher-world/'+file]=['../../../../../experiences/teacher-world/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    const teacherAssets=['app-world.png','synk-logo.svg','sticker-book.webp','sticker-person.webp','SUIT-Variable.woff2','InterTight-700.woff2','DMMono-Medium.ttf','slab-cream-long.webp','slab-coral-long.webp','chip-blush-long.webp','thread-shift.webp','badge-cream.webp','badge-check.webp','wide-coral.webp','wide-butter.webp'];
+    for(const file of teacherAssets){const type=file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':file.endsWith('.svg')?'image/svg+xml':file.endsWith('.png')?'image/png':'image/webp';files['/teacher-world/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,type];}
+    // Existing teacher CSS has these fixed absolute image paths. No directory
+    // traversal, model, data file or wider assets directory is exposed.
+    for(const file of ['wide-coral.webp','slab-cream-long.webp','chip-blush-long.webp','badge-cream.webp'])files['/assets/'+file]=['../../../../../experiences/teacher-world/assets/'+file,'image/webp'];
     if(path==='/consultation'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/consultation/'});return res.end();}
     files['/consultation/']=['public/customer-computer.html','text/html; charset=utf-8'];
     for(const file of ['customer-computer.js','customer-computer-state.mjs','customer-computer.css'])files['/consultation/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
@@ -833,9 +859,9 @@ export function createCompanyApp(options={}) {
     files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
     files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
-    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();return await respondStatic(req,res,{path:join(here,file),type,headers:responseHeaders(type)});}
+    if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
-  }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&/^SYNK_[A-Z0-9_]{1,80}$/.test(e.code)?{code:e.code}:{})});}});
+  }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
     return new Promise((resolve,reject)=>{
       const failed=error=>{listener.off('listening',started);reject(error);};
@@ -844,12 +870,12 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);synkIdentity.close();customerIdentity.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);const identityStopped=synkIdentity.close(),teachingStopped=teaching.close();customerIdentity.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([identityStopped,teachingStopped,queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
-      try{await messenger.close();}finally{store.close();}
+      try{await messenger.close();}finally{synkIdentity.dispose();teaching.dispose();store.close();}
     })();
     return shutdownTask;
   }

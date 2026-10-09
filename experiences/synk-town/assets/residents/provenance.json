@@ -1,0 +1,59 @@
+{
+  "version": 2,
+  "createdAt": "2026-10-08T21:19:17.287Z",
+  "method": "Actual transparent Three.js renders from local procedural resident meshes; no image generation, image editing, paid API, or downloads.",
+  "generator": "node experiences/synk-town/qa-residents-ui.cjs --portraits-only --output-dir qa/graphics-v3/residents",
+  "source": "experiences/synk-town/day-residents.mjs",
+  "sourceSha256": "10c15fe70c173ef48f99a77db1e145e358d6e5a188ddf84ce849b111942a73aa",
+  "reference": {
+    "path": "docs/캐릭터/교수연구실/research.png",
+    "sha256": "d874a8fd3e84ea442676fac1784865980f32a0ae4be4bed94e312e2b758d71f1",
+    "usage": "Researcher form reference only, original unchanged. Not an approved 3D master or same-person casting claim."
+  },
+  "assets": [
+    {
+      "id": "cafe-owner",
+      "path": "experiences/synk-town/assets/residents/cafe-owner.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "456a0a2b1f1f8fa97f3568c546679d32cbb89bb1d5cfe9869f51e4b8f48b49a6"
+    },
+    {
+      "id": "workshop-owner",
+      "path": "experiences/synk-town/assets/residents/workshop-owner.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "8faa0d4aab4b1e517ecc68ed4af3f671d1f841092d66dc9adbdf551e35499269"
+    },
+    {
+      "id": "researcher",
+      "path": "experiences/synk-town/assets/residents/researcher.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "c2808c3c0911f128b73f404c7b88d4cca36645d2d36ff1deb217fba87185a80d"
+    },
+    {
+      "id": "visitor-tea-reader",
+      "path": "experiences/synk-town/assets/residents/visitor-tea-reader.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "b322c306f375bd7a6141b13e0d5014102c18db1387edbc194b1fbe112b9af7b2"
+    },
+    {
+      "id": "book-guest",
+      "path": "experiences/synk-town/assets/residents/book-guest.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "aa36c1715153e3a474bd38b0cee14cb84d6e13d19f9d70a6f8a4a4880ba6ef6d"
+    },
+    {
+      "id": "companion",
+      "path": "experiences/synk-town/assets/residents/companion.png",
+      "width": 512,
+      "height": 640,
+      "sha256": "07919f375cff0801ad11d294da0e98a8740bb5fdfff0dfee10dbf6303a6ab2aa"
+    }
+  ],
+  "captureMethod": "qa-residents-ui.cjs with --portraits-only --output-dir qa/graphics-v3/residents",
+  "verification": "experiences/synk-town/qa/graphics-v3/residents/RESIDENTS-portraits.json"
+}

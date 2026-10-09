@@ -69,7 +69,7 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     }
     const { response, data } = result;
     if (!response.ok || data?.ok !== true) {
-      const code = data?.error?.code || (response.status === 401 ? 'AUTH_REQUIRED' : 'ACCOUNT_UNAVAILABLE');
+      const code = data?.error?.code || (response.status === 401 ? 'AUTH_REQUIRED' : response.status === 429 || response.status >= 500 ? 'SERVICE_UNAVAILABLE' : 'ACCOUNT_UNAVAILABLE');
       throw fault(code,
         messages[code] || (data?.error?.message !== code && data?.error?.message) || '계정 정보를 불러오지 못했어요. 잠시 뒤 다시 시도해 주세요.',
         response.status === 429 || response.status >= 500,
@@ -78,9 +78,28 @@ function createAccountClient({ url, anonKey, product, appVersion = '0.2.0', getA
     return data;
   }
   const action = (action, values = {}, options) => request('synk-account', { action, ...values }, options);
+  const play = async body => {
+    if (product !== 'world') throw fault('PRODUCT_FORBIDDEN', 'WORLD 계정으로 게임 기록을 연결해 주세요.');
+    const data = await request('synk-play', body);
+    if (data.scope !== 'synk-play' || typeof data.accountId !== 'string' || !data.accountId || !Number.isSafeInteger(data.revision) || data.revision < 0
+      || !data.state || typeof data.state !== 'object' || !data.state.wallet || typeof data.state.wallet !== 'object' || !data.state.records || typeof data.state.records !== 'object' || typeof data.state.imported !== 'boolean') throw fault('INVALID_RESPONSE', '게임 계정 기록을 확인하지 못했어요. 다시 연결해 주세요.');
+    // The account host validates the owner and product schema. Expose only the
+    // fixed response contract, never server-added credentials or transport data.
+    return { ok: true, scope: data.scope, accountId: data.accountId, revision: data.revision, state: data.state,
+      ...(Object.hasOwn(data, 'result') ? { result: data.result } : {}), ...(data.duplicate === true ? { duplicate: true } : {}) };
+  };
   return Object.freeze({
     configured, product,
+    play: Object.freeze({ load: () => play(), mutate: body => {
+      if (!body || typeof body !== 'object' || Array.isArray(body)) return Promise.reject(fault('INVALID_REQUEST', '게임 저장 요청을 확인해 주세요.'));
+      return play(body);
+    } }),
     load: () => request('synk-account'),
+    wardrobeLoad: () => request('synk-wardrobe'),
+    wardrobeSave: values => request('synk-wardrobe', { action: 'save', ...values }),
+    platformLoad: () => request('synk-personal?resource=platform-library'),
+    platformSave: ({state,expected_revision}) => request('synk-personal', {resource:'platform-library',action:'save',state,expected_revision}),
+    platformDelete: ({expected_revision}) => request('synk-personal', {resource:'platform-library',action:'delete',expected_revision}),
     release: () => request(`release-policy?app_version=${encodeURIComponent(appVersion)}`),
     setLearning: (enabled, expected_revision) => action('learning-consent', { enabled, expected_revision }),
     updateProfile: (profile, expected_profile_revision) => action('profile-update', { profile, expected_profile_revision }),

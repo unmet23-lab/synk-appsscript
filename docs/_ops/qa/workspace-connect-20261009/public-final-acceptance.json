@@ -1,0 +1,45 @@
+{
+  "completedAt": "2026-10-09T19:09:07.172Z",
+  "status": "production-published-and-verified",
+  "origin": "https://synk.im",
+  "commit": "4c6a365eb5e4df8acb4379adc380bfb1a2093e4d",
+  "portalCommit": "24c67ceb7a3df60eb29340f1d9c89d06c7f7cf47",
+  "runtimeCommit": "16e602a612a3f7005b57da94b9b6d8c64232f563",
+  "metadataCommit": "4c6a365eb5e4df8acb4379adc380bfb1a2093e4d",
+  "preservedConcurrentLabCommit": "00f9f969af76a4c6bd2370abf1c392546cc45679",
+  "payload": {
+    "world": 536,
+    "linkedTown": 27,
+    "account": 47,
+    "portal": 1,
+    "total": 611
+  },
+  "publicVerification": {
+    "priorAll612Matched": true,
+    "unchangedFiles": 601,
+    "changedFilesExact": 10,
+    "removedPaths404": 2,
+    "method": "Baseline all612 live hashes plus exact unchanged Git payload and latest10 changed hashes/2 removed routes; not a second full611 network download."
+  },
+  "pages": {
+    "conclusion": "success",
+    "headSha": "4c6a365eb5e4df8acb4379adc380bfb1a2093e4d",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37976675753"
+  },
+  "siteCheck": {
+    "conclusion": "success",
+    "headSha": "4c6a365eb5e4df8acb4379adc380bfb1a2093e4d",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/37976675625"
+  },
+  "officialPublicRepairReview": ".tmp/workspace-connect-20261009/world-metadata-repair-v2/official-review/completed.json",
+  "audioFramesUnchanged": true,
+  "realStudentLogin": false,
+  "evidence": [
+    ".tmp/workspace-connect-20261009/operations-read/public-live-1791569197994.json",
+    ".tmp/workspace-connect-20261009/operations-read/public-large-files-retry.json",
+    ".tmp/workspace-connect-20261009/operations-read/public-metadata-staged.json",
+    ".tmp/workspace-connect-20261009/operations-read/public-metadata-live.json"
+  ]
+}

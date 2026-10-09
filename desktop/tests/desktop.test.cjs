@@ -67,6 +67,14 @@ test('JSON exports allow known filenames from own origin while executable downlo
   assert.equal(allowedDownload(request),true);
   for(const bad of [{mime:'application/octet-stream'},{filename:'payload.exe'},{size:33554433},{url:'blob:https://evil.invalid/synthetic'},{sourceUrl:'http://127.0.0.1:4280/korean-racing/'}])assert.equal(allowedDownload({...request,...bad}),false);
 });
+
+test('platform can open only the exact public care entry without sharing its native session',()=>{
+  const entry='synk-desktop://platform/index.html';
+  for(const mode of ['development','release'])assert.equal(externalDestination('https://synk.im/care/',entry,'platform',mode),'https://synk.im/care/');
+  for(const clientId of ['world','messenger'])assert.equal(externalDestination('https://synk.im/care/',entry,clientId,'release'),null);
+  for(const url of ['http://synk.im/care/','https://synk.im/care/?token=secret','https://synk.im/care/#token','https://user:secret@synk.im/care/','https://synk.im.evil.invalid/care/','https://synk.im/care/other','https://synk.im/care/../id/','https://synk.im:444/care/'])assert.equal(externalDestination(url,entry,'platform','release'),null,url);
+  assert.equal(allowedNavigation('https://synk.im/care/',entry,'platform'),false);
+});
 test('CSP allows same-origin game frames and the exact Three import map while top-level embedding stays blocked',()=>{
   assert.match(contentSecurityPolicy('mainFrame'),/frame-ancestors 'none'/);assert.match(contentSecurityPolicy('subFrame'),/frame-ancestors 'self'/);
   const importMap=require('node:fs').readFileSync(path.resolve(__dirname,'../../experiences/korean-racing/index.html'),'utf8').match(/<script type="importmap">([^<]+)<\/script>/)[1];

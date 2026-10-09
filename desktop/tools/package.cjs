@@ -1,7 +1,7 @@
 'use strict';
 const fs=require('node:fs'),path=require('node:path');
 const {build,Platform,Arch}=require('electron-builder');
-const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity}=require('../src/catalog.cjs');
+const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,identity}=require('../src/catalog.cjs');
 const {safeEntry,inside}=require('../src/security.cjs');
 const {configuration}=require('../src/auth-config.cjs');
 const root=path.resolve(__dirname,'..');
@@ -37,8 +37,14 @@ function configFor(id,{mode='development',platform='win32',arch='x64'}={}) {
     publish:null,
   };
 }
+function previewEntry(id,options={}){
+  const flag=options.messengerCloudPreview;
+  if(flag!==undefined&&flag!==true)throw Error('Messenger cloud preview requires an explicit true flag.');
+  if(flag===true){if(options.mode!=='development'||id!=='messenger')throw Error('Cloud preview is restricted to the Messenger development client.');return MESSENGER_CLOUD_PREVIEW_ENTRY;}
+  return DEV_URLS[id];
+}
 function prepare(id,options){
-  const config=configFor(id,options),c=identity(id,options.mode);let entry=DEV_URLS[id],releases=[],auth=null;
+  const config=configFor(id,options),c=identity(id,options.mode);let entry=previewEntry(id,options),releases=[],auth=null;
   if(id==='platform'&&['index.html','launcher.mjs','launcher.css'].some(file=>!fs.existsSync(path.join(root,'renderer',file))))throw Error('The native platform renderer must be built before packaging.');
   if(options.authConfig){auth=JSON.parse(fs.readFileSync(options.authConfig,'utf8'));configuration(auth,id,options.mode);}
   if(options.mode==='development'&&id==='platform')releases=previewReleases(options);
@@ -47,7 +53,7 @@ function prepare(id,options){
     const release=JSON.parse(fs.readFileSync(options.releaseConfig,'utf8'));entry=id==='platform'?PLATFORM_ENTRY:release.entries?.[id];releases=release.releases||[];
     if(release.version!==1||release.approved!==true)throw Error('Release configuration is not approved.');
   }
-  if(!safeEntry(entry,options.mode))throw Error('Invalid entry URL for '+id);
+  if(!safeEntry(entry,options.mode,{clientId:id,messengerCloudPreview:options.messengerCloudPreview}))throw Error('Invalid entry URL for '+id);
   const stageRoot=path.resolve(root,'.stage'),stage=path.resolve(config.directories.app);
   if(!inside(stageRoot,stage))throw Error('Invalid staging directory');
   fs.rmSync(stage,{recursive:true,force:true});
@@ -58,15 +64,20 @@ function prepare(id,options){
     config.extraResources.push({from:installer,to:'clients/'+release.installer.relativePath});
   }
   const version=require('../package.json').version;
-  fs.writeFileSync(path.join(config.directories.app,'package.json'),JSON.stringify({name:'synk-'+id+(options.mode==='development'?'-preview':''),version,description:'SYNK '+id+' desktop client',author:'SYNK',main:'src/main.cjs'},null,2));
-  fs.writeFileSync(path.join(config.directories.app,'runtime.json'),JSON.stringify({clientId:id,mode:options.mode,entry,releases,auth},null,2));
+  fs.writeFileSync(path.join(config.directories.app,'package.json'),JSON.stringify({name:'synk-'+id+(options.mode==='development'?'-preview':''),version,description:identity(id,options.mode).name+' desktop client',author:'SYNK',main:'src/main.cjs'},null,2));
+  fs.writeFileSync(path.join(config.directories.app,'runtime.json'),JSON.stringify({clientId:id,mode:options.mode,entry,...(options.messengerCloudPreview?{messengerCloudPreview:true}:{}),releases,auth},null,2));
   fs.writeFileSync(path.join(config.directories.app,'synk-install.json'),JSON.stringify({clientId:id,mode:options.mode,appId:c.appId,version,arch:options.arch,platform:options.platform,sourceHash:sourceHash()},null,2));
   return config;
 }
-async function main(args=process.argv.slice(2)) {
-  const allowed=['mode','platform','arch','client','release-config','auth-config','dir'];const options={mode:'development',platform:process.platform,arch:process.arch};
-  for(const arg of args){const m=/^--([a-z-]+)=(.+)$/.exec(arg);if(!m||!allowed.includes(m[1]))throw Error('Unknown argument');options[m[1]==='release-config'?'releaseConfig':m[1]==='auth-config'?'authConfig':m[1]]=m[2];}
+function parseOptions(args) {
+  const allowed=['mode','platform','arch','client','release-config','auth-config','dir','messenger-cloud-preview'];const options={mode:'development',platform:process.platform,arch:process.arch};
+  for(const arg of args){const m=/^--([a-z-]+)=(.+)$/.exec(arg);if(!m||!allowed.includes(m[1]))throw Error('Unknown argument');options[m[1]==='release-config'?'releaseConfig':m[1]==='auth-config'?'authConfig':m[1]==='messenger-cloud-preview'?'messengerCloudPreview':m[1]]=m[2];}
   if(!['development','release'].includes(options.mode)||!['win32','darwin'].includes(options.platform)||!['x64','arm64'].includes(options.arch))throw Error('Unsupported build target');
+  if(options.messengerCloudPreview!==undefined){if(options.messengerCloudPreview!=='true'||options.mode!=='development'||options.client!=='messenger')throw Error('Use --client=messenger --mode=development --messenger-cloud-preview=true.');options.messengerCloudPreview=true;}
+  return options;
+}
+async function main(args=process.argv.slice(2)) {
+  const options=parseOptions(args);
   if(options.platform==='darwin'&&process.platform!=='darwin'&&options.dir!=='true')throw Error('Create Mac DMG/ZIP installers on macOS; this host can only prepare an unsigned .app directory.');
   const ids=options.client?[options.client]:['world','messenger','platform'];
   const electronVersion=require('../package.json').devDependencies.electron;
@@ -76,4 +87,4 @@ async function main(args=process.argv.slice(2)) {
   }
 }
 if(require.main===module)main().catch(error=>{process.stderr.write(error.message+'\n');process.exitCode=1;});
-module.exports={configFor,prepare};
+module.exports={configFor,prepare,previewEntry,parseOptions};

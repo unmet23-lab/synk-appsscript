@@ -1,5 +1,8 @@
 'use strict';
-const fs=require('node:fs/promises'),path=require('node:path'),crypto=require('node:crypto');
+// Installed archives are physical files. Electron's patched fs treats .asar as
+// a virtual directory and returns ENOENT when hashing the archive itself.
+const fs=process.versions.electron?require('original-fs').promises:require('node:fs/promises');
+const path=require('node:path'),crypto=require('node:crypto');
 const {CLIENTS,identity}=require('./catalog.cjs');
 const {inside}=require('./security.cjs');
 const {releasesFor,compareVersions}=require('./release-catalog.cjs');

@@ -8,10 +8,10 @@ test('teacher preview remains separate from the three installed release clients 
   assert.equal(TEACHER.id,'teacher');assert.equal(TEACHER.entry,'http://127.0.0.1:4280/synk-account/teacher.html');
   assert.equal(TEACHER.sessionScope,'im.synk.teacher.preview');assert.ok(!Object.values(CLIENTS).some(c=>TEACHER.appId.startsWith(c.appId+'.')));
 });
-test('only an unpackaged development platform can launch the fixed separate teacher process with no shell',async()=>{
+test('development platform opens teaching in the fixed Messenger process with no shell',async()=>{
   const {calls,options,service}=fixture();assert.equal(service.available(),true);
-  assert.deepEqual(await service.open('https://evil.invalid/'),{ok:true,preview:true,separateClient:true});
-  assert.equal(calls.length,1);assert.equal(calls[0].exe,options.executable);assert.deepEqual(calls[0].args,[path.join(options.appRoot,'src','teacher-main.cjs'),'--synk-teacher-preview']);assert.equal(calls[0].opts.shell,false);assert.equal(calls[0].opts.detached,true);
+  assert.deepEqual(await service.open('https://evil.invalid/'),{ok:true,preview:true,separateClient:false,clientId:'messenger',view:'teaching'});
+  assert.equal(calls.length,1);assert.equal(calls[0].exe,options.executable);assert.deepEqual(calls[0].args,[path.join(options.appRoot,'src','main.cjs'),'--synk-dev','--client=messenger','--view=teaching']);assert.equal(calls[0].opts.shell,false);assert.equal(calls[0].opts.detached,true);
   for(const change of [{packaged:true},{mode:'release'},{clientId:'world'},{clientId:'messenger'},{clientId:'teacher'}]){const denied=fixture(change);assert.equal(denied.service.available(),false);assert.equal((await denied.service.open()).code,'PREVIEW_DEVELOPMENT_ONLY');assert.equal(denied.calls.length,0);}
   assert.equal(teacherPreviewAvailable({packaged:null,mode:'development',clientId:'platform'}),false);
 });
@@ -46,6 +46,6 @@ test('only the account teacher frame is allowed; local classroom demo stays a se
   for(const url of ['http://127.0.0.1:4280/teacher-world/?account=1','http://127.0.0.1:4280/teacher-world/index.html?account=1']){assert.equal(teacherFrame(url),true);assert.equal(teacherNavigation(url),false);}
   for(const url of ['http://127.0.0.1:4295/','http://127.0.0.1:4280/teacher-world/','http://127.0.0.1:4280/teacher-world/?account=1&account=1','http://127.0.0.1:4280/teacher-world/?account=1&token=hidden','http://127.0.0.1:4280/synk-account/client.html?product=world'])assert.equal(teacherFrame(url),false,url);
 });
-test('platform forwards only its main-process configured public auth file to the separate teacher process',async()=>{
-  const {service,calls}=fixture({authConfigPath:'C:/synthetic/public-auth.json'});await service.open();assert.equal(calls[0].args[2],'--auth-config='+path.resolve('C:/synthetic/public-auth.json'));assert.equal(calls[0].opts.windowsHide,true);
+test('platform forwards only its configured public auth file to Messenger teaching',async()=>{
+  const {service,calls}=fixture({authConfigPath:'C:/synthetic/public-auth.json'});await service.open();assert.equal(calls[0].args[4],'--auth-config='+path.resolve('C:/synthetic/public-auth.json'));assert.equal(calls[0].opts.windowsHide,true);
 });

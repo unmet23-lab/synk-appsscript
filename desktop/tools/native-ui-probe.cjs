@@ -6,20 +6,28 @@ async function probeNativeUI(contents,artifacts){
   const original=await contents.executeJavaScript("localStorage.getItem('synk-launcher-view-v1')");
   const checks=await contents.executeJavaScript(`(async()=>{
     const checks=[],q=s=>document.querySelector(s),check=(name,ok)=>checks.push({name,ok:!!ok});
+    const environment=await window.synkDesktop.getEnvironment(),development=environment.mode==='development'&&environment.clientId==='platform'&&environment.nativeShell===true;
+    // Source development exposes the catalogue for review. Teacher shares the
+    // Workspace card; this does not grant product data or an account session.
+    const expectedApps=development?['world','messenger','path','pulse','care','fortune','rehearsal','family-album']:['world'];
     q('[data-filter="all"]').click();q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));
-    check('guest-only-public-world',document.querySelectorAll('[data-app]').length===1&&!!q('[data-app="world"]'));
-    check('guest-no-staff-or-planned-apps',!q('[data-app="messenger"]')&&!q('[data-app="teacher"]')&&!q('[data-app="studio"]')&&!q('[data-app="pulse"]'));
+    const displayed=[...document.querySelectorAll('#app-list [data-app]')].map(row=>row.dataset.app);
+    check('catalogue-matches-current-runtime',displayed.length===expectedApps.length&&expectedApps.every(id=>displayed.includes(id)));
+    check('retired-and-shared-cards-not-duplicated',!q('[data-app="teacher"]')&&!q('[data-app="studio"]')&&!q('[data-app="shift"]')&&!q('[data-app="partners"]'));
     check('teacher-web-link-hidden',q('#teacher-web-link').hidden);
-    await Promise.all([...document.querySelectorAll('.app-item img')].map(image=>image.decode().catch(()=>{})));check('library-icons-loaded-and-visible',[...document.querySelectorAll('.app-item img')].every(image=>image.complete&&image.naturalWidth>0&&image.getBoundingClientRect().width>=32));
-    q('[data-view="downloads"]').click();check('installation-manager-no-private-apps',!q('#view-downloads').hidden&&q('#view-library').hidden&&!q('#download-list').textContent.includes('Messenger')&&document.querySelectorAll('.download-row').length<=1);
+    const tiles=[...document.querySelectorAll('.app-item .tile')];check('library-marks-render-at-readable-size',tiles.length===expectedApps.length&&tiles.every(tile=>tile.textContent.trim()&&tile.getBoundingClientRect().width>=32&&tile.getBoundingClientRect().height>=32));
+    q('[data-view="downloads"]').click();check('installation-manager-matches-runtime-catalogue',!q('#view-downloads').hidden&&q('#view-library').hidden&&document.querySelectorAll('.download-row').length===(development?2:1));
     q('[data-view="settings"]').click();check('settings-view',!q('#view-settings').hidden&&q('#view-downloads').hidden);
     q('#density').value='compact';q('#density').dispatchEvent(new Event('change',{bubbles:true}));check('density-persisted',document.documentElement.classList.contains('compact')&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).density==='compact');q('#density').value='comfortable';q('#density').dispatchEvent(new Event('change',{bubbles:true}));
-    q('#search').value='메신저';q('#search').dispatchEvent(new Event('input',{bubbles:true}));check('search-cannot-discover-private-apps',document.querySelectorAll('[data-app]').length===0);q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));q('[data-app="world"]').click();
+    q('#search').value='메신저';q('#search').dispatchEvent(new Event('input',{bubbles:true}));check('search-respects-runtime-catalogue',development?document.querySelectorAll('[data-app]').length===1&&!!q('[data-app="messenger"]'):document.querySelectorAll('[data-app]').length===0);q('#search').value='';q('#search').dispatchEvent(new Event('input',{bubbles:true}));q('[data-app="world"]').click();
     const before=q('#favorite').getAttribute('aria-pressed');q('#favorite').click();check('public-world-favorite-persisted',q('#favorite').getAttribute('aria-pressed')!==before&&JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('world')===(before!=='true'));q('#favorite').click();
     q('[data-game="racing"]').click();check('public-content-dialog',q('#content-dialog').open&&q('#content-title').textContent==='한국어 레이싱');q('#content-go-world').click();check('content-dialog-return',!q('#content-dialog').open&&q('#breadcrumb-app').textContent==='SYNK WORLD');
     q('#account-button').click();check('account-dialog',q('#account-dialog').open&&!!q('#account-state').textContent);q('#account-dialog .dialog-close').click();check('account-dialog-close',!q('#account-dialog').open);
-    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));check('search-keyboard-shortcut',document.activeElement===q('#search'));q('#search').blur();await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
-    const rejected=await window.synkDesktop.windowAction('arbitrary-command');check('window-action-allowlist',rejected.code==='INVALID_WINDOW_ACTION');return checks;
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'k',ctrlKey:true,bubbles:true}));check('command-menu-keyboard-shortcut',q('#command-dialog').open&&document.activeElement===q('#command-input'));q('#command-dialog').close();await document.fonts.ready;check('fonts-loaded',document.fonts.status==='loaded');
+    const rejected=await window.synkDesktop.windowAction('arbitrary-command');check('window-action-allowlist',rejected.code==='INVALID_WINDOW_ACTION');
+    const desktop=await window.synkDesktop.getDesktopPreferences();check('desktop-preferences-ipc-ready',desktop.ok===true&&typeof desktop.preferences.closeToTray==='boolean'&&typeof desktop.preferences.zoomFactor==='number'&&desktop.capabilities.globalShortcut===false);
+    const recovery=await window.synkDesktop.draftRecoveryStatus(null);check('smoke-draft-recovery-disabled',recovery.ok===true&&recovery.enabled===false);
+    const diagnostic=await window.synkDesktop.copyPlatformDiagnostics({clients:[]});check('smoke-keeps-user-clipboard-untouched',diagnostic.ok===false&&diagnostic.code==='CLIPBOARD_UNAVAILABLE');return checks;
   })()`);
   for(const [name,script]of [
     ['platform-downloads-hidden-preview.png',"document.querySelector('[data-view=downloads]').click()"],

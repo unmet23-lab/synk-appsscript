@@ -1,10 +1,12 @@
 import * as THREE from './scene-assets/three.module.js';
 import {createAvatarTextiles} from './avatar-textiles.mjs';
+import {createAvatarWardrobe} from './avatar-wardrobe.mjs';
+import {WARDROBE_OUTFITS,slotsForOutfit,outfitForSlots} from './wardrobe-catalog.mjs';
 
 // Shared runtime asset: +Z front, +Y up, foot origin; bounds are exposed by metrics().
 // This remains an authored procedural study, not an approved production master.
 export const AVATAR_VERSION = 'mongle-v3';
-export const AVATAR_OUTFITS = Object.freeze(['none', 'scarf', 'apron', 'scarf-apron']);
+export const AVATAR_OUTFITS = WARDROBE_OUTFITS;
 const TAU = Math.PI * 2;
 const profile = new THREE.CatmullRomCurve3([
   [0,.11],[.86,.12],[.89,.25],[.84,.49],[.815,.83],[.775,1.12],[.68,1.43],[.48,1.69],[.24,1.81],[0,1.845]
@@ -50,8 +52,8 @@ function shortNap(mobile){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('color',new THREE.Float32BufferAttribute(color,3));return new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.085,depthWrite:false}));
 }
 
-export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4}={}){
- const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=createAvatarTextiles({anisotropy}),textures=textile.textures;
+export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4,wardrobeDetail=false}={}){
+ const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=createAvatarTextiles({anisotropy,detailSize:mobile?512:1024}),textures=textile.textures;
  const bodyMaterial=new THREE.MeshPhysicalMaterial({color:'#ee8b76',...textile.fabric('wool',[8.8,3.3]),normalScale:new THREE.Vector2(.46,.46),roughness:1,sheen:.72,sheenRoughness:.92,sheenColor:new THREE.Color('#f4baa7'),vertexColors:true});
  const assetFailures=[];try{
   const felt=await boundedTexture(textureLoader,new URL('./assets/felt-coral.webp',import.meta.url).href);
@@ -103,16 +105,24 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
  const notePoint=(u,v)=>{const p=tail(u,v);p[2]+=.017;return p;};
  tube(scarf,[notePoint(.45,.88),notePoint(.45,.77),notePoint(.60,.75)],.0055,bodyMaterial,false,12);const note=mesh(scarf,new THREE.SphereGeometry(.011,12,8),bodyMaterial);note.position.set(...notePoint(.41,.885));note.scale.set(1.3,.75,.4);
  const footOffset=body.geometry.boundingBox.min.y;for(const child of group.children)child.position.y-=footOffset;const bodyBounds={width:body.geometry.boundingBox.max.x-body.geometry.boundingBox.min.x,height:body.geometry.boundingBox.max.y-footOffset,depth:body.geometry.boundingBox.max.z-body.geometry.boundingBox.min.z};
- let outfit='none',disposed=false;function setOutfit(value){outfit=AVATAR_OUTFITS.includes(value)?value:'none';scarf.visible=outfit.includes('scarf');apron.visible=outfit.includes('apron');
+ const fitProfile=Array.from({length:161},(_,i)=>{const p=profile.getPoint(i/160);return[p.y,p.x];}).sort((a,b)=>a[0]-b[0]);
+ const wardrobe=createAvatarWardrobe({parent:group,textile,footOffset,bodyProfile:fitProfile,mobile,detail:wardrobeDetail});
+ let outfit='none',equipment={body:'',neck:''},disposed=false,pose='neutral';
+ function setOutfit(value){equipment=slotsForOutfit(value);outfit=outfitForSlots(equipment);scarf.visible=false;apron.visible=false;wardrobe.set(equipment);
   const p=body.geometry.attributes.position,c=body.geometry.attributes.color;
   for(let i=0;i<p.count;i++){
    const x=p.getX(i),y=p.getY(i),z=p.getZ(i),front=Math.max(0,z/.75);
    const eyeContact=front*.13*Math.exp(-Math.pow((y-1.282)/.095,2))*(Math.exp(-Math.pow((x-.31)/.098,2))+Math.exp(-Math.pow((x+.31)/.098,2)));
-   const scarfContact=scarf.visible?.10*Math.exp(-Math.pow((y-.89)/.055,2)):0;
-   const apronContact=apron.visible?front*.055*Math.exp(-Math.pow((y-.60)/.34,8))*Math.exp(-Math.pow((Math.abs(x)-.40)/.10,2)):0;
-   const tone=1-eyeContact-scarfContact-apronContact;c.setXYZ(i,tone,tone,tone);
+   const scarfContact=equipment.neck?.07*Math.exp(-Math.pow((y-.98)/.048,2)):0;
+   const apronContact=equipment.body==='mongle-apron-starter'?front*.045*Math.exp(-Math.pow((y-.60)/.34,8))*Math.exp(-Math.pow((Math.abs(x)-.40)/.10,2)):0;
+   const garmentContact=equipment.body?.030*Math.exp(-Math.pow((y-1.04)/.035,2)):0;
+   const tone=1-eyeContact-scarfContact-apronContact-garmentContact;c.setXYZ(i,tone,tone,tone);
   }c.needsUpdate=true;return outfit;}setOutfit('none');
- function update(seconds,{reducedMotion=false,greeting=-1}={}){if(reducedMotion){group.rotation.z=0;group.scale.setScalar(1);return;}const active=greeting>=0&&greeting<1.2;group.rotation.z=active?Math.sin(greeting*TAU/1.2)*.08:Math.sin(seconds*.8)*.004;group.scale.set(1,1+Math.sin(seconds*1.7)*.003,1);}
+ // Mongle has no arms: greeting is a gentle whole-body bow, with the original
+ // geometry and eye placement moving together rather than replacing the face.
+ function applyPose(){group.rotation.x=pose==='wave'?.12:0;group.rotation.z=pose==='tilt'?-.11:pose==='wave'?.035:0;}
+ function setPose(value){pose=['neutral','wave','tilt'].includes(value)?value:'neutral';group.scale.setScalar(1);applyPose();return pose;}
+ function update(seconds,{reducedMotion=false,greeting=-1}={}){applyPose();if(reducedMotion){group.scale.setScalar(1);return;}const active=greeting>=0&&greeting<1.2;group.rotation.z+=active?Math.sin(greeting*TAU/1.2)*.08:Math.sin(seconds*.8)*.004;group.scale.set(1,1+Math.sin(seconds*1.7)*.003,1);}
  function dispose(){if(disposed)return;disposed=true;const geos=new Set(),allMaterials=new Set(materials);group.traverse(o=>{if(o.isInstancedMesh)o.dispose();if(o.geometry)geos.add(o.geometry);if(o.material)allMaterials.add(o.material);});geos.forEach(g=>g.dispose());allMaterials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());group.removeFromParent();}
- return{group,setOutfit,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
+ return{group,setOutfit,setEquipment:setOutfit,setDyes:value=>wardrobe.setDyes(value),getDyes:()=>wardrobe.getDyes(),setPose,getPose:()=>pose,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,wardrobeRevision:6,dyeRevision:1,pose,equipment:{...equipment},dyes:wardrobe.getDyes(),wardrobe:wardrobe.metrics(),outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
 }

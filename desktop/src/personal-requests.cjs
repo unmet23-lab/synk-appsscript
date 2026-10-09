@@ -1,6 +1,6 @@
 'use strict';
-const RESOURCES = Object.freeze(['path', 'rehearsal', 'family-album']);
-const LIMITS = Object.freeze({ path: 64 * 1024, rehearsal: 500000, 'family-album': 32 * 1024 * 1024 });
+const RESOURCES = Object.freeze(['path', 'rehearsal', 'family-album', 'platform-library']);
+const LIMITS = Object.freeze({ path: 64 * 1024, rehearsal: 500000, 'family-album': 32 * 1024 * 1024, 'platform-library':64 * 1024 });
 const MIME = Object.freeze({ image: ['image/jpeg', 'image/png', 'image/webp'], audio: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4'] });
 const MEDIA_LIMITS = Object.freeze({ image: 6 * 1024 * 1024, audio: 8 * 1024 * 1024 });
 const PERSONAL_OPERATIONS = Object.freeze(['personalLoad', 'personalSave', 'personalDelete', 'personalAssetPrepare', 'personalAssetConfirm', 'personalAssetRead', 'personalAssetDelete']);

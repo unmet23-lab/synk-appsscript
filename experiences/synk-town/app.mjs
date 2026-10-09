@@ -24,6 +24,11 @@ let snapshot = null, busy = false, generation = 0, animationFrame = null;
 let assetsReady = false, activePlan = null, animationElapsed = 0;
 let routeHelpVisible = false;
 let presentationComplete = false;
+let actionsSignature = '';
+let lifeUI = null, presence = null, presencePending = null, lifeConnectionFailed = false;
+let presenceTimer = null;
+// A new document gets a new presence identity, including a duplicated tab.
+const surfaceId = crypto.randomUUID();
 
 function place(element, point) {
   if (!element || !Number.isFinite(point?.x) || !Number.isFinite(point?.y)) throw new Error('장면의 자리를 확인할 수 없어요.');
@@ -37,7 +42,7 @@ function actor(name, value) {
   if (name === 'guest') $('guest-bubble').hidden = value.pose !== 'seated';
 }
 function sceneVisible() {
-  if (document.hidden || $('info-dialog').open || $('reading-dialog')?.open) return false;
+  if (document.hidden || $('info-dialog').open || $('reading-dialog')?.open || $('life-dialog')?.open) return false;
   const rect = $('scene').getBoundingClientRect(), dialogue = $('dialogue').getBoundingClientRect();
   // The essential scene and authored reaction must both be on screen for a
   // delivery receipt. Merely setting DOM styles off screen is not a delivery.
@@ -51,10 +56,14 @@ function cancelPresentation() {
 }
 function setBusy(value) {
   busy = value;
+  document.querySelector('.town-layout').setAttribute('aria-busy', String(value));
   for (const button of document.querySelectorAll('#actions button,.review-actions button')) button.disabled = value;
+  lifeUI?.setBusy(value);
 }
 const readingUI = mountUnderstanding({ transport, available: () => !!snapshot });
 function showError(message) {
+  lifeConnectionFailed = true; lifeUI?.invalidate();
+  actionsSignature = '';
   if (transport.linked) { snapshot = null; cancelPresentation(); readingUI.invalidate(); $('actions').replaceChildren(); $('scene').hidden = true; $('dialogue').textContent = '연결 상태를 다시 확인해 주세요.'; $('info-dialog').close(); $('info-content').replaceChildren(); $('material-summary').replaceChildren(); if ($('reading-open')) $('reading-open').disabled = true; }
   $('error').textContent = message; $('error').hidden = false;
   $('retry-button').hidden = false; $('save-status').textContent = '기록을 다시 확인해 주세요.';
@@ -126,7 +135,7 @@ function describeScene(activityText) {
   const description = [location, activityText, sign].filter(Boolean).join(' ');
   if ($('scene').getAttribute('aria-label') !== description) $('scene').setAttribute('aria-label', description);
 }
-function renderScene({ preserveActors = false } = {}) {
+function renderScene({ preserveActors = false, preserveLifeOwner = false } = {}) {
   const { state, view } = snapshot, scene = view.scene;
   const seat = seats[scene.placement] || seats['eaves-left'];
   place($('chair'), seat);
@@ -144,7 +153,7 @@ function renderScene({ preserveActors = false } = {}) {
   if (!preserveActors) {
     $('tea-table').hidden = !scene.teaPlaced;
     actor('guest', scene.guestSeated ? { ...seat, pose: 'seated' } : { x: 15, y: 80, pose: 'idle' });
-    actor('owner', scene.teaPlaced ? { x: Math.min(90, seat.x + 16), y: seat.y + 2, pose: 'serving' } : { x: 42, y: 60, pose: 'idle' });
+    if (!preserveLifeOwner) actor('owner', scene.teaPlaced ? { x: Math.min(90, seat.x + 16), y: seat.y + 2, pose: 'serving' } : { x: 42, y: 60, pose: 'idle' });
     actor('tea', { ...beside, pose: scene.teaPlaced ? 'placed' : 'hidden' });
   }
   $('guest-bubble').textContent = view.planKind === 'sign' || state.activity === 'sign' ? '여기네요' : '편해요';
@@ -168,13 +177,20 @@ function render(data) {
     && (data.state.activity || 'seat') === (snapshot?.state.activity || 'seat');
   if (!keepPresentation) cancelPresentation();
   snapshot = data;
+  lifeConnectionFailed = false;
+  if (data.presence?.surfaceId === surfaceId) presence = data.presence;
   const { state, view } = data;
   $('scope-label').textContent = view.scopeLabel;
   $('speaker').textContent = view.speaker;
   $('dialogue').textContent = view.plan && !presentationComplete ? view.presentationLine || view.line : view.line;
   $('scene-title').textContent = state.activity === 'sign' ? '이 자리로 오세요' : '어디에서 쉴까요?';
   $('visit-label').textContent = state.visit === 1 ? '첫 방문' : `${state.visit}번째 방문`;
-  $('actions').replaceChildren(...view.actions.map(buttonFor));
+  const nextActionsSignature = JSON.stringify([view.actions, state.phase, state.color, state.previewSlot,
+    view.scene.signPreview, state.sign?.draftPicture, state.sign?.draftSlot]);
+  if (nextActionsSignature !== actionsSignature) {
+    actionsSignature = nextActionsSignature;
+    $('actions').replaceChildren(...view.actions.map(buttonFor));
+  }
   $('remove-button').hidden = !view.scene.canopyPlaced || !['ready', 'place'].includes(state.phase);
   $('visit-button').hidden = state.phase !== 'away';
   $('craft-recipe').hidden = state.phase !== 'color' || !state.color;
@@ -186,28 +202,42 @@ function render(data) {
     const span = document.createElement('span'); span.className = 'material'; span.textContent = `${label} ${value}`; inventory.append(span);
   }
   $('save-status').textContent = transport.linked ? '이 학생의 생활 기록에 저장돼요. 생활 행동은 한국어 실력 점수가 아니에요.' : '이 기기의 가상 기록에 저장돼요.';
-  renderScene({ preserveActors: !!keepPresentation }); setBusy(busy);
+  renderScene({ preserveActors: !!keepPresentation,
+    preserveLifeOwner: !!lifeUI && !!data.capabilities?.life && !!view.life && !view.plan && state.phase !== 'away' }); setBusy(busy);
+  lifeUI?.render(data, { presence, allowActors: !view.plan && !activePlan });
   if (view.plan && view.reaction && !keepPresentation) present(view.plan);
 }
 async function command(type, payload = {}) {
-  if (busy || !snapshot) return;
+  if (busy || !snapshot) return false;
   setBusy(true); clearError(); $('save-status').textContent = '기록을 확인하고 있어요…';
-  const request = { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision };
   try {
+    // A heartbeat may already be in flight. Its revision must land before the
+    // user's command is built; the click is not discarded or sent stale.
+    if (presencePending) await presencePending;
+    if (type.startsWith('LIFE_')) {
+      if (transport.linked || !snapshot.capabilities?.life || !presence || lifeConnectionFailed) throw new Error('이웃의 생활 연결을 다시 확인해 주세요.');
+      payload = { ...payload, surfaceId, fence: presence.fence };
+    }
+    const request = { id: crypto.randomUUID(), type, payload, expectedRevision: snapshot.state.revision };
     render(await transport.command({ ...request, sharingRevision: snapshot.sharingRevision }));
+    return true;
   } catch (error) {
     cancelPresentation(); showError(error.message || '연결이 잠깐 끊겼어요. 기록을 다시 확인해요.');
+    return false;
   } finally { setBusy(false); }
 }
 async function load() {
   if (busy) return;
   setBusy(true); clearError();
   try {
+    if (presencePending) await presencePending;
     render(await transport.read());
+    await ensureLifeUI();
   } catch (error) { cancelPresentation(); showError(error.message); }
   finally { setBusy(false); }
 }
 function present(rawPlan) {
+  lifeUI?.releaseActors();
   const mine = generation;
   let plan;
   try { plan = globalThis.LoomLife.createPlan(rawPlan); }
@@ -287,8 +317,10 @@ $('meaning-button').addEventListener('click', () => openInfo('뜻 보기', snaps
   ? ['안내판: 어디로 가는지 알려 주는 그림이에요.', '왼쪽과 오른쪽: 안내판을 놓을 두 자리예요.', '화살표: 내가 만든 자리 쪽을 가리켜요.']
   : ['안: 찻집 지붕 아래예요.', '밖: 찻집 앞의 빈 자리예요.', '옮기기: 같은 물건의 자리를 바꿔요.']));
 $('route-help-button').addEventListener('click', () => { routeHelpVisible = !routeHelpVisible; renderSigns(); });
-$('notebook-button').addEventListener('click', () => openInfo('함께한 일', snapshot?.view.notebook?.length
-  ? snapshot.view.notebook : ['아직 함께한 일이 없어요. 천천히 둘러봐요.']));
+$('notebook-button').addEventListener('click', () => {
+  const lines = snapshot?.view.notebook || [];
+  openInfo('함께한 일', lines.length ? lines : ['아직 함께한 일이 없어요. 천천히 둘러봐요.']);
+});
 $('close-dialog').addEventListener('click', () => $('info-dialog').close());
 $('retry-button').addEventListener('click', async () => {
   try { if (!assetsReady) await prepareAssets(); await load(); } catch (error) { showError(error.message); }
@@ -296,9 +328,9 @@ $('retry-button').addEventListener('click', async () => {
 $('visit-button').addEventListener('click', () => command('VISIT'));
 $('remove-button').addEventListener('click', () => command('REMOVE'));
 $('reset-button').addEventListener('click', () => {
-  if (confirm('이 개발 체험의 가상 기록을 처음부터 다시 시작할까요?')) command('RESET');
+  if (confirm(transport.linked ? '수업에 연결한 이 학생의 타운 생활 기록을 처음부터 다시 시작할까요?' : '이 개발 체험의 가상 기록을 처음부터 다시 시작할까요?')) command('RESET');
 });
-document.addEventListener('visibilitychange', () => { if (document.hidden) $('guest-bubble').hidden = true; });
+document.addEventListener('visibilitychange', () => { if (document.hidden) $('guest-bubble').hidden = true; pulsePresence(); });
 addEventListener('pagehide', cancelPresentation);
 addEventListener('pageshow', event => { if (event.persisted) load(); });
 addEventListener('resize', renderSigns);
@@ -312,10 +344,50 @@ async function prepareAssets() {
   })));
   await document.fonts.ready; assetsReady = true;
 }
-if (!['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)) {
+function presenceFlags() {
+  // Reading and choosing still count as foreground play. Only issuance waits
+  // for a safe boundary; the observation clock above is deliberately separate.
+  const foreground = !document.hidden && assetsReady && !!snapshot && !lifeConnectionFailed;
+  const rect = $('scene').getBoundingClientRect();
+  const visible = rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+  const delivered = snapshot?.state.activity === 'sign' ? snapshot.state.sign?.delivered : snapshot?.state.delivered;
+  const inputActive = document.activeElement?.matches('input,textarea,[contenteditable="true"]');
+  const safe = foreground && visible && snapshot.state.phase === 'ready' && delivered && !snapshot.state.resting
+    && !snapshot.view.plan && !activePlan && !document.querySelector('dialog[open]') && !inputActive;
+  return { surfaceId, foreground, safe: !!safe };
+}
+async function pulsePresence() {
+  if (transport.linked || !lifeUI || !snapshot?.capabilities?.life || busy || presencePending) return;
+  const failed = lifeConnectionFailed;
+  presencePending = (async () => {
+    try {
+      const response = await fetch('/api/preview/presence', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(presenceFlags()), cache: 'no-store' });
+      const data = await response.json();
+      if (!response.ok || !data.state || !data.view || !data.capabilities?.life) throw new Error(data.message || '이웃의 생활 연결을 다시 확인해 주세요.');
+      if (!failed) render(data);
+    } catch (error) { cancelPresentation(); showError(error.message); }
+  })();
+  try { await presencePending; } finally { presencePending = null; }
+}
+async function ensureLifeUI() {
+  if (lifeUI) return;
+  if (!transport.linked && $('life-panel') && snapshot?.capabilities?.life) {
+    const { mountLife } = await import('./life-ui.mjs');
+    lifeUI = mountLife({ command, actor, getSnapshot: () => snapshot, getPresence: () => presence,
+      surfaceId, reducedMotion: () => reduced.matches });
+    render(snapshot);
+    if (presenceTimer === null) presenceTimer = setInterval(pulsePresence, 1000);
+  }
+}
+async function initialize() {
+  await prepareAssets(); await load();
+  await pulsePresence();
+}
+if (!transport.linked && !['127.0.0.1', 'localhost', '[::1]'].includes(location.hostname)) {
   showError('이 개발 체험은 이 기기의 전용 서버에서만 열 수 있어요.');
 } else {
-  prepareAssets().then(load).catch(error => showError(error.message));
+  initialize().catch(error => showError(error.message));
 }
 
 if (transport.linked) setInterval(() => { if (!busy) load(); }, 5000);

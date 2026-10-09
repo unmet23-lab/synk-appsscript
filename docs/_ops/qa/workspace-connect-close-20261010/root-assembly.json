@@ -1,0 +1,446 @@
+{
+  "at": "2026-10-09T20:27:36.712Z",
+  "target": "C:/Users/q1212/.codex/worktrees/workspace-integration-close/SYNK-appsscript",
+  "files": [
+    {
+      "file": "experiences/path-vr/model.mjs",
+      "sha256": "5a03f5982a8ff5658602974f43b6ead599cd64c0fa6bf5e3f1c73bfca033c9a4",
+      "provenance": "experiences/path-vr/model.mjs"
+    },
+    {
+      "file": "experiences/conversation-rehearsal/domain.mjs",
+      "sha256": "6d60f39dad629bd98ab0e2a673410ea59dbd95dffcfaa55aa795a9c39d10dea6",
+      "provenance": "experiences/conversation-rehearsal/domain.mjs"
+    },
+    {
+      "file": "experiences/family-album/model.mjs",
+      "sha256": "4a2ff290570fa2d79a8c7423a5250285dccd5092b291cefe0b158102cb51a49d",
+      "provenance": "experiences/family-album/model.mjs"
+    },
+    {
+      "file": "experiences/path-travel/real-places.mjs",
+      "sha256": "b2008d4c8d4bca9ec992b1ebdf56c3002dcff60b2c9d52f0cfa26c8f2f48a4e5",
+      "provenance": "experiences/path-travel/real-places.mjs"
+    },
+    {
+      "file": "experiences/path-travel/places-v2.mjs",
+      "sha256": "5a536ef94548c7acef01f4e5496c9767cd86a016f479f4edb4de4bb9085180fd",
+      "provenance": "experiences/path-travel/places-v2.mjs"
+    },
+    {
+      "file": "experiences/path-travel/real-conditions.mjs",
+      "sha256": "0b949e9aa13039277982017240769ce591d31e2841c4838369559c1ee63c1435",
+      "provenance": "experiences/path-travel/real-conditions.mjs"
+    },
+    {
+      "file": "atlas/domain.js",
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "provenance": "atlas/domain.js"
+    },
+    {
+      "file": "atlas/travel.js",
+      "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "provenance": "atlas/travel.js"
+    },
+    {
+      "file": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "provenance": "atlas/ask.js"
+    },
+    {
+      "file": "experiences/path-travel/planner.mjs",
+      "sha256": "b0b0ff91245b44e49145c05e25e2594ed6d6b12c0fd4670656b5d59bb464514e",
+      "provenance": "experiences/path-travel/planner.mjs"
+    },
+    {
+      "file": "experiences/path-travel/real-guide.mjs",
+      "sha256": "ee738efe6e5dadd849471fe78f63dd28d2dbc300d54164e2e575290cb6458c0d",
+      "provenance": "experiences/path-travel/real-guide.mjs"
+    },
+    {
+      "file": "atlas/trail-life.js",
+      "sha256": "a2045a196edde3ac986c9c2cdd952db792df7b919efc44c8811710dc777fe552",
+      "provenance": "atlas/trail-life.js"
+    },
+    {
+      "file": "atlas/temper-outcomes.js",
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "provenance": "atlas/temper-outcomes.js"
+    },
+    {
+      "file": "experiences/path-travel/planner-feedback.mjs",
+      "sha256": "ab4f891a852cf82039e635e66f3e233b04d3f82151678b96b9d7aa009b72584e",
+      "provenance": "experiences/path-travel/planner-feedback.mjs"
+    },
+    {
+      "file": "experiences/path-travel/planner-storage.mjs",
+      "sha256": "dccfcbb5b723c0061b2a954b9e417961dc21336f8fefb0deb3d7d86082fa78b1",
+      "provenance": "experiences/path-travel/planner-storage.mjs"
+    },
+    {
+      "file": "experiences/path-travel/planner-account.mjs",
+      "sha256": "d4364cce5903c7172b8dd2635ae1ed596e758e0f601236cbc94d1022b8c33a60",
+      "provenance": "experiences/path-travel/planner-account.mjs"
+    },
+    {
+      "file": "experiences/play-common/account-host.mjs",
+      "sha256": "d604f0fb5ecee5c80844ae3aa1eb12c11990fa1ab81819b0205db374b64c2b86",
+      "provenance": "experiences/play-common/account-host.mjs"
+    },
+    {
+      "file": "experiences/play-common/play-data.mjs",
+      "sha256": "d9ef2439e84198d6b6f5641d126cda48fa0c1b0d66f2205cb8847912d122dbb3",
+      "provenance": "experiences/play-common/play-data.mjs"
+    },
+    {
+      "file": "experiences/korean-racing/garage-core.js",
+      "sha256": "2314ad2e983a0656f22dae1ff818590bb622ca9c4cfc460fac10e35c8a190772",
+      "provenance": "experiences/korean-racing/garage-core.js"
+    },
+    {
+      "file": "experiences/mascot-render-lab/three/character-contract.mjs",
+      "sha256": "bcca1de0da94c2db8d01b2a677aa19eea8e4a0a87dee8803427718f9f58fb066",
+      "provenance": "experiences/mascot-render-lab/three/character-contract.mjs"
+    },
+    {
+      "file": "experiences/korean-racing/beginner-catalog.js",
+      "sha256": "475824940cc6644a3495d55c06145efca5e40c0d36d0315076c2c3094da463c8",
+      "provenance": "experiences/korean-racing/beginner-catalog.js"
+    },
+    {
+      "file": "experiences/korean-racing/play-catalog.js",
+      "sha256": "c8cb4bbf6fb2bdd0136c6327c64ad91bd87e097528bb9f27efc55bd3576168ae",
+      "provenance": "experiences/korean-racing/play-catalog.js"
+    },
+    {
+      "file": "tools/build-world-account.mjs",
+      "sha256": "5fb415978359dcf0a60447adab484417a7ab9a41844350feb21ff51cc8819da1",
+      "provenance": "tools/build-world-account.mjs"
+    },
+    {
+      "file": "tools/build-linked-town-public.mjs",
+      "sha256": "b5e8fcb84a64b8030265e6f2ed015ab37df9474c2d08ef620807022bfed9614b",
+      "provenance": "tools/build-linked-town-public.mjs"
+    },
+    {
+      "file": "tools/build-messenger-teaching.cjs",
+      "sha256": "6afb20596ed906797a696baef19a7d8a1c9efdf7920705365aa6b4c9007f14b2",
+      "provenance": "tools/build-messenger-teaching.cjs"
+    },
+    {
+      "file": "tools/synk-id/teacher-workspace-public-provision.cjs",
+      "sha256": "05139baa202e8c0408a32724de9442e654605a07107cad604fa6d712ed8e9590",
+      "provenance": "tools/synk-id/teacher-workspace-public-provision.cjs"
+    },
+    {
+      "file": "tools/synk-id/world-app-public-provision.cjs",
+      "sha256": "3b3a97a1a2a619374dfaeb11221a822652c3f775c322bd984b6488f0c301b979",
+      "provenance": "tools/synk-id/world-app-public-provision.cjs"
+    },
+    {
+      "file": "tools/build-world-app-public.mjs",
+      "sha256": "602c984c28541a672b89f9b751724b897a80a346269b63c2dfa3e6ff7fb71eb8",
+      "provenance": ".tmp/workspace-connect-20261009/world-metadata-builder-guard-v1/builder-final.mjs"
+    },
+    {
+      "file": "tools/synk-id/registry.cjs",
+      "sha256": "68236a37d5fe1dd7a613da7728ec0fba69f9a733e7f1d8ed998f47eca91c8558",
+      "provenance": "Only Workspace teacher registration on origin/master"
+    },
+    {
+      "file": "experiences/synk-world-app/app-shell.mjs",
+      "sha256": "fb1bc33b9a19d2747db6abd9584779e269777a980a261c8d729b93a3be802cee",
+      "provenance": "experiences/synk-world-app/qa/costume-convenience-20261009/dye-preflight-source/SYNK-appsscript/experiences/synk-world-app/app-shell.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/app-shell.css",
+      "sha256": "6da6c181767daa76deee2dbc1ec711ed3bd58063c03694f589f8098bc68fae2f",
+      "provenance": "experiences/synk-world-app/qa/costume-convenience-20261009/dye-preflight-source/SYNK-appsscript/experiences/synk-world-app/app-shell.css"
+    },
+    {
+      "file": "experiences/synk-world-app/world-town-client.mjs",
+      "sha256": "47504d378d4449f670b5c2746eac792cc4ea29c9ccee42f3b66218b021621f53",
+      "provenance": "experiences/synk-world-app/qa/costume-convenience-20261009/dye-preflight-source/SYNK-appsscript/experiences/synk-world-app/world-town-client.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/world-client.mjs",
+      "sha256": "8e1b196d708afb055136f75dceabe6b5b199e648beee4dfc1b1ae61ae236e062",
+      "provenance": "experiences/synk-world-app/world-client.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/world-account.bundle.mjs",
+      "sha256": "03976a81321aa44f768b5fa2090c1c2610e5964b4551ae82883768d51b47a6b2",
+      "provenance": ".tmp/world-app-public-review-repair-20261010/world/world-account.bundle.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/server.mjs",
+      "sha256": "604dd1abff8845a9316fbe6085a0889375205aa9034bbc4cc396db3232ffbdde",
+      "provenance": "experiences/synk-world-app/qa/costume-convenience-20261009/dye-preflight-source/SYNK-appsscript/experiences/synk-world-app/server.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/operating-mode.mjs",
+      "sha256": "44383450f6f757a28ce49e93dda5ca4bd7925dc3df4b820c56aad35863f96402",
+      "provenance": "experiences/synk-world-app/operating-mode.mjs"
+    },
+    {
+      "file": "experiences/synk-world-app/world-account.mjs",
+      "sha256": "d86a025aa02c19e4a6b34fcba58bbb81df77994f21b3e4ca3bba981b34eb8adc",
+      "provenance": "Integration source restored by excluding later game-host changes; must reproduce approved bundle"
+    },
+    {
+      "file": "experiences/synk-world-app/qa/account-mode.test.mjs",
+      "sha256": "59387ea909a71ab60467328dcddd892360dec9fac382ab7fea232ce2cb2d621d",
+      "provenance": "Original account/enrollment integration tests; game-host project excluded"
+    },
+    {
+      "file": "experiences/synk-world-app/qa/town-host.test.mjs",
+      "sha256": "85cb5276d1996742c67982610865157de347afe5ac2ca9379d6ad93b1f36251d",
+      "provenance": "experiences/synk-world-app/qa/town-host.test.mjs"
+    },
+    {
+      "file": "experiences/synk-town/linked.html",
+      "sha256": "4d3ae72c19c800d0958414e7934b4ce99b630c01075e3b9bc5172d135784a414",
+      "provenance": "experiences/synk-town/linked.html"
+    },
+    {
+      "file": "experiences/synk-town/assets/logo-ink.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "provenance": "experiences/synk-town/assets/logo-ink.svg"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/tea.webp",
+      "sha256": "ed105c26b2b3c433f0435233c0093235523184f1c15222ce1eaf6672c3065c87",
+      "provenance": "experiences/synk-town/assets/material/tea.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/chair.webp",
+      "sha256": "cd1fd47a13ddf9e02711c5c41c67719e53a0a7b31777fd39abc7493fc1b4efea",
+      "provenance": "experiences/synk-town/assets/material/chair.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/visitor-tea-reader.png",
+      "sha256": "8d30dc2bdd85edaaf0be0d51b97fed3b196d74aca972b014a23a618d24a844d4",
+      "provenance": "experiences/synk-town/assets/residents/visitor-tea-reader.png"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/cafe-owner.png",
+      "sha256": "78e489d4712a2a295d976468e15786cc28dd9317cc3da09b58547bf6dd3521f8",
+      "provenance": "experiences/synk-town/assets/residents/cafe-owner.png"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/coffee-open.webp",
+      "sha256": "5e81227a4ed50d8a91269fd966f3868a131c0c10c2d702c0dbc082812e5b93d1",
+      "provenance": "experiences/synk-town/assets/material/coffee-open.webp"
+    },
+    {
+      "file": "experiences/synk-town/style.css",
+      "sha256": "bba63ebcbc96f64f1ccb75112bc64fa24bda3cd25897e5416ba97708e04f6f80",
+      "provenance": "experiences/synk-town/style.css"
+    },
+    {
+      "file": "experiences/synk-town/assets/fonts/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "provenance": "experiences/synk-town/assets/fonts/SUIT-Variable.woff2"
+    },
+    {
+      "file": "experiences/synk-town/assets/fonts/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "provenance": "experiences/synk-town/assets/fonts/InterTight-Medium.ttf"
+    },
+    {
+      "file": "experiences/synk-town/assets/fonts/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca",
+      "provenance": "experiences/synk-town/assets/fonts/InterTight-Bold.ttf"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/wide-cream.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d",
+      "provenance": "experiences/synk-town/assets/material/wide-cream.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/wide-butter.webp",
+      "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e",
+      "provenance": "experiences/synk-town/assets/material/wide-butter.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/material/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312",
+      "provenance": "experiences/synk-town/assets/material/wide-lapis.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/slab-cream-long.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "provenance": "experiences/synk-town/assets/ui/slab-cream-long.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/slab-coral-long.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "provenance": "experiences/synk-town/assets/ui/slab-coral-long.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/slab-blush-long.webp",
+      "sha256": "8249fb7023fd51806045e8db93999c0ae24ae9ba09d2f57e9f6712d632b9a899",
+      "provenance": "experiences/synk-town/assets/ui/slab-blush-long.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/tag-cream.webp",
+      "sha256": "3e21b91b548936cc98f44cf57991613f52dc03cb44e4f215458e79e795e9e7f4",
+      "provenance": "experiences/synk-town/assets/ui/tag-cream.webp"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/tex-coral.webp",
+      "sha256": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1",
+      "provenance": "experiences/synk-town/assets/ui/tex-coral.webp"
+    },
+    {
+      "file": "experiences/synk-town/app.mjs",
+      "sha256": "06ece9c6961330c57a1314b34168735404a0c70427904905d2d18c35e5498132",
+      "provenance": "experiences/synk-town/app.mjs"
+    },
+    {
+      "file": "experiences/synk-town/linked-client.mjs",
+      "sha256": "3c6a987f0f9a24e6b18257acc03be31a3659b8e634d1f573d8f31a9ba46c0b80",
+      "provenance": "experiences/synk-town/linked-client.mjs"
+    },
+    {
+      "file": "experiences/synk-town/understanding-ui.mjs",
+      "sha256": "546c20db1da390eaa7b4b07ca1cba0c5d13dac26575c55d161a45c36927c6969",
+      "provenance": "experiences/synk-town/understanding-ui.mjs"
+    },
+    {
+      "file": "experiences/synk-town/understanding.mjs",
+      "sha256": "78aba83b57ddb6a3183fd025da45b8302f4b06a11f20d233c8c0fe580019230c",
+      "provenance": "experiences/synk-town/understanding.mjs"
+    },
+    {
+      "file": "experiences/synk-town/life-ui.mjs",
+      "sha256": "8d802220290380316dae07861e4d37cd8924e71139ceddeafbf92a1a391acb44",
+      "provenance": "experiences/synk-town/life-ui.mjs"
+    },
+    {
+      "file": "experiences/synk-town/day-app.mjs",
+      "sha256": "f0f903c287bc322d56168389eded4d73f8fde6117134180a80239c40366d6ee1",
+      "provenance": "Byte-exact source recovered from approved public payload"
+    },
+    {
+      "file": "experiences/synk-town/day-character.mjs",
+      "sha256": "a3ee6cf6297deaa2f74db0811583184b64f204f3b6bec76803c0166d14e4accc",
+      "provenance": "experiences/synk-town/day-character.mjs"
+    },
+    {
+      "file": "experiences/synk-town/day-environment.mjs",
+      "sha256": "2f9271d622cd04ecc464b369d53d5b13e30759b36e6fc936f1f2614492c65385",
+      "provenance": "Byte-exact source recovered from approved public payload"
+    },
+    {
+      "file": "experiences/synk-town/day-materials.mjs",
+      "sha256": "031476eba51697b4a92eefb46f5250b3e71be0c193a0ef919b8da4fb2d22af55",
+      "provenance": "Byte-exact source recovered from approved public payload"
+    },
+    {
+      "file": "experiences/synk-town/day-rendering.mjs",
+      "sha256": "a058aace0ca0eaf9d9b3b712b2b43ab0283793fb4dddc2896a2eb2e43b082458",
+      "provenance": "experiences/synk-town/day-rendering.mjs"
+    },
+    {
+      "file": "experiences/synk-town/day-residents.mjs",
+      "sha256": "831afd874eb1e9ab842739696b01701d05040c88cb5f8e66ca5d7c208057e36f",
+      "provenance": "experiences/synk-town/day-residents.mjs"
+    },
+    {
+      "file": "experiences/synk-town/day-scene.mjs",
+      "sha256": "239e54adf8c03134a2fd4576f9ea92eb12a341a85454a17533781f84e41e644b",
+      "provenance": "Byte-exact source recovered from approved public payload"
+    },
+    {
+      "file": "experiences/synk-town/day-style.css",
+      "sha256": "bdb99e6dafdc4e9fb9967c1b95a1c74b6f21f1e412fc6458e8cc83ea84e65226",
+      "provenance": "experiences/synk-town/day-style.css"
+    },
+    {
+      "file": "experiences/synk-town/day.html",
+      "sha256": "5c8f38b2b6c48854c427c549acd09153452d948ca0cb8e73cb10c76bf0d9b3a1",
+      "provenance": "experiences/synk-town/day.html"
+    },
+    {
+      "file": "experiences/synk-town/rendering/CopyShader.js",
+      "sha256": "8dd28d636ec38e0966190cb53e473141d607439da276ac7a8fdb4c79810fc72c",
+      "provenance": "experiences/synk-town/rendering/CopyShader.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/EffectComposer.js",
+      "sha256": "3acd133a603e10c89e67d342c642e1dfacff5446e98253ab83dbbe374c28c0dd",
+      "provenance": "experiences/synk-town/rendering/EffectComposer.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/MaskPass.js",
+      "sha256": "c659039dffdea1de62421aa86849883b2cfa7c94e8079a1da0e462a09c6ae03a",
+      "provenance": "experiences/synk-town/rendering/MaskPass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/OutputPass.js",
+      "sha256": "7f495a6a29241d82b69db649e4f47f72d2069c56a475fce63222f53af7b8d7e6",
+      "provenance": "experiences/synk-town/rendering/OutputPass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/OutputShader.js",
+      "sha256": "b96c7d82bd2dbdc94a9dbdcb9234c7989a7891db023ab249505acfc75ac83a8e",
+      "provenance": "experiences/synk-town/rendering/OutputShader.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/Pass.js",
+      "sha256": "7cebe392a77c573f9f6c075daef1ba7160bff220d03052d2c528f0de59a2d02a",
+      "provenance": "experiences/synk-town/rendering/Pass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/provenance.json",
+      "sha256": "c0a85d677bdbeaf6e73f4696f81ae71b1520359c81e8fbf4460f1ac9c493714f",
+      "provenance": "experiences/synk-town/rendering/provenance.json"
+    },
+    {
+      "file": "experiences/synk-town/rendering/RenderPass.js",
+      "sha256": "fa4d74e8ff58c4ba39fcf843df8a94debe8f9ef3995ce23e6763e5017ef96335",
+      "provenance": "experiences/synk-town/rendering/RenderPass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/ShaderPass.js",
+      "sha256": "24fef72b80ebbcec937a9744ada860cbf40585dc98ab2f76aa0025e8a96b5465",
+      "provenance": "experiences/synk-town/rendering/ShaderPass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/SimplexNoise.js",
+      "sha256": "0da20033a6542de4bbdd6b0470fd1b1bb3b8a33023e2f1b656e8c9ff5e279de6",
+      "provenance": "experiences/synk-town/rendering/SimplexNoise.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/SSAOPass.js",
+      "sha256": "abd6d6114ad52db3040362d55a13d25d601d8fb8615f66ce130e11bbe9a740e5",
+      "provenance": "experiences/synk-town/rendering/SSAOPass.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/SSAOShader.js",
+      "sha256": "8a52fe985b195b5865292650288af9d6276a71b5aa9c06772260fcc7536428b6",
+      "provenance": "experiences/synk-town/rendering/SSAOShader.js"
+    },
+    {
+      "file": "experiences/synk-town/rendering/THREE-LICENSE.txt",
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "provenance": "experiences/synk-town/rendering/THREE-LICENSE.txt"
+    },
+    {
+      "file": "experiences/synk-town/town-layout.mjs",
+      "sha256": "ad12c883b1a5a362fa7367b0bd78b8ea4af37f1395da57b29b0e52693c6aa3bc",
+      "provenance": "experiences/synk-town/town-layout.mjs"
+    },
+    {
+      "file": "experiences/synk-town/walk-controls.mjs",
+      "sha256": "6d825a71eab51caf3ee011c8c1b731e52a31eebbded38919d8fd27d70b89ceb4",
+      "provenance": "experiences/synk-town/walk-controls.mjs"
+    },
+    {
+      "file": "experiences/synk-town/walk.mjs",
+      "sha256": "705f5482cf2d161d853c01feb118cafe1a96f46c1b300bb87ed47881e315a872",
+      "provenance": "experiences/synk-town/walk.mjs"
+    }
+  ]
+}

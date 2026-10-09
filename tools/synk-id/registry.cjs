@@ -40,9 +40,10 @@ const LEGACY_CLIENT_IDS = freeze(Object.fromEntries(['production', 'rehearsal'].
 // Public-site registrations do not enter the local config generators.
 // The dedicated provisioner preserves the existing loopback/native bindings.
 const PUBLIC_CARE_CLIENT = freeze({ id: 'care-public-browser', service: 'care', product: 'platform', runtime: 'browser', environment: 'production', redirectUris: ['https://synk.im/care/'] });
+const WORKSPACE_TEACHER_CLIENT = freeze({ id: 'teacher-workspace-public-browser', service: 'teacher', product: 'world', runtime: 'browser', environment: 'production', redirectUris: ['https://workspace.synk.im/api/teaching/callback'] });
 const COMPANY_CLOUD = freeze({
   origin: 'https://workspace.synk.im', environment: 'production',
   staff: { registration: 'messenger-browser', product: 'messenger', redirectUri: 'https://workspace.synk.im/api/synk-id/callback' },
   customer: { id: 'company-customer-public-browser', service: 'company-customer', product: 'platform', runtime: 'browser', redirectUris: ['https://workspace.synk.im/api/customer/synk-id/callback'] },
 });
-module.exports = { SERVICES, CLIENTS, PUBLIC_CARE_CLIENT, COMPANY_CLOUD, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };
+module.exports = { SERVICES, CLIENTS, PUBLIC_CARE_CLIENT, WORKSPACE_TEACHER_CLIENT, COMPANY_CLOUD, LEGACY_CLIENT_IDS, TOOL_REDIRECTS: CLIENTS.find(client => client.id === 'tools-legacy').redirectUris };

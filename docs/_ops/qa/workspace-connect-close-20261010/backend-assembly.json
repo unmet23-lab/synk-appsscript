@@ -1,0 +1,802 @@
+{
+  "at": "2026-10-09T20:27:04.692Z",
+  "target": "C:/Users/q1212/Documents/SYNK-talk-workspace-close-20261010",
+  "base": "62a0e06cfbbcd565f4aacf1e3d280898126b1da9",
+  "branch": "codex/workspace-data-integration-20261010",
+  "source": "C:/Users/q1212/Documents/SYNK-talk-workspace-deploy-20261010",
+  "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+  "predecessorCommit": "d739dfb42f8ab32d240ca0d044e37c201f359586",
+  "copiedPaths": [
+    {
+      "file": "docs/SYNK_CLASSROOM.md",
+      "sha256": "d9438de9278a17680aca0af5d7e292ab947bd16c4b754bc0c08e29a504bd0bb0",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "lib/modern-town-domain.mjs",
+      "sha256": "0441dd605915dcd69f4f462dea0359c78afe6f2edeae4824aa022ebbb99cbb27",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/modern-town-export.js",
+      "sha256": "d1a00d85d459b60b2defa2b843cb3a4a691272abd99c6564d77fe4273cb15036",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/modern-town-server.js",
+      "sha256": "91857e24ecdf871df8902ee67914c77b94ab591a4902da78ff277c18f98c6cec",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/modern-town-store.js",
+      "sha256": "450f7bc194f66215bb92d648d3d26d2c5dd2469ddc9dae284e7b9dda0bb1d7f2",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/synk-auth.js",
+      "sha256": "1a50820ff6f8ebdedd8685d5a06d18bc31b2fd1d547ac6f3e62063fbd6d69155",
+      "beforeSha256": "6b79f7ac1bee56f0565bf3321eb12ad691c3f3e2d436031a9c73d3481a051e77",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/synk-classroom-enrollment.js",
+      "sha256": "25a9129a23640fc3fa5f28c102b8932838394f0dbf7881785af00ea178c6c8d1",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/synk-classroom-server.js",
+      "sha256": "358b48dd50399a40022bfe26cfbc52f5a0a4d2d0bafa0ae00b71f782c27c588c",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "lib/synk-classroom-store.js",
+      "sha256": "324d1f8bfb8aa0203a2d8d048324e89fbeda0aa920b69ab2f8d0d36e330bed9b",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "lib/synk-classroom-teaching.js",
+      "sha256": "46bebb9c0b8d1d8405ca647188b7db2afc4fd0bf71a1719d09cfb88fd268dce0",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/synk-server.js",
+      "sha256": "320d3f6fbae27b57544a3e6a3aac8e59c4d973c4caa9e44dda7d8c5fd5ee7e24",
+      "beforeSha256": "67b60f8fd477d58b0a2867fbc59c2eae2a05d227c43cc2b2389b74cf274d17e0",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/synk-store.js",
+      "sha256": "9a2b6341a1e54447246add7288c18f0e6db6ccc2a5e4c71895b7a96f3e7f9524",
+      "beforeSha256": "c99fa9622c6cdfec3c8799ea6400b597f8a3a24e2f32177435ca8627045d1ca4",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/world-v1-catalog.js",
+      "sha256": "d1aebbb56741eed84d96e1f51b94f704e1a03218d00238f281d8eaf2ac6b5cfe",
+      "beforeSha256": "fb331286de2f1f4f7a3b598bf70503b514ca369df940a7a2244a8bb2db68cf96",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/world-v1-domain.js",
+      "sha256": "0d9f3e8096e4a3242f0fbbd944cc5d5b57aeb47df22cb9faf985dedd396bd3d5",
+      "beforeSha256": "a78ab685ca89fd93347ffce59171944a758e19be3b2c46d894beaeaaa91ee9fd",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/world-v1-learning.js",
+      "sha256": "aec3b5c096efb8f005117babc903d17eaae31aa98fe63265008e2dcab07c23a5",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/world-v1-server.js",
+      "sha256": "d90e35d1a23cfafd4607fc4800415e408611814954baa8b735130e86443124bd",
+      "beforeSha256": "a3ebc72c47e010f06fe4e74e72000bca9e670a96184d8045bd7c884cb1a4a74e",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "lib/world-v1-store.js",
+      "sha256": "6a22cf9814712b6156ef4787b9bfaa50c8204e1aea09fec86bda00db03a3bb92",
+      "beforeSha256": "25e6fd270614539de98fb2b89a9f819abb0e505362946c4cbfa318b8e2088b91",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/_shared/synk-classroom-runtime.js",
+      "sha256": "efc3ad5f30a5799f01abc1e948f8b45e3662e1823f3e754727bdb93cc0c5d358",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "supabase/functions/synk-account/index.ts",
+      "sha256": "2a3ccc580e985c0aae69f98c80c906b9b264bd61f49880bfcb4beac7785f9095",
+      "beforeSha256": "27c237055117480875b90249f1e9614b7d0ce4ea80718d6916beab22ccfb5b25",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/synk-account/동봉.json",
+      "sha256": "8d3da8275841949c401e7f8fe73d82aa07bee38492b12fa2f8e366c942d99f8e",
+      "beforeSha256": "37773ebde489fd7ef6da270a689b480f3923637797f8196dfa720d94eeece1d3",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/synk-classroom/index.ts",
+      "sha256": "a40d436b8467ef8c3ff68c8b7fa89290a481049525bde9383aa847236a660a03",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "supabase/functions/synk-classroom/동봉.json",
+      "sha256": "2015ebc17788f47eabb5fbb9abecceeb6c3d08596977773f443fbccaa7c92c50",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "supabase/functions/synk-learning/동봉.json",
+      "sha256": "6ce37b6dc0821522fba98259c5fd4af6de3e710bb141334b009db04210bb4604",
+      "beforeSha256": "d74f791db68e762447222fd2d44a09a9623d65aeabf935101aa0e340ab3cc42c",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/synk-town/index.ts",
+      "sha256": "efddd11d380e8b95231bf6f9aed154e995af862d2ab6275297a222539f55bf39",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/synk-town/town-runtime.mjs",
+      "sha256": "fd3198da0937ff3b9742fde7efe3f4ad8b03269b0b7b6f69b89ec74161b84916",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/synk-world-v1/world-v1-runtime.mjs",
+      "sha256": "6a01b17bfabd3e9bea4723c50a93b822de63b75542b63346a21ba0b686e6f05e",
+      "beforeSha256": "a3ebd4f3697fd13aef257a978e4965bd8a688d44e53c5e381f7c8a99a6f13b9c",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/functions/tutor/동봉.json",
+      "sha256": "eacc942f83f8520282ff066c4f33ed7183d21091ba5b1714953f4c5c68e3b3d7",
+      "beforeSha256": "6c87832e22b6642d4c02db0417255fab18a8ff88ac575f4208687123e097997e",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261003100000_synk_classroom_c16.sql",
+      "sha256": "233b9a393d8139dbb4ee6eb8009fb09ea919517c3faba907f99cc868fac7d14c",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "supabase/migrations/20261009220000_synk_world_wardrobe_c17.sql",
+      "sha256": "0861f4ce23343fd60fb0f105089067fadeb10ebeeb21865c8080c426f5c448e9",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261009230000_synk_teaching_care_towns_c16.sql",
+      "sha256": "8463c3fc7ede21a403e46cf0b25b09aac2e8e182fca49a6d8cad57c47a1a1c20",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261009233000_world_v1_learning_c16.sql",
+      "sha256": "0faa5b11a01d3d411d6541b6213a376f927746b16a35b1decd8d6d2885f7dfc9",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261009234500_synk_modern_town_c16.sql",
+      "sha256": "7c1e3bffabc58a138ecc6a0ea7e0de9cfca1b0c69962faf439ab7c6d616bc9a9",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261009235000_synk_classroom_enrollment_c16.sql",
+      "sha256": "75c3c4058738ae05642ffef5ff6e95b809d9d060e58f0febf5d3fafc9094b007",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "supabase/migrations/20261010003000_synk_world_dyes_c18.sql",
+      "sha256": "da5bb731d1de655e8a65294cafc4463814bd3571133ab2944776bace2ecb0dee",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/modern-town-integration.test.js",
+      "sha256": "4dcd3249191baaa2d247ce6ce573a5f4bbeee71f432450b53f1db5720df41ccc",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/synk-classroom-enrollment-http.test.js",
+      "sha256": "d12365bd20c8b1128dfe0e6a0b81c66e785a5972c5de6e789bc008c029a6681d",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/synk-classroom-enrollment.test.js",
+      "sha256": "6e9322982cf0a76b5b671c94fe12440dbeba64c13cff889efb259b09cacc272b",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/synk-classroom-migration.test.js",
+      "sha256": "8d0eb61fe5cfaf13748679d799a82a9482fd5b92278f0874606be894ec67239b",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tests/synk-classroom-purge.test.js",
+      "sha256": "295a7f74f85f4bf2653c626493ff621feae302e62e751e0a4dc1974f8e20b659",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tests/synk-classroom.test.js",
+      "sha256": "535a336a2e674dad70118ab18df48fed554ecc69c28e97961f497264659f4e44",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tests/synk-teaching-overview.test.js",
+      "sha256": "5e8038bd51a79beade14fb56c8367230ed012fbbc198b0c624bdf7bfdb00b8a9",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/world-classroom-integration.test.js",
+      "sha256": "0f1b51d720ed53e5d186c928afab6eb7d0651f9d7d5af4c9002f07e70502986c",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/world-v1-account-export.test.js",
+      "sha256": "a353462261b5959dd609fe4fa1c5b653724f41cb654458fe8c11b40b948a60f0",
+      "beforeSha256": "58b2a20c6282ece064038f6659738186b29e2c75c13b7e1225448828e8e52802",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/world-v1-dyes.test.js",
+      "sha256": "bbf5e9c2edeed20c080838d17fce107929f0e355953ebab1dd64ea9fad0247ef",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/world-v1-server.test.js",
+      "sha256": "4991286438e926864f230cc4ee8ac3ca9bc3b21ecc21d9fd278e97f57d61f899",
+      "beforeSha256": "c904d2b8d8bbabd7f3c8f6414c1ea509180a5dd361c821f85c1ffa50bb67741e",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tests/world-v1-wardrobe.test.js",
+      "sha256": "8508adb856c9b51c6a7d0f49bbd6ab12dc3a4c46c5c87d9f83c3678c6bbf4cd8",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tools/qa-synk-classroom-fixture.cjs",
+      "sha256": "0b9b4914fc6d944f37763fc913c0c76ac46564b73b7b578c617c6b75b1ae01ed",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/qa-synk-classroom-game-drivers.cjs",
+      "sha256": "d65993e5e51df91007a3979cbfe940206e63ded25d50bc6d701ecf48a07e2c81",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/qa-synk-classroom-games.cjs",
+      "sha256": "0f93cdcbc8cde71b610ffffe877cb7f870151ec2224630a15c71828dd89675cd",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/qa-synk-classroom-memory.cjs",
+      "sha256": "16888183bea65bb2d1d681ad6ed48c0c1600f5a063a0edc391fb2f12145b4ca3",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/qa-synk-classroom.cjs",
+      "sha256": "4a92de492591bc94afbd6c5b1b8a45b452f5d000af3f0ae14a8c4ee6b0ab7c23",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/synk-classroom-build.js",
+      "sha256": "f0763b160c4043f57e2ea4402c00705862f52d171323bbb24432127109491c09",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "classroom-predecessor-and-final"
+    },
+    {
+      "file": "tools/synk-town-build.js",
+      "sha256": "eab7d4cf6c66b689b113cbace8ca4690e25fea17eb3a211c4d6a3b075501e2e8",
+      "beforeSha256": null,
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    },
+    {
+      "file": "tools/world-v1-local-db.js",
+      "sha256": "3e38f31a4db586f4c53a24b64dc47706ff947bdacaf1248c3992a4431cdb6a55",
+      "beforeSha256": "2c1ec5928487819c23cd995ebba5a6ea6a7b745f59e8a1d1c74b5cb8dcb6c46e",
+      "sourceCommit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+      "origin": "final-reviewed-integration"
+    }
+  ],
+  "alreadyIdentical": [
+    {
+      "file": "lib/world-v1-export.js",
+      "sha256": "ba03bb14975f534d6f5965abb81139624a0b575d8335391bd67c488a06af2b92"
+    },
+    {
+      "file": "supabase/functions/_shared/synk-atlas-summary.js",
+      "sha256": "52a34d4ee87cdd8c4b64c9141a9b2b98e92ba9d3e59238af21a4c77cc3043e36"
+    },
+    {
+      "file": "supabase/functions/_shared/synk-atlas.js",
+      "sha256": "a4cb713817ba0228d907c567faa7496038ac15b1a8f584ee8cccaee2f742456b"
+    },
+    {
+      "file": "supabase/functions/synk-world-v1/index.ts",
+      "sha256": "5a527902027848358ceeb448e7158f11e205ae9081ad487c6312c6b4241e31e8"
+    },
+    {
+      "file": "supabase/migrations/20261009180000_synk_world_v1_c16.sql",
+      "sha256": "85bcdc2729e76e2a72d985376eb129bd0c6bf9f77535058034547c91db881301"
+    },
+    {
+      "file": "tests/world-v1-lifecycle.test.js",
+      "sha256": "84a502d3896618c0a84d9392eb9d5b3e64e446d0cd4b7153ea54f08d6b37b658"
+    },
+    {
+      "file": "tools/world-v1-build.js",
+      "sha256": "8c8d3d95b53d98f48199cad128bd81c3f4963b29539a4e0a39a8f70c895cb80c"
+    }
+  ],
+  "preservedRemoteFiles": [
+    {
+      "file": "supabase/migrations/20261007020000_synk_account_lifecycle_c16.sql",
+      "sha256": "ee77b62b9b7bd2e56c0ba4ea45104ab86181f3a17233a4c1c429659eaa250932",
+      "reason": "Preserve newer remote migration chain and cumulative verification/fixture predecessors."
+    },
+    {
+      "file": "supabase/migrations/20261007030000_synk_account_availability_c16.sql",
+      "sha256": "fce927a859a38883022dfdb0033fbee5082ab9873fe5c8f7e3b78bb62229b28a",
+      "reason": "Preserve newer remote migration chain and cumulative verification/fixture predecessors."
+    },
+    {
+      "file": "tests/lib/account-lifecycle-fixture.js",
+      "sha256": "2b25b27d628e000d914a9b7ad7dd330f1c6f01d571bbdd4b6040eb0144cb04fe",
+      "reason": "Preserve newer remote migration chain and cumulative verification/fixture predecessors."
+    }
+  ],
+  "tests": [
+    {
+      "startedAt": "2026-10-09T20:27:53.565Z",
+      "finishedAt": "2026-10-09T20:30:36.044Z",
+      "exitCode": 1,
+      "signal": null,
+      "args": [
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "tests/synk-auth-session.test.js",
+        "tests/synk-server.test.js",
+        "tests/synk-account-logout.test.js",
+        "tests/synk-account-lifecycle.test.js",
+        "tests/synk-account-availability.test.js",
+        "tests/synk-account-restore-export.test.js",
+        "tests/synk-classroom.test.js",
+        "tests/synk-classroom-migration.test.js",
+        "tests/synk-classroom-purge.test.js",
+        "tests/synk-teaching-overview.test.js",
+        "tests/synk-classroom-enrollment.test.js",
+        "tests/synk-classroom-enrollment-http.test.js",
+        "tests/modern-town-integration.test.js",
+        "tests/world-classroom-integration.test.js",
+        "tests/world-v1-account-export.test.js",
+        "tests/world-v1-dyes.test.js",
+        "tests/world-v1-lifecycle.test.js",
+        "tests/world-v1-server.test.js",
+        "tests/world-v1-wardrobe.test.js"
+      ],
+      "files": [
+        "tests/synk-auth-session.test.js",
+        "tests/synk-server.test.js",
+        "tests/synk-account-logout.test.js",
+        "tests/synk-account-lifecycle.test.js",
+        "tests/synk-account-availability.test.js",
+        "tests/synk-account-restore-export.test.js",
+        "tests/synk-classroom.test.js",
+        "tests/synk-classroom-migration.test.js",
+        "tests/synk-classroom-purge.test.js",
+        "tests/synk-teaching-overview.test.js",
+        "tests/synk-classroom-enrollment.test.js",
+        "tests/synk-classroom-enrollment-http.test.js",
+        "tests/modern-town-integration.test.js",
+        "tests/world-classroom-integration.test.js",
+        "tests/world-v1-account-export.test.js",
+        "tests/world-v1-dyes.test.js",
+        "tests/world-v1-lifecycle.test.js",
+        "tests/world-v1-server.test.js",
+        "tests/world-v1-wardrobe.test.js"
+      ],
+      "NODE_PATH": "C:/Users/q1212/Documents/SYNK-talk/node_modules",
+      "total": 178,
+      "passed": 177,
+      "failed": 1,
+      "skipped": 0,
+      "tap": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-assembly-tests.tap",
+      "stderr": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-assembly-tests.stderr.txt",
+      "ok": false,
+      "syntheticOnly": true
+    },
+    {
+      "startedAt": "2026-10-09T20:36:10.866Z",
+      "finishedAt": "2026-10-09T20:36:20.079Z",
+      "args": [
+        "--test",
+        "--test-reporter=tap",
+        "tests/synk-server.test.js"
+      ],
+      "files": [
+        "tests/synk-server.test.js"
+      ],
+      "exitCode": 0,
+      "total": 27,
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0,
+      "tap": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-auth-compatibility-tests.tap",
+      "stderr": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-close-20261010\\backend-auth-compatibility-tests.stderr.txt",
+      "ok": true,
+      "syntheticOnly": true,
+      "supersedes": "Only the stale assertion failure in the first combined suite."
+    }
+  ],
+  "sourceClosure": [
+    {
+      "slug": "synk-classroom",
+      "verifiedDeploymentVersion": 2,
+      "modules": [
+        {
+          "name": "index.ts",
+          "expectedSHA256": "a40d436b8467ef8c3ff68c8b7fa89290a481049525bde9383aa847236a660a03",
+          "actualSHA256": "a40d436b8467ef8c3ff68c8b7fa89290a481049525bde9383aa847236a660a03",
+          "exact": true
+        },
+        {
+          "name": "synk-classroom-runtime.mjs",
+          "expectedSHA256": "4bee28e4014fb682f0622928d1dc22ff7f36a2806ecefea915dee40947a078c3",
+          "actualSHA256": "4bee28e4014fb682f0622928d1dc22ff7f36a2806ecefea915dee40947a078c3",
+          "exact": true
+        }
+      ],
+      "extra": [],
+      "ok": true
+    },
+    {
+      "slug": "synk-world-v1",
+      "verifiedDeploymentVersion": 2,
+      "modules": [
+        {
+          "name": "index.ts",
+          "expectedSHA256": "5a527902027848358ceeb448e7158f11e205ae9081ad487c6312c6b4241e31e8",
+          "actualSHA256": "5a527902027848358ceeb448e7158f11e205ae9081ad487c6312c6b4241e31e8",
+          "exact": true
+        },
+        {
+          "name": "world-v1-runtime.mjs",
+          "expectedSHA256": "6a01b17bfabd3e9bea4723c50a93b822de63b75542b63346a21ba0b686e6f05e",
+          "actualSHA256": "6a01b17bfabd3e9bea4723c50a93b822de63b75542b63346a21ba0b686e6f05e",
+          "exact": true
+        }
+      ],
+      "extra": [],
+      "ok": true
+    },
+    {
+      "slug": "synk-town",
+      "verifiedDeploymentVersion": 2,
+      "modules": [
+        {
+          "name": "index.ts",
+          "expectedSHA256": "efddd11d380e8b95231bf6f9aed154e995af862d2ab6275297a222539f55bf39",
+          "actualSHA256": "efddd11d380e8b95231bf6f9aed154e995af862d2ab6275297a222539f55bf39",
+          "exact": true
+        },
+        {
+          "name": "town-runtime.mjs",
+          "expectedSHA256": "fd3198da0937ff3b9742fde7efe3f4ad8b03269b0b7b6f69b89ec74161b84916",
+          "actualSHA256": "fd3198da0937ff3b9742fde7efe3f4ad8b03269b0b7b6f69b89ec74161b84916",
+          "exact": true
+        }
+      ],
+      "extra": [],
+      "ok": true
+    },
+    {
+      "slug": "synk-account",
+      "verifiedDeploymentVersion": 55,
+      "modules": [
+        {
+          "name": "index.ts",
+          "expectedSHA256": "2a3ccc580e985c0aae69f98c80c906b9b264bd61f49880bfcb4beac7785f9095",
+          "actualSHA256": "2a3ccc580e985c0aae69f98c80c906b9b264bd61f49880bfcb4beac7785f9095",
+          "exact": true
+        },
+        {
+          "name": "synk-auth.mjs",
+          "expectedSHA256": "9803131c577f62add353263e75fdd0e36d6103bb81ea8af8a69149ab3789b4b3",
+          "actualSHA256": "9803131c577f62add353263e75fdd0e36d6103bb81ea8af8a69149ab3789b4b3",
+          "exact": true
+        },
+        {
+          "name": "release-policy.mjs",
+          "expectedSHA256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406",
+          "actualSHA256": "6168a37abb42cdcbf61e060f91b9fd53b363b229b0882dffa9ab136803c8e406",
+          "exact": true
+        },
+        {
+          "name": "계약판.mjs",
+          "expectedSHA256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4",
+          "actualSHA256": "8f3c6b43edbb9331b251ad5b99b419f729bc79bc0bc985bc89b6a583788853d4",
+          "exact": true
+        },
+        {
+          "name": "sha256.mjs",
+          "expectedSHA256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b",
+          "actualSHA256": "9fbbd80c93df47c45d6f5d1e83a4aa23446f521599a525991809865db60a9e3b",
+          "exact": true
+        },
+        {
+          "name": "synk-store.mjs",
+          "expectedSHA256": "061e721575de6ddaab6bf7d61d2a6b0b57a1529b9225f50e85ee5bb3a1790682",
+          "actualSHA256": "061e721575de6ddaab6bf7d61d2a6b0b57a1529b9225f50e85ee5bb3a1790682",
+          "exact": true
+        },
+        {
+          "name": "내정보규칙.mjs",
+          "expectedSHA256": "9b094fd9491e97d8d603e9dde5a8a7edefc80da1d99ff2ca13066f7a6108bb5e",
+          "actualSHA256": "9b094fd9491e97d8d603e9dde5a8a7edefc80da1d99ff2ca13066f7a6108bb5e",
+          "exact": true
+        },
+        {
+          "name": "synk-server.mjs",
+          "expectedSHA256": "2f6055f5f1ec7d29b95500e68add5ccba9d58b27fa7abd0453f8c13c3d823364",
+          "actualSHA256": "2f6055f5f1ec7d29b95500e68add5ccba9d58b27fa7abd0453f8c13c3d823364",
+          "exact": true
+        },
+        {
+          "name": "synk-atlas.mjs",
+          "expectedSHA256": "33cc267abb38af996097b10326ed67b91441300733862e242c092e403a57e2b8",
+          "actualSHA256": "33cc267abb38af996097b10326ed67b91441300733862e242c092e403a57e2b8",
+          "exact": true
+        },
+        {
+          "name": "atlas-memory-rules.mjs",
+          "expectedSHA256": "2a7b59615d4bb5c9187b8ba48291529a7cf4061119c3e10dd5284141e3684c5b",
+          "actualSHA256": "2a7b59615d4bb5c9187b8ba48291529a7cf4061119c3e10dd5284141e3684c5b",
+          "exact": true
+        },
+        {
+          "name": "synk-atlas-summary.mjs",
+          "expectedSHA256": "faf1abf030445125a66a24aa2ff92a1ef16b4461713e2e33767962678c2197bf",
+          "actualSHA256": "faf1abf030445125a66a24aa2ff92a1ef16b4461713e2e33767962678c2197bf",
+          "exact": true
+        },
+        {
+          "name": "world-v1-export.mjs",
+          "expectedSHA256": "748e68263a155f5ce7d127c1336916c766480952c09f86f9970b29552f625066",
+          "actualSHA256": "748e68263a155f5ce7d127c1336916c766480952c09f86f9970b29552f625066",
+          "exact": true
+        },
+        {
+          "name": "world-v1-domain.mjs",
+          "expectedSHA256": "cbe75c73768a5e2ea20c973946bc6eb2e5489fa455efbf50bf723d20418fb72c",
+          "actualSHA256": "cbe75c73768a5e2ea20c973946bc6eb2e5489fa455efbf50bf723d20418fb72c",
+          "exact": true
+        },
+        {
+          "name": "world-v1-catalog.mjs",
+          "expectedSHA256": "f7b14ee7918d168b1ba6af72a861147fb6b473b4e618a907bc2a733f5b274eed",
+          "actualSHA256": "f7b14ee7918d168b1ba6af72a861147fb6b473b4e618a907bc2a733f5b274eed",
+          "exact": true
+        },
+        {
+          "name": "modern-town-export.mjs",
+          "expectedSHA256": "f4b06ee86f979a3c1817f107aee48f118f4ba4d5dda8d41c51dbe7010967292c",
+          "actualSHA256": "f4b06ee86f979a3c1817f107aee48f118f4ba4d5dda8d41c51dbe7010967292c",
+          "exact": true
+        }
+      ],
+      "extra": [],
+      "ok": true
+    }
+  ],
+  "constraints": {
+    "noGitStageCommitPush": true,
+    "noDeployment": true,
+    "noProductionDatabase": true,
+    "noRealLogin": true,
+    "sourceWorktreeUnmodified": true,
+    "unrelatedRemoteModulesPreserved": true,
+    "googleRegistrationV55Preserved": true
+  },
+  "status": "ready-for-root-review-no-commit-or-push",
+  "builderChecks": [
+    {
+      "command": "tools/world-v1-build.js --check",
+      "exitCode": 0,
+      "passed": true,
+      "generatedFilesModified": false
+    },
+    {
+      "command": "tools/synk-town-build.js --check",
+      "exitCode": 0,
+      "passed": true,
+      "generatedFilesModified": false
+    },
+    {
+      "command": "tools/synk-classroom-build.js --check",
+      "exitCode": 0,
+      "passed": true,
+      "generatedFilesModified": false
+    }
+  ],
+  "copiedPathsVerified": true,
+  "preservedRemoteFilesVerified": true,
+  "changedPaths": [
+    "docs/SYNK_CLASSROOM.md",
+    "lib/modern-town-domain.mjs",
+    "lib/modern-town-export.js",
+    "lib/modern-town-server.js",
+    "lib/modern-town-store.js",
+    "lib/synk-auth.js",
+    "lib/synk-classroom-enrollment.js",
+    "lib/synk-classroom-server.js",
+    "lib/synk-classroom-store.js",
+    "lib/synk-classroom-teaching.js",
+    "lib/synk-server.js",
+    "lib/synk-store.js",
+    "lib/world-v1-catalog.js",
+    "lib/world-v1-domain.js",
+    "lib/world-v1-learning.js",
+    "lib/world-v1-server.js",
+    "lib/world-v1-store.js",
+    "supabase/functions/_shared/synk-classroom-runtime.js",
+    "supabase/functions/synk-account/index.ts",
+    "supabase/functions/synk-account/동봉.json",
+    "supabase/functions/synk-classroom/index.ts",
+    "supabase/functions/synk-classroom/동봉.json",
+    "supabase/functions/synk-learning/동봉.json",
+    "supabase/functions/synk-town/index.ts",
+    "supabase/functions/synk-town/town-runtime.mjs",
+    "supabase/functions/synk-world-v1/world-v1-runtime.mjs",
+    "supabase/functions/tutor/동봉.json",
+    "supabase/migrations/20261003100000_synk_classroom_c16.sql",
+    "supabase/migrations/20261009220000_synk_world_wardrobe_c17.sql",
+    "supabase/migrations/20261009230000_synk_teaching_care_towns_c16.sql",
+    "supabase/migrations/20261009233000_world_v1_learning_c16.sql",
+    "supabase/migrations/20261009234500_synk_modern_town_c16.sql",
+    "supabase/migrations/20261009235000_synk_classroom_enrollment_c16.sql",
+    "supabase/migrations/20261010003000_synk_world_dyes_c18.sql",
+    "tests/modern-town-integration.test.js",
+    "tests/synk-classroom-enrollment-http.test.js",
+    "tests/synk-classroom-enrollment.test.js",
+    "tests/synk-classroom-migration.test.js",
+    "tests/synk-classroom-purge.test.js",
+    "tests/synk-classroom.test.js",
+    "tests/synk-server.test.js",
+    "tests/synk-teaching-overview.test.js",
+    "tests/world-classroom-integration.test.js",
+    "tests/world-v1-account-export.test.js",
+    "tests/world-v1-dyes.test.js",
+    "tests/world-v1-server.test.js",
+    "tests/world-v1-wardrobe.test.js",
+    "tools/qa-synk-classroom-fixture.cjs",
+    "tools/qa-synk-classroom-game-drivers.cjs",
+    "tools/qa-synk-classroom-games.cjs",
+    "tools/qa-synk-classroom-memory.cjs",
+    "tools/qa-synk-classroom.cjs",
+    "tools/synk-classroom-build.js",
+    "tools/synk-town-build.js",
+    "tools/world-v1-local-db.js"
+  ],
+  "unexpectedChangedPaths": [],
+  "unstagedOnly": true,
+  "sourceWorktreeStatus": "M docs/_ops/배포장부.jsonl",
+  "testCompatibilityEdits": [
+    {
+      "file": "tests/synk-server.test.js",
+      "line": 252,
+      "reason": "Existing Google identity assertion predates deployed v53/v55 registrationRequired/phoneVerified response fields. Preserve live runtime; assert the verified contract.",
+      "sha256": "abec54f4975c47ed9d0501d62cbdf0647c8410cac3b65c6f5d7a96091e05f8b8",
+      "runtimeModified": false
+    }
+  ],
+  "finalValidation": {
+    "uniqueRelevantTests": 178,
+    "initialRun": {
+      "total": 178,
+      "passed": 177,
+      "failed": 1
+    },
+    "changedTestFileRetry": {
+      "total": 27,
+      "passed": 27,
+      "failed": 0
+    },
+    "remainingFailures": 0,
+    "fullSuiteRerun": false,
+    "reason": "Only a test expectation changed after the combined run; the complete changed test file passed on retry.",
+    "runtimeSourceClosureModules": 21,
+    "runtimeSourceClosureExact": true,
+    "builderChecksPassed": 3
+  },
+  "finishedAt": "2026-10-09T20:36:56.959Z",
+  "allPreparedChecksPassed": true
+}

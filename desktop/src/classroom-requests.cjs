@@ -7,6 +7,8 @@ const ROUTES=Object.freeze({
   stopRun:['POST','world/runs/stop'],learningGet:['GET','world/learning'],learningPost:['POST','world/learning'],
   townRead:['GET','world/town'],townCommand:['POST','world/town/command'],assignments:['POST','assignments'],
   assignmentUpdate:['POST','assignments/update'],assignmentCancel:['POST','assignments/cancel'],observations:['POST','observations'],
+  teacherOverview:['GET','teacher/overview'],care:['GET','teacher/care'],careSave:['POST','teacher/care'],enrollmentInvite:['POST','teacher/invites'],enrollmentPreview:['POST','enrollment/preview'],enrollmentClaim:['POST','enrollment/claim'],
+  townMembership:['GET','world/town/membership'],townSharing:['POST','world/town/sharing'],townActivity:['POST','world/town/activity'],
 });
 function invalid(){throw Object.assign(new Error('수업 요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});}
 const record=value=>!!value&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
@@ -25,7 +27,7 @@ function classroomRequestSpec(params,product){
   const {operation,classId,query,body}=params;
   if(typeof operation!=='string'||!Object.hasOwn(ROUTES,operation))invalid();
   const [method,route]=ROUTES[operation],search=new URLSearchParams();
-  if(operation==='classes'){if(classId!==undefined)invalid();}
+  if(['classes','teacherOverview','enrollmentPreview','enrollmentClaim'].includes(operation)){if(classId!==undefined)invalid();}
   else {if(typeof classId!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(classId))invalid();search.set('classId',classId);}
   if(operation==='learningGet'){
     if(!record(query)||Object.keys(query).some(key=>!['after','revision'].includes(key)))invalid();

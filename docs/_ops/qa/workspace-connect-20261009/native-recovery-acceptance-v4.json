@@ -1,0 +1,95 @@
+{
+  "completedAt": "2026-10-09T20:03:05.117Z",
+  "status": "installed-and-verified",
+  "manifestPath": ".tmp/desktop-native-workspace-connect-final-20261010-v4/manifest.json",
+  "manifestSHA256": "db4a2194cb5f539fe5db5bacce0780043a8c931ac9c5cca9ec312b4a0b9898c4",
+  "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179",
+  "reviewedSourceHash": "3fb619e66ca038bd2f7c4c30989e203953efcd1eb9425bd30462b3e836b6d22b",
+  "files": [
+    {
+      "clientId": "world",
+      "file": "app.asar",
+      "sha256": "0840f2e6f7f698b887b6ad0eb39b4bad11dc40db9d6854168e15590df770f170",
+      "expectedSHA256": "0840f2e6f7f698b887b6ad0eb39b4bad11dc40db9d6854168e15590df770f170",
+      "pass": true
+    },
+    {
+      "clientId": "world",
+      "file": "synk-install.json",
+      "sha256": "b04342ce0915b6b0a92e85b0fc2b99e2ea4ef1ef5a2ebf83b75b4bda943f392a",
+      "expectedSHA256": "b04342ce0915b6b0a92e85b0fc2b99e2ea4ef1ef5a2ebf83b75b4bda943f392a",
+      "pass": true
+    },
+    {
+      "clientId": "messenger",
+      "file": "app.asar",
+      "sha256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+      "expectedSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+      "pass": true
+    },
+    {
+      "clientId": "messenger",
+      "file": "synk-install.json",
+      "sha256": "e7e89d34fd6a52c09bc4887a37a38f310479605c7941330c901cf2ec2c07829e",
+      "expectedSHA256": "e7e89d34fd6a52c09bc4887a37a38f310479605c7941330c901cf2ec2c07829e",
+      "pass": true
+    },
+    {
+      "clientId": "platform",
+      "file": "app.asar",
+      "sha256": "1acaf762ff06a606d6ad9e91972f286a980f657e45fee4b2e2842b8ec84f4f39",
+      "expectedSHA256": "1acaf762ff06a606d6ad9e91972f286a980f657e45fee4b2e2842b8ec84f4f39",
+      "pass": true
+    },
+    {
+      "clientId": "platform",
+      "file": "synk-install.json",
+      "sha256": "0a59c4b1469049143425218e4ba556120779183a6a147ea7b9627e28c1c42b12",
+      "expectedSHA256": "0a59c4b1469049143425218e4ba556120779183a6a147ea7b9627e28c1c42b12",
+      "pass": true
+    }
+  ],
+  "executables": [
+    {
+      "clientId": "world",
+      "sha256": "64eb5f2bfcb0da4e714c065c9c7715b49e27554be1c553f45736a7a546ac1d78",
+      "preserved": true
+    },
+    {
+      "clientId": "messenger",
+      "sha256": "f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481",
+      "preserved": true
+    },
+    {
+      "clientId": "platform",
+      "sha256": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+      "preserved": true
+    }
+  ],
+  "onlyUpdatedRuntimeFiles": [
+    "renderer/launcher.mjs",
+    "renderer/platform-continuity.mjs"
+  ],
+  "preserved": "Installed identities, authentication configuration, WORLD external-link security fix and existing user profile/vault paths. Profile/vault content was not accessed.",
+  "officialGate": ".tmp/workspace-connect-20261009/native-install-gate-v4.json",
+  "installReceipt": ".tmp/workspace-connect-20261009/native-install-result-v4.json",
+  "rollbackBackup": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\native-installed-v4-backup-20261009T200252Z",
+  "review": {
+    "model": "claude-opus-5-5",
+    "effort": "max",
+    "normalCompletion": true,
+    "validation": "docs/_ops/qa/native-followup-corrections-20261010/notice-review/official-review-validation.json",
+    "raw": "docs/_ops/qa/native-followup-corrections-20261010/notice-review/official-review.json"
+  },
+  "tests": {
+    "common": 507,
+    "related": 138,
+    "packagedApps": 3,
+    "actualElectronUI": 12,
+    "uiProof": "docs/_ops/qa/workspace-connect-20261009/recovery-ui-v4/result.json"
+  },
+  "realAuthenticationPerformed": false,
+  "realStudentAcceptance": false,
+  "userBoundary": "2026-10-10: 먼저 기존 연결·설치 검증까지 마무리. Actual teacher/student sign-in, enrollment and sharing consent remain a separate user-led acceptance.",
+  "supersedes": "docs/_ops/qa/workspace-connect-20261009/native-final-acceptance.json"
+}

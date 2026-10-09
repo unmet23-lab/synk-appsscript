@@ -1,0 +1,66 @@
+{
+  "completedAt": "2026-10-09T19:17:12.0323505Z",
+  "status": "installed-and-visible-app-verified",
+  "manifestSHA256": "248b2f054db0be63472d4378faa917141758233c0b218025524c74699b69848d",
+  "files": [
+    {
+      "clientId": "world",
+      "file": "app.asar",
+      "sha256": "347aa987a1758412036f295d259f2b5ddb381b36bfaf7c4805f892d7a5e1ba9d",
+      "expectedSHA256": "347aa987a1758412036f295d259f2b5ddb381b36bfaf7c4805f892d7a5e1ba9d",
+      "pass": true
+    },
+    {
+      "clientId": "world",
+      "file": "synk-install.json",
+      "sha256": "abaaee8d1df71f38a271ae775982b572d6a0e5ea5dc4e061cc994ee8bcd2e8a1",
+      "expectedSHA256": "abaaee8d1df71f38a271ae775982b572d6a0e5ea5dc4e061cc994ee8bcd2e8a1",
+      "pass": true
+    },
+    {
+      "clientId": "messenger",
+      "file": "app.asar",
+      "sha256": "1020b3804f01ab6c9abe71602352d865f653fc1fe53455493983ba3479469b49",
+      "expectedSHA256": "1020b3804f01ab6c9abe71602352d865f653fc1fe53455493983ba3479469b49",
+      "pass": true
+    },
+    {
+      "clientId": "messenger",
+      "file": "synk-install.json",
+      "sha256": "352d31cbc6dcef1dda283e9090d3a4dd99bd864edc66a930f5653197625d54f4",
+      "expectedSHA256": "352d31cbc6dcef1dda283e9090d3a4dd99bd864edc66a930f5653197625d54f4",
+      "pass": true
+    },
+    {
+      "clientId": "platform",
+      "file": "app.asar",
+      "sha256": "61743d52155a0a484b73abd80a0f9c64549d320b90deddee04c483001661d94c",
+      "expectedSHA256": "61743d52155a0a484b73abd80a0f9c64549d320b90deddee04c483001661d94c",
+      "pass": true
+    },
+    {
+      "clientId": "platform",
+      "file": "synk-install.json",
+      "sha256": "28d3c8e403f06e5457ddad562ef9784b19953ad84714c9948fa37ba64e31642f",
+      "expectedSHA256": "28d3c8e403f06e5457ddad562ef9784b19953ad84714c9948fa37ba64e31642f",
+      "pass": true
+    }
+  ],
+  "actualWorldUI": {
+    "realInstalledArchive": true,
+    "authenticationInteracted": false,
+    "networkMocked": false,
+    "screenshot": "docs/_ops/qa/workspace-operating-connect-20261009/desktop/installed-world-v3.jpg",
+    "realInstalledExecutable": true,
+    "physicalEscapeStoppedFurtherComputerUse": true,
+    "visible": true,
+    "appDataIsolated": true,
+    "normalExitCode": 0
+  },
+  "profileAccess": false,
+  "vaultAccess": false,
+  "realStudentAcceptance": false,
+  "installReceipt": ".tmp/workspace-connect-20261009/native-install-result-v3.json",
+  "officialGate": ".tmp/workspace-connect-20261009/native-install-gate-v3.json",
+  "additionalP3RecoveryGuidanceFindings": 2
+}

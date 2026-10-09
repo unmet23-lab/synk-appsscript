@@ -92,6 +92,18 @@
       "sha256": "75cbfc589fd9c97232eea14673f3965eba0d511886bc3afef8520c0e8264557e"
     },
     {
+      "name": "care-note.webp",
+      "source": "docs/디자인/펠트부품/assets/배경/note-brief.webp",
+      "bytes": 214486,
+      "sha256": "4f1f9e4f4798d246674ffd2ef3f65346e08140aeae2994783a0d670d06ab5c78"
+    },
+    {
+      "name": "fortune-star.avif",
+      "source": "docs/Loom_자산/구움/공방_별똥별.avif",
+      "bytes": 530728,
+      "sha256": "17db6ffb3996b785bfa4c00e9fc904f760f6f3ec4bbde9ca589b1c677b4a54be"
+    },
+    {
       "name": "studio-camera.webp",
       "source": "experiences/entry-check/assets/items/camera.webp",
       "bytes": 19154,

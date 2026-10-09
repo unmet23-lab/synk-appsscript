@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-10-09T18:21:43.327Z",
+  "project": "qiwxeddwwnzkwalpsuty",
+  "commit": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+  "functionsVerifiedAt": "2026-10-09T17:52:15.295Z",
+  "functions": [
+    {
+      "slug": "synk-classroom",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "exactSourceModules": 2,
+      "sourceMatches": true
+    },
+    {
+      "slug": "synk-world-v1",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "exactSourceModules": 2,
+      "sourceMatches": true
+    },
+    {
+      "slug": "synk-town",
+      "version": 2,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "exactSourceModules": 2,
+      "sourceMatches": true
+    },
+    {
+      "slug": "synk-account",
+      "version": 55,
+      "status": "ACTIVE",
+      "verifyJwt": true,
+      "exactSourceModules": 15,
+      "sourceMatches": true
+    }
+  ],
+  "flagsVerifiedAt": "2026-10-09T17:50:57.741Z",
+  "flags": {
+    "SYNK_CLASSROOM_ENABLED": true,
+    "SYNK_WORLD_V1_ENABLED": true,
+    "SYNK_TOWN_ENABLED": true
+  },
+  "otherSecretsPreserved": true,
+  "databaseVerifiedAt": "2026-10-09T17:54:13.275Z",
+  "database": {
+    "structuralChecksPass": true,
+    "matchingMigrationLedgers": 8,
+    "privateTables": 14,
+    "triggers": 10,
+    "indexes": 7,
+    "rosterUnchanged": true,
+    "roster": {
+      "class_total": 1,
+      "staff_total": 2,
+      "class_active": 1,
+      "staff_active": 2,
+      "learner_total": 1,
+      "learner_active": 1,
+      "learner_linked": 0,
+      "learner_unlinked": 1,
+      "staff_class_links": 2
+    }
+  },
+  "staffLinkVerifiedAt": "2026-10-09T18:21:43.261Z",
+  "staff": {
+    "staff_total": 2,
+    "staff_active": 2,
+    "staff_linked": 2,
+    "staff_unlinked": 0,
+    "staff_active_linked": 2,
+    "staff_active_unlinked": 0
+  },
+  "primaryTests": {
+    "total": 34,
+    "pass": 34,
+    "fail": 0,
+    "logSha256": "428a2aa5939570932dc4e6628b27a2c5c51d1f842b159120a1f3c47929e8cb4e"
+  },
+  "realStudentEnrollmentVerified": false,
+  "staffIdentityAssigned": false,
+  "sourceEvidence": [
+    ".tmp/workspace-connect-20261009/backend-final-handoff.json",
+    ".tmp/workspace-connect-20261009/backend-deploy-v3/postflight-after-flags.json",
+    ".tmp/workspace-connect-20261009/operations-read/flags-activation.json",
+    ".tmp/workspace-connect-20261009/operations-read/final-backend-structure.json",
+    ".tmp/workspace-connect-20261009/operations-read/staff-link-aggregate.json"
+  ]
+}

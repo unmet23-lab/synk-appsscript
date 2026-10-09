@@ -62,6 +62,10 @@ const searchIcon = () => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="tru
 
 async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
   const authStamp=companyAuthSnapshot();
+  if(authStamp.userId&&typeof ensureNativeSynkCompanySession==='function'){
+    const recovery=ensureNativeSynkCompanySession();if(recovery?.then)await recovery;
+    if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
+  }
   path = demoApiUrl(path,method);
   const response = await fetch(path, { method, credentials: 'same-origin', headers: { ...(isDemoMode() && !['/api/me','/api/login','/api/logout','/api/launch'].includes(path.split('?')[0]) ? {'X-Synk-Demo':'1'} : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(method !== 'GET' && state.csrf ? { 'X-CSRF-Token': state.csrf } : {}) }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
   const content = await response.json().catch(() => ({}));
@@ -118,13 +122,28 @@ async function initialize() {
   try {
     const params = new URLSearchParams(location.hash.replace(/^#/, ''));
     const requestedView=new URLSearchParams(location.search).get('tab')||params.get('view');
-    if(isDemoMode()&&['messenger','home','workroom','handbook'].includes(requestedView)){location.replace(requestedView==='home'?demoHomeUrl():requestedView==='workroom'?demoWorkroomUrl():requestedView==='handbook'?demoHandbookUrl():demoMessengerUrl());return;}
+    if(isDemoMode()&&['messenger','home','workroom','handbook','teaching'].includes(requestedView)){location.replace(requestedView==='teaching'?demoTeachingUrl():requestedView==='home'?demoHomeUrl():requestedView==='workroom'?demoWorkroomUrl():requestedView==='handbook'?demoHandbookUrl():demoMessengerUrl());return;}
     selectWorkspaceView(requestedView,new URLSearchParams(location.search).get('section')||params.get('section')||'',new URLSearchParams(location.search).get('teamId')||params.get('teamId')||undefined,new URLSearchParams(location.search).get('draftId')||params.get('draftId')||undefined);
     const launch = params.get('launch');
     if (launch) { history.replaceState(null, '', location.pathname + location.search); await api('/api/launch', { token: launch }); }
-    const me = await api('/api/me');
+    // A teacher-only account can enter its classroom without company membership.
+    if(state.tab==='teaching'&&!isDemoMode()){
+      let me=await api('/api/me');
+      // Native teacher entry must not expose an old company's cookie identity.
+      const native=window.synkDesktop?.teacher?await window.synkDesktop.authStatus():null;
+      const companyAllowed=!native||native.signedIn&&native.account?.synk_user_id===me.synkUserId;
+      if(native&&companyAllowed&&me.user){const checked=await prepareNativeSynkCompanyEntry();if(checked===false){renderTeachingOnly();return;}me=checked?.me||me;assertSynkPlatformIdentity(me,checked);}
+      state.csrf=companyAllowed?me.csrfToken||'':'';state.user=companyAllowed?me.user:null;state.synkUserId=companyAllowed?me.synkUserId||null:null;state.platformUrl=me.platformUrl||null;
+      if(!state.user){renderTeachingOnly();state.initialized=true;return;}
+      await loadState();state.initialized=true;startPolling();return;
+    }
+    const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;
+    if(synkEntry===false)return;
+    const me = synkEntry?.me||await api('/api/me');
+    if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);
     state.csrf = me.csrfToken || '';
     state.user = me.user;
+    state.synkUserId = me.synkUserId || null;
     state.platformUrl = me.platformUrl || null;
     if (params.get('invite')) { state.authMode = 'join'; state.authToken = params.get('invite'); history.replaceState(null, '', location.pathname + location.search); }
     else if (me.needsSetup || params.get('setup')) { state.authMode = 'setup'; state.authToken = params.get('setup') || ''; if (params.get('setup')) history.replaceState(null, '', location.pathname + location.search); }
@@ -138,7 +157,7 @@ async function initialize() {
     if (status.get('connected')) { notify('계정 연결과 첫 수집을 확인했어요. 채널별 수집 결과를 살펴보세요.'); state.tab = 'channels'; render(); }
     if (status.get('connectionError')) { notify(status.get('connectionError')); state.tab = 'channels'; render(); }
     if (status.has('connected') || status.has('connectionError')) { const resultUrl=new URL(location.href);resultUrl.searchParams.delete('connected');resultUrl.searchParams.delete('connectionError');history.replaceState(null,'',resultUrl.pathname+resultUrl.search+resultUrl.hash); }
-  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>성장 현황에 연결하지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 연결', 'reload', 'refresh', 'primary')}</div></main>`; }
+  } catch (err) { if(err.code==='SESSION_CHANGED')return; app.innerHTML = `<main class="initial-loading" id="main"><img class="brand-logo" src="/wordmark.svg" alt="싱ㅋ"><div class="empty"><h3>성장 현황에 연결하지 못했어요</h3><p>${escape(err.message)}</p>${button('다시 연결', 'reload', 'refresh', 'primary')}</div></main>`;if(typeof renderSynkPlatformEntryRecovery==='function')renderSynkPlatformEntryRecovery(err); }
 }
 async function loadState() {
   const authStamp=companyAuthSnapshot();if(!authStamp.userId)throw companyAuthChanged();
@@ -191,6 +210,8 @@ async function loadHype() {
 }
 
 function renderAuth() {
+  if(typeof resetTeachingWorkspace==='function')resetTeachingWorkspace();
+  if(typeof resetNativeSynkCompanyView==='function')resetNativeSynkCompanyView();
   if(typeof wpSyncIdentity==='function')wpSyncIdentity();
   if(typeof resetMarinHome==='function')resetMarinHome();
   if(typeof hideChartLeaders==='function')hideChartLeaders(true);
@@ -203,6 +224,7 @@ function renderAuth() {
   if(!setup&&!join&&typeof installSynkLogin==='function')void installSynkLogin();
 }
 function shell(content) {
+  if(typeof teachingPrepareRender==='function')teachingPrepareRender();
   const practiceEdit=typeof wpCaptureEdit==='function'?wpCaptureEdit():null;
   if(practiceEdit?.composing){syncWorkspaceLocation();return;}
   if(state.tab==='home'&&typeof marinHomeShell==='function'){
@@ -210,6 +232,7 @@ function shell(content) {
     const input=document.getElementById('marin-input'),editing=input&&document.activeElement===input,selection=editing?[input.selectionStart,input.selectionEnd,input.selectionDirection]:null,logTop=document.getElementById('marin-conversation')?.scrollTop;
     if(editing&&marinHome.composing){syncWorkspaceLocation();mountWorkspaceModule();return;}
     app.innerHTML=marinHomeShell(content);renderedTab='home';state.workspaceSidebarOpen=false;syncWorkspaceSidebar();syncWorkspaceLocation();mountWorkspaceModule();syncMarinHome();
+    if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
     if(logTop!=null){const log=document.getElementById('marin-conversation');if(log)log.scrollTop=logTop;}
     if(editing){const restored=document.getElementById('marin-input');restored?.focus({preventScroll:true});restored?.setSelectionRange(...selection);}
     return;
@@ -229,10 +252,11 @@ function shell(content) {
   for(const id of openDetails){const element=document.getElementById(id);if(element?.tagName==='DETAILS')element.open=true;}
   syncWorkspaceLocation();
   mountWorkspaceModule();
+  if(typeof ensureTeachingWorkspace==='function')ensureTeachingWorkspace();
   if(state.tab==='workroom'&&typeof ensureWorkroom==='function')ensureWorkroom();
   if(state.tab==='handbook'&&typeof ensureCompanyGuide==='function')ensureCompanyGuide();
 }
-function render() { if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { renderAuth(); return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if ((!isAdmin() && state.tab === 'settings') || (!canManageTeam() && state.tab === 'members')) state.tab = 'overview'; if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
+function render() { if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { if(state.tab==='teaching'&&!isDemoMode()&&typeof renderTeachingOnly==='function')renderTeachingOnly();else renderAuth();return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if ((!isAdmin() && state.tab === 'settings') || (!canManageTeam() && state.tab === 'members')) state.tab = 'overview'; if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ teaching:typeof teachingWorkspacePage==='function'?teachingWorkspacePage:()=>'',home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
 function pageHeading(kicker,title,description,actions='') { const names={'EXPLORE YOUR GROWTH':'성과 분석','CHANNEL LIBRARY':'채널','PEOPLE & TEAMS':'팀·크루','COLLECTION CENTER':'수집 센터'};return `<header class="page-heading"><div><h1>${names[kicker]||title}</h1><p>${description}</p></div>${actions?`<div class="heading-actions">${actions}</div>`:''}</header>`; }
 function marketingScopeDescription() {
   return state.scope === 'mine' ? '내가 담당하는 채널의 성과와 다음 할 일을 확인하세요.' : state.scope === 'team' ? '팀별 성과를 한눈에 비교하고, 선택한 팀의 흐름을 살펴보세요.' : isAdmin() ? '회사 전체 채널의 성과와 운영 상태를 한눈에 확인하세요.' : '내 권한으로 열람할 수 있는 모든 채널을 모아 봅니다.';
@@ -551,7 +575,7 @@ document.addEventListener('click', async event => {
     if (action === 'cancel-handoff-confirm') { target.disabled = true; await api(`/api/channels/${encodeURIComponent(id)}/handoff/cancel`,{}); closeModal(); await loadState(); notify('이관 요청을 취소했어요.'); return; }
     if (action === 'tab') { if(target.tagName==='A'&&(event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return; event.preventDefault(); selectWorkspaceView(target.dataset.tab); state.error = ''; state.report = null; render(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); window.scrollTo(0,0); return; }
     if (action === 'close-modal') { closeModal(); return; }
-    if (action === 'logout') { const stamp=companyAuthSnapshot();await globalThis.SynkDeviceNotifications?.beforeLogout().catch(()=>{});if(!companyAuthCurrent(stamp))return;const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; clearInterval(pollTimer); clearInterval(hypePollTimer); state.hypeRequest++; state.hype = null; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning)notify(logoutResult.warning); return; }
+    if (action === 'logout') { const stamp=companyAuthSnapshot();await globalThis.SynkDeviceNotifications?.beforeLogout().catch(()=>{});if(!companyAuthCurrent(stamp))return;const logoutResult=await logoutSynkCompany(); if(!logoutResult.done)return; const teachingWarning=typeof logoutTeachingForCompany==='function'?await logoutTeachingForCompany():'';if(!companyAuthCurrent(stamp))return; clearInterval(pollTimer); clearInterval(hypePollTimer); state.hypeRequest++; state.hype = null; if(typeof resetContentWorkspace==='function')resetContentWorkspace(); if(typeof resetStudioWorkspace==='function')resetStudioWorkspace(); state.user = null; state.csrf = ''; state.data = null; state.report = null; state.authMode = 'login'; state.tab='home'; closeModal(); renderAuth(); if(logoutResult.warning||teachingWarning)notify([logoutResult.warning,teachingWarning].filter(Boolean).join(' ')); return; }
     if (action === 'refresh') { target.disabled = true; await loadState(); if (reportTabs()) await loadReport(); if(state.tab==='content')await loadContentWorkspace(); notify('최신 상태로 불러왔어요.'); return; }
     if (action === 'add-channel') { addChannelModal(); return; }
     if (action === 'day') { await dayModal(target.dataset.date); return; }
@@ -601,11 +625,13 @@ document.addEventListener('submit', async event => {
       case 'assignment': { if (values.role === 'manager' && !values.teamId) throw new Error('팀장은 소속 팀을 선택해 주세요.'); const ownTeam = form.dataset.id === state.user.id && state.user.role === 'admin'; await api(`/api/members/${encodeURIComponent(form.dataset.id)}/assignment`,{teamId:values.teamId || null,role:values.role}); closeModal(); await loadState(); notify(ownTeam ? '내 소속 팀을 저장했어요.' : '크루의 팀과 역할을 저장했어요.'); break; }
       case 'channel-details': { await api(`/api/channels/${encodeURIComponent(form.dataset.id)}/details`,values); closeModal(); await loadState(); notify('채널 정보를 저장했어요.'); break; }
       case 'auth': {
+        if(!isDemoMode()&&typeof assertSynkCompanyPasswordAllowed==='function')assertSynkCompanyPasswordAllowed();
         const endpoint = state.authMode === 'join' ? '/api/join' : state.authMode === 'setup' ? '/api/setup' : '/api/login';
         if (state.authMode === 'join') values.token = state.authToken;
         if (state.authMode === 'setup') values.setupToken = state.authToken || values.setupToken;
         await api(endpoint, values); state.authMode = 'login'; state.authToken = '';
-        const me = await api('/api/me'); state.platformUrl = me.platformUrl || null; state.user = me.user; state.csrf = me.csrfToken || ''; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
+        const synkEntry=!isDemoMode()&&typeof prepareSynkCompanyEntry==='function'?await prepareSynkCompanyEntry():true;if(synkEntry===false)break;
+        const me = synkEntry?.me||await api('/api/me');if(!isDemoMode()&&typeof assertSynkPlatformIdentity==='function')assertSynkPlatformIdentity(me,synkEntry);state.platformUrl = me.platformUrl || null; state.user = me.user; state.csrf = me.csrfToken || ''; await loadState(); if(reportTabs())await loadReport(); if(state.tab==='content')await loadContentWorkspace(); startPolling(); break;
       }
       case 'add-channels': {
         const urls = values.urls.split(/\r?\n/).map(url => url.trim()).filter(Boolean), results = { added: [], existing: [], errors: [] };
@@ -643,4 +669,5 @@ function moveRange(direction) {
     state.start = first.toISOString().slice(0, 10); state.end = last.toISOString().slice(0, 10) > reportToday() ? reportToday() : last.toISOString().slice(0, 10);
   } else { const length = Math.round((Date.parse(state.end) - Date.parse(state.start)) / 86400000) + 1; let start = shiftDate(state.start, length * direction), end = shiftDate(state.end, length * direction); if (end > reportToday()) { end = reportToday(); start = shiftDate(end, -(length - 1)); } state.start = start; state.end = end; }
 }
+window.synkDesktop?.onOpenView?.(view=>{if(view!=='teaching')return;selectWorkspaceView('teaching');closeModal();render();const url=new URL(location.href);url.searchParams.set('tab','teaching');history.replaceState(null,'',url.pathname+url.search+url.hash);});
 initialize();

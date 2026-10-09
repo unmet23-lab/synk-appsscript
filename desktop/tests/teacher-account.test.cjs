@@ -14,10 +14,10 @@ test('teacher is a distinct OAuth registration and vault fingerprint within the 
 test('teacher broker cannot access learner learning, town, company or arbitrary API operations',async()=>{
  const calls=[],auth={accountRequest:async(...args)=>{calls.push(args);return{ok:true};}};
  for(const operation of ['load','release','updateProfile','revokeSession','revokeAll','requestDeletion','exportPage'])assert.equal((await teacherAccountRequest(auth,operation)).ok,true);
- for(const operation of ['classes','workspace','assignments','assignmentUpdate','assignmentCancel','observations'])assert.equal((await teacherAccountRequest(auth,'classroom',{operation})).ok,true);
+ for(const operation of ['classes','teacherOverview','workspace','care','careSave','enrollmentInvite','assignments','assignmentUpdate','assignmentCancel','observations'])assert.equal((await teacherAccountRequest(auth,'classroom',{operation})).ok,true);
  const before=calls.length;
  for(const operation of ['setLearning','learningGet','learningPost','memoryGet','memoryPost','atlasSummary','companyRequest','__proto__'])assert.equal((await teacherAccountRequest(auth,operation)).error.code,'INVALID_REQUEST');
- for(const operation of ['student','account','startRun','submit','sharing','townRead','townCommand','learningPost'])assert.equal((await teacherAccountRequest(auth,'classroom',{operation})).error.code,'INVALID_REQUEST');
+ for(const operation of ['enrollmentPreview','enrollmentClaim','student','account','startRun','submit','sharing','townRead','townCommand','townMembership','townSharing','townActivity','learningPost'])assert.equal((await teacherAccountRequest(auth,'classroom',{operation})).error.code,'INVALID_REQUEST');
  assert.equal(calls.length,before);
 });
 test('real teacher handler rejects other windows and frames before account dispatch',async()=>{

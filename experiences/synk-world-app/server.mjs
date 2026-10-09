@@ -5,19 +5,24 @@ import {randomBytes,randomUUID} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {createRequire} from 'node:module';
 import {createAccountTownHost} from './town-host.mjs';
+import {publicWorldConfig} from './operating-mode.mjs';
 const require=createRequire(import.meta.url);
 const root=fileURLToPath(new URL('./',import.meta.url));
 const home=path.resolve(root,'../synk-world-home');
 const town=path.resolve(root,'../synk-town');
+const brandOpening=path.resolve(root,'../brand-opening');
 const talk=path.resolve(root,'../../../SYNK-talk');
 const port=Number(process.env.SYNK_WORLD_PORT||4296);
 const {createWorldV1Service}=require(path.join(talk,'lib/world-v1-server.js'));
 const {createWorldV1Store}=require(path.join(talk,'lib/world-v1-store.js'));
 const {createWorldV1LocalDb}=require(path.join(talk,'tools/world-v1-local-db.js'));
-fs.mkdirSync(path.join(root,'.local'),{recursive:true});
+const mode=process.env.SYNK_WORLD_MODE||'rehearsal';
+if(!['rehearsal','account'].includes(mode))throw Error('SYNK_WORLD_MODE must be rehearsal or account');
+const publicConfig=publicWorldConfig(mode==='account'?{mode,basePath:process.env.SYNK_WORLD_BASE_PATH||'/',account:JSON.parse(fs.readFileSync(process.env.SYNK_WORLD_ACCOUNT_CONFIG,'utf8'))}:{mode,basePath:'/'},`http://127.0.0.1:${port}/`);
+if(mode==='rehearsal')fs.mkdirSync(path.join(root,'.local'),{recursive:true});
 const dataDir=process.env.SYNK_WORLD_DATA_DIR||path.join(root,'.local/db-v1');
-const database=await createWorldV1LocalDb({dataDir});
-const townHost=createAccountTownHost({directory:`${dataDir}-town`});
+const database=mode==='rehearsal'?await createWorldV1LocalDb({dataDir}):null;
+const townHost=mode==='rehearsal'?createAccountTownHost({directory:`${dataDir}-town`}):null;
 const sessions=new Map();
 const ids={'player-a':'11111111-1111-4111-8111-111111111111','player-b':'22222222-2222-4222-8222-222222222222'};
 const allowedGames=new Set(['korean-runner','korean-rhythm','hangul-stage']);
@@ -26,7 +31,7 @@ function sessionCookieName(request){const tab=request.headers.get('x-synk-rehear
 function cookieToken(request){const name=sessionCookieName(request);return request.headers.get('cookie')?.match(new RegExp(`(?:^|;\\s*)${name}=([A-Za-z0-9_-]+)(?:;|$)`))?.[1];}
 function requestToken(request){return request.headers.get('authorization')?.match(/^Bearer ([A-Za-z0-9_-]+)$/)?.[1]||cookieToken(request);}
 function identity(request){const token=requestToken(request);const entry=sessions.get(token);if(!entry||entry.expires<Date.now()){sessions.delete(token);throw Object.assign(Error('AUTH_REQUIRED'),{status:401,code:'AUTH_REQUIRED'});}return entry.identity;}
-const service=createWorldV1Service({store:createWorldV1Store(database.sql),verify:async request=>identity(request),enabled:()=>true});
+const service=database?createWorldV1Service({store:createWorldV1Store(database.sql),verify:async request=>identity(request),enabled:()=>true}):null;
 const json=(res,status,data,headers={})=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...headers});res.end(JSON.stringify(data));};
 async function body(req){let size=0;const chunks=[];for await(const chunk of req){size+=chunk.length;if(size>16384)throw Object.assign(Error('PAYLOAD_TOO_LARGE'),{status:413});chunks.push(chunk);}return Buffer.concat(chunks);}
 const server=http.createServer(async(req,res)=>{
@@ -34,8 +39,11 @@ const server=http.createServer(async(req,res)=>{
   const expectedHost=new Set([`127.0.0.1:${port}`,`localhost:${port}`,`10.0.2.2:${port}`]);if(!expectedHost.has(req.headers.host))return json(res,403,{ok:false,error:{code:'HOST_FORBIDDEN'}});
   const origin=req.headers.origin;if(origin&&!new Set([`http://127.0.0.1:${port}`,`http://localhost:${port}`]).has(origin))return json(res,403,{ok:false,error:{code:'ORIGIN_FORBIDDEN'}});
   const url=new URL(req.url,`http://127.0.0.1:${port}`);
-  if(url.pathname==='/health')return json(res,200,{ok:true,rehearsal:true,database:'local-postgresql',production:false});
+  if(publicConfig.basePath!=='/'&&url.pathname.startsWith(publicConfig.basePath))url.pathname='/'+url.pathname.slice(publicConfig.basePath.length);
+  if(url.pathname==='/world-config.json'){if(req.method!=='GET')return json(res,405,{error:'METHOD_NOT_ALLOWED'});return json(res,200,publicConfig);}
+  if(url.pathname==='/health')return json(res,200,{ok:true,mode,rehearsal:mode==='rehearsal',database:database?'local-postgresql':null,production:false});
   if(url.pathname.startsWith('/api/world/')){
+   if(mode!=='rehearsal')return json(res,404,{ok:false,error:{code:'REHEARSAL_DISABLED'}});
    const tab=req.headers['x-synk-rehearsal-tab'];if(tab!==undefined&&(typeof tab!=='string'||!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(tab)))return json(res,400,{ok:false,error:{code:'REHEARSAL_TAB_INVALID'}});
    if(!['GET','POST','PUT'].includes(req.method))return json(res,405,{ok:false,error:{code:'METHOD_NOT_ALLOWED'}});
    if(req.method!=='GET'&&!req.headers['content-type']?.startsWith('application/json'))return json(res,415,{ok:false,error:{code:'JSON_REQUIRED'}});
@@ -65,13 +73,16 @@ const server=http.createServer(async(req,res)=>{
   // Reject alternate Windows separators before any prefix allowlist or path resolution.
   if(/[\\\0]/.test(pathname)||pathname.split('/').some(segment=>segment==='.'||segment==='..')){res.writeHead(403).end();return;}
   const first=pathname.split('/')[1];
-  if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
-  else if(['/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs'].includes(pathname))base=root;
+  if(first==='brand-opening'){base=brandOpening;pathname=pathname.slice(first.length+1);}
+  else if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
+  else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
+  else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
+  else if(['/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;
    if(pathname==='/day.html'){
-    const html=fs.readFileSync(path.join(town,'day.html'),'utf8').replace('<head>','<head><script>window.__SYNK_WORLD_TOWN__={rehearsal:true,accountScoped:true};</script>');
+    const html=fs.readFileSync(path.join(town,'day.html'),'utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_TOWN__=${JSON.stringify({mode,rehearsal:mode==='rehearsal',accountScoped:true,basePath:publicConfig.basePath})};</script>`);
     res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(req.method==='HEAD'?undefined:html);return;
    }
    if(pathname.startsWith('/day-assets/')){
@@ -81,10 +92,11 @@ const server=http.createServer(async(req,res)=>{
     else if(file==='felt-coral.webp'){base=home;pathname='/assets/'+file;}
     else if(['azure-sky-v3.jpg','azure-sky-v3-mobile.jpg','terrain-normal.jpg','cliff-normal.jpg'].includes(file)){base=home;pathname='/scene-assets/graphics-v2/'+file;}
     else {res.writeHead(404).end();return;}
-   }else if(!/^\/(?:(?:day-app\.mjs|day-style\.css|day-scene\.mjs|day-character\.mjs|day-residents\.mjs|day-environment\.mjs|day-materials\.mjs|day-rendering\.mjs|walk\.mjs|walk-controls\.mjs)$|rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise)\.js$|assets\/)/.test(pathname)){res.writeHead(404).end();return;}
+   }else if(!/^\/(?:(?:day-app\.mjs|day-style\.css|day-scene\.mjs|day-character\.mjs|day-residents\.mjs|day-environment\.mjs|day-materials\.mjs|day-rendering\.mjs|walk\.mjs|walk-controls\.mjs|town-layout\.mjs)$|rendering\/(?:Pass|RenderPass|EffectComposer|ShaderPass|MaskPass|OutputPass|CopyShader|OutputShader|SSAOPass|SSAOShader|SimplexNoise)\.js$|assets\/)/.test(pathname)){res.writeHead(404).end();return;}
   }
   else if(['/','/mobile.html','/desktop.html'].includes(pathname)){
-   const html=fs.readFileSync(path.join(home,'index.html'),'utf8').replace('<head>','<head><script>window.__SYNK_WORLD_CONNECTED__=true;</script>').replace('</head>','<link rel="stylesheet" href="/app-shell.css"><script type="module" src="/app-shell.mjs"></script></head>');
+   const cover='<div id="synk-opening-cover" aria-hidden="true" style="position:fixed;inset:0;background:#000;z-index:2147483646"></div><script>window.__synkOpeningSafetyTimer=setTimeout(function(){document.getElementById("synk-opening-cover")?.remove()},5000)</script>';
+   const html=fs.readFileSync(path.join(home,'index.html'),'utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_CONNECTED__=true;window.__SYNK_WORLD_CONFIG__=${JSON.stringify(publicConfig).replace(/</g,'\\u003c')};</script>`).replace('</head>','<link rel="stylesheet" href="/app-shell.css"><link rel="stylesheet" href="/brand-opening/opening.css"><script type="module" src="/app-shell.mjs"></script></head>').replace('<body>','<body>'+cover);
    res.writeHead(200,{'Content-Type':mime['.html'],'Cache-Control':'no-store'});res.end(req.method==='HEAD'?undefined:html);return;
   }
   if(pathname.endsWith('/'))pathname+='index.html';const target=path.resolve(base,'.'+pathname);const rel=path.relative(base,target);
@@ -96,4 +108,4 @@ const server=http.createServer(async(req,res)=>{
  }catch(error){if(res.headersSent){res.destroy();return;}json(res,error.status||500,{ok:false,error:{code:error.code==='AUTH_REQUIRED'?'AUTH_REQUIRED':error.status===413?'PAYLOAD_TOO_LARGE':'REHEARSAL_UNAVAILABLE'}});}
 });
 server.listen(port,'127.0.0.1',()=>console.log(`WORLD local app: http://127.0.0.1:${port}/mobile.html (synthetic accounts, no production access)`));
-for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>server.close(async()=>{await database.close();process.exit(0);}));
+for(const signal of ['SIGINT','SIGTERM'])process.once(signal,()=>server.close(async()=>{await database?.close();process.exit(0);}));

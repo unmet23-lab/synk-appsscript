@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer"><meta name="theme-color" content="#ffffff">
-  <title>SYNK WORLD · 교사</title>
+  <title>SYNK Workspace · 내 수업</title>
   <link rel="icon" href="./assets/app-world.png"><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./personalization.css">
 </head>
 <body>
   <div class="app-shell">
     <aside class="sidebar">
       <a class="brand" href="./" aria-label="교사 앱 홈"><img src="./assets/synk-logo.svg" alt="synk"></a>
-      <div class="product"><span>WORLD</span><p>교사 워크스페이스</p></div>
+      <div class="product"><span>Workspace</span><p>학생 상세와 수업 처리</p></div>
       <label class="field-label" for="class-select">내 수업</label>
       <select id="class-select" aria-label="반 선택"><option>수업 불러오는 중</option></select>
       <nav aria-label="주 메뉴">
@@ -18,10 +18,10 @@
         <button class="nav-button" data-view="assignments"><span class="nav-symbol">02</span>보낸 과제<span id="assignment-count" class="count">0</span></button>
         <button class="nav-button" data-view="review"><span class="nav-symbol">03</span>수업 관찰</button>
       </nav>
-      <div class="sidebar-bottom"><img src="./assets/sticker-book.webp" alt=""><p>한 명을 이해하면,<br>다음 수업이 달라져요.</p><span class="eyebrow">SYNK WORLD / TEACHER</span></div>
+      <div class="sidebar-bottom"><img src="./assets/sticker-book.webp" alt=""><p>한 명을 이해하면,<br>다음 수업이 달라져요.</p><span class="eyebrow">SYNK Workspace · 내 수업</span></div>
     </aside>
     <div class="workspace">
-      <header class="topbar"><span class="breadcrumb">SYNK WORLD <span>/</span> 교사</span><div><span id="mode-badge" class="demo-badge">연결 확인 중</span><button id="personalization-button" class="text-button">내 맞춤</button><button id="refresh" class="text-button">새로고침 ↻</button><button id="teacher-logout" class="text-button" hidden>연결 종료</button></div></header>
+      <header class="topbar"><span class="breadcrumb">SYNK Workspace <span>/</span> 내 수업</span><div><span id="mode-badge" class="demo-badge">연결 확인 중</span><button id="personalization-button" class="text-button">내 맞춤</button><button id="refresh" class="text-button">새로고침 ↻</button><button id="teacher-logout" class="text-button" hidden>연결 종료</button></div></header>
       <main id="main" tabindex="-1">
         <section class="intro"><div><p class="eyebrow">TEACHING, WITH CONTEXT.</p><h1 id="page-title">기록을 읽고, <span class="underline">다음 수업으로.</span></h1><p id="page-description">학생별로 지금 필요한 연습을 살펴보고 과제를 보내세요.</p></div><div class="intro-note"><span class="mono">CONNECTED LEARNING</span><p>관찰하고<br><strong>함께 나아가요.</strong></p><img src="./assets/sticker-person.webp" alt=""></div></section>
         <p id="mode-note" class="mode-note">교사 앱의 연결 상태를 확인하고 있어요.</p>
@@ -43,5 +43,7 @@
   <dialog id="assignment-dialog" aria-labelledby="assignment-dialog-title"><form id="assignment-form"><div class="dialog-header"><p class="eyebrow">NEXT STEP</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="assignment-dialog-title">다음 연습 보내기</h2><p id="assignment-student" class="subtle"></p><label>학습 내용<select name="contentId" id="content-select" required></select></label><p id="content-description" class="help"></p><label>과제 이름<input name="title" id="assignment-title" required maxlength="100"></label><label>마감일<input type="date" name="dueDate" id="assignment-due" required></label><label>학생에게 전할 말<textarea name="instructions" maxlength="500" rows="3" placeholder="어떻게 풀면 좋을지 짧게 알려 주세요."></textarea></label><p class="help">추천을 검토한 뒤 선생님이 내용을 바꿔 보낼 수 있어요.</p><p id="assignment-error" class="error" role="alert"></p><button type="submit" class="felt-button primary">학생에게 과제 보내기 →</button></form></dialog>
   <dialog id="note-dialog" aria-labelledby="note-title"><form id="note-form"><div class="dialog-header"><p class="eyebrow">OBSERVATION</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="note-title">수업 관찰 남기기</h2><p id="note-student" class="subtle"></p><label>관찰한 학습 영역<select name="skillId" id="note-skill" required></select></label><label>직접 관찰한 내용<textarea name="text" required maxlength="1000" rows="5" placeholder="예: 안내문을 소리 내어 다시 읽으니 장소를 정확히 찾았어요."></textarea></label><p class="help">관찰한 행동과 상황을 적어 주세요. 성격이나 실력을 단정하는 표현은 피해주세요.</p><p id="note-error" class="error" role="alert"></p><button type="submit" class="felt-button primary">관찰 저장하기</button></form></dialog>
   <div id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="care-dialog" aria-labelledby="care-dialog-title"><form id="care-form"><div class="dialog-header"><p class="eyebrow">NEXT CARE</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="care-dialog-title">다음 케어 정하기</h2><p id="care-student" class="subtle"></p><label>후속 할 일<input name="title" id="care-title" required maxlength="100" placeholder="예: 다음 수업에서 조건 읽기 함께 확인"></label><label>처리할 담당 교사<select name="assigneeId" id="care-assignee" required></select></label><label>처리 기한<input type="date" name="dueDate" id="care-due" required></label><label>상태<select name="status" id="care-status"><option value="open">예정</option><option value="in-progress">처리 중</option><option value="done">완료</option></select></label><label>교사가 확인할 메모<textarea name="note" maxlength="1000" rows="4" placeholder="확인한 근거와 다음 행동을 적어 주세요."></textarea></label><p class="help">공유된 기록에 근거한 수업 업무로 남겨요. 학생의 개인 설정이나 생활 취향을 실력 판정에 쓰지 않아요.</p><p id="care-error" class="error" role="alert"></p><button type="submit" class="felt-button primary">케어 할 일 저장하기</button></form></dialog>
+  <dialog id="student-invite-dialog" aria-labelledby="student-invite-title"><div class="dialog-header"><p class="eyebrow">MY CLASS</p><button type="button" class="text-button close-dialog" aria-label="닫기">닫기 ×</button></div><h2 id="student-invite-title">학생 계정 연결하기</h2><p id="student-invite-student" class="subtle"></p><label>이 학생만 사용하는 연결 코드<input id="student-invite-code" readonly autocomplete="off" spellcheck="false"></label><p id="student-invite-expiry" class="help" role="status"></p><p class="help">학생이 SYNK WORLD에 로그인한 뒤 프로필의 ‘내 반 연결’에서 이름과 반을 확인하고 입력해요. 학습·TOWN 활동 공유는 학생이 따로 선택해요.</p><p class="help">새 코드를 만들면 이전 코드는 만료돼요. 해당 학생에게만 전달해 주세요.</p><p id="student-invite-error" class="error" role="alert"></p><button type="button" id="student-invite-copy" class="felt-button primary" disabled>연결 코드 복사</button></dialog>
   <script type="module" src="./app.mjs"></script>
 </body></html>

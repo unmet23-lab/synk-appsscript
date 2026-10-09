@@ -22,6 +22,8 @@ function configuration(value,clientId,mode){
   // Their API products remain WORLD and platform; the server decides permissions.
   const product=clientId==='teacher'?'world':['fortune','care','rehearsal','family-album','path'].includes(clientId)?'platform':clientId;
   const selected={version:1,supabaseUrl,accountApiUrl,publishableKey:key,clientId:value.clients[clientId].clientId,redirectUri:value.clients[clientId].redirectUri,product,...(['teacher','fortune','care','rehearsal','family-album','path'].includes(clientId)?{clientKey:clientId}:{})};
-  return Object.freeze({...selected,fingerprint:crypto.createHash('sha256').update(JSON.stringify(selected)).digest('hex')});
+  // Platform's fixed route key is derived from this client selection. Keep its
+  // existing vault binding; every OAuth identity field still participates above.
+  return Object.freeze({...selected,...(['platform','world'].includes(clientId)?{clientKey:clientId}:{}),fingerprint:crypto.createHash('sha256').update(JSON.stringify(selected)).digest('hex')});
 }
 module.exports={configuration};

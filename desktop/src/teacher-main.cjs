@@ -8,6 +8,7 @@ const {configuration}=require('./auth-config.cjs');
 const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService}=require('./auth-service.cjs');
+const {suiteKey,createSuiteStore,createSuiteFollower}=require('./suite-session.cjs');
 const {bindTeacherIPC,sendTeacherAuth}=require('./teacher-account.cjs');
 if(app.isPackaged||!process.argv.includes('--synk-teacher-preview'))throw Error('Teacher preview is available only from the local development launcher.');
 const smoke=process.argv.includes('--synk-smoke'),sessionScope=TEACHER.sessionScope+(smoke?'.smoke':'');
@@ -38,7 +39,7 @@ function createWindow(){
   if(!auth){
     const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>sendTeacherAuth(window,state)});
-    void auth.initialize();
+    if(!smoke&&authConfig){const key=suiteKey(authConfig,'development'),suite=createSuiteFollower({store:createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite','development',key),key}),auth});app.once('will-quit',()=>suite.dispose());void suite.start();}else void auth.initialize();
   }
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:TEACHER.name,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   secureTeacherWindow(window);

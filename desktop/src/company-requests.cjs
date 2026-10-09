@@ -4,7 +4,9 @@ function createCompanyRequests({entry,clientId,session,auth}){
   return async function companyRequest(operation,params={}){
     const bad=()=>{throw Object.assign(new Error('회사 연결 요청을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
     try{if(clientId!=='messenger'||!params||typeof params!=='object'||Array.isArray(params))bad();
-      const allowed={status:[],challenge:['action','currentPassword','csrfToken','confirm'],exchange:['challenge','confirm'],renew:['csrfToken'],logout:['csrfToken']}[operation];if(!allowed||Object.keys(params).some(k=>!allowed.includes(k)))bad();
+      const operations={status:[],challenge:['action','currentPassword','csrfToken','confirm'],exchange:['challenge','confirm'],renew:['csrfToken'],logout:['csrfToken']};
+      if(typeof operation!=='string'||!Object.hasOwn(operations,operation))bad();
+      const allowed=operations[operation];if(Object.keys(params).some(k=>!allowed.includes(k)))bad();
       const headers={Origin:new URL(entry).origin},body={};
       if(['challenge','renew','logout'].includes(operation)&&params.csrfToken!==undefined){if(typeof params.csrfToken!=='string'||params.csrfToken.length>2048||/[\r\n]/.test(params.csrfToken))bad();headers['X-CSRF-Token']=params.csrfToken;}
       if(operation==='challenge'){if(!['login','link','unlink'].includes(params.action))bad();body.action=params.action;if(params.confirm!==undefined)body.confirm=params.confirm===true;if(params.action!=='login'){if(typeof params.currentPassword!=='string'||!params.currentPassword||params.currentPassword.length>1024||!params.csrfToken||params.confirm!==true)bad();body.currentPassword=params.currentPassword;}}

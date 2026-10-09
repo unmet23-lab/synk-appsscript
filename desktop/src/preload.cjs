@@ -2,10 +2,32 @@
 const {contextBridge,ipcRenderer}=require('electron');
 // Fixed operations only. Tokens, raw IPC, paths, URLs and commands stay in main.
 contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
+  teacher:Object.freeze({
+    getEnvironment:()=>ipcRenderer.invoke('synk:teacher-environment'),
+    authStatus:()=>ipcRenderer.invoke('synk:teacher-auth-status'),
+    authSignIn:()=>ipcRenderer.invoke('synk:teacher-auth-sign-in'),
+    authCancelSignIn:()=>ipcRenderer.invoke('synk:teacher-auth-cancel'),
+    authSignOut:()=>ipcRenderer.invoke('synk:teacher-auth-sign-out'),
+    accountRequest:(operation,params={})=>ipcRenderer.invoke('synk:teacher-account-request',operation,params),
+    onAuthChanged:callback=>subscribe('synk:teacher-auth-changed',callback),
+  }),
   getEnvironment:()=>ipcRenderer.invoke('synk:environment'),
+  getDesktopPreferences:()=>ipcRenderer.invoke('synk:desktop-preferences'),
+  updateDesktopPreferences:patch=>ipcRenderer.invoke('synk:desktop-preferences-update',patch),
+  copyPlatformDiagnostics:summary=>ipcRenderer.invoke('synk:copy-platform-diagnostics',summary),
+  setTrayShortcuts:items=>ipcRenderer.invoke('synk:tray-shortcuts',items),
+  onDesktopPreferences:callback=>subscribe('synk:desktop-preferences',callback),
+  onDesktopAction:callback=>subscribe('synk:desktop-action',callback),
+  draftRecoveryStatus:owner=>ipcRenderer.invoke('synk:draft-recovery-status',owner),
+  setDraftRecoveryEnabled:(value,owner)=>ipcRenderer.invoke('synk:draft-recovery-enabled',value,owner),
+  draftRecoveryLoad:(slot,owner)=>ipcRenderer.invoke('synk:draft-recovery-load',slot,owner),
+  draftRecoverySave:(slot,value,owner)=>ipcRenderer.invoke('synk:draft-recovery-save',slot,value,owner),
+  draftRecoveryClear:(slot,owner)=>ipcRenderer.invoke('synk:draft-recovery-clear',slot,owner),
+  onDraftRecoveryChanged:callback=>subscribe('synk:draft-recovery-changed',callback),
   getClients:()=>ipcRenderer.invoke('synk:clients'),
   openTeacherPreview:()=>ipcRenderer.invoke('synk:teacher-preview'),
   openProductPreview:id=>typeof id==='string'&&['path','care','fortune','rehearsal','family-album'].includes(id)?ipcRenderer.invoke('synk:product-preview',id):Promise.resolve({ok:false,code:'UNKNOWN_PREVIEW'}),
+  openPublicApp:id=>typeof id==='string'&&['care','fortune','rehearsal'].includes(id)?ipcRenderer.invoke('synk:open-public-app',id):Promise.resolve({ok:false,code:'UNKNOWN_PUBLIC_APP'}),
   prepareClient:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:prepare-client',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   cancelPreparation:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:cancel-preparation',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
   openInstaller:id=>typeof id==='string'&&['world','messenger'].includes(id)?ipcRenderer.invoke('synk:open-installer',id):Promise.resolve({ok:false,code:'UNKNOWN_CLIENT'}),
@@ -22,5 +44,6 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   onClientsChanged:callback=>subscribe('synk:clients-changed',callback),
   onClientProgress:callback=>subscribe('synk:client-progress',callback),
   onWindowStateChanged:callback=>subscribe('synk:window-state-changed',callback),
+  onOpenView:callback=>subscribe('synk:open-view',callback),
 }));
 function subscribe(channel,callback){if(typeof callback!=='function')throw new TypeError('A callback is required');const listener=(_event,value)=>callback(value);ipcRenderer.on(channel,listener);return ()=>ipcRenderer.removeListener(channel,listener);}

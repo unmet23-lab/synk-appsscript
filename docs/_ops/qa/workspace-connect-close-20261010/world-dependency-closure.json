@@ -1,0 +1,238 @@
+{
+  "at": "2026-10-09T20:28:40.499Z",
+  "files": [
+    {
+      "file": "experiences/synk-world-home/app.mjs",
+      "sha256": "5a49e15f5324f2fec08936d7b34974fe9589fb1bb3113b6eba25bb36d8bc1483"
+    },
+    {
+      "file": "experiences/synk-world-home/assets/videos/batchim.mp4",
+      "sha256": "3684b62c5afef1c5213e1ff6a53ad593d71bab357a89013219f1e2cb21e7ee67"
+    },
+    {
+      "file": "experiences/synk-world-home/assets/videos/geu-a-ga.mp4",
+      "sha256": "e0acace7be3ee169abcfb68d966ee6397c9e4d377cceb8707d211d6e62237209"
+    },
+    {
+      "file": "experiences/synk-world-home/assets/videos/vowel-dance.mp4",
+      "sha256": "2f2ac25deee9e20d2ec0682f0e4909c5af5da5210a9ca59eb0c5a97b35ddc0dc"
+    },
+    {
+      "file": "experiences/synk-world-home/avatar-contract.json",
+      "sha256": "e2d31954f6746f4f7455d8b883a8e49e25dc536fe5848ae423c78712aa2fa0e2"
+    },
+    {
+      "file": "experiences/synk-world-home/avatar-textiles.mjs",
+      "sha256": "2a59a07eddb957229e292dd8000240c7688d8213b0ec1d7683149e0c269d7aee"
+    },
+    {
+      "file": "experiences/synk-world-home/avatar-v3.mjs",
+      "sha256": "fee00167ac0e23d8f758e3ad6d1f9563cc06db4c4292238bd06e0e6198b9e33d"
+    },
+    {
+      "file": "experiences/synk-world-home/avatar-wardrobe.mjs",
+      "sha256": "df3c0ca4ec1b45c0e459030a098d513264e0f6ba6b0a6fda0fb438b323e39941"
+    },
+    {
+      "file": "experiences/synk-world-home/contact-light-v6.mjs",
+      "sha256": "ef372774e8d709b2d473a46066b0b28c78dce02bf137327cf5877afd1b399e9c"
+    },
+    {
+      "file": "experiences/synk-world-home/courtyard-details-v5.mjs",
+      "sha256": "faf6d5a217aee8d63873444c03b7bef3b986dbaabeb23e1d82a01278a92e477a"
+    },
+    {
+      "file": "experiences/synk-world-home/index.html",
+      "sha256": "ac8549d00e0a3a11855d0920f4167044447bcf69b98ecb8b238038f31ce3aa1b"
+    },
+    {
+      "file": "experiences/synk-world-home/environment-optics-v7.mjs",
+      "sha256": "6f7b5fbb03cdd4ef39cbd103a4e2da384e9b1da8c94b415f17935cc0c244ea60"
+    },
+    {
+      "file": "experiences/synk-world-home/environment-v4.mjs",
+      "sha256": "93c1b12d3158ba305fee6ac3a9c3489416e8fd776797574c720c025c282cb0f8"
+    },
+    {
+      "file": "experiences/synk-world-home/foliage-v6.mjs",
+      "sha256": "35ee09de28f4933bd9a1bdffa6d23f308a3e92ce0e59faa52c8af3789092a5bf"
+    },
+    {
+      "file": "experiences/synk-world-home/garden-breeze-v5.mjs",
+      "sha256": "3f557ca9efcd940eb2f49b158b9322926463e644c889e94cc7b03f0b442e6fa0"
+    },
+    {
+      "file": "experiences/synk-world-home/graphics-home.css",
+      "sha256": "0731df5d980c04ad65b94f7b45d17778a4eac902281d7ce635c264b746f3bcda"
+    },
+    {
+      "file": "experiences/synk-world-home/graphics.css",
+      "sha256": "9d7974338475d3333f04128049c4e136fd87236c93a8dd1854f17d0d9189a794"
+    },
+    {
+      "file": "experiences/synk-world-home/graphics.mjs",
+      "sha256": "06a8f27f5d6d23557206b1e4bf966a7c36dcbe2e510dd84a05f04071e63ebc5f"
+    },
+    {
+      "file": "experiences/synk-world-home/river-life-v8.mjs",
+      "sha256": "84a173b3bbafdac8851d1eb79960e1a6f8edc03458c057b96f300b71f9dbf1cf"
+    },
+    {
+      "file": "experiences/synk-world-home/roof-craft-v7.mjs",
+      "sha256": "6d6020c0b917634e8269023ff501c9ca11c15a2ef3b28808d238db7d62be93a4"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/graphics-v2/provenance.json",
+      "sha256": "5304cd90bd846ecedf27dffcf0606da7e856b0150547195ab4df2e935fd3ec7b"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/graphics-v3/mongle-v3.export.json",
+      "sha256": "196bd63d90b61cd096c77ff4c11fe9b78362a4eb4f124195e96d917ffbcbb03e"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/graphics-v4/manifest.json",
+      "sha256": "4968e5eed9f38774208e566c89df970347c04bc34bc6579b38f017b946db761f"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/graphics-v4/mongle-v4.export.json",
+      "sha256": "782cab4766e0b01005aac23c6e0cf62318ecf7725a85ff0121f39f3619f9daaf"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/rendering/SSAOPass.js",
+      "sha256": "9834203b7f056a9d4c8a4ce30bfb91ff331de63d3d3586d412e537c8f981d65d"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/rendering/THREE-LICENSE.txt",
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/THREE-LICENSE.txt",
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/three.core.js",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-assets/three.module.js",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-v2-garden.mjs",
+      "sha256": "d83994eb82d84164645f711ee7ae9e4aecab4ed35e61d2f06249593278bada33"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-v2.mjs",
+      "sha256": "a3470e55d091cb6d1ed8f64074c402c7218909f8407ff398fd056b6582c2c5df"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-v3-garden.mjs",
+      "sha256": "18c1ecb6c81df6132ac288fddfe9479e8a424ac9c428fe019afade9c244b3e50"
+    },
+    {
+      "file": "experiences/synk-world-home/scene-v3.mjs",
+      "sha256": "f7dc595fc46d84cff9152293ba6a645f523cc1fab72da9190de8de86315435a3"
+    },
+    {
+      "file": "experiences/synk-world-home/scene.mjs",
+      "sha256": "35be2f8f2d36d99949d8959dcec841a198d938abdf5d28199109154707e4592c"
+    },
+    {
+      "file": "experiences/synk-world-home/songs.mjs",
+      "sha256": "5a544b64cf245da499248983f53286e5b10de8df9dfe7db23b46d82ae2ba7999"
+    },
+    {
+      "file": "experiences/synk-world-home/style.css",
+      "sha256": "eb45c6d6fabcbe4ab83c532beacbe67f64169b53083404bb4942ee9d8ccf9924"
+    },
+    {
+      "file": "experiences/synk-world-home/surface-library-v6.mjs",
+      "sha256": "974e3cc8682e74edbcb9cbe5ec94d8045962f643b00dab9b170699bde3fd9089"
+    },
+    {
+      "file": "experiences/synk-town/assets/fonts/InterTight-OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "experiences/synk-town/assets/fonts/SUIT-OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/book-guest.png",
+      "sha256": "ec8c7b1e89ddd9bd0841fd1b9a3a6533bec7e7e02096b8e29ed496683d7f60ae"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/companion.png",
+      "sha256": "46a88ed619a62887a3f3517a60948d5e6dedd48e7e9d13de3a9fab529222b0d2"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/provenance.json",
+      "sha256": "a3b2afbdccc9e463f06c7deec424f3727116f2420264832aa56c18216cde57c4"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/researcher.png",
+      "sha256": "9d0abf07ac86559807059d0d036a944d785167b7353bc559a582540208cf5705"
+    },
+    {
+      "file": "experiences/synk-town/assets/residents/workshop-owner.png",
+      "sha256": "b655de1475d3a067473969dc3c946b91f5714f445c118bc036c0e84768080799"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/badge-coral.webp",
+      "sha256": "34780a6d00da5afa0c71ef86f9bb8cd975e9adda2cf389585dcdc1d4079a2eec"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/badge-cream.webp",
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/chip-blush-long.webp",
+      "sha256": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/chip-blush.webp",
+      "sha256": "fcf455288baad82da74b84181fb0c850b1e96ca50d0732fbf34e3cafb28d7e69"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/control-butter.webp",
+      "sha256": "c983a7cb1ec51c34c2f88b6850d4867aa4f5a9f2d3be1e6f221fb3380df1743f"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/control-lapis.webp",
+      "sha256": "adc7fb2634b557a71d3faf4e35aa047edf1a8cdf7326b674757f6e3ea62d89cb"
+    },
+    {
+      "file": "experiences/synk-town/assets/ui/control-neutral.webp",
+      "sha256": "78aad0515eb883d10e80296d51003ed5d378483a3a397fd29a3c85db0d34205f"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-album.mjs",
+      "sha256": "9afec98cf614da0266a23a4dabc24157768db50bd8b8b3e19ce73334715d9806"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-catalog.mjs",
+      "sha256": "800fe28ff257f7333b40142ce09e2f2ae5b6ac870c324bb320a8c574da5a930e"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-stage-state.mjs",
+      "sha256": "ac61d09212e875a9c60f3b4ed0e86ce284f2c6047600c947804fa604b292df5e"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-stage.mjs",
+      "sha256": "16f8cc4443afe514b9f89c9063c1075aa5a3049eba88ef2c39d8d07fe961c012"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-studio.css",
+      "sha256": "00013843c49b8183f0cb1fb1cce9a640f5c46465f7a47f463531d6a062ca8c40"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-studio.mjs",
+      "sha256": "9af8bb547233a168bd0e76f90f2b47733f1c769cec9edd4695ae1ee8eb4ab0b0"
+    },
+    {
+      "file": "experiences/synk-world-home/wardrobe-workbench.mjs",
+      "sha256": "50901e7e27f3404765e22a1bacf6f029033a7f27902da999472432b6cd9d1f5d"
+    }
+  ],
+  "unrestored": []
+}

@@ -5,6 +5,15 @@ const modulePromise=import('../renderer/personalization.mjs');
 const at='2026-10-02T10:00:00.000Z';
 async function fixture(initial={}){const mod=await modulePromise,store=new Map(Object.entries(initial));const storage={getItem:key=>store.get(key)||null,setItem:(key,value)=>store.set(key,value),removeItem:key=>store.delete(key)};return {...mod,store,storage,host:mod.createPlatformPersonalization(engine,storage,{clock:()=>at})};}
 const selection={context:'teacher',goal:'clarity',textSize:'large',explanation:'brief',motion:'reduced',consent:true};
+
+test('a temporary purpose changes visible order without saving or granting apps',async()=>{
+  const f=await fixture(),before=f.host.current({appIds:['world','messenger']});
+  const preview=f.previewPurpose(before,'creator',['world','messenger']);
+  assert.equal(preview.sessionOnly,true);assert.deepEqual(preview.order,['messenger','world']);
+  assert.deepEqual(preview.presentation,before.presentation);assert.equal(f.store.size,0);
+  assert.equal(f.host.current().active,false);assert.equal(f.previewPurpose(before,'__proto__'),before);
+  assert.deepEqual(f.previewPurpose(before,'creator',['world']).order,['world']);
+});
 test('first start does not persist or personalize before consent',async()=>{const f=await fixture();assert.equal(f.host.current().active,false);assert.deepEqual(f.host.current().order,['world','messenger','teacher','path','pulse','care','fortune','rehearsal','family-album']);assert.equal(f.store.size,0);assert.throws(()=>f.host.save({...selection,consent:false}),/동의/);assert.equal(f.store.size,0);});
 test('declared teacher purpose goes through Core and produces real catalog and presentation settings',async()=>{const f=await fixture();const result=f.host.save(selection);assert.equal(result.active,true);assert.equal(result.selected,'teacher');assert.equal(result.order[0],'teacher');assert.equal(result.presentation.textSize,'large');assert.equal(result.presentation.motion,'reduced');assert.equal(result.presentation.explanation,'brief');assert.equal(result.plan.scope.domain,'SYNK');assert.equal(result.plan.scope.workspace.startsWith('p.platform:c.launcher:'),true);assert.equal(result.provenance.goal.source,'self-declared');assert.match(result.reason,/교사·교육기관/);assert.match(result.reason,/수업과 설명/);assert.equal(f.store.size,1);assert.equal(JSON.parse(f.store.get(f.PERSONAL_KEY)).profile.scope.personId,'anonymous-local');});
 test('self-selected use contexts recommend distinct spaces without enabling planned products',async()=>{const f=await fixture();for(const [context,goal,expected] of [['student','study','world'],['teacher','clarity','teacher'],['work','work','messenger'],['creator','expression','messenger'],['customer','explore','pulse'],['career','prepare','path'],['partner','expression','pulse'],['team','work','messenger']]){const r=f.host.save({...selection,context,goal});assert.equal(r.selected,expected,context);assert.equal(r.order.length,9);assert.equal(r.plan.selected.canLaunch,undefined);assert.equal(r.plan.selected.installer,undefined);}});

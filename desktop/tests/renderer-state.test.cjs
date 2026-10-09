@@ -35,13 +35,13 @@ test('PATH requires exact source-mode capability and never masquerade as install
 test('teacher preview needs explicit native capability and never reuses package launch',async()=>{
   const {primaryAction}=await mod;
   assert.equal(primaryAction({id:'teacher',canLaunch:true}).disabled,true);assert.equal(primaryAction({id:'teacher'},{native:false,teacherPreviewAvailable:true}).disabled,true);
-  assert.deepEqual(primaryAction({id:'teacher'},{native:true,teacherPreviewAvailable:true}),{label:'교사 앱 미리보기',action:'teacher-preview',disabled:false});
+  assert.deepEqual(primaryAction({id:'teacher'},{native:true,teacherPreviewAvailable:true}),{label:'내 수업 열기',action:'teacher-preview',disabled:false});
 });
 test('library filters and Korean searches distinguish plans and retain new favorites',async()=>{
   const {matchesLibrary,parsePreferences}=await mod;
   assert.equal(matchesLibrary('teacher',{search:'기관'}),true);assert.equal(matchesLibrary('pulse',{search:'고객'}),true);assert.equal(matchesLibrary('path',{search:'면접'}),true);assert.equal(matchesLibrary('messenger',{search:'인공지능'}),true);
   assert.equal(matchesLibrary('teacher',{filter:'planned'}),false);assert.equal(matchesLibrary('pulse',{filter:'planned',search:'파트너'}),true);assert.equal(matchesLibrary('partners',{filter:'planned'}),false);assert.equal(matchesLibrary('studio',{filter:'installed',client:{canLaunch:false}}),false);
-  const prefs=parsePreferences(JSON.stringify({selected:'teacher',favorites:['teacher','pulse','pulse','evil'],lastLaunch:{world:123,teacher:123,pulse:123}}));assert.equal(prefs.selected,'teacher');assert.deepEqual(prefs.favorites,['teacher','pulse']);assert.equal(prefs.lastLaunch.world,123);assert.equal(prefs.lastLaunch.teacher,null);assert.equal(prefs.lastLaunch.pulse,null);
+  const prefs=parsePreferences(JSON.stringify({selected:'teacher',favorites:['teacher','pulse','pulse','evil'],lastLaunch:{world:123,teacher:123,pulse:123}}));assert.equal(prefs.selected,'teacher');assert.deepEqual(prefs.favorites,['teacher','pulse']);assert.equal(prefs.lastLaunch.world,123);assert.equal(prefs.lastLaunch.teacher,123);assert.equal(prefs.lastLaunch.pulse,null);
 });
 
 test('retired app preferences and stale launch rows cannot become Messenger authority',async()=>{const {parsePreferences,primaryAction,clientRows,matchesLibrary}=await mod;for(const id of ['studio','shift']){const prefs=parsePreferences(JSON.stringify({selected:id,favorites:[id],lastLaunch:{[id]:123}}));assert.equal(prefs.selected,'world');assert.deepEqual(prefs.favorites,[]);assert.equal(prefs.lastLaunch.messenger,null);assert.equal(matchesLibrary(id),false);assert.equal(clientRows([{id,canLaunch:true}]).some(row=>row.id===id),false);assert.equal(primaryAction({id,canLaunch:true,installer:{canOpen:true}},{productPreviewsAvailable:[id]}).disabled,true);}});

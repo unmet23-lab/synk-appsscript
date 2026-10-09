@@ -1,0 +1,1954 @@
+{
+  "at": "2026-10-09T20:26:25.638Z",
+  "target": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript",
+  "sourceAuditSHA256": "bc40733499a391175512352681def8db22fabbfc6268e9454bdc9e6684a626ba",
+  "copied": [
+    {
+      "file": "desktop/src/account-requests.cjs",
+      "sha256": "637c2569cc291c02ecc9c91a6ce468fb89902cb54f883469ad8a8da014bb7c2f",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\account-requests.cjs"
+    },
+    {
+      "file": "desktop/src/auth-config-path.cjs",
+      "sha256": "f321433bd4f1f4b32e2d7199ad188704b787471e3f556d337318501852aa4ea5",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\auth-config-path.cjs"
+    },
+    {
+      "file": "desktop/src/auth-config.cjs",
+      "sha256": "2b19e3d81cb304e28f41ed3e9dc567049cfe9f38457357f98dfc0d7e89db566e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\auth-config.cjs"
+    },
+    {
+      "file": "desktop/src/auth-service.cjs",
+      "sha256": "84f85727ef1f48380c43e1b24e1b7ed387191748361a808da5597da08d54ea19",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\auth-service.cjs"
+    },
+    {
+      "file": "desktop/src/auth-store.cjs",
+      "sha256": "f674183d4ef75a59b24dc6e7d0e01f6ad9c797df79d92f06e86ba6feb234e108",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\auth-store.cjs"
+    },
+    {
+      "file": "desktop/src/care-account.cjs",
+      "sha256": "f215bbce6146f7a079ea3b2602808088730b2200c789fdccac2d8684f24045cb",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\care-account.cjs"
+    },
+    {
+      "file": "desktop/src/care-preload.cjs",
+      "sha256": "8646605dea88f8f07fcd0704498adc268058e19cef32f5c42c522fd2ccfc9a1b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\care-preload.cjs"
+    },
+    {
+      "file": "desktop/src/catalog.cjs",
+      "sha256": "cbeab994348b7d5bb4906dec1bfb3916fd858acf8cedb02d6f7bf80b67e6b953",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\catalog.cjs"
+    },
+    {
+      "file": "desktop/src/classroom-main.cjs",
+      "sha256": "1abc76e517be3382604aec28cdd1a424f6b0c942b15693d448e68f330296b2d8",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\classroom-main.cjs"
+    },
+    {
+      "file": "desktop/src/classroom-policy.cjs",
+      "sha256": "82da77aa1e5b9ee03080fdcff2a5c1d03851d7532095c564b823cf5a19643e96",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\classroom-policy.cjs"
+    },
+    {
+      "file": "desktop/src/classroom-requests.cjs",
+      "sha256": "70707323d464404f9bab709b210ff2f5b93fa893d40282c69f39047a02ecd349",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\classroom-requests.cjs"
+    },
+    {
+      "file": "desktop/src/client-lifecycle.cjs",
+      "sha256": "035d5e97104f38462ded28b8a7023c21268b1ea15d732e61c5fdb49944275324",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\client-lifecycle.cjs"
+    },
+    {
+      "file": "desktop/src/company-requests.cjs",
+      "sha256": "1550b3fb7b66544874a58a513ee5761182936796ac5b793e24c7d1f306e84ccb",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\company-requests.cjs"
+    },
+    {
+      "file": "desktop/src/connection-content.cjs",
+      "sha256": "443c88f192a883ab7cf83e43852f3cd7a285ded0317d1501c61c6469c6ee18ef",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\connection-content.cjs"
+    },
+    {
+      "file": "desktop/src/connection-recovery.cjs",
+      "sha256": "651b55ff8257a4d3f3081bbe2a712a60fd5549c643c168ae82ee8e8608d57afd",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\connection-recovery.cjs"
+    },
+    {
+      "file": "desktop/src/desktop-preferences.cjs",
+      "sha256": "5af16ee82736a02dfc4548065d3dc4cbfbc147c0ebf0d2b0a7245dea47deb496",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\desktop-preferences.cjs"
+    },
+    {
+      "file": "desktop/src/diagnostics-clipboard.cjs",
+      "sha256": "89cf6922d13471b8fb0739cde3fee9243036e05a6c30645dbbc9cff41218d0f5",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\diagnostics-clipboard.cjs"
+    },
+    {
+      "file": "desktop/src/downloads.cjs",
+      "sha256": "675d92ef069e5523ac4fdf470380f5b1a7fa32dba991369e91e8c8588831629b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\downloads.cjs"
+    },
+    {
+      "file": "desktop/src/draft-exit.cjs",
+      "sha256": "1754368c0caef05738e2905dbfa154c3055762becc72acecd9dea01287bb06fe",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\draft-exit.cjs"
+    },
+    {
+      "file": "desktop/src/draft-recovery-ipc.cjs",
+      "sha256": "22042e331492a72676f716ff3c67e78de93e717c5c3547e684418b4aab9d7ab8",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\draft-recovery-ipc.cjs"
+    },
+    {
+      "file": "desktop/src/draft-recovery.cjs",
+      "sha256": "249cb686d6aeed589e4301d81aed3bf98d037e0ca78b97440a748496e69a20cc",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\draft-recovery.cjs"
+    },
+    {
+      "file": "desktop/src/installations.cjs",
+      "sha256": "5bab184a03e4a8a71c42069793b0739667bcd0ec0ce8090929fa6b3861b97f19",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\installations.cjs"
+    },
+    {
+      "file": "desktop/src/library-access.cjs",
+      "sha256": "4bb99ecd6239768fc21821c6cf511ce8829db30658b6215a8de242a2f246a625",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\library-access.cjs"
+    },
+    {
+      "file": "desktop/src/local-releases.cjs",
+      "sha256": "af09ae0dc18c77fcee552c05b2460c1d3bbe2c1b58a8d3e125748f189686d371",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\local-releases.cjs"
+    },
+    {
+      "file": "desktop/src/main.cjs",
+      "sha256": "f716138215d02fb9417012e5be17404fe84e56ea0824711a590dd00ceeb51d27",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\main.cjs"
+    },
+    {
+      "file": "desktop/src/messenger-teacher.cjs",
+      "sha256": "6b948746784fa8b7b88844ee3723e643d899671e7799afe19ea6e5ad215746f6",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\messenger-teacher.cjs"
+    },
+    {
+      "file": "desktop/src/native-content.cjs",
+      "sha256": "4edc4e671d9ee2f74d3e2d141c35c886620d490f314d81496c4024e3c61f13ee",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\native-content.cjs"
+    },
+    {
+      "file": "desktop/src/personal-account.cjs",
+      "sha256": "26535d62a9ea67c182b1076e5c689b737bf32a821e23ff3da786335cecb914dc",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\personal-account.cjs"
+    },
+    {
+      "file": "desktop/src/personal-preload.cjs",
+      "sha256": "2a02ca3dbeafb72ae2991106ee055884a183013e399d6d902f4db10516631e74",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\personal-preload.cjs"
+    },
+    {
+      "file": "desktop/src/personal-requests.cjs",
+      "sha256": "8aa34bd0839a5bcf948d7ad29e65a2dcfb9ecabc6f837d623be3efc6e01b050d",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\personal-requests.cjs"
+    },
+    {
+      "file": "desktop/src/platform-tray.cjs",
+      "sha256": "221d1bb2cefa8af3cca545f5b2167361cd22de58fceae32d809326fc8b2fcf1b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\platform-tray.cjs"
+    },
+    {
+      "file": "desktop/src/preload.cjs",
+      "sha256": "fc93cb3ebf05ba7451a58662d46b0bf4c9c62aea7e21ae09318200ef0816184e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\preload.cjs"
+    },
+    {
+      "file": "desktop/src/product-main.cjs",
+      "sha256": "482f4007db92e6d56b260f289be5e332fef904ac22dcd3921a2f8091535ed979",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\product-main.cjs"
+    },
+    {
+      "file": "desktop/src/product-preload.cjs",
+      "sha256": "7b880a4011aee3b68122db145c6eb29855c61e975d405cc74ce03dd0fc665c1a",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\product-preload.cjs"
+    },
+    {
+      "file": "desktop/src/product-preview.cjs",
+      "sha256": "3b6abfc144df18636585a8c78ed697180adcc21c19ff82005de726d144b3f2b0",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\product-preview.cjs"
+    },
+    {
+      "file": "desktop/src/program-root.cjs",
+      "sha256": "e0d5c42b369ca1e1c3a55bb9d2438ff3aa0b80d4eed47ac67d7f06645304e89c",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\program-root.cjs"
+    },
+    {
+      "file": "desktop/src/public-apps.cjs",
+      "sha256": "c6e9cceefa857899ddaa6e7bf9e58aac977f712cb9d72de008880918f2d4bf87",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\public-apps.cjs"
+    },
+    {
+      "file": "desktop/src/release-catalog.cjs",
+      "sha256": "54c3ab27d8497b37f6a2162db00e3675858ca2da04d772a06f99c06094bf122a",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\release-catalog.cjs"
+    },
+    {
+      "file": "desktop/src/security.cjs",
+      "sha256": "c6bcb42b091a78d454ae9440f5b73da21289298820e3cba4eeb40ce5ba57002d",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\security.cjs"
+    },
+    {
+      "file": "desktop/src/suite-session.cjs",
+      "sha256": "96dfaf6dd6e613432efe77cf088f805f867b0253a970f46dd3397dcb3ea97e26",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\suite-session.cjs"
+    },
+    {
+      "file": "desktop/src/teacher-account.cjs",
+      "sha256": "aa8706f942a93710c89e2bfb3840663244c5b33a4cb8c417dd878085a34010f0",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\teacher-account.cjs"
+    },
+    {
+      "file": "desktop/src/teacher-main.cjs",
+      "sha256": "6ac84f6e5c85b0c2acbc8ce178b7393bbade61619acb56603e0769aae64eca92",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\teacher-main.cjs"
+    },
+    {
+      "file": "desktop/src/teacher-preload.cjs",
+      "sha256": "f9cc60797601ad06763cd9c538b55ac097e6aa071dc60146bb11c2c364fca2ad",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\teacher-preload.cjs"
+    },
+    {
+      "file": "desktop/src/teacher-preview.cjs",
+      "sha256": "3ccb025034f81f4c6825125c502915e3a2c8119a1f7a3ba3fa0b0ea13e20272b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\teacher-preview.cjs"
+    },
+    {
+      "file": "desktop/src/teacher-security.cjs",
+      "sha256": "b4a09a6326542f08f294556f7e0c41822f8afd0bfe794c52cea60ecb8b7bbc93",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\teacher-security.cjs"
+    },
+    {
+      "file": "desktop/src/window-placement.cjs",
+      "sha256": "8b1262790cca6dd72d0cc2ddf42e34f1ce21353c34f76849cf86d5eab41197fe",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\src\\window-placement.cjs"
+    },
+    {
+      "file": "desktop/renderer/benefits.mjs",
+      "sha256": "473ae94dfbadffcf1a9b71d687cb188191af5cf203a56ba4ebc6c8e3a9e58340",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\benefits.mjs"
+    },
+    {
+      "file": "desktop/renderer/convenience-state.mjs",
+      "sha256": "a57cd1f971b3ca2288ff0da5aab2eafd6d616ba92ee3934d288c83db79b7d72e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\convenience-state.mjs"
+    },
+    {
+      "file": "desktop/renderer/convenience.css",
+      "sha256": "c2d96cf10a1ae5a3303a4f9bd9da4ba3b454610e09810138e03e7dedd16cc3ef",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\convenience.css"
+    },
+    {
+      "file": "desktop/renderer/convenience.mjs",
+      "sha256": "15b1b5cf4701aef2586847f58c4accc92c4ac05d66012ce44ec3f3a9bd9c50e3",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\convenience.mjs"
+    },
+    {
+      "file": "desktop/renderer/draft-recovery.mjs",
+      "sha256": "7a2044a4fe3118b610ae702d44669d310d53f70bfa359a68eb8e9e0ae814ccf8",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\draft-recovery.mjs"
+    },
+    {
+      "file": "desktop/renderer/index.html",
+      "sha256": "8a330428b791281f5f8c363ae739edff8da8ad41fd150d84e31ec74ce8fa66c7",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\index.html"
+    },
+    {
+      "file": "desktop/renderer/launcher.css",
+      "sha256": "11b92284ba6f4610d11511f6329bc8b094d4e0924908bdb7642eac20238eb39d",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\launcher.css"
+    },
+    {
+      "file": "desktop/renderer/launcher.mjs",
+      "sha256": "78e993c0b39f8294a2d54f69f04f558cc9740c850ada95679a3e8bfb84f66990",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\launcher.mjs"
+    },
+    {
+      "file": "desktop/renderer/library.mjs",
+      "sha256": "6892e79c37629859ef57f640943347fa22bd0253dc92b6ee22d32e5cfd62f88c",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\library.mjs"
+    },
+    {
+      "file": "desktop/renderer/member-home.css",
+      "sha256": "b770f43fc493cde5b0edf7f41429e31c17f21c353fa54141339234213cbcdeb4",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\member-home.css"
+    },
+    {
+      "file": "desktop/renderer/member-home.mjs",
+      "sha256": "d43e125ce9c68efc792f1eef36f245a2775d858a1c70f68da534066426246f26",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\member-home.mjs"
+    },
+    {
+      "file": "desktop/renderer/personalization.mjs",
+      "sha256": "f1cf17794392e446d76ee55e3916258c44c55bddbdada546d651d942474d3022",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\personalization.mjs"
+    },
+    {
+      "file": "desktop/renderer/platform-continuity.css",
+      "sha256": "d515c3995bf723b50ca6b802b950f63ee2318827f389faec70f43e61444097ae",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\platform-continuity.css"
+    },
+    {
+      "file": "desktop/renderer/platform-continuity.mjs",
+      "sha256": "5d0f91669df3890b15e68f3ea512aeac1304b5c0d5247490169b631e6d7f558b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\platform-continuity.mjs"
+    },
+    {
+      "file": "desktop/renderer/state.mjs",
+      "sha256": "97f74562e9f27238cbe882e03d9c8dc9760fad43299a0f9eb52e22d43ee00610",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\renderer\\state.mjs"
+    },
+    {
+      "file": "desktop/assets/launcher/sources.json",
+      "sha256": "5d46096731f79e640b1694e567dfcac7eb182461a680d2c5760b5d58ddb6974f",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\sources.json"
+    },
+    {
+      "file": "desktop/assets/launcher/synk.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\synk.svg"
+    },
+    {
+      "file": "desktop/assets/sources.json",
+      "sha256": "3a35e7debf9eaa15662eb7c7a31aab96dfb18381e115c466488597199a1e4978",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\sources.json"
+    },
+    {
+      "file": "desktop/tests/account-memory.test.cjs",
+      "sha256": "b8687d3d3ea057c0f62d1ec2fa35d35f3a6c0aea7f5dfd0fcb9e8fffba154b71",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\account-memory.test.cjs"
+    },
+    {
+      "file": "desktop/tests/auth-preparation.test.cjs",
+      "sha256": "b85667f7631bc034bb04bab8bad1017d59f27469e0e3abd8f016665d39a2ed99",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\auth-preparation.test.cjs"
+    },
+    {
+      "file": "desktop/tests/auth.test.cjs",
+      "sha256": "ac43bf74a41bac4b378e33207d6a3e9f0fea3db74d14e3f5297f9c355a8fd3cb",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\auth.test.cjs"
+    },
+    {
+      "file": "desktop/tests/care-account.test.cjs",
+      "sha256": "48eba68939d6ab90c87e86fdeaacbd951789da6cb92189589b1087c63780bd79",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\care-account.test.cjs"
+    },
+    {
+      "file": "desktop/tests/care-preview.test.cjs",
+      "sha256": "f365e9fac5939a51ae6eefd6847b057074c8fe59dbd1eef30052e99ddae66029",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\care-preview.test.cjs"
+    },
+    {
+      "file": "desktop/tests/classroom-policy.test.cjs",
+      "sha256": "47ff7fc32e582098cea17ad4cb67ca625cb07d6957817fd9ed03687e4404788c",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\classroom-policy.test.cjs"
+    },
+    {
+      "file": "desktop/tests/classroom-requests.test.cjs",
+      "sha256": "dd1abf1461108bf06d3190ddacc0df4dfdea14d8f70763e71f7ea60092dfc77d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\classroom-requests.test.cjs"
+    },
+    {
+      "file": "desktop/tests/company-requests.test.cjs",
+      "sha256": "6c06cfc7cf06b2779b08926e2c5b5984617205ae6aa8420af65cf91b6c88ec54",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\company-requests.test.cjs"
+    },
+    {
+      "file": "desktop/tests/connection-content.test.cjs",
+      "sha256": "ed8a9a11e255b420ee4eb2ceb510440c88d15f0e27e883df2f8d8ea60ceb80c5",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\connection-content.test.cjs"
+    },
+    {
+      "file": "desktop/tests/connection-recovery.test.cjs",
+      "sha256": "92d8cffff600a20b1813f1be033345df26f5d81b6634aa170da57259764604f9",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\connection-recovery.test.cjs"
+    },
+    {
+      "file": "desktop/tests/convenience.test.cjs",
+      "sha256": "b1807be4427b16084ccea858e923ac15a908c0cb0f6240c8008ecfa7c69bd19e",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\convenience.test.cjs"
+    },
+    {
+      "file": "desktop/tests/desktop-convenience.test.cjs",
+      "sha256": "f234be4d427b7070da41b9258c6e61272c09d8e6fc8939b6a605892dfc6ab3bc",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\desktop-convenience.test.cjs"
+    },
+    {
+      "file": "desktop/tests/desktop.test.cjs",
+      "sha256": "dc7b6dda50bab93caf8e71dae6142779c03ac7e4122b5a60fdc1080ec5f2e43e",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\desktop.test.cjs"
+    },
+    {
+      "file": "desktop/tests/development-catalog.test.cjs",
+      "sha256": "f1b944a5901e351f97b7c9ecbaeeb7c708ad0b85e2ec8e72cfdac6c1def372f0",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\development-catalog.test.cjs"
+    },
+    {
+      "file": "desktop/tests/diagnostics-clipboard.test.cjs",
+      "sha256": "ee999da2b15c036279338b42a86f75766489a28ba0f6c0f1538e9d67c2aedb78",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\diagnostics-clipboard.test.cjs"
+    },
+    {
+      "file": "desktop/tests/downloads.test.cjs",
+      "sha256": "c9bce8022a3f98f194c391b1776423b7f6d4c0d4d34660d8010cd56f3167196d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\downloads.test.cjs"
+    },
+    {
+      "file": "desktop/tests/draft-exit.test.cjs",
+      "sha256": "69a060854cf30ef4815a7c92acdd8f91e9a89d9e5fd2e29d43677e9407eb89d8",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\draft-exit.test.cjs"
+    },
+    {
+      "file": "desktop/tests/draft-recovery-ipc.test.cjs",
+      "sha256": "d2441b68268b90bb2a7daa204fa2c55f83dae47b6e7f34968fed4632bc4d7856",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\draft-recovery-ipc.test.cjs"
+    },
+    {
+      "file": "desktop/tests/draft-recovery.test.cjs",
+      "sha256": "a77feae34867d85334bb5910908fa7d3a9b566e05a920cf167f1d137968acdbd",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\draft-recovery.test.cjs"
+    },
+    {
+      "file": "desktop/tests/fortune-account.test.cjs",
+      "sha256": "25f4fd789b30d4b0e5dbf85ad71a48398e92a1e988a98e6f3d28686e659a98a8",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\fortune-account.test.cjs"
+    },
+    {
+      "file": "desktop/tests/installations-asar.test.cjs",
+      "sha256": "824670609b8ac88ec1ec75ae425bbd32be8bc681ebc325885957f7778e6b2fcd",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\installations-asar.test.cjs"
+    },
+    {
+      "file": "desktop/tests/library-access.test.cjs",
+      "sha256": "4dce64ab5ee7e98eda312408bc522f5bc79111b8b71961cdb404eedd1cd6a072",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\library-access.test.cjs"
+    },
+    {
+      "file": "desktop/tests/lifecycle.test.cjs",
+      "sha256": "53c1157dcfdc5526c182852c51802a6e89ee582235eaf1616a903b9b4133e8d2",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\lifecycle.test.cjs"
+    },
+    {
+      "file": "desktop/tests/logout-draft-cleanup.test.cjs",
+      "sha256": "cc52a9697252bab861b93f23645c49179d6b2b8825df277c50e1ab42a70f3eff",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\logout-draft-cleanup.test.cjs"
+    },
+    {
+      "file": "desktop/tests/member-benefit-preview.test.cjs",
+      "sha256": "b15d866c0eac9a1f423e0c280accfb15da29960f907b2eb1382e099a5cdb0e5d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\member-benefit-preview.test.cjs"
+    },
+    {
+      "file": "desktop/tests/member-home.test.cjs",
+      "sha256": "ccda508e17e7c4b2786f813f0a4f7c3c8ff3c715d7e7d87768c3eac2a726e0ae",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\member-home.test.cjs"
+    },
+    {
+      "file": "desktop/tests/messenger-cloud-preview.test.cjs",
+      "sha256": "30ce4d4999849bec1d847b6730b2b42180aa77260c240164725396a580c66f45",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\messenger-cloud-preview.test.cjs"
+    },
+    {
+      "file": "desktop/tests/messenger-teacher.test.cjs",
+      "sha256": "a0d845a3f0232b32b8cd6a188bbea011025d5712278b29aa8be85593deb2525b",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\messenger-teacher.test.cjs"
+    },
+    {
+      "file": "desktop/tests/native-logout-provider.test.cjs",
+      "sha256": "9ca4bcc6fbf7757f5f24d6edc96295e036c4915dbb7c59961651b575de2ec499",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\native-logout-provider.test.cjs"
+    },
+    {
+      "file": "desktop/tests/native-shell.test.cjs",
+      "sha256": "7168bd253e20ca1af6f42d006ed067a6fbe8a590a84bf7206299c8bf8f4f1989",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\native-shell.test.cjs"
+    },
+    {
+      "file": "desktop/tests/personal-account.test.cjs",
+      "sha256": "83559ed5b7fd2fe93af2d3568d519cfc47596855c703e3b54de886d793d33801",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\personal-account.test.cjs"
+    },
+    {
+      "file": "desktop/tests/platform-continuity-auth.test.cjs",
+      "sha256": "b6dd27b4fe2b9448de4be2dee89c6e354e6a843130f70fdd4fd39c36ed6b12bd",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\platform-continuity-auth.test.cjs"
+    },
+    {
+      "file": "desktop/tests/platform-tray.test.cjs",
+      "sha256": "d85d225f7b2940c8d2b6bdbf4768561668f93b741987ab954231851e3911affc",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\platform-tray.test.cjs"
+    },
+    {
+      "file": "desktop/tests/play-account.test.cjs",
+      "sha256": "079655073fb66e5a654a97bf3556d8b074adb88625df1982a9410c2dde3ee59b",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\play-account.test.cjs"
+    },
+    {
+      "file": "desktop/tests/product-preview.test.cjs",
+      "sha256": "cb53ee0a8631d048b18e528c509f1bbd5b13a93aba98573c299dbf5bd727cb2e",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\product-preview.test.cjs"
+    },
+    {
+      "file": "desktop/tests/program-root.test.cjs",
+      "sha256": "e51d9b59e3e01ba2505026e5ffd46e9ee3deed49a8e22c722a41bc20d125cd3d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\program-root.test.cjs"
+    },
+    {
+      "file": "desktop/tests/public-apps.test.cjs",
+      "sha256": "b49857f2dedded5f2ab16db8649cec0388d3c3224acdbcb5b76d098f27f06656",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\public-apps.test.cjs"
+    },
+    {
+      "file": "desktop/tests/renderer-auth.test.cjs",
+      "sha256": "a8fbb1b4d8c29a7e8ef606311b3f015229e323372db5c67190bfd99dc1b53240",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\renderer-auth.test.cjs"
+    },
+    {
+      "file": "desktop/tests/renderer-draft-recovery.test.cjs",
+      "sha256": "9f080e67206588847af15a9c466142c9728f088737bbbd69c787dd4b4130416b",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\renderer-draft-recovery.test.cjs"
+    },
+    {
+      "file": "desktop/tests/renderer-personalization.test.cjs",
+      "sha256": "c8c5d8e34b973c29450afec2add431c76d94fd4815c810cfd98ceaa4a0d82672",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\renderer-personalization.test.cjs"
+    },
+    {
+      "file": "desktop/tests/renderer-state.test.cjs",
+      "sha256": "c2805233a35df255dad6966583267080fbeeb70e662a1e6c5d22d9dcd7d21ce9",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\renderer-state.test.cjs"
+    },
+    {
+      "file": "desktop/tests/startup-resume.test.cjs",
+      "sha256": "f1aa8994d9eccb4f19bde97667f982c60405684a81b2e516376887a5705e27d8",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\startup-resume.test.cjs"
+    },
+    {
+      "file": "desktop/tests/suite-recovery.test.cjs",
+      "sha256": "7751942630a0af5d609af22ab3b81c66c57255c36dc733ed66d2d94792d29e64",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\suite-recovery.test.cjs"
+    },
+    {
+      "file": "desktop/tests/suite-session.test.cjs",
+      "sha256": "044b79f0c00060a8276becc05b4821df135041ce49869573a84d00eb3cfaf31a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\suite-session.test.cjs"
+    },
+    {
+      "file": "desktop/tests/teacher-account.test.cjs",
+      "sha256": "60d0efa193909a72dabc58c271db398c4104e8c5b5078512d0df5af54d61e61e",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\teacher-account.test.cjs"
+    },
+    {
+      "file": "desktop/tests/teacher-preview.test.cjs",
+      "sha256": "40764ab5734d505c9878e5e7b78071d341b59976f7fdd1d210530b48035f0f26",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\teacher-preview.test.cjs"
+    },
+    {
+      "file": "desktop/tests/window-resume.test.cjs",
+      "sha256": "1e4be52a9071863b02b65599743f5bc10bfa988aef1c191c3707bf96eb2804eb",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\window-resume.test.cjs"
+    },
+    {
+      "file": "desktop/tests/workspace-enrollment-response.test.cjs",
+      "sha256": "67e4d07815614ec0b4fbc4863dc662fd5e411642848cec3661953ef7922fbf7d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\workspace-enrollment-response.test.cjs"
+    },
+    {
+      "file": "desktop/tools/app-compaction-smoke.cjs",
+      "sha256": "8562cad8305fae87f70ee5379725457166591350eda98f05dd19e6b4363ef6f3",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\app-compaction-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/benefits-native-smoke.cjs",
+      "sha256": "6ca71d99d3230c770308099a6c25b5381afa54bff81ba73a7cbbfe9155a3b455",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\benefits-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/build-client-catalog.cjs",
+      "sha256": "b5929e263e15e47d95b8cbf1cf1f0a44120eef0176b0363976f1edd48a2f006a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\build-client-catalog.cjs"
+    },
+    {
+      "file": "desktop/tools/build-platform-continuity.cjs",
+      "sha256": "a2af3a277320677e8ec087662e474f67ed05e7d10426f07ee22ec79e33abbec5",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\build-platform-continuity.cjs"
+    },
+    {
+      "file": "desktop/tools/build-renderer-assets.cjs",
+      "sha256": "7cc6e7b7ca724940230cd3461a55df437bb94cb7401df21c669696c252623358",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\build-renderer-assets.cjs"
+    },
+    {
+      "file": "desktop/tools/care-native-smoke.cjs",
+      "sha256": "49f0508272f0bcf4630eda353c89db2182bff09f6222d7da7889882cff4de670",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\care-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/care-recovery-native-smoke.cjs",
+      "sha256": "69348cac39e7da65d85cb85135efbf8b70850c9e9c97223c7f277ea5573afdc4",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\care-recovery-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/connection-native-smoke.cjs",
+      "sha256": "22224be65d6f5c69dea3989cadcefc1288642485388806f346eb3436176751d8",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\connection-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/connection-package-smoke.cjs",
+      "sha256": "e2c4d673b0ac5520ac15b5ba8ef65d0cf3624ae3abf4ebdd7979432941ac4f51",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\connection-package-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/continuity-exit-fixture.cjs",
+      "sha256": "3ab4fb2e71a833f65eeb43ed076ff04a5c5faccf8adf5ccbc1df18247f5f6c7a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\continuity-exit-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/continuity-exit-native-smoke.cjs",
+      "sha256": "99a9a84de265151825b460946923b6791965a45b53ce10dc1338c0f3d740fa0b",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\continuity-exit-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/convenience-home-fixture.cjs",
+      "sha256": "0f5e97d65ec4912790590287f62f9027e76a4cdb4683df92be87f9156e34d27a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\convenience-home-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/convenience-home-native-smoke.cjs",
+      "sha256": "b52f894ac6e035de9c3e98923e2255164d895ff0131c1eaa8745e64101213d85",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\convenience-home-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/convenience-native-smoke.cjs",
+      "sha256": "57753577c5fe6d1d8e8f8a7c81b907e292f34ac96fcccd74ba4b32ad1b7550d0",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\convenience-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/convenience-package-delivery.cjs",
+      "sha256": "d9dcb794d1195af92a6da7ac38a6457fb7fcf5633b71d80c6edaeaeef19f7ebe",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\convenience-package-delivery.cjs"
+    },
+    {
+      "file": "desktop/tools/convenience-package-qa.cjs",
+      "sha256": "789b621c154c270cb8daf21a8db3b32fc543473b9122dc50edea8c281a1c59e1",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\convenience-package-qa.cjs"
+    },
+    {
+      "file": "desktop/tools/desktop-preferences-native-smoke.cjs",
+      "sha256": "c3ffef907467531021e3f6c2d6c67f40ff15206184b157a59c3d04d34c1239a6",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\desktop-preferences-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/desktop-preferences-os-smoke.cjs",
+      "sha256": "e142cb4163278bebe51ead1c09bdc10f5853e332989510347eae5166e896f3cc",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\desktop-preferences-os-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/development-catalog-fixture.cjs",
+      "sha256": "988b1b161f6fb9c9677db653c22ce4154467050e8e565f2a88f4cbd5dae813d7",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\development-catalog-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/development-catalog-smoke.cjs",
+      "sha256": "89e6c485cdcc16a476f269b3bba6a22669c5a0de92b39b87faa3dcbd7527a8c9",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\development-catalog-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/experience-fixture.cjs",
+      "sha256": "11dc09f1dd0ec4caa895d50bfbd9a2f67e7796ff13a5a6ab5de5f4cdf48a83d3",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\experience-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/experience-native-smoke.cjs",
+      "sha256": "d16df2ad5103ed0fa05df9410f9c977c2b6d1a915f1046e1aecbfeeaf7ea9700",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\experience-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/fortune-platform-smoke.cjs",
+      "sha256": "6dff7980979b76812b514f1bf3ff00adf8d69378ebf8fc7a9dd9a77553278741",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\fortune-platform-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/icons.cjs",
+      "sha256": "c943333445504a1b50ad58404560871af8d96f6d9b8eab14ca6aa62e701c6d28",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\icons.cjs"
+    },
+    {
+      "file": "desktop/tools/lifecycle-smoke.cjs",
+      "sha256": "9eba0d59ceca5d56bf9ed5a4de44596566bc3639096550f392570a23507d8e56",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\lifecycle-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/mac-cross.cjs",
+      "sha256": "4c5d40affbcddafbc70de8e01eb1b73c1b0e0fd4cf70c6f30c0cdb04f586b286",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\mac-cross.cjs"
+    },
+    {
+      "file": "desktop/tools/member-home-native-smoke.cjs",
+      "sha256": "4b4f3cea8f2cb79c1a5c1936c51245891e2afc05d07e9e78374121976546bf5d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\member-home-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/native-ui-probe.cjs",
+      "sha256": "943c3d4b6ccabcc20ae73a50f94fda4496209b530203d7e9ea38612af4bc7ddf",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\native-ui-probe.cjs"
+    },
+    {
+      "file": "desktop/tools/package.cjs",
+      "sha256": "bbf4e751dcb1339493d66c46c3bc3f5a8e16f6c3d4ce185eb1d008fc31f036e9",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\package.cjs"
+    },
+    {
+      "file": "desktop/tools/personal-native-smoke.cjs",
+      "sha256": "bf1e82e8aa01faa6590a40a2632fb568403a513dc8decd450f5ad5105dc3693a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\personal-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/platform-input-native-smoke.cjs",
+      "sha256": "88535a31536c61a14fc9dcb19ae65b20447adc3513366d7cf7cf0961668edebc",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-input-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/platform-library-native-fixture.cjs",
+      "sha256": "647cf095f58aa189f88f67a457329dd4e0f38ed795c804bf0a61cfcdb783471d",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-library-native-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/platform-library-native-smoke.cjs",
+      "sha256": "1d7836dabbdf03cf083052eac9dbc33f59678a878a30c1f3769e28be07a12c7f",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-library-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/platform-note-management-native-smoke.cjs",
+      "sha256": "4a90f2d8a79900872a264687c25fb7cd01fcc442c6b39e9565c59bd97a097579",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-note-management-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/platform-tray-native-smoke.cjs",
+      "sha256": "66598aee639a05860aae701902c98ac8742015186792ec58d8a1a37d8cc229f0",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-tray-native-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/qa-messenger-teacher-grouping.cjs",
+      "sha256": "6844bf102039e215c1d24fd28561d6555420edeefcb9cadd815d202795878fb6",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\qa-messenger-teacher-grouping.cjs"
+    },
+    {
+      "file": "desktop/tools/renderer-account-fixture.cjs",
+      "sha256": "caa2659c534a741a89559e22a9764d3cf0b90dc6878267ec84a113aff05c0ccd",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\renderer-account-fixture.cjs"
+    },
+    {
+      "file": "desktop/tools/renderer-preview.cjs",
+      "sha256": "5f07fccbc7b6f7c67bfab91933f54d99413bb36478139607f89ad5dca1dc008f",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\renderer-preview.cjs"
+    },
+    {
+      "file": "desktop/tools/renderer-responsive-smoke.cjs",
+      "sha256": "917cc4a01a8ddb45827cb667906a91f6846f535286716c43f2b54c70d3db065b",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\renderer-responsive-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/smoke-package.cjs",
+      "sha256": "a123578a5ae28bbe71a24fea9af282eab64d749ff66c4c60f4b4b61e52dc1b90",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\smoke-package.cjs"
+    },
+    {
+      "file": "desktop/tools/smoke.cjs",
+      "sha256": "3f563015f50a2f7d5c6e54d37c9fd47be2921b4cd151e15edd2088a51782e658",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/source-hash.cjs",
+      "sha256": "61970cf92fa42a3c8da77c571662cb8ea8f765cce0b7e91ff18104a6d6cd3001",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\source-hash.cjs"
+    },
+    {
+      "file": "desktop/tools/startup-resume-os-smoke.cjs",
+      "sha256": "eb2f9b5ab2c9e72aff02eb1cc6ffd7c6194a493e0c0e9c3ad66bcc98f06cf405",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\startup-resume-os-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/teacher-account-smoke.cjs",
+      "sha256": "8a1a5ccd1d872a505635f3bf6e1912fed58ecaa3b3f480097901c711da34477a",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\teacher-account-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/teacher-entry-smoke.cjs",
+      "sha256": "84c41481a268ad20df2c33ecaa8d46dda98d7d1fdf8d2d55e80992b4fab75ce8",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\teacher-entry-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/verify-packages.cjs",
+      "sha256": "a79d9374ef47ffdb3be7781cc9f11bfa41661e70ee5b2639c73d5e51a04e9daf",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\verify-packages.cjs"
+    },
+    {
+      "file": "desktop/tools/window-resume-audit.cjs",
+      "sha256": "2494abbd971f72f8f2209bbf2e19738713eacda16b133a1a04aa2ba4cf12fe04",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\window-resume-audit.cjs"
+    },
+    {
+      "file": "desktop/tools/workroom-download-smoke.cjs",
+      "sha256": "1c7d91b5f34689a26b9f0531ea3807a45ec1db814d85657307ecc2af66fa6ca9",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\workroom-download-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/workspace-connect-final-smoke.cjs",
+      "sha256": "baf2960a88c5e97e84be9473571b819471ffecd878fa642846b0efc09cdabfd2",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\workspace-connect-final-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/workspace-connect-smoke.cjs",
+      "sha256": "5370c7cfec357b6ec6d8e51fe2eb9c921b2081b88f980bddd168192241f0e909",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\workspace-connect-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/world-entry-connect-smoke.cjs",
+      "sha256": "1d1789f4c17d8d1d49dff92f19129d63b8ed15233deb6670fc051fab50a08220",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\world-entry-connect-smoke.cjs"
+    },
+    {
+      "file": "desktop/tools/world-play-native-smoke.cjs",
+      "sha256": "ee9959ead6f1ab3b430eabc07ec27bd8a9814b2d36f0cab681bb728e0926e253",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\world-play-native-smoke.cjs"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-entry.mjs",
+      "sha256": "40c97bc8010d1175c9dc3734c5f2beab205a554ef5b7c4a51fef66d5bdfbefb4",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-entry.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "sha256": "9d54d4ebc6d9f9358427b388d330c561625431041afb3e72ccf21e9708d412ca",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\core.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library-data.mjs",
+      "sha256": "60448bd29bc3e2495618883bb51c333109654dc5f186d664f300b9c17f59523b",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library-data.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/personal-data.mjs",
+      "sha256": "f11eeacf7bb0b1fdf45a684c7297ec918dd10eedeb689767ebf8787aefab38de",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\personal-data.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/personal-media.mjs",
+      "sha256": "f38128e15bbd52a3c490e5c31502bd97a20d3242a37e002a7ab702c3ae3bc6e4",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\personal-media.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/product-account.mjs",
+      "sha256": "21158142f47bfb209db4f5a24b31eeaabc5f67bf2a14e998ea0330fd6085b9e2",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\product-account.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/document-sync.mjs",
+      "sha256": "8ad52f8b8b9b6654dbffcaa7d47397ed4cc450a7fd684ffca468b5ec1c2dd710",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\document-sync.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/account-notebook.mjs",
+      "sha256": "12a91747abe6de1efa0ddbb9ae416c0e4e04ec237457a97f1a8cde483ba1c2b8",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\account-notebook.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library-account.mjs",
+      "sha256": "5d1dd1f67ad7ec8758368fdd22932d159c85f5fed81e0262e68d3f2878d6374e",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library-account.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library-recovery.mjs",
+      "sha256": "0117f940b322ec180e33b21d692cb9b6afa4e17f57df740ef242eb2bef079885",
+      "provenance": "panel-retry verified build source graph",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library-recovery.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library-view.mjs",
+      "sha256": "31fd6e8cf0369d84b5309b2a578f4dc782e04b9b4c4468b7fcaedfa63744829a",
+      "provenance": "notice-lifecycle after source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library-view.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/client.mjs",
+      "sha256": "bca8deba759e61ae49a9f0a206362d6e4466d22163de5062609b3c85a2b96550",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\client.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/generated/account-client.cjs",
+      "sha256": "00ff815ead84ef74c24bf1101c1c48bf7723914377e5fad6e6be27705088c922",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\generated\\account-client.cjs"
+    },
+    {
+      "file": "experiences/synk-account/src/world-play-entry.mjs",
+      "sha256": "2b585eeb0b6aeaa0794fc8eb777937f98808658e12a0d9d1b4ba8a828637831d",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\world-play-entry.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/classroom-client.mjs",
+      "sha256": "60cddfbdc6b547fb99cb67280d1dd295a02ca24a0fbf8f1f61210f90d7b292cc",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\classroom-client.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/account-view.mjs",
+      "sha256": "33f62e9e0387a596744faf1eab1c52ac893d599c0e8498b26390dff2d15bf5eb",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\account-view.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/account-classroom.mjs",
+      "sha256": "50cf8e30e6c2bfc4d983397d51e19cd121901a6524ddd9479f9c62d2ad9696f7",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\account-classroom.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/desktop-account.mjs",
+      "sha256": "124ec92c0090803373513d84e5cd07e8f42abd37bc0c06a2fbe8655653301f03",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\desktop-account.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/atlas-words.mjs",
+      "sha256": "f366ffadf2bdbbabe93f7fb2609c5d3777658ecae1d89e254db49a7c7bdb0833",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\atlas-words.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/town-sharing.mjs",
+      "sha256": "23ddaeacf252bd2aef45aa407deadc33216971a33d38d93c3d29aeaa751212d8",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\town-sharing.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/world-classroom.mjs",
+      "sha256": "53eb6935dd50fdfa2818742833e5d04e37173f1fb485ec380ce77212c5c21091",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\world-classroom.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/classroom-town-host.mjs",
+      "sha256": "a13f3c1d45fb9fac79754f68495ce42bddbba2e2ace1bb023a3af2edab32916d",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\classroom-town-host.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/wardrobe-view.mjs",
+      "sha256": "10986de037955f753f7ad4b64c875449240de7c29b1ceb6465aebad6cc757ea9",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\wardrobe-view.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/generated/world-learning-host.cjs",
+      "sha256": "8bcfb74531e65fdc960794546c1c79dd459ec57bee93fddb79c0bab1c478f977",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\generated\\world-learning-host.cjs"
+    },
+    {
+      "file": "experiences/synk-account/src/generated/wardrobe-catalog.cjs",
+      "sha256": "256735435ccba1252e2943cfc0bc21fac3f4e27244ed9e11a6de540d71736136",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\generated\\wardrobe-catalog.cjs"
+    },
+    {
+      "file": "experiences/synk-account/src/wardrobe-three-preview.mjs",
+      "sha256": "e87ef35a7138bd16e358638764f171648d389d26f6782f26323ba3ac9e53bc20",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\wardrobe-three-preview.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/generated/wardrobe-client.cjs",
+      "sha256": "469079cbd12824fcf966ab3917081023818548f7e156a5f5cb80b3839c4c908f",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\generated\\wardrobe-client.cjs"
+    },
+    {
+      "file": "experiences/synk-account/client.html",
+      "sha256": "77ddb3a38fc3bfc124d094534aa6c33e510ef301d508c8d259bc56a4b9e156e9",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\client.html"
+    },
+    {
+      "file": "experiences/synk-account/style.css",
+      "sha256": "677734a2e92ce371f157960e82e543ff7fc02fb40b7ad45cb88963cae6055ff4",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\style.css"
+    },
+    {
+      "file": "experiences/synk-account/world-classroom.css",
+      "sha256": "685bde4241bc453cda640a9446edd77031c445eed02f0185abfcbcf5bbb7053f",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\world-classroom.css"
+    },
+    {
+      "file": "experiences/synk-account/wardrobe.css",
+      "sha256": "00ba7b3505fc9b5e1097d9ebec7e1fe6afd5e5a5ed38c621705968b0732d93c9",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\wardrobe.css"
+    },
+    {
+      "file": "experiences/synk-account/world.webmanifest",
+      "sha256": "651217ba7f7f8430afa43ba41860d6e5f977e350749c712c3ffe3607382a893d",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\world.webmanifest"
+    },
+    {
+      "file": "experiences/synk-account/dist/wardrobe-three.js",
+      "sha256": "ca63e2e89a9a83c9c3ddb8641aeda6ab2aa2420e41210f1571887442ad60fe44",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\dist\\wardrobe-three.js"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-base.webp",
+      "sha256": "38dfa064e70b80b8507ee78f10305221de003996932f9fbfd2fd457b1ee43720",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-base.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-scarf.webp",
+      "sha256": "a69df98f2fa85d32a7254d1961d465cef504bcfa68e4c0281466b6d253cd82b6",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-scarf.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-apron.webp",
+      "sha256": "68d7e4a6afc09379bcd17f31db0737c2a30641da0cc247187aabca5cae89da5a",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-apron.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-summer-deel.webp",
+      "sha256": "f78f3707fe212c457d335af731f756177f7276092bbc5ce73445631d7096bf35",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-summer-deel.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-winter-deel.webp",
+      "sha256": "5d3a21fcedc7b7534323b4524c1a89a1a0a8a0c3a4412d005b3908bac42ab1cb",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-winter-deel.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/kkamong-headphones.webp",
+      "sha256": "f66dfd9d9413483d2b248aa8dabfd087f8719209eb7ba76cb8d2b6365039a4f2",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\kkamong-headphones.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/mongle-basic.webp",
+      "sha256": "035653ea9a8c511e3302bf8bbe6e35a00af044e05c3e55c5efd75f332813637d",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\mongle-basic.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/marin-basic.webp",
+      "sha256": "62e7a18bee49d2cfabfd944c1a72680fd399982102d0d1d546308b43e5ca7803",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\marin-basic.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/felt-paper.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\felt-paper.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/felt-night.webp",
+      "sha256": "1fede8c6c14e4c7814f384141a7c66fdbfdc5c8d6d114428830ae3b831f96752",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\felt-night.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/felt-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\felt-lapis.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/cushion-cream.webp",
+      "sha256": "6f5d6593da6f7e845a33f3579f684be82ef8b81dc7a80555962261824a442c1a",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\cushion-cream.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/wardrobe/cushion-blush.webp",
+      "sha256": "b7c5d1ce2744196d728ca145eeca6ff531b629d3d2e5ba37e94fd9432f5c57fa",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\wardrobe\\cushion-blush.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/scrapbook.css",
+      "sha256": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\scrapbook.css"
+    },
+    {
+      "file": "experiences/synk-account/assets/laptop-felt.webp",
+      "sha256": "5c27f30d79aab097ea4f12867beb102afe08af4a82b31cb722f9ff3e320ee9b8",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\laptop-felt.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/synk-logo.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\synk-logo.svg"
+    },
+    {
+      "file": "experiences/synk-account/src/enrollment.mjs",
+      "sha256": "c62ce15a98d77618250d48021c44a676aa336b91afac1ccab02a5d911d3b49c2",
+      "provenance": "Integration source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\enrollment.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/messenger-teacher.mjs",
+      "sha256": "64ce7fa237df62850abb1ac1d2d7fed74d3711d49bcaf251d2e0476740523bf3",
+      "provenance": "Integration source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\messenger-teacher.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/teacher-workspace.mjs",
+      "sha256": "359c7191d5e56b75bfe9653ed7721b93f64807b9654befa467f1fab6c9f82b2f",
+      "provenance": "Integration source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\teacher-workspace.mjs"
+    },
+    {
+      "file": "experiences/synk-account/src/teacher-session.mjs",
+      "sha256": "9d05c59ce2e8c42a5e367d749e8110cd372dafe1cd0ec663e18e665b8afdc78e",
+      "provenance": "Integration source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\teacher-session.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/classroom-client.test.mjs",
+      "sha256": "b6a93275095cb7976910b9ca758f8e3ab0edca640ffafe53417f6da7430e5b15",
+      "provenance": "Integration regression source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\classroom-client.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/enrollment.test.mjs",
+      "sha256": "daa10e8cd95382d31c693437ca2c41a4213c2de946daf94f1f8b330d28a6fc97",
+      "provenance": "Integration regression source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\enrollment.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/town-sharing.test.mjs",
+      "sha256": "43ed6cf898fafb19956011da8ec0d430437fdc269ad6c77f1d43b59b754fde53",
+      "provenance": "Integration regression source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\town-sharing.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/messenger-teacher.test.mjs",
+      "sha256": "14b0821ff71bd52c9fae0d472644a2bdb68b83c44dedd3186131e5842a9c4b1c",
+      "provenance": "Integration regression source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\messenger-teacher.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/teacher-client.test.mjs",
+      "sha256": "eb12246403fe692578ae69e616af61140c65342e498ec4ca9f4f8c7b27252f46",
+      "provenance": "Integration regression source audited at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\teacher-client.test.mjs"
+    },
+    {
+      "file": "desktop/tools/platform-input-fixture.mjs",
+      "sha256": "a19ba90383ecd0bd145f74e90ea14d8a57cab65edee9d7d79d2419f654211791",
+      "provenance": "Existing native QA runner imported fixture; separately pinned at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-input-fixture.mjs"
+    },
+    {
+      "file": "desktop/tools/platform-note-management-fixture.mjs",
+      "sha256": "ec36d75bf9904921651c33802aa590231822965441d8b4ca3d25f5738d07b3d5",
+      "provenance": "Existing native QA runner imported fixture; separately pinned at closure",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\platform-note-management-fixture.mjs"
+    },
+    {
+      "file": "desktop/package-lock.json",
+      "sha256": "f84f6ca23baa0240374715d42a7fd5de265e3e68bbf996fc7cb1328b0e30ae88",
+      "provenance": "Current package/style input; compare to reviewed build graph before staging",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\package-lock.json"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library.css",
+      "sha256": "8de92339f249069ac2bb99fead709b37f347b285e60beaaf2ccdbc8042ecbec3",
+      "provenance": "Current package/style input; compare to reviewed build graph before staging",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library.css"
+    },
+    {
+      "file": "experiences/synk-account/tests/platform-library.test.mjs",
+      "sha256": "62aff3eab2cacb9536bc2789c8ad48a81e555ce91080b45d784bced5bf57c149",
+      "provenance": "Reviewed latest library regression snapshot",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\qa\\native-followup-corrections-20261010\\panel-retry\\after\\experiences\\synk-account\\tests\\platform-library.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/platform-library-view.test.mjs",
+      "sha256": "5d653aa87b395aa17f33f241950fa502d64f4bea9dfc84d582b4f2f5ad198583",
+      "provenance": "Reviewed latest library regression snapshot",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\_ops\\qa\\native-followup-corrections-20261010\\notice-lifecycle\\after\\platform-library-view.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/tests/platform-library-recovery.test.mjs",
+      "sha256": "4dd5e978f78c7928ff85bb539844ebdc1d0949daf1aff6638335a149a7af10aa",
+      "provenance": "Related library recovery regression / teacher product name entry, audited current input",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\tests\\platform-library-recovery.test.mjs"
+    },
+    {
+      "file": "experiences/synk-account/teacher.html",
+      "sha256": "745c08564d13c06ef072b85bd796b7c45b5527988900d94ccbddc65ea1a984e9",
+      "provenance": "Related library recovery regression / teacher product name entry, audited current input",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\teacher.html"
+    },
+    {
+      "file": "desktop/package.json",
+      "sha256": "e9255b76cffd82f9276b12f4d5003fd7c58778fd09a363ac8083982e59cfc99d",
+      "provenance": "Only product description change; preserve baseline LF and unchanged scripts/dependencies",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\package.json",
+      "primaryBytesIntentionallyNotCopied": true
+    }
+  ],
+  "unchanged": [
+    {
+      "file": "desktop/assets/launcher/button-soft.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\button-soft.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/button.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\button.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/care-note.webp",
+      "sha256": "4f1f9e4f4798d246674ffd2ef3f65346e08140aeae2994783a0d670d06ab5c78",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\care-note.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/chip.webp",
+      "sha256": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\chip.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/DMMono.ttf",
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\DMMono.ttf"
+    },
+    {
+      "file": "desktop/assets/launcher/engine.js",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\engine.js"
+    },
+    {
+      "file": "desktop/assets/launcher/fortune-star.avif",
+      "sha256": "17db6ffb3996b785bfa4c00e9fc904f760f6f3ec4bbde9ca589b1c677b4a54be",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\fortune-star.avif"
+    },
+    {
+      "file": "desktop/assets/launcher/InterTight.woff2",
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\InterTight.woff2"
+    },
+    {
+      "file": "desktop/assets/launcher/laptop.webp",
+      "sha256": "e7fec4f0b240f1d440041bb39cae6adec4784f0624f911605e119abc2d0e1689",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\laptop.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/messenger.png",
+      "sha256": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\messenger.png"
+    },
+    {
+      "file": "desktop/assets/launcher/path-cover.png",
+      "sha256": "6ea72a37d99719a920ad70c1229d03c79aab285f2160ea61fafbada1ccb1260d",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\path-cover.png"
+    },
+    {
+      "file": "desktop/assets/launcher/personalization.js",
+      "sha256": "749eb298c8f4a0242e348385c4ea4b77c354546dc66ea16354ac7897210308e8",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\personalization.js"
+    },
+    {
+      "file": "desktop/assets/launcher/pulse-cover.png",
+      "sha256": "75cbfc589fd9c97232eea14673f3965eba0d511886bc3afef8520c0e8264557e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\pulse-cover.png"
+    },
+    {
+      "file": "desktop/assets/launcher/racing.jpg",
+      "sha256": "e7ae9d3a64b3286ea21ffc058d5f7f7417ac4362ecec4aa93d9d301d36aee7f5",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\racing.jpg"
+    },
+    {
+      "file": "desktop/assets/launcher/rhythm.jpg",
+      "sha256": "32b41b20ab95126acee32c617c2c72bd2bf7db0d98f2f3f1bd47d0b102360551",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\rhythm.jpg"
+    },
+    {
+      "file": "desktop/assets/launcher/runner.jpg",
+      "sha256": "48cf6034157d9945dfef6561bd996775fe57b64d67fecf6ed29c7b0b8101cc83",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\runner.jpg"
+    },
+    {
+      "file": "desktop/assets/launcher/shift-cover.png",
+      "sha256": "acaabc6e3f992484ff4038d1d11bc026259513a262fe4b8694651e29b0e92fc0",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\shift-cover.png"
+    },
+    {
+      "file": "desktop/assets/launcher/studio-camera.webp",
+      "sha256": "8a363e6f5047ab30691208270391aaf0074fccce233ad76c5fa6ae11f1a705c3",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\studio-camera.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/SUIT.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\SUIT.woff2"
+    },
+    {
+      "file": "desktop/assets/launcher/teacher-cover.png",
+      "sha256": "747e85e5bb1e2bbb0fd86567c6bbe4b925c43e26a4ae4d8e847ef454a5f78c4f",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\teacher-cover.png"
+    },
+    {
+      "file": "desktop/assets/launcher/wide-black.webp",
+      "sha256": "1fede8c6c14e4c7814f384141a7c66fdbfdc5c8d6d114428830ae3b831f96752",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\wide-black.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/wide-butter.webp",
+      "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\wide-butter.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/wide-coral.webp",
+      "sha256": "a6fe0f01a7457a84b1817a75f3933be201e9f61e59ee45363fe12aea63802235",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\wide-coral.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/wide-cream.webp",
+      "sha256": "5339e11853bfbba65b0fc0abbb1390de6ac1987979fbfecfb46ba415a811a51d",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\wide-cream.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\wide-lapis.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/world-cover.webp",
+      "sha256": "de50792266bbafb375e85be5b34799b6039246087c1146509a814643cc44d7be",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\world-cover.webp"
+    },
+    {
+      "file": "desktop/assets/launcher/world.png",
+      "sha256": "f590318880ad89fe93048982b84fc26a422b61df2342b35fd572f40f4d1be87c",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\launcher\\world.png"
+    },
+    {
+      "file": "desktop/assets/messenger.icns",
+      "sha256": "637c629ec6187a7400ec770a4c93a7746375014b97e454eeda49a0178317761f",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\messenger.icns"
+    },
+    {
+      "file": "desktop/assets/messenger.ico",
+      "sha256": "d49c0d5e6f65c6ea66a477fa4a3870bd69d1ff09e464efacba02e6e9a789053e",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\messenger.ico"
+    },
+    {
+      "file": "desktop/assets/messenger.png",
+      "sha256": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\messenger.png"
+    },
+    {
+      "file": "desktop/assets/platform.icns",
+      "sha256": "2f36a7e3f4b4e1aea57d6446d0dbd377bdb6c4c19f3928c41df643c21b7feebc",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\platform.icns"
+    },
+    {
+      "file": "desktop/assets/platform.ico",
+      "sha256": "5f85fa1e20d80f9f780a2fd68cd9a53498a5eec57a2b8b6202ce08e7a46fffe7",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\platform.ico"
+    },
+    {
+      "file": "desktop/assets/platform.png",
+      "sha256": "bdaa6a7071c0ec6a8b3b7aa711ada93d3e2e947b6adc52a2cb7aebae80d4a5fe",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\platform.png"
+    },
+    {
+      "file": "desktop/assets/world.icns",
+      "sha256": "1e449e0a486717310c43c8d57a285733c26b1c8f7c92b9b307801ef26208f448",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\world.icns"
+    },
+    {
+      "file": "desktop/assets/world.ico",
+      "sha256": "ad4a6799128bccce5caadb5c6c4ad45c42b1c139f4e1c78bf70f355d1c0d682a",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\world.ico"
+    },
+    {
+      "file": "desktop/assets/world.png",
+      "sha256": "f590318880ad89fe93048982b84fc26a422b61df2342b35fd572f40f4d1be87c",
+      "provenance": "Installed v4 frozen runtime source",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\desktop-native-workspace-connect-final-20261010-v4\\world\\stage\\assets\\world.png"
+    },
+    {
+      "file": "desktop/tests/renderer-library.test.cjs",
+      "sha256": "826a42acdeb155821d83744757f33dab795a9d21a85529cea871c2ffd7633eff",
+      "provenance": "notice-review full507 source/tests/tools pin",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tests\\renderer-library.test.cjs"
+    },
+    {
+      "file": "experiences/synk-account/assets/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\SUIT-Variable.woff2"
+    },
+    {
+      "file": "experiences/synk-account/assets/InterTight-700.woff2",
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\InterTight-700.woff2"
+    },
+    {
+      "file": "experiences/synk-account/assets/sticker-book.webp",
+      "sha256": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\sticker-book.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/thread-shift.webp",
+      "sha256": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\thread-shift.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/slab-coral-long.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\slab-coral-long.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/slab-cream-long.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\slab-cream-long.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/chip-blush-long.webp",
+      "sha256": "184f49c21988368e1a4422a5584785999f8741c1bfc263371d9f62fd8d622457",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\chip-blush-long.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/badge-cream.webp",
+      "sha256": "5336c1eca815b403ad0348bfde1573dda2367fab4996ea099c2daf03015f15be",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\badge-cream.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/badge-check.webp",
+      "sha256": "9cf54368ec871bc8f1b645ca2dfda0ff88d6dd565c3d27b1dd9b98dc5e2bb645",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\badge-check.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/tex-blush.webp",
+      "sha256": "c22e6bae8603eba21f09fc9d53ea857290bffd53ec9112183e44e81c9a638831",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\tex-blush.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/care-note.webp",
+      "sha256": "4f1f9e4f4798d246674ffd2ef3f65346e08140aeae2994783a0d670d06ab5c78",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\care-note.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/fortune-star.avif",
+      "sha256": "17db6ffb3996b785bfa4c00e9fc904f760f6f3ec4bbde9ca589b1c677b4a54be",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\fortune-star.avif"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/teacher-cover.png",
+      "sha256": "747e85e5bb1e2bbb0fd86567c6bbe4b925c43e26a4ae4d8e847ef454a5f78c4f",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\teacher-cover.png"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/studio-camera.webp",
+      "sha256": "8a363e6f5047ab30691208270391aaf0074fccce233ad76c5fa6ae11f1a705c3",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\studio-camera.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/wide-lapis.webp",
+      "sha256": "4c8a9dbfbe26f068ed69ceb661a63f57959967952d9deb9601ddb79588e3d312",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\wide-lapis.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/member/wide-butter.webp",
+      "sha256": "1527974a05a2814457ecc92735e22959d8378c032a80c7c682ced57d7f329f8e",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\member\\wide-butter.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/sticker-search.webp",
+      "sha256": "d08fd73c271ca539a9f5c754c067bd7b438875a136732989e5efe78cb6cb85c8",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\sticker-search.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/sticker-person.webp",
+      "sha256": "b26e20a40385723a37d61c9b6632f686a7fa6cc1f71dfcc2c3000b1255b9d2ae",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\sticker-person.webp"
+    },
+    {
+      "file": "experiences/synk-account/assets/app-platform.png",
+      "sha256": "bdaa6a7071c0ec6a8b3b7aa711ada93d3e2e947b6adc52a2cb7aebae80d4a5fe",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\app-platform.png"
+    },
+    {
+      "file": "experiences/synk-account/assets/app-world.png",
+      "sha256": "f590318880ad89fe93048982b84fc26a422b61df2342b35fd572f40f4d1be87c",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\app-world.png"
+    },
+    {
+      "file": "experiences/synk-account/assets/InterTight-Regular.ttf",
+      "sha256": "053de5dcb2af4b7bd2fad68249953df7a58bf7b103a38b59d2d8d89a86ca5699",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\InterTight-Regular.ttf"
+    },
+    {
+      "file": "experiences/synk-account/assets/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\InterTight-Medium.ttf"
+    },
+    {
+      "file": "experiences/synk-account/assets/DMMono-Medium.ttf",
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b",
+      "provenance": "Reviewed public account build input; preserve canonical input rather than transformed output",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\assets\\DMMono-Medium.ttf"
+    },
+    {
+      "file": "experiences/synk-account/package.json",
+      "sha256": "67a3cc82473e5096ae07bbca5ab6bb1c5a787b29da94a8bb5b1d7c1894621179",
+      "provenance": "Current package/style input; compare to reviewed build graph before staging",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\package.json"
+    },
+    {
+      "file": "experiences/synk-account/package-lock.json",
+      "sha256": "948978d492660bdc9355610d63b71c73bf85d5db1d70def75aeccc1f258a4e7b",
+      "provenance": "Current package/style input; compare to reviewed build graph before staging",
+      "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\package-lock.json"
+    }
+  ],
+  "filesCopied": 231,
+  "filesAlreadyExact": 62,
+  "externalDependencies": [
+    {
+      "file": "experiences/path-vr/model.mjs",
+      "sha256": "5a03f5982a8ff5658602974f43b6ead599cd64c0fa6bf5e3f1c73bfca033c9a4",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/conversation-rehearsal/domain.mjs",
+      "sha256": "6d60f39dad629bd98ab0e2a673410ea59dbd95dffcfaa55aa795a9c39d10dea6",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/family-album/model.mjs",
+      "sha256": "4a2ff290570fa2d79a8c7423a5250285dccd5092b291cefe0b158102cb51a49d",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/real-places.mjs",
+      "sha256": "b2008d4c8d4bca9ec992b1ebdf56c3002dcff60b2c9d52f0cfa26c8f2f48a4e5",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/places-v2.mjs",
+      "sha256": "5a536ef94548c7acef01f4e5496c9767cd86a016f479f4edb4de4bb9085180fd",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/real-conditions.mjs",
+      "sha256": "0b949e9aa13039277982017240769ce591d31e2841c4838369559c1ee63c1435",
+      "targetMatches": true
+    },
+    {
+      "file": "atlas/domain.js",
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f",
+      "targetMatches": true
+    },
+    {
+      "file": "atlas/travel.js",
+      "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2",
+      "targetMatches": true
+    },
+    {
+      "file": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/planner.mjs",
+      "sha256": "b0b0ff91245b44e49145c05e25e2594ed6d6b12c0fd4670656b5d59bb464514e",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/real-guide.mjs",
+      "sha256": "ee738efe6e5dadd849471fe78f63dd28d2dbc300d54164e2e575290cb6458c0d",
+      "targetMatches": true
+    },
+    {
+      "file": "atlas/trail-life.js",
+      "sha256": "a2045a196edde3ac986c9c2cdd952db792df7b919efc44c8811710dc777fe552",
+      "targetMatches": true
+    },
+    {
+      "file": "atlas/temper-outcomes.js",
+      "sha256": "a6ab147b062455c9f0df7fae662d91360d28840312d556f776fcc337c375d763",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/planner-feedback.mjs",
+      "sha256": "ab4f891a852cf82039e635e66f3e233b04d3f82151678b96b9d7aa009b72584e",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/planner-storage.mjs",
+      "sha256": "dccfcbb5b723c0061b2a954b9e417961dc21336f8fefb0deb3d7d86082fa78b1",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/path-travel/planner-account.mjs",
+      "sha256": "d4364cce5903c7172b8dd2635ae1ed596e758e0f601236cbc94d1022b8c33a60",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/play-common/account-host.mjs",
+      "sha256": "d604f0fb5ecee5c80844ae3aa1eb12c11990fa1ab81819b0205db374b64c2b86",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/play-common/play-data.mjs",
+      "sha256": "d9ef2439e84198d6b6f5641d126cda48fa0c1b0d66f2205cb8847912d122dbb3",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/korean-racing/garage-core.js",
+      "sha256": "2314ad2e983a0656f22dae1ff818590bb622ca9c4cfc460fac10e35c8a190772",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/mascot-render-lab/three/character-contract.mjs",
+      "sha256": "bcca1de0da94c2db8d01b2a677aa19eea8e4a0a87dee8803427718f9f58fb066",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/korean-racing/beginner-catalog.js",
+      "sha256": "475824940cc6644a3495d55c06145efca5e40c0d36d0315076c2c3094da463c8",
+      "targetMatches": true
+    },
+    {
+      "file": "experiences/korean-racing/play-catalog.js",
+      "sha256": "c8cb4bbf6fb2bdd0136c6327c64ad91bd87e097528bb9f27efc55bd3576168ae",
+      "targetMatches": true
+    }
+  ],
+  "packageSemanticChange": "description only: Messenger to Workspace. No new scripts or dependencies.",
+  "runtime100Exact": true,
+  "sourceClosureIncludesConcurrentPlatformWork": "Required exact dependencies of reviewed installed v4; not independently redesigned here.",
+  "testsPending": false,
+  "gitIndexTouched": false,
+  "sharedPrimarySourceModified": false,
+  "installedApplicationsModified": false,
+  "profilesAccessed": false,
+  "networkInstall": false,
+  "completedAt": "2026-10-09T20:36:25.902Z",
+  "tests": [
+    {
+      "label": "Native classroom, auth redaction, teacher and Workspace entry",
+      "file": ".tmp/workspace-connect-close-20261010/native-assembly-targeted.tap",
+      "sha256": "536ae0d2fc1a3f0769eb3a2b263e49a48ef69cbb1c945bd79c7f699a4c8aac79",
+      "passed": 101,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "label": "Account enrollment, classroom client and Town sharing",
+      "file": ".tmp/workspace-connect-close-20261010/account-assembly-targeted.tap",
+      "sha256": "3f6ae03fb384d00d991e40ff2afb2e84a2d8fb152f51eee4696360f8153fc17f",
+      "passed": 16,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "label": "Platform library and recovery guidance lifecycle",
+      "file": ".tmp/workspace-connect-close-20261010/account-assembly-recovery.tap",
+      "sha256": "06aa878b0bb27269ad7bcf80eec843cc410093ea74b27a067240903606904b9c",
+      "passed": 84,
+      "failed": 0,
+      "exitCode": 0
+    },
+    {
+      "label": "Two classes, student selection and revoked teacher membership",
+      "file": ".tmp/workspace-connect-close-20261010/account-assembly-teacher.tap",
+      "sha256": "5d0e31e894f95834fd67ebe0412d7b832063f669c94e42f74411fa4870b6a789",
+      "passed": 23,
+      "failed": 0,
+      "exitCode": 0
+    }
+  ],
+  "testTotal": {
+    "passed": 224,
+    "failed": 0
+  },
+  "finalVerification": {
+    "assembledFilesExact": 293,
+    "desktopReviewedSourceTestToolFilesExact": 201,
+    "runtimeFileCount": 100,
+    "runtimeSourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179",
+    "runtimeMatchesInstalledV4": true,
+    "continuityInputFilesExact": 27,
+    "externalDependenciesExact": 22,
+    "continuityBuilder": {
+      "command": "node desktop/tools/build-platform-continuity.cjs --check",
+      "exitCode": 0,
+      "exactOutputComparison": true,
+      "outputWritten": false,
+      "log": ".tmp/workspace-connect-close-20261010/native-assembly-continuity-build.txt",
+      "logSHA256": "c185fea9411e442e6a8918fb16ed3c506f6bc187b56dcc794ef86221497414bb"
+    },
+    "gitDiffCheck": {
+      "exitCode": 0,
+      "scope": [
+        "desktop/",
+        "experiences/synk-account/"
+      ]
+    }
+  }
+}

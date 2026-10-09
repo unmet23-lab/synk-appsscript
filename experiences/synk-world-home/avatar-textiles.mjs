@@ -41,7 +41,8 @@ function make(kind){
     for(let y=0;y<size;y++)for(let x=0;x<size;x++){
       const ix=Math.floor(x/8),iy=Math.floor(y/8),over=(ix+iy)%2===0;
       const warp=Math.pow(Math.max(0,Math.cos((x%8-3.5)/8*Math.PI)),2),weft=Math.pow(Math.max(0,Math.cos((y%8-3.5)/8*Math.PI)),2);
-      const h=112+29*(over?warp:weft)+8*(over?weft:warp)+grain(x,y)*2;
+      const diagonal=((ix+iy)%4)<2,twist=Math.cos((x+y)*Math.PI/8)*4;
+      const h=kind==='denim'?109+34*(diagonal?warp:weft)+6*(diagonal?weft:warp)+twist+grain(x,y)*2:112+29*(over?warp:weft)+8*(over?weft:warp)+grain(x,y)*2;
       const p=(y*size+x)*4;pixels.data[p]=pixels.data[p+1]=pixels.data[p+2]=h;pixels.data[p+3]=255;
     }
     ctx.putImageData(pixels,0,0);
@@ -71,10 +72,51 @@ function make(kind){
   return {map:map(albedo,`${kind}-low-contrast-colour`,true),normalMap:map(normal,`${kind}-micro-normal`),roughnessMap:properties,aoMap:properties};
 }
 
-export function createAvatarTextiles({anisotropy=4}={}){
+const wardSeed=seed=>()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
+function wardCanvas(size){const c=document.createElement('canvas');c.width=c.height=size;return c;}
+function wardTexture(image,name,srgb=false){const t=new THREE.CanvasTexture(image);t.name=name;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.colorSpace=srgb?THREE.SRGBColorSpace:THREE.NoColorSpace;return t;}
+
+function makeWardrobeTextile(kind,size=512){
+  const canvas=wardCanvas,texture=wardTexture,seeded=wardSeed;
+  size=size>=1024?1024:512;
+  const scale=size/512,heightCanvas=canvas(size),ctx=heightCanvas.getContext('2d'),random=seeded(6181);
+  if(kind==='knit-detail'){
+    ctx.fillStyle='#656565';ctx.fillRect(0,0,size,size);ctx.lineCap='round';const w=size/14,h=size/20;
+    for(let j=-1;j<=20;j++)for(let i=-1;i<=14;i++){
+      const x=i*w,y=j*h;
+      for(const [width,tone]of [[9.8,'#777777'],[7.3,'#989898'],[4.9,'#b5b5b5'],[2.2,'#bdbdbd']])for(const side of [-1,1]){
+        ctx.strokeStyle=tone;ctx.lineWidth=width*scale;ctx.beginPath();ctx.moveTo(x+w*.5+side*w*.35,y-h*.08);ctx.bezierCurveTo(x+w*.5+side*w*.36,y+h*.16,x+w*.5+side*w*.15,y+h*.70,x+w*.5+side*scale,y+h*.96);ctx.stroke();
+      }
+      // Fine twist follows each yarn leg; never broad colour noise or large pits.
+      ctx.lineWidth=.65*scale;ctx.strokeStyle='rgba(155,155,155,.42)';for(let k=0;k<5;k++)for(const side of [-1,1]){const v=(k+.6)/5,xx=x+w*.5+side*w*(.32-.29*v);ctx.beginPath();ctx.moveTo(xx-2*scale,y+v*h);ctx.lineTo(xx+2*scale,y+(v+.08)*h);ctx.stroke();}
+    }
+  }else{
+    const pixels=ctx.createImageData(size,size),cell=kind==='silk-detail'?6*scale:kind==='denim-detail'?7*scale:9*scale;
+    for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+      const ix=Math.floor(x/cell),iy=Math.floor(y/cell),a=(x%cell)/cell,b=(y%cell)/cell;
+      const warp=Math.pow(Math.sin(Math.PI*a),1.35),weft=Math.pow(Math.sin(Math.PI*b),1.35),twill=(ix+iy)%4<3,over=kind==='denim-detail'||kind==='silk-detail'?twill:(ix+iy)%2===0;
+      const twist=Math.sin((x+y)/(2.6*scale))*.8,shade=108+37*(over?warp:weft)+6*(over?weft:warp)+twist,p=(y*size+x)*4;
+      pixels.data[p]=pixels.data[p+1]=pixels.data[p+2]=shade;pixels.data[p+3]=255;
+    }ctx.putImageData(pixels,0,0);
+  }
+  // Sparse short fibres carry direction, rather than the photograph's lighting.
+  ctx.lineWidth=.4*scale;ctx.lineCap='round';for(let i=0;i<(kind==='silk-detail'?2300:6200);i++){const x=random()*size,y=random()*size,len=(1+random()*4)*scale,a=kind==='denim-detail'?-.75:kind==='knit-detail'?1.15:random()*Math.PI;ctx.strokeStyle=random()>.5?'rgba(170,170,170,.14)':'rgba(85,85,85,.12)';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(a)*len,y+Math.sin(a)*len);ctx.stroke();}
+  const source=ctx.getImageData(0,0,size,size).data,albedo=canvas(size),normal=canvas(size),packed=canvas(size),ac=albedo.getContext('2d'),nc=normal.getContext('2d'),pc=packed.getContext('2d'),a=ac.createImageData(size,size),n=nc.createImageData(size,size),p=pc.createImageData(size,size);
+  for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    const i=(y*size+x)*4,h=source[i]/255,dx=(source[(y*size+(x+1)%size)*4]-source[(y*size+(x+size-1)%size)*4])/255,dy=(source[(((y+1)%size)*size+x)*4]-source[(((y+size-1)%size)*size+x)*4])/255;
+    const strength=(kind==='knit-detail'?3.0:2.2)*scale,nx=-dx*strength,ny=dy*strength,l=1/Math.hypot(nx,ny,1),tone=kind==='denim-detail'?231+(h-.5)*35:242+(h-.5)*18;
+    a.data[i]=a.data[i+1]=a.data[i+2]=clamp(tone,221,251);a.data[i+3]=255;n.data[i]=(nx*l*.5+.5)*255;n.data[i+1]=(ny*l*.5+.5)*255;n.data[i+2]=(l*.5+.5)*255;n.data[i+3]=255;
+    p.data[i]=kind==='knit-detail'?clamp(201+h*67,222,253):clamp(231+h*28,240,254);p.data[i+1]=kind==='wax-detail'?210+(h-.5)*14:kind==='silk-detail'?224+(h-.5)*15:244+(h-.5)*10;p.data[i+2]=0;p.data[i+3]=255;
+  }
+  ac.putImageData(a,0,0);nc.putImageData(n,0,0);pc.putImageData(p,0,0);const properties=texture(packed,`${kind}-AO-R-roughness-G`);
+  return {map:texture(albedo,`${kind}-yarn-colour`,true),normalMap:texture(normal,`${kind}-yarn-normal`),roughnessMap:properties,aoMap:properties};
+}
+
+export function createAvatarTextiles({anisotropy=4,detailSize=512}={}){
   const textures=[],sets={};
   for(const kind of ['wool','knit','cotton']){sets[kind]=make(kind);for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
   function fabric(kind,repeat){
+    if(!sets[kind]){sets[kind]=kind.endsWith('-detail')?makeWardrobeTextile(kind,detailSize):make(kind);for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
     const result={},clones=new Map();
     for(const [key,texture] of Object.entries(sets[kind])){if(!clones.has(texture)){const clone=texture.clone();clone.repeat.set(...repeat);clone.needsUpdate=true;textures.push(clone);clones.set(texture,clone);}result[key]=clones.get(texture);}
     return result;

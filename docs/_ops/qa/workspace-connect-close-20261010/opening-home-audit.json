@@ -1,0 +1,362 @@
+{
+  "at": "2026-10-09T20:38:44.807Z",
+  "mode": "read-only narrow source-dependency audit; only this JSON report written",
+  "approvedManifest": {
+    "path": ".tmp/world-app-public-review-repair-20261010/manifest.json",
+    "sha256": "51499d3d89c53ed578af684d66971f26fa11423b49ef1cca773e562bc4b92a30",
+    "createdAt": "2026-10-09T17:46:25.947Z"
+  },
+  "builder": {
+    "isolated": {
+      "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\tools\\build-world-app-public.mjs",
+      "exists": true,
+      "sha256": "602c984c28541a672b89f9b751724b897a80a346269b63c2dfa3e6ff7fb71eb8"
+    },
+    "approvedSnapshot": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\world-metadata-builder-guard-v1\\builder-final.mjs",
+      "exists": true,
+      "sha256": "602c984c28541a672b89f9b751724b897a80a346269b63c2dfa3e6ff7fb71eb8"
+    },
+    "primaryLaterVersion": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\tools\\build-world-app-public.mjs",
+      "exists": true,
+      "sha256": "28e5fc1031dea75ee89349b39ac2446d6b0256a7752f2751a4ba53ca50a7971a"
+    },
+    "isolatedMatchesSnapshot": true
+  },
+  "conclusion": {
+    "approvedBuildRequiresBrandHomeHtml": false,
+    "approvedManifestContainsBrandHomeHtml": false,
+    "approvedEntrySource": "experiences/synk-world-home/index.html",
+    "approvedEntrySourceSha256": "ac8549d00e0a3a11855d0920f4167044447bcf69b98ecb8b238038f31ce3aa1b",
+    "currentApprovedEntry": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-home\\index.html",
+      "exists": true,
+      "sha256": "ac8549d00e0a3a11855d0920f4167044447bcf69b98ecb8b238038f31ce3aa1b"
+    },
+    "currentApprovedEntryMatchesPin": true,
+    "approvedAssetScanFiles": [
+      "experiences/brand-opening/opening.mjs",
+      "experiences/brand-opening/opening.css"
+    ],
+    "approvedAssetScanLines": [
+      102,
+      103,
+      104,
+      105,
+      106,
+      107
+    ],
+    "laterPrimaryOnlyDependencies": [
+      "experiences/brand-opening/home.html",
+      "experiences/brand-opening/home.mjs",
+      "experiences/brand-opening/home.css",
+      "experiences/brand-opening/assets/home",
+      "experiences/synk-world-app/document.mjs"
+    ],
+    "laterPrimaryLines": {
+      "entry": 86,
+      "assetScan": 102
+    },
+    "requiredRestoration": "Keep the isolated builder exact to builder-final.mjs. Copy approved world/brand-opening rows to their source paths only after sourceSha256 === sha256 and approved payload bytes match. Use the current synk-world-home/index.html only after confirming its exact approved source pin. No brand-opening/home.html restoration or later Maru/UI files is required."
+  },
+  "brandOpening": {
+    "count": 13,
+    "allPayloadHashesMatch": true,
+    "allPayloadsAreExactOriginalSources": true,
+    "rows": [
+      {
+        "path": "brand-opening/assets/felt-world-scene-desktop-v6.webp",
+        "bytes": 626284,
+        "sha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac",
+        "source": "experiences/brand-opening/assets/felt-world-scene-desktop-v6.webp",
+        "sourceSha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\felt-world-scene-desktop-v6.webp",
+          "exists": true,
+          "sha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\felt-world-scene-desktop-v6.webp",
+          "exists": true,
+          "sha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\felt-world-scene-desktop-v6.webp",
+          "exists": true,
+          "sha256": "890cf5bad38ac5f720f04ef24a20a4f0d225a25bfe79951303844696c4888cac"
+        }
+      },
+      {
+        "path": "brand-opening/assets/felt-world-scene-mobile-v6.webp",
+        "bytes": 573138,
+        "sha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9",
+        "source": "experiences/brand-opening/assets/felt-world-scene-mobile-v6.webp",
+        "sourceSha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\felt-world-scene-mobile-v6.webp",
+          "exists": true,
+          "sha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\felt-world-scene-mobile-v6.webp",
+          "exists": true,
+          "sha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\felt-world-scene-mobile-v6.webp",
+          "exists": true,
+          "sha256": "dcd11c47e72b5edd220353a2ea4acc96ec422d013634fadec0e1932bfed3dae9"
+        }
+      },
+      {
+        "path": "brand-opening/assets/InterTight.woff2",
+        "bytes": 18680,
+        "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+        "source": "experiences/brand-opening/assets/InterTight.woff2",
+        "sourceSha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\InterTight.woff2",
+          "exists": true,
+          "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\InterTight.woff2",
+          "exists": true,
+          "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\InterTight.woff2",
+          "exists": true,
+          "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+        }
+      },
+      {
+        "path": "brand-opening/assets/mongle.webp",
+        "bytes": 238072,
+        "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051",
+        "source": "experiences/brand-opening/assets/mongle.webp",
+        "sourceSha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\mongle.webp",
+          "exists": true,
+          "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\mongle.webp",
+          "exists": true,
+          "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\mongle.webp",
+          "exists": true,
+          "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051"
+        }
+      },
+      {
+        "path": "brand-opening/assets/opening-candidate.wav",
+        "bytes": 33560,
+        "sha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6",
+        "source": "experiences/brand-opening/assets/opening-candidate.wav",
+        "sourceSha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\opening-candidate.wav",
+          "exists": true,
+          "sha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\opening-candidate.wav",
+          "exists": true,
+          "sha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\opening-candidate.wav",
+          "exists": true,
+          "sha256": "1c377c5179425f7ecb14389f3f43924698163a3ed5bfa7086126e7d4840c46a6"
+        }
+      },
+      {
+        "path": "brand-opening/assets/sound-off.webp",
+        "bytes": 17994,
+        "sha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29",
+        "source": "experiences/brand-opening/assets/sound-off.webp",
+        "sourceSha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\sound-off.webp",
+          "exists": true,
+          "sha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\sound-off.webp",
+          "exists": true,
+          "sha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\sound-off.webp",
+          "exists": true,
+          "sha256": "4c8efce88c07f9d8b2244e3fea25e9bfcbdb8d4662a49745e3a534bd4559ad29"
+        }
+      },
+      {
+        "path": "brand-opening/assets/sound-on.webp",
+        "bytes": 18310,
+        "sha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793",
+        "source": "experiences/brand-opening/assets/sound-on.webp",
+        "sourceSha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\sound-on.webp",
+          "exists": true,
+          "sha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\sound-on.webp",
+          "exists": true,
+          "sha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\sound-on.webp",
+          "exists": true,
+          "sha256": "8dae35a5a602231cc0672302c0f1d83b781c2b5d04b9d89296f37e0ca4726793"
+        }
+      },
+      {
+        "path": "brand-opening/assets/SUIT.woff2",
+        "bytes": 624536,
+        "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+        "source": "experiences/brand-opening/assets/SUIT.woff2",
+        "sourceSha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\SUIT.woff2",
+          "exists": true,
+          "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\SUIT.woff2",
+          "exists": true,
+          "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\SUIT.woff2",
+          "exists": true,
+          "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+        }
+      },
+      {
+        "path": "brand-opening/assets/synk-paper.webp",
+        "bytes": 308740,
+        "sha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170",
+        "source": "experiences/brand-opening/assets/synk-paper.webp",
+        "sourceSha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\synk-paper.webp",
+          "exists": true,
+          "sha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\synk-paper.webp",
+          "exists": true,
+          "sha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\synk-paper.webp",
+          "exists": true,
+          "sha256": "cce3be2c4a1cdffc60274610867a0197e3a5da4303c11cc1a0f03d6948c7d170"
+        }
+      },
+      {
+        "path": "brand-opening/assets/world-menu-desktop-omni11-v6-web.mp4",
+        "bytes": 14346803,
+        "sha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08",
+        "source": "experiences/brand-opening/assets/world-menu-desktop-omni11-v6-web.mp4",
+        "sourceSha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\world-menu-desktop-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\world-menu-desktop-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\world-menu-desktop-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7005bccb68991703d023a5c367187c3a1d9306511585368dbb2b9ad7b837fe08"
+        }
+      },
+      {
+        "path": "brand-opening/assets/world-menu-mobile-omni11-v6-web.mp4",
+        "bytes": 14040698,
+        "sha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c",
+        "source": "experiences/brand-opening/assets/world-menu-mobile-omni11-v6-web.mp4",
+        "sourceSha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\assets\\world-menu-mobile-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\assets\\world-menu-mobile-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\assets\\world-menu-mobile-omni11-v6-web.mp4",
+          "exists": true,
+          "sha256": "7e8a27b8bb0f730fe87368c3af7ce6dfcafe0c25f3361ef9c68714f63e4edf4c"
+        }
+      },
+      {
+        "path": "brand-opening/opening.css",
+        "bytes": 6559,
+        "sha256": "798ab12eea3bcbc0cac8367ad16f02a4be327179df59e0410db8a08162c2b0c5",
+        "source": "experiences/brand-opening/opening.css",
+        "sourceSha256": "798ab12eea3bcbc0cac8367ad16f02a4be327179df59e0410db8a08162c2b0c5",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\opening.css",
+          "exists": true,
+          "sha256": "798ab12eea3bcbc0cac8367ad16f02a4be327179df59e0410db8a08162c2b0c5"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\opening.css",
+          "exists": true,
+          "sha256": "6cb2bed853d2bb5c06e64b84efb3ac3b531e389301eb160af73d524c83660245"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\opening.css",
+          "exists": true,
+          "sha256": "798ab12eea3bcbc0cac8367ad16f02a4be327179df59e0410db8a08162c2b0c5"
+        }
+      },
+      {
+        "path": "brand-opening/opening.mjs",
+        "bytes": 8705,
+        "sha256": "1ff67428879c262c6ae3f08acb0e409bc68f164b9728bbf0de93c8b411528af6",
+        "source": "experiences/brand-opening/opening.mjs",
+        "sourceSha256": "1ff67428879c262c6ae3f08acb0e409bc68f164b9728bbf0de93c8b411528af6",
+        "approvedSnapshot": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-public-review-repair-20261010\\world\\brand-opening\\opening.mjs",
+          "exists": true,
+          "sha256": "1ff67428879c262c6ae3f08acb0e409bc68f164b9728bbf0de93c8b411528af6"
+        },
+        "currentSource": {
+          "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\opening.mjs",
+          "exists": true,
+          "sha256": "4e30b5c75598093860c4a4ae6f2aefc0ac81b957681000f5d1255ac8a57e016e"
+        },
+        "isolatedSource": {
+          "path": "C:\\Users\\q1212\\.codex\\worktrees\\workspace-integration-close\\SYNK-appsscript\\experiences\\brand-opening\\opening.mjs",
+          "exists": true,
+          "sha256": "1ff67428879c262c6ae3f08acb0e409bc68f164b9728bbf0de93c8b411528af6"
+        }
+      }
+    ]
+  },
+  "scope": {
+    "productSourcesChanged": false,
+    "sharedSourcesChanged": false,
+    "buildExecuted": false,
+    "gitIndexChanged": false
+  }
+}

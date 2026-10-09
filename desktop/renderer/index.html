@@ -6,6 +6,8 @@
   <meta name="color-scheme" content="dark light">
   <title>SYNK Platform</title>
   <link rel="stylesheet" href="./launcher.css">
+  <link rel="stylesheet" href="./member-home.css">
+  <link rel="stylesheet" href="./convenience.css">
   <script src="/assets/launcher/engine.js"></script>
   <script src="/assets/launcher/personalization.js"></script>
   <script type="module" src="./launcher.mjs"></script>
@@ -35,17 +37,19 @@
 </svg>
 <div class="launcher">
   <header class="titlebar">
-    <div class="brand-lockup">
+    <button class="brand-lockup" id="brand-home" aria-label="SYNK 내 홈">
       <svg class="wordmark" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
       <span class="edition" id="edition">PLATFORM</span>
-    </div>
+    </button>
     <nav class="nav-pill nav-links" aria-label="주 메뉴">
-      <button data-view="library" class="active" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span>라이브러리</span></button>
+      <button data-view="home" class="active" aria-current="page"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span>내 홈</span></button>
+      <button data-view="library"><svg class="i" aria-hidden="true"><use href="#i-grid"/></svg><span>라이브러리</span></button>
       <button data-view="benefits"><svg class="i" aria-hidden="true"><use href="#i-gift"/></svg><span>회원 혜택</span></button>
       <button data-view="downloads"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg><span>설치·업데이트</span><span class="counter" id="queue-count" hidden>0</span></button>
       <button data-view="settings"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg><span>설정</span></button>
     </nav>
     <div class="title-actions">
+      <button class="icon-button mobile-search-toggle" id="library-search-toggle" aria-label="앱과 회원 혜택 검색" aria-expanded="false" aria-controls="search benefits-search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg></button>
       <button class="account-button" id="account-button" aria-label="SYNK ID 계정"><span class="avatar" aria-hidden="true">S</span><span class="account-name" id="account-label">SYNK ID 로그인</span><svg class="i" aria-hidden="true"><use href="#i-chevron-down"/></svg></button>
       <div class="window-actions" id="window-actions" hidden>
         <button data-window="minimize" aria-label="최소화"><svg class="i" aria-hidden="true"><use href="#i-minus"/></svg></button>
@@ -57,7 +61,7 @@
   <div class="workspace">
     <aside class="library" aria-label="내 앱">
       <div class="library-heading"><span id="library-caption">내 라이브러리</span><span class="count" id="library-count">00</span></div>
-      <label class="search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="앱 찾기" aria-label="라이브러리에서 앱 찾기" autocomplete="off"><kbd>Ctrl K</kbd></label>
+      <label class="search"><svg class="i" aria-hidden="true"><use href="#i-search"/></svg><input id="search" type="search" placeholder="앱·회원 혜택 찾기" aria-label="앱과 회원 혜택 찾기" autocomplete="off"></label>
       <div class="filters" aria-label="라이브러리 필터"><button data-filter="all" aria-pressed="true">내 앱</button><button data-filter="installed" aria-pressed="false">설치됨</button><button data-filter="development" aria-pressed="false">개발판</button><button data-filter="planned" aria-pressed="false">준비 중</button><button data-filter="favorites" aria-pressed="false" aria-label="즐겨찾기"><svg class="i" aria-hidden="true"><use href="#i-star"/></svg></button></div>
       <div id="app-list" class="app-list"></div>
       <div id="benefits-search" class="benefits-search" hidden aria-label="회원 혜택 검색 결과"></div>
@@ -68,7 +72,8 @@
       </div>
     </aside>
     <main id="main" tabindex="-1">
-      <section id="view-library" class="view library-view" aria-label="앱 상세">
+      <section id="view-home" class="view member-home" aria-label="내 홈"></section>
+      <section id="view-library" class="view library-view" aria-label="앱 상세" hidden>
         <div class="personal-entry" id="personal-entry" hidden><span class="atlas-dot" aria-hidden="true"></span><div><span class="label">YOUR SYNK, YOUR WAY</span><strong id="personal-heading">무엇부터 시작할까요?</strong><p id="personal-summary">목적과 보기 방식을 고르면, 나에게 맞는 공간부터 보여 드려요.</p></div><button class="ghost-button" id="personal-open">맞춤 시작</button></div>
         <div id="recommendation" class="recommendation" hidden aria-live="polite"></div>
         <div class="library-empty" id="library-empty" hidden aria-live="polite"><svg class="empty-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><span class="label">YOUR SYNK</span><h1 id="library-empty-title">내 앱을 확인하고 있어요</h1><p id="library-empty-description">계정 연결을 마치면 이용할 수 있는 앱이 나타납니다.</p><div class="empty-actions"><button class="solid-button" id="library-account">계정 관리</button><button class="ghost-button" id="library-retry" hidden>다시 불러오기</button></div></div>
@@ -82,7 +87,7 @@
             <span class="hero-caption" id="hero-caption">SIGNAL RHYTHM · WORLD의 게임 아트</span>
           </div>
           <div class="action-strip">
-            <div class="launch-group"><button class="primary" id="primary-action" disabled>확인 중</button><button class="icon-button refresh" id="refresh" aria-label="설치 상태 다시 확인"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg></button></div>
+            <div class="launch-group"><button class="primary" id="primary-action" disabled>확인 중</button><button class="ghost-button" id="teaching-action" data-command="teacher-preview" data-client="teacher" hidden>내 수업 열기</button><button class="icon-button refresh" id="refresh" aria-label="설치 상태 다시 확인"><svg class="i" aria-hidden="true"><use href="#i-refresh"/></svg></button></div>
             <dl class="readouts">
               <div class="app-state"><dt>이 기기의 앱</dt><dd id="install-status">확인 중</dd></div>
               <div class="app-version"><dt>설치 버전</dt><dd id="install-version" class="mono">—</dd></div>
@@ -90,7 +95,7 @@
             </dl>
           </div>
           <p class="action-notice" id="action-notice" role="status"></p>
-          <p class="teacher-web-entry" id="teacher-web-link" hidden><a href="http://127.0.0.1:4295/" target="_blank" rel="noopener noreferrer">이 컴퓨터의 교사 앱 열기 <svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a><span>로컬 MVP · 교사 서비스가 실행 중이어야 합니다.</span></p>
+          <p class="teacher-web-entry" id="teacher-web-link" hidden><a href="http://127.0.0.1:4191/?tab=teaching" target="_blank" rel="noopener noreferrer">워크스페이스에서 내 수업 열기 <svg class="i" aria-hidden="true"><use href="#i-arrow-up-right"/></svg></a><span>로컬 MVP · 워크스페이스 서비스가 실행 중이어야 합니다.</span></p>
           <div class="detail-tabs" aria-label="앱 상세 항목"><button data-detail="overview" aria-pressed="true">개요</button><button data-detail="content" aria-pressed="false">포함된 콘텐츠</button><button data-detail="info" aria-pressed="false">앱 정보</button></div>
           <div id="detail-content" class="detail-content"></div>
         </div>
@@ -98,12 +103,12 @@
       <section id="view-benefits" class="view benefits-view" aria-label="회원 혜택" hidden>
         <div id="benefits-overview">
           <header class="benefits-hero">
-            <div class="benefits-hero-copy"><span class="label">SYNK FOR YOU</span><h1 tabindex="-1" id="benefits-title">소중한 순간을,<br>더 잘.</h1><p>오늘의 운세로 가볍게 시작하고,<br>사람과 이야기를 챙기는 시간.</p><span class="benefits-membership"><span class="led" aria-hidden="true"></span>SYNK 회원 무료 제공 예정</span></div>
+            <div class="benefits-hero-copy"><span class="label">SYNK FOR YOU</span><h1 tabindex="-1" id="benefits-title">소중한 순간을,<br>더 잘.</h1><p>오늘의 운세로 가볍게 시작하고,<br>사람과 이야기를 챙기는 시간.</p><span class="benefits-membership"><span class="led" aria-hidden="true"></span>서비스별 제공 상태 확인</span></div>
             <div class="benefits-hero-art brand-care"><img src="/assets/launcher/care-note.webp" alt="소중한 날을 표시한 펠트 메모"><span class="poster-word" aria-hidden="true">마음</span></div>
           </header>
-          <div class="benefits-intro"><h2>일상에 즐거움을 더할 네 가지</h2><p>각 서비스의 준비 상태와 앞으로 만날 경험을 살펴보세요.</p></div>
+          <div class="benefits-intro"><h2>일상에 즐거움을 더할 네 가지</h2><p>각 서비스의 제공 상태와 지금 시작할 수 있는 경험을 살펴보세요.</p></div>
           <div class="benefits-grid" id="benefits-grid"></div>
-          <div class="benefits-promise"><span class="label">작은 시작, 소중한 기록</span><p>오늘의 작은 행운, 한 사람의 생일, 꼭 전하고 싶은 말, 가족사진 한 장에서 시작해요.</p><p class="benefits-release-note">회원 혜택을 준비하고 있어요. 현재 개발 미리보기와 준비 중인 서비스를 구분해 안내합니다.</p></div>
+          <div class="benefits-promise"><span class="label">작은 시작, 소중한 기록</span><p>오늘의 작은 행운, 한 사람의 생일, 꼭 전하고 싶은 말, 가족사진 한 장에서 시작해요.</p><p class="benefits-release-note">공개 웹과 PC 개발 미리보기의 제공 범위는 각 서비스 안내에서 확인하세요.</p></div>
         </div>
         <div id="benefit-detail" hidden></div>
       </section>
@@ -136,7 +141,7 @@
     <button id="footer-settings" aria-label="설정"><svg class="i" aria-hidden="true"><use href="#i-settings"/></svg><span>설정</span></button>
   </footer>
 </div>
-<dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="계정 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><svg class="dialog-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><span class="label">ONE SYNK ID</span><h2 id="account-title">SYNK에 로그인</h2><p id="account-description">하나의 계정으로 각자의 SYNK 공간을 연결하세요.</p><div class="account-state" id="account-state"></div><button class="primary" id="sign-in">로그인</button><button class="ghost-button" id="sign-out" hidden>로그아웃</button><button class="ghost-button" id="cancel-sign-in" hidden>로그인 취소</button><p class="fine-print">로그인은 기본 브라우저에서 진행됩니다. 학습 기록과 회사 자료는 각 앱의 권한에 따라 따로 관리됩니다.</p></dialog>
+<dialog id="account-dialog" class="account-dialog" aria-labelledby="account-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="계정 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><svg class="dialog-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><span class="label">ONE SYNK ID</span><h2 id="account-title">SYNK에 로그인</h2><p id="account-description">하나의 계정으로 각자의 SYNK 공간을 연결하세요.</p><div class="account-state" id="account-state"></div><button class="ghost-button" id="account-retry" type="button" hidden>저장된 로그인 다시 확인</button><button class="primary" id="sign-in">로그인</button><button class="ghost-button" id="sign-out" hidden>로그아웃</button><button class="ghost-button" id="cancel-sign-in" hidden>로그인 취소</button><p class="fine-print">로그인은 기본 브라우저에서 진행됩니다. 학습 기록과 회사 자료는 각 앱의 권한에 따라 따로 관리됩니다.</p></dialog>
 <dialog id="content-dialog" class="content-dialog" aria-labelledby="content-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="콘텐츠 창 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><img id="content-image" alt=""><div class="content-dialog-copy"><span class="label">WORLD · 개발 중인 콘텐츠</span><h2 id="content-title"></h2><p id="content-description"></p><p class="fine-print">콘텐츠는 WORLD 클라이언트에서 이용합니다. 표시된 화면은 개발 버전입니다.</p><button class="ghost-button" id="content-go-world">WORLD로 돌아가기 <svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg></button></div></dialog>
 <div id="toast" class="toast" role="status" hidden></div>
 <dialog id="personal-dialog" class="personal-dialog" aria-labelledby="personal-title"><form method="dialog"><button class="dialog-close icon-button" aria-label="맞춤 설정 닫기"><svg class="i" aria-hidden="true"><use href="#i-x"/></svg></button></form><span class="label"><span class="atlas-dot" aria-hidden="true"></span>이 기기 설정 · 선택 사항</span><h2 id="personal-title">나에게 맞는 SYNK</h2><p class="personal-intro">표시할 앱은 계정에 연결된 이용 권한으로 정해져요. 맞춤 설정은 그 안에서 앱 순서와 보기 방식만 바꿔요. 이 기기의 계정별로 저장됩니다.</p><form id="personal-form">
@@ -145,4 +150,5 @@
   <label>글자 크기<select id="personal-text"><option value="standard">기본</option><option value="large">크게</option></select></label><label>설명 분량<select id="personal-explanation"><option value="standard">기본</option><option value="brief">핵심만</option><option value="detailed">자세히</option></select></label><label>화면 움직임<select id="personal-motion"><option value="full">기본</option><option value="reduced">줄이기</option></select></label></div>
   <label class="consent-choice"><input id="personal-consent" type="checkbox"><span>내 선택을 이 기기에 저장하고 플랫폼 맞춤 표시에 사용하는 데 동의해요.</span></label><p class="fine-print">학습 능력·회사 권한을 판단하지 않아요. 학생 기록과 회사 자료를 가져오거나 섞지 않으며, 언제든 삭제할 수 있어요.</p><p id="personal-message" role="status"></p><button class="primary" type="submit" id="personal-save">이 기기에 저장하고 적용</button><div class="personal-secondary"><button type="button" class="ghost-button" id="personal-skip">지금은 건너뛰기</button><button type="button" class="text-link" id="personal-clear">맞춤 설정 삭제</button></div>
 </form></dialog>
+<dialog id="leave-dialog" class="account-dialog leave-dialog" aria-labelledby="leave-title" aria-describedby="leave-description"><h2 id="leave-title">작성 중인 메모가 있어요</h2><p id="leave-description"></p><form method="dialog" class="leave-actions"><button class="solid-button" value="keep" autofocus>돌아가서 저장</button><button class="ghost-button" value="discard">저장 없이 나가기</button></form></dialog>
 </body></html>

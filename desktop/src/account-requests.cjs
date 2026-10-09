@@ -2,6 +2,10 @@
 const {classroomRequestSpec}=require('./classroom-requests.cjs');
 const {PERSONAL_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
+  if(['platformLoad','platformSave','platformDelete'].includes(operation)){
+    if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
+    return personalRequestSpec(operation.replace('platform','personal'),params,product,'platform-library');
+  }
   if(PERSONAL_OPERATIONS.includes(operation))return personalRequestSpec(operation,params,product,clientKey);
   const invalid=()=>{throw Object.assign(new Error('요청 형식을 확인해 주세요.'),{code:'INVALID_REQUEST'});};
   if(!params||typeof params!=='object'||Array.isArray(params))invalid();
@@ -10,6 +14,21 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   const uuid=v=>{if(typeof v!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(v))invalid();return v;};
   const action=(action,body)=>({path:'synk-account',body:{action,...body}});
   switch(operation){
+    case 'playLoad':keys([]);if(product!=='world'||clientKey!=='world')invalid();return {path:'synk-play'};
+    case 'playMutate':{
+      if(product!=='world'||clientKey!=='world')invalid();uuid(params.id);
+      if(params.action==='wallet'){
+        keys(['action','id','method','args']);
+        if(!['buyItem','equipItem','setGameGoal','setBeginnerGoal','setWish','awardMiniGame','awardBeginnerPractice','awardRace'].includes(params.method)||!Array.isArray(params.args)||params.args.length>8)invalid();
+      }else if(params.action==='progress'){
+        keys(['action','id','changes']);if(!Array.isArray(params.changes)||params.changes.length>2048)invalid();
+        for(const change of params.changes){if(!change||typeof change!=='object'||Array.isArray(change)||Object.keys(change).some(key=>!['key','previous','value'].includes(key))||typeof change.key!=='string'||!change.key||change.key.length>256||![change.previous,change.value].every(value=>value===null||typeof value==='string'))invalid();}
+      }else if(params.action==='import'){
+        keys(['action','id','expected_revision','state']);if(params.expected_revision!==0||!params.state||typeof params.state!=='object'||Array.isArray(params.state)||Object.keys(params.state).some(key=>!['wallet','records'].includes(key))||!params.state.wallet||!params.state.records)invalid();
+      }else invalid();
+      let serialized;try{serialized=JSON.stringify(params,(_key,value)=>{if(value===undefined||typeof value==='function'||typeof value==='symbol'||typeof value==='bigint'||typeof value==='number'&&!Number.isFinite(value))invalid();return value;});}catch{invalid();}
+      if(Buffer.byteLength(serialized,'utf8')>3*1024*1024)invalid();return {path:'synk-play',body:JSON.parse(serialized)};
+    }
     case 'classroom':return classroomRequestSpec(params,product);
     case 'load':keys([]);return {path:'synk-account'};
     case 'atlasSummary':keys([]);return {path:'synk-account?view=atlas'};
@@ -58,4 +77,11 @@ function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
   }
 }
 function redact(value,depth=0){if(depth>40)throw Error('INVALID_RESPONSE');if(Array.isArray(value))return value.map(v=>redact(v,depth+1));if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).filter(([key])=>!/^(access_token|refresh_token|id_token|authorization|token|code_verifier|client_secret)$/i.test(key)).map(([k,v])=>[k,redact(v,depth+1)]));return value;}
-module.exports={requestSpec,redact};
+function redactAccountResponse(value,operation,params){
+  const clean=redact(value);
+  // This explicit teacher-issued invitation is not an OAuth credential.
+  if(operation==='classroom'&&params?.operation==='enrollmentInvite'&&value?.ok===true&&
+    value.invite&&!Array.isArray(value.invite)&&typeof value.invite.token==='string'&&/^[a-f0-9]{32}$/.test(value.invite.token))clean.invite.token=value.invite.token;
+  return clean;
+}
+module.exports={requestSpec,redact,redactAccountResponse};

@@ -19,6 +19,27 @@ const stamp = v => typeof v==='string'&&Number.isFinite(Date.parse(v));
 const validDate = (v,required=false) => typeof v==='string' && (!v ? !required : /^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v);
 const ownKeys = (v,allowed) => v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).every(k=>allowed.includes(k));
 export function emptyAlbum(){ return {format:'synk-family-album',version:1,pages:[]}; }
+// A read-only view: search entered text, never media bytes or account references.
+export function selectAlbumPages(album,{query='',sort='recent'}={}){
+  const normalize=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('ko-KR');
+  const terms=normalize(query).trim().split(/\s+/u).filter(Boolean);
+  const result=album.pages.filter(page=>{
+    if(!terms.length)return true;
+    const recipe=page.recipe;
+    const values=[page.title,page.story,page.person,page.author,page.date,...Object.values(page.details),
+      ...page.contributions.flatMap(item=>[item.name,item.text]),
+      ...(recipe?[recipe.learnedFrom,recipe.servings,recipe.ingredients,recipe.steps,...recipe.attempts.flatMap(item=>[item.date,item.note])]:[])];
+    const haystack=normalize(values.join('\n'));
+    return terms.every(term=>haystack.includes(term));
+  });
+  return result.sort((a,b)=>{
+    if(sort==='date-asc'||sort==='date-desc'){
+      if(!a.date||!b.date)return a.date?-1:b.date?1:0;
+      return sort==='date-asc'?a.date.localeCompare(b.date):b.date.localeCompare(a.date);
+    }
+    return Date.parse(b.updatedAt)-Date.parse(a.updatedAt);
+  });
+}
 export function newId(){return globalThis.crypto.randomUUID();}
 export function emptyRecipe(at=new Date().toISOString()){return {servings:'',learnedFrom:'',ingredients:'',steps:'',attempts:[],revisedAt:at};}
 function validateRecipe(recipe,at){

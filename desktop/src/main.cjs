@@ -1,19 +1,32 @@
 'use strict';
-const {app,BrowserWindow,ipcMain,session,protocol,Menu,shell,dialog,safeStorage}=require('electron');
+const {app,BrowserWindow,ipcMain,session,protocol,Menu,Tray,shell,dialog,safeStorage,screen,globalShortcut,clipboard}=require('electron');
 const fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const {CLIENTS,DEV_URLS,PLATFORM_ENTRY,identity}=require('./catalog.cjs');
 const {safeEntry,assertSender,trustedEntry,preferences,allowedNavigation,externalDestination,contentSecurityPolicy,nativeContentSecurityPolicy}=require('./security.cjs');
 const {createClientLifecycle}=require('./client-lifecycle.cjs');
+const {resolveProgramRoot}=require('./program-root.cjs');
 const {loadDevelopmentReleases}=require('./local-releases.cjs');
 const {createNativeContent}=require('./native-content.cjs');
+const {createConnectionContent,connectionContentSecurityPolicy}=require('./connection-content.cjs');
+const {createConnectionRecovery}=require('./connection-recovery.cjs');
 const {configuration}=require('./auth-config.cjs');
 const {resolveAuthConfigPath}=require('./auth-config-path.cjs');
 const {createTokenStore}=require('./auth-store.cjs');
 const {createAuthService,publicError}=require('./auth-service.cjs');
+const {suiteKey,createSuiteStore,createSuitePublisher,createSuiteFollower}=require('./suite-session.cjs');
 const {createCompanyRequests}=require('./company-requests.cjs');
 const {createTeacherPreview}=require('./teacher-preview.cjs');
+const {createMessengerTeacherService,bindMessengerTeacherIPC,sendMessengerTeacherAuth,messengerViewEntry}=require('./messenger-teacher.cjs');
 const {createProductPreviews}=require('./product-preview.cjs');
+const {createPublicApps}=require('./public-apps.cjs');
 const {createDownloadHandler}=require('./downloads.cjs');
+const {installDraftExitGuard}=require('./draft-exit.cjs');
+const {createPlatformTray}=require('./platform-tray.cjs');
+const {createDesktopPreferences}=require('./desktop-preferences.cjs');
+const {createWindowPlacement}=require('./window-placement.cjs');
+const {createDraftRecovery}=require('./draft-recovery.cjs');
+const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
+const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -27,38 +40,75 @@ else {
   developmentAuthConfigPath=resolveAuthConfigPath();
   if(developmentAuthConfigPath)runtime.auth=JSON.parse(fs.readFileSync(path.resolve(developmentAuthConfigPath),'utf8'));
 }
-if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
+if(!Object.hasOwn(CLIENTS,runtime.clientId)||!['development','release'].includes(runtime.mode)||!safeEntry(runtime.entry,runtime.mode,runtime)||(runtime.clientId==='platform'&&runtime.entry!==PLATFORM_ENTRY)||(runtime.clientId!=='platform'&&runtime.entry===PLATFORM_ENTRY))throw Error('Invalid desktop runtime configuration');
 const smoke=runtime.mode==='development'&&process.argv.includes('--synk-smoke');
-const current=identity(runtime.clientId,runtime.mode),entry=runtime.entry;
+const current=identity(runtime.clientId,runtime.mode),entry=messengerViewEntry(runtime.entry,runtime.clientId,process.argv);
+const publicApps=createPublicApps({clientId:runtime.clientId,mode:runtime.mode,openExternal:url=>shell.openExternal(url),accountStatus:()=>accountStatus()});
 const teacherPreview=createTeacherPreview({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath});
 const smokeArtifacts=smoke?(packaged?path.join(app.getPath('temp'),'SYNK Desktop Smoke',current.sessionScope):path.join(__dirname,'..','artifacts')):null;
 const authConfig=configuration(runtime.mode==='development'&&!runtime.auth?.clients?.[runtime.clientId]?null:runtime.auth,runtime.clientId,runtime.mode);
+const teacherAuthConfig=runtime.clientId==='messenger'?configuration(runtime.auth?.clients?.teacher?runtime.auth:null,'teacher',runtime.mode):null;
 app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,protocolRegistered=false,auth,installations;
-const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>auth?.status()});
-app.on('before-quit',()=>{auth?.dispose();installations?.dispose();});
+let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
+const suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
+function publishAuthState(state){platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
+function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
+async function signOutAccount(){
+  const owner=accountStatus()?.account?.synk_user_id;
+  if(suitePublisher&&!suitePublisher.signOut())return {ok:false,status:accountStatus(),error:{code:'SUITE_UNAVAILABLE',message:'앱 계정 연결을 저장하지 못해 로그아웃을 완료하지 못했어요.'}};
+  const result=await auth.signOut();
+  // Authentication has its own confirmed result. An encrypted draft cleanup
+  // failure must not discard its server flags or become an auth failure.
+  try{if(owner)await draftRecovery?.clearAccount(owner);}
+  catch{return {...result,draftRecoveryCleanup:{ok:false,code:'DRAFT_STORAGE_FAILED'}};}
+  return result;
+}
+function sendTeachingView(){if(pendingTeachingView&&runtime.clientId==='messenger'&&window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId)){window.webContents.send('synk:open-view','teaching');pendingTeachingView=false;}}
+const suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
+const accountStatus=()=>suitePublisher?suitePublisher.project(auth.status()):auth?.status();
+const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.resolve({ok:false,code:'SUITE_UNAVAILABLE'}):operation();
+const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
+app.on('will-quit',()=>{desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();});
 if(!app.requestSingleInstanceLock())app.quit();
 else {
-  app.on('second-instance',()=>{if(window){if(window.isMinimized())window.restore();window.show();window.focus();}});
-  app.on('window-all-closed',()=>{if(process.platform!=='darwin')app.quit();});
-  app.on('activate',()=>{if(!window||window.isDestroyed())createWindow();});
-  app.whenReady().then(createWindow);
+  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
+  app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
+  app.on('activate',()=>{if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
+  app.whenReady().then(()=>{
+    if(runtime.clientId==='platform'){
+      desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,appRoot:app.getAppPath(),name:current.appId});
+      desktopPreferences.initialize();
+      windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
+      draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
+      draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
+    }
+    platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>sendDesktop('synk:desktop-action',action)});
+    createWindow();
+  });
 }
 function createWindow(){
   let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
-    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}});
-    void auth.initialize();
+    auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);}});
+    if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
+  }
+  if(runtime.clientId==='messenger'&&!teacherService){
+    const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
+    const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,teacherKey),key:teacherKey}):null;
+    teacherService=createMessengerTeacherService({config:teacherAuthConfig,directory:path.join(app.getPath('userData'),'Teacher'),scope:current.sessionScope+'.teacher',safeStorage,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>sendMessengerTeacherAuth(window,state,entry,runtime.clientId),suiteStore:teacherSuite,createTokenStore,createAuthService,createSuiteFollower});
+    void teacherService.initialize();
   }
   // Same page permissions are not implicit desktop permissions. Media remains unavailable until a deliberate consent flow is implemented.
   ownSession.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
   ownSession.setPermissionCheckHandler(()=>false);
   if(smoke&&runtime.clientId==='platform')ownSession.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>{smokeNetworkRequests.push(details.url);callback({cancel:true});});
-  ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[details.url.startsWith('synk-desktop://platform/')?nativeContentSecurityPolicy():contentSecurityPolicy(details.resourceType)]}}));
+  ownSession.webRequest.onHeadersReceived((details,callback)=>callback({responseHeaders:{...details.responseHeaders,'Content-Security-Policy':[details.url.startsWith('synk-desktop://platform/')?nativeContentSecurityPolicy():details.url.startsWith('synk-desktop://status/')?connectionContentSecurityPolicy():contentSecurityPolicy(details.resourceType)]}}));
   ownSession.removeAllListeners('will-download');
   ownSession.on('will-download',createDownloadHandler({getWindow:()=>window,session:ownSession,entry,clientId:runtime.clientId,
     configureSave(item,spec){
@@ -67,12 +117,17 @@ function createWindow(){
     },
     onDenied(reason){if(smoke||!window||window.isDestroyed())return;dialog.showMessageBox(window,{type:'info',title:'SYNK 기록 저장',message:reason==='session'?'회사 로그인을 확인한 뒤 다시 저장해 주세요.':'이 파일은 앱에서 저장할 수 없어요.',detail:runtime.clientId==='messenger'?'내 작업실의 AI 업무 연습 TXT 기록만 최대 64 KiB까지 저장할 수 있어요.':'연결된 JSON 기록만 최대 32 MiB까지 저장할 수 있어요. 더 큰 기록은 웹에서 내보내 주세요.'});},
   }));
-  if(!protocolRegistered){const nativeContent=createNativeContent({appRoot:app.getAppPath()});ownSession.protocol.handle('synk-desktop',request=>request.url.startsWith('synk-desktop://platform/')&&runtime.clientId==='platform'?nativeContent(request):new Response(`<!doctype html><html lang="ko"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${current.productName}</title><h1>${current.name}</h1><p>앱 연결을 준비하고 있어요.</p><p>${runtime.mode==='development'?'개발 미리보기입니다. 해당 로컬 서버를 시작한 뒤 앱을 다시 열어 주세요.':'지금은 연결할 수 없어요. 잠시 뒤 다시 열어 주세요.'}</p></html>`,{headers:{'content-type':'text/html; charset=utf-8','content-security-policy':"default-src 'none'; base-uri 'none'; frame-ancestors 'none'"}}));}
+  if(!protocolRegistered){const nativeContent=createNativeContent({appRoot:app.getAppPath()}),connectionContent=createConnectionContent({appRoot:app.getAppPath(),clientId:runtime.clientId,mode:runtime.mode,entry,messengerCloudPreview:runtime.messengerCloudPreview,productName:current.productName});ownSession.protocol.handle('synk-desktop',request=>request.url.startsWith('synk-desktop://platform/')&&runtime.clientId==='platform'?nativeContent(request):connectionContent(request));}
   protocolRegistered=true;
   const isPlatform=runtime.clientId==='platform';
-  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#08090C':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
+  const placement=isPlatform?windowPlacement.restore():null;
+  window=new BrowserWindow({width:isPlatform?1440:1180,height:isPlatform?940:860,minWidth:isPlatform?960:720,minHeight:isPlatform?680:580,...(placement?{x:placement.x,y:placement.y,width:placement.width,height:placement.height,minWidth:placement.minWidth,minHeight:placement.minHeight}:{}),title:current.productName,icon:path.join(app.getAppPath(),'assets',runtime.clientId+'.png'),show:false,autoHideMenuBar:true,frame:!isPlatform,backgroundColor:isPlatform?'#08090C':'#ffffff',webPreferences:preferences(path.join(__dirname,'preload.cjs'),partition)});
   Menu.setApplicationMenu(process.platform==='darwin'?Menu.buildFromTemplate([{label:current.productName,submenu:[{role:'about'},{role:'quit'}]},{label:'Edit',submenu:[{role:'undo'},{role:'redo'},{type:'separator'},{role:'cut'},{role:'copy'},{role:'paste'},{role:'selectAll'}]}]):null);
   const contents=window.webContents;
+  contents.on('did-finish-load',sendTeachingView);
+  if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
+  if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});
+  platformTray?.attachWindow(window);
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
   const send=(channel,value)=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);};
   const windowState=()=>({maximized:window.isMaximized(),minimized:window.isMinimized(),focused:window.isFocused(),platform:process.platform});
@@ -84,22 +139,33 @@ function createWindow(){
   contents.on('will-attach-webview',event=>event.preventDefault());
   contents.on('will-navigate',(event,url)=>{if(!allowedNavigation(url,entry,runtime.clientId)){event.preventDefault();external(url);}});
   contents.on('will-redirect',(event,url)=>{if(!allowedNavigation(url,entry,runtime.clientId))event.preventDefault();});
-  const programRoot=process.platform==='win32'?path.join(process.env.LOCALAPPDATA||app.getPath('appData'),'Programs'):'/Applications';
+  const programRoot=resolveProgramRoot({platform:process.platform,env:process.env,getHome:()=>app.getPath('home')});
   if(!installations)installations=createClientLifecycle({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,programRoot,packageRoot:packaged?path.join(process.resourcesPath,'clients'):path.join(app.getAppPath(),'dist'),cacheRoot:path.join(app.getPath('userData'),'Installers'),releases:runtime.releases||[],spawn,openPath:file=>shell.openPath(file),onChange:async()=>{try{const state=await installations.getClients();send('synk:clients-changed',state);send('synk:client-progress',state);}catch{}}});
   window.on('focus',async()=>{try{send('synk:clients-changed',await installations.getClients());}catch{}});
   const companyRequest=createCompanyRequests({entry,clientId:runtime.clientId,session:ownSession,auth});
   const handlers={
-    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available()}),
-    'synk:teacher-preview':()=>teacherPreview.open(),
-    'synk:product-preview':id=>productPreviews.open(id),
-    'synk:clients':()=>installations.getClients(),'synk:launch':id=>installations.launch(id),
+    'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available()}),
+    'synk:desktop-preferences':()=>desktopSnapshot(),
+    'synk:desktop-preferences-update':patch=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};const result=desktopPreferences.update(patch);return result.ok?desktopSnapshot():result;},
+    'synk:copy-platform-diagnostics':input=>isPlatform&&!smoke?copyDiagnostics({clipboard,input,environment:{platform:process.platform,arch:process.arch,version:app.getVersion(),mode:runtime.mode},account:accountStatus()}):{ok:false,code:'CLIPBOARD_UNAVAILABLE'},
+    'synk:tray-shortcuts':items=>isPlatform?platformTray.setShortcuts(items):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:draft-recovery-status':owner=>isPlatform?draftRecoveryRequests.status(owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:draft-recovery-enabled':(value,owner)=>isPlatform?draftRecoveryRequests.setEnabled(value,owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:draft-recovery-load':(slot,owner)=>isPlatform?draftRecoveryRequests.load(slot,owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:draft-recovery-save':(slot,value,owner)=>isPlatform?draftRecoveryRequests.save(slot,value,owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:draft-recovery-clear':(slot,owner)=>isPlatform?draftRecoveryRequests.clear(slot,owner):{ok:false,code:'LAUNCHER_ONLY'},
+    'synk:open-public-app':id=>requireSuite(()=>publicApps.open(id)),
+    'synk:teacher-preview':()=>requireSuite(()=>teacherPreview.open()),
+    'synk:product-preview':id=>requireSuite(()=>productPreviews.open(id)),
+    'synk:clients':()=>installations.getClients(),'synk:launch':id=>requireSuite(()=>installations.launch(id)),
     'synk:prepare-client':id=>installations.prepareClient(id),'synk:cancel-preparation':id=>installations.cancelPreparation(id),'synk:open-installer':id=>installations.openInstaller(id),
     'synk:window-state':windowState,'synk:window-action':action=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};if(action==='minimize')window.minimize();else if(action==='toggle-maximize'){if(window.isMaximized())window.unmaximize();else window.maximize();}else if(action==='close')window.close();else return {ok:false,code:'INVALID_WINDOW_ACTION'};return {ok:true};},
-    'synk:auth-status':()=>auth.status(),'synk:auth-sign-in':()=>auth.signIn(),'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':()=>auth.signOut(),
-    'synk:account-request':(operation,params)=>auth.accountRequest(operation,params),'synk:company-request':companyRequest,
+    'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
+    'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
-  window.once('ready-to-show',()=>{if(!smoke)window.show();});
+  unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
+  window.once('ready-to-show',()=>{if(smoke)return;const hidden=isPlatform&&process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&platformTray.isActive();if(!hidden)window.show();});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{
@@ -126,5 +192,6 @@ function createWindow(){
       }catch(error){process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:error.message})+'\n');clearTimeout(timer);app.exit(1);}
     });
   }
-  window.loadURL(entry).catch(()=>window.loadURL('synk-desktop://status/'));
+  connectionRecovery=createConnectionRecovery({contents,entry});
+  void connectionRecovery.connect();
 }

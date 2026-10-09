@@ -15,6 +15,10 @@ export function createDesktopAccountClient({ bridge, product, guard }) {
   }
   return Object.freeze({
     configured: true, product,
+    play: Object.freeze({
+      load: () => request('playLoad'),
+      mutate: body => request('playMutate', body),
+    }),
     load: () => request('load'), release: () => request('release'), atlasSummary: () => request('atlasSummary'),
     setLearning: (enabled, expected_revision) => request('setLearning', { enabled, expected_revision }),
     updateProfile: (profile, expected_profile_revision) => request('updateProfile', { profile, expected_profile_revision }),

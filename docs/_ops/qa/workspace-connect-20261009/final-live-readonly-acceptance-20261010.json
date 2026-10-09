@@ -1,0 +1,213 @@
+{
+  "at": "2026-10-09T19:58:50.618Z",
+  "status": "passed-with-real-user-flow-excluded-by-user",
+  "scope": "Existing deployment, aggregate-only operating reads, isolated synthetic identity/data-flow verification",
+  "operatingWrites": 0,
+  "realAccountSessionsChanged": 0,
+  "messagesSent": 0,
+  "privateIdentifiersIncluded": false,
+  "live": {
+    "verifiedAt": "2026-10-09T19:54:25.237Z",
+    "functions": [
+      {
+        "slug": "synk-classroom",
+        "version": 2,
+        "active": true,
+        "verifyJwt": true,
+        "sameVersion": true,
+        "bodySHA256": "cfe7d2e013153e62518cc091fec15c0ecc75b04c7d3fe45b819f5b053cc60573",
+        "exactPreviouslyReviewedBody": true,
+        "anonymousHTTP": 401,
+        "preflight": {
+          "http": 204,
+          "origin": "*",
+          "requiredHeadersPresent": true
+        }
+      },
+      {
+        "slug": "synk-world-v1",
+        "version": 2,
+        "active": true,
+        "verifyJwt": true,
+        "sameVersion": true,
+        "bodySHA256": "0e50bf2a6fb1245d68875160640dc481a744e7a63024ab46943d945369f6fb87",
+        "exactPreviouslyReviewedBody": true,
+        "anonymousHTTP": 401,
+        "preflight": {
+          "http": 204,
+          "origin": "*",
+          "requiredHeadersPresent": true
+        }
+      },
+      {
+        "slug": "synk-town",
+        "version": 2,
+        "active": true,
+        "verifyJwt": true,
+        "sameVersion": true,
+        "bodySHA256": "e271106f2826249d84329bef5559d698335a5782bb8ee739ba5031c1c1053f6b",
+        "exactPreviouslyReviewedBody": true,
+        "anonymousHTTP": 401,
+        "preflight": {
+          "http": 204,
+          "origin": "*",
+          "requiredHeadersPresent": true
+        }
+      },
+      {
+        "slug": "synk-account",
+        "version": 55,
+        "active": true,
+        "verifyJwt": true,
+        "sameVersion": true,
+        "bodySHA256": "8604140dbc950dce98cdd61ca6d721604cae2be8cc2f2f43c4a9099ab1cc2526",
+        "exactPreviouslyReviewedBody": true,
+        "anonymousHTTP": 401
+      }
+    ],
+    "flags": {
+      "SYNK_CLASSROOM_ENABLED": true,
+      "SYNK_WORLD_V1_ENABLED": true,
+      "SYNK_TOWN_ENABLED": true
+    },
+    "databaseStructure": true,
+    "migrations": 8,
+    "privateTables": 14,
+    "triggers": 10,
+    "indexes": 7,
+    "roster": {
+      "class_total": 1,
+      "staff_total": 2,
+      "class_active": 1,
+      "staff_active": 2,
+      "learner_total": 1,
+      "learner_active": 1,
+      "learner_linked": 0,
+      "learner_unlinked": 1,
+      "staff_class_links": 2
+    },
+    "newTableRowCounts": {
+      "synk_teacher_care": 0,
+      "synk_academy_towns": 0,
+      "synk_world_v1_runs": 0,
+      "synk_world_v1_state": 0,
+      "synk_classroom_state": 0,
+      "synk_classroom_invites": 0,
+      "synk_classroom_sharing": 0,
+      "synk_modern_town_state": 0,
+      "synk_world_v1_requests": 0,
+      "synk_modern_town_commands": 0,
+      "synk_academy_town_activity": 0,
+      "synk_classroom_event_links": 0,
+      "synk_academy_town_memberships": 0,
+      "synk_world_v1_learning_scores": 0
+    },
+    "staffAuthentication": {
+      "total": 2,
+      "active": 2,
+      "linked": 2,
+      "activeLinked": 2
+    },
+    "commonIdentity": {
+      "staffClassOrphans": 0,
+      "staffAuthWithoutUser": 0,
+      "learnerAuthWithoutUser": 0,
+      "linkedStaffWithCommonAccount": 0,
+      "activeLearnerWithoutActiveClass": 0,
+      "linkedLearnerWithoutCommonAccount": 0
+    },
+    "workspaceHealth": {
+      "healthHTTP": 200,
+      "healthReady": true,
+      "classroomProxyCheckedWithIsolatedFixture": true
+    }
+  },
+  "source": {
+    "backendGitHead": "ed0e150aa9a5c190babde44c2cf896ed78b6d350",
+    "reviewedSourceFiles": 52,
+    "allReviewedSourceHashesMatch": true,
+    "externalAccountServiceSHA256": "1913dc5ec3932a0e931eca8727b3273b782908c120db30c470ef8f9cdeb9f14c",
+    "workspaceFixture": "company-candidate-v6 exact frozen server"
+  },
+  "synthetic": {
+    "passed": 15,
+    "failed": 0,
+    "tests": [
+      "sharing withdrawal, reconsent, personal consent and roster movement fence old surfaces and preserve private life state",
+      "real loopback HTTP modern command reaches teacherOverview under the same account and produces zero language events",
+      "unlinked students reach only fixed enrollment routes with verified world identity",
+      "real SQL invite contains only a 128-bit token hash; explicit claim links existing roster and grants no consent or school role",
+      "only a currently assigned active teacher/director can issue and staff revocation cannot revive old tokens",
+      "a linked roster row is never reassigned; one account cannot claim a second roster row",
+      "Town activity requires separate opt-in, preserves one academy identity, and cannot become language evidence",
+      "care ownership, due date, state, idempotency and revision are stored under current sharing scope",
+      "Town opt-out and master sharing withdrawal hide old activities; reconsent never restores them",
+      "reproduces the missing v1 source before migration and new bridge is additive/private without retroactive collection",
+      "v1 completion and classroom use one stable account: personal consent, explicit share and unmapped expressions stay separate",
+      "same-account teacher assignment returns to WORLD and result returns to Workspace without importing the old v1 run as task completion",
+      "revocation, personal revision changes, class transfer and source deletion do not resurrect unbound summaries or old assignments",
+      "teacher proxy only exposes assigned classes and rejects learner scopes and arbitrary APIs",
+      "staff and teacher sessions coexist and logging out of either leaves the other authorization intact"
+    ],
+    "storage": "Memory-only PGlite and isolated temporary SQLite",
+    "transport": "Local handler and loopback HTTP with synthetic identities and fake OAuth",
+    "productionCredentialsUsed": false,
+    "paidProductAICalls": 0
+  },
+  "identityInterpretation": {
+    "staffAuthUserLinked": 2,
+    "staffAuthUsersValid": true,
+    "staffWithCommonSynkAccount": 0,
+    "learnerLinked": 0,
+    "learnerUnlinked": 1,
+    "firstVerifiedCommonAccountFlowNotYetObserved": true,
+    "notAConfirmedRuntimeDefect": "The reviewed withAccount transaction creates the shared mapping on an eligible first authenticated account use; registration policy can require onboarding first. No production identity was linked by this verification."
+  },
+  "excludedRealUserAcceptance": [
+    "Teacher completes SYNK ID authentication using the auth identity assigned to the actual staff roster and confirms the assigned class",
+    "Teacher issues an enrollment code; the student previews and explicitly claims their own roster entry",
+    "Student chooses personal-learning, class-learning-sharing and Town-activity-sharing consents separately",
+    "Real WORLD work and permitted Town activity appear for that same learner in the assigned teacher view, followed by actual care workflow"
+  ],
+  "initialAttemptLimitations": [
+    {
+      "artifact": "backend-focused.tap",
+      "reason": "Deployment checkout had no local PGlite package; existing installed dependencies were selected through per-process NODE_PATH without installing anything."
+    },
+    {
+      "artifact": "backend-focused-r2.tap",
+      "reason": "The selected WORLD tests depend on their first migration-initialization test. Filtering that prerequisite out caused three unconfigured-fixture failures. The prerequisite and those three tests were rerun together in world-focused-r3.tap and all four passed. Product code was not changed."
+    }
+  ],
+  "previousEvidencePreserved": true,
+  "artifacts": [
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/read-live.cjs",
+      "sha256": "f4d321d627692a1cee2eac49be4a9aaca5b33962fc6609ffa6a88bd244ca2732"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/identity-aggregate-query.sql",
+      "sha256": "d195c3b7ab084c39741b77d78e54c3679d01bb437484b4fc9a4e7d231633dc73"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/live-read.json",
+      "sha256": "77d0e34b5bf4887b71548c86416b475b9d82fa756410ab6b05d5be28dd9fb299"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/backend-focused.tap",
+      "sha256": "01d35efb3759c2c66c067f1b2c5da05bca97ad6c0c496ee5a10c4ea4614106db"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/backend-focused-r2.tap",
+      "sha256": "5b1936508ae8f1f2462cdd15499700bcabdcb78813fb2cacf6ba02dc6bb02d06"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/world-focused-r3.tap",
+      "sha256": "d19c00453227e89b3fa7bcd5e139bb15d08ef96759d22443cf8b8a38800528e5"
+    },
+    {
+      "path": ".tmp/workspace-connect-20261009/final-live-readonly-20261010/workspace-focused.tap",
+      "sha256": "98a525986687d294614f543013fc8b4bfcbe166725cb597cd54a0226cd56b021"
+    }
+  ]
+}

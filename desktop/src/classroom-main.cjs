@@ -38,7 +38,7 @@ async function openWindows(){
     const partition=`persist:synk-classroom-${role}${smoke?'-smoke':''}`,own=session.fromPartition(partition);
     own.setPermissionRequestHandler((_w,_p,callback)=>callback(false));own.setPermissionCheckHandler(()=>false);own.removeAllListeners('will-download');own.on('will-download',event=>event.preventDefault());
     own.webRequest.onBeforeRequest((details,callback)=>callback({cancel:!classroomURL(details.url,origin,role,{resource:true})}));
-    const win=new BrowserWindow({width:role==='teacher'?1320:1100,height:900,minWidth:360,minHeight:500,show:false,title:role==='teacher'?'SYNK WORLD · 교사':'SYNK WORLD',icon:path.join(__dirname,'../assets/world.png'),backgroundColor:'#ffffff',autoHideMenuBar:true,webPreferences:{partition,nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
+    const win=new BrowserWindow({width:role==='teacher'?1320:1100,height:900,minWidth:360,minHeight:500,show:false,title:role==='teacher'?'SYNK Workspace · 내 수업':'SYNK WORLD',icon:path.join(__dirname,'../assets/world.png'),backgroundColor:'#ffffff',autoHideMenuBar:true,webPreferences:{partition,nodeIntegration:false,contextIsolation:true,sandbox:true,webSecurity:true}});
     windows.set(role,win);win.on('closed',()=>windows.delete(role));win.webContents.setWindowOpenHandler(()=>({action:'deny'}));win.webContents.on('will-attach-webview',e=>e.preventDefault());
     for(const name of ['will-navigate','will-redirect'])win.webContents.on(name,(event,url)=>{if(!classroomURL(url,origin,role))event.preventDefault();});
     win.webContents.on('will-frame-navigate',event=>{if(!classroomURL(event.url,origin,role,{frame:!event.isMainFrame}))event.preventDefault();});

@@ -1,0 +1,299 @@
+{
+  "completedAt": "2026-10-09T18:16:31.428Z",
+  "completedAtKST": "2026-10-10 03:15 KST",
+  "status": "production-deployed-and-preservation-verified",
+  "origin": "https://workspace.synk.im",
+  "manifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+  "image": "sha256:69c5f8b39fbd40316f235c0a159b182bd4281bad650aa73a280012e9291203dc",
+  "qaSHA256": "0ba3e2ae00f96d3536f35e0f87f3e6854d45ebb0720d7b05e6f98ccd85b10649",
+  "health": "healthy",
+  "originalTimersActive": 3,
+  "staticRoutesExact": 11,
+  "teacherConfigured": true,
+  "activeStaffSessionsPreserved": 5,
+  "staffCsrfAndExpiryPreserved": true,
+  "customerBaselineSessions": 0,
+  "customerContinuity": "not-applicable-no-active-customer-baseline",
+  "existingBusinessRowsAndKeysPreserved": true,
+  "allowedChanges": {
+    "emptyTeacherSessionTableAdded": true,
+    "staffCiphertextReencryptedSamePlaintext": 1
+  },
+  "paidAIEnabled": false,
+  "backgroundJobsEnabled": false,
+  "realTeacherLoginVerified": false,
+  "realStudentActivityVerified": false,
+  "syntheticUI": {
+    "checks": 50,
+    "classes": 2,
+    "students": 32
+  },
+  "officialRuntimeReview": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-candidate-v6\\official-review\\completed.json",
+  "officialOperatorReview": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\official-review-fixed\\completed.json",
+  "evidence": {
+    "prepare": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-prepare-1791569515344.json",
+      "sha256": "84feaffd7166cad8d65cd8c8ee4dca8cdac84c601690c5d64dd0c77fb1eb678e",
+      "at": "2026-10-09T18:11:55.339Z",
+      "results": [
+        {
+          "status": "operator-package-installed",
+          "root": "/srv/synk/workspace-connect-operator-20261009-e01fe60531bc",
+          "files": [
+            {
+              "name": "deploy-messenger.py",
+              "sha256": "fef11f6750a27405d90a8be1d93dc80499914109135caaf4a6aa03aab5b7e859"
+            },
+            {
+              "name": "compare-messenger.py",
+              "sha256": "76c737992af64e9b2aa895400bfc6c69943a1415b25faf3fad79e7776fdeb976"
+            },
+            {
+              "name": "live-session-proof.py",
+              "sha256": "287d7368a8041292014b6775beb7ca26815a9571c1affcdd76fc5a3d8dc28853"
+            },
+            {
+              "name": "qa-bundle.json",
+              "sha256": "0ba3e2ae00f96d3536f35e0f87f3e6854d45ebb0720d7b05e6f98ccd85b10649"
+            },
+            {
+              "name": "manual-restore.py",
+              "sha256": "50951d0a56adf9a5996d5f4dc214219c4feccd63fece99e7399c16b6055baa6c"
+            },
+            {
+              "name": "teacher-settings.json",
+              "sha256": "4c7f957d26d6eab2444a7c7a18fc7e75c238b5467d4d795706dac6745babe3f7"
+            },
+            {
+              "name": "operator.cjs",
+              "sha256": "c6daef1bb53c01d9ea90fd1d941401eb2ae3bdd5d891eeabf0890de7a420208f"
+            }
+          ],
+          "proofBaselineOverwrite": false,
+          "productionServiceActions": 0
+        }
+      ]
+    },
+    "proof-before": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-proof-before-1791569524790.json",
+      "sha256": "43409750985be191b6086ce75dab11659d8b862d48f6009a9198d3fce5bf9f8d",
+      "at": "2026-10-09T18:12:04.785Z",
+      "results": [
+        {
+          "at": "2026-10-09T18:12:04.771782+00:00",
+          "status": "passed",
+          "mode": "before",
+          "persistedStaffSessions": 5,
+          "persistedCustomerSessions": 0,
+          "activeStaffSessions": 5,
+          "activeCustomerSessions": 0,
+          "expiredCustomerSessions": 0,
+          "customerBindingsVerified": true,
+          "customerSessionsExpiredBeforeBootDeleted": null,
+          "activeCustomerContinuityVerification": "not-applicable-no-active-customer-baseline",
+          "sameStaffSessionCsrfAndExpiry": null,
+          "sameActiveCustomerSessionCsrfAndExpiry": null,
+          "sameStaffAndCustomerSessionCsrfAndExpiry": null,
+          "keysAndBusinessDataUnchanged": null,
+          "containerReplacementConfirmed": null,
+          "issueCodes": [],
+          "liveDatabaseWrite": false,
+          "credentialValuesPrinted": false,
+          "privateProof": "/srv/synk/workspace-connect-operator-20261009-e01fe60531bc/private-proof/live-session-before.json"
+        }
+      ]
+    },
+    "backup": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-backup-1791569534144.json",
+      "sha256": "efa17b256e23e80fc0fde34bfbff07fde14893ba5ba2d9b120b18ae91aee58bf",
+      "at": "2026-10-09T18:12:14.136Z",
+      "results": [
+        {
+          "verifiedAt": "2026-10-09T18:12:14.104Z",
+          "invocation": "5ff1bc58f0684374b530ab5822265701",
+          "exitMonotonicSeconds": 99184.510829,
+          "result": "success",
+          "uploadCompleteObserved": true,
+          "attribution": "same-boot-unit-cgroup-root-pid-execution-window",
+          "journalInvocationPresent": true,
+          "journalRecordSHA256": "2ebdd6bae475c99e7a4c69e75745eb0b8e1e3bae1e4dfbaf8b1f1de311ca2e59",
+          "status": "predeployment-backup-complete",
+          "manualBackups": 1,
+          "scheduledExecutionClaimed": false
+        }
+      ]
+    },
+    "apply": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-apply-1791569619386.json",
+      "sha256": "de7775acca379fd4a131f80a8947691de1849c39e252caa799fda487c5c05ce9",
+      "at": "2026-10-09T18:13:39.379Z",
+      "results": [
+        {
+          "at": "2026-10-09T18:13:39.336Z",
+          "status": "workspace-teaching-connect-live-awaiting-stopped-logical-comparison",
+          "manifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+          "image": "sha256:69c5f8b39fbd40316f235c0a159b182bd4281bad650aa73a280012e9291203dc",
+          "release": "/opt/synk/releases/e01fe60531bc",
+          "backgroundJobsEnabled": false,
+          "paidAIEnabled": false,
+          "webPushEnabled": true,
+          "workNotificationsEnabled": true,
+          "environmentChanges": [
+            "SYNK_COMPANY_IMAGE",
+            "SYNK_ID_TEACHER_CLIENT_ID"
+          ],
+          "officialReview": {
+            "completed": true,
+            "requestedModel": "claude-opus-5-5",
+            "effort": "max",
+            "rawSHA256": "27426c36db0343b232be39ec245829e093a1cc2c1160851b625a764432c9c30c",
+            "waived": false
+          },
+          "environmentSHA256": "9ad1bcdbfaaf87a4698df9d8a6497a625193f9e8eff14f520789a354f29bb244",
+          "mountUUID": "4722fa7e-7824-4c5f-9657-6650bec989c6",
+          "sourceBeforeCopyVerified": true,
+          "sourceBeforeCopyFiles": 6,
+          "runningEnvironmentVerified": true,
+          "dataVolumePathUnchanged": true,
+          "systemdUnitsChanged": 0,
+          "caddySHA256": "b26fea1a328f8c704d3430c8ad0995b00a718d362e6ce84cb28f5011550d8606",
+          "caddyUnchanged": true,
+          "backendChanges": true,
+          "automaticRollback": false
+        }
+      ]
+    },
+    "capture": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-capture-1791569698620.json",
+      "sha256": "86e3094bf689ae40fb39a72a5e6aba0391ed4c406437a993695d46bfccf0cec6",
+      "at": "2026-10-09T18:14:58.608Z",
+      "results": [
+        {
+          "at": "2026-10-09T18:14:50.738Z",
+          "status": "workspace-teaching-connect-cold-copies-ready-service-left-stopped",
+          "before": "/srv/synk/workspace-connect-cutover-20261009-e01fe60531bc/source-before",
+          "after": "/srv/synk/workspace-connect-cutover-20261009-e01fe60531bc/source-after",
+          "sourceUnchangedDuringCopy": true,
+          "automaticRestart": false,
+          "automaticRollback": false,
+          "logicalComparisonCompleted": false,
+          "mainStopProtectedByOperationsLock": true
+        },
+        {
+          "at": "2026-10-09T18:14:58.462Z",
+          "status": "workspace-teaching-connect-resumed-original-timers",
+          "manifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+          "image": "sha256:69c5f8b39fbd40316f235c0a159b182bd4281bad650aa73a280012e9291203dc",
+          "unitChanges": 0,
+          "originalTimersStartedAfterHealth": true,
+          "logicalComparisonCompleted": false,
+          "captureResultPresent": true,
+          "captureFailureNotCleared": true,
+          "sameVersionOnly": true,
+          "automaticRollback": false,
+          "schedulerPrecondition": {
+            "at": "2026-10-09T18:14:51.326Z",
+            "counts": {
+              "pendingReminders": 0,
+              "pushSubscriptions": 0,
+              "pushQueue": 0
+            },
+            "digest": {
+              "duplicateDailyDigestRows": 0,
+              "undedupedDueAssignees": 0,
+              "kstDate": "2026-10-10",
+              "kstWeekday": 5,
+              "uniqueDailyDigestGuardVerified": true
+            },
+            "kstDate": "2026-10-10",
+            "window": {
+              "fromUTC": "2026-10-09T18:05:04.464Z",
+              "untilUTC": "2026-10-09T21:10:04.464Z"
+            },
+            "privateStoppedCopyOnly": false,
+            "newSchedulerDeliveryPossible": false,
+            "stoppedSourceReadOnly": true
+          }
+        },
+        {
+          "status": "cold-copies-ready-service-healthy-original-timers-running",
+          "logicalComparisonCompleted": false,
+          "resumedThroughPinnedSafetyGate": true
+        }
+      ]
+    },
+    "compare": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-compare-1791569706842.json",
+      "sha256": "8c90ac9db2c254411097d8ec3ccf8c33699b98e3fc34925bc7943831363fab1e",
+      "at": "2026-10-09T18:15:06.837Z",
+      "results": [
+        {
+          "allowedChanges": {
+            "customerSessionsExpiredBeforeBootDeleted": 0,
+            "emptyTeacherSessionTableAdded": true,
+            "schemaChanges": 1,
+            "staffCiphertextReencryptedSamePlaintext": 1,
+            "tokensExpiredBeforeBootDeleted": 0
+          },
+          "issueCodes": [],
+          "reportWritten": true,
+          "sourceFilesUnchanged": true,
+          "status": "existing-business-data-preserved"
+        }
+      ]
+    },
+    "proof-after": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-proof-after-1791569713649.json",
+      "sha256": "6e78e745568dafc3f4329c3e2bab4ad690bdc15a3fbc8e81610d7068db1d9a37",
+      "at": "2026-10-09T18:15:13.646Z",
+      "results": [
+        {
+          "at": "2026-10-09T18:15:13.640102+00:00",
+          "status": "passed",
+          "mode": "after",
+          "persistedStaffSessions": 5,
+          "persistedCustomerSessions": 0,
+          "activeStaffSessions": 5,
+          "activeCustomerSessions": 0,
+          "expiredCustomerSessions": 0,
+          "customerBindingsVerified": true,
+          "customerSessionsExpiredBeforeBootDeleted": 0,
+          "activeCustomerContinuityVerification": "not-applicable-no-active-customer-baseline",
+          "sameStaffSessionCsrfAndExpiry": true,
+          "sameActiveCustomerSessionCsrfAndExpiry": null,
+          "sameStaffAndCustomerSessionCsrfAndExpiry": null,
+          "keysAndBusinessDataUnchanged": true,
+          "containerReplacementConfirmed": true,
+          "issueCodes": [],
+          "liveDatabaseWrite": false,
+          "credentialValuesPrinted": false,
+          "privateProof": "/srv/synk/workspace-connect-operator-20261009-e01fe60531bc/private-proof/live-session-after.json"
+        }
+      ]
+    },
+    "status": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\operator-status-1791569722197.json",
+      "sha256": "bd667231630ee8a6cde5df4a02451f9af417624deb5f28387c670e1f535a9b7f",
+      "at": "2026-10-09T18:15:22.189Z",
+      "results": [
+        {
+          "at": "2026-10-09T18:15:22.063379+00:00",
+          "release": "/opt/synk/releases/e01fe60531bc",
+          "manifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+          "image": "sha256:69c5f8b39fbd40316f235c0a159b182bd4281bad650aa73a280012e9291203dc",
+          "health": "healthy",
+          "startedAt": "2026-10-09T18:14:52.014996275Z",
+          "units": {
+            "synk-company.service": "active",
+            "synk-company-health.timer": "active",
+            "synk-company-backup.timer": "active",
+            "synk-company-backup-watch.timer": "active"
+          },
+          "writes": 0,
+          "candidateImagePinned": true
+        }
+      ]
+    }
+  },
+  "publicVerification": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\workspace-connect-20261009\\company-operator-v6\\public-verification.json"
+}

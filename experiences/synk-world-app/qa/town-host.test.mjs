@@ -38,5 +38,5 @@ test('appearance only renders known slots with server-returned ownership',()=>{
   assert.equal(confirmedAppearance({...base,avatar:{slots:{body:'external-model',neck:'external-model'}}}).outfit,'none');
 });
 test('unauthenticated appearance is empty and not verified',()=>{
-  assert.deepEqual(confirmedAppearance(null),{avatarId:'mongle',renderVersion:3,slots:{body:'',neck:''},outfit:'none',verified:false,revision:null});
+  assert.deepEqual(confirmedAppearance(null),{avatarId:'mongle',renderVersion:3,slots:{body:'',neck:''},dyes:{},outfit:'none',verified:false,revision:null});
 });

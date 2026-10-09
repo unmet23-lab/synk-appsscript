@@ -1,8 +1,8 @@
 {
   "id": "/?app=synk-messenger",
-  "name": "SYNK 사내 메신저",
-  "short_name": "SYNK 메신저",
-  "description": "초대받은 SYNK 직원의 대화와 업무 공간. 인터넷 연결이 필요합니다.",
+  "name": "SYNK Workspace",
+  "short_name": "워크스페이스",
+  "description": "싱크 워크스페이스에서 수업·대화·업무·제작을 연결합니다. 회사와 담당 반의 권한을 각각 확인하며 인터넷 연결이 필요합니다.",
   "lang": "ko",
   "start_url": "/?tab=messenger",
   "scope": "/",
