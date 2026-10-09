@@ -157,9 +157,9 @@ async function playSession(page, { width, shots, wrongOnce, started = false, end
     check(`${width}px 첫 화면에 노래 세 곡`, songCards === 3, `노래 ${songCards}`);
     await page.locator('#songs .song-card').nth(0).click();
     await page.waitForSelector('#song:not([hidden])');
-    const v1 = await page.evaluate(() => window.__hangulQA.songAt(12.2));
+    const v1 = await page.evaluate(() => window.__hangulQA.songAt(12.3)); // 「오른쪽 아!」의 「아」는 12.21초(10-09 목소리로 잰 값)
     const vowelOk = v1.kind === 'vowel' && v1.step === 0 && await page.locator('#song-stage .song-tile.big.on').count() === 1 && await page.locator('#song-stage .move.right').count() === 1;
-    check(`${width}px 모음 댄스 12.2초: ㅏ가 켜지고 오른쪽 화살표`, vowelOk, JSON.stringify(v1));
+    check(`${width}px 모음 댄스 12.3초: ㅏ가 켜지고 오른쪽 화살표`, vowelOk, JSON.stringify(v1));
     if (width === 390) await shot(page, 'song-vowel', width);
     const v2 = await page.evaluate(() => window.__hangulQA.songAt(22.3));
     check(`${width}px 모음 댄스 후렴: 여섯 모음을 차례로`, v2.kind === 'sweep' && v2.step >= 1 && await page.locator('#song-stage .song-tile.on').count() === 1, JSON.stringify(v2));
