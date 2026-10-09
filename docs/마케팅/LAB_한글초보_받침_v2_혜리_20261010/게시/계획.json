@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-09T19:56:49.245Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Korean batchim (final consonants) in one song! 안 알 암 앙 산 물 밤 강 #learnkorean",
+      "text": "Sing along with Mongle — the Korean final consonants (batchim) ㄴ ㄹ ㅁ ㅇ in one song.\n\nA batchim sits at the bottom of a syllable:\n아 + ㄴ = 안 (an) · 아 + ㄹ = 알 (al) · 아 + ㅁ = 암 (am) · 아 + ㅇ = 앙 (ang)\nThen read real words: 산 (mountain) · 물 (water) · 밤 (chestnut / night) · 강 (river)\n손 (hand) · 눈 (snow) · 별 (star) · 말 (horse) · 곰 (bear) · 몸 (body) · 공 (ball) · 방 (room)\nㅇ on top makes no sound — shh! At the bottom it says \"ng\".\nColors show the parts: first consonant coral, vowel blue, batchim yellow.\n\nRomanization appears under every letter, and English captions (CC) have the lyrics.\nAt the end, try reading 문 · 발 · 콩 (door · foot · bean).\n\nHangul for Beginners · 한글 초보단계 #3 — after the vowel song (#1) and the consonant song (#2).\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #batchim",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle build Korean syllables with a final consonant (아 + ㄴ = 안) — first consonant coral, vowel blue, batchim yellow — under a white card reading “Korean final consonants in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/원고.json",
+          "bytes": 1566,
+          "sha256": "d4b7d4e8501633c95b0e594d2b7f8225748cf3dad697998863f46247452bb5b0",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/제목.txt",
+          "bytes": 92,
+          "sha256": "6e9361276ba2c770ed3f0fda62e1f2d1db0a1b0bcc0d1bb396e0af40a4cb9ca8",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 912,
+          "sha256": "f2a08ad2e46c522f5a1728019c1ccfc675d58574f0d888634265eb6b2077e904",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/video.mp4",
+          "bytes": 21050717,
+          "sha256": "8005e550c0adb35065a6ae33c5491d8fef93ed03363fc6049aac167bc1f52f68",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 2947,
+          "sha256": "7547acbc89171c546382460ca4f4537a64afa430bab6d1e9ce0bcde489dbc5fb",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "afe74b3c135869f82a73ddbd5774eeacf623f04c89caaa85d967936932338378",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "afe74b3c135869f82a73ddbd5774eeacf623f04c89caaa85d967936932338378",
+        "publicationHash": "8291e353817571e74cce2fd9a5dd3cd265982322a268d5acf0af10b4f0288296",
+        "approvedAt": "2026-10-09T19:56:49.536Z",
+        "note": "유호님 10-10 04:4x 그 아 가 혜리 끝 화면을 보고 「마지막 음성은 지금 목소리로 하자. 혜리로 하자」, 유튜브 교체는 「네 편 다 바꾸기」"
+      },
+      "errors": []
+    }
+  ]
+}

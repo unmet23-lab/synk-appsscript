@@ -1,0 +1,34 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_받침_v2_혜리_20261010/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "afe74b3c135869f82a73ddbd5774eeacf623f04c89caaa85d967936932338378",
+      "publicationHash": "8291e353817571e74cce2fd9a5dd3cd265982322a268d5acf0af10b4f0288296",
+      "startedAt": "2026-10-09T19:56:53.533Z",
+      "state": "scheduled",
+      "id": "AjSVuiLzIVk",
+      "url": "https://www.youtube.com/watch?v=AjSVuiLzIVk",
+      "thumbnail": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDabqudrqfilmL--0k-mGwBCd5jIjz6NSiZDD01CKtXG0TA"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": false,
+        "itemId": "UExZVDh5R2dFNDE0NC5GNjNDRDREMDQxOThCMDQ2",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
+      },
+      "finishedAt": "2026-10-09T19:57:35.760Z",
+      "publishAt": "2026-10-10T23:00:00.000Z",
+      "scheduledAt": "2026-10-09T19:57:41.948Z",
+      "publicNote": "유호님 10-10 「혜리로 하자」·「네 편 다 바꾸기」 — 예약된 하나 끝 화면 판(EcPP6aMC3RA)과 같은 10/11 08:00에 혜리 판 공개, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
+    }
+  }
+}

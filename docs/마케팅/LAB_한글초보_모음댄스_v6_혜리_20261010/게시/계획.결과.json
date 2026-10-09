@@ -1,0 +1,33 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_모음댄스_v6_혜리_20261010/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "41b1d485c23a8acb85993fe5350917d8ece9521ac7735a245ae623d5195d51af",
+      "publicationHash": "803583927ff3bdf53ebad946df7a53ba8729ec3a7217b047952f64a45b063cbe",
+      "startedAt": "2026-10-09T19:53:33.240Z",
+      "state": "public",
+      "id": "knW2_3ifY08",
+      "url": "https://www.youtube.com/watch?v=knW2_3ifY08",
+      "thumbnail": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDaYe42DhqlJxXa7fl-mUX7si2l4kH3VfhZrdVzZgsaSqqw"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": false,
+        "itemId": "UExZVDh5R2dFNDE0NC45NDk1REZENzhEMzU5MDQz",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
+      },
+      "finishedAt": "2026-10-09T19:54:00.583Z",
+      "publicAt": "2026-10-09T19:54:17.392Z",
+      "publicNote": "유호님 10-10 「혜리로 하자」·「네 편 다 바꾸기」 — 공개된 하나 끝 화면 판(n-_Vp4PYTcw)을 혜리 판으로 바꿔 바로 공개, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
+    }
+  }
+}

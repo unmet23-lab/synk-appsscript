@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "All 14 Korean consonants in one song! 가 나 다 라 마 바 사 아 자 차 카 타 파 하 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle build Korean syllables (ㄱ + ㅏ = 가), consonant in coral and vowel in blue, under a white card reading “All 14 Korean consonants in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-10 유호님 「범수로 하니까 너무 처지네」 → 그 아 가 혜리 판을 보고 「마지막 음성은 지금 목소리로 하자. 혜리로 하자」, 유튜브 교체는 「네 편 다 바꾸기」. 끝 화면 「읽어 볼까요?」와 답 소리만 혜리(10-09 처음 끝 화면 목소리, Typecast 같은 설정)로 바꾼 판 — 노래 · 화면은 10-09 판과 같다. 비공개로 올린 뒤 --공개(AI 음악이 중심이라 --합성표시). 10-10 08:00 예약된 하나 끝 화면 판(XzcEwF1hc0E)을 바꾸는 판 — 같은 시각 예약, 하나 판은 예약을 풀고 비공개로(지우지 않음).",
+ "version": "v4-yt-hyeri"
+}

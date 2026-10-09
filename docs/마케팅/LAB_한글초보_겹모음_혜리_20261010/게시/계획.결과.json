@@ -1,0 +1,19 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_겹모음_혜리_20261010/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "4bd0a4b2a479c9bf0f3b8741886fb729a7129ef46b7217143424a489d043ff6c",
+      "publicationHash": "6eab6fe60cff8459d408f8aebd1e8db2b8e94272388802e7bd03e64785b5ef34",
+      "startedAt": "2026-10-09T20:01:22.553Z",
+      "state": "partial",
+      "id": "Stt1zyAorEs",
+      "url": "https://www.youtube.com/watch?v=Stt1zyAorEs",
+      "thumbnail": null,
+      "captions": [],
+      "playlist": null,
+      "failedAt": "2026-10-09T20:01:56.343Z",
+      "error": "YouTube en 자막 업로드 실패 403: The request cannot be completed because you have exceeded your <a href=\"/youtube/v3/getting-started#quota\">quota</a>. (기존 YouTube 영상 Stt1zyAorEs; 새로 업로드하지 말고 기존 영상 확인 필요)"
+    }
+  }
+}
