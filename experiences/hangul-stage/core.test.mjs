@@ -402,3 +402,18 @@ test('받침 노래: 신호가 겹치지 않고, 칸 글자는 모두 이 판의
   assert.deepEqual([11.0, 11.3, 11.6].map(t => cueAt(song, t).step), [0, 1, 2]);
   assert.equal(cueAt(song, 11.6).cue.made, '안');
 });
+
+test('모음 댄스: 신호가 겹치지 않고, 글자는 노래에서 잰 음절 시각(10-09 목소리)에 차례로 켜진다', () => {
+  const song = songById('vowel-dance');
+  let prev = 0;
+  for (const cue of song.cues) {
+    assert.ok(cue.t < cue.end && cue.t >= prev - 1e-6, `${cue.text} ${cue.t}~${cue.end}`);
+    prev = cue.end;
+    const marks = Array.isArray(cue.at) ? cue.at : cue.at != null ? [cue.at] : [];
+    marks.forEach((m, i) => assert.ok(m >= cue.t && m < cue.end && (i === 0 || m > marks[i - 1]), `${cue.text} 표시 ${m}`));
+    if (cue.kind === 'sweep') assert.equal(marks.length, cue.letters.length, cue.text);
+  }
+  // 「차렷 이!」의 「이」는 19.085초(받아쓰기 표는 18.57초), 첫 후렴은 「Hey!」(21.36초) 뒤 「아」(21.67초)부터 켠다
+  assert.deepEqual([19.0, 19.1].map(t => cueAt(song, t).step), [-1, 0]);
+  assert.deepEqual([21.4, 21.6, 21.7].map(t => cueAt(song, t).cue.kind + cueAt(song, t).step), ['vowel0', 'sweep-1', 'sweep0']);
+});
