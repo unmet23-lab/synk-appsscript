@@ -53,7 +53,7 @@ function tile(l, { onTap = true } = {}) {
   return b;
 }
 // 첫 화면 노래 카드의 작은 글자(그 노래가 가르치는 것)
-const SONG_GLYPHS = { 'vowel-dance': 'ㅏㅓㅗㅜ', 'geu-a-ga': 'ㄱ+ㅏ', batchim: '아+ㄴ' };
+const SONG_GLYPHS = { 'vowel-dance': 'ㅏㅓㅗㅜ', 'geu-a-ga': 'ㄱ+ㅏ', batchim: '아+ㄴ', 'compound-dance': 'ㅗ+ㅏ' };
 function renderHome() {
   const at = now(), v = view(progress, pack, at);
   const more = canPlayMore(progress, at), today = sessionsToday(progress, at);
@@ -325,10 +325,10 @@ function feedback(correct, text) {
   setTimeout(() => $('dock').querySelector('.felt-cta')?.focus({ preventScroll: true }), 30);
 }
 // 막힌 순간(설계 §8): 소리 문항에서 이어서 두 번 틀리면 천천히 다시 들을지 한 번 묻는다. 받아들이면 도움받은 문항이 된다.
-function slowOffer(state, text, button) {
+function slowOffer(state, text, button, talker = 0) {
   if (S.wrongRun < 2) return null;
   const b = el('button', { class: 'slow', type: 'button' }, icon('speaker'), '천천히 듣기');
-  b.addEventListener('click', async () => { if (!state.assisted) { state.assisted = true; rec.helped(state.pid); } await play(button, text, false, { slow: true }); });
+  b.addEventListener('click', async () => { if (!state.assisted) { state.assisted = true; rec.helped(state.pid); } await play(button, text, false, { slow: true, talker }); });
   return b;
 }
 // 시범(설계 §2 「보여 주는 안내가 먼저다」): 그 꼴이 처음 나올 때 한 번, 몽글의 손가락이 소리를 누르고 맞는 것을 고른다.
@@ -371,11 +371,13 @@ const LISTEN_PROMPT = { pair: '헷갈리는 두 소리예요. 들은 쪽을 골�
 function renderListen(item) {
   const state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, answered: false };
   S.open = [state.pid];
+  // 여러 목소리로 듣고 고르기(HVPT, 10-09): 그 음절을 가진 목소리가 여럿이면 문항마다 한 목소리(문항 번호로 정해짐)로 묻고 답한다.
+  const talker = audio.talkerFor(item.target.text, item.id || item.target.text);
   const speak = el('button', { class: 'speak', type: 'button', 'aria-label': '소리 듣기' });
   const hear = async (opts = {}) => {
     if (state.plays > 0) { state.replays += 1; rec.replay(state.pid); }
     state.plays += 1;
-    const ok = await play(speak, item.target.text, false, opts);
+    const ok = await play(speak, item.target.text, false, { ...opts, talker });
     if (state.plays === 1) rec.delivered(state.pid, ok);
   };
   speak.addEventListener('click', () => hear());
@@ -387,7 +389,7 @@ function renderListen(item) {
     : null;
   // 가르쳐 주기는 몽글이 크게 나오니 안내 줄의 작은 몽글은 뺀다. replaceChildren은 null을 글자로 넣어 빈 자리는 걸러 낸다.
   $('stage').replaceChildren(...[prompt(LISTEN_PROMPT[item.type] || (item.word ? '소리를 듣고 맞는 낱말을 골라요' : '소리를 듣고 맞는 글자를 골라요'), { mini: !head }), head,
-    el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak)), el('div', { class: `options${item.type === 'pair' ? ' pair' : ''}` }, options)].filter(Boolean));
+    el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak, talker)), el('div', { class: `options${item.type === 'pair' ? ' pair' : ''}` }, options)].filter(Boolean));
   dock();
   async function choose(o, b) {
     if (state.answered) return;
@@ -400,7 +402,9 @@ function renderListen(item) {
     settle(item, { correct, assisted: state.assisted, replays: state.replays, confused: correct ? [] : [[item.target.letter, o.letter]] });
     if (correct && item.type === 'teach') audio.effect('joy');
     feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : '이 소리예요');
-    if (!correct) { await audio.say(o.text); await audio.wait(250); await audio.say(item.target.text); }
+    if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }
+    // 여러 목소리 음절은 맞혀도 정답 소리를 같은 목소리로 한 번 더(HVPT — 고르자마자 정답 소리를 들려준다)
+    else if (audio.talkerCount(item.target.text) > 1) { await audio.wait(250); await audio.say(item.target.text, { talker }); }
   }
   if (!withDemo(item.type, state, () => [{ node: speak, run: () => hear() }, { node: options[item.options.findIndex(x => x.text === item.target.text)] }]))
     pause(300).then(() => { if (!state.answered) hear(); });
@@ -562,9 +566,10 @@ function endSession() {
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
     : [el('p', {}, v.allMet ? '한글 글자를 다 만났어요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
-  // 노래로 복습: 오늘 받침을 다뤘으면 「받침 노래」, 자음을 다뤘으면 「그 아 가」, 아니면 「모음 댄스」.
-  const todayRoles = new Set([...S.met, ...S.practiced].map(id => pack.byId.get(id)?.role));
-  const songId = todayRoles.has('final') ? 'batchim' : todayRoles.has('consonant') ? 'geu-a-ga' : 'vowel-dance';
+  // 노래로 복습: 오늘 겹모음을 다뤘으면 「겹모음 댄스」, 받침이면 「받침 노래」, 자음이면 「그 아 가」, 아니면 「모음 댄스」.
+  const today = [...S.met, ...S.practiced].map(id => pack.byId.get(id)).filter(Boolean);
+  const todayRoles = new Set(today.map(l => l.role));
+  const songId = today.some(l => l.compound) ? 'compound-dance' : todayRoles.has('final') ? 'batchim' : todayRoles.has('consonant') ? 'geu-a-ga' : 'vowel-dance';
   $('finish-song').dataset.song = songId;
   $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title} 30초`;
   audio.effect('achieve');
@@ -633,11 +638,20 @@ function songStage(cue) {
   const part = (i, glyph, sound, extra = '', pic = null) => el('span', { class: 'part', 'data-i': String(i) }, pic ? el('img', { class: 'song-mn', src: pic, alt: '' }) : null,
     el('span', { class: `song-tile${extra}` }, glyph), el('small', {}, sound));
   const op = sign => el('span', { class: 'op', 'aria-hidden': 'true' }, sign);
+  // 떠올리기 줄(cue.ask)의 결과 칸: 노래가 답을 부를 때(그 칸이 켜질 때)까지 「?」(style.css .part.ask)
+  const answer = (made, ask) => (ask ? [el('span', { class: 'ask-q' }, '?'), el('span', { class: 'ask-a' }, made)] : made);
+  const result = (made, ask, pic = null) => { const p = part(2, answer(made, ask), answer(made, ask), ' result', pic); if (ask) p.classList.add('ask'); return p; };
   if (cue.kind === 'blend') {
     const c = cue.consonant, v = pack.byId.get(cue.vowel), made = songSyllable(c, cue.vowel);
-    return [el('div', { class: 'song-blend', 'aria-label': `${consonantGlyph(c)} 더하기 ${v.glyph}는 ${made}` },
+    return [el('div', { class: 'song-blend', 'aria-label': cue.ask ? `${consonantGlyph(c)} 더하기 ${v.glyph}는?` : `${consonantGlyph(c)} 더하기 ${v.glyph}는 ${made}` },
       part(0, consonantGlyph(c), consonantSound(c), '', pack.mnemonics[c]?.img || null), op('+'),
-      part(1, v.glyph, v.voice), op('='), part(2, made, made, ' result'))];
+      part(1, v.glyph, v.voice), op('='), result(made, !!cue.ask))];
+  }
+  // 겹모음 합치기(겹모음 댄스): 오 + 아 = 와 · 고 + 아 = 과. 칸은 노래가 부르는 음절 그대로다.
+  if (cue.kind === 'compound') {
+    const [a, b, made] = cue.texts;
+    return [el('div', { class: 'song-blend', 'aria-label': cue.ask ? `${a} 더하기 ${b}는?` : `${a} 더하기 ${b}는 ${made}` },
+      part(0, a, a), op('+'), part(1, b, b), op('='), result(made, !!cue.ask))];
   }
   // 받침 합치기(받침 노래): 바탕 음절 + 받침 = 음절. 받침 칸은 받침 표시(아래 짧은 줄)와 받침 소리(은·을·음·응), 낱말이면 결과 칸 위에 그림.
   if (cue.kind === 'batchim') {
@@ -677,7 +691,7 @@ function renderSongAt(t) {
       if (!tileLetters(cue, Number(n.dataset.i)).every(id => SP.known.has(id))) n.classList.add('unmet');
     }
     // 가사 줄은 글자가 보이는 장면(줄 켜기·합치기)에서만 — 모음·가사 장면은 이미 크게 글로 보인다.
-    $('song-line').textContent = cue && (cue.kind === 'sweep' || cue.kind === 'blend' || cue.kind === 'batchim') ? cue.text : '';
+    $('song-line').textContent = cue && ['sweep', 'blend', 'batchim', 'compound'].includes(cue.kind) ? cue.text : '';
     // 따라 하기 안내: 모음은 몸으로(손을 뻗는다), 글자 줄·합치기는 켜진 글자를 누른다.
     $('song-hint').textContent = !cue || cue.kind === 'line' ? '' : cue.kind === 'vowel' ? '손도 같이 뻗어 봐요' : '켜진 글자를 박자에 맞춰 눌러 봐요';
   }
@@ -685,6 +699,8 @@ function renderSongAt(t) {
     const i = Number(n.dataset.i), lit = !n.classList.contains('unmet');
     n.classList.toggle('on', lit && i === step); n.classList.toggle('done', lit && i < step);
   }
+  // 떠올리기 줄: 가사 줄도 답을 부를 때까지 물음만(「그 더하기 아는?」 → 「그 더하기 아는? 가!」)
+  if (cue?.ask) { const text = step >= 2 ? cue.text : cue.ask; if ($('song-line').textContent !== text) $('song-line').textContent = text; }
   return { cue, step };
 }
 // mode: listen(첫 화면 — 노래 전체, 모든 글자가 켜진다) · review(회차 끝 30초 장단 — 만난 글자만 켜진다).

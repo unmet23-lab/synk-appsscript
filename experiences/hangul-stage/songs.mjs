@@ -6,7 +6,8 @@
 // 낱말 시각과 반주 섞인 소리로 잰 시각은 0.1초에서 한 박까지 일렀다. 귀로 듣고 어긋나면 그 줄의 숫자만 고친다.
 //
 // 신호(cue) 꼴: line(가사 한 줄), vowel(모음 하나 — 동작과 함께), sweep(글자 여럿을 차례로), blend(자음 + 모음 = 음절, 세 걸음),
-// batchim(바탕 음절 + 받침 = 음절, 세 걸음 — 10-08 받침 노래).
+// batchim(바탕 음절 + 받침 = 음절, 세 걸음 — 10-08 받침 노래), compound(모음·음절 + 모음 = 겹모음 음절, 세 걸음 — 10-09 겹모음 댄스).
+// ask가 있는 합치기는 떠올리기 줄이다(노래 영상 가이드): 노래가 답을 부를 때까지 결과 칸과 가사 줄의 답이 「?」로 비어 있다.
 
 const MOVE = { 'v-a': 'right', 'v-eo': 'left', 'v-o': 'up', 'v-u': 'down', 'v-eu': 'wide', 'v-i': 'tall',
   'v-ya': 'right2', 'v-yeo': 'left2', 'v-yo': 'up2', 'v-yu': 'down2' };
@@ -41,6 +42,13 @@ const batchim = (t, end, base, made, at) => ({ kind: 'batchim', t, end, base, fi
   text: `${base} ${BAT_SOUND[FS[made][2]]} ${made}!`, ...(FPIC[made] ? { pic: FPIC[made] } : {}) });
 // 받침 음절 줄(후렴): 칸마다 음절 글자와 그 글자들(tiles).
 const bsweep = (t, end, sylls, at, text) => ({ kind: 'sweep', t, end, letters: [...sylls], texts: [...sylls], tiles: sylls.map(s => FS[s].filter(Boolean)), at, text });
+// 겹모음 댄스의 음절과 그 글자(첫소리 ㅇ은 소리 없는 자리라 세지 않는다).
+const CV = { '오': ['v-o'], '아': ['v-a'], '와': ['v-wa'], '우': ['v-u'], '어': ['v-eo'], '워': ['v-wo'], '이': ['v-i'], '위': ['v-wi'],
+  '으': ['v-eu'], '의': ['v-ui'], '고': ['c-g', 'v-o'], '과': ['c-g', 'v-wa'], '구': ['c-g', 'v-u'], '귀': ['c-g', 'v-wi'],
+  '주': ['c-j', 'v-u'], '쥐': ['c-j', 'v-wi'], '무': ['c-m', 'v-u'], '뭐': ['c-m', 'v-wo'] };
+const FOUR = ['와', '워', '위', '의'];
+// 겹모음 합치기: 앞 칸(모음 또는 음절) + 뒤 모음 = 겹모음 음절, 세 걸음. ask는 떠올리기 줄의 물음(답 앞까지 보이는 가사).
+const vv = (t, end, texts, at, text, extra = {}) => ({ kind: 'compound', t, end, texts, tiles: texts.map(s => CV[s]), at, text, ...extra });
 
 export const SONGS = Object.freeze([
   {
@@ -91,10 +99,18 @@ export const SONGS = Object.freeze([
     // (100.02 BPM, 첫 박 0.284초) 위에 둔다 — 받아쓰기 낱말 시각은 빠른 줄에서 1~2박씩 틀린다. 노래는 후렴을 한 번 더 이어 부른다.
     // 10-08 영상 v3(유호님 「초반 타이밍·리듬이 안 맞는다」): 반주를 걷어 낸 목소리로 음절 시작을 다시 쟀다. 1절이 한 박 빨랐고,
     // 마디 뒤 줄(느 아 나 · 르 아 라 …)은 셋잇단 느낌(아 +1/3박 · 음절 +5/6박)으로 부르며, 1절 앞에 「그, 아, 가!」를 한 번 더 부른다.
-    id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 81.16, bpm: 100.0,
+    // 10-09 노래 v4(영상 v4와 같은 소리, 유호님 「오케이 이어서 남은것도 전부 하자」): 「그 더하기 아는?」·「느 더하기 아는?」 뒤에 반주만
+    // 흐르는 한 마디씩을 끼웠다(노래 영상 가이드의 떠올리기 — 물음 → 쉼 → 답). 답 칸은 노래가 답을 부를 때까지 「?」다(ask).
+    // 아래 표는 원곡 시각으로 적고 끝에서 sh()로 옮긴다 — 끼운 곳 원곡 32.672 · 35.057초(답 「가」·「나」 바로 앞), 노래 81.16 → 85.959초.
+    // 원본·끼우기 스크립트 Documents/synk-vendor/hangul-songs/geu-a-ga-v4-20261009/
+    id: 'geu-a-ga', title: '그 아 가', src: 'assets/songs/geu-a-ga.mp3', duration: 85.959, bpm: 100.0,
     suno: '644b446b-0387-48f2-a6cc-58163c232f4f', teaches: ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-h', 'c-k', 'c-t', 'c-p', 'c-ch'],
-    review: [13.9, 43.3], // 회차 끝 30초 장단: 합치기 열네 자음 → 「그 더하기 아는? 가!」 → 「합쳐 봐」 → 후렴 두 줄
+    // 회차 끝 장단(31.8초): 합치기 열네 자음 → 「그 더하기 아는? … 가!」 → 「합쳐 봐」 → 후렴 첫 줄 「가나다라마바사 짝!」.
+    // 쉼 두 마디만큼 길어져서 끝을 후렴 둘째 줄(옛 끝 원곡 43.3초) 대신 첫 줄 끝(원곡 40.93초 = 새 45.7초)으로 당겼다 — 둘째 줄 글자는 1절에 다 나온다.
+    review: [13.9, 45.7],
     cues: (() => {
+      const BAR = 4 * (60 / 100.02), INS = [32.672, 35.057];
+      const sh = t => +(t + INS.filter(c => t >= c).length * BAR).toFixed(3);
       const g = k => +(0.284 + (60 / 100.02) * k).toFixed(3);
       const on = k => +(g(k) - 0.15).toFixed(3); // 줄 신호는 첫 소리보다 조금 먼저 켠다
       const CONS = ['c-g', 'c-n', 'c-d', 'c-r', 'c-m', 'c-b', 'c-s', 'c-ng', 'c-j', 'c-ch', 'c-k', 'c-t', 'c-p', 'c-h'];
@@ -111,8 +127,9 @@ export const SONGS = Object.freeze([
         const at = c === 'c-ng' ? [g(L - 1 / 6), g(L + 1), g(L + 1)] : [g(L), g(L + (back ? 1 / 3 : 0.5)), g(L + (back ? 5 / 6 : 1))];
         out.push(bl(on(L), k === 13 ? +(PRE1 - 0.12).toFixed(3) : on(L + 2), c, at, TEXT[k]));
       });
-      out.push(bl(+(PRE1 - 0.12).toFixed(3), on(55.5), 'c-g', [PRE1, g(53), g(54)], '그 더하기 아는? 가!'));
-      out.push(bl(on(55.5), on(59), 'c-n', [g(55.5), g(57), g(58)], '느 더하기 아는? 나!'));
+      // 떠올리기: 「…아는?」 뒤 쉼 한 마디 동안 결과 칸과 가사 줄의 답이 「?」로 비어 있다(ask = 답 앞까지 보이는 가사)
+      out.push({ ...bl(+(PRE1 - 0.12).toFixed(3), on(55.5), 'c-g', [PRE1, g(53), g(54)], '그 더하기 아는? 가!'), ask: '그 더하기 아는?' });
+      out.push({ ...bl(on(55.5), on(59), 'c-n', [g(55.5), g(57), g(58)], '느 더하기 아는? 나!'), ask: '느 더하기 아는?' });
       out.push(line(on(59), on(64), '합쳐 봐, 하나 둘 셋!'));
       const chorus = starts => starts.forEach((L, n) => out.push(sw(L, n % 2 ? ROW2 : ROW1, n % 2 ? '아 자 차 카 타 파 하 짝!' : '가 나 다 라 마 바 사 짝!', { syllables: true })));
       chorus([64, 68, 72, 76, 80, 84, 88, 92]);
@@ -121,7 +138,7 @@ export const SONGS = Object.freeze([
       chorus([112, 116, 120, 124]);
       out.push(bl(on(128), 78.47, 'c-g', [g(128), g(129), g(130)], '그, 아, 가!'));
       out.push(line(78.47, 81.16, '이제 읽을 수 있어!')); // 이제 78.55 · 읽을 78.86 · 수 79.18 · 있어 79.32
-      return out;
+      return out.map(c => ({ ...c, t: sh(c.t), end: sh(c.end), ...(Array.isArray(c.at) ? { at: c.at.map(sh) } : {}) }));
     })(),
   },
   {
@@ -151,6 +168,48 @@ export const SONGS = Object.freeze([
       return out;
     })(),
   },
+  {
+    // 10-09 겹모음 댄스(Suno 827ae68f, 10-08 유호님 「C로 가자」 · 콘티 「추천안대로 갈게」): 모양과 소리가 맞는 합치기 넷(오+아=와 · 우+어=워 ·
+    // 우+이=위 · 으+이=의)과 자음이 붙은 2절(고+아=과 · 구+이=귀 · 주+이=쥐 · 무+어=뭐). 노래 영상 가이드를 처음 적용한 곡이다.
+    // 노래 v3(영상 v3·v4와 같은 소리, 유호님 「오더하기 아는 와! 이때 와가 0.1초만에 지나가는데 조금 0.5초는 있어야」): 떠올리기 두 곳 앞에
+    // 반주만 흐르는 한 마디씩, 「와!」 뒤에 한 박을 끼웠다 — 원곡 시각 t는 sh(t)로 옮긴다. 시각은 노래에서 목소리만 떼어 잰 값
+    // (99.98 BPM, 첫 박 0.580초). 원본·끼우기 스크립트 Documents/synk-vendor/hangul-songs/compound-dance-v3-20261009/
+    id: 'compound-dance', title: '겹모음 댄스', src: 'assets/songs/compound-dance.mp3', duration: 49.0, bpm: 99.98,
+    suno: '827ae68f-65d7-448f-899e-8d8f0191ed96', teaches: ['v-wa', 'v-wo', 'v-wi', 'v-ui'],
+    review: [6.13, 35.54], // 회차 끝 장단(29.4초): 1절 합치기 넷 → 떠올리기 둘 → 후렴 · 「따라 해 봐」 → 2절 과 귀 쥐 뭐
+    cues: (() => {
+      const BEAT = 60 / 99.98, PH = 0.580, BAR = 4 * BEAT;
+      const INS = [[12.73, BAR], [13.17, BEAT], [15.21, BAR]];
+      const sh = t => +(t + INS.filter(([c]) => t >= c).reduce((n, [, len]) => n + len, 0)).toFixed(3);
+      const b = k => sh(PH + BEAT * k);
+      const on = k => +(b(k) - 0.15).toFixed(3); // 줄 신호는 첫 소리보다 조금 먼저 켠다
+      const four = (t, end, L) => ({ kind: 'sweep', t, end, letters: [...FOUR], texts: [...FOUR], tiles: FOUR.map(s => CV[s]),
+        at: [0, 0.8, 1.5, 2].map(o => b(L + o)), text: '와! 워! 위! 의!' });
+      const dance = (t, end) => line(t, end, '따라 해 봐, 모음 댄스!');
+      const out = [line(0, 1.63, 'Ready? 모음 둘!')];
+      // 도입 「오, 아, 와!」 b(2·3·4)와 메아리 b(5·6·7)(뒤 「와~」 늘임)
+      out.push(vv(1.63, 3.43, ['오', '아', '와'], [b(2), b(3), b(4)], '오, 아, 와!'), vv(3.43, on(9.5), ['오', '아', '와'], [b(5), b(6), b(7)], '오, 아, 와!'));
+      // 1절 b(9.5 + 2k): 앞 모음 +0 · 뒤 모음 +½ · 결과 +1박. 첫 줄은 자음 없이 이어 불러 입이 열리는 순간으로 잰 값(아 6.64 · 와 7.05)
+      [['오', '아', '와'], ['우', '어', '워'], ['우', '이', '위'], ['으', '이', '의']].forEach((tx, k) => {
+        const L = 9.5 + 2 * k;
+        out.push(vv(on(L), k === 3 ? 10.73 : on(L + 2), tx, k === 0 ? [b(L), 6.64, 7.05] : [b(L), b(L + 0.5), b(L + 1)], `${tx[0]} ${tx[1]} ${tx[2]}!`));
+      });
+      // 떠올리기: 「…이는?」 뒤 쉼 한 마디 동안 결과 칸과 가사 줄의 답이 「?」 → 답(와 15.28 · 의 20.65)
+      out.push(vv(10.73, on(21), ['오', '아', '와'], [b(17), b(19), sh(12.88)], '오 더하기 아는? 와!', { ask: '오 더하기 아는?' }));
+      out.push(vv(on(21), b(25.5), ['으', '이', '의'], [b(21), b(23), sh(15.25)], '으 더하기 이는? 의!', { ask: '으 더하기 이는?' }));
+      // 후렴 줄 b(L): 와 +0 · 워 +0.8 · 위 +1.5 · 의 +2박. 첫 줄은 「의!」가 0.63초 보이게 「와」 소리에 맞춰 켠다
+      out.push(four(b(25.5), on(29.5), 25.5), four(on(29.5), sh(20.54), 29.5), dance(sh(20.54), on(37.5)), four(on(37.5), on(41.5), 37.5));
+      // 2절 b(41.5 + 2k)
+      [['고', '아', '과'], ['구', '이', '귀'], ['주', '이', '쥐'], ['무', '어', '뭐']].forEach((tx, k) => {
+        const L = 41.5 + 2 * k;
+        out.push(vv(on(L), on(L + 2), tx, [b(L), b(L + 0.5), b(L + 1)], `${tx[0]} ${tx[1]} ${tx[2]}!`));
+      });
+      out.push(four(on(49.5), on(53.5), 49.5), four(on(53.5), sh(34.94), 53.5), dance(sh(34.94), on(61.5)), four(on(61.5), on(65.5), 61.5));
+      // 마무리 「오, 아, 와! 안녕!」(안녕 46.72초) — 노래 끝까지 와가 켜져 있다
+      out.push(vv(on(65.5), 49.0, ['오', '아', '와'], [b(65.5), b(66.5), b(67.5)], '오, 아, 와! 안녕!'));
+      return out;
+    })(),
+  },
 ]);
 
 // 배우는 길에 없는 자음이 노래에 나올 때 쓰는 글자 모양과 유니코드 첫소리 번호(10-05 거센소리 U5가 길에 들어와 지금은 대비용).
@@ -162,7 +221,7 @@ export function tileLetters(cue, i) {
   if (cue.kind === 'vowel') return [cue.letter];
   if (cue.kind === 'blend') return i === 0 ? [cue.consonant] : i === 1 ? [cue.vowel] : [cue.consonant, cue.vowel];
   if (cue.kind === 'batchim') { const base = FS[cue.base].filter(Boolean); return i === 0 ? base : i === 1 ? [cue.final] : [...base, cue.final]; }
-  if (cue.kind === 'sweep' && cue.tiles) return cue.tiles[i];
+  if ((cue.kind === 'sweep' || cue.kind === 'compound') && cue.tiles) return cue.tiles[i];
   if (cue.kind === 'sweep') { const id = cue.letters[i]; return cue.syllables ? [id, 'v-a'] : cue.consonant ? [cue.consonant, id] : [id]; }
   return [];
 }
@@ -171,7 +230,7 @@ export function lettersIn(song, from, to) {
   const out = new Set();
   for (const cue of song.cues) {
     if (cue.end <= from || cue.t >= to) continue;
-    const n = cue.kind === 'vowel' ? 1 : cue.kind === 'blend' || cue.kind === 'batchim' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
+    const n = cue.kind === 'vowel' ? 1 : cue.kind === 'blend' || cue.kind === 'batchim' || cue.kind === 'compound' ? 3 : cue.kind === 'sweep' ? cue.letters.length : 0;
     for (let i = 0; i < n; i += 1) for (const id of tileLetters(cue, i)) out.add(id);
   }
   return out;

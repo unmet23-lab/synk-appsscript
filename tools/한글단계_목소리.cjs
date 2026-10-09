@@ -25,9 +25,10 @@ const arg = name => { const i = process.argv.indexOf(name); return i > 0 ? proce
 const readJson = (file, fallback) => { try { return JSON.parse(fs.readFileSync(file, 'utf8')); } catch { return fallback; } };
 const CANDIDATES = readJson(path.join(stage, 'qa', 'voice-candidates.json'), { voices: [] }).voices;
 const VOICE_ID = /^tc_[0-9a-f]{24}$/;
-// 목소리: 혜리. 10-03 유호님이 비교 뒤 「혜리랑 우리가 고른 서현이 제일 낫네. 여자는 컨텐츠 특성에 따라서 둘 중 하나」라고 했고,
-// 한글 단계는 상큼한 목소리를 찾던 자리라 혜리로 했다. --voice나 POST /voice로 바꾼다.
-let VOICE = { id: arg('--voice') || 'tc_62e8f21e979b3860fe2f6a24', name: arg('--name') || '혜리' };
+// 목소리: 하나. 10-03에는 혜리로 정했다(유호님 「혜리랑 우리가 고른 서현이 제일 낫네. 여자는 컨텐츠 특성에 따라서 둘 중 하나」).
+// 10-09 유호님이 해설 목소리를 하나·소진 가운데 콘텐츠마다 한 명으로 정해 후보 713개를 하나로 구웠다(「오케이 이어서 남은것도 전부 하자」,
+// 귀 확인 뒤 --approve). 소리 목록이 늘어도 한 목소리로 굽게 기본값을 하나로 둔다. --voice나 POST /voice로 바꾼다.
+let VOICE = { id: arg('--voice') || 'tc_61659cc118732016a95fe7c6', name: arg('--name') || '하나' };
 // 글자 소리는 감정을 싣지 않고 또박또박, 조금 천천히.
 const SETTINGS = { model: 'ssfm-v30', emotion: 'normal', intensity: 1.0, tempo: 0.9, seed: 1003 };
 const SAMPLE = ['아', '어', '오', '으', '애', '에', '가', '나무'];

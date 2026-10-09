@@ -417,3 +417,46 @@ test('모음 댄스: 신호가 겹치지 않고, 글자는 노래에서 잰 음�
   assert.deepEqual([19.0, 19.1].map(t => cueAt(song, t).step), [-1, 0]);
   assert.deepEqual([21.4, 21.6, 21.7].map(t => cueAt(song, t).cue.kind + cueAt(song, t).step), ['vowel0', 'sweep-1', 'sweep0']);
 });
+
+test('그 아 가 v4: 떠올리기 두 줄은 쉼 한 마디 동안 답 칸이 비고, 노래가 답을 부를 때 켜진다', () => {
+  const song = songById('geu-a-ga');
+  assert.equal(song.duration, 85.959);
+  assert.equal(song.cues.at(-1).end, song.duration);
+  let prev = 0;
+  for (const cue of song.cues) { assert.ok(cue.t < cue.end && cue.t >= prev - 1e-6, `${cue.text} ${cue.t}~${cue.end}`); prev = cue.end; }
+  // 「그 더하기 아는?」 뒤 쉼(32.67~35.07초)은 둘째 걸음, 「가!」(35.08초)에 결과 — 「느 더하기 아는? … 나!」(39.88초)도 같다
+  const asks = song.cues.filter(c => c.ask);
+  assert.deepEqual(asks.map(c => c.ask), ['그 더하기 아는?', '느 더하기 아는?']);
+  assert.deepEqual([33.0, 34.9, 35.2].map(t => cueAt(song, t).step), [1, 1, 2]);
+  assert.equal(cueAt(song, 35.2).cue.consonant, 'c-g');
+  assert.deepEqual([39.7, 40.0].map(t => cueAt(song, t).step), [1, 2]);
+  assert.equal(cueAt(song, 40.0).cue.consonant, 'c-n');
+  // 쉼 앞의 1절 줄은 원곡 시각 그대로(그 아 가!의 아 15.05초)
+  assert.deepEqual([14.75, 15.05].map(t => cueAt(song, t).step), [0, 1]);
+});
+
+test('겹모음 댄스: 신호가 겹치지 않고, 합치기 칸의 글자가 그 음절의 글자이며, 떠올리기는 답 앞에 쉰다', () => {
+  const song = songById('compound-dance');
+  assert.ok(song && song.cues.length >= 20);
+  let prev = 0;
+  for (const cue of song.cues) {
+    assert.ok(cue.t < cue.end && cue.t >= prev - 1e-6, `${cue.text} ${cue.t}~${cue.end}`);
+    prev = cue.end;
+    const marks = Array.isArray(cue.at) ? cue.at : [];
+    marks.forEach((m, i) => assert.ok(m >= cue.t && m < cue.end && (i === 0 || m > marks[i - 1]), `${cue.text} 표시 ${m}`));
+    if (cue.kind === 'compound' || cue.kind === 'sweep') cue.texts.forEach((ch, i) => {
+      assert.deepEqual(Object.values(pack.lettersIn(ch)).filter(Boolean), tileLetters(cue, i), ch);
+      for (const id of tileLetters(cue, i)) assert.ok(pack.byId.has(id), `${ch}: ${id}`);
+    });
+  }
+  assert.equal(prev, song.duration);
+  // 결과는 겹모음(U9) — 와 워 위 의가 장단 구간에 다 나온다
+  for (const id of song.teaches) assert.equal(pack.byId.get(id).unit, 'U9', id);
+  const met = lettersIn(song, ...song.review);
+  for (const id of song.teaches) assert.ok(met.has(id), id);
+  // 「오 더하기 아는?」 뒤 쉼 한 마디(12.73~15.13초)는 둘째 걸음, 「와!」(15.28초)에 결과
+  assert.deepEqual([13.0, 15.0, 15.3].map(t => cueAt(song, t).step), [1, 1, 2]);
+  assert.equal(cueAt(song, 13.0).cue.ask, '오 더하기 아는?');
+  // 1절 첫 줄 「오 아 와」는 입이 열리는 순간(아 6.64 · 와 7.05초)
+  assert.deepEqual([6.5, 6.7, 7.1].map(t => cueAt(song, t).step), [0, 1, 2]);
+});

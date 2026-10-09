@@ -287,6 +287,10 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .song-blend small{font:800 15px/1 var(--sans);color:var(--muted)}
 .song-blend .part.on small{color:var(--coral-deep)}
 .song-blend .op{font:900 26px/1 var(--sans);color:var(--muted)}
+/* 떠올리기 줄(그 아 가 · 겹모음 댄스): 결과 칸은 노래가 답을 부를 때까지 「?」 */
+.song-blend .part.ask .ask-a{display:none}
+.song-blend .part.ask.on .ask-a,.song-blend .part.ask.done .ask-a{display:inline}
+.song-blend .part.ask.on .ask-q,.song-blend .part.ask.done .ask-q{display:none}
 /* 동작 화살표: 짧은 획이 가리키는 쪽. ㅡ는 옆으로, ㅣ는 위아래로, ㅑㅕㅛㅠ는 두 번. */
 .move{display:inline-flex;align-items:center;gap:4px}
 .move.tall{flex-direction:column}
