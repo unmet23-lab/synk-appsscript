@@ -1,0 +1,220 @@
+[
+  {
+    "name": "desktop",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v8",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1,
+      "shadowMapSize": 2048,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 6.200000002980232,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": true,
+        "quality": "balanced",
+        "mobile": false,
+        "passCount": 6,
+        "aoSamples": 8,
+        "beautySize": [
+          1400,
+          720
+        ],
+        "aoSize": [
+          700,
+          360
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 45360000,
+        "drawCalls": 427,
+        "triangles": 625930,
+        "cpuSubmissionMs": 6.100000001490116,
+        "allocations": 1,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "optics": {
+        "revision": 7,
+        "waterTime": 0,
+        "reflectionAtlas": [
+          512,
+          128
+        ],
+        "reflectedBuildings": 70,
+        "reflectedFacadeParts": 110,
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "disposed": false
+      },
+      "riverLife": {
+        "revision": 8,
+        "vesselCount": 1,
+        "drawCalls": 5,
+        "triangles": 1324,
+        "elapsed": 0,
+        "position": [
+          -1.2,
+          -1.16,
+          -22.2
+        ],
+        "routeSpeed": 0.235,
+        "routeZ": -22.2,
+        "routeBounds": [
+          -52,
+          52
+        ],
+        "initialX": -1.2,
+        "waterEffects": [
+          "contact-shadow",
+          "approximate-reflection",
+          "stern-wash",
+          "diverging-wake"
+        ],
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "textureCount": 0,
+        "mobile": false,
+        "time": "sunset",
+        "disposed": false
+      },
+      "roofCraft": {
+        "tiles": 96,
+        "triangles": 6528
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 1400,
+        "height": 720
+      },
+      "dpr": 1,
+      "drawCalls": 427,
+      "triangles": 625930,
+      "lines": 8376,
+      "instancedFoliage": 1360,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  },
+  {
+    "name": "mobile",
+    "errors": [],
+    "metrics": {
+      "renderer": "Three.js r180",
+      "graphicsVersion": 3,
+      "visualRevision": "environment-v8",
+      "view": "home",
+      "cameraYaw": 0,
+      "cameraMoving": false,
+      "quality": "balanced",
+      "pixelRatio": 1.5,
+      "shadowMapSize": 1024,
+      "active": true,
+      "contextLost": false,
+      "shaderError": false,
+      "renderSubmissionMs": 7.100000001490116,
+      "renderStatsIncludeShadows": true,
+      "contactLight": {
+        "enabled": false,
+        "quality": "balanced",
+        "mobile": true,
+        "passCount": 1,
+        "aoSamples": 0,
+        "beautySize": null,
+        "aoSize": null,
+        "msaaSamples": 0,
+        "estimatedTargetBytes": 0,
+        "drawCalls": 253,
+        "triangles": 391306,
+        "cpuSubmissionMs": 7.100000001490116,
+        "allocations": 0,
+        "releases": 0,
+        "disposed": false
+      },
+      "surfaceMaps": {
+        "textures": 9,
+        "edge": 256
+      },
+      "optics": {
+        "revision": 7,
+        "waterTime": 0,
+        "reflectionAtlas": [
+          512,
+          128
+        ],
+        "reflectedBuildings": 70,
+        "reflectedFacadeParts": 110,
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "disposed": false
+      },
+      "riverLife": {
+        "revision": 8,
+        "vesselCount": 1,
+        "drawCalls": 5,
+        "triangles": 1324,
+        "elapsed": 0,
+        "position": [
+          -5.4,
+          -1.16,
+          -22.2
+        ],
+        "routeSpeed": 0.235,
+        "routeZ": -22.2,
+        "routeBounds": [
+          -52,
+          52
+        ],
+        "initialX": -5.4,
+        "waterEffects": [
+          "contact-shadow",
+          "approximate-reflection",
+          "stern-wash",
+          "diverging-wake"
+        ],
+        "extraRenderTargets": 0,
+        "extraLights": 0,
+        "textureCount": 0,
+        "mobile": true,
+        "time": "sunset",
+        "disposed": false
+      },
+      "roofCraft": {
+        "tiles": 96,
+        "triangles": 4992
+      },
+      "assetFailures": [],
+      "avatarVersion": "mongle-v3",
+      "drawingBuffer": {
+        "width": 585,
+        "height": 697
+      },
+      "dpr": 1.5,
+      "drawCalls": 253,
+      "triangles": 391306,
+      "lines": 5421,
+      "instancedFoliage": 1180,
+      "frameCount": 4,
+      "outfit": "scarf-apron",
+      "time": "sunset",
+      "paused": false,
+      "reducedMotion": true,
+      "productionAsset": false
+    }
+  }
+]

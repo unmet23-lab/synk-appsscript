@@ -1,0 +1,53 @@
+{
+  "date": "2026-10-09",
+  "sourceSkyProvenance": "experiences/korean-racing/art-source/sky-v3-provenance.json",
+  "newGeneration": false,
+  "assets": [
+    {
+      "file": "azure-sky-v3-mobile.jpg",
+      "source": "experiences/korean-racing/assets/azure-sky-v3-mobile.jpg",
+      "sha256": "dc4c2b928345fd64aaba62952f8450324cedfdd95b28062511c7c9fe029bcfa7",
+      "bytes": 78521,
+      "method": "Existing local asset copied without pixel edits"
+    },
+    {
+      "file": "golden-sky-v3-mobile.jpg",
+      "source": "experiences/korean-racing/assets/golden-sky-v3-mobile.jpg",
+      "sha256": "aef854bc8b045d83d801ab354ac32659e236d3d6f912e829d722926d49bdcf2b",
+      "bytes": 71139,
+      "method": "Existing local asset copied without pixel edits"
+    },
+    {
+      "file": "terrain-normal.jpg",
+      "source": "experiences/korean-racing/assets/terrain-normal.jpg",
+      "sha256": "a35519e19443d55678e727cdedfbcaf0a7a8e796300bb1d6aafd8109f5f0ba97",
+      "bytes": 233772,
+      "method": "Existing local asset copied without pixel edits",
+      "license": "CC0-1.0",
+      "origin": "https://polyhaven.com/a/rocky_terrain_02"
+    },
+    {
+      "file": "cliff-normal.jpg",
+      "source": "experiences/korean-racing/assets/cliff-normal.jpg",
+      "sha256": "af8dc8f098cede1f968197b249d5a4d90af139c773ab344806f06efe12bc68e3",
+      "bytes": 250094,
+      "method": "Existing local asset copied without pixel edits",
+      "license": "CC0-1.0",
+      "origin": "https://polyhaven.com/a/marble_cliff_05"
+    },
+    {
+      "file": "azure-sky-v3.jpg",
+      "source": "experiences/korean-racing/assets/azure-sky-v3.jpg",
+      "sha256": "6938f9d76fb6ed6b5afa4eee1cb1927404f01cd617513a470bea7427d0424e9c",
+      "bytes": 480193,
+      "method": "Existing local asset copied without pixel edits"
+    },
+    {
+      "file": "golden-sky-v3.jpg",
+      "source": "experiences/korean-racing/assets/golden-sky-v3.jpg",
+      "sha256": "4d4fd46eee775ba31c466cce42171299f3c5e7356be4b5938d9c517768795c36",
+      "bytes": 439689,
+      "method": "Existing local asset copied without pixel edits"
+    }
+  ]
+}

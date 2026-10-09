@@ -1,0 +1,54 @@
+{
+  "phase": "historical_local_render_before_public_approval",
+  "later_live_test_result": "결과.md",
+  "checked_at": "2026-10-08T14:35:08.972Z",
+  "render_command": "node tools/SNS키트굽기.js docs/마케팅/댓글DM_자료시험_20261008/원고.html --sheet",
+  "cards": 2,
+  "errors": 0,
+  "warnings": 0,
+  "loaded_fonts": [
+    "SUIT Variable",
+    "Inter Tight",
+    "DM Mono"
+  ],
+  "caption_exact_match": true,
+  "files": [
+    {
+      "file": "out/01_doc45_시험-A.png",
+      "bytes": 600165,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "deb7b6afed90e45f973ae476b2497445813cbd16c130f2b829c4c0dd7e46c94f"
+    },
+    {
+      "file": "out/02_doc45_시험-B.png",
+      "bytes": 596473,
+      "width": 1080,
+      "height": 1350,
+      "sha256": "bcdd17964d7aa83f197f5e5a910c3238c1c93e99a15ee4c2a5d59a8623bb453b"
+    },
+    {
+      "file": "out/_시트.png",
+      "bytes": 108883,
+      "width": 1628,
+      "height": 439,
+      "sha256": "b833519c4ad338b00ab0911639079fc20e4f788430d0d28bfa95d7aff9f67cce"
+    }
+  ],
+  "visual_review": {
+    "full_size_pngs": true,
+    "contact_sheet": true,
+    "title_and_A_B_readable": true,
+    "marker_and_code_readable": true,
+    "notice_and_logo_visible": true,
+    "clipping_or_overlap": false
+  },
+  "actions": {
+    "external_uploads": 0,
+    "public_posts": 0,
+    "comments": 0,
+    "dms": 0,
+    "external_api_calls": 0
+  },
+  "approval": "public_posting_not_approved"
+}

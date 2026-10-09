@@ -1,0 +1,34 @@
+const fs=require('fs');
+const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+(async()=>{
+ const base='output/synk-world-graphics-research-20261008/';const d=JSON.parse(fs.readFileSync(base+'report/src/data.json'));
+ let checks=[];const check=(label,pass,detail)=>{checks.push({label,pass,detail});if(!pass)throw new Error(label+' '+JSON.stringify(detail));};
+ let rows=d.queries.games.rows;check('54 unique comparison rows',rows.length===54&&new Set(rows.map(r=>r.appid)).size===54,rows.length);
+ check('4989 unique catalog apps',d.queries.catalog.rows.length===4989&&new Set(d.queries.catalog.rows.map(r=>r.appid)).size===4989,4989);
+ check('all review ratios correct',rows.every(r=>!r.total||+(r.positive/r.total*100).toFixed(1)===r.positivePct),rows.filter(r=>r.total>0).length);
+ check('unreleased distinguished',rows.filter(r=>r.comingSoon).every(r=>r.total===0||r.total==null),rows.filter(r=>r.comingSoon).map(r=>r.name));
+ check('pixel classes repaired',rows.filter(r=>[2666510,3167550].includes(r.appid)).every(r=>r.group==='픽셀 2D'),true);
+ check('required game descriptions present',rows.every(r=>r.name&&r.graphics&&r.costume&&r.platforms&&r.implication&&r.url&&r.sources.length),true);
+ const b=await chromium.launch({channel:'msedge',headless:true});let p=await b.newPage({viewport:{width:1440,height:1000}}),errors=[];p.on('pageerror',e=>errors.push(String(e)));
+ await p.goto('http://127.0.0.1:4293/',{waitUntil:'networkidle'});
+ check('54 game title visible',await p.getByRole('heading',{name:'작품별 비교 · 54종'}).count()===1,true);
+ await p.locator('.synk-filter select').selectOption('픽셀 2D');
+ check('pixel filter works',await p.locator('table').first().innerText().then(t=>t.includes("Rusty's Retirement")&&t.includes('Tiny Pasture')),true);
+ await p.locator('.synk-filter select').selectOption('전체');await p.getByPlaceholder('Search data').first().fill('Fantasy');
+ check('game search works',(await p.locator('table').first().innerText()).includes('FANTASY LIFE i'),true);
+ await p.locator('table').first().locator('tbody tr').first().click();check('detail opens',await p.getByText('꾸미기:',{exact:false}).count()===1,true);
+ await p.getByPlaceholder('Search data').first().fill('');await p.getByPlaceholder('Search data').last().fill('Stardew');
+ check('catalog search works',(await p.locator('table').last().innerText()).includes('Stardew Valley'),true);
+ await p.getByPlaceholder('Search data').last().fill('');
+ for(const img of await p.locator('.synk-gallery img').all()){await img.scrollIntoViewIfNeeded();await img.evaluate(i=>i.complete?Promise.resolve():new Promise(resolve=>{i.onload=resolve;i.onerror=resolve;}));}
+ const images=await p.locator('.synk-gallery img').evaluateAll(a=>a.map(i=>({alt:i.alt,loaded:i.complete&&i.naturalWidth>0})));
+ check('ten official screenshots load',images.length===10&&images.every(i=>i.loaded),images);
+ await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:base+'report-desktop-final.png'});
+ await p.locator('.synk-gallery').scrollIntoViewIfNeeded();await p.screenshot({path:base+'report-gallery-final.png'});
+ await p.setViewportSize({width:390,height:844});await p.evaluate(()=>scrollTo(0,0));await p.screenshot({path:base+'report-mobile-final.png'});
+ check('mobile no document horizontal overflow',await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await p.locator('.synk-filter select').selectOption('인형·장난감 3D');await p.locator('.synk-filter').scrollIntoViewIfNeeded();await p.screenshot({path:base+'report-mobile-table.png'});
+ check('mobile filter works',(await p.locator('table').first().innerText()).includes('Cozy Caravan'),true);
+ check('no runtime errors',errors.length===0,errors);
+ await b.close();fs.writeFileSync(base+'verification.json',JSON.stringify({checkedAt:new Date().toISOString(),checks,unperformed:['Galaxy S25 / iPhone 15 actual game runtime','costume 3D prototype','full playthrough of surveyed games'],result:'passed'},null,2));console.log(JSON.stringify({checks:checks.length,result:'passed'}));
+})().catch(e=>{console.error(e);process.exit(1);});

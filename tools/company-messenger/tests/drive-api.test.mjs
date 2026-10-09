@@ -81,15 +81,16 @@ async function waitUntil(fn, message, timeout = 3000) {
   assert.fail(message);
 }
 
-async function fixture(t, drive = new FakeDriveStorage()) {
+async function fixture(t, drive = new FakeDriveStorage(), { backgroundJobsEnabled = true } = {}) {
   const dataDir = await mkdtemp(join(tmpdir(), 'synk-drive-api-test-'));
-  let app = createMessenger({ dataDir, port: 0, host: '127.0.0.1', driveStorage: drive });
+  let app = createMessenger({ dataDir, port: 0, host: '127.0.0.1', driveStorage: drive, backgroundJobsEnabled });
   let address = await app.listen();
   const fx = {
     dataDir, drive,
     get url() { return address.url; },
     get db() { return app.db; },
-    async restart({ legacy = false } = {}) {
+    get server() { return app.server; },
+    async restart({ legacy = false, backgroundJobsEnabled: nextEnabled = backgroundJobsEnabled } = {}) {
       await app.close();
       if (legacy) {
         const db = new DatabaseSync(join(dataDir, 'messenger.sqlite'));
@@ -100,7 +101,8 @@ async function fixture(t, drive = new FakeDriveStorage()) {
           }
         } finally { db.close(); }
       }
-      app = createMessenger({ dataDir, port: 0, host: '127.0.0.1', driveStorage: drive });
+      backgroundJobsEnabled = nextEnabled;
+      app = createMessenger({ dataDir, port: 0, host: '127.0.0.1', driveStorage: drive, backgroundJobsEnabled });
       address = await app.listen();
     },
     client() {
@@ -294,6 +296,53 @@ test('remote deletions retain their original account in a durable retry queue ac
   assert.equal(fx.drive.calls.filter(c => c.method === 'trash').at(-1).connectionId, 'beta');
 });
 
+test('paused background jobs retain old and newly requested Drive deletions until an enabled restart', async t => {
+  const fx = await fixture(t, new FakeDriveStorage(), { backgroundJobsEnabled: false });
+  const owner = await fx.owner();
+  await activate(owner.client, 'alpha');
+  const cloud = (await upload(owner.client, owner.channel.id, 'paused.txt', 'synthetic')).file;
+  const { message } = await publish(owner.client, owner.channel.id, [cloud.id]);
+  await owner.client.json(`/api/messages/${message.id}`, { method: 'DELETE' });
+  assert.equal(fx.db.prepare('SELECT COUNT(*) AS n FROM files').get().n, 0, 'explicit local deletion still completes');
+  assert.equal(fx.db.prepare('SELECT attempts FROM drive_delete_outbox').get().attempts, 0);
+  assert.equal(fx.drive.calls.filter(call => call.method === 'trash').length, 0);
+  await fx.restart();
+  await owner.client.json('/api/login', { method: 'POST', body: { username: 'owner', password } });
+  const cancelled = (await upload(owner.client, owner.channel.id, 'cancelled.txt', 'synthetic')).file;
+  await owner.client.json(`/api/files/${cancelled.id}`, { method: 'DELETE' });
+  assert.equal((await owner.client.json('/api/storage/drive')).pendingDeletions, 2);
+  assert.equal(fx.drive.calls.filter(call => call.method === 'trash').length, 0, 'manual delete must not drain the earlier backlog');
+  assert.equal(fx.drive.files.size, 2);
+  await fx.restart({ backgroundJobsEnabled: true });
+  await waitUntil(() => fx.db.prepare('SELECT COUNT(*) AS n FROM drive_delete_outbox').get().n === 0, 'enabled restart must resume durable cleanup');
+  assert.equal(fx.drive.calls.filter(call => call.method === 'trash').length, 2);
+  assert.equal(fx.drive.files.size, 0);
+  await fx.restart({ backgroundJobsEnabled: false });
+  assert.equal(fx.drive.calls.filter(call => call.method === 'trash').length, 2, 'already completed deletions never replay');
+});
+
+test('enabled shutdown waits for an already running Drive deletion before closing its durable queue', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'synk-drive-stop-test-'));
+  let release, reached;
+  const pending = new Promise(resolve => { release = resolve; });
+  const started = new Promise(resolve => { reached = resolve; });
+  const app = createMessenger({ dataDir, driveStorage: { trash: async () => { reached(); await pending; } } });
+  t.after(async () => { release(); await app.close(); await rm(dataDir, { recursive: true, force: true }); });
+  app.db.prepare('INSERT INTO drive_delete_outbox(file_id,connection_id,remote_id,created_at) VALUES(?,?,?,?)').run('synthetic-file', 'synthetic-account', 'synthetic-remote', new Date().toISOString());
+  await app.startMounted();
+  await started;
+  let closed = false;
+  const stopping = app.close().then(() => { closed = true; });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(closed, false);
+  assert.equal(app.db.isOpen, true);
+  release();
+  await stopping;
+  assert.equal(app.db.isOpen, false);
+  const db = new DatabaseSync(join(dataDir, 'messenger.sqlite'), { readOnly: true });
+  try { assert.equal(db.prepare('SELECT COUNT(*) AS n FROM drive_delete_outbox').get().n, 0); } finally { db.close(); }
+});
+
 test('a failed verified upload preserves its remote cleanup intent until Drive authentication recovers', async t => {
   const fx = await fixture(t);
   const owner = await fx.owner();
@@ -333,6 +382,9 @@ test('disconnecting after a cloud transfer starts cleans the remote object and l
     await hold;
     return result;
   };
+  let serverObservedClose = false;
+  fx.server.once('request', (_req, res) => res.once('close', () => { serverObservedClose = true; }));
+  t.after(() => release());
   const body = Buffer.from('upload will finish after the browser closes');
   const req = request(fx.url + `/api/channels/${owner.channel.id}/files`, { method: 'POST', headers: { Cookie: owner.client.cookie, Origin: fx.url, 'X-File-Name': 'cancel.bin', 'Content-Type': 'application/octet-stream', 'Content-Length': String(body.length) } }, res => res.resume());
   req.on('error', () => {});
@@ -341,6 +393,7 @@ test('disconnecting after a cloud transfer starts cleans the remote object and l
   const disconnected = new Promise(resolve => req.once('close', resolve));
   req.destroy();
   await disconnected;
+  await waitUntil(() => serverObservedClose, 'server must observe the cancelled response before the held upload finishes');
   release();
   await waitUntil(async () => fx.drive.files.size === 0 && (await readdir(join(fx.dataDir, 'uploads'))).length === 0, 'cancelled remote upload must leave no orphan');
   assert.equal((await owner.client.json('/api/storage')).fileCount, 0);

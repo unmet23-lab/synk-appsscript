@@ -1,0 +1,456 @@
+{
+  "at": "2026-10-08T21:52:29.321Z",
+  "passed": 19,
+  "checks": [
+    {
+      "name": "pc default quality policy",
+      "passed": true
+    },
+    {
+      "name": "pc direct mode has no extra targets",
+      "passed": true
+    },
+    {
+      "name": "pc full resolution beauty and capped half resolution AO",
+      "passed": true
+    },
+    {
+      "name": "pc AO leaves sky and gamma unchanged within one RGB level",
+      "passed": true
+    },
+    {
+      "name": "pc output alpha stays opaque",
+      "passed": true
+    },
+    {
+      "name": "pc renderer/scene state restored",
+      "passed": true
+    },
+    {
+      "name": "pc high-resolution photo restores target size",
+      "passed": true
+    },
+    {
+      "name": "pc switching off releases render targets",
+      "passed": true
+    },
+    {
+      "name": "pc dispose removes canvas and owns no targets",
+      "passed": true
+    },
+    {
+      "name": "phone default quality policy",
+      "passed": true
+    },
+    {
+      "name": "phone direct mode has no extra targets",
+      "passed": true
+    },
+    {
+      "name": "phone full resolution beauty and capped half resolution AO",
+      "passed": true
+    },
+    {
+      "name": "phone AO leaves sky and gamma unchanged within one RGB level",
+      "passed": true
+    },
+    {
+      "name": "phone output alpha stays opaque",
+      "passed": true
+    },
+    {
+      "name": "phone renderer/scene state restored",
+      "passed": true
+    },
+    {
+      "name": "phone high-resolution photo restores target size",
+      "passed": true
+    },
+    {
+      "name": "phone switching off releases render targets",
+      "passed": true
+    },
+    {
+      "name": "phone dispose removes canvas and owns no targets",
+      "passed": true
+    },
+    {
+      "name": "no page or shader errors",
+      "passed": true
+    }
+  ],
+  "results": [
+    {
+      "name": "pc",
+      "delta": {
+        "meanAbsoluteRGB": 3.646814236117446,
+        "skyMeanAbsoluteRGB": 0.021095008051529758,
+        "opaqueRatio": 1,
+        "darkenedPixelRatio": 0.11226888020833334
+      },
+      "skyDelta": {
+        "meanAbsoluteRGB": 0.014206090856487687,
+        "skyMeanAbsoluteRGB": 0.021095008051529758,
+        "opaqueRatio": 1,
+        "darkenedPixelRatio": 0
+      },
+      "boot": {
+        "enabled": true,
+        "quality": "balanced",
+        "mobile": false,
+        "passCount": 6,
+        "aoSamples": 8,
+        "beautySize": [
+          1280,
+          720
+        ],
+        "aoSize": [
+          640,
+          360
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 41472000,
+        "drawCalls": 468,
+        "triangles": 661746,
+        "cpuSubmissionMs": 2.5,
+        "allocations": 1,
+        "releases": 0,
+        "disposed": false
+      },
+      "active": {
+        "enabled": true,
+        "quality": "detail",
+        "mobile": false,
+        "passCount": 6,
+        "aoSamples": 12,
+        "beautySize": [
+          1280,
+          720
+        ],
+        "aoSize": [
+          640,
+          360
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 41472000,
+        "drawCalls": 468,
+        "triangles": 661746,
+        "cpuSubmissionMs": 38.5,
+        "allocations": 2,
+        "releases": 1,
+        "disposed": false
+      },
+      "timings": {
+        "light": {
+          "medianMs": 1.5999999977648258,
+          "metrics": {
+            "enabled": false,
+            "quality": "light",
+            "mobile": false,
+            "passCount": 1,
+            "aoSamples": 0,
+            "beautySize": null,
+            "aoSize": null,
+            "msaaSamples": 0,
+            "estimatedTargetBytes": 0,
+            "drawCalls": 303,
+            "triangles": 516922,
+            "cpuSubmissionMs": 1.5,
+            "allocations": 3,
+            "releases": 3,
+            "disposed": false
+          }
+        },
+        "balanced": {
+          "medianMs": 3,
+          "metrics": {
+            "enabled": true,
+            "quality": "balanced",
+            "mobile": false,
+            "passCount": 6,
+            "aoSamples": 8,
+            "beautySize": [
+              1280,
+              720
+            ],
+            "aoSize": [
+              640,
+              360
+            ],
+            "msaaSamples": 2,
+            "estimatedTargetBytes": 41472000,
+            "drawCalls": 468,
+            "triangles": 661746,
+            "cpuSubmissionMs": 3.199999999254942,
+            "allocations": 4,
+            "releases": 3,
+            "disposed": false
+          }
+        },
+        "detail": {
+          "medianMs": 2.399999998509884,
+          "metrics": {
+            "enabled": true,
+            "quality": "detail",
+            "mobile": false,
+            "passCount": 6,
+            "aoSamples": 12,
+            "beautySize": [
+              1280,
+              720
+            ],
+            "aoSize": [
+              640,
+              360
+            ],
+            "msaaSamples": 2,
+            "estimatedTargetBytes": 41472000,
+            "drawCalls": 468,
+            "triangles": 661746,
+            "cpuSubmissionMs": 2.2000000029802322,
+            "allocations": 4,
+            "releases": 3,
+            "disposed": false
+          }
+        }
+      },
+      "photo": {
+        "width": 1920,
+        "height": 1080,
+        "before": {
+          "enabled": true,
+          "quality": "detail",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 12,
+          "beautySize": [
+            1280,
+            720
+          ],
+          "aoSize": [
+            640,
+            360
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 41472000,
+          "drawCalls": 466,
+          "triangles": 652166,
+          "cpuSubmissionMs": 2.300000000745058,
+          "allocations": 4,
+          "releases": 3,
+          "disposed": false
+        },
+        "after": {
+          "enabled": true,
+          "quality": "detail",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 12,
+          "beautySize": [
+            1280,
+            720
+          ],
+          "aoSize": [
+            640,
+            360
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 41472000,
+          "drawCalls": 466,
+          "triangles": 652166,
+          "cpuSubmissionMs": 2.2000000029802322,
+          "allocations": 4,
+          "releases": 3,
+          "disposed": false
+        },
+        "state": {
+          "target": true,
+          "autoClear": true,
+          "background": true,
+          "override": true
+        }
+      }
+    },
+    {
+      "name": "phone",
+      "delta": {
+        "meanAbsoluteRGB": 3.8549567335757913,
+        "skyMeanAbsoluteRGB": 0.023633156966490317,
+        "opaqueRatio": 1,
+        "darkenedPixelRatio": 0.09531447350672602
+      },
+      "skyDelta": {
+        "meanAbsoluteRGB": 0.012576487755827318,
+        "skyMeanAbsoluteRGB": 0.023633156966490317,
+        "opaqueRatio": 1,
+        "darkenedPixelRatio": 0
+      },
+      "boot": {
+        "enabled": false,
+        "quality": "balanced",
+        "mobile": true,
+        "passCount": 1,
+        "aoSamples": 0,
+        "beautySize": null,
+        "aoSize": null,
+        "msaaSamples": 0,
+        "estimatedTargetBytes": 0,
+        "drawCalls": 249,
+        "triangles": 377034,
+        "cpuSubmissionMs": 2.600000001490116,
+        "allocations": 0,
+        "releases": 0,
+        "disposed": false
+      },
+      "active": {
+        "enabled": true,
+        "quality": "detail",
+        "mobile": true,
+        "passCount": 6,
+        "aoSamples": 12,
+        "beautySize": [
+          585,
+          697
+        ],
+        "aoSize": [
+          293,
+          349
+        ],
+        "msaaSamples": 2,
+        "estimatedTargetBytes": 18360072,
+        "drawCalls": 375,
+        "triangles": 510694,
+        "cpuSubmissionMs": 2757.7999999970198,
+        "allocations": 1,
+        "releases": 0,
+        "disposed": false
+      },
+      "timings": {
+        "light": {
+          "medianMs": 1.3999999985098839,
+          "metrics": {
+            "enabled": false,
+            "quality": "light",
+            "mobile": true,
+            "passCount": 1,
+            "aoSamples": 0,
+            "beautySize": null,
+            "aoSize": null,
+            "msaaSamples": 0,
+            "estimatedTargetBytes": 0,
+            "drawCalls": 249,
+            "triangles": 377034,
+            "cpuSubmissionMs": 1.3999999985098839,
+            "allocations": 2,
+            "releases": 2,
+            "disposed": false
+          }
+        },
+        "balanced": {
+          "medianMs": 1.1000000014901161,
+          "metrics": {
+            "enabled": false,
+            "quality": "balanced",
+            "mobile": true,
+            "passCount": 1,
+            "aoSamples": 0,
+            "beautySize": null,
+            "aoSize": null,
+            "msaaSamples": 0,
+            "estimatedTargetBytes": 0,
+            "drawCalls": 249,
+            "triangles": 377034,
+            "cpuSubmissionMs": 1.300000000745058,
+            "allocations": 2,
+            "releases": 2,
+            "disposed": false
+          }
+        },
+        "detail": {
+          "medianMs": 1.699999999254942,
+          "metrics": {
+            "enabled": true,
+            "quality": "detail",
+            "mobile": true,
+            "passCount": 6,
+            "aoSamples": 12,
+            "beautySize": [
+              585,
+              697
+            ],
+            "aoSize": [
+              293,
+              349
+            ],
+            "msaaSamples": 2,
+            "estimatedTargetBytes": 18360072,
+            "drawCalls": 375,
+            "triangles": 510694,
+            "cpuSubmissionMs": 1.6000000014901161,
+            "allocations": 3,
+            "releases": 2,
+            "disposed": false
+          }
+        }
+      },
+      "photo": {
+        "width": 1476,
+        "height": 1760,
+        "before": {
+          "enabled": true,
+          "quality": "detail",
+          "mobile": true,
+          "passCount": 6,
+          "aoSamples": 12,
+          "beautySize": [
+            585,
+            697
+          ],
+          "aoSize": [
+            293,
+            349
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 18360072,
+          "drawCalls": 373,
+          "triangles": 501114,
+          "cpuSubmissionMs": 2.2999999970197678,
+          "allocations": 3,
+          "releases": 2,
+          "disposed": false
+        },
+        "after": {
+          "enabled": true,
+          "quality": "detail",
+          "mobile": true,
+          "passCount": 6,
+          "aoSamples": 12,
+          "beautySize": [
+            585,
+            697
+          ],
+          "aoSize": [
+            293,
+            349
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 18360072,
+          "drawCalls": 373,
+          "triangles": 501114,
+          "cpuSubmissionMs": 2.100000001490116,
+          "allocations": 3,
+          "releases": 2,
+          "disposed": false
+        },
+        "state": {
+          "target": true,
+          "autoClear": true,
+          "background": true,
+          "override": true
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "limitation": "Headless Edge, synthetic viewport. CPU submission is not GPU time or physical-device performance. Visual acceptance still requires image review."
+}

@@ -1,0 +1,12 @@
+{
+    email {$SYNK_TLS_EMAIL}
+}
+
+{$SYNK_COMPANY_DOMAIN} {
+    # Preserve the public Host for company origin/session validation.
+    header Strict-Transport-Security "max-age=31536000"
+    reverse_proxy company:4191 {
+        # Caddy is the only public entry; discard client-supplied forwarding.
+        header_up X-Forwarded-For {remote_host}
+    }
+}

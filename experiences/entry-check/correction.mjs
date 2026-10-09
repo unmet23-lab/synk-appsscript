@@ -18,9 +18,9 @@ export function choiceCorrection(venue, item, selected) {
   if (selected === item.answer) return '';
   const rules = activeRules(venue, item.at);
   const label = id => rules.find(rule => rule.id === id)?.short || rules.find(rule => rule.id === id)?.text || id;
-  if (selected === 'pass') return `통과를 골랐어요. 이 손님은 ‘${label(item.answer)}’ 규칙에 따라 거절해야 해요.`;
-  if (item.answer === 'pass') return `‘${label(selected)}’ 규칙으로 거절을 골랐어요. 이 손님은 들어갈 수 있어요. 금지와 허용 조건을 함께 확인해요.`;
-  return `‘${label(selected)}’ 규칙으로 거절을 골랐어요. 이 손님은 ‘${label(item.answer)}’ 규칙에 따라 거절해야 해요. 고른 규칙과 손님의 내용을 맞춰 봐요.`;
+  if (selected === 'pass') return `통과를 골랐지만, 이 손님은 ‘${label(item.answer)}’ 규칙 때문에 들어갈 수 없어요.`;
+  if (item.answer === 'pass') return `‘${label(selected)}’ 규칙으로 거절했지만, 이 손님은 들어갈 수 있어요. 안 되는 것과 괜찮은 것을 같이 읽어 봐요.`;
+  return `‘${label(selected)}’ 규칙으로 거절했지만 이유가 달라요. 이 손님은 ‘${label(item.answer)}’ 규칙 때문에 들어갈 수 없어요.`;
 }
 
 function preservesShift(venue, before, after, targeted) {
@@ -40,7 +40,7 @@ function preservesShift(venue, before, after, targeted) {
 /** Replace one remaining slot or move an existing slot; never add an attempt to the shift. */
 export function immediateCheck({ venue, queue, index, item, coach, assignment = null, seenIds = [] }) {
   const none = (status, line) => ({ status, queue, item: null, line });
-  if (index >= queue.length - 1) return none('round-end', '이번 근무의 마지막 손님이에요. 근무를 마친 뒤 다음 연습을 확인해요.');
+  if (index >= queue.length - 1) return none('round-end', '이번 근무의 마지막 손님이었어요. 근무를 마치면 다음 연습을 볼 수 있어요.');
   const measure = caseMetadata(item), prefix = queue.slice(0, index + 1), remaining = queue.slice(index + 1);
   const attempted = new Set([...seenIds, ...prefix.map(row => row.id)]);
   const pool = assignmentCases(venue.cases, assignment).filter(candidate => candidate.id !== item.id
@@ -71,12 +71,12 @@ export function immediateCheck({ venue, queue, index, item, coach, assignment = 
     const revised = proposed.find(next => preservesShift(venue, queue, next, !!assignment));
     if (!revised) continue;
     return { status: 'new', queue: revised, item: candidate, line: strong
-      ? '다른 새 문항으로 같은 안내 규칙을 확인해요. 난도와 읽기 항목은 같아요.'
-      : '다른 새 문항으로 같은 난도의 읽기 항목을 확인해요. 안내 규칙·표현은 달라질 수 있어요.' };
+      ? '같은 안내 규칙을 새 손님으로 한 번 더 확인해요.'
+      : '비슷한 연습을 새 손님으로 한 번 더 해요. 규칙·표현은 달라질 수 있어요.' };
   }
   const next = remaining[0], equivalent = sameMeasure(measure, caseMetadata(next));
   const nextSeen = exposure(next);
-  if (equivalent && nextSeen === true) return { status: 'review', queue, item: next, line: '남은 근무에는 바로 이어질 같은 목표의 새 손님이 없어요. 다음 손님은 이미 본 문항의 복습이에요.' };
-  if (equivalent && nextSeen === null) return { status: 'unknown', queue, item: next, line: '다음 손님은 같은 난도의 읽기 항목이에요. 이전 노출을 확인하지 못해 새 문항이라고 부르지 않아요.' };
-  return none('unavailable', '남은 근무와 이번 목표 범위에서 바로 이어질 같은 목표의 새 손님을 준비하지 못했어요. 다음 손님은 원래 순서대로 진행해요.');
+  if (equivalent && nextSeen === true) return { status: 'review', queue, item: next, line: '같은 연습을 할 새 손님이 없어요. 다음 손님은 이미 본 손님의 복습이에요.' };
+  if (equivalent && nextSeen === null) return { status: 'unknown', queue, item: next, line: '다음 손님도 비슷한 연습이에요. 전에 만난 손님인지는 확인하지 못했어요.' };
+  return none('unavailable', '바로 이어서 확인할 새 손님이 없어요. 다음 손님은 원래 순서대로 만나요.');
 }

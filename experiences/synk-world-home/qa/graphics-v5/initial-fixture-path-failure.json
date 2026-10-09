@@ -1,0 +1,27 @@
+{
+  "message": "Error: ENOENT: no such file or directory, open 'C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-home\\environment-v5.mjs'",
+  "checks": [
+    "environment v5 has backwards-compatible graphicsVersion",
+    "light pixel ratio and shadow size",
+    "light drawing budget",
+    "detail pixel ratio and shadow size",
+    "detail drawing budget",
+    "balanced pixel ratio and shadow size",
+    "balanced drawing budget",
+    "inactive scene does not render idle frames",
+    "paused scene can export real high-resolution pixels",
+    "photo caps and aspect ratio",
+    "photo restores interactive resolution",
+    "active scene resumes",
+    "runtime reduced motion sleeps without remounting",
+    "WebGL loss test available",
+    "lost context export throws",
+    "lost context emits recovery error",
+    "disposed export throws",
+    "dispose removes canvas",
+    "optional texture deadline is finite",
+    "optional failure is visible in metrics",
+    "late texture is disposed",
+    "no runtime or shader errors"
+  ]
+}

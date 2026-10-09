@@ -31,7 +31,7 @@ export class StoryVoice {
  async speak(lines,{manual=false}={}){
   this.stop();const generation=this.generation;
   const queue=lines.filter(Boolean);
-  if(this.readingOnly){this.status('reading','글로만 연습 중이에요. 음성은 쉬고 있어요.');return false;}
+  if(this.readingOnly){this.status('reading','소리 없이 글만 읽는 중이에요.');return false;}
   if(!this.audio?.enabled){this.status('muted','소리가 꺼져 있어요.');return false;}
   if(!manual&&!this.automatic)return false;
   if(!queue.length)return false;

@@ -1,6 +1,7 @@
 import { dateRange, shiftDate } from '../analytics.mjs';
 import { growthWeekWindow } from './growth-summary.mjs';
 import { CREW_PROFILE_CATALOG } from './crew-profile-service.mjs';
+import { answerProductivity } from './assistant-productivity.mjs';
 
 const fail = message => Object.assign(new Error(message), { status: 400 });
 const number = value => typeof value === 'number' && Number.isFinite(value);
@@ -58,7 +59,7 @@ export function declaredWorkDraft(message, otherNames=[]) {
 }
 
 // Deterministic intent routing over current authorized records. No prompts, logs, model calls or inferred facts are persisted.
-export function createAssistantService({ today, performance, directory }) {
+export function createAssistantService({ today, performance, directory, productivity, clientWorkday }) {
   function answer(user, input, request) {
     if (!input || typeof input !== 'object' || Array.isArray(input) || typeof input.message !== 'string' || input.message.length > 1000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(input.message) || !input.message.trim()) throw fail('마린에게 물어볼 내용을 1~1000자로 입력해 주세요.');
     const message = input.message.trim(), compact = clean(message);
@@ -69,6 +70,8 @@ export function createAssistantService({ today, performance, directory }) {
       return result('profile',Object.keys(draft).length?'직접 말한 업무 정보를 초안으로 정리했어요. 아직 저장하지 않았어요. 내 업무 카드에서 항목과 공유 여부를 확인한 뒤 저장해 주세요.':'내 업무 카드에서 역량·선호·협업 방식과 가능한 시간을 직접 확인해 주세요. 공유는 기본으로 꺼져 있고 언제든 수정하거나 철회·삭제할 수 있어요.',[profileAction(draft)]);
     }
     if (/^(그중|그럼\s*그|거기서|그거|그것|이중|아까|이어서)/.test(message) || /^(?:우리\s*팀|내\s*팀|지난\s*주|저번\s*주|이번\s*달)(?:만|은|는|도)?[?.!\s]*$/.test(message)) return fallback('확인할 범위를 함께 알려 주세요. 예를 들어 “우리 팀 이번 주 조회수”처럼 물어보면 현재 자료로 확인할 수 있어요.');
+    const productivityResult = answerProductivity({ message, request, user, productivity, clientWorkday });
+    if (productivityResult) return productivityResult;
     if (/파일|첨부|문서/.test(message)) {
       const query = keyword(message, /파일|첨부(?:파일)?|문서|검색/g), found = directory(request, { include: 'files', query });
       if (!found.items.length) return result('files', '확인. 지금 볼 수 있는 공유 파일에서 일치하는 파일을 찾지 못했어요. 파일 이름을 바꾸어 찾거나 파일 화면을 열어 주세요.', [messenger('공유 파일 보기', { panel: 'files' })], { query, count: 0 });

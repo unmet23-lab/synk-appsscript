@@ -10,6 +10,9 @@
 //       화면: 배역표(공식 미리듣기·후보 둘), 「샘플 만들기」(배역마다 두 줄 → 저장소 밖에서 듣기), 「전부 만들기」(게임마다 또는 전체 → 게임 폴더에 적용).
 //       이 컴퓨터의 명령으로도 같다: POST /generate {"mode":"sample"} · {"mode":"sample","alternates":true} · {"mode":"all","games":["korean-runner"]}
 //         · {"mode":"all","confirmed":true} · POST /stop · POST /cast {"role":"mongle","voiceId":"tc_…"} · GET /status
+//         · 들어 보기 {"mode":"audition","name":"narrator-20261008","voices":[{"id":"tc_…","name":"…"}],"emotions":["normal","smart"],
+//           "lines":[{"game":"korean-racing","id":"intro","previous":"…","next":"…"}]} → 어림만 돌려준다, {"confirmed":true}를 더하면 굽는다.
+//           정한 줄을 후보 목소리 × 감정 방식마다 그 게임의 후처리로 구워 저장소 밖 audition/<이름>/에 둔다(게임 폴더·배역 파일은 그대로).
 //   node tools/미니게임_목소리.cjs --apply <게임|all>   → 받아 둔 원본만으로 후처리·적용을 다시 한다(유료 호출 없음).
 // 원본(Typecast wav)은 저장소 밖 Documents/synk-vendor/minigame-voice/raw/<목소리>/<요청 해시>.wav — 목소리·설정·글이 같으면 다시 사지 않는다.
 // 배역·설정은 tools/minigame-voice-casting.json, 게임별 작업·후처리는 tools/lib/미니게임목소리_게임.cjs.
@@ -41,7 +44,8 @@ function loadCatalog() {
 function sourceInfo(job, adapter) {
   const v = job.voice;
   return { sourceKey: job.key, text: job.text, ...(job.speaker ? { speaker: job.speaker } : {}), voice: v.voice.name, voiceId: v.voice.id, provider: 'Typecast', model: v.model,
-    emotion: v.emotion, intensity: v.intensity, tempo: v.tempo, seed: v.seed, targetLufs: v.targetLufs, post: adapter.post };
+    emotion: v.emotion, ...(v.emotion === V.SMART ? { previousText: v.previousText, nextText: v.nextText } : { intensity: v.intensity }),
+    tempo: v.tempo, seed: v.seed, targetLufs: v.targetLufs, post: adapter.post };
 }
 function writeRecord(game, results, casting, repo = G.REPO) {
   const file = path.join(G.gameDir(game, repo), 'qa', 'voice.source.json'), prev = readJson(file, { lines: {} });
@@ -96,6 +100,54 @@ async function buildSamples(tasks) {
   const prev = readJson(SAMPLE_INDEX, []).filter(p => !index.some(x => x.file === p.file));
   fs.mkdirSync(SAMPLES, { recursive: true });
   fs.writeFileSync(SAMPLE_INDEX, JSON.stringify([...prev, ...index], null, 1));
+  return index;
+}
+// 들어 보기: 정한 줄 × 후보 목소리 × 감정 방식(프리셋 이름 또는 smart). smart의 앞뒤 글은 줄마다 준다 — 소리로 나오지 않고 감정을 읽는 데만 쓴다.
+// 결과는 저장소 밖 audition/<이름>/<목소리>/<감정>/<게임>__<id>.mp3와 index.json. 게임 폴더·배역 파일은 건드리지 않는다.
+const AUDITION = path.join(V.VENDOR, 'audition');
+async function auditionTasks(body, casting) {
+  const { name, voices = [], emotions = ['normal'], lines = [] } = body;
+  if (!/^[a-z0-9-]{3,40}$/.test(name || '')) throw Error('들어 보기 이름(name)은 영문 소문자·숫자·- 3~40자');
+  if (!voices.length || !lines.length) throw Error('목소리(voices)와 줄(lines)을 주세요.');
+  for (const v of voices) if (!V.VOICE_ID.test(v.id || '') || !v.name) throw Error('목소리 id·이름을 확인해 주세요: ' + JSON.stringify(v));
+  for (const e of emotions) if (e !== V.SMART && !V.PRESETS.includes(e)) throw Error('모르는 감정: ' + e);
+  const all = await V.allJobs({ casting, games: selectedGames([...new Set(lines.map(l => l.game))].join(',')) });
+  const tasks = [];
+  for (const l of lines) {
+    const job = all.find(j => j.game === l.game && j.id === l.id);
+    if (!job) throw Error(`줄 없음: ${l.game}/${l.id}`);
+    // 발음 시험: 소리로 읽을 글을 바꿔 구워 볼 수 있다(text). 같은 줄의 여러 글은 tag로 가른다(파일 이름 <id>~<tag>).
+    const text = l.text ? String(l.text) : job.text, tag = l.tag ? String(l.tag) : '';
+    if (tag && !/^[a-z0-9-]{1,20}$/.test(tag)) throw Error('tag는 영문 소문자·숫자·- 20자까지: ' + tag);
+    for (const voice of voices) for (const emotion of emotions) {
+      const { previousText, nextText, ...base } = job.voice;
+      const v = { ...base, voice: { id: voice.id, name: voice.name }, emotion, ...(emotion === V.SMART ? { previousText: String(l.previous || ''), nextText: String(l.next || '') } : {}) };
+      tasks.push({ name, emotion, tag, job: { ...job, text, voice: v, key: V.cacheKey(v, text) } });
+    }
+  }
+  return tasks;
+}
+async function buildAudition(tasks) {
+  const name = tasks[0].name, dir = path.join(AUDITION, name), stageRoot = path.join(V.VENDOR, 'audition-stage', name), index = [];
+  for (const t of tasks) {
+    const raw = V.rawPath(t.job.voice, t.job.key);
+    if (!fs.existsSync(raw)) continue;
+    const adapter = G.GAMES[t.job.game], v = t.job.voice;
+    try {
+      const r = await adapter.process(t.job, raw, path.join(stageRoot, v.voice.id, t.emotion));
+      const main = r.files[t.job.outputs.find(o => o.endsWith('.mp3')) || t.job.outputs[0]];
+      const rel = [v.voice.id, t.emotion, `${t.job.game}__${t.job.id}${t.tag ? '~' + t.tag : ''}${path.extname(main)}`].join('/');
+      fs.mkdirSync(path.dirname(path.join(dir, ...rel.split('/'))), { recursive: true });
+      fs.copyFileSync(main, path.join(dir, ...rel.split('/')));
+      index.push({ game: t.job.game, id: t.job.id, ...(t.tag ? { tag: t.tag } : {}), role: t.job.role, text: t.job.text, voice: v.voice, emotion: t.emotion, tempo: v.tempo,
+        ...(t.emotion === V.SMART ? { previous: v.previousText, next: v.nextText } : {}), seconds: Math.round((await G.probe(main)).duration * 1000) / 1000,
+        file: rel, key: t.job.key, problems: adapter.validate(t.job, r.metrics) });
+    } catch (e) { say(`들어 보기 후처리 실패 ${t.job.game}/${t.job.id}: ${e.message}`); }
+  }
+  const prev = readJson(path.join(dir, 'index.json'), []).filter(p => !index.some(x => x.file === p.file));
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'index.json'), JSON.stringify([...prev, ...index], null, 1));
+  fs.rmSync(stageRoot, { recursive: true, force: true });
   return index;
 }
 
@@ -256,7 +308,29 @@ async function beginRun(body) {
     })();
     return { started: true, estimate: state.estimate };
   }
-  if (mode !== 'all') throw Error('mode는 sample 또는 all');
+  if (mode === 'audition') {
+    const tasks = await auditionTasks(body, casting);
+    const pending = V.unique(tasks.map(t => t.job)).filter(j => !fs.existsSync(V.rawPath(j.voice, j.key)));
+    // smart의 앞뒤 글은 Typecast 문서에 값 이야기가 없어 따로 센다. 10-08 실측으로는 값에 들지 않았다
+    // (해설 들어 보기 52줄: 글 1,444자 + 앞뒤 글 866자 → 잔량 1,444 줄어듦). 남은 크레딧 비교에만 넉넉히 더한다.
+    const contextChars = pending.reduce((n, j) => n + [...(j.voice.previousText || '') + (j.voice.nextText || '')].length, 0);
+    const left = credits(await api('/v1/users/me/subscription')).left, estimate = Math.ceil(V.chars(pending) * perChar());
+    if (estimate + contextChars > left) throw Error(`어림 ${estimate + contextChars} 크레딧이 남은 ${left}보다 많다 — 추가 결제 없이 멈춤`);
+    if (!body.confirmed) return { needConfirm: true, tasks: tasks.length, lines: pending.length, chars: V.chars(pending), contextChars, estimate, left, share: +(100 * estimate / left).toFixed(2) };
+    state = { running: true, mode, phase: '시작', log: state.log, startedAt: new Date().toISOString(), estimate: { lines: pending.length, chars: V.chars(pending), contextChars, credits: estimate, left }, applied: {} };
+    (async () => {
+      try {
+        await fetchRaw(tasks.map(t => t.job));
+        state.phase = '들어 보기 후처리';
+        const made = await buildAudition(tasks);
+        state.audition = { name: body.name, made: made.length, dir: path.join(AUDITION, body.name) };
+        say(`들어 보기 ${made.length}개 준비 — ${state.audition.dir}`); state.phase = '끝';
+      } catch (e) { state.phase = '멈춤'; state.stopReason = e.message; say('멈춤: ' + e.message); }
+      finally { state.running = false; state.endedAt = new Date().toISOString(); }
+    })();
+    return { started: true, estimate: state.estimate };
+  }
+  if (mode !== 'all') throw Error('mode는 sample·audition·all 가운데 하나');
   if (!meter?.perChar && !body.force) throw Error('먼저 「샘플 만들기」로 한 글자당 크레딧을 잰다.');
   const games = selectedGames((body.games || []).join(','));
   const jobs = await V.allJobs({ casting, games });
@@ -422,4 +496,4 @@ function serve() {
 }
 
 if (require.main === module) (async () => { if (!(await cli())) serve(); })().catch(e => { console.error(e.message); process.exitCode = 1; });
-module.exports = { applyGame, buildSamples, allowed: (req, url) => allowed(req, url), sourceInfo, writeRecord };
+module.exports = { applyGame, buildSamples, auditionTasks, allowed: (req, url) => allowed(req, url), sourceInfo, writeRecord };

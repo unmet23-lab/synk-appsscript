@@ -14,6 +14,12 @@ const fail = (message, status = 400) => Object.assign(new Error(message), { stat
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const engine = Object.freeze({ id: 'crew-work', version: AtlasWork.VERSION });
 const fields = ['skills', 'preferredTasks', 'communication', 'workMode', 'availableHours', 'participates'];
+// Atlas validators use TypeError for rejected declarations; expose those as
+// client input errors without changing the handling of storage/server faults.
+function normalizeDeclaration(normalize, input) {
+  try { return normalize(input, CREW_PROFILE_CATALOG.skills); }
+  catch (error) { if (error instanceof TypeError) throw fail(error.message); throw error; }
+}
 
 export function createCrewProfileService({ store, clock }) {
   function current(user) {
@@ -49,7 +55,7 @@ export function createCrewProfileService({ store, clock }) {
     user = current(user);
     if (!object(input)) throw fail('업무카드 입력을 확인해 주세요.');
     const { expectedRevision, ...declaration } = input;
-    const value = AtlasWork.normalizeProfile(declaration, CREW_PROFILE_CATALOG.skills), at = clock();
+    const value = normalizeDeclaration(AtlasWork.normalizeProfile, declaration), at = clock();
     store.transaction(() => {
       checkRevision(user.id, input);
       const prior = profileFor(user.id);
@@ -86,7 +92,7 @@ export function createCrewProfileService({ store, clock }) {
   }
   function evaluate(user, input) {
     // Resolve both current organization access and current sharing consent for every request.
-    const visible = roster(user), criteria = AtlasWork.normalizeCriteria(input, CREW_PROFILE_CATALOG.skills);
+    const visible = roster(user), criteria = normalizeDeclaration(AtlasWork.normalizeCriteria, input);
     const allowed = new Set(visible.members.filter(member => member.shared).map(member => member.id));
     if (criteria.memberIds.some(id => !allowed.has(id))) throw fail('현재 범위에서 공유 중인 업무카드를 다시 선택해 주세요.', 404);
     return { ...AtlasWork.evaluate(criteria, visible.members, CREW_PROFILE_CATALOG.skills), scope: visible.scope };

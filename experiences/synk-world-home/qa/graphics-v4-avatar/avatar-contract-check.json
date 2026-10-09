@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "none normalized",
+    "none neck visibility",
+    "none body visibility",
+    "scarf normalized",
+    "scarf neck visibility",
+    "scarf body visibility",
+    "apron normalized",
+    "apron neck visibility",
+    "apron body visibility",
+    "scarf-apron normalized",
+    "scarf-apron neck visibility",
+    "scarf-apron body visibility",
+    "unknown item is never visible",
+    "finite vertices",
+    "foot origin",
+    "height under two world units",
+    "reduced motion has no sway",
+    "every geometry disposed once",
+    "every material disposed once",
+    "every used texture disposed once"
+  ],
+  "passed": 20,
+  "metrics": {
+    "avatarVersion": "mongle-v3",
+    "materialRevision": 4,
+    "outfit": "none",
+    "bodyBounds": {
+      "width": 1.8004822731018066,
+      "height": 1.8342324290424585,
+      "depth": 1.609148919582367
+    },
+    "assetFailures": [],
+    "productionAsset": false
+  },
+  "bodyExtents": {
+    "minY": 0,
+    "maxY": 1.8342324290424585
+  },
+  "resources": {
+    "geometries": 54,
+    "materials": 12,
+    "textures": 18
+  },
+  "checkedAt": "2026-10-08T20:26:35.980Z"
+}

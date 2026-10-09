@@ -1,0 +1,146 @@
+[
+  {
+    "name": "desktop",
+    "initial": {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "scene": true,
+      "metrics": {
+        "renderer": "Three.js r180",
+        "drawingBuffer": {
+          "width": 1168,
+          "height": 454
+        },
+        "dpr": 1,
+        "drawCalls": 22,
+        "triangles": 17736,
+        "lines": 8647,
+        "frameCount": 5,
+        "outfit": "none",
+        "time": "day",
+        "paused": true,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "overflows": [
+        {
+          "tag": "IMG",
+          "cls": "scarf-object",
+          "txt": ""
+        }
+      ]
+    },
+    "wardrobe": {
+      "panel": "wardrobe",
+      "state": "scarf",
+      "caption": "몽글 · 포근한 목도리",
+      "panelScroll": 540,
+      "panelWidth": 540
+    },
+    "focus": "<button data-action=\"wardrobe\">옷 갈아입기 <span data-icon=\"arrow\"><svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"></path></svg></span></button>",
+    "town": "SYNK TOWN\n\n한국어로 살아가는 우리 동네\n\n내 집을 꾸미고, 작물을 기르고, 이웃과 이야기를 나누는 곳이에요.\n\n메인에서 쉬운 한국어부터 시작해요.\n앱 안에서 TOPIK 1급+를 통과해요.\n해금과 이용권을 확인하고 타운에 들어가요.\n\n지금은 타운 입구의 미리보기예요. 실제 학습 기록이나 이용권을 확인한 상태는 아니에요.\n\n한글부터 시작하기",
+    "video": {
+      "readyState": 4,
+      "paused": false,
+      "currentTime": 0.088204,
+      "duration": 54.766667
+    },
+    "errors": []
+  },
+  {
+    "name": "mobile390",
+    "initial": {
+      "width": 390,
+      "scrollWidth": 390,
+      "scene": true,
+      "metrics": {
+        "renderer": "Three.js r180",
+        "drawingBuffer": {
+          "width": 350,
+          "height": 326
+        },
+        "dpr": 1,
+        "drawCalls": 94,
+        "triangles": 38870,
+        "lines": 5204,
+        "frameCount": 17,
+        "outfit": "none",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "overflows": [
+        {
+          "tag": "IMG",
+          "cls": "scarf-object",
+          "txt": ""
+        }
+      ]
+    },
+    "wardrobe": {
+      "panel": "wardrobe",
+      "state": "scarf",
+      "caption": "몽글 · 포근한 목도리",
+      "panelScroll": 370,
+      "panelWidth": 370
+    },
+    "focus": "<button data-action=\"wardrobe\">옷 갈아입기 <span data-icon=\"arrow\"><svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"></path></svg></span></button>",
+    "town": "SYNK TOWN\n\n한국어로 살아가는 우리 동네\n\n내 집을 꾸미고, 작물을 기르고, 이웃과 이야기를 나누는 곳이에요.\n\n메인에서 쉬운 한국어부터 시작해요.\n앱 안에서 TOPIK 1급+를 통과해요.\n해금과 이용권을 확인하고 타운에 들어가요.\n\n지금은 타운 입구의 미리보기예요. 실제 학습 기록이나 이용권을 확인한 상태는 아니에요.\n\n한글부터 시작하기",
+    "video": {
+      "readyState": 4,
+      "paused": false,
+      "currentTime": 0.436911,
+      "duration": 54.766667
+    },
+    "errors": []
+  },
+  {
+    "name": "mobile320",
+    "initial": {
+      "width": 320,
+      "scrollWidth": 320,
+      "scene": true,
+      "metrics": {
+        "renderer": "Three.js r180",
+        "drawingBuffer": {
+          "width": 290,
+          "height": 326
+        },
+        "dpr": 1,
+        "drawCalls": 79,
+        "triangles": 35638,
+        "lines": 5204,
+        "frameCount": 46,
+        "outfit": "none",
+        "time": "day",
+        "paused": false,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "overflows": [
+        {
+          "tag": "IMG",
+          "cls": "scarf-object",
+          "txt": ""
+        }
+      ]
+    },
+    "wardrobe": {
+      "panel": "wardrobe",
+      "state": "scarf",
+      "caption": "몽글 · 포근한 목도리",
+      "panelScroll": 300,
+      "panelWidth": 300
+    },
+    "focus": "<button data-action=\"wardrobe\">옷 갈아입기 <span data-icon=\"arrow\"><svg class=\"icon\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M4 12h15m-6-6 6 6-6 6\"></path></svg></span></button>",
+    "town": "SYNK TOWN\n\n한국어로 살아가는 우리 동네\n\n내 집을 꾸미고, 작물을 기르고, 이웃과 이야기를 나누는 곳이에요.\n\n메인에서 쉬운 한국어부터 시작해요.\n앱 안에서 TOPIK 1급+를 통과해요.\n해금과 이용권을 확인하고 타운에 들어가요.\n\n지금은 타운 입구의 미리보기예요. 실제 학습 기록이나 이용권을 확인한 상태는 아니에요.\n\n한글부터 시작하기",
+    "video": {
+      "readyState": 4,
+      "paused": false,
+      "currentTime": 0.462162,
+      "duration": 54.766667
+    },
+    "errors": []
+  }
+]

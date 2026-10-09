@@ -1,0 +1,16 @@
+{
+  "bytes": 3153872,
+  "meshes": 9,
+  "materials": 8,
+  "images": 4,
+  "triangles": 43252,
+  "note": "Static candidate, no bones or animations. Runtime short hair lines and bump shader are not transported; base-color maps, geometry, UV, normals, sheen and clearcoat are transported.",
+  "sha256": "5117b727f27c022d96f7b794e056aa77fb008dd906a6d8b9457c30e17a93a457",
+  "createdAt": "2026-10-08T19:44:35.225Z",
+  "source": [
+    "avatar-v3.mjs",
+    "qa/graphics-v3/export-avatar.mjs"
+  ],
+  "rigged": false,
+  "productionApproved": false
+}

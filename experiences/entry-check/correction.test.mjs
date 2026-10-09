@@ -19,10 +19,10 @@ test('feedback names the actual selected rule and retains the authored correct e
   for (const [venueId, caseId, selected, label] of [['pool', 'pool-04', 'food', '수영 모자'], ['library', 'library-02', 'food', '도서관 카드']]) {
     const venue = VENUES.find(v => v.id === venueId), target = venue.cases.find(c => c.id === caseId);
     const line = choiceCorrection(venue, target, selected);
-    assert.ok(line.includes(`이 손님은 ‘${label}’ 규칙에 따라 거절해야 해요.`));
+    assert.ok(line.includes(`이 손님은 ‘${label}’ 규칙 때문에 들어갈 수 없어요.`));
     assert.doesNotMatch(line, /’이에요|오개념|약점|숙달/);
   }
-  assert.match(choiceCorrection(pool, find('pool-03'), 'food'), /음식.*들어갈 수.*허용/);
+  assert.match(choiceCorrection(pool, find('pool-03'), 'food'), /음식.*들어갈 수.*괜찮은/);
   for (const line of [pass, cap, kid]) assert.doesNotMatch(line, /오개념|약점|숙달|급수|헷갈렸/);
   assert.equal(item.why, '김밥은 음식이에요. 음식은 가지고 들어갈 수 없어요.');
 });

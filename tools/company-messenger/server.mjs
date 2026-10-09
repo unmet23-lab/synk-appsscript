@@ -83,7 +83,9 @@ async function jsonBody(req) {
   }
 }
 
-export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL } = {}) {
+export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || path.join(ROOT, 'data'), port = Number(process.env.MESSENGER_PORT || 4197), host = '127.0.0.1', driveStorage, integration = null, basePath = '', platformUrl = process.env.SYNK_PLATFORM_URL, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled } = {}) {
+  assert(typeof backgroundJobsEnabled === 'boolean', 400, '백그라운드 작업 설정은 boolean이어야 합니다.');
+  assert(typeof workNotificationsEnabled === 'boolean', 400, '업무 알림 설정은 boolean이어야 합니다.');
   // This first version is deliberately local-only. Network deployment needs TLS and an explicit hosting design.
   assert(integration || ['127.0.0.1', '::1', 'localhost'].includes(host), 400, '현재 버전은 이 컴퓨터에서만 실행할 수 있습니다.');
   assert(basePath === '' || basePath === '/messenger', 400, '메신저 경로 설정을 확인해 주세요.');
@@ -157,7 +159,13 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   let deletionTimer = null;
   let reminderTimer = null;
   const activeDownloads = new Set();
-  const collaboration = createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, fileTypeSql: FILE_TYPE_SQL, integrated: Boolean(integration), origin: () => integration?.origin || `http://${host}:${listeningPort}`, resolveLink: resolveWorkspaceLink });
+  const collaboration = createCollaborationService({ db, assert, textField, now, transaction, members, requireChannel, requireMessage, requirePosting, messageShape, publish, fileTypeSql: FILE_TYPE_SQL, integrated: Boolean(integration), origin: () => integration?.origin || `http://${host}:${listeningPort}`, resolveLink: resolveWorkspaceLink, backgroundJobsEnabled, workNotificationsEnabled,
+    externalNotifications: integration?.notifications ? {
+      list: userId => integration.notifications.list(bridge.companyUserId(userId)),
+      read: (userId, notificationId) => integration.notifications.read(bridge.companyUserId(userId), notificationId),
+      readAll: userId => integration.notifications.readAll(bridge.companyUserId(userId)),
+    } : null,
+  });
 
   function resolveWorkspaceLink({ userId, channelId, workspaceLink, recipientIds, purpose = 'share' }) {
     if (integration?.resolveWorkspaceLink) {
@@ -181,7 +189,8 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
   }
   function retryDriveDeletions() {
     if (deletionTask) return deletionTask;
-    if (closed) return Promise.resolve();
+    // Keep deletion intent durable while restored data is awaiting acceptance.
+    if (closed || !backgroundJobsEnabled) return Promise.resolve();
     deletionTask = (async () => {
       const pending = all('SELECT * FROM drive_delete_outbox ORDER BY created_at LIMIT 20');
       for (const job of pending) {
@@ -297,7 +306,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     syncDirectory();
     const basic = { needsSetup: !hasSetup(), workspace: { name: workspaceName() }, storage: { provider: active ? 'google-drive' : 'local' }, platformUrl: platformEntryUrl };
     if (!user) return basic;
-    return { ...basic, user: publicUser(user), channels: channelsFor(user.id), members: members(), teams: bridge?.teamsFor(user.id) || [], notificationUnread: collaboration.unreadCount(user.id), limits: { fileBytes: FILE_LIMIT }, ...(identity ? { integrated: { csrfToken: identity.csrfToken, companyUserId: identity.companyUserId, role: identity.role, canWrite: identity.canWrite, canManage: identity.canManage, parentOrigin: identity.parentOrigin } } : {}) };
+    return { ...basic, user: publicUser(user), channels: channelsFor(user.id), members: members(), teams: bridge?.teamsFor(user.id) || [], notificationUnread: collaboration.unreadCount(user.id), scheduledNotifications: { enabled: workNotificationsEnabled }, limits: { fileBytes: FILE_LIMIT }, ...(identity ? { integrated: { csrfToken: identity.csrfToken, companyUserId: identity.companyUserId, role: identity.role, canWrite: identity.canWrite, canManage: identity.canManage, parentOrigin: identity.parentOrigin } } : {}) };
   }
   function createChannel(name, description, kind, userIds, pairKey = null, category = 'generic', creatorId = null, teamId = null, scope = 'public') {
     const id = randomUUID();
@@ -827,6 +836,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
             const body = await readBody();
             message = requireMessage(match[1], user.id);
             const channel = requirePosting(user.id, message.channel_id);
+            collaboration.productivity.assertMessageMutable(message.id);
             const content = textField(body.body, '메시지', 8000);
             const extras = collaboration.prepareMessage(body, channel, user.id, message, integration?.origin || `http://${req.headers.host}`);
             assert(content || extras.workspaceLink || one('SELECT id FROM files WHERE message_id=? LIMIT 1', message.id), 400, '빈 메시지로 수정할 수 없습니다.');
@@ -838,6 +848,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
           if (method === 'DELETE' && !match[2]) {
             const channel = requireChannel(user.id, message.channel_id);
             assert(message.user_id === user.id || (user.role === 'owner' && channel.kind === 'channel'), 403, '이 메시지를 삭제할 수 없습니다.');
+            collaboration.productivity.assertMessageMutable(message.id);
             const files = all('SELECT * FROM files WHERE message_id=?', message.id);
             transaction(() => {
               for (const f of files) queueFileDeletion(f);
@@ -960,7 +971,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       if (res.headersSent) { if (!res.writableEnded) res.end(); return; }
       if (!(error instanceof AppError) && !error.publicMessage) console.error('[messenger] Request failed:', error.code || error.name);
       const status = Number.isInteger(error.status) && error.status >= 400 && error.status <= 599 ? error.status : 500;
-      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.' });
+      json(res, status, { error: error instanceof AppError ? error.message : typeof error.publicMessage === 'string' ? error.publicMessage : '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.', ...(error.code === 'SYNK_WORK_NOTIFICATIONS_PAUSED' ? { code: error.code } : {}) });
     }
   };
   const server = http.createServer(handler);
@@ -970,19 +981,42 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
 
   let initialized = false;
   async function initialize() {
-      if (initialized) return;
+      if (initialized || closed) return;
       initialized = true;
       // A crash may leave an incomplete upload. Remove only generated files absent from the database.
       const known = new Set(all("SELECT disk_name FROM files WHERE storage_provider='local'").map(f => f.disk_name));
       for (const name of await readdir(uploadDir)) if (/^[a-f0-9-]{36}\.bin$/.test(name) && !known.has(name)) await removeDiskFile(name);
-      deletionTimer = setInterval(() => { void retryDriveDeletions().catch(() => {}); }, 60000);
-      deletionTimer.unref();
-      void retryDriveDeletions().catch(() => {});
-      const remind = () => { syncDirectory(); collaboration.deliverReminders(); };
-      remind(); reminderTimer = setInterval(() => { try { remind(); } catch { console.error('[messenger] Reminder delivery will retry.'); } }, 15000); reminderTimer.unref();
+      syncDirectory();
+      if (backgroundJobsEnabled) {
+        deletionTimer = setInterval(() => { void retryDriveDeletions().catch(() => {}); }, 60000);
+        deletionTimer.unref();
+        void retryDriveDeletions().catch(() => {});
+      }
+      if (workNotificationsEnabled) {
+        const remind = () => { if (closed) return; syncDirectory(); collaboration.deliverReminders(); };
+        remind(); reminderTimer = setInterval(() => { try { remind(); } catch { console.error('[messenger] Reminder delivery will retry.'); } }, 15000); reminderTimer.unref();
+      }
   }
   return {
     server, db, handler, startMounted: initialize, disconnectRevoked,
+    notificationsForCompanyUser(companyUserId) {
+      if (!bridge) return [];
+      syncDirectory();
+      const member = members().find(row => bridge.companyUserId(row.id) === companyUserId);
+      return member ? collaboration.notificationsForPush(member.id) : [];
+    },
+    notifyCompanyUsers(companyUserIds) {
+      if (!bridge || !Array.isArray(companyUserIds)) return;
+      syncDirectory();
+      const ids = new Set(companyUserIds);
+      for (const member of members()) if (ids.has(bridge.companyUserId(member.id))) publish('notification', null, member.id);
+    },
+    productivityOverview(req, kind, query = {}) {
+      const auth = session(req); assert(auth, 401, '회사 계정으로 로그인해 주세요.');
+      const service = collaboration.productivity;
+      assert(['workday', 'catchUp', 'decisions'].includes(kind), 400, '확인할 업무 범위를 선택해 주세요.');
+      return service[kind](auth.user.id, kind === 'decisions' ? new URLSearchParams(query) : query);
+    },
     assistantDirectory(req, { include, query = '', completed = false } = {}) {
       const auth = session(req); assert(auth, 401, '회사 계정으로 로그인해 주세요.');
       const channels = channelsFor(auth.user.id).map(channel => ({ id: channel.id, name: channel.name, kind: channel.kind, scope: channel.scope }));

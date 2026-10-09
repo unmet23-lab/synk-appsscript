@@ -1,5 +1,5 @@
 {
-  "note": "미니게임 목소리 배역 제안(2026-10-07, tools/미니게임_목소리.cjs가 읽는다). 해설(서현)·바람(혜리)은 유호님이 고른 목소리이고 나머지는 제안이다 — 화면에서 공식 미리듣기와 샘플을 듣고 「이 목소리로 바꾸기」로 고른다. 후보는 Typecast ssfm-v30 한국어 목록 359개 가운데 공식 미리듣기의 말소리가 한국어로 받아 적힌 목소리(237개 — 영어 105·일본어 13·중국어 2·기타 2개 미리듣기는 뺌)에서, 성별은 지금 게임과 같게 두고, 미리듣기에서 잰 음높이·밝기·억양 폭·빠르기와 쓰임새(애니·게임·교육·오디오북 등)·미리듣기 말투로 골랐다. 목록의 나이 칸은 모두 young_adult라 아이·노인 배역은 음높이·빠르기·쓰임새로 고른 것이다. 측정은 귀로 듣는 판단을 대신하지 않는다. 빠르기(tempo)는 지금 파이프라인이 느리게 읽히던 곳(레이싱 rate -1, 이야기 교실 -3~-10%, 리듬·말 랠리 -6~-8%, 입장 검사 「초급이 알아듣게 느긋하게」, 주문 폭주 rate -1)은 0.92(조금 느리게), 그대로였던 바람길(rate 0)은 1.0, 말 랠리 안내는 4.5초 한도가 있어 0.94. 감정은 모두 normal(배역의 색은 목소리 고르기로 낸다).",
+  "note": "미니게임 목소리 배역 제안(2026-10-07, tools/미니게임_목소리.cjs가 읽는다). 해설(서현)·바람(혜리)은 유호님이 고른 목소리이고 나머지는 제안이다 — 화면에서 공식 미리듣기와 샘플을 듣고 「이 목소리로 바꾸기」로 고른다. 후보는 Typecast ssfm-v30 한국어 목록 359개 가운데 공식 미리듣기의 말소리가 한국어로 받아 적힌 목소리(237개 — 영어 105·일본어 13·중국어 2·기타 2개 미리듣기는 뺌)에서, 성별은 지금 게임과 같게 두고, 미리듣기에서 잰 음높이·밝기·억양 폭·빠르기와 쓰임새(애니·게임·교육·오디오북 등)·미리듣기 말투로 골랐다. 목록의 나이 칸은 모두 young_adult라 아이·노인 배역은 음높이·빠르기·쓰임새로 고른 것이다. 측정은 귀로 듣는 판단을 대신하지 않는다. 빠르기(tempo)는 지금 파이프라인이 느리게 읽히던 곳(레이싱 rate -1, 이야기 교실 -3~-10%, 리듬·말 랠리 -6~-8%, 입장 검사 「초급이 알아듣게 느긋하게」, 주문 폭주 rate -1)은 0.92(조금 느리게), 그대로였던 바람길(rate 0)은 1.0, 말 랠리 안내는 4.5초 한도가 있어 0.94. 감정은 모두 normal(배역의 색은 목소리 고르기로 낸다). 10-09 해설은 하나·소진 가운데 게임마다 한 명(games), 칭찬·위로·놀람·이야기 줄만 감정 smart(lines, tools/미니게임_목소리_연출.cjs) — 나머지 배역·줄은 지금처럼 normal.",
   "model": "ssfm-v30",
   "language": "kor",
   "defaults": {
@@ -15,7 +15,7 @@
     "narrator": {
       "label": "해설",
       "gender": "female",
-      "fixed": "유호님이 고른 차분한 설명 목소리(10-03 「혜리랑 우리가 고른 서현이 제일 낫네」)",
+      "fixed": "유호님이 고른 하나·소진(10-09 「한 컨텐츠당 하나 OR 소진, 두 명을 섞어 쓰지 말고」) — 게임마다 한 명(games), 줄마다 보통/감정은 Claude 판단(lines의 smart, tools/미니게임_목소리_연출.cjs)",
       "usedIn": [
         "레이싱 전부",
         "입장 검사 안내",
@@ -23,31 +23,31 @@
         "이야기 교실 해설",
         "말 랠리 안내"
       ],
-      "character": "차분하고 또박또박한 설명",
+      "character": "밝고 상큼한 해설 — 칭찬·위로·놀람·이야기 장면만 감정, 뜻을 전하는 줄은 보통",
       "voice": {
-        "id": "tc_69f2e455ea79fd197aa0476f",
-        "name": "서현",
-        "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
-        "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
-        "why": "유호님이 고른 설명 목소리 — 낮고 차분하다"
+        "id": "tc_666a9871abcf27a5169850d0",
+        "name": "소진",
+        "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
+        "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
+        "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
       },
       "alternates": [
         {
-          "id": "tc_68ddea1e462b169ddd20b74d",
-          "name": "이현",
-          "preview": "https://static2.typecast.ai/c/251002_leehyun/leehyun_mixdown.mp3",
-          "measure": "음높이 211Hz · 밝기 782Hz · 억양 폭 10.3반음 · 빠르기 4.88 · 교육·대화",
-          "why": "교육·대화용 — 「여러분은 이 그림을 보시면…」 설명하는 말투, 조금 느리다"
+          "id": "tc_61659cc118732016a95fe7c6",
+          "name": "하나",
+          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+          "measure": "음높이 281Hz · 밝기 1433Hz · 억양 폭 17반음 · 빠르기 5.08 · 숏폼",
+          "why": "억양 폭이 가장 넓은 상큼한 목소리, 읽는 속도는 느긋하다"
         },
         {
-          "id": "tc_6731b2b2478a48710ecc9158",
-          "name": "진희",
-          "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142448_6731b2b2478a48710ecc9158_SSFM-V3_0.mp3",
-          "measure": "음높이 225Hz · 밝기 925Hz · 억양 폭 10.5반음 · 빠르기 4.45 · 아나운서·뉴스",
-          "why": "아나운서·뉴스용 — 느리고 또렷하다"
+          "id": "tc_69f2e455ea79fd197aa0476f",
+          "name": "서현",
+          "preview": "https://static2.typecast.ai/c/260430_seohyeon/seohyeon_mixdown.mp3",
+          "measure": "음높이 157Hz · 밝기 673Hz · 억양 폭 11.2반음 · 빠르기 5.19 · 아나운서·대화",
+          "why": "10-09까지의 해설 — 유호님 「힘 빠지는 목소리」로 하나·소진으로 바꿈"
         }
       ],
-      "why": "학습 게임의 문제·안내를 맡는다. 말 랠리 안내는 옛 판에서 몽글과 헷갈리지 않게 남성 목소리였는데 이번에는 해설(서현)로 맞췄다 — 몽글과 다른 목소리라 시험(narration.test)의 「몽글과 다른 목소리」는 지킨다. 귀로 들어 보고 남성이 낫다면 games[\"talk-rally\"].narrator에 voice를 둔다."
+      "why": "10-09 유호님 「목소리가 힘 빠지는 목소리야. 다른 애로 바꿔, 상큼한 애로」 → 견본·게임 문장 들어 보기 → 「하나 또는 소진」. 게임마다 한 목소리: 레이싱 소진(달리는 게임이라 빨리 읽는 쪽 — 낱말 2,000개·풀이가 흐름을 붙잡지 않는다) · 이야기 교실 소진(이야기꾼(오디오북) 목소리 — 몽글(선하)보다 높아 해설과 몽글이 갈린다) · 말 랠리 소진(안내 4.5초 한도에 여유가 있고, 몽글(선하)과 음높이가 갈린다) · 입장 검사 하나(읽는 게임이라 느긋하게(초급) — 손님 사고 이야기에 억양 폭이 산다) · 말의 리듬 하나(듣고 뜻을 가리는 문장이라 느긋하고 또렷하게). 다른 게임은 기본값 소진."
     },
     "wind": {
       "label": "바람",
@@ -633,9 +633,386 @@
     },
     "talk-rally": {
       "narrator": {
-        "tempo": 0.94
+        "tempo": 0.94,
+        "voice": {
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        }
+      }
+    },
+    "korean-racing": {
+      "narrator": {
+        "voice": {
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        }
+      }
+    },
+    "story-classroom": {
+      "narrator": {
+        "voice": {
+          "id": "tc_666a9871abcf27a5169850d0",
+          "name": "소진"
+        }
+      }
+    },
+    "entry-check": {
+      "narrator": {
+        "voice": {
+          "id": "tc_61659cc118732016a95fe7c6",
+          "name": "하나"
+        }
+      }
+    },
+    "korean-rhythm": {
+      "narrator": {
+        "voice": {
+          "id": "tc_61659cc118732016a95fe7c6",
+          "name": "하나"
+        }
       }
     }
   },
-  "lines": {}
+  "lines": {
+    "korean-racing/intro": {
+      "emotion": "smart",
+      "previousText": "레이스가 시작됐어요.",
+      "nextText": ""
+    },
+    "korean-racing/correct": {
+      "emotion": "smart",
+      "previousText": "고른 길에 정답이 있었어요.",
+      "nextText": ""
+    },
+    "korean-racing/boost": {
+      "emotion": "smart",
+      "previousText": "정답을 맞혀서 차가 빨라져요.",
+      "nextText": ""
+    },
+    "korean-racing/retry": {
+      "emotion": "smart",
+      "previousText": "이번 문제는 틀렸어요. 정답을 알려 줬어요.",
+      "nextText": ""
+    },
+    "korean-racing/finish": {
+      "emotion": "smart",
+      "previousText": "결승선을 지나 레이스를 끝까지 달렸어요.",
+      "nextText": ""
+    },
+    "korean-racing/shield-ready": {
+      "emotion": "smart",
+      "previousText": "세 문제를 이어서 맞혔어요.",
+      "nextText": ""
+    },
+    "korean-racing/shield-block": {
+      "emotion": "smart",
+      "previousText": "장애물에 부딪혔는데 보호막이 막아 줬어요.",
+      "nextText": ""
+    },
+    "korean-racing/garage-earned": {
+      "emotion": "smart",
+      "previousText": "오늘의 레이스를 마치고 보상을 받았어요.",
+      "nextText": ""
+    },
+    "korean-racing/garage-wish": {
+      "emotion": "smart",
+      "previousText": "레이스를 끝까지 달려 완주 보상을 받았어요.",
+      "nextText": ""
+    },
+    "korean-racing/mission-complete": {
+      "emotion": "smart",
+      "previousText": "오늘의 미션을 해냈어요.",
+      "nextText": ""
+    },
+    "korean-racing/finale-unlock": {
+      "emotion": "smart",
+      "previousText": "결승전을 통과했어요.",
+      "nextText": ""
+    },
+    "korean-racing/tutorial-welcome": {
+      "emotion": "smart",
+      "previousText": "레이싱을 처음 하는 친구가 들어왔어요.",
+      "nextText": ""
+    },
+    "korean-racing/tutorial-right": {
+      "emotion": "smart",
+      "previousText": "왼쪽으로 잘 움직였어요.",
+      "nextText": ""
+    },
+    "korean-racing/tutorial-retry": {
+      "emotion": "smart",
+      "previousText": "사과가 아닌 다른 길로 갔어요.",
+      "nextText": ""
+    },
+    "korean-racing/tutorial-correct": {
+      "emotion": "smart",
+      "previousText": "사과 쪽으로 가서 정답을 맞혔어요.",
+      "nextText": ""
+    },
+    "korean-racing/tutorial-finish": {
+      "emotion": "smart",
+      "previousText": "연습을 모두 마쳤어요.",
+      "nextText": ""
+    },
+    "talk-rally/intro": {
+      "emotion": "smart",
+      "previousText": "말 랠리를 시작해요.",
+      "nextText": "안녕하세요?"
+    },
+    "talk-rally/practice-done": {
+      "emotion": "smart",
+      "previousText": "연습 랠리를 마쳤어요.",
+      "nextText": ""
+    },
+    "talk-rally/daily-best": {
+      "emotion": "smart",
+      "previousText": "하루 도전이 끝났어요. 지금까지 가운데 가장 높은 기록이에요.",
+      "nextText": ""
+    },
+    "talk-rally/result-3": {
+      "emotion": "smart",
+      "previousText": "랠리가 끝났어요. 공을 하나도 놓치지 않았어요.",
+      "nextText": ""
+    },
+    "talk-rally/result-2": {
+      "emotion": "smart",
+      "previousText": "랠리가 끝났어요. 공을 거의 다 받아쳤어요.",
+      "nextText": ""
+    },
+    "talk-rally/result-1": {
+      "emotion": "smart",
+      "previousText": "랠리가 끝났어요. 공을 몇 개 놓쳤어요.",
+      "nextText": ""
+    },
+    "talk-rally/result-0": {
+      "emotion": "smart",
+      "previousText": "랠리가 끝났어요. 공을 거의 받아치지 못했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-tut-guest": {
+      "emotion": "smart",
+      "previousText": "오늘 첫 근무를 시작했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-tut-why": {
+      "emotion": "smart",
+      "previousText": "보리 씨를 통과시켰고, 맞는 판단이었어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-tut-tray": {
+      "emotion": "smart",
+      "previousText": "다음 손님 구리 씨가 짐을 보여 줬어요.",
+      "nextText": "안내문의 두 번째 규칙을 봐요. 음식은 가지고 들어갈 수 없어요."
+    },
+    "entry-check/nar-tut-why2": {
+      "emotion": "smart",
+      "previousText": "구리 씨를 거절하고 알맞은 이유를 골랐어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-memo": {
+      "emotion": "smart",
+      "previousText": "근무하는 중에 새 알림이 도착했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-result-3": {
+      "emotion": "smart",
+      "previousText": "근무가 끝났어요. 놓친 손님이 한 명도 없어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-result-2": {
+      "emotion": "smart",
+      "previousText": "근무가 끝났어요. 거의 모든 손님을 바르게 맞이했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-result-1": {
+      "emotion": "smart",
+      "previousText": "근무가 끝났어요. 몇 명은 놓쳤어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-result-0": {
+      "emotion": "smart",
+      "previousText": "근무가 끝났어요. 놓친 손님이 많았어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-01": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “안녕하세요! 수영하러 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-02": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “점심은 수영장 안에서 먹을 거예요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-03": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “물은 가지고 가도 되지요?” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-04": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “모자는 집에 두고 왔어요. 그냥 들어가도 되지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-05": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “아빠는 주차장에 있어요. 저 먼저 들어갈게요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-06": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “저 혼자 왔어요. 아홉 살이에요!” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-07": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “물만 가지고 왔어요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-pool-08": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “아이와 같이 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-01": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “책을 돌려주러 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-02": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “카드는 집에 있어요. 오늘만 그냥 들어가면 안 돼요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-03": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “커피는 뚜껑을 꼭 닫았어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-04": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “커피 한 잔만 들고 갈게요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-05": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “이 카드도 되지요? 제 카드예요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-06": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “배가 고파서 김밥을 샀어요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-07": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “이 카드는 언니 거예요. 괜찮지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-08": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “숙제할 책을 빌리고 싶어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-library-09": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “잠깐이면 돼요. 책만 빌릴게요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-01": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “사진은 안 찍을게요. 휴대폰만 있어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-02": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “바다 그림을 꼭 찍고 싶어요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-03": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “저는 중학생이에요. 어린이 표로 샀어요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-04": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “할머니는 무료지요?” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-05": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “저도 할아버지인데, 무료지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-06": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “엄마가 표를 사 줬어요!” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-07": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “카메라는 가방에 넣을게요. 안 찍으면 되지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-museum-08": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “전시를 보러 왔어요. 아직 괜찮지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-01": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “어제 비가 와서 오늘 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-02": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “의자에 앉아서 보고 싶어요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-03": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “오늘 음악회 맞지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-04": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “과자 먹으면서 들을 거예요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-05": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “김밥 도시락을 싸 왔어요.” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-06": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “물 한 병만 가지고 왔어요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-07": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “언니는 다음 버스로 와요. 먼저 들어갈게요!” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-08": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “아이랑 돗자리에 앉아서 볼게요.” 규칙을 다 지킨 손님인데 거절했어요.",
+      "nextText": ""
+    },
+    "entry-check/nar-oops-concert-09": {
+      "emotion": "smart",
+      "previousText": "손님이 말했어요. “아주 작은 의자예요. 괜찮지요?” 규칙을 어긴 손님인데 그냥 들여보냈어요.",
+      "nextText": ""
+    },
+    "story-classroom/dialogue-opening-01": {
+      "emotion": "smart",
+      "previousText": "",
+      "nextText": "어? 복도에서 발소리가 들려! 누가 오는 걸까?"
+    },
+    "story-classroom/dialogue-clue-outro-01": {
+      "emotion": "smart",
+      "previousText": "어? 서랍에 편지가 있어! 누가 쓴 걸까?",
+      "nextText": "어머… 오늘이 내 생일인 걸 어떻게 알았어?"
+    }
+  }
 }

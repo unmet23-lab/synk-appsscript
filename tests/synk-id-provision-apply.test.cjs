@@ -1,6 +1,7 @@
 'use strict';
 const { test } = require('node:test'), assert = require('node:assert/strict');
 const { provision } = require('../tools/synk-id/provision.cjs');
+const { createProvider } = require('../tools/synk-id/provision-apply.cjs');
 const { canonicalMap, digest, clientName } = require('../tools/synk-id/provision-plan.cjs');
 const { CLIENTS } = require('../tools/synk-id/registry.cjs');
 const clone = value => JSON.parse(JSON.stringify(value));
@@ -142,4 +143,42 @@ test('existing Fortune and unrelated mapping source order survive the full workf
   await provision({ ...f.options(), apply: true, existingMapping: original, bindings });
   assert.deepEqual(Object.entries(f.mapping).slice(0, Object.keys(original).length), Object.entries(original));
   assert.equal(f.calls.create.length, 15); assert.equal(f.calls.create.some(row => /fortune/.test(row.client_name)), false);
+});
+
+async function updateProviderFixture(t, apply) {
+  const original = process.env.SUPABASE_PROJECT_REF;
+  t.after(() => { if (original === undefined) delete process.env.SUPABASE_PROJECT_REF; else process.env.SUPABASE_PROJECT_REF = original; });
+  const managementCalls = [], requests = [];
+  const credentials = { 운영REF: 'synthetic', 리허설REF: 'syntheticpreview', 읽기: () => ({ SUPABASE_PROJECT_REF: process.env.SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN: 'fixture-only' }) };
+  const provider = await createProvider({ environment: 'production', apply }, { credentials,
+    management: async (ref, suffix) => { managementCalls.push({ ref, suffix }); return Response.json([{ type: 'secret', api_key: 'fixture-admin-only' }]); },
+    fetcher: async (url, init) => { requests.push({ url, init }); return Response.json({ client_id: 'existing-client_1', ...JSON.parse(init.body) }); },
+  });
+  return { provider, managementCalls, requests };
+}
+
+test('read-only provider rejects OAuth updates before obtaining admin credentials or sending requests', async t => {
+  const f = await updateProviderFixture(t, false);
+  await assert.rejects(f.provider.updateClient('existing-client_1', { redirect_uris: ['https://example.com/callback'] }), /읽기 전용/);
+  assert.deepEqual(f.managementCalls, []); assert.deepEqual(f.requests, []);
+});
+
+test('OAuth update rejects invalid client IDs before any admin credential lookup or request', async t => {
+  const f = await updateProviderFixture(t, true);
+  for (const id of ['', null, 123, 'a'.repeat(257), '../other', 'client/other', 'client?admin=1', '%2Fother', '클라이언트']) {
+    await assert.rejects(f.provider.updateClient(id, {}), /클라이언트 ID/);
+  }
+  assert.deepEqual(f.managementCalls, []); assert.deepEqual(f.requests, []);
+});
+
+test('OAuth update sends one authenticated PUT to the exact client and preserves its callback body', async t => {
+  const f = await updateProviderFixture(t, true), body = { redirect_uris: ['http://127.0.0.1:4191/api/synk-id/callback', 'https://workspace.synk.im/api/synk-id/callback'] };
+  const result = await f.provider.updateClient('existing-client_1', body);
+  assert.deepEqual(f.managementCalls, [{ ref: 'synthetic', suffix: '/api-keys?reveal=true' }]);
+  assert.equal(f.requests.length, 1);
+  const { url, init } = f.requests[0];
+  assert.equal(url, 'https://synthetic.supabase.co/auth/v1/admin/oauth/clients/existing-client_1');
+  assert.equal(init.method, 'PUT'); assert.equal(init.redirect, 'error');
+  assert.equal(init.headers.apikey, 'fixture-admin-only'); assert.equal(init.headers.Authorization, 'Bearer fixture-admin-only');
+  assert.deepEqual(JSON.parse(init.body), body); assert.deepEqual(result, { client_id: 'existing-client_1', ...body });
 });

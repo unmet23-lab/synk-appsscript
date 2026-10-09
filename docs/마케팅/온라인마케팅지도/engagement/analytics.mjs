@@ -6,14 +6,15 @@ export const METRICS = [
 ];
 export function shiftDate(date, offset) {
   const value = new Date(date + 'T00:00:00Z');
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(value.getTime())||value.toISOString().slice(0,10)!==date)throw Object.assign(new Error('실제 달력 날짜를 선택해 주세요.'),{status:400});
   value.setUTCDate(value.getUTCDate() + offset);
   return value.toISOString().slice(0, 10);
 }
 export function dateRange(start, end) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end) || start > end) throw new Error('집계 시작일과 종료일을 확인해 주세요.');
-  if ([start, end].some(date => !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) throw new Error('실제 달력 날짜를 선택해 주세요.');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start) || !/^\d{4}-\d{2}-\d{2}$/.test(end) || start > end) throw Object.assign(new Error('집계 시작일과 종료일을 확인해 주세요.'),{status:400});
+  if ([start, end].some(date => !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date)) throw Object.assign(new Error('실제 달력 날짜를 선택해 주세요.'),{status:400});
   const days = Math.round((Date.parse(end) - Date.parse(start)) / 86400000) + 1;
-  if (!Number.isFinite(days) || days < 1 || days > 366) throw new Error('집계 기간은 최대 366일로 선택해 주세요.');
+  if (!Number.isFinite(days) || days < 1 || days > 366) throw Object.assign(new Error('집계 기간은 최대 366일로 선택해 주세요.'),{status:400});
   return Array.from({ length: days }, (_, i) => shiftDate(start, i));
 }
 const known = value => typeof value === 'number' && Number.isFinite(value);

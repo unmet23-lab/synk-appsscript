@@ -97,13 +97,13 @@ test('eleven added confirmations keep authored facts, correct rule, explanation 
     assert.doesNotMatch(item.why, /오개념|숙달|급수|약점/);
   }
   const library = byVenue('library'), museum = byVenue('museum'), concert = byVenue('concert');
-  assert.match(find(library, 'library-10').why, /나래 씨 이름의 도서관 카드/);
+  assert.match(find(library, 'library-10').why, /나래 씨 이름이 적힌 도서관 카드/);
   assert.match(find(library, 'library-11').why, /음료는 뚜껑이 있으면/);
   assert.match(find(museum, 'museum-09').why, /휴대폰은 괜찮.*카메라가 없/);
   assert.match(find(museum, 'museum-10').why, /카메라는 가지고 들어갈 수 없.*카메라가 있어/);
   assert.match(find(museum, 'museum-11').why, /13살 이하.*21살.*어른 표/);
   assert.match(find(concert, 'concert-10').why, /10일로 바뀌었지만.*9일 표/);
-  assert.match(find(concert, 'concert-12').why, /9일.*허용.*10일로 바뀐/);
+  assert.match(find(concert, 'concert-12').why, /9일 표.*10일로 바뀌었지만.*9일 표도 된다/);
   assert.match(find(concert, 'concert-13').why, /6시 25분.*6시 30분.*과자도 음식/);
   assert.match(find(concert, 'concert-14').why, /7살 이하.*7살.*엄마와 함께/);
   const added = pairs.map(([venueId, , to]) => find(byVenue(venueId), to));

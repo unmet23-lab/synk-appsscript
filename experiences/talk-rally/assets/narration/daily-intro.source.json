@@ -1,8 +1,8 @@
 {
-  "sourceKey": "d6b64d047f9a244b303458e6b3df7672",
-  "text": "하루 도전이에요. 오늘은 모두 같은 열두 번이에요.",
-  "voice": "서현",
-  "voiceId": "tc_69f2e455ea79fd197aa0476f",
+  "sourceKey": "6233454a420fd6f258db7b7bc0515184",
+  "text": "하루 도전! 오늘은 모두 같은 공 열두 개예요.",
+  "voice": "소진",
+  "voiceId": "tc_666a9871abcf27a5169850d0",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "normal",

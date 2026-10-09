@@ -6,12 +6,13 @@ function resetWorkroom({clearStorage=false}={}){
   wrCancelDailyPoll();
   if(typeof crReset==='function')crReset();
   if(typeof makerToolsReset==='function')makerToolsReset();
+  if(typeof clientDeskReset==='function')clientDeskReset();
   if(clearStorage&&wr.userId)try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}
   Object.assign(wr,{userId:null,guide:null,content:null,loading:false,attempted:false,error:'',request:wr.request+1,view:'desk',phase:'plan',series:'synkbrief-use',platform:'all',limit:8,daily:null,dailyDate:'',dailyRegion:'KR',dailyPlatform:'all',dailyLoading:false,dailyPollFetching:false,dailyAttempted:false,dailyError:'',dailyRequest:wr.dailyRequest+1,dailyActionRequest:wr.dailyActionRequest+1,dailyPlanRequest:wr.dailyPlanRequest+1,dailyCollecting:false,dailySaving:false,dailyLimits:new Map(),dailyPollTimer:null,dailyPollUntil:0,dailyFetchedAt:0,dailyLoadedDay:''});
 }
 function wrIdentity(){
   if(!state.user)return;
-  if(wr.userId!==state.user.id){resetWorkroom();wr.userId=state.user.id;const params=new URLSearchParams(location.search);if(state.tab==='workroom'&&['desk','trends','tools','practice','pages'].includes(params.get('section')))wr.view=params.get('section');if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['publish','subtitles','sources'].includes(params.get('tool')))makerTools.view=params.get('tool');try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
+  if(wr.userId!==state.user.id){resetWorkroom();wr.userId=state.user.id;const params=new URLSearchParams(location.search);if(state.tab==='workroom'&&['desk','trends','tools','practice','pages','clients'].includes(params.get('section')))wr.view=params.get('section');if(wr.view==='tools'&&typeof makerTools!=='undefined'&&['publish','subtitles','sources','brand','quality'].includes(params.get('tool')))makerTools.view=params.get('tool');try{sessionStorage.removeItem(wrReviewKey(wr.userId));}catch{}}
 }
 function ensureWorkroom(){
   if(!state.user)return;wrIdentity();
@@ -19,6 +20,7 @@ function ensureWorkroom(){
   wrEnsureDaily();
   if(typeof crEnsure==='function')crEnsure();
   if(typeof makerToolsEnsure==='function')makerToolsEnsure();
+  if(typeof clientDeskEnsure==='function')clientDeskEnsure();
   if(typeof wpEnsure==='function'&&wr.view==='practice')void wpEnsure();
 }
 async function loadWorkroom(){
@@ -35,7 +37,7 @@ const wrButton=(label,action,attrs='',classes='')=>button(label,'workroom-'+acti
 const wrExternal=(label,url)=>`<a class="btn small quiet" href="${escape(safeUrl(url))}" target="_blank" rel="noopener noreferrer">${escape(label)}${icon('external')}</a>`;
 function contentWorkroomPage(){
   wrIdentity();
-  return `<div class="wr-workroom">${['tools','practice'].includes(wr.view)?'':pageHeading('','내 작업실','제작 기준과 참고 자료를 확인하고, 관리하는 페이지를 이어가세요.')}${wr.error&&!['trends','tools','practice'].includes(wr.view)?`<div class="wr-error" role="alert">${escape(wr.error)} ${wrButton('다시 불러오기','refresh','','small')}</div>`:''}${wr.view==='practice'?wpPanel():wr.view==='tools'?makerToolsPanel():wr.view==='pages'?wrPages():wr.view==='trends'?wrTrends():!wr.guide?`<section class="wr-loading" role="status"><span class="loading-line"></span><p>${wr.loading?'제작 자료를 꺼내고 있어요.':'제작 자료를 불러옵니다.'}</p>${!wr.loading&&wr.attempted&&!wr.error?wrButton('다시 불러오기','refresh','','small'):''}</section>`:wrDesk()}</div>`;
+  return `<div class="wr-workroom">${['tools','practice','clients'].includes(wr.view)?'':pageHeading('','내 작업실','제작 기준과 참고 자료를 확인하고, 관리하는 페이지를 이어가세요.')}${wr.error&&!['trends','tools','practice'].includes(wr.view)?`<div class="wr-error" role="alert">${escape(wr.error)} ${wrButton('다시 불러오기','refresh','','small')}</div>`:''}${wr.view==='clients'?clientDeskPanel():wr.view==='practice'?wpPanel():wr.view==='tools'?makerToolsPanel():wr.view==='pages'?wrPages():wr.view==='trends'?wrTrends():!wr.guide?`<section class="wr-loading" role="status"><span class="loading-line"></span><p>${wr.loading?'제작 자료를 꺼내고 있어요.':'제작 자료를 불러옵니다.'}</p>${!wr.loading&&wr.attempted&&!wr.error?wrButton('다시 불러오기','refresh','','small'):''}</section>`:wrDesk()}</div>`;
 }
 function wrDesk(){
   const guide=wr.guide,series=guide.series.find(row=>row.id===wr.series)||guide.series[0],tips=guide.tips.filter(tip=>tip.phase===wr.phase),sources=(guide.sources||[]).filter(source=>tips.some(tip=>tip.source===source.id));
@@ -189,7 +191,7 @@ async function wrCopy(){
 document.addEventListener('click',async event=>{
   const target=event.target.closest?.('[data-action^="workroom-"]');if(!target||target.disabled||!state.user)return;const action=target.dataset.action.slice(9);
   try{
-    if(action==='view'&&['desk','trends','tools','practice','pages'].includes(target.dataset.tab)){wr.view=target.dataset.tab;wr.dailyPlanRequest++;render();window.scrollTo(0,0);}
+    if(action==='view'&&['desk','trends','tools','practice','pages','clients'].includes(target.dataset.tab)){wr.view=target.dataset.tab;wr.dailyPlanRequest++;render();window.scrollTo(0,0);}
     else if(action==='daily-region'&&['KR','US','CN'].includes(target.dataset.id)){wr.dailyRegion=target.dataset.id;wr.dailyPlatform='all';wr.dailyLimits.clear();wr.dailyPlanRequest++;render();}
     else if(action==='daily-more'){wr.dailyLimits.set(target.dataset.id,(wr.dailyLimits.get(target.dataset.id)||10)+20);render();}
     else if(action==='daily-refresh')await wrLoadDaily();

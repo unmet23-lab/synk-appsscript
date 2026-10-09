@@ -7,13 +7,13 @@ import { DatabaseSync } from 'node:sqlite';
 import { createServer } from 'node:http';
 import { createMessenger } from '../server.mjs';
 
-async function fixture(t) {
+async function fixture(t, { backgroundJobsEnabled = true, workNotificationsEnabled } = {}) {
   const dir = await mkdtemp(join(tmpdir(), 'synk-collaboration-'));
   const driveStorage = { active: async () => null, status: async () => ({ provider: 'local' }) };
   let app, url;
-  async function start() { app = createMessenger({ dataDir: dir, port: 0, driveStorage }); url = (await app.listen()).url; }
+  async function start() { app = createMessenger({ dataDir: dir, port: 0, driveStorage, backgroundJobsEnabled, workNotificationsEnabled }); url = (await app.listen()).url; }
   await start();
-  const fx = { get db() { return app.db; }, get url() { return url; }, async restart(edit) { await app.close(); if (edit) { const db = new DatabaseSync(join(dir, 'messenger.sqlite')); try { db.exec('PRAGMA foreign_keys=ON'); edit(db); } finally { db.close(); } } await start(); } };
+  const fx = { get db() { return app.db; }, get url() { return url; }, async restart(edit, { backgroundJobsEnabled: nextEnabled = backgroundJobsEnabled } = {}) { await app.close(); backgroundJobsEnabled = nextEnabled; if (edit) { const db = new DatabaseSync(join(dir, 'messenger.sqlite')); try { db.exec('PRAGMA foreign_keys=ON'); edit(db); } finally { db.close(); } } await start(); } };
   function client() {
     let cookie = '';
     return { async request(path, method = 'GET', body, status = 200, extra = {}) {
@@ -79,7 +79,7 @@ test('tasks restrict assignments and changes, keep original message links and no
   const created = (await f.member.client.request(`/api/messages/${message.id}/task`, 'POST', { assigneeId: f.other.user.id, dueDate: '2026-10-02', title: '참고 자료 정리' }, 201)).task;
   assert.equal(created.canManage, true); assert.equal(created.messageId, message.id);
   const list = await f.other.client.request('/api/tasks?scope=mine'); assert.equal(list.tasks.length, 1); assert.equal(list.tasks[0].message.body, '자료 정리');
-  assert.equal((await f.other.client.request('/api/notifications')).items[0].kind, 'task');
+  assert.ok((await f.other.client.request('/api/notifications')).items.some(item => item.kind === 'task'), 'the assignment remains present when a due digest is newer');
   const changed = (await f.other.client.request(`/api/messages/${message.id}/task`, 'PATCH', { status: 'done' })).task; assert.equal(changed.status, 'done');
   assert.equal((await f.member.client.request('/api/notifications')).items[0].kind, 'task');
   const dm = (await f.owner.client.request('/api/dms', 'POST', { userId: f.member.user.id }, 201)).channel, secret = await f.send(f.owner, dm.id, '비공개 업무');
@@ -121,7 +121,7 @@ test('search combines author, inclusive KST dates, attachment type and privacy b
 });
 
 test('saved messages and reminders remain private, survive restart, catch up once and disappear with source deletion', async t => {
-  const f = await fixture(t), message = await f.send(f.owner, f.social, '나중에 확인');
+  const f = await fixture(t, { backgroundJobsEnabled: false, workNotificationsEnabled: true }), message = await f.send(f.owner, f.social, '나중에 확인');
   await f.member.client.request(`/api/messages/${message.id}/save`, 'POST', {});
   assert.equal((await f.member.client.request('/api/saved')).messages.length, 1); assert.equal((await f.other.client.request('/api/saved')).messages.length, 0);
   const reminder = (await f.member.client.request(`/api/messages/${message.id}/reminder`, 'PUT', { remindAt: new Date(Date.now() + 3600000).toISOString() })).reminder;
@@ -136,6 +136,31 @@ test('saved messages and reminders remain private, survive restart, catch up onc
   assert.equal((await f.member.client.request('/api/saved')).messages.length, 0);
   assert.equal((await f.member.client.request('/api/reminders')).reminders.length, 0);
   assert.equal((await f.member.client.request('/api/notifications')).items.length, 0);
+});
+
+test('paused reminders stay pending through startup, reads and restart; enabled restart delivers once', async t => {
+  const f = await fixture(t, { backgroundJobsEnabled: false });
+  const message = await f.send(f.owner, f.social, 'synthetic reminder');
+  const rejected = await f.member.client.request(`/api/messages/${message.id}/reminder`, 'PUT', { remindAt: new Date(Date.now() + 3600000).toISOString() }, 503);
+  assert.equal(rejected.code, 'SYNK_WORK_NOTIFICATIONS_PAUSED');
+  assert.equal(f.db.prepare('SELECT COUNT(*) n FROM message_reminders').get().n, 0, 'a paused service must not promise a new reminder');
+  const reminder = { id: 'synthetic-restored-reminder' };
+  await f.restart(db => db.prepare('INSERT INTO message_reminders(id,message_id,user_id,remind_at,created_at) VALUES(?,?,?,?,?)').run(reminder.id, message.id, f.member.user.id, '2020-01-01T00:00:00.000Z', '2019-12-31T00:00:00.000Z'));
+  const pending = () => f.db.prepare('SELECT delivered_at FROM message_reminders WHERE id=?').get(reminder.id).delivered_at;
+  assert.equal(pending(), null, 'startup must not catch up reminders');
+  assert.equal((await f.member.client.request('/api/notifications')).items.length, 0);
+  assert.equal((await f.member.client.request('/api/reminders')).reminders.length, 1);
+  assert.equal((await f.other.client.request('/api/reminders')).reminders.length, 0, 'private access checks remain active');
+  assert.equal(pending(), null, 'viewing notifications or reminders must not drain the queue');
+  await f.restart();
+  assert.equal(pending(), null);
+  const explicit = await f.send(f.owner, f.social, 'new explicit mention', { mentionIds: [f.member.user.id] });
+  assert.equal((await f.member.client.request('/api/notifications')).items[0].message.id, explicit.id, 'new user actions still notify recipients');
+  await f.restart(undefined, { backgroundJobsEnabled: true });
+  assert.ok(pending());
+  assert.equal((await f.member.client.request('/api/notifications')).items.filter(item => item.kind === 'reminder').length, 1);
+  await f.restart();
+  assert.equal((await f.member.client.request('/api/notifications')).items.filter(item => item.kind === 'reminder').length, 1);
 });
 
 test('company share authorization errors explain recovery without exposing external error text', async t => {

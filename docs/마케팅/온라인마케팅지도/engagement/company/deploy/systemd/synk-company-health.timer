@@ -1,0 +1,9 @@
+[Unit]
+Description=Check SYNK company readiness every minute
+PartOf=synk-company.service
+
+[Timer]
+OnActiveSec=2min
+OnUnitActiveSec=1min
+AccuracySec=10s
+Unit=synk-company-health.service

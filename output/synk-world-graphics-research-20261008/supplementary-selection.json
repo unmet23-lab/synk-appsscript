@@ -1,0 +1,185 @@
+{
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\catalog-union.json",
+  "catalogObservedAt": "2026-10-08T14:46:30.054Z",
+  "scope": "12 supplemental candidates excluding prior 18 3D and 21 tactile/pixel entries",
+  "warning": "Search review metrics may be language-specific; not comparable to all-language API summary rates. Rationale is a selection hypothesis, not new verification.",
+  "notFoundInLocalCatalog": [
+    "FANTASY LIFE i",
+    "Slime Rancher 2",
+    "Petit Island"
+  ],
+  "rows": [
+    {
+      "appid": 2418520,
+      "name": "Farm Together 2",
+      "url": "https://store.steampowered.com/app/2418520/",
+      "releaseLabel": "May 30, 2025",
+      "searchTags": [
+        "Life Sim",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 2019,
+      "searchPositivePct": 93,
+      "whyInclude": "생활 생산과 공동 농장 꾸미기, 최신작에서 넓은 농장·여러 캐릭터의 시각적 정돈을 비교할 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2508780,
+      "name": "STORY OF SEASONS: Grand Bazaar",
+      "url": "https://store.steampowered.com/app/2508780/",
+      "releaseLabel": "Aug 27, 2025",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 1343,
+      "searchPositivePct": 95,
+      "whyInclude": "2025년 출시 생활·농장 검증작. 작은 인물과 장터·일상 상호작용의 가독성을 비교할 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2209900,
+      "name": "Moonlight Peaks",
+      "url": "https://store.steampowered.com/app/2209900/",
+      "releaseLabel": "Jul 6, 2026",
+      "searchTags": [
+        "Life Sim",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 1858,
+      "searchPositivePct": 88,
+      "whyInclude": "2026년 최신작. 판타지 정체성·외형 꾸미기·생활 공간의 결합을 추가 확인할 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2016460,
+      "name": "Tales of the Shire: A The Lord of The Rings™ Game",
+      "url": "https://store.steampowered.com/app/2016460/",
+      "releaseLabel": "Jul 29, 2025",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 2515,
+      "searchPositivePct": 81,
+      "whyInclude": "유명 세계관을 생활 콘텐츠로 옮긴 사례. 손맛·따뜻함과 그래픽 호감이 전체평가로 이어지는지 비교할 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2966320,
+      "name": "Starsand Island",
+      "url": "https://store.steampowered.com/app/2966320/",
+      "releaseLabel": "Aug 18, 2026",
+      "searchTags": [
+        "Life Sim",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 2809,
+      "searchPositivePct": 81,
+      "whyInclude": "2026년 최신 3D 섬 생활 후보. 스타일·복장·주거 꾸미기의 상한 비교에 높은 관련성",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 3146520,
+      "name": "WEBFISHING",
+      "url": "https://store.steampowered.com/app/3146520/",
+      "releaseLabel": "Oct 11, 2024",
+      "searchTags": [
+        "Cozy"
+      ],
+      "searchReviewCount": 50081,
+      "searchPositivePct": 97,
+      "whyInclude": "카탈로그상 5만여 리뷰·97% 긍정. 가벼운 동물 아바타와 소셜 활동이 고사양 표현 없이 호응하는지 비교할 핵심 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 1896700,
+      "name": "Wylde Flowers",
+      "url": "https://store.steampowered.com/app/1896700/",
+      "releaseLabel": "Sep 20, 2022",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 1705,
+      "searchPositivePct": 96,
+      "whyInclude": "생활·코지·농장 세 태그 교집합과 96% 긍정. 휴대폰 중심 콘텐츠 설계·착장 관계를 별도 확인할 후보",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2839280,
+      "name": "Natsu-Mon: 20th Century Summer Kid",
+      "url": "https://store.steampowered.com/app/2839280/",
+      "releaseLabel": "Jun 26, 2024",
+      "searchTags": [
+        "Life Sim",
+        "Cozy"
+      ],
+      "searchReviewCount": 176,
+      "searchPositivePct": 95,
+      "whyInclude": "작은 마을 자유 탐험과 인물 동작·따뜻한 여름 표현의 참고 후보. 코스튬보다 월드·생활 경험 보완",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 1222670,
+      "name": "The Sims™ 4",
+      "url": "https://store.steampowered.com/app/1222670/",
+      "releaseLabel": "Jun 18, 2020",
+      "searchTags": [
+        "Life Sim"
+      ],
+      "searchReviewCount": 107349,
+      "searchPositivePct": 86,
+      "whyInclude": "카탈로그상 10만여 리뷰의 대규모 생활 시뮬레이션 기준점. 모듈 의상·주거·행동 연계 비교에 필요",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2408820,
+      "name": "Luma Island",
+      "url": "https://store.steampowered.com/app/2408820/",
+      "releaseLabel": "Nov 20, 2024",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 3753,
+      "searchPositivePct": 90,
+      "whyInclude": "생활·모험과 섬 공간의 읽힘을 비교할 후보. 카탈로그 3753리뷰·90% 긍정으로 추가 검토 가치",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2918500,
+      "name": "Cozy Island",
+      "url": "https://store.steampowered.com/app/2918500/",
+      "releaseLabel": "Sep 21, 2025",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 2475,
+      "searchPositivePct": 92,
+      "whyInclude": "2025년 출시 섬 생활 후보. 작은 공간·귀여운 인물·휴대폰에 맞을 수 있는 표현 밀도를 검증할 가치",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    },
+    {
+      "appid": 2997840,
+      "name": "Animalkind",
+      "url": "https://store.steampowered.com/app/2997840/",
+      "releaseLabel": "Mar 30, 2026",
+      "searchTags": [
+        "Life Sim",
+        "Cozy",
+        "Farming Sim"
+      ],
+      "searchReviewCount": 68,
+      "searchPositivePct": 91,
+      "whyInclude": "2026년 신규 동물 생활 후보. SYNK 마스코트의 월드 사용과 직접 비교하기 좋지만 표본 68리뷰로 초기 반응만 확인",
+      "verificationStatus": "local catalog selection only; graphics, costume, mobile platforms not newly verified"
+    }
+  ]
+}

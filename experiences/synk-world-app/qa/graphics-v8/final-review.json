@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-08T23:45:01.6519714Z",
+  "VisualRevision": "environment-v8",
+  "Suites": [
+    {
+      "File": "experiences/synk-world-app/qa/graphics-v8/inspect.json",
+      "Passed": 62,
+      "Errors": 0,
+      "FailedChecks": 0
+    },
+    {
+      "File": "experiences/synk-world-app/qa/graphics-v8/regression.json",
+      "Passed": 26,
+      "Errors": 0,
+      "FailedChecks": 0
+    },
+    {
+      "File": "experiences/synk-world-home/qa/graphics-v8/river-home.json",
+      "Passed": 42,
+      "Errors": 0,
+      "FailedChecks": 0
+    },
+    {
+      "File": "experiences/synk-world-home/qa/graphics-v8/verification.json",
+      "Passed": 27,
+      "Errors": 0,
+      "FailedChecks": 0
+    },
+    {
+      "File": "experiences/synk-world-home/qa/river-life-v8/verification.json",
+      "Passed": 21,
+      "Errors": 0,
+      "FailedChecks": 0
+    },
+    {
+      "File": "experiences/synk-world-home/qa/finish-v8/verification.json",
+      "Passed": 16,
+      "Errors": 0,
+      "FailedChecks": 0
+    }
+  ],
+  "SourceHashMatch": true,
+  "AvatarSourcePreserved": true,
+  "V8LinksValid": true,
+  "PhysicalDevices": 0,
+  "PublicDeployment": false
+}

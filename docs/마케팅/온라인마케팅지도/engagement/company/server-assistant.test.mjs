@@ -8,6 +8,47 @@ import { createCompanyApp } from './server.mjs';
 import { Store } from './store.mjs';
 import { createMessenger } from '../../../../../tools/company-messenger/server.mjs';
 
+test('Marin opens authorized workday, decisions and recorded changes without acknowledging or changing work', async t => {
+  const f = await fixture(t), room = f.boot.admin.channels.find(c => c.systemKey === 'social');
+  const request = (await f.json('admin', `/messenger/api/channels/${room.id}/messages`, 'POST', { body: '합성 표지 작업 요청' }, 201)).message;
+  const task = (await f.json('admin', `/messenger/api/messages/${request.id}/task`, 'POST', { title: '표지 수정', assigneeId: f.boot.member.user.id, reviewerId: f.boot.admin.user.id, dueDate: '2099-01-01', stage: 'requested' }, 201)).task;
+  const workday = await f.ask('member', '오늘 처리할 일');
+  assert.equal(workday.intent, 'workday'); assert.equal(workday.data.counts.reply, 1);
+  assert.equal(workday.actions[0].panel, 'workday'); assert.match(workday.text, /표지 수정/);
+  assert.equal((await f.ask('admin', '내가 기다리는 일')).data.group, 'waiting');
+  const final = (await f.json('admin', `/messenger/api/channels/${room.id}/messages`, 'POST', { body: '검토한 표지 최종본' }, 201)).message;
+  await f.json('admin', '/messenger/api/decisions', 'POST', { messageId: request.id, summary: '표지 최종본 확정', kind: 'final', resultMessageId: final.id, effectiveDate: '2026-10-08', requestId: 'assistant-fixture-final' }, 201);
+  const found = await f.ask('member', '표지 최종본 찾아줘');
+  assert.equal(found.intent, 'decisions'); assert.equal(found.data.count, 1); assert.match(found.text, /표지 최종본 확정/);
+  assert.equal(found.actions[0].panel, 'decisions');
+  for (const question of ['최종 파일 어디 있어?', '최종본 어디 있나요?', '최종본 찾아주세요']) assert.equal((await f.ask('member', question)).data.count, 1);
+  const before = JSON.stringify(f.app.messenger.db.prepare('SELECT * FROM productivity_reads').all());
+  const recap = await f.ask('member', '자리 비운 동안 바뀐 것');
+  assert.equal(recap.intent, 'catchup'); assert.equal(recap.data.counts.requests, 1); assert.equal(recap.data.counts.decisions, 1);
+  assert.equal(recap.actions[0].panel, 'catchup'); assert.equal(recap.generative, false); assert.equal(recap.externalCalls, false);
+  assert.equal(JSON.stringify(f.app.messenger.db.prepare('SELECT * FROM productivity_reads').all()), before);
+  assert.equal(f.app.messenger.db.prepare('SELECT revision FROM message_tasks WHERE id=?').get(task.id).revision, task.revision);
+  const privateRoom = (await f.json('admin', '/messenger/api/channels', 'POST', { name: '비공개 확정', category: 'project' }, 201)).channel;
+  const secret = (await f.json('admin', `/messenger/api/channels/${privateRoom.id}/messages`, 'POST', { body: 'SECRET-DECISION-ONLY' }, 201)).message;
+  await f.json('admin', '/messenger/api/decisions', 'POST', { messageId: secret.id, summary: 'SECRET-DECISION-ONLY', effectiveDate: '2026-10-08' }, 201);
+  for (const question of ['확정된 결정 찾아줘', '자리 비운 동안 바뀐 것']) assert.doesNotMatch(JSON.stringify(await f.ask('member', question)), /SECRET-DECISION-ONLY/);
+  assert.equal(f.externalCalls, 0);
+});
+
+test('client workflow HTTP integration keeps owner projection, current permissions and CSRF checks', async t => {
+  const f = await fixture(t);
+  let project = (await f.json('admin', '/api/client-projects', 'POST', { title: '합성 고객 작업', customerName: '검증 고객', ownerId: f.users.member.id, reviewerId: f.users.admin.id, summary: '시안 확인', stage: 'received' }, 201)).project;
+  project = (await f.json('member', `/api/client-projects/${project.id}/versions`, 'POST', { revision: project.revision, kind: 'preview', label: '첫 시안', url: 'https://example.test/preview.mp4' })).project;
+  const items = (await f.json('member', '/api/client-workflow')).items;
+  assert.equal(items.length, 1); assert.equal(items[0].kind, 'customer_review'); assert.equal(items[0].group, 'waiting');
+  assert.equal((await f.json('peer', '/api/client-workflow')).items.length, 0);
+  assert.equal((await f.ask('member', '오늘 처리할 일')).data.customerCount, 1);
+  const forbidden = await f.raw('member', '/api/client-workflow', 'POST', { projectId: project.id, revision: project.revision, action: 'complete', messageId: 'invalid' }, { 'X-CSRF-Token': 'wrong' });
+  assert.equal(forbidden.status, 403);
+  f.app.store.put('users', f.users.member.id, { ...f.users.member, active: false });
+  assert.equal((await f.raw('member', '/api/client-workflow')).status, 401);
+});
+
 async function fixture(t) {
   const directory = await mkdtemp(join(tmpdir(), 'synk-assistant-'));
   let externalCalls = 0;
@@ -142,7 +183,13 @@ test('assistant validates input, CSRF, current login and a session revoked while
   await f.json('member', '/api/assistant', 'POST', { message: '내 성과' }, 403, { 'X-CSRF-Token': 'bad' });
   await f.json('member', '/api/assistant', 'POST', { message: '내 성과' }, 403, { Origin: 'https://invalid.example' });
   await f.json('member', '/api/assistant', 'POST', { message: '내 성과' }, 403, { Cookie: '' });
-  const payload = Buffer.from(JSON.stringify({ message: '내 성과' })), entered = new Promise(resolve => f.app.server.once('request', resolve));
+  const payload = Buffer.from(JSON.stringify({ message: '내 성과' }));
+  // Wait until authenticated body consumption, not merely the HTTP request event:
+  // identity validation may yield before the body parser is entered.
+  const entered = new Promise(resolve => f.app.server.once('request', incoming => {
+    const iterator = incoming.iterator.bind(incoming);
+    incoming.iterator = (...args) => { resolve(); return iterator(...args); };
+  }));
   let req;
   const pending = new Promise((resolve, reject) => { req = httpRequest(f.base + '/api/assistant', { method: 'POST', headers: { ...f.headers('member'), 'Content-Type': 'application/json', 'Content-Length': payload.length } }, res => { let text = ''; res.on('data', chunk => { text += chunk; }); res.on('end', () => resolve({ status: res.statusCode, body: JSON.parse(text) })); }); req.on('error', reject); req.write(payload.subarray(0, 6)); });
   await entered; f.app.store.revokeUser(f.users.member.id); req.end(payload.subarray(6)); const refused = await pending; assert.equal(refused.status, 401); assert.equal(refused.body.data, undefined);

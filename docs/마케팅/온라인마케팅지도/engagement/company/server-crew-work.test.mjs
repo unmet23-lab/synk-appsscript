@@ -100,7 +100,13 @@ test('a revoked session or changed role while the POST body is arriving cannot s
     const bytes = Buffer.from(JSON.stringify(body)); let request;
     const entered = new Promise(resolve => f.app.server.once('request', resolve));
     const response = new Promise((resolve, reject) => { request = httpRequest(f.base() + path, { method: 'POST', headers: { ...f.headers(key), 'Content-Length': bytes.length } }, result => { let text = ''; result.on('data', chunk => text += chunk); result.on('end', () => resolve({ status: result.statusCode, body: JSON.parse(text) })); }); request.on('error', reject); request.write(bytes.subarray(0, 4)); });
-    await entered; mutate(); request.end(bytes.subarray(4)); return response;
+    const incoming = await entered;
+    // Central identity validation may await before the body reader starts.
+    // Revoke only after that reader is waiting for the unfinished JSON body.
+    const deadline = Date.now() + 3000;
+    while (!incoming.listenerCount('readable') && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 5));
+    assert.ok(incoming.listenerCount('readable'), 'request body reader started');
+    mutate(); request.end(bytes.subarray(4)); return response;
   }
   const changed = await delayed('manager', '/api/crew-work/evaluate', { requiredSkills: ['planning'], memberIds: [f.users.member.id], minAvailableHours: 2 }, () => f.app.store.put('users', f.users.manager.id, { ...f.users.manager, role: 'member' }));
   assert.equal(changed.status, 403); assert.equal(changed.body.selected, undefined);

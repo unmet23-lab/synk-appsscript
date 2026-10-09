@@ -1,0 +1,218 @@
+{
+  "schemaVersion": 1,
+  "version": "mongle-v4-20261009",
+  "createdAt": "2026-10-08T20:39:36.031Z",
+  "productionApproved": false,
+  "rigged": false,
+  "nativeImportVerified": false,
+  "runtime": "avatar-v3.mjs",
+  "runtimeMaterialRevision": 4,
+  "staticCandidate": "scene-assets/graphics-v4/mongle-v4.glb",
+  "editableImport": "scene-assets/graphics-v4/mongle-v4.blend",
+  "coordinates": {
+    "glb": {
+      "front": "+Z",
+      "up": "+Y",
+      "origin": "feet"
+    },
+    "blend": "Standard Blender glTF importer coordinate conversion; Blender Z up"
+  },
+  "bodyBounds": {
+    "width": 1.8004822731018066,
+    "height": 1.8342324290424585,
+    "depth": 1.609148919582367
+  },
+  "slots": {
+    "neck": "mongle-scarf-first-steps",
+    "body": "mongle-apron-starter"
+  },
+  "exportedOutfit": "scarf-apron",
+  "attributes": [
+    "POSITION",
+    "NORMAL",
+    "TEXCOORD_0",
+    "COLOR_0"
+  ],
+  "materialFeatures": [
+    "sRGB base colour",
+    "tangent-space normal map and scalar normal scale",
+    "shared AO-R / roughness-G packed properties",
+    "per-texture KHR_texture_transform",
+    "KHR_materials_sheen",
+    "KHR_materials_clearcoat",
+    "KHR_materials_specular",
+    "KHR_materials_unlit"
+  ],
+  "uvConvention": "Geometry UV unchanged; texture.flipY baked into image rows; no additional normal Y inversion",
+  "validation": {
+    "gltfLoader": {
+      "passed": 82,
+      "checks": [
+        "material 0 retains base colour",
+        "material 0 retains tangent normal scale",
+        "material 0 retains roughness texture",
+        "material 0 retains occlusion strength",
+        "material 0 retains sheen",
+        "material 0 shares AO-R and roughness-G image",
+        "material 0 map retains texture transform",
+        "material 0 normalMap retains texture transform",
+        "material 0 roughnessMap retains texture transform",
+        "material 0 aoMap retains texture transform",
+        "material 1 retains base colour",
+        "material 1 retains eye specular intensity",
+        "material 1 retains clearcoat",
+        "material 2 retains base colour",
+        "material 3 retains base colour",
+        "material 4 retains base colour",
+        "material 4 retains tangent normal scale",
+        "material 4 retains roughness texture",
+        "material 4 retains occlusion strength",
+        "material 4 retains sheen",
+        "material 4 shares AO-R and roughness-G image",
+        "material 4 map retains texture transform",
+        "material 4 normalMap retains texture transform",
+        "material 4 roughnessMap retains texture transform",
+        "material 4 aoMap retains texture transform",
+        "material 5 retains base colour",
+        "material 5 retains tangent normal scale",
+        "material 5 retains roughness texture",
+        "material 5 retains occlusion strength",
+        "material 5 retains sheen",
+        "material 5 shares AO-R and roughness-G image",
+        "material 5 map retains texture transform",
+        "material 5 normalMap retains texture transform",
+        "material 5 roughnessMap retains texture transform",
+        "material 5 aoMap retains texture transform",
+        "material 6 retains base colour",
+        "material 6 retains tangent normal scale",
+        "material 6 retains roughness texture",
+        "material 6 retains occlusion strength",
+        "material 6 retains sheen",
+        "material 6 shares AO-R and roughness-G image",
+        "material 6 map retains texture transform",
+        "material 6 normalMap retains texture transform",
+        "material 6 roughnessMap retains texture transform",
+        "material 6 aoMap retains texture transform",
+        "material 7 retains base colour",
+        "material 8 retains base colour",
+        "material 8 retains tangent normal scale",
+        "material 8 retains roughness texture",
+        "material 8 retains occlusion strength",
+        "material 8 retains sheen",
+        "material 8 shares AO-R and roughness-G image",
+        "material 8 map retains texture transform",
+        "material 8 normalMap retains texture transform",
+        "material 8 roughnessMap retains texture transform",
+        "material 8 aoMap retains texture transform",
+        "material 9 retains base colour",
+        "material 9 retains tangent normal scale",
+        "material 9 retains roughness texture",
+        "material 9 retains occlusion strength",
+        "material 9 retains sheen",
+        "material 9 shares AO-R and roughness-G image",
+        "material 9 map retains texture transform",
+        "material 9 normalMap retains texture transform",
+        "material 9 roughnessMap retains texture transform",
+        "material 9 aoMap retains texture transform",
+        "material 10 retains base colour",
+        "base-surface-0 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "base-surface-1 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "base-surface-2 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "base-surface-3 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "neck-surface-4 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "neck-surface-5 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "neck-surface-6 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "body-surface-7 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "body-surface-8 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "body-surface-9 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "body-surface-10 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "body-surface-11 retains POSITION/NORMAL/TEXCOORD_0/COLOR_0",
+        "combined outfit retains contact shading vertices",
+        "body and neck remain independently addressable nodes",
+        "same-light render is close to the runtime material result"
+      ],
+      "vertices": 27252,
+      "colouredVertices": 6267,
+      "imageDifference": {
+        "meanAbsoluteRgbError": 0.7646446759259259,
+        "pixelsAboveMean5": 7023,
+        "totalPixels": 288000,
+        "maxChannelDifference": 54
+      },
+      "loader": "Existing experiences/korean-racing/vendor/GLTFLoader.js",
+      "loaderSha256": "6851a68b2c32cd98162948d11be66b5ac2027a96a3923e67457826eff1c5e715"
+    },
+    "blender": {
+      "version": "5.2.1 LTS",
+      "meshes": 12,
+      "images": 9,
+      "triangles": 44940,
+      "vertexColorMeshes": 12,
+      "uvMeshes": 12,
+      "scope": "GLB import, embedded textures, material nodes, colour attributes, UVs and editable file only; not Unity rendering or device performance"
+    },
+    "physicalDevice": false,
+    "nativeUnity": false
+  },
+  "files": [
+    {
+      "path": "avatar-v3.mjs",
+      "bytes": 15038,
+      "sha256": "1474c6a57ec2d3a694fa30122a3909856f01c66c4b1ebf514abdc98eef776cf7"
+    },
+    {
+      "path": "avatar-textiles.mjs",
+      "bytes": 5492,
+      "sha256": "9e7a37e0d8624ed28409c5d61ea3349aaeec0f5001df07be6bc3c74539c885ed"
+    },
+    {
+      "path": "assets/felt-coral.webp",
+      "bytes": 54754,
+      "sha256": "a71048dab9e47aa4646985c3baa17c8055cbad0c70bb826537b0a6e31a9f04b1"
+    },
+    {
+      "path": "scene-assets/graphics-v4/mongle-v4.glb",
+      "bytes": 3684424,
+      "sha256": "770b5651d13eacbfa41f3222f9db95fd9935761f5feaeca6992e026124a56732"
+    },
+    {
+      "path": "scene-assets/graphics-v4/mongle-v4.blend",
+      "bytes": 3240845,
+      "sha256": "f1a6ba30f1a2ac70942136de06fb3f8073c31adf881f0358b59a059cfb42d6dc"
+    },
+    {
+      "path": "scene-assets/graphics-v4/mongle-v4.export.json",
+      "bytes": 13411,
+      "sha256": "782cab4766e0b01005aac23c6e0cf62318ecf7725a85ff0121f39f3619f9daaf"
+    },
+    {
+      "path": "qa/graphics-v4-export/export-avatar.mjs",
+      "bytes": 11311,
+      "sha256": "6dcbd87b19aad83bd3a06bf864c77ad33656f3051c818d780bd7b16b4a19617a"
+    },
+    {
+      "path": "qa/graphics-v4-export/roundtrip.mjs",
+      "bytes": 6552,
+      "sha256": "d0e6ec6c2f281bf7e20144dd2181b2a624cfb305616edbbd99f4318c16979b98"
+    },
+    {
+      "path": "qa/graphics-v4-export/roundtrip.png",
+      "bytes": 392532,
+      "sha256": "002a18a83af3ed2f98179525e2dc78fc594e541af18b9237e67886cd1b2f13ef"
+    },
+    {
+      "path": "qa/graphics-v4-export/blender-import.json",
+      "bytes": 3096,
+      "sha256": "390de19f6e4c78846948a1de7478896075272f13e757bd56efda8a347a28a076"
+    }
+  ],
+  "limitations": [
+    "Static candidate with no bones or animations",
+    "Runtime subpixel short nap line segments are omitted",
+    "Body COLOR_0 contains contact tint for the combined scarf-apron outfit; runtime recomputes this when equipment changes",
+    "Runtime per-material envMapIntensity has no standard glTF equivalent and requires native lighting tuning",
+    "Blender/GLTFLoader import does not verify Unity URP rendering"
+  ],
+  "newImageGeneration": false,
+  "newDownload": false
+}

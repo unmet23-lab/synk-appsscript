@@ -1,130 +1,130 @@
 {
   "storyVersion": "classroom-birthday-2",
-  "textVersion": "classroom-birthday-2-voice-1",
+  "textVersion": "classroom-birthday-2-voice-2",
   "sourceHashes": {
-    "story.mjs": "6c139b949559b73cd5d2eeda9263988ef1cb53af1246fea7ffe1febbbae13aa6",
-    "voice-lines.mjs": "4d0d7d77b6132107ab44ba96b6382124e5ee291d763eab01735c195bca6c0fb3"
+    "story.mjs": "89e28577e35dc51bf7cfc59d9d428a86e7b151a136e84f460d2b49f4de942ad7",
+    "voice-lines.mjs": "47fd26eb6aca5e0f966b7e828c65441c24efd034d0cf4898e830d96898116ea7"
   },
-  "generatedAt": "2026-10-07T11:21:44.672Z",
+  "generatedAt": "2026-10-09T08:42:04.637Z",
   "humanRecording": false,
   "normalization": "ffmpeg loudnorm I=-18 TP=-2.5 LRA=7; mono 24 kHz MP3 96 kbps",
   "lines": [
     {
       "id": "dialogue-opening-01",
       "speaker": "narrator",
-      "text": "쉬는 시간이 끝났어요. 교실에는 과자와 종이가 가득해요.",
+      "text": "쉬는 시간이 끝났어요. 그런데 교실이 엉망이에요. 과자와 종이가 여기저기 있어요.",
       "category": "narration",
       "assistanceMissionIds": [],
       "phase": "opening",
       "actId": null,
       "index": 0,
       "file": "assets/voice/dialogue-opening-01.mp3",
-      "sha256": "384f042080418aa29f419f21e022763d3e1752d1d79cd9ffa1722da26a45d6b0",
-      "bytes": 66284,
-      "durationSeconds": 5.446,
-      "peakDbfs": -3.11,
-      "rmsDbfs": -19.4
+      "sha256": "3879f020b6a0f1b3f427d37f027696db6828f92d7994ff8e5887c16fcc91779e",
+      "bytes": 79244,
+      "durationSeconds": 6.506,
+      "peakDbfs": -2.56,
+      "rmsDbfs": -20.76
     },
     {
       "id": "dialogue-opening-02",
       "speaker": "mongle",
-      "text": "어? 문밖에서 발소리가 나! 누구지?",
+      "text": "어? 복도에서 발소리가 들려! 누가 오는 걸까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
       "actId": null,
       "index": 1,
       "file": "assets/voice/dialogue-opening-02.mp3",
-      "sha256": "45fcd989314ee20425bdd50a0be41989e3ae4ec870995a69a616f8e5889504d5",
-      "bytes": 53324,
-      "durationSeconds": 4.347,
-      "peakDbfs": -2.95,
-      "rmsDbfs": -19.49
+      "sha256": "90a46c3d185c0e7ebbca77f2cfecd56af6822d0260b57e0f5e310ddef2655c29",
+      "bytes": 54764,
+      "durationSeconds": 4.487,
+      "peakDbfs": -2.99,
+      "rmsDbfs": -19.1
     },
     {
       "id": "dialogue-opening-03",
       "speaker": "kkamong",
-      "text": "이 몸이 다 정리할 수 있지. 선생님만 안 오시면…",
+      "text": "이 몸이 금방 치울 수 있어. …그런데 발소리가 점점 가까워지는데?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
       "actId": null,
       "index": 2,
       "file": "assets/voice/dialogue-opening-03.mp3",
-      "sha256": "1576114770548983c9149e4e73bf2768e000176962b61968f7c33983d70619d6",
-      "bytes": 60812,
-      "durationSeconds": 4.974,
-      "peakDbfs": -2.92,
-      "rmsDbfs": -19.84
+      "sha256": "c6734df2dbe6e87799c4a40b1dca68a05713604cafac14eef32ab5207eb0c079",
+      "bytes": 68012,
+      "durationSeconds": 5.586,
+      "peakDbfs": -2.97,
+      "rmsDbfs": -19.77
     },
     {
       "id": "dialogue-opening-04",
       "speaker": "teacher",
-      "text": "이게 다 뭐야!",
+      "text": "어머나, 교실이 왜 이렇게 됐어?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
       "actId": null,
       "index": 3,
       "file": "assets/voice/dialogue-opening-04.mp3",
-      "sha256": "79816009633a542d815030c30f95c916dce2e8feb39eb7e491277c7eaa6242b9",
-      "bytes": 27692,
-      "durationSeconds": 2.21,
-      "peakDbfs": -2.7,
-      "rmsDbfs": -22.01
+      "sha256": "9849c8cfc06d12437fc689d436971cf881b6f0e58cb94613e4eb79903180e326",
+      "bytes": 42380,
+      "durationSeconds": 3.451,
+      "peakDbfs": -2.67,
+      "rmsDbfs": -18.75
     },
     {
       "id": "dialogue-opening-05",
       "speaker": "marin",
-      "text": "상황 보고. 선생님 도착. 정리 필요.",
+      "text": "상황 보고. 선생님 도착. 교실 상태, 엉망. …정리를 시작한다.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
       "actId": null,
       "index": 4,
       "file": "assets/voice/dialogue-opening-05.mp3",
-      "sha256": "dbbd0ab0364e93f45164fdf6a73009f583d5769e1fcfa8cce558d39279604490",
-      "bytes": 55628,
-      "durationSeconds": 4.54,
-      "peakDbfs": -2.95,
-      "rmsDbfs": -18.53
+      "sha256": "25d020d5fc9ec7daedfa022623c6fffd2adbd359eefa99734b65a4e01fe360ef",
+      "bytes": 89036,
+      "durationSeconds": 7.323,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -18.33
     },
     {
       "id": "dialogue-cleanup-intro-01",
       "speaker": "teacher",
-      "text": "마린, 까몽. 먼저 교실을 정리하자.",
+      "text": "마린, 까몽! 수업 전에 교실부터 정리하자.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "cleanup",
       "index": 0,
       "file": "assets/voice/dialogue-cleanup-intro-01.mp3",
-      "sha256": "0aec1cb87b8186fb5f27d6d155ae1a6a6c865c497802da9b428e02aa3c218863",
-      "bytes": 55628,
-      "durationSeconds": 4.544,
-      "peakDbfs": -3.01,
-      "rmsDbfs": -19.67
+      "sha256": "865effe850bc8e5ba4d793486c6120de8aafdecc37e106fb1f0616035b4efe62",
+      "bytes": 56204,
+      "durationSeconds": 4.597,
+      "peakDbfs": -3.2,
+      "rmsDbfs": -19.59
     },
     {
       "id": "dialogue-cleanup-intro-02",
       "speaker": "mongle",
-      "text": "어? 이 종이에 글자가 있어! 버려도 되는 걸까?",
+      "text": "어? 이 종이에 뭐가 쓰여 있어! 이것도 버려야 해?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "cleanup",
       "index": 1,
       "file": "assets/voice/dialogue-cleanup-intro-02.mp3",
-      "sha256": "849179ea13286a5e0bd8cece952eb5b9db41afc930a7ae8a7074bbd07ebe3bbb",
-      "bytes": 58220,
-      "durationSeconds": 4.766,
-      "peakDbfs": -3.11,
-      "rmsDbfs": -19.18
+      "sha256": "04b20e8aab7f39f6204f7a87a4750b17b50dee93f716ed2fa8d0fc219a672035",
+      "bytes": 63692,
+      "durationSeconds": 5.219,
+      "peakDbfs": -3.65,
+      "rmsDbfs": -18.99
     },
     {
       "id": "dialogue-cleanup-intro-03",
       "speaker": "teacher",
-      "text": "그 종이는 오늘 쓸 장식이야. 버리면 안 돼.",
+      "text": "아니, 그 종이는 버리면 안 돼. 오늘 쓸 장식이거든.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -133,80 +133,80 @@
       "actId": "cleanup",
       "index": 2,
       "file": "assets/voice/dialogue-cleanup-intro-03.mp3",
-      "sha256": "19cd6ea506306b5acf2f6aefa54a4c42f4cd064cad39b4e6ca413d5581ca4b00",
-      "bytes": 57068,
-      "durationSeconds": 4.672,
-      "peakDbfs": -2.9,
-      "rmsDbfs": -19.34
+      "sha256": "d04cb05444679f5e2865b8af2f58968a16d9a66b24ecab4afe6abb3a102c5471",
+      "bytes": 61964,
+      "durationSeconds": 5.067,
+      "peakDbfs": -5.33,
+      "rmsDbfs": -19.44
     },
     {
       "id": "dialogue-cleanup-outro-01",
       "speaker": "kkamong",
-      "text": "이 몸의 정리 실력, 봤지? …종이도 안 구겼어.",
+      "text": "봤지? 이 몸이 치우니까 금방이잖아. …종이도 하나도 안 구겼어.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "cleanup",
       "index": 0,
       "file": "assets/voice/dialogue-cleanup-outro-01.mp3",
-      "sha256": "b54fd9dd11e1b46864aa1d39cb4b0676bc70f955221abb58bde9f97d7a2be491",
-      "bytes": 62828,
-      "durationSeconds": 5.138,
-      "peakDbfs": -2.92,
-      "rmsDbfs": -19.73
+      "sha256": "e45eeb58a58ea89ce63b025a97fb0858dbdb0b834a41f413ee3ddbf8857a40dc",
+      "bytes": 74924,
+      "durationSeconds": 6.157,
+      "peakDbfs": -2.91,
+      "rmsDbfs": -19.7
     },
     {
       "id": "dialogue-cleanup-outro-02",
       "speaker": "marin",
-      "text": "정리 완료. 종이 보관. …하트 모양 발견.",
+      "text": "정리 완료. 종이 보관. …종이에서 하트 모양 발견.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "cleanup",
       "index": 1,
       "file": "assets/voice/dialogue-cleanup-outro-02.mp3",
-      "sha256": "c8e03ac5fee6499db0f82f1711f1a2f3877c5bc2017b343909d454ac08ab57f9",
-      "bytes": 55916,
-      "durationSeconds": 4.565,
-      "peakDbfs": -3.5,
-      "rmsDbfs": -18.63
+      "sha256": "997f008dfea477ab264edb0f09eb3d6fd3e6f2d061a2c64a4c1a275e3fc8f339",
+      "bytes": 70028,
+      "durationSeconds": 5.755,
+      "peakDbfs": -2.94,
+      "rmsDbfs": -18.21
     },
     {
       "id": "dialogue-cleanup-outro-03",
       "speaker": "mongle",
-      "text": "오! 하트도 별도 있어! 누가 만들었을까?",
+      "text": "우와! 하트랑 별이야! 누가 이걸 만들었을까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "cleanup",
       "index": 2,
       "file": "assets/voice/dialogue-cleanup-outro-03.mp3",
-      "sha256": "71fe7ac533495d1a03de5bc33dc11fe00f68a04735d4571e820599f7e3837f24",
-      "bytes": 59084,
-      "durationSeconds": 4.828,
-      "peakDbfs": -4.17,
-      "rmsDbfs": -19.82
+      "sha256": "c374dcdee255ada313c4e7ee64aec3f49b1e8a281a03d5cd9332c210c1e004de",
+      "bytes": 57068,
+      "durationSeconds": 4.678,
+      "peakDbfs": -3.19,
+      "rmsDbfs": -19.61
     },
     {
       "id": "dialogue-clue-intro-01",
       "speaker": "teacher",
-      "text": "꽃도 있네? 이건 어디에 둘까?",
+      "text": "어머, 꽃도 있네? 이 꽃은 어디에 둘까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "clue",
       "index": 0,
       "file": "assets/voice/dialogue-clue-intro-01.mp3",
-      "sha256": "673198c10f81ae7f30e57d24b875d103213ce0d5368bd4b89ade63abfd54e434",
-      "bytes": 41228,
-      "durationSeconds": 3.343,
-      "peakDbfs": -2.93,
-      "rmsDbfs": -18.58
+      "sha256": "52ab19955f77420685f593673d2c31c0fe04c9002bbbcad83769a1e1b09db82b",
+      "bytes": 53324,
+      "durationSeconds": 4.368,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -18.64
     },
     {
       "id": "dialogue-clue-intro-02",
       "speaker": "marin",
-      "text": "꽃 확인. 세 송이. …예쁘다.",
+      "text": "꽃 확인. 세 송이. 상태 양호. …예쁘다.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -215,112 +215,112 @@
       "actId": "clue",
       "index": 1,
       "file": "assets/voice/dialogue-clue-intro-02.mp3",
-      "sha256": "6ea215f15725158698cbb4e6832f05f539110ff1f723074212f8030cb0678eb7",
-      "bytes": 51308,
-      "durationSeconds": 4.186,
-      "peakDbfs": -2.83,
-      "rmsDbfs": -19.17
+      "sha256": "2f797b2ae0f43639020fd50df462f297d6940001eb176ac1c27ebe55eeacf037",
+      "bytes": 58508,
+      "durationSeconds": 4.799,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -18.83
     },
     {
       "id": "dialogue-clue-intro-03",
       "speaker": "mongle",
-      "text": "어? 편지도 있어! 누가 썼을까?",
+      "text": "어? 서랍에 편지가 있어! 누가 쓴 걸까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "clue",
       "index": 2,
       "file": "assets/voice/dialogue-clue-intro-03.mp3",
-      "sha256": "61a3f00a3b4c4784a114be2413fe3d2a70f7ad134a7a12aacb82535c24dd33f8",
-      "bytes": 51308,
-      "durationSeconds": 4.19,
-      "peakDbfs": -2.7,
-      "rmsDbfs": -19.54
+      "sha256": "5de70455b6b591dfb588ea24562dcc442bb5542f52307e627c09f9239b995463",
+      "bytes": 55916,
+      "durationSeconds": 4.572,
+      "peakDbfs": -2.88,
+      "rmsDbfs": -19.11
     },
     {
       "id": "dialogue-clue-outro-01",
       "speaker": "narrator",
-      "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!”라고 쓰여 있어요.",
+      "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!” 하고 쓰여 있어요.",
       "category": "narration",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "clue",
       "index": 0,
       "file": "assets/voice/dialogue-clue-outro-01.mp3",
-      "sha256": "84bdcee2238c615818d64847a70b0c3e83356be88a6102cab5ba12a661225dac",
-      "bytes": 61676,
-      "durationSeconds": 5.046,
-      "peakDbfs": -3.6,
-      "rmsDbfs": -19.32
+      "sha256": "0e1d0eb37c495158f90ab4d80696b3a75e406ddd8b66f73c6d5ddf103f5c33d0",
+      "bytes": 61964,
+      "durationSeconds": 5.07,
+      "peakDbfs": -2.86,
+      "rmsDbfs": -20.06
     },
     {
       "id": "dialogue-clue-outro-02",
       "speaker": "teacher",
-      "text": "오늘 내 생일인 걸 어떻게 알았니?",
+      "text": "어머… 오늘이 내 생일인 걸 어떻게 알았어?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "clue",
       "index": 1,
       "file": "assets/voice/dialogue-clue-outro-02.mp3",
-      "sha256": "7b3e0d6057db3709f32b73707504a1e304936ef9ffe0e681a45db19d9697a0dd",
-      "bytes": 41804,
-      "durationSeconds": 3.399,
-      "peakDbfs": -2.78,
-      "rmsDbfs": -18.31
+      "sha256": "efb466cbe833f7094b0d831ac9e09421eb24a882ae854767da1045c5b5618d6c",
+      "bytes": 53900,
+      "durationSeconds": 4.408,
+      "peakDbfs": -4.23,
+      "rmsDbfs": -19.11
     },
     {
       "id": "dialogue-clue-outro-03",
       "speaker": "kkamong",
-      "text": "내가 준비했지. …편지는 세 번 고쳐 썼어.",
+      "text": "내가 다 준비했지. …사실 편지는 세 번이나 다시 썼어.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "clue",
       "index": 2,
       "file": "assets/voice/dialogue-clue-outro-03.mp3",
-      "sha256": "4548dd5527c12aa059634df3b8ce9d94662c906cc16a5973105d15e4655b9827",
-      "bytes": 56204,
-      "durationSeconds": 4.589,
-      "peakDbfs": -2.69,
-      "rmsDbfs": -19.54
+      "sha256": "0f922a7b11f5298849f50bf657fb9fd3281714a6da247b5f0bad0be70bbcfced",
+      "bytes": 68876,
+      "durationSeconds": 5.643,
+      "peakDbfs": -2.89,
+      "rmsDbfs": -20.62
     },
     {
       "id": "dialogue-surprise-intro-01",
       "speaker": "mongle",
-      "text": "우와! 깜짝 파티였구나! 같이 준비하자!",
+      "text": "우와! 깜짝 생일 파티였구나! 우리 같이 준비하자!",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "surprise",
       "index": 0,
       "file": "assets/voice/dialogue-surprise-intro-01.mp3",
-      "sha256": "e5caa74823d08a5f73d2adc9ab2e0ac210a5d5082873e852f3869a203cf129f5",
-      "bytes": 62252,
-      "durationSeconds": 5.109,
-      "peakDbfs": -3.81,
-      "rmsDbfs": -19.17
+      "sha256": "446d3aeef16043b8f238a9a5c329f900c5ecdff289c00eba3f8cef16c3af5557",
+      "bytes": 63404,
+      "durationSeconds": 5.187,
+      "peakDbfs": -3.82,
+      "rmsDbfs": -19
     },
     {
       "id": "dialogue-surprise-intro-02",
       "speaker": "teacher",
-      "text": "아직 케이크를 못 봤는데?",
+      "text": "그런데 케이크는 어디 있니?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
       "actId": "surprise",
       "index": 1,
       "file": "assets/voice/dialogue-surprise-intro-02.mp3",
-      "sha256": "3159040f792e8b4770c5d3570d0d3244b8370955353778eae587eaecf7ccf4c1",
-      "bytes": 32588,
-      "durationSeconds": 2.618,
-      "peakDbfs": -3.28,
-      "rmsDbfs": -19.96
+      "sha256": "50357a91a1e22db14372ec5767e57e73d17c8824813df375bac07b537ddb4e0f",
+      "bytes": 37196,
+      "durationSeconds": 3.005,
+      "peakDbfs": -3.57,
+      "rmsDbfs": -17.88
     },
     {
       "id": "dialogue-surprise-intro-03",
       "speaker": "kkamong",
-      "text": "내가 숨겨 뒀지. …조금 먹으려 했어, 아니, 잘 지켰어!",
+      "text": "케이크는 내가 숨겨 뒀지. …한 입만 먹으려다가, 아니, 잘 지켰어.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -329,198 +329,198 @@
       "actId": "surprise",
       "index": 2,
       "file": "assets/voice/dialogue-surprise-intro-03.mp3",
-      "sha256": "a96a556a614142bdf621aaf27f6f0b1992dd95b47cd56e7c318518e7c0670bf5",
-      "bytes": 64844,
-      "durationSeconds": 5.306,
-      "peakDbfs": -2.93,
-      "rmsDbfs": -19.61
+      "sha256": "13735e02a96efafad7a509638518fb18f286e90ce3fc06dd3210cff474f57978",
+      "bytes": 74348,
+      "durationSeconds": 6.108,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -19.51
     },
     {
       "id": "dialogue-surprise-outro-01",
       "speaker": "marin",
-      "text": "파티 준비 완료. …선생님, 생일 축하합니다.",
+      "text": "파티 준비 완료. 전원 확인. …선생님, 생일 축하합니다.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "surprise",
       "index": 0,
       "file": "assets/voice/dialogue-surprise-outro-01.mp3",
-      "sha256": "fb5f921612c5516f13d9e0430511b30f4fda4627779bd2e83510d3b37d75d868",
-      "bytes": 56204,
-      "durationSeconds": 4.595,
-      "peakDbfs": -2.86,
-      "rmsDbfs": -18.74
+      "sha256": "185f81c3e5c0e92581398abd479d3740104c0c6ee53b029e7639a47902d5c877",
+      "bytes": 75212,
+      "durationSeconds": 6.18,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -18.17
     },
     {
       "id": "dialogue-surprise-outro-02",
       "speaker": "mongle",
-      "text": "우와! 교실이 파티 장소가 됐어!",
+      "text": "우와! 우리 교실이 파티장이 됐어!",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
       "actId": "surprise",
       "index": 1,
       "file": "assets/voice/dialogue-surprise-outro-02.mp3",
-      "sha256": "894fb17d2d58fa88e6a006a3deb567da0dc86f500ed2f74bfe6e22229def54f0",
-      "bytes": 49868,
-      "durationSeconds": 4.071,
-      "peakDbfs": -3.07,
-      "rmsDbfs": -19.92
+      "sha256": "9221a260b34202821a0f36da186d09f8006431976b57b965df25f024d00f4392",
+      "bytes": 53324,
+      "durationSeconds": 4.351,
+      "peakDbfs": -4.72,
+      "rmsDbfs": -19.71
     },
     {
       "id": "dialogue-ending-01",
       "speaker": "teacher",
-      "text": "교실이 엉망인 줄 알았는데, 나를 위해 준비한 거였구나.",
+      "text": "교실이 엉망인 줄 알았는데… 다 나를 위한 거였구나. 정말 고마워.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
       "actId": null,
       "index": 0,
       "file": "assets/voice/dialogue-ending-01.mp3",
-      "sha256": "dc9961dea420462a8f7d0a176a28d904d812bb5951e642469080cb3adae72759",
-      "bytes": 61964,
-      "durationSeconds": 5.079,
-      "peakDbfs": -3.01,
-      "rmsDbfs": -19.38
+      "sha256": "3b7471c73e5ae01d0fa665913c3c0d77da1660df2902f618c9133a042d78919f",
+      "bytes": 69164,
+      "durationSeconds": 5.685,
+      "peakDbfs": -2.92,
+      "rmsDbfs": -19.51
     },
     {
       "id": "dialogue-ending-02",
       "speaker": "kkamong",
-      "text": "내 작전은 완벽했지. …네가 도와줘서 다행이야.",
+      "text": "훗, 이 몸의 작전이니까. …그래도 네가 도와줘서 다행이야.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
       "actId": null,
       "index": 1,
       "file": "assets/voice/dialogue-ending-02.mp3",
-      "sha256": "1f9b203ef1cebcd4c760dcffdc2a8b6b08ba40db14791c7204c6ba33f7c2af1d",
-      "bytes": 63980,
-      "durationSeconds": 5.253,
-      "peakDbfs": -2.98,
-      "rmsDbfs": -19.63
+      "sha256": "abd4c8bf58c9355872978b72ba502c0e571c6f1ef183a65be95d36b6808f2f9c",
+      "bytes": 63692,
+      "durationSeconds": 5.229,
+      "peakDbfs": -2.94,
+      "rmsDbfs": -19.12
     },
     {
       "id": "dialogue-ending-03",
       "speaker": "mongle",
-      "text": "같이 하니까 더 재밌어! 다음 파티도 같이 할까?",
+      "text": "같이 하니까 더 신나! 다음 파티도 같이 준비할까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
       "actId": null,
       "index": 2,
       "file": "assets/voice/dialogue-ending-03.mp3",
-      "sha256": "6d1bec62f5f4d841394a066b742158aa84f113b338e14b12b37b3a1542cde058",
-      "bytes": 63404,
-      "durationSeconds": 5.199,
-      "peakDbfs": -3.18,
-      "rmsDbfs": -19.82
+      "sha256": "95a3abb8edf38901542ea20e345d2fc1ee39b7a3e2c487fba97ff661854d1d24",
+      "bytes": 60812,
+      "durationSeconds": 4.979,
+      "peakDbfs": -3.02,
+      "rmsDbfs": -19.59
     },
     {
       "id": "dialogue-ending-04",
       "speaker": "teacher",
-      "text": "이제 새 글을 읽고 마지막 정리를 해 보자. 이번에는 친구와 장소가 달라.",
+      "text": "파티가 끝나면 다시 치워야겠지? 이번에는 부탁이 조금 달라. 잘 읽어 봐.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
       "actId": null,
       "index": 3,
       "file": "assets/voice/dialogue-ending-04.mp3",
-      "sha256": "55d698f532139a8fa5c7ba4d55edc67a22e0b951f8e810d6f24ee86ff02b00b8",
-      "bytes": 81260,
-      "durationSeconds": 6.684,
-      "peakDbfs": -2.96,
-      "rmsDbfs": -18.67
+      "sha256": "caf5ec37898344a5bba3d1252c30fed631301718fa1e32d7590572e6042347d1",
+      "bytes": 77228,
+      "durationSeconds": 6.35,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -19.33
     },
     {
       "id": "feedback-unavailable-story",
       "speaker": "teacher",
-      "text": "먼저 이야기를 읽어 주세요.",
+      "text": "이야기를 먼저 읽어 볼까요?",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-unavailable-story.mp3",
-      "sha256": "58948c11c2c0d0599c594a46fffa785b54bf04fd3c5f1fe211497c9bdf6e53d3",
-      "bytes": 35756,
-      "durationSeconds": 2.885,
-      "peakDbfs": -3.03,
-      "rmsDbfs": -20.68
+      "sha256": "a3bef240039107f61fb5456013ff4c0d07a087e38089c4de6912893c94571fd0",
+      "bytes": 39212,
+      "durationSeconds": 3.19,
+      "peakDbfs": -2.82,
+      "rmsDbfs": -19.02
     },
     {
       "id": "feedback-invalid-destination",
       "speaker": "teacher",
-      "text": "물건을 놓을 곳을 골라 주세요.",
+      "text": "이 물건은 어디에 놓을까요? 놓을 곳을 눌러 주세요.",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-invalid-destination.mp3",
-      "sha256": "9db7411567c7c6d1419875f0771e506daad4e6a99855c61294331b42e35a4f0f",
-      "bytes": 36908,
-      "durationSeconds": 2.984,
-      "peakDbfs": -3.5,
-      "rmsDbfs": -19.71
+      "sha256": "ae27dc55e2e3165470739c3cf4d2e4d41905c059ddf09e179b8aa62352260b05",
+      "bytes": 58508,
+      "durationSeconds": 4.793,
+      "peakDbfs": -3.79,
+      "rmsDbfs": -19.1
     },
     {
       "id": "feedback-selection",
       "speaker": "teacher",
-      "text": "친구와 물건을 먼저 골라 주세요.",
+      "text": "누가 옮길지, 무엇을 옮길지 먼저 골라 주세요.",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-selection.mp3",
-      "sha256": "415cc731bfab5934a9c9149550ef42dce9aad9998f8c2bd7181dc601e9e2f190",
-      "bytes": 45260,
-      "durationSeconds": 3.684,
-      "peakDbfs": -2.94,
-      "rmsDbfs": -19.21
+      "sha256": "224f9cbfff9c4275b61d4c3f1657467f20bc1bf8c3776186f8ad90538da06e3d",
+      "bytes": 56780,
+      "durationSeconds": 4.634,
+      "peakDbfs": -2.92,
+      "rmsDbfs": -18.98
     },
     {
       "id": "feedback-extra-object",
       "speaker": "mongle",
-      "text": "어? 지금 글에는 이 물건이 없네! 맡은 일을 다시 같이 보자!",
+      "text": "어? 그건 부탁에 없는 물건이야! 부탁을 같이 다시 읽어 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-extra-object.mp3",
-      "sha256": "a70f142f9b31088dffa45e6117de1b87620e6d814f5087fe3ce2dc400204f2bb",
-      "bytes": 76652,
-      "durationSeconds": 6.292,
-      "peakDbfs": -3.1,
-      "rmsDbfs": -19.19
+      "sha256": "103fd24746a2ad9873f0576dd1eadb779cd337dc573b477c6fb011747b8b5366",
+      "bytes": 80396,
+      "durationSeconds": 6.623,
+      "peakDbfs": -2.97,
+      "rmsDbfs": -19.17
     },
     {
       "id": "feedback-help-unavailable",
       "speaker": "teacher",
-      "text": "이 막의 정리가 끝났어요.",
+      "text": "이 장면은 정리가 다 끝났어요.",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-help-unavailable.mp3",
-      "sha256": "8fff95289fe91db74aa736c01d99f7ede45dd6fe4a3a3f81a73965d1fd47433a",
-      "bytes": 38924,
-      "durationSeconds": 3.146,
-      "peakDbfs": -3,
-      "rmsDbfs": -18.63
+      "sha256": "f00d236667df7db34ac7b134890a4c24c6393afe87fcc5e39a7737cc0c6f3773",
+      "bytes": 38636,
+      "durationSeconds": 3.134,
+      "peakDbfs": -2.86,
+      "rmsDbfs": -18.32
     },
     {
       "id": "feedback-already-marin",
       "speaker": "marin",
-      "text": "확인. 이미 완료한 임무.",
+      "text": "확인. 그 임무는 이미 완료.",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-already-marin.mp3",
-      "sha256": "68d71528b281ce96f9bc189bc8ead9ef57551b864230c0a87ca99bed0c0fe8f9",
-      "bytes": 43532,
-      "durationSeconds": 3.539,
-      "peakDbfs": -2.93,
-      "rmsDbfs": -18.58
+      "sha256": "ab06ecdb62844ccb4c6219dfd813801b514f784dd00d3b3e21be72af915dfb99",
+      "bytes": 43820,
+      "durationSeconds": 3.559,
+      "peakDbfs": -2.92,
+      "rmsDbfs": -18.16
     },
     {
       "id": "feedback-already-kkamong",
       "speaker": "kkamong",
-      "text": "내가 벌써 해 놓았지.",
+      "text": "그건 이 몸이 벌써 끝냈지.",
       "category": "feedback",
       "assistanceMissionIds": [],
       "file": "assets/voice/feedback-already-kkamong.mp3",
-      "sha256": "3f0f42005b0d28ca47961adfe38ca683c53ef8a9d36335f117fdcaff1876ce06",
-      "bytes": 32588,
-      "durationSeconds": 2.62,
-      "peakDbfs": -2.98,
-      "rmsDbfs": -21.7
+      "sha256": "74153307c47fabd7daa9e21b2f327794d23ce07977a19d333932048647762abc",
+      "bytes": 42668,
+      "durationSeconds": 3.475,
+      "peakDbfs": -2.89,
+      "rmsDbfs": -20.09
     },
     {
       "id": "mission-cleanup-snacks",
@@ -542,7 +542,7 @@
     {
       "id": "help-cleanup-snacks",
       "speaker": "teacher",
-      "text": "과자를 옮기는 친구는 마린이에요. 과자가 갈 곳은 상자 안이에요.",
+      "text": "누가 옮겨요? 마린이에요. 과자를 어디에 넣어요? 상자 안이에요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -550,16 +550,16 @@
       "missionId": "cleanup-snacks",
       "mode": "story",
       "file": "assets/voice/help-cleanup-snacks.mp3",
-      "sha256": "3b854b61213a111f75358ad949b1e435d85a6801bf357cf8c6e3fdc1c8bc0c4e",
-      "bytes": 77804,
-      "durationSeconds": 6.404,
-      "peakDbfs": -2.93,
-      "rmsDbfs": -19.28
+      "sha256": "5e0b1da942ecdbb2d0a9f6b5abd0019a842e53df5f61aa4177e61a690cae712b",
+      "bytes": 78092,
+      "durationSeconds": 6.41,
+      "peakDbfs": -2.89,
+      "rmsDbfs": -18.5
     },
     {
       "id": "feedback-cleanup-snacks-success",
       "speaker": "marin",
-      "text": "임무 완료. 과자, 상자에 도착.",
+      "text": "임무 완료. 과자, 상자 안에 보관. …흘린 과자 없음.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -567,16 +567,16 @@
       "missionId": "cleanup-snacks",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-snacks-success.mp3",
-      "sha256": "3b8a936dc382f529924d1c4d4c682a35b604857b60c8286f9e8d71c1b2dd2db4",
-      "bytes": 49292,
-      "durationSeconds": 4.018,
-      "peakDbfs": -2.88,
-      "rmsDbfs": -18.84
+      "sha256": "0fd3b02e81fa0d05dc3af9a1ef860cd7ebcaa4b51a608148593f878c12713d34",
+      "bytes": 74636,
+      "durationSeconds": 6.141,
+      "peakDbfs": -2.93,
+      "rmsDbfs": -18.96
     },
     {
       "id": "feedback-cleanup-snacks-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 부탁에는 마린이라고 적혀 있다. …과자는 마린 담당.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -584,16 +584,16 @@
       "missionId": "cleanup-snacks",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-snacks-actor.mp3",
-      "sha256": "7fa75a7d52ef90aa52a36f01122063a296975630e5d450532bf930d00ca2b5c2",
-      "bytes": 97388,
-      "durationSeconds": 8.018,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -20.24
+      "sha256": "2b193d1d6390d1b60a30fedcc94c37fd88dff2798e2959b52b72781dd2b6b176",
+      "bytes": 83276,
+      "durationSeconds": 6.842,
+      "peakDbfs": -2.86,
+      "rmsDbfs": -19.16
     },
     {
       "id": "feedback-cleanup-snacks-destination",
       "speaker": "mongle",
-      "text": "어? 상자에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 과자는 상자 안에 넣으라고 했어! 같이 다시 넣어 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -601,16 +601,16 @@
       "missionId": "cleanup-snacks",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-snacks-destination.mp3",
-      "sha256": "c45f1beefd30cd1c5d0928d16d62d1e2810180b9af57feaa9f3b8b530066bc66",
-      "bytes": 76940,
-      "durationSeconds": 6.326,
-      "peakDbfs": -2.96,
-      "rmsDbfs": -19.04
+      "sha256": "47465e8c87aa8d72cd9dfd749eca2e16b8e92fec0eb455eff614bb937b82e71f",
+      "bytes": 69452,
+      "durationSeconds": 5.705,
+      "peakDbfs": -2.69,
+      "rmsDbfs": -19.48
     },
     {
       "id": "feedback-cleanup-snacks-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 과자는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 과자를 버리면 어떡해! 이 몸이 얼른 꺼낼게. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -618,11 +618,11 @@
       "missionId": "cleanup-snacks",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-snacks-bin.mp3",
-      "sha256": "c4979046a515d15699585338341831c6025b789e33060dafc764ab6176062bd0",
-      "bytes": 76076,
-      "durationSeconds": 6.26,
-      "peakDbfs": -2.94,
-      "rmsDbfs": -19.75
+      "sha256": "ac692e719fe3f6ca2e3355c2fa9655c66916f1a3b0b46f4e8cdd89a47c5a5e5d",
+      "bytes": 81548,
+      "durationSeconds": 6.705,
+      "peakDbfs": -2.89,
+      "rmsDbfs": -19.5
     },
     {
       "id": "mission-cleanup-paper",
@@ -644,7 +644,7 @@
     {
       "id": "help-cleanup-paper",
       "speaker": "teacher",
-      "text": "“버리지 말고”는 버리면 안 된다는 뜻이에요. 까몽이 종이를 서랍에 넣어요.",
+      "text": "“버리지 말고”는 쓰레기통에 넣지 말라는 말이에요. 까몽이 종이를 서랍 안에 넣어요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -652,16 +652,16 @@
       "missionId": "cleanup-paper",
       "mode": "story",
       "file": "assets/voice/help-cleanup-paper.mp3",
-      "sha256": "beabc9da2afd13d4a137d98ca64b495bde799215961410d473b2190a38ad7a88",
-      "bytes": 75500,
-      "durationSeconds": 6.196,
-      "peakDbfs": -2.87,
-      "rmsDbfs": -19.14
+      "sha256": "78ee9948f0f9b52deabfa760f6a2cf052e2e286cf53eaea92b72f5815e85f386",
+      "bytes": 81836,
+      "durationSeconds": 6.722,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -19.21
     },
     {
       "id": "feedback-cleanup-paper-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 종이도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 넣으니까 딱 맞지. 종이는 서랍 안에 쏙.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -669,16 +669,16 @@
       "missionId": "cleanup-paper",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-paper-success.mp3",
-      "sha256": "f8d30fa0b09b2cbe3cd9a86d92810f56eb0f6276db2bf9801731ca62db590b3d",
-      "bytes": 53036,
-      "durationSeconds": 4.335,
-      "peakDbfs": -3.13,
-      "rmsDbfs": -20.46
+      "sha256": "be9770e2e95a1054ddc6a0cd19227dc6c9961699ebd0a72a51cafbe17233d1fe",
+      "bytes": 64844,
+      "durationSeconds": 5.307,
+      "peakDbfs": -2.86,
+      "rmsDbfs": -20.25
     },
     {
       "id": "feedback-cleanup-paper-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "어이, 그 종이는 이 몸 담당이야. 부탁을 다시 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -686,16 +686,16 @@
       "missionId": "cleanup-paper",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-paper-actor.mp3",
-      "sha256": "78f1866f862f8c12168644ea5709d80ca2926723c72496e6c00f20d1e37402a0",
-      "bytes": 82988,
-      "durationSeconds": 6.827,
-      "peakDbfs": -3,
-      "rmsDbfs": -19.53
+      "sha256": "04ed2a6bdb9dd38db3a7f87a3a870df66c8e16e5b0d8311181f00dbbf7f65cff",
+      "bytes": 64844,
+      "durationSeconds": 5.324,
+      "peakDbfs": -2.93,
+      "rmsDbfs": -19.73
     },
     {
       "id": "feedback-cleanup-paper-destination",
       "speaker": "mongle",
-      "text": "어? 서랍에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 종이는 서랍 안에 넣으라고 했어! 우리 다시 넣어 보자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -703,16 +703,16 @@
       "missionId": "cleanup-paper",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-paper-destination.mp3",
-      "sha256": "eda23375d551bf45cc539da75c5a1b06bebd9db261797e65eb7fc41a53287bd8",
-      "bytes": 70892,
-      "durationSeconds": 5.82,
-      "peakDbfs": -3.33,
-      "rmsDbfs": -18.66
+      "sha256": "34f1c8d493042b4ef5a1eba791ae12bd95de71575b1e2ca9f7a1e727cab44c62",
+      "bytes": 72908,
+      "durationSeconds": 5.999,
+      "peakDbfs": -2.98,
+      "rmsDbfs": -19.36
     },
     {
       "id": "feedback-cleanup-paper-bin",
       "speaker": "teacher",
-      "text": "잠깐! 종이는 버릴 물건이 아니야. 이번 글에서는 까몽이 종이를 서랍에 넣어.",
+      "text": "잠깐! 그 종이는 버리면 안 돼. 까몽이 서랍 안에 넣어야 해.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -720,11 +720,11 @@
       "missionId": "cleanup-paper",
       "mode": "story",
       "file": "assets/voice/feedback-cleanup-paper-bin.mp3",
-      "sha256": "01d4ef27e538ebb0b027236e9dd51f4bdbc68bff249c0c25d0c3c8219ee11d3b",
-      "bytes": 83564,
-      "durationSeconds": 6.882,
+      "sha256": "aacd9fdea61509c6a8dff6484484b12bb30e9c13f8892b4045aafaa3721b0f72",
+      "bytes": 74348,
+      "durationSeconds": 6.106,
       "peakDbfs": -2.82,
-      "rmsDbfs": -19.5
+      "rmsDbfs": -18.9
     },
     {
       "id": "mission-clue-flowers",
@@ -746,7 +746,7 @@
     {
       "id": "help-clue-flowers",
       "speaker": "teacher",
-      "text": "마린이 꽃을 옮겨요. “책상 위”는 꽃을 놓을 곳이에요.",
+      "text": "꽃은 마린이 옮겨요. 놓을 곳은 “책상 위”예요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -754,16 +754,16 @@
       "missionId": "clue-flowers",
       "mode": "story",
       "file": "assets/voice/help-clue-flowers.mp3",
-      "sha256": "69a5a63e133e18e144631c91617738d02c99296359cd4968b27767f7850a09f1",
-      "bytes": 61676,
-      "durationSeconds": 5.049,
-      "peakDbfs": -2.73,
-      "rmsDbfs": -19.68
+      "sha256": "0aa87da47d62099bfd0923aa67f282bb7d44ce3bdd742755291c623695249927",
+      "bytes": 57068,
+      "durationSeconds": 4.678,
+      "peakDbfs": -3.05,
+      "rmsDbfs": -19.14
     },
     {
       "id": "feedback-clue-flowers-success",
       "speaker": "marin",
-      "text": "임무 완료. 꽃, 책상에 도착.",
+      "text": "임무 완료. 꽃, 책상 위에 도착. …교실이 밝아졌다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -771,16 +771,16 @@
       "missionId": "clue-flowers",
       "mode": "story",
       "file": "assets/voice/feedback-clue-flowers-success.mp3",
-      "sha256": "87fbead04448b07380a1a683895575dd32c6225e70dc53dbd633a45cc54a2404",
-      "bytes": 51884,
-      "durationSeconds": 4.228,
+      "sha256": "5801c85a34fef9c210715d2d64bfb363f0415a2f5fa2e4b4c697bae1b4eada3b",
+      "bytes": 84716,
+      "durationSeconds": 6.965,
       "peakDbfs": -2.87,
-      "rmsDbfs": -18.89
+      "rmsDbfs": -19.6
     },
     {
       "id": "feedback-clue-flowers-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 꽃 운반은 마린 담당. …꽃은 내가 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -788,16 +788,16 @@
       "missionId": "clue-flowers",
       "mode": "story",
       "file": "assets/voice/feedback-clue-flowers-actor.mp3",
-      "sha256": "7fa75a7d52ef90aa52a36f01122063a296975630e5d450532bf930d00ca2b5c2",
-      "bytes": 97388,
-      "durationSeconds": 8.018,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -20.24
+      "sha256": "f758f3089c51ee5e4ddb28a0ea8fd97dfdd2ee1d7ffa23764ec92702820cbcdc",
+      "bytes": 73772,
+      "durationSeconds": 6.066,
+      "peakDbfs": -2.88,
+      "rmsDbfs": -19.13
     },
     {
       "id": "feedback-clue-flowers-destination",
       "speaker": "mongle",
-      "text": "어? 책상에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 꽃은 책상 위에 놓으라고 했어! 같이 옮겨 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -805,16 +805,16 @@
       "missionId": "clue-flowers",
       "mode": "story",
       "file": "assets/voice/feedback-clue-flowers-destination.mp3",
-      "sha256": "06fce2d6afe9edf3b173164458a546867007f24503158fe89003f373bb221f9e",
-      "bytes": 74924,
-      "durationSeconds": 6.163,
-      "peakDbfs": -3.61,
-      "rmsDbfs": -18.97
+      "sha256": "d26294e9e4afdf5465f896e5f0752ec28fbd42c8cf7e74c59cd77e639559ce64",
+      "bytes": 65708,
+      "durationSeconds": 5.383,
+      "peakDbfs": -3.57,
+      "rmsDbfs": -19.42
     },
     {
       "id": "feedback-clue-flowers-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 꽃은 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 꽃을 버리면 안 되지! 이 몸이 구해 줄게. 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -822,11 +822,11 @@
       "missionId": "clue-flowers",
       "mode": "story",
       "file": "assets/voice/feedback-clue-flowers-bin.mp3",
-      "sha256": "c424ce635892b7430caea054ae96891fffe7f39c0d689e6c4c6d91fac4bc8a1b",
-      "bytes": 82988,
-      "durationSeconds": 6.823,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -19.36
+      "sha256": "4d57247cc3e5b8eb2f6fffff3831d0339da0b2d5c25167aaa7f311c73a02d504",
+      "bytes": 87596,
+      "durationSeconds": 7.203,
+      "peakDbfs": -2.91,
+      "rmsDbfs": -19.59
     },
     {
       "id": "mission-clue-letter",
@@ -848,7 +848,7 @@
     {
       "id": "help-clue-letter",
       "speaker": "teacher",
-      "text": "“꽃을 놓은 뒤”이므로 꽃을 먼저 놓아요. 그다음 까몽이 편지를 칠판에 붙여요.",
+      "text": "“꽃을 놓은 뒤”라고 했어요. 꽃이 먼저, 편지는 그다음이에요. 편지는 까몽이 칠판에 붙여요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "clue-letter"
@@ -856,16 +856,16 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/help-clue-letter.mp3",
-      "sha256": "7735adf59eb16ff25275ceadfd2f1051aef4903936994fc2a2ea4095a3d33848",
-      "bytes": 91916,
-      "durationSeconds": 7.58,
-      "peakDbfs": -3.02,
-      "rmsDbfs": -18.84
+      "sha256": "ae3efaf82bb197a80cf3d82e4efac1f8746630e5a32125f921a70760ca1e4c23",
+      "bytes": 106316,
+      "durationSeconds": 8.775,
+      "peakDbfs": -2.79,
+      "rmsDbfs": -18.25
     },
     {
       "id": "feedback-clue-letter-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 편지도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 붙인 편지, 반듯하지? …손이 조금 떨렸지만.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -873,16 +873,16 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/feedback-clue-letter-success.mp3",
-      "sha256": "be5c91eee3d499a1db8133d902520893279e99e312cc1b087c4414d54f38a5b2",
-      "bytes": 54476,
-      "durationSeconds": 4.445,
-      "peakDbfs": -2.93,
-      "rmsDbfs": -20.46
+      "sha256": "fd8b283ea38b4938d2cb1a22586bb6d11a9e55c2f85f398d45df338b32a512a9",
+      "bytes": 74348,
+      "durationSeconds": 6.116,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -20.14
     },
     {
       "id": "feedback-clue-letter-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "그 편지는 이 몸이 붙여야 해. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -890,16 +890,16 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/feedback-clue-letter-actor.mp3",
-      "sha256": "78f1866f862f8c12168644ea5709d80ca2926723c72496e6c00f20d1e37402a0",
-      "bytes": 82988,
-      "durationSeconds": 6.827,
-      "peakDbfs": -3,
-      "rmsDbfs": -19.53
+      "sha256": "cee62f8e60812ea5345ab884a0d7e39fbcf3be0ee0fa753c4e8dcd6e167645ae",
+      "bytes": 62828,
+      "durationSeconds": 5.15,
+      "peakDbfs": -2.84,
+      "rmsDbfs": -19.36
     },
     {
       "id": "feedback-clue-letter-destination",
       "speaker": "mongle",
-      "text": "어? 칠판에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 편지는 칠판에 붙이라고 했어! 다시 붙여 보자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -907,16 +907,16 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/feedback-clue-letter-destination.mp3",
-      "sha256": "241aab230998d5389c691927085c301320e6f7ab34e9bce5c089f9dabc1f4ced",
-      "bytes": 69740,
-      "durationSeconds": 5.729,
-      "peakDbfs": -3.22,
-      "rmsDbfs": -19.39
+      "sha256": "9b77414a953342942cfa942d7a44b6d04a79812a187156fe9ead978d2d08c6cf",
+      "bytes": 63404,
+      "durationSeconds": 5.206,
+      "peakDbfs": -2.83,
+      "rmsDbfs": -19.34
     },
     {
       "id": "feedback-clue-letter-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 편지는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "그 편지는 이 몸이… 아니, 누가 정성껏 쓴 편지야. 버리면 안 돼.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -924,16 +924,16 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/feedback-clue-letter-bin.mp3",
-      "sha256": "c91b0c58808ba1bb61c5922bf99f0c4b3cff429ffedee3e8943e353a37eda16b",
-      "bytes": 76364,
-      "durationSeconds": 6.266,
-      "peakDbfs": -2.83,
-      "rmsDbfs": -19.57
+      "sha256": "9d334efc2b6d9f51947a79f8096d7e1d18083701dc24877c10b33eefecd82c5f",
+      "bytes": 79820,
+      "durationSeconds": 6.572,
+      "peakDbfs": -2.79,
+      "rmsDbfs": -19.47
     },
     {
       "id": "feedback-clue-letter-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 꽃부터. 그다음 편지.",
+      "text": "순서 확인. 먼저 꽃. 그다음 편지. …꽃부터 놓는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -941,11 +941,11 @@
       "missionId": "clue-letter",
       "mode": "story",
       "file": "assets/voice/feedback-clue-letter-order.mp3",
-      "sha256": "003aa6d186056ef66a3cf736e4b2f9b4aaac9b8ab01d322855fb150445fd501c",
-      "bytes": 64268,
-      "durationSeconds": 5.275,
-      "peakDbfs": -2.94,
-      "rmsDbfs": -18.62
+      "sha256": "ca8059ee4e523f995ddd8b258063d61583a904c1b088aea22d996c9e59674eab",
+      "bytes": 77804,
+      "durationSeconds": 6.402,
+      "peakDbfs": -2.84,
+      "rmsDbfs": -18.61
     },
     {
       "id": "mission-surprise-cake",
@@ -967,7 +967,7 @@
     {
       "id": "help-surprise-cake",
       "speaker": "teacher",
-      "text": "이번에는 까몽이 케이크를 옮겨요. 케이크는 책상 위에 놓아요.",
+      "text": "이번에는 까몽이 옮겨요. 케이크는 책상 위에 놓아요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -975,16 +975,16 @@
       "missionId": "surprise-cake",
       "mode": "story",
       "file": "assets/voice/help-surprise-cake.mp3",
-      "sha256": "7491e7a96981ca330e48f364e3bcf8cf54673387b33721fdeece9cbdce12cda1",
-      "bytes": 68012,
-      "durationSeconds": 5.581,
-      "peakDbfs": -2.87,
-      "rmsDbfs": -19.05
+      "sha256": "c07b585dd5936781bfb648e47ff3c1bc80beb2bf27c8c96d2185a18ad80c9de2",
+      "bytes": 63116,
+      "durationSeconds": 5.167,
+      "peakDbfs": -2.93,
+      "rmsDbfs": -19.64
     },
     {
       "id": "feedback-surprise-cake-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 케이크도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 지킨 케이크, 무사히 도착. …한 입도 안 먹었어. 진짜야.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -992,16 +992,16 @@
       "missionId": "surprise-cake",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-cake-success.mp3",
-      "sha256": "6b18d5b438b5386aca1e57016e08a3043b347957a624fd8397afd45be7f8ec83",
-      "bytes": 58508,
-      "durationSeconds": 4.795,
-      "peakDbfs": -2.88,
-      "rmsDbfs": -20.22
+      "sha256": "e7af85cb5168927e2dd2ae16c7628f97e11b434401f37cb43923ef940804828b",
+      "bytes": 85004,
+      "durationSeconds": 6.988,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -20.23
     },
     {
       "id": "feedback-surprise-cake-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "그 케이크는 이 몸이 지켜 온 거야. 옮기는 것도 이 몸 몫이지.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -1009,16 +1009,16 @@
       "missionId": "surprise-cake",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-cake-actor.mp3",
-      "sha256": "78f1866f862f8c12168644ea5709d80ca2926723c72496e6c00f20d1e37402a0",
-      "bytes": 82988,
-      "durationSeconds": 6.827,
-      "peakDbfs": -3,
-      "rmsDbfs": -19.53
+      "sha256": "85818b65cf1b9f28201d92f0f27af31b2f4055ddb1d7c87abd9cfb87cf6c410c",
+      "bytes": 83276,
+      "durationSeconds": 6.855,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -20.12
     },
     {
       "id": "feedback-surprise-cake-destination",
       "speaker": "mongle",
-      "text": "어? 책상에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "우와, 케이크다! 그런데 책상 위에 놓으라고 했어! 같이 옮기자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -1026,16 +1026,16 @@
       "missionId": "surprise-cake",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-cake-destination.mp3",
-      "sha256": "06fce2d6afe9edf3b173164458a546867007f24503158fe89003f373bb221f9e",
-      "bytes": 74924,
-      "durationSeconds": 6.163,
-      "peakDbfs": -3.61,
-      "rmsDbfs": -18.97
+      "sha256": "a5690e6ae1604a0dd8f7da1fe8d26e641ddfa2f14bb107cb3061db32b9687f49",
+      "bytes": 83276,
+      "durationSeconds": 6.861,
+      "peakDbfs": -3.18,
+      "rmsDbfs": -18.99
     },
     {
       "id": "feedback-surprise-cake-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 케이크는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익! 케이크를 버리다니! 이 몸이 끝까지 지켰는데… 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -1043,11 +1043,11 @@
       "missionId": "surprise-cake",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-cake-bin.mp3",
-      "sha256": "ed380495ea3353ffcc2042558555d626016fe4c2e4e80311379702d5bcd99363",
-      "bytes": 72332,
-      "durationSeconds": 5.943,
-      "peakDbfs": -3.01,
-      "rmsDbfs": -19.74
+      "sha256": "d45bc93a9e950be0213f46c74bcca1ac29400d3d11df01a63836e706214fee08",
+      "bytes": 91340,
+      "durationSeconds": 7.517,
+      "peakDbfs": -2.77,
+      "rmsDbfs": -20.73
     },
     {
       "id": "mission-surprise-ribbon",
@@ -1069,7 +1069,7 @@
     {
       "id": "help-surprise-ribbon",
       "speaker": "teacher",
-      "text": "케이크가 먼저예요. 그다음 마린이 리본을 칠판에 붙여요.",
+      "text": "“케이크를 놓은 다음”이니까 케이크가 먼저예요. 그다음 마린이 리본을 칠판에 붙여요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1077,16 +1077,16 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/help-surprise-ribbon.mp3",
-      "sha256": "65c7aa5460f586c236debfd5ffd256323e26081036321ae9c644b4397da778e0",
-      "bytes": 70604,
-      "durationSeconds": 5.786,
-      "peakDbfs": -2.99,
-      "rmsDbfs": -19.61
+      "sha256": "e151d2a325f566c8287ad5f113012ab36e8141d88ea8029aa28742feae496a03",
+      "bytes": 84428,
+      "durationSeconds": 6.944,
+      "peakDbfs": -2.88,
+      "rmsDbfs": -18.48
     },
     {
       "id": "feedback-surprise-ribbon-success",
       "speaker": "marin",
-      "text": "임무 완료. 리본, 칠판에 도착.",
+      "text": "임무 완료. 리본, 칠판에 부착. …보기 좋다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1094,16 +1094,16 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-ribbon-success.mp3",
-      "sha256": "76af48e06354b5d29d1f474f41be44978e0498dd9709d527c1c07728664d0f8f",
-      "bytes": 47276,
-      "durationSeconds": 3.857,
-      "peakDbfs": -2.94,
-      "rmsDbfs": -18.76
+      "sha256": "c146ca102c8325502a6253accef05e5bd6033212bab9b8ea78fc104d67398ef6",
+      "bytes": 61100,
+      "durationSeconds": 5.011,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -19.17
     },
     {
       "id": "feedback-surprise-ribbon-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 리본은 마린 담당. …내가 붙인다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1111,16 +1111,16 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-ribbon-actor.mp3",
-      "sha256": "7fa75a7d52ef90aa52a36f01122063a296975630e5d450532bf930d00ca2b5c2",
-      "bytes": 97388,
-      "durationSeconds": 8.018,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -20.24
+      "sha256": "95067cfe0365a6bd8093f79332a68c096c1aa3aa880d30ce5011e50c5e0ef075",
+      "bytes": 66284,
+      "durationSeconds": 5.429,
+      "peakDbfs": -2.84,
+      "rmsDbfs": -19.81
     },
     {
       "id": "feedback-surprise-ribbon-destination",
       "speaker": "mongle",
-      "text": "어? 칠판에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 리본은 칠판에 붙이라고 했어! 같이 다시 해 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1128,16 +1128,16 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-ribbon-destination.mp3",
-      "sha256": "241aab230998d5389c691927085c301320e6f7ab34e9bce5c089f9dabc1f4ced",
-      "bytes": 69740,
-      "durationSeconds": 5.729,
-      "peakDbfs": -3.22,
-      "rmsDbfs": -19.39
+      "sha256": "f32818f9d95145e214197f5d032b7e182c451da29b23ebcb1450dea90119c55d",
+      "bytes": 71180,
+      "durationSeconds": 5.85,
+      "peakDbfs": -2.96,
+      "rmsDbfs": -19.16
     },
     {
       "id": "feedback-surprise-ribbon-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 리본은 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "리본을 버리면 파티가 심심해지잖아. 이 몸이 꺼내 줄게. 놓을 곳을 다시 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1145,16 +1145,16 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-ribbon-bin.mp3",
-      "sha256": "827a8daadf774de2deb2a0f18f33e58b46cee8d636efa150453f3ca555dbb101",
-      "bytes": 82412,
-      "durationSeconds": 6.779,
-      "peakDbfs": -3.04,
-      "rmsDbfs": -19.77
+      "sha256": "8de0e15c8459fe95c05741520789260acdc5c409265630a5f3ab842cd81e9404",
+      "bytes": 83564,
+      "durationSeconds": 6.866,
+      "peakDbfs": -2.91,
+      "rmsDbfs": -19.8
     },
     {
       "id": "feedback-surprise-ribbon-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 케이크부터. 그다음 리본.",
+      "text": "순서 확인. 먼저 케이크. 그다음 리본. …케이크부터 놓는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -1162,9 +1162,9 @@
       "missionId": "surprise-ribbon",
       "mode": "story",
       "file": "assets/voice/feedback-surprise-ribbon-order.mp3",
-      "sha256": "123dc0d2a1cc323b0083bb828020842587a756eba315d94e0776974839a4576b",
-      "bytes": 60524,
-      "durationSeconds": 4.951,
+      "sha256": "5603497ebf63806328a7806910e1d5878cf9edf8edc0db6a5099f529874d110d",
+      "bytes": 70028,
+      "durationSeconds": 5.753,
       "peakDbfs": -2.89,
       "rmsDbfs": -18.52
     },
@@ -1188,7 +1188,7 @@
     {
       "id": "help-review-snacks",
       "speaker": "teacher",
-      "text": "이번 글에서는 까몽이 과자를 옮겨요. 아까의 상자가 아니라 선반 위에 놓아요.",
+      "text": "이번에는 까몽이 옮겨요. 아까는 상자였지만, 이번에는 선반 위예요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-snacks"
@@ -1196,16 +1196,16 @@
       "missionId": "review-snacks",
       "mode": "review",
       "file": "assets/voice/help-review-snacks.mp3",
-      "sha256": "b353e70e5a5c26ceb8f8c7538fde5dc4aae949bad8ed2c27f773292256480b63",
-      "bytes": 86444,
-      "durationSeconds": 7.116,
-      "peakDbfs": -2.81,
-      "rmsDbfs": -18.89
+      "sha256": "85e7fc1978595c2aa27194c90bddf3fd4c58136b1411a54a5d97e1ea40f20a3a",
+      "bytes": 75788,
+      "durationSeconds": 6.229,
+      "peakDbfs": -3.69,
+      "rmsDbfs": -19.44
     },
     {
       "id": "feedback-review-snacks-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 과자도 제자리를 찾았어.",
+      "text": "훗, 과자는 선반 위에. 이 몸은 바뀐 부탁도 한 번에 읽지.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -1213,16 +1213,16 @@
       "missionId": "review-snacks",
       "mode": "review",
       "file": "assets/voice/feedback-review-snacks-success.mp3",
-      "sha256": "5de3131e0690c58d1f8c6563f4ccd44f26d2d230d4c436f60f8d324c5db7c8ce",
-      "bytes": 60812,
-      "durationSeconds": 4.99,
-      "peakDbfs": -2.92,
-      "rmsDbfs": -19.27
+      "sha256": "3e6478ee2c4b30f9e3272f085873d00cd3bc9f0512c7812eeb75c95ecd73eee7",
+      "bytes": 80396,
+      "durationSeconds": 6.623,
+      "peakDbfs": -2.87,
+      "rmsDbfs": -19.76
     },
     {
       "id": "feedback-review-snacks-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "이번 과자는 이 몸 담당이야. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -1230,16 +1230,16 @@
       "missionId": "review-snacks",
       "mode": "review",
       "file": "assets/voice/feedback-review-snacks-actor.mp3",
-      "sha256": "78f1866f862f8c12168644ea5709d80ca2926723c72496e6c00f20d1e37402a0",
-      "bytes": 82988,
-      "durationSeconds": 6.827,
-      "peakDbfs": -3,
-      "rmsDbfs": -19.53
+      "sha256": "90e4c32fa58ba9fd6088d79b249b7628f0b44e54de6006670ace45e3cbdc3c3a",
+      "bytes": 63692,
+      "durationSeconds": 5.23,
+      "peakDbfs": -2.93,
+      "rmsDbfs": -19.87
     },
     {
       "id": "feedback-review-snacks-destination",
       "speaker": "mongle",
-      "text": "어? 선반에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 이번에는 선반 위라고 했어! 아까랑 달라! 같이 다시 놓아 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -1247,16 +1247,16 @@
       "missionId": "review-snacks",
       "mode": "review",
       "file": "assets/voice/feedback-review-snacks-destination.mp3",
-      "sha256": "d948f93bbe5b7a9e3396d45cdea5752c9d3b211cb8d377657dda69627aaa3529",
-      "bytes": 74060,
-      "durationSeconds": 6.084,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -18.92
+      "sha256": "d0a49607fc3591eae5773724d0ce6202a42d278c4824ebf00025872291aeabe4",
+      "bytes": 84716,
+      "durationSeconds": 6.975,
+      "peakDbfs": -3.06,
+      "rmsDbfs": -18.94
     },
     {
       "id": "feedback-review-snacks-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 과자는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 과자를 또 버리면 어떡해! 이 몸이 꺼낼게. 이번 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -1264,11 +1264,11 @@
       "missionId": "review-snacks",
       "mode": "review",
       "file": "assets/voice/feedback-review-snacks-bin.mp3",
-      "sha256": "c4979046a515d15699585338341831c6025b789e33060dafc764ab6176062bd0",
-      "bytes": 76076,
-      "durationSeconds": 6.26,
-      "peakDbfs": -2.94,
-      "rmsDbfs": -19.75
+      "sha256": "4373b3b83661f057b4cf74ee96cf0aa01566c013389949a840261409c94b8a84",
+      "bytes": 79244,
+      "durationSeconds": 6.512,
+      "peakDbfs": -2.91,
+      "rmsDbfs": -19.1
     },
     {
       "id": "mission-review-paper",
@@ -1290,7 +1290,7 @@
     {
       "id": "help-review-paper",
       "speaker": "teacher",
-      "text": "“서랍이 아니라 상자”예요. 마린이 종이를 상자 안에 넣어요.",
+      "text": "“서랍이 아니라 상자”라고 했어요. 마린이 종이를 상자 안에 넣어요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-paper"
@@ -1298,16 +1298,16 @@
       "missionId": "review-paper",
       "mode": "review",
       "file": "assets/voice/help-review-paper.mp3",
-      "sha256": "63bcf8f8fa1231b675bbb53589b4d63a29350ede6ce2373dd690bdcd2e50ac77",
-      "bytes": 70892,
-      "durationSeconds": 5.821,
-      "peakDbfs": -2.87,
-      "rmsDbfs": -20.19
+      "sha256": "150c799bb4498f34b30958339c592952903a0b6177bd4f5e56ef7f1185f1973a",
+      "bytes": 79820,
+      "durationSeconds": 6.555,
+      "peakDbfs": -2.86,
+      "rmsDbfs": -19.55
     },
     {
       "id": "feedback-review-paper-success",
       "speaker": "marin",
-      "text": "임무 완료. 종이, 상자에 도착.",
+      "text": "임무 완료. 종이, 상자 안에 보관. …서랍이 아니라 상자. 확인.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -1315,16 +1315,16 @@
       "missionId": "review-paper",
       "mode": "review",
       "file": "assets/voice/feedback-review-paper-success.mp3",
-      "sha256": "a012dcfc3ec505854ee6d5ce91346a36579e25eb7129d0c0f4322dcef1876eb3",
-      "bytes": 47564,
-      "durationSeconds": 3.872,
-      "peakDbfs": -2.96,
-      "rmsDbfs": -18.6
+      "sha256": "23eda05ee759a6e1c933e77a420a336912f28b1505cab425b484e9b676bd9434",
+      "bytes": 98828,
+      "durationSeconds": 8.14,
+      "peakDbfs": -2.84,
+      "rmsDbfs": -18.89
     },
     {
       "id": "feedback-review-paper-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 이번 종이 담당은 마린. …내가 넣는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -1332,16 +1332,16 @@
       "missionId": "review-paper",
       "mode": "review",
       "file": "assets/voice/feedback-review-paper-actor.mp3",
-      "sha256": "7fa75a7d52ef90aa52a36f01122063a296975630e5d450532bf930d00ca2b5c2",
-      "bytes": 97388,
-      "durationSeconds": 8.018,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -20.24
+      "sha256": "9e229e0e98b3368aac0161ced52d8c59e896dc3a9ef0000deb1e7eec7d6fcfc5",
+      "bytes": 66572,
+      "durationSeconds": 5.451,
+      "peakDbfs": -2.73,
+      "rmsDbfs": -18.79
     },
     {
       "id": "feedback-review-paper-destination",
       "speaker": "mongle",
-      "text": "어? 상자에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 이번에는 서랍이 아니라 상자라고 했어! 같이 다시 넣자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -1349,16 +1349,16 @@
       "missionId": "review-paper",
       "mode": "review",
       "file": "assets/voice/feedback-review-paper-destination.mp3",
-      "sha256": "c45f1beefd30cd1c5d0928d16d62d1e2810180b9af57feaa9f3b8b530066bc66",
-      "bytes": 76940,
-      "durationSeconds": 6.326,
-      "peakDbfs": -2.96,
-      "rmsDbfs": -19.04
+      "sha256": "1d646f9d6a9221075d89341100d1911fec45d9170ae16c50195d472c1d0e675d",
+      "bytes": 74060,
+      "durationSeconds": 6.075,
+      "peakDbfs": -3.66,
+      "rmsDbfs": -19.39
     },
     {
       "id": "feedback-review-paper-bin",
       "speaker": "teacher",
-      "text": "잠깐! 종이는 버릴 물건이 아니야. 이번 글에서는 마린이 종이를 상자에 넣어.",
+      "text": "잠깐! 종이는 버리면 안 돼. 이번에는 마린이 상자 안에 넣어야 해.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -1366,11 +1366,11 @@
       "missionId": "review-paper",
       "mode": "review",
       "file": "assets/voice/feedback-review-paper-bin.mp3",
-      "sha256": "b4a464287af2cc0645de7c40b86cfc7b29daac6e5b8dbe220ad79a65807d3c58",
-      "bytes": 88460,
-      "durationSeconds": 7.276,
-      "peakDbfs": -3.01,
-      "rmsDbfs": -18.52
+      "sha256": "bd7f8b16e6a1b40990afb60878afa99daf38f4732c6fd50a9e1923fcec8fe426",
+      "bytes": 76364,
+      "durationSeconds": 6.276,
+      "peakDbfs": -3.34,
+      "rmsDbfs": -18.64
     },
     {
       "id": "mission-review-cake",
@@ -1392,7 +1392,7 @@
     {
       "id": "help-review-cake",
       "speaker": "teacher",
-      "text": "까몽이 과자를 먼저 옮겨요. 그다음 마린이 케이크를 선반 위에 놓아요.",
+      "text": "“과자를 옮긴 뒤”예요. 까몽이 과자를 먼저 옮기고, 그다음 마린이 케이크를 선반 위에 놓아요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-cake"
@@ -1400,16 +1400,16 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/help-review-cake.mp3",
-      "sha256": "ef2cf9ad9efc1bd9800f40ae71f3d915ebd8b812423a51cc375a56abe68cb4af",
-      "bytes": 70604,
-      "durationSeconds": 5.802,
-      "peakDbfs": -2.96,
-      "rmsDbfs": -18.74
+      "sha256": "0a045d3b8a474d70769b496cb575bea4306c9487e13257c511a2c918a088f264",
+      "bytes": 93356,
+      "durationSeconds": 7.688,
+      "peakDbfs": -2.87,
+      "rmsDbfs": -18.67
     },
     {
       "id": "feedback-review-cake-success",
       "speaker": "marin",
-      "text": "임무 완료. 케이크, 선반에 도착.",
+      "text": "임무 완료. 케이크, 선반 위에 도착. …마지막 정리, 끝.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -1417,16 +1417,16 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/feedback-review-cake-success.mp3",
-      "sha256": "e4f44442418d0e349ecdb858286044331e72e184fa15645db7dceab3bd4e2249",
-      "bytes": 47276,
-      "durationSeconds": 3.848,
-      "peakDbfs": -2.95,
-      "rmsDbfs": -18.48
+      "sha256": "c8859a4afdcd1bf3a391123b3d3c721b8ddea8d063deb35206944e44ee69e796",
+      "bytes": 71756,
+      "durationSeconds": 5.897,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -18.57
     },
     {
       "id": "feedback-review-cake-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 이번 케이크는 마린 담당. …내가 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -1434,16 +1434,16 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/feedback-review-cake-actor.mp3",
-      "sha256": "7fa75a7d52ef90aa52a36f01122063a296975630e5d450532bf930d00ca2b5c2",
-      "bytes": 97388,
-      "durationSeconds": 8.018,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -20.24
+      "sha256": "6198004a1e28e2ead0f053c35ec5a0aef10b68d62948a263e790062bbcaab594",
+      "bytes": 67148,
+      "durationSeconds": 5.513,
+      "peakDbfs": -2.9,
+      "rmsDbfs": -19.53
     },
     {
       "id": "feedback-review-cake-destination",
       "speaker": "mongle",
-      "text": "어? 선반에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 케이크는 선반 위에 놓으라고 했어! 같이 다시 올려 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -1451,16 +1451,16 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/feedback-review-cake-destination.mp3",
-      "sha256": "d948f93bbe5b7a9e3396d45cdea5752c9d3b211cb8d377657dda69627aaa3529",
-      "bytes": 74060,
-      "durationSeconds": 6.084,
-      "peakDbfs": -2.89,
-      "rmsDbfs": -18.92
+      "sha256": "b1821308a7f976bc23bc2846839a63c3ec8e202113fb25fd6320b76ac93301b7",
+      "bytes": 75212,
+      "durationSeconds": 6.176,
+      "peakDbfs": -3.83,
+      "rmsDbfs": -19.42
     },
     {
       "id": "feedback-review-cake-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 케이크는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익! 케이크는 버리면 안 돼! 이 몸이 구할게. 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -1468,16 +1468,16 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/feedback-review-cake-bin.mp3",
-      "sha256": "ed380495ea3353ffcc2042558555d626016fe4c2e4e80311379702d5bcd99363",
-      "bytes": 72332,
-      "durationSeconds": 5.943,
-      "peakDbfs": -3.01,
-      "rmsDbfs": -19.74
+      "sha256": "4d1629918a984a521552992b82daea639e68f6b8bca260e2e675b06696ab7099",
+      "bytes": 74636,
+      "durationSeconds": 6.133,
+      "peakDbfs": -2.93,
+      "rmsDbfs": -19.78
     },
     {
       "id": "feedback-review-cake-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 과자부터. 그다음 케이크.",
+      "text": "순서 확인. 먼저 과자. 그다음 케이크. …과자부터 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -1485,11 +1485,11 @@
       "missionId": "review-cake",
       "mode": "review",
       "file": "assets/voice/feedback-review-cake-order.mp3",
-      "sha256": "0ae1488ac67b1a737bbf86fe117cf9a329fe42c36a3687b2f195db6206858ddf",
-      "bytes": 62828,
-      "durationSeconds": 5.138,
-      "peakDbfs": -2.81,
-      "rmsDbfs": -18.86
+      "sha256": "baf844041795ec6483b473faeeeadf1239ca3ed4fd5e10670d69416db7a50df8",
+      "bytes": 75212,
+      "durationSeconds": 6.183,
+      "peakDbfs": -2.74,
+      "rmsDbfs": -18.73
     }
   ]
 }

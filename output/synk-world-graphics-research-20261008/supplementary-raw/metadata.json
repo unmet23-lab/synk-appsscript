@@ -1,0 +1,377 @@
+[
+  {
+    "appid": 2418520,
+    "name": "Farm Together 2",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2418520&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2418520?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:55:58.8014145Z",
+    "release": {
+      "coming_soon": false,
+      "date": "30 May, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": true,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 5157,
+      "total_negative": 338,
+      "total_reviews": 5495
+    },
+    "website": null
+  },
+  {
+    "appid": 2508780,
+    "name": "STORY OF SEASONS: Grand Bazaar",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2508780&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2508780?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:05.5631150Z",
+    "release": {
+      "coming_soon": false,
+      "date": "27 Aug, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 3846,
+      "total_negative": 261,
+      "total_reviews": 4107
+    },
+    "website": "https://www.storyofseasons.com/grandbazaar/"
+  },
+  {
+    "appid": 2209900,
+    "name": "Moonlight Peaks",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2209900&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2209900?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:12.1023375Z",
+    "release": {
+      "coming_soon": false,
+      "date": "6 Jul, 2026"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": true,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 1982,
+      "total_negative": 247,
+      "total_reviews": 2229
+    },
+    "website": "https://www.moonlightpeaks.com/"
+  },
+  {
+    "appid": 2016460,
+    "name": "Tales of the Shire: A The Lord of The Rings™ Game",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2016460&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2016460?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:18.6805696Z",
+    "release": {
+      "coming_soon": false,
+      "date": "29 Jul, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 3125,
+      "total_negative": 707,
+      "total_reviews": 3832
+    },
+    "website": "http://talesoftheshire.com"
+  },
+  {
+    "appid": 2966320,
+    "name": "Starsand Island",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2966320&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2966320?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:25.3019436Z",
+    "release": {
+      "coming_soon": false,
+      "date": "18 Aug, 2026"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 6,
+      "review_score_desc": "Mostly Positive",
+      "total_positive": 5500,
+      "total_negative": 1685,
+      "total_reviews": 7185
+    },
+    "website": "https://www.starsandisland.com/?utm_source=steam"
+  },
+  {
+    "appid": 3146520,
+    "name": "WEBFISHING",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=3146520&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/3146520?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:32.4022673Z",
+    "release": {
+      "coming_soon": false,
+      "date": "11 Oct, 2024"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 9,
+      "review_score_desc": "Overwhelmingly Positive",
+      "total_positive": 68619,
+      "total_negative": 1884,
+      "total_reviews": 70503
+    },
+    "website": null
+  },
+  {
+    "appid": 1896700,
+    "name": "Wylde Flowers",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1896700&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/1896700?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:39.0173098Z",
+    "release": {
+      "coming_soon": false,
+      "date": "20 Sep, 2022"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 9,
+      "review_score_desc": "Overwhelmingly Positive",
+      "total_positive": 2661,
+      "total_negative": 114,
+      "total_reviews": 2775
+    },
+    "website": "https://wyldeflowersgame.com/"
+  },
+  {
+    "appid": 2839280,
+    "name": "Natsu-Mon: 20th Century Summer Kid",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2839280&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2839280?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:45.8320362Z",
+    "release": {
+      "coming_soon": false,
+      "date": "26 Jun, 2024"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 188,
+      "total_negative": 8,
+      "total_reviews": 196
+    },
+    "website": null
+  },
+  {
+    "appid": 1222670,
+    "name": "The Sims™ 4",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1222670&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/1222670?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:52.6915976Z",
+    "release": {
+      "coming_soon": false,
+      "date": "18 Jun, 2020"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 173724,
+      "total_negative": 27505,
+      "total_reviews": 201229
+    },
+    "website": "https://www.ea.com/games/the-sims/the-sims-4"
+  },
+  {
+    "appid": 2408820,
+    "name": "Luma Island",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2408820&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2408820?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:56:59.2689398Z",
+    "release": {
+      "coming_soon": false,
+      "date": "20 Nov, 2024"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 10768,
+      "total_negative": 2029,
+      "total_reviews": 12797
+    },
+    "website": "https://www.lumaisland.com"
+  },
+  {
+    "appid": 2918500,
+    "name": "Cozy Island",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2918500&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2918500?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:57:06.6313252Z",
+    "release": {
+      "coming_soon": false,
+      "date": "21 Sep, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": true,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 2457,
+      "total_negative": 217,
+      "total_reviews": 2674
+    },
+    "website": null
+  },
+  {
+    "appid": 2997840,
+    "name": "Animalkind",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2997840&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2997840?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:57:13.1808325Z",
+    "release": {
+      "coming_soon": false,
+      "date": "30 Mar, 2026"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 81,
+      "total_negative": 10,
+      "total_reviews": 91
+    },
+    "website": "https://www.animalkind.gg/"
+  },
+  {
+    "appid": 2993780,
+    "name": "FANTASY LIFE i: The Girl Who Steals Time",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2993780&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/2993780?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:57:19.7806727Z",
+    "release": {
+      "coming_soon": false,
+      "date": "21 May, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 12398,
+      "total_negative": 1216,
+      "total_reviews": 13614
+    },
+    "website": "https://www.fantasylife.jp/fli/"
+  },
+  {
+    "appid": 1657630,
+    "name": "Slime Rancher 2",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1657630&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/1657630?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:57:26.5272174Z",
+    "release": {
+      "coming_soon": false,
+      "date": "23 Sep, 2025"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 8,
+      "review_score_desc": "Very Positive",
+      "total_positive": 47683,
+      "total_negative": 2775,
+      "total_reviews": 50458
+    },
+    "website": "http://slimerancher.com/"
+  },
+  {
+    "appid": 1744970,
+    "name": "Petit Island",
+    "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1744970&l=english",
+    "reviewsUrl": "https://store.steampowered.com/appreviews/1744970?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+    "observedAt": "2026-10-08T14:57:33.0642522Z",
+    "release": {
+      "coming_soon": false,
+      "date": "13 Nov, 2024"
+    },
+    "platforms": {
+      "windows": true,
+      "mac": false,
+      "linux": false
+    },
+    "reviews": {
+      "num_reviews": 0,
+      "review_score": 6,
+      "review_score_desc": "Mostly Positive",
+      "total_positive": 105,
+      "total_negative": 28,
+      "total_reviews": 133
+    },
+    "website": "https://www.soedesco.com/games/petit-island"
+  }
+]

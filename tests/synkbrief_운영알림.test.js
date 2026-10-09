@@ -37,6 +37,69 @@ function queueSnapshot(issues = {}, keyConfigured = true) {
     healthy:keyConfigured && Object.values(issue_counts).every(count=>count===0),key_configured:keyConfigured,issue_counts};
 }
 
+function driveJob(health = 'ok', overrides = {}) {
+  return {jobname:'synkbrief-drive-library',active:true,last_run_at:new Date().toISOString(),health,http_status:200,...overrides};
+}
+
+test('Drive 동기화 미설정과 정상·첫 실행 대기는 무경보이며 기존 두 잡은 계속 필수다',()=>{
+  const f=fixture();assert.equal(f.run().state,'baseline');
+  f.payload.jobs.push(driveJob());assert.equal(f.run().state,'unchanged');
+  f.payload.jobs[2]=driveJob('pending',{last_run_at:null,http_status:null});assert.equal(f.run().state,'unchanged');
+  f.payload.jobs.pop();assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,0);
+  for(const missing of ['synkbrief-refresh','synkbrief-retention']){
+    const g=fixture();g.payload.jobs=g.payload.jobs.filter(job=>job.jobname!==missing);g.payload.jobs.push(driveJob());
+    assert.equal(g.run().state,'sent');assert.match(g.emails[0].body,new RegExp(missing+' \\| missing'));
+  }
+});
+
+test('기존 계정 장애 중 Drive 장애 종류 변화와 부분·전체 복구를 각각 한 번 알린다',()=>{
+  const f=fixture();breakAccount(f,'send-failed');f.run();assert.equal(f.emails.length,1);
+  f.payload.jobs.push(driveJob('failed',{http_status:401}));assert.equal(f.run().state,'sent');
+  assert.match(f.emails.at(-1).body,/synkbrief-drive-library \| failed.*401/);
+  assert.match(f.emails.at(-1).body,/@yuhobuilds \| send-failed/);
+  f.payload.jobs.reverse();f.payload.jobs.find(job=>job.jobname==='synkbrief-drive-library').last_run_at=new Date(Date.now()+100).toISOString();
+  assert.equal(f.run().state,'unchanged');assert.equal(f.emails.length,2);
+  for(const health of ['stale','never','disabled']){
+    Object.assign(f.payload.jobs.find(job=>job.jobname==='synkbrief-drive-library'),driveJob(health,{last_run_at:null,http_status:null}));
+    assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).body,new RegExp('synkbrief-drive-library \\| '+health));
+    assert.equal(f.run().state,'unchanged');
+  }
+  Object.assign(f.payload.jobs.find(job=>job.jobname==='synkbrief-drive-library'),driveJob());
+  assert.equal(f.run().state,'sent');assert.equal(f.emails.at(-1).subject,'[SYNK DM] 운영 이상');
+  assert.doesNotMatch(f.emails.at(-1).body,/synkbrief-drive-library/);assert.match(f.emails.at(-1).body,/send-failed/);
+  f.payload=snapshot();assert.equal(f.run().state,'sent');assert.match(f.emails.at(-1).subject,/복구/);
+  assert.equal(f.emails.length,7);assert.ok(f.emails.every(mail=>mail.to==='unmet23@gmail.com'));
+});
+
+test('Drive 동기화 오류는 서버 전체 정상 표시에도 숨기지 않고 inactive는 disabled로 알린다',()=>{
+  for(const job of [driveJob('failed',{http_status:503}),driveJob('ok',{active:false})]){
+    const f=fixture();f.payload.jobs.push(job);assert.equal(f.run().healthy,false);assert.equal(f.emails.length,1);
+    assert.match(f.emails[0].body,new RegExp('synkbrief-drive-library \\| '+(job.active?'failed':'disabled')));
+    assert.equal(f.run().state,'unchanged');
+  }
+});
+
+test('Drive 잡의 중복·누락 필드·잘못된 상태와 비밀 원문은 고정 형식 오류로만 알린다',()=>{
+  const changes=[job=>{job.health='SECRET '+KEY;},job=>{job.health='healthy';},job=>{job.active='true';},
+    job=>{delete job.last_run_at;},job=>{job.last_run_at=['2026-10-08T01:02:03Z'];},job=>{job.last_run_at='SECRET';},
+    job=>{delete job.http_status;},job=>{job.http_status='200';},job=>{job.http_status=99;},job=>{job.http_status=600;},job=>{job.http_status=200.5;}];
+  for(const change of changes){
+    const f=fixture(),job=driveJob();change(job);job.error='SECRET '+KEY;f.payload.jobs.push(job);f.run();
+    assert.match(f.emails[0].body,/ops-status \| invalid_response/);
+    assert.doesNotMatch(JSON.stringify(f.emails)+JSON.stringify([...f.values].filter(([key])=>key!=='SYNKBRIEF_OPS_READ_KEY')),/SECRET|test-only/);
+    assert.throws(()=>f.context.synkbrief운영알림키저장('a'.repeat(64)),/연결하지 못했습니다/);
+    assert.equal(f.values.get('SYNKBRIEF_OPS_READ_KEY'),KEY);
+  }
+  const f=fixture();f.payload.jobs.push(driveJob(),driveJob());f.run();assert.match(f.emails[0].body,/ops-status \| invalid_response/);
+});
+
+test('Drive 장애 메일 전달 미확인 뒤 같은 장애는 재발송하지 않으며 원문을 노출하지 않는다',()=>{
+  const f=fixture();f.payload.jobs.push(driveJob('failed',{http_status:403,error:'SECRET '+KEY}));f.mailError=true;
+  assert.throws(()=>f.run(),/전달 여부/);assert.equal(f.run().state,'delivery_unknown');assert.equal(f.emails.length,1);
+  assert.doesNotMatch(JSON.stringify(f.emails)+f.values.get('SYNKBRIEF_OPS_NOTICE'),/SECRET|test-only/);
+  assert.equal(f.triggers.length,0);assert.equal(f.deleted.length,0);
+});
+
 test('정상 큐와 한도 대기는 해시를 바꾸거나 메일을 보내지 않는다',()=>{
   const f=fixture();assert.equal(f.run().state,'baseline');const before=f.values.get('SYNKBRIEF_OPS_NOTICE');
   f.payload.queue=queueSnapshot();f.payload.queue.queued=1200;f.payload.queue.rate_limited=1200;

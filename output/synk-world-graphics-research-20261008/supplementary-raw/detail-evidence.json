@@ -1,0 +1,411 @@
+{
+  "observedAt": "2026-10-08T15:04:11.708Z",
+  "count": 15,
+  "sourceTimeZone": "UTC",
+  "releaseDateRule": "Steam appdetails date; may differ from regional/console/original release. EA explicitly marked.",
+  "outsideTagUnion": [
+    2993780,
+    1657630,
+    1744970
+  ],
+  "rows": [
+    {
+      "appid": 2418520,
+      "name": "Farm Together 2",
+      "observedAt": "2026-10-08T14:55:58.8014145Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2418520&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2418520?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2418520-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2418520-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2418520/a6bfd16ae1cce4fc5bf9fd92791cbc462e342d35/ss_a6bfd16ae1cce4fc5bf9fd92791cbc462e342d35.1920x1080.jpg?t=1789071014",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2418520-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.milkstonestudios.com/games/farm-together-2/",
+        "https://www.reddit.com/r/FarmTogether/comments/1kq791j/farm_together_2_console_roadmap/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2508780,
+      "name": "STORY OF SEASONS: Grand Bazaar",
+      "observedAt": "2026-10-08T14:56:05.5631150Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2508780&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2508780?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2508780-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2508780-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2508780/2884143d2e0489a79cb461aa9eb30aa7ae2d73ed/ss_2884143d2e0489a79cb461aa9eb30aa7ae2d73ed.1920x1080.jpg?t=1780524524",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2508780-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.storyofseasons.com/grandbazaar/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2209900,
+      "name": "Moonlight Peaks",
+      "observedAt": "2026-10-08T14:56:12.1023375Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2209900&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2209900?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2209900-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2209900-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2209900/ss_c3ce821141f5bb624c1c8bfdb09747c3d96a9782.1920x1080.jpg?t=1790728927",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2209900-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.moonlightpeaks.com/",
+        "https://play.google.com/store/apps/details?id=com.xseed.moonlightpeaks&hl=en_US"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2016460,
+      "name": "Tales of the Shire: A The Lord of The Rings™ Game",
+      "observedAt": "2026-10-08T14:56:18.6805696Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2016460&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2016460?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2016460-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2016460-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2016460/22b4604b88db03f839ec355f28c6cb035e935d3b/ss_22b4604b88db03f839ec355f28c6cb035e935d3b.1920x1080.jpg?t=1769187824",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2016460-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://talesoftheshire.com/",
+        "https://store.playstation.com/en-ca/concept/10010195",
+        "https://www.take2games.com/ir/news/tales-shire-lord-rings-game-launches-march-25-2025"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2966320,
+      "name": "Starsand Island",
+      "observedAt": "2026-10-08T14:56:25.3019436Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2966320&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2966320?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2966320-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2966320-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2966320/ss_e980f1439726b6c8768d491afade55f8e697cc05.1920x1080.jpg?t=1788284838",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2966320-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.starsandisland.com/",
+        "https://www.nintendo.com/en-gb/Games/Nintendo-Switch-2-games/Starsand-Island-3173808.html"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 3146520,
+      "name": "WEBFISHING",
+      "observedAt": "2026-10-08T14:56:32.4022673Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=3146520&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/3146520?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\3146520-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\3146520-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3146520/ss_d1fdc753a7dc005896e239ea5ea055618a744bb6.1920x1080.jpg?t=1728673229",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\3146520-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 1896700,
+      "name": "Wylde Flowers",
+      "observedAt": "2026-10-08T14:56:39.0173098Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1896700&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/1896700?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1896700-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1896700-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1896700/ss_6662fc660391c56e02d17b22d5cac99d58c896d9.1920x1080.jpg?t=1765310909",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1896700-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://wyldeflowersgame.com/help.html",
+        "https://wyldeflowersgame.com/changes.html"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2839280,
+      "name": "Natsu-Mon: 20th Century Summer Kid",
+      "observedAt": "2026-10-08T14:56:45.8320362Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2839280&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2839280?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2839280-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2839280-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2839280/ss_477627a267137c0cf7482da7486539a05cf0d253.1920x1080.jpg?t=1790227732",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2839280-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.spike-chunsoft.co.jp/pages/natsumon/en/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 1222670,
+      "name": "The Sims™ 4",
+      "observedAt": "2026-10-08T14:56:52.6915976Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1222670&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/1222670?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1222670-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1222670-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1222670/ss_537683e5e29c2d6d02c64aa7321dcb26166f7d82.1920x1080.jpg?t=1790028362",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1222670-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.ea.com/games/the-sims/the-sims-4/buy"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2408820,
+      "name": "Luma Island",
+      "observedAt": "2026-10-08T14:56:59.2689398Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2408820&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2408820?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2408820-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2408820-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2408820/ss_e2479ad88ece66f2d4b319792f59e866e313f45a.1920x1080.jpg?t=1786439749",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2408820-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.lumaisland.com/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2918500,
+      "name": "Cozy Island",
+      "observedAt": "2026-10-08T14:57:06.6313252Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2918500&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2918500?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2918500-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2918500-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2918500/d192de9fd670d37881c9a2302a4d0cadf7f103cd/ss_d192de9fd670d37881c9a2302a4d0cadf7f103cd.1920x1080.jpg?t=1789613573",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2918500-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2997840,
+      "name": "Animalkind",
+      "observedAt": "2026-10-08T14:57:13.1808325Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2997840&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2997840?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2997840-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2997840-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2997840/5e4f81ec632d6837c83b004dbe1619cbc8d96e0b/ss_5e4f81ec632d6837c83b004dbe1619cbc8d96e0b.1920x1080.jpg?t=1791413842",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2997840-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.animalkind.gg/faq"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 2993780,
+      "name": "FANTASY LIFE i: The Girl Who Steals Time",
+      "observedAt": "2026-10-08T14:57:19.7806727Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=2993780&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/2993780?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2993780-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2993780-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2993780/ss_790f3c235f2be0dc4b35f5c271efa02acb4f8f80.1920x1080.jpg?t=1749900924",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\2993780-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.fantasylife.jp/fli/en/",
+        "https://www.fantasylife.jp/fli/en/ios-android/",
+        "https://www.fantasylife.jp/fli/en/guide/cross-save/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 1657630,
+      "name": "Slime Rancher 2",
+      "observedAt": "2026-10-08T14:57:26.5272174Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1657630&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/1657630?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1657630-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1657630-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1657630/6300ad3b599cd5d0cffb8788be8d95d7a019f666/ss_6300ad3b599cd5d0cffb8788be8d95d7a019f666.1920x1080.jpg?t=1790096620",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1657630-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://slimerancher2.zendesk.com/hc/en-us/articles/19319060075155-Supported-Platforms",
+        "https://www.slimerancher.com/news/slime-rancher-now-on-mobile-/"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    },
+    {
+      "appid": 1744970,
+      "name": "Petit Island",
+      "observedAt": "2026-10-08T14:57:33.0642522Z",
+      "reviewFilter": {
+        "language": "all",
+        "purchase_type": "all",
+        "filter": "all",
+        "review_type": "all",
+        "num_per_page": 0
+      },
+      "appdetailsUrl": "https://store.steampowered.com/api/appdetails?appids=1744970&l=english",
+      "reviewUrl": "https://store.steampowered.com/appreviews/1744970?json=1&language=all&purchase_type=all&filter=all&review_type=all&num_per_page=0",
+      "appdetailsRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1744970-appdetails.json",
+      "reviewRaw": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1744970-reviews.json",
+      "screenshotUrl": "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/1744970/ss_037ad2932299748101310325a8654bf9b0ea6f80.1920x1080.jpg?t=1753569001",
+      "screenshotLocal": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\output\\synk-world-graphics-research-20261008\\supplementary-raw\\1744970-shot.jpg",
+      "screenshotVisuallyInspected": true,
+      "additionalSources": [
+        "https://www.soedesco.com/games/petit-island"
+      ],
+      "platformScope": "Steam API OS and separately cited official platform pages. Steam Deck compatibility is not native Android/iOS support.",
+      "reviewInterpretation": "Lifetime all-language/all-purchase recommendation ratio, not a graphics rating or causal style preference.",
+      "limitations": "No game installed or tested on physical mobile devices. One representative screenshot per title; first Starsand screenshot is promotional composition."
+    }
+  ],
+  "mobileReviewExamples": [
+    {
+      "game": "Moonlight Peaks",
+      "source": "https://play.google.com/store/apps/details?id=com.xseed.moonlightpeaks&hl=en_US",
+      "reviewer": "Li Dali",
+      "date": "2026-09-05",
+      "paraphrase": "미감·이야기·플레이를 좋아하지만 Pixel 8 Pro에서 발열과 배터리 소모, 메뉴 조작에 불만.",
+      "scope": "개인 경험. 현재 모든 기기 성능이나 전체 여론을 대표하지 않음."
+    },
+    {
+      "game": "Moonlight Peaks",
+      "source": "https://play.google.com/store/apps/details?id=com.xseed.moonlightpeaks&hl=en_US",
+      "reviewer": "AliceGale",
+      "date": "2026-09-06",
+      "paraphrase": "퀘스트·인물에 호의적이지만 발열과 모바일 미니게임 설명 부족을 지적.",
+      "scope": "개인 경험. 현재 모든 기기 성능이나 전체 여론을 대표하지 않음."
+    }
+  ]
+}

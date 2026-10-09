@@ -25,7 +25,7 @@ export function buildGrowthHistory(records,catalog,{asOf,selectionStart,selectio
   dateRange(asOf,asOf);
   if(selectionStart)dateRange(selectionStart,selectionStart);
   if(selectionEnd)dateRange(selectionEnd,selectionEnd);
-  if(selectionStart&&selectionStart>(selectionEnd||asOf))throw new Error('선택 시작일과 종료일을 확인해 주세요.');
+  if(selectionStart&&selectionStart>(selectionEnd||asOf))throw Object.assign(new Error('선택 시작일과 종료일을 확인해 주세요.'),{status:400});
   const channels=catalog.channels.filter(channel=>channel.ready),channelIds=new Set(channels.map(channel=>channel.id));
   const posts=records.posts.filter(post=>channelIds.has(post.channelId)&&validDate(post.publishedDate)&&post.publishedDate<=asOf),postIds=new Set(posts.map(post=>post.id));
   const postIndex=metricIndex(records.snapshots.filter(row=>postIds.has(row.postId)&&validDate(row.date)&&row.date<=asOf),'postId');
@@ -65,7 +65,7 @@ export function buildGrowthHistory(records,catalog,{asOf,selectionStart,selectio
     change:{...compareMetric(sources.get(key),key,start||asOf,asOf),baseDate:start}}]));
   const selectedStart=start?(selectionStart&&selectionStart>start?selectionStart:start):null;
   const selectedEnd=selectionEnd&&selectionEnd<asOf?selectionEnd:asOf;
-  if(selectedStart&&selectedStart>selectedEnd)throw new Error('선택한 기간에 보존된 기록이 없습니다.');
+  if(selectedStart&&selectedStart>selectedEnd)throw Object.assign(new Error('선택한 기간에 보존된 기록이 없습니다.'),{status:400});
   const selected=daily.filter(row=>row.date>=selectedStart&&row.date<=selectedEnd),first=selected[0]?.metrics,last=selected.at(-1)?.metrics;
   const selection={start:selectedStart,end:selectedEnd,days:selected.length,baselineDate:selectedStart,metrics:Object.fromEntries(METRICS.map(({key})=>{
     const point=last?.[key]||pointAt(sources.get(key),key,selectedEnd,new Map());

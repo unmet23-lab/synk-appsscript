@@ -13,17 +13,22 @@
 !docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md
 !docs/마케팅/온라인마케팅지도/engagement/company/public
 !docs/마케팅/온라인마케팅지도/engagement/company/public/**
+!docs/마케팅/온라인마케팅지도/engagement/company/deploy/
+!docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs
 !tools/
 !tools/company-messenger/
 !tools/company-messenger/server.mjs
 !tools/company-messenger/drive-storage.mjs
 !tools/company-messenger/company-integration.mjs
 !tools/company-messenger/collaboration-service.mjs
+!tools/company-messenger/productivity-service.mjs
+!tools/company-messenger/web-push-service.mjs
 !tools/company-messenger/platform-navigation.mjs
 !tools/company-messenger/public
 !tools/company-messenger/public/**
 !atlas/
 !atlas/engine.js
+!atlas/ask.js
 !atlas/trail.js
 !atlas/personalization.js
 !atlas/domain.js
@@ -43,6 +48,7 @@
 !experiences/atlas-lab/matching-ui.mjs
 !experiences/atlas-lab/meeting.mjs
 !experiences/atlas-lab/meeting-ui.mjs
+!experiences/atlas-lab/meeting-regions.mjs
 !experiences/atlas-lab/reconnect.mjs
 !experiences/atlas-lab/discovery.mjs
 !experiences/atlas-lab/discovery-ui.mjs
@@ -72,6 +78,14 @@
 !docs/마케팅/맞춤도구/computer/
 !docs/마케팅/맞춤도구/computer/content.js
 !docs/마케팅/맞춤도구/computer/rules.js
+!docs/마케팅/클라이언트_발주서_20260930/
+!docs/마케팅/클라이언트_발주서_20260930/receiver/
+!docs/마케팅/클라이언트_발주서_20260930/receiver/sync.cjs
+!docs/마케팅/맞춤도구/assets/
+!docs/마케팅/맞춤도구/assets/laptop-felt.webp
+!docs/마케팅/맞춤도구/assets/fb-tile-cream-long.webp
+!docs/마케팅/맞춤도구/assets/fb-tile-butter-long.webp
+!docs/마케팅/맞춤도구/assets/fb-slab-black-long.webp
 !docs/브랜드_폰트/
 !docs/브랜드_폰트/SUIT/
 !docs/브랜드_폰트/SUIT/SUIT-Variable.woff2
@@ -115,6 +129,7 @@
 !docs/디자인/
 !docs/디자인/펠트스크랩북/
 !docs/디자인/펠트스크랩북/README.md
+!docs/디자인/펠트스크랩북/scrapbook.css
 !docs/마케팅/제작양식/
 !docs/마케팅/제작양식/AI_소식_도구추천.md
 !docs/마케팅/제작양식/AI_활용법.md
@@ -144,9 +159,10 @@
 !docs/디자인/펠트부품/assets/ui/slab-coral-long.webp
 !docs/디자인/펠트부품/assets/ui/badge-check.webp
 !docs/디자인/SNS키트/assets/felt-laptop.webp
-# Keep validation programs out of the runtime image.
+# Keep validation and local preview programs out of the runtime image.
 docs/마케팅/온라인마케팅지도/engagement/company/*.test.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/verify-*.mjs
+docs/마케팅/온라인마케팅지도/engagement/company/preview-*.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/*-check.mjs
 **/.env
 **/.env.*

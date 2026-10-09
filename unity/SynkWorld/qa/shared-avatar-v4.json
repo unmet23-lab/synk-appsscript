@@ -1,0 +1,9 @@
+{
+  "contractId": "mongle",
+  "renderVersion": 3,
+  "sha256": "7F2759362C71309E4A21EB7C935C0DD8390B641DF1DDC9EF5C0F58B3F528B482",
+  "identical": true,
+  "nativeAssetAvailable": true,
+  "nativeRendered": false,
+  "note": "Identity and slot contract only. The procedural Unity scene has not been replaced by the shared web model."
+}

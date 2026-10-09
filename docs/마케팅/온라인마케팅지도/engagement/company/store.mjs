@@ -1,22 +1,31 @@
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { randomBytes, randomUUID, createHash, createCipheriv, createDecipheriv, scryptSync, timingSafeEqual } from 'node:crypto';
+import { randomBytes, randomUUID, createHash, createCipheriv, createDecipheriv, scryptSync, scrypt, timingSafeEqual } from 'node:crypto';
+import { createConcurrencyGuard } from './request-security.mjs';
 
 export const now = () => new Date().toISOString();
 export const hash = value => createHash('sha256').update(value).digest('hex');
 export const token = () => randomBytes(32).toString('base64url');
 export const today = () => new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
 export function passwordHash(password) {
-  if (typeof password !== 'string' || password.length < 12 || password.length > 256) throw new Error('비밀번호는 12~256자로 입력해 주세요.');
+  validatePassword(password);
   const salt = randomBytes(16).toString('hex');
   return salt + ':' + scryptSync(password,salt,64).toString('hex');
 }
-export function passwordMatches(password, stored) {
+const passwordWork=createConcurrencyGuard(4);
+const derive=(password,salt)=>passwordWork(()=>new Promise((resolve,reject)=>scrypt(password,salt,64,(error,key)=>error?reject(error):resolve(key))));
+const inputError=message=>Object.assign(new Error(message),{status:400});
+function validatePassword(password){if(typeof password!=='string'||password.length<12||password.length>256)throw inputError('비밀번호는 12~256자로 입력해 주세요.');}
+// Synchronous hashing above is for offline setup/fixtures. HTTP mutations use
+// this bounded asynchronous variant and never run scryptSync on a request.
+export async function passwordHashAsync(password){validatePassword(password);const salt=randomBytes(16).toString('hex');return salt+':'+(await derive(password,salt)).toString('hex');}
+export async function passwordMatches(password, stored) {
   if (typeof password !== 'string' || password.length > 256) return false;
-  const [salt,key] = (stored || '00000000000000000000000000000000:'+ '0'.repeat(128)).split(':');
-  const actual = scryptSync(password,salt,64);
-  return key?.length === 128 && timingSafeEqual(actual,Buffer.from(key,'hex'));
+  const valid=typeof stored==='string'&&/^[0-9a-f]{32}:[0-9a-f]{128}$/i.test(stored);
+  const [salt,key]=(valid?stored:'0'.repeat(32)+':'+ '0'.repeat(128)).split(':');
+  const actual=await derive(password,salt);
+  return valid&&timingSafeEqual(actual,Buffer.from(key,'hex'));
 }
 export function publicUser(user) {
   if (!user) return null;
@@ -61,9 +70,9 @@ export class Store {
   revokeUser(userId) {this.#statement('DELETE FROM tokens WHERE userId=?').run(userId);}
   createUser({email,name,role='member',password,teamId=null}) {
     email=String(email||'').trim().toLowerCase();name=String(name||'').trim();
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!name||name.length>80)throw new Error('이름과 이메일을 확인해 주세요.');
-    if(this.all('users').some(u=>u.email===email))throw new Error('이미 등록된 이메일입니다.');
-    if(!['admin','manager','member','viewer'].includes(role))throw new Error('크루 역할을 확인해 주세요.');
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)||email.length>254||!name||name.length>80)throw inputError('이름과 이메일을 확인해 주세요.');
+    if(this.all('users').some(u=>u.email===email))throw inputError('이미 등록된 이메일입니다.');
+    if(!['admin','manager','member','viewer'].includes(role))throw inputError('크루 역할을 확인해 주세요.');
     const id=randomUUID();
     return this.put('users',id,{id,email,name,role,teamId,active:true,passwordHash:password?passwordHash(password):null,createdAt:now()});
   }

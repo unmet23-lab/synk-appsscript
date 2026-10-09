@@ -1,0 +1,14 @@
+{
+  "passed": 6,
+  "checks": [
+    "missing albedo returns renderable procedural wool and explicit metrics",
+    "body colour does not drive normal or bump displacement",
+    "AO red and roughness green share the same texture reference",
+    "vertex-colour materials never sample absent zero-valued colour attributes",
+    "unresolved albedo reaches its configured 12 second deadline",
+    "a texture arriving after timeout is disposed instead of leaking"
+  ],
+  "deadlineTimerAcceleratedForTest": true,
+  "realDevicePerformance": false,
+  "checkedAtUtc": "2026-10-08T20:28:10.696Z"
+}

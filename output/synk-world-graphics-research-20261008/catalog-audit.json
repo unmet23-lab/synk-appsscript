@@ -1,0 +1,151 @@
+{
+  "auditedAt": "2026-10-08T14:52:33.809Z",
+  "sourceFiles": [
+    "collect-catalog.cjs",
+    "catalog-10235.json",
+    "catalog-97376.json",
+    "catalog-87918.json",
+    "catalog-union.json",
+    "catalog-raw/*.json"
+  ],
+  "networkRequestsForAudit": 0,
+  "collectionWindow": {
+    "firstUtc": "2026-10-08T14:42:43.968Z",
+    "lastUtc": "2026-10-08T14:46:27.529Z",
+    "kst": "2026-10-08 23:42:43~23:46:27 KST"
+  },
+  "scope": {
+    "source": "Steam public store search results",
+    "region": "US",
+    "language": "English",
+    "category1": 998,
+    "ignore_preferences": 1,
+    "sort": "Reviews_DESC",
+    "tags": [
+      {
+        "id": 10235,
+        "name": "Life Sim"
+      },
+      {
+        "id": 97376,
+        "name": "Cozy"
+      },
+      {
+        "id": 87918,
+        "name": "Farming Sim"
+      }
+    ],
+    "unit": "단일 appid가 있는 앱 검색행. 패키지는 제외."
+  },
+  "counts": {
+    "pages": 60,
+    "searchRowsAcrossTags": 5775,
+    "appRowsAcrossTags": 5773,
+    "packageRowsExcluded": 2,
+    "unionUniqueAppIds": 4989,
+    "duplicateMembershipsAcrossTags": 784,
+    "membership": {
+      "oneTag": 4287,
+      "twoTags": 620,
+      "threeTags": 82
+    }
+  },
+  "reports": [
+    {
+      "tag": "Life Sim",
+      "tagId": 10235,
+      "pageCount": 31,
+      "offsetsComplete": true,
+      "reportedTotal": 3022,
+      "reportedTotalStable": true,
+      "rawSearchRows": 3022,
+      "parsedAppRows": 3022,
+      "uniqueAppIds": 3022,
+      "duplicateAppIdsWithinTag": [],
+      "excludedPackageRows": 0,
+      "unexpectedExcludedRows": []
+    },
+    {
+      "tag": "Cozy",
+      "tagId": 97376,
+      "pageCount": 18,
+      "offsetsComplete": true,
+      "reportedTotal": 1714,
+      "reportedTotalStable": true,
+      "rawSearchRows": 1714,
+      "parsedAppRows": 1714,
+      "uniqueAppIds": 1714,
+      "duplicateAppIdsWithinTag": [],
+      "excludedPackageRows": 0,
+      "unexpectedExcludedRows": []
+    },
+    {
+      "tag": "Farming Sim",
+      "tagId": 87918,
+      "pageCount": 11,
+      "offsetsComplete": true,
+      "reportedTotal": 1039,
+      "reportedTotalStable": true,
+      "rawSearchRows": 1039,
+      "parsedAppRows": 1037,
+      "uniqueAppIds": 1037,
+      "duplicateAppIdsWithinTag": [],
+      "excludedPackageRows": 2,
+      "unexpectedExcludedRows": []
+    }
+  ],
+  "excludedPackageRows": [
+    {
+      "tag": "Farming Sim",
+      "start": 0,
+      "title": "Farm Frenzy Pack",
+      "packageId": 2988,
+      "containedAppIds": [
+        38120,
+        38130,
+        38140,
+        38150,
+        38160
+      ],
+      "url": "https://store.steampowered.com/sub/2988/"
+    },
+    {
+      "tag": "Farming Sim",
+      "start": 100,
+      "title": "Farming Simulator 15: Gold Edition",
+      "packageId": 83678,
+      "containedAppIds": [
+        313160,
+        374851
+      ],
+      "url": "https://store.steampowered.com/sub/83678/"
+    }
+  ],
+  "farmingDifference": {
+    "reportedSearchTotal": 1039,
+    "rawSearchRows": 1039,
+    "parsedApps": 1037,
+    "excludedPackages": 2,
+    "cause": "단일 appid만 허용하는 정규식이 복수 appid를 가진 패키지 검색행 2개를 제외했다.",
+    "notCause": [
+      "페이지 누락 아님: 0부터1000까지11페이지 원문이 있음",
+      "태그 내 중복 제거 때문 아님: 앱 행1037개 모두 고유함",
+      "수집 중 total_count 변동 때문 아님:11페이지 모두1039"
+    ],
+    "parserAssessment": "collect-catalog.cjs의 rawRows 명칭은 원문 전체 검색행이 아니라 파싱한 앱 행 수다. 앱 중심 카탈로그에서는 패키지 제외가 합리적이나 숫자 차이를 밝혀야 한다."
+  },
+  "limitations": [
+    "Life Sim·Cozy·Farming Sim 세 태그는 모든 생활 콘텐츠의 완전한 분류가 아니다. 해당 태그가 없는 게임은 포함되지 않을 수 있다.",
+    "US 공개 스토어의 검색 결과다. 전 세계 지역별 판매·검색·연령 제한·비공개·삭제 앱을 모두 조사했다는 뜻이 아니다. ignore_preferences=1도 이러한 제약 전부를 해제한 증거가 아니다.",
+    "페이지는 2026-10-08 약4분에 걸쳐 수집됐고 원자적 스냅샷이 아니다. 관측된 total_count는 태그별로 일정했고 태그 내 앱ID 중복은 없었지만, 동시점 목록의 완전 고정이나 수집 중 순위 변동 부재를 보장하지 않는다.",
+    "카탈로그 전 페이지 수집은 각 게임의 그래픽·플레이·모바일 성능을 전수 검증한 뜻이 아니다. 후속 선정 작품의 상세 조사와 구분해야 한다.",
+    "리뷰 순 정렬과 전체 긍정률은 그래픽만의 인과효과나 모바일 선호도를 증명하지 않는다. 출시 예정작은 이용자 반응이 입증된 작품과 구분해야 한다."
+  ],
+  "recommendedFinalWording": "2026년 10월 8일 Steam 미국·영문 공개 검색에서 Life Sim·Cozy·Farming Sim 세 태그의 전체 60페이지를 수집했다. 패키지 2건을 제외하고 중복을 합친 고유 앱 4,989개를 목록화한 뒤, SYNK와 관련성이 높은 작품을 골라 그래픽과 이용자 반응을 상세 비교했다. 이는 세 태그 검색 범위의 목록 전수 수집이며, Steam 전체 생활게임이나 4,989개 작품의 그래픽·실플레이를 전수 검증했다는 뜻은 아니다.",
+  "shortWording": "Steam 생활 관련 3개 태그의 전체 검색 페이지를 수집해 고유 앱 4,989개를 목록화하고 주요 작품을 상세 비교했다.",
+  "avoidWording": [
+    "스팀 생활게임4,989개 그래픽을 전수 검증했다",
+    "스팀의 모든 생활게임을 빠짐없이 조사했다",
+    "Farming Sim 게임2개가 누락됐다"
+  ]
+}

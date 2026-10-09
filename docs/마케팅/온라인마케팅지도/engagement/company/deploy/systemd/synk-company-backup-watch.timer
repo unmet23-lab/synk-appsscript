@@ -1,0 +1,9 @@
+[Unit]
+Description=Check SYNK offsite backup freshness every 30 minutes
+PartOf=synk-company.service
+
+[Timer]
+OnActiveSec=2min
+OnUnitActiveSec=30min
+AccuracySec=1min
+Unit=synk-company-backup-watch.service

@@ -1,0 +1,12 @@
+{
+  "savedAt": "2026-10-08T19:54:42.240Z",
+  "digests": {
+    "a": "d5746e65aa902601ceab44aa490ddfbf29329b9bc51930702c03ea7410770488",
+    "b": "a274172eecf118d9af164b411cf5c8c7b3fab033f8656445675e9ec8cebd6f29"
+  },
+  "revisions": {
+    "a": 10,
+    "b": 0
+  },
+  "commandId": "town-api-feaa123d-aa15-4493-85a9-bed67c4f8abc"
+}

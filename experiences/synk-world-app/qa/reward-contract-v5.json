@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-08T21:12:49.462Z",
+  "implementation": "current-world-v1-first-steps-only",
+  "transport": "real HTTP / isolated local PGlite",
+  "checks": [
+    {
+      "name": "fresh isolated accounts have only the starter apron",
+      "passed": true
+    },
+    {
+      "name": "unauthenticated game completion cannot issue an item",
+      "passed": true
+    },
+    {
+      "name": "runner cannot be substituted for the server-issued first-steps game",
+      "passed": true
+    },
+    {
+      "name": "runner client completion summary does not mint a shared costume",
+      "passed": true
+    },
+    {
+      "name": "rhythm cannot be substituted for the server-issued first-steps game",
+      "passed": true
+    },
+    {
+      "name": "rhythm client completion summary does not mint a shared costume",
+      "passed": true
+    },
+    {
+      "name": "external Origin is denied before any account mutation",
+      "passed": true
+    },
+    {
+      "name": "there is no generic client reward grant endpoint",
+      "passed": true
+    },
+    {
+      "name": "issued run carries exactly the server catalog and no answers",
+      "passed": true
+    },
+    {
+      "name": "a second account cannot complete the first account run",
+      "passed": true
+    },
+    {
+      "name": "client-selected owner, reward, and score are rejected",
+      "passed": true
+    },
+    {
+      "name": "missing answers and fabricated game questions are rejected",
+      "passed": true
+    },
+    {
+      "name": "parallel identical completion requests issue one item in one revision",
+      "passed": true
+    },
+    {
+      "name": "retry after an ignored acknowledgement cannot pay again",
+      "passed": true
+    },
+    {
+      "name": "a different request id cannot pay an already completed run again",
+      "passed": true
+    },
+    {
+      "name": "a changed answer cannot overwrite a completed result",
+      "passed": true
+    },
+    {
+      "name": "logged-out session cannot start or complete another run",
+      "passed": true
+    }
+  ],
+  "passed": 17,
+  "failed": 0,
+  "sourceSHA256": {
+    "experiences/synk-world-app/server.mjs": "69c350ac096fd373d13ace5f11e6e68ed84dbcbf95e6961e26497639b3e87779",
+    "experiences/korean-runner/app.mjs": "3703c14c0cf0da721261241f34c45515885c62c5da6831e870a7d41b2052fbe0",
+    "experiences/korean-runner/core.mjs": "fc07de81722af72db23cfb91d3161d0fef57829f54eb6fac8b835278fe2b2c8f",
+    "experiences/korean-rhythm/app.mjs": "4b932198533d8da65d82f7170bccf3aeff16ab8b1e3e84b73b16c6d03f6112fa",
+    "SYNK-talk/lib/world-v1-server.js": "a3ebc72c47e010f06fe4e74e72000bca9e670a96184d8045bd7c884cb1a4a74e",
+    "SYNK-talk/lib/world-v1-domain.js": "a78ab685ca89fd93347ffce59171944a758e19be3b2c46d894beaeaaa91ee9fd",
+    "SYNK-talk/lib/world-v1-store.js": "25e6fd270614539de98fb2b89a9f819abb0e505362946c4cbfa318b8e2088b91",
+    "SYNK-talk/supabase/migrations/20261009180000_synk_world_v1_c16.sql": "85bcdc2729e76e2a72d985376eb129bd0c6bf9f77535058034547c91db881301"
+  },
+  "fixtureDirectory": "C:\\Users\\q1212\\AppData\\Local\\Temp\\synk-world-reward-v5-Y8MQVY",
+  "productionTouched": false,
+  "limitation": "These checks establish current rejection, account isolation and idempotency. They do not implement runner/rhythm server completion, prove a human played, or measure learning effects. Existing game local coins remain separate."
+}

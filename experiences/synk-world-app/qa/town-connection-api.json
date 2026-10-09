@@ -1,0 +1,49 @@
+{
+  "checkedAt": "2026-10-08T19:54:42.642Z",
+  "base": "http://127.0.0.1:4396",
+  "checks": [
+    "anonymous town reads are rejected",
+    "anonymous town writes are rejected",
+    "town snapshots are explicitly scoped synthetic-account previews",
+    "wrong town operation method is rejected",
+    "query account ID cannot select another account town",
+    "authenticated mutation only changes account A despite forged owner field",
+    "town duplicate command is idempotent",
+    "town stale revision cannot overwrite a newer state",
+    "server rejects equipping an unowned neck item",
+    "unowned neck item is removed before the actual home renderer receives appearance",
+    "browser bridge restores its own tab account and server-confirmed inventory",
+    "appearance invalidation refreshes the receiver from the server",
+    "forged broadcast contents never grant or render items",
+    "browser token is rejected by the town API after logout",
+    "receiver clears appearance and blocks commands after logout",
+    "browser bridge has no runtime errors",
+    "logged-out API session cannot read or write its town",
+    "other account remains authenticated and unchanged after A logout",
+    "actual server restart restores account A town state byte-equivalently after canonicalization",
+    "actual server restart restores separate account B town state",
+    "committed town command survives restart"
+  ],
+  "passed": 21,
+  "errors": [],
+  "sourceSha256": {
+    "server.mjs": "2b04fa49306cb9dab4f7f8016b9b9cabdc266f59d4872e579f9439aa98b49b4a",
+    "town-host.mjs": "e723e593de80b30eab20d73ce846f84187f28b71ec7e89fe2bc9c12c1e0d29b2",
+    "world-client.mjs": "9ed1cd7277e5b6d0efc73e5d6eb9653e8ff4f0f6b879251788a9af9d2fe9162f",
+    "world-town-client.mjs": "ed3850790535279683c744452e76540c4712d5f5686e62c89fd02f07ef623132"
+  },
+  "restartVerified": true,
+  "limits": [
+    "API and browser bridge only; Town scene integration is a separate verification",
+    "Synthetic local accounts, not production identity or TOPIK access",
+    "Not physical-device or Unity performance proof"
+  ],
+  "restartedCheckedAt": "2026-10-08T19:55:10.777Z",
+  "staticHardeningAfterApiCheck": {
+    "appliedAfterApiVerification": true,
+    "restartedAt": "2026-10-08T20:00:45.0850698Z",
+    "file": "server.mjs",
+    "currentSourceSha256": "834ca3663e93f5c68d0f59ba2a610231797166a2d358757489b6b746200131fb",
+    "note": "After the 21 API/bridge checks and actual restart persistence comparison, the supervising agent hardened static routing against Windows backslash, NUL, parent traversal and case variants. The isolated 4396 server was restarted on that source. API contracts were unchanged; these 21 API assertions were not rerun. Static path regression is verified separately by the supervising agent."
+  }
+}

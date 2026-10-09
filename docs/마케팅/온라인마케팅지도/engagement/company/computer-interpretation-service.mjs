@@ -82,7 +82,7 @@ function invalidReason(cause, payload, model, usageOverrun) {
     MODEL_QUOTE_INVALID: 'model-quote-invalid', MODEL_RESPONSE_INVALID: 'model-response-invalid' })[cause?.code] || 'model-response-invalid';
 }
 
-export function createComputerInterpretationService({ store, clock = () => new Date().toISOString(), getEnv = name => process.env[name], fetchImpl = globalThis.fetch }) {
+export function createComputerInterpretationService({ store, clock = () => new Date().toISOString(), getEnv = name => process.env[name], fetchImpl = globalThis.fetch, customerAuthorized = () => false }) {
   const running = new Set(); let stopping = false, expiryTimer = null;
   // The input fingerprint outlives response deletion and expiry. Key it with the
   // store secret so the ledger alone cannot confirm a guessed source sentence.
@@ -93,13 +93,43 @@ export function createComputerInterpretationService({ store, clock = () => new D
     return { at: new Date(ms).toISOString(), ms };
   };
   const active = user => {
+    if (user?.kind === 'customer') {
+      if (!customerAuthorized(user)) throw error('현재 로그인한 계정을 확인해 주세요.', 401, 'SYNK_COMPUTER_AI_FORBIDDEN');
+      return user;
+    }
     const current = user && store.get('users', user.id);
     if (!current?.active) throw error('현재 로그인한 계정을 확인해 주세요.', 401, 'SYNK_COMPUTER_AI_FORBIDDEN');
     return current;
   };
   const authorized = user => {
-    if (active(user).role !== 'admin') throw error('AI 상담 시험은 관리자 계정에서 이용할 수 있어요.', 403, 'SYNK_COMPUTER_AI_FORBIDDEN');
+    const current = active(user);
+    if (current.kind !== 'customer' && current.role !== 'admin') throw error('AI 상담 시험은 관리자 계정에서 이용할 수 있어요.', 403, 'SYNK_COMPUTER_AI_FORBIDDEN');
   };
+  function customerLimits() {
+    const positive = name => { const value = getEnv(name); return typeof value === 'string' && /^[1-9][0-9]*$/.test(value) && Number.isSafeInteger(Number(value)) ? Number(value) : null; };
+    const requestLimit = positive('SYNK_COMPUTER_AI_CUSTOMER_DAILY_REQUESTS');
+    const costLimitMicroUSD = positive('SYNK_COMPUTER_AI_CUSTOMER_DAILY_MICRO_USD');
+    if (getEnv('SYNK_COMPUTER_AI_CUSTOMER_ENABLED') !== '1' || requestLimit === null || costLimitMicroUSD === null) return null;
+    return { requestLimit, costLimitMicroUSD };
+  }
+  function customerUsage(user, limits) {
+    const time = currentTime(), day = time.at.slice(0, 10);
+    let requestsUsed = 0, accounted = 0n;
+    for (const row of store.all(KIND)) {
+      if (row.userId !== user.id) continue;
+      const accepted = Date.parse(row.at);
+      if (!Number.isFinite(accepted) || !integer(row.accountedMicroUSD)) throw error('개인별 사용량 기록을 확인해야 해요.', 503);
+      if (new Date(accepted).toISOString().slice(0, 10) !== day) continue;
+      if (row.status !== 'cancelled') requestsUsed++;
+      accounted += BigInt(row.accountedMicroUSD);
+    }
+    // Keep reservations and deleted-response ledger rows: neither a restart nor
+    // a privacy deletion grants more paid requests.
+    return { day, ...limits, requestsUsed, requestsRemaining: Math.max(0, limits.requestLimit - requestsUsed),
+      accountedMicroUSD: Number(accounted > BigInt(Number.MAX_SAFE_INTEGER) ? BigInt(Number.MAX_SAFE_INTEGER) : accounted),
+      remainingMicroUSD: Number(accounted >= BigInt(limits.costLimitMicroUSD) ? 0n : BigInt(limits.costLimitMicroUSD) - accounted),
+      resetsAt: new Date(Date.parse(day + 'T00:00:00Z') + 86400000).toISOString() };
+  }
   const removed = () => error('이 요청의 서버 응답 인용은 삭제되었거나 보관 기간이 끝났어요. 같은 요청을 다시 전송하지 않습니다.', 410, 'SYNK_COMPUTER_AI_RESPONSE_REMOVED');
   function withoutResponse(row, at, reason) {
     const { resultCiphertext: _ciphertext, ...retained } = row;
@@ -183,6 +213,12 @@ export function createComputerInterpretationService({ store, clock = () => new D
     try { authorized(user); } catch { return { ...base, reason: user ? 'admin-required' : 'session-required', message: '회사 관리자 계정으로 로그인하면 AI 상담 설정을 확인할 수 있어요.' }; }
     purgeExpired();
     base.buildProof = computerRuntimeProof();
+    if (user.kind === 'customer') {
+      const limits = customerLimits();
+      if (!limits) return { ...base, reason: 'customer-configuration-required', message: '고객용 AI 상담을 아직 준비하고 있어요. 직접 조건을 선택하고 저장할 수 있어요.' };
+      base.usage = customerUsage(user, limits);
+      if (!base.usage.requestsRemaining || !base.usage.remainingMicroUSD) return { ...base, reason: 'customer-daily-limit', message: '오늘의 AI 상담 사용 한도에 도달했어요. 저장된 조건은 계속 볼 수 있어요.' };
+    }
     const config = configuration(getEnv);
     if (config.reason) return { ...base, reason: config.reason, message: config.message };
     const configured = { ...base, maxOutputTokens: config.maxOutputTokens };
@@ -234,6 +270,12 @@ export function createComputerInterpretationService({ store, clock = () => new D
     const duplicate = store.transaction(() => {
       const row = store.get(KIND, id); if (row) return row;
       authorized(user); revalidate();
+      if (user.kind === 'customer') {
+        const limits = customerLimits();
+        if (!limits) throw error('고객용 AI 상담을 아직 준비하고 있어요.', 503, 'SYNK_COMPUTER_AI_UNAVAILABLE');
+        const usage = customerUsage(user, limits);
+        if (!usage.requestsRemaining || reserved > usage.remainingMicroUSD) throw error('오늘의 AI 상담 사용 한도에 도달했어요.', 429, 'SYNK_COMPUTER_AI_CUSTOMER_LIMIT');
+      }
       if (stoppedByUsage() || spent() + BigInt(reserved) > BigInt(config.totalLimit)) throw error('AI 상담 시험 비용 한도에 도달했어요.', 429, 'SYNK_COMPUTER_AI_BUDGET');
       store.put(KIND, id, { id, requestUUID: input.id, userId: user.id, digest, requestId: input.requestId, sourceId: input.sourceId, revision: input.revision,
         model: config.model, buildId: proof.buildId, at, expiresAt: new Date(Date.parse(at) + RETENTION_MS).toISOString(), status: 'reserved', inputBound, maxOutputTokens: config.maxOutputTokens, inputRate: config.inputRate, outputRate: config.outputRate,

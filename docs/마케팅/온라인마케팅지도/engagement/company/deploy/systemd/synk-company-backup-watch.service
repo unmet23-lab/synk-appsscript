@@ -1,0 +1,12 @@
+[Unit]
+Description=SYNK offsite backup success freshness check
+Requisite=synk-company.service
+After=synk-company.service
+PartOf=synk-company.service
+
+[Service]
+Type=oneshot
+EnvironmentFile=/etc/synk/company.env
+UMask=0077
+ExecStart=/usr/bin/bash /opt/synk/current/docs/마케팅/온라인마케팅지도/engagement/company/deploy/company-backup-watch.sh
+TimeoutStartSec=60

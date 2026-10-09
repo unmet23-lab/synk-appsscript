@@ -1,0 +1,352 @@
+{
+  "checkedAt": "2026-10-08T21:36:21.772Z",
+  "base": "http://127.0.0.1:4396",
+  "passed": 20,
+  "checks": [
+    "light changes the actual mobile drawing buffer and shadow quality without another canvas",
+    "balanced changes the actual mobile drawing buffer and shadow quality without another canvas",
+    "detail changes the actual mobile drawing buffer and shadow quality without another canvas",
+    "reload restores quality, sunset, and both server-confirmed costume slots",
+    "a modal pauses home rendering with zero additional frames",
+    "closing the modal resumes the live home renderer",
+    "the full-screen Town keeps its own renderer active while the covered home stops",
+    "photo export contains opaque, nonblank pixels above realtime resolution",
+    "high-resolution export preserves framing and restores the interactive drawing buffer",
+    "the photo identifies the same server-confirmed combined costume",
+    "the browser exposes actual WebGL context loss for this regression",
+    "context loss disables Photo, clears capture access, and offers recovery",
+    "retry creates exactly one working canvas and retains account outfit, time, and quality",
+    "close view and its button survive renderer recovery",
+    "a recovered renderer exports a real opaque photograph",
+    "changing motion and quality during loading retains only one pending canvas",
+    "a stalled optional sky reaches a usable scene within a finite timeout",
+    "settings changed during loading apply to the eventual single renderer",
+    "late asset completion does not recreate or invalidate the renderer",
+    "the checked flows contain no unhandled browser errors"
+  ],
+  "observations": [
+    {
+      "id": "quality-profiles",
+      "samples": [
+        {
+          "metrics": {
+            "renderer": "Three.js r180",
+            "graphicsVersion": 3,
+            "visualRevision": "environment-v5",
+            "view": "home",
+            "cameraYaw": 0,
+            "cameraMoving": false,
+            "quality": "light",
+            "pixelRatio": 1,
+            "shadowMapSize": 512,
+            "active": false,
+            "contextLost": false,
+            "shaderError": false,
+            "renderSubmissionMs": 1.5,
+            "assetFailures": [],
+            "avatarVersion": "mongle-v3",
+            "drawingBuffer": {
+              "width": 350,
+              "height": 465
+            },
+            "dpr": 1,
+            "drawCalls": 117,
+            "triangles": 205320,
+            "lines": 5421,
+            "instancedFoliage": 1294,
+            "frameCount": 6,
+            "outfit": "scarf-apron",
+            "time": "day",
+            "paused": true,
+            "reducedMotion": false,
+            "productionAsset": false
+          },
+          "canvasCount": 1,
+          "available": true
+        },
+        {
+          "metrics": {
+            "renderer": "Three.js r180",
+            "graphicsVersion": 3,
+            "visualRevision": "environment-v5",
+            "view": "home",
+            "cameraYaw": 0,
+            "cameraMoving": false,
+            "quality": "balanced",
+            "pixelRatio": 1.5,
+            "shadowMapSize": 1024,
+            "active": false,
+            "contextLost": false,
+            "shaderError": false,
+            "renderSubmissionMs": 1.5,
+            "assetFailures": [],
+            "avatarVersion": "mongle-v3",
+            "drawingBuffer": {
+              "width": 525,
+              "height": 697
+            },
+            "dpr": 1.5,
+            "drawCalls": 117,
+            "triangles": 205320,
+            "lines": 5421,
+            "instancedFoliage": 1294,
+            "frameCount": 6,
+            "outfit": "scarf-apron",
+            "time": "day",
+            "paused": true,
+            "reducedMotion": false,
+            "productionAsset": false
+          },
+          "canvasCount": 1,
+          "available": true
+        },
+        {
+          "metrics": {
+            "renderer": "Three.js r180",
+            "graphicsVersion": 3,
+            "visualRevision": "environment-v5",
+            "view": "home",
+            "cameraYaw": 0,
+            "cameraMoving": false,
+            "quality": "detail",
+            "pixelRatio": 2,
+            "shadowMapSize": 1536,
+            "active": false,
+            "contextLost": false,
+            "shaderError": false,
+            "renderSubmissionMs": 1.5,
+            "assetFailures": [],
+            "avatarVersion": "mongle-v3",
+            "drawingBuffer": {
+              "width": 700,
+              "height": 930
+            },
+            "dpr": 2,
+            "drawCalls": 117,
+            "triangles": 205320,
+            "lines": 5421,
+            "instancedFoliage": 1294,
+            "frameCount": 6,
+            "outfit": "scarf-apron",
+            "time": "day",
+            "paused": true,
+            "reducedMotion": false,
+            "productionAsset": false
+          },
+          "canvasCount": 1,
+          "available": true
+        }
+      ]
+    },
+    {
+      "id": "reload-restored",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "detail",
+        "pixelRatio": 2,
+        "shadowMapSize": 1536,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 2,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 700,
+          "height": 930
+        },
+        "dpr": 2,
+        "drawCalls": 117,
+        "triangles": 205320,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 3,
+        "outfit": "scarf-apron",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "canvasCount": 1,
+      "available": true
+    },
+    {
+      "id": "modal-paused",
+      "before": 4,
+      "after": 4,
+      "paused": true
+    },
+    {
+      "id": "town-paused-home",
+      "homeFrames": 0,
+      "townFrames": 25
+    },
+    {
+      "id": "high-resolution-photo",
+      "photo": {
+        "width": 1398,
+        "height": 1858,
+        "opaquePixels": 1024,
+        "colors": 847
+      },
+      "before": {
+        "width": 700,
+        "height": 930
+      },
+      "after": {
+        "width": 700,
+        "height": 930
+      },
+      "dpr": 2
+    },
+    {
+      "id": "context-lost",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "detail",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "detail",
+        "pixelRatio": 2,
+        "shadowMapSize": 1536,
+        "active": true,
+        "contextLost": true,
+        "shaderError": false,
+        "renderSubmissionMs": 2.100000001490116,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 700,
+          "height": 930
+        },
+        "dpr": 2,
+        "drawCalls": 106,
+        "triangles": 201044,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 45,
+        "outfit": "scarf-apron",
+        "time": "sunset",
+        "paused": true,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "canvasCount": 1,
+      "available": false
+    },
+    {
+      "id": "context-recovered",
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "detail",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "detail",
+        "pixelRatio": 2,
+        "shadowMapSize": 1536,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 23.800000000745058,
+        "assetFailures": [],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 700,
+          "height": 930
+        },
+        "dpr": 2,
+        "drawCalls": 117,
+        "triangles": 205320,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 1,
+        "outfit": "scarf-apron",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": false,
+        "productionAsset": false
+      },
+      "canvasCount": 1,
+      "available": true
+    },
+    {
+      "id": "while-sky-stalled",
+      "canvasCount": 1,
+      "available": false
+    },
+    {
+      "id": "bounded-sky-fallback",
+      "elapsedMs": 14999,
+      "metrics": {
+        "renderer": "Three.js r180",
+        "graphicsVersion": 3,
+        "visualRevision": "environment-v5",
+        "view": "home",
+        "cameraYaw": 0,
+        "cameraMoving": false,
+        "quality": "light",
+        "pixelRatio": 1,
+        "shadowMapSize": 512,
+        "active": true,
+        "contextLost": false,
+        "shaderError": false,
+        "renderSubmissionMs": 229.80000000074506,
+        "assetFailures": [
+          {
+            "url": "/scene-assets/graphics-v2/azure-sky-v3-mobile.jpg",
+            "reason": "timeout"
+          }
+        ],
+        "avatarVersion": "mongle-v3",
+        "drawingBuffer": {
+          "width": 350,
+          "height": 465
+        },
+        "dpr": 1,
+        "drawCalls": 70,
+        "triangles": 182028,
+        "lines": 5421,
+        "instancedFoliage": 1294,
+        "frameCount": 1,
+        "outfit": "none",
+        "time": "sunset",
+        "paused": false,
+        "reducedMotion": true,
+        "productionAsset": false
+      },
+      "canvasCount": 1,
+      "available": true
+    }
+  ],
+  "errors": [],
+  "sourceSha256": {
+    "app-shell.mjs": "99829d24ab45495d879123dd2ce1a1c915c3a89b76aab84aac3115204d7375ee",
+    "app.mjs": "e550e08c90c6613a419bb4337efdb5057e1fd88f7edcb577dd4b0a0c64f5e2e5",
+    "scene-v3.mjs": "b04f31d6be657515cb1e75a8e8cf9b78d4e2e8aac800f503a5b85bb7c9abb8a4",
+    "avatar-v3.mjs": "1474c6a57ec2d3a694fa30122a3909856f01c66c4b1ebf514abdc98eef776cf7",
+    "garden-breeze-v5.mjs": "3f557ca9efcd940eb2f49b158b9322926463e644c889e94cc7b03f0b442e6fa0",
+    "courtyard-details-v5.mjs": "3991c40e036311b26642da09d3e668695096516b4fa44024c7302d768ccab556"
+  },
+  "endSourceSha256": {
+    "app-shell.mjs": "99829d24ab45495d879123dd2ce1a1c915c3a89b76aab84aac3115204d7375ee",
+    "app.mjs": "e550e08c90c6613a419bb4337efdb5057e1fd88f7edcb577dd4b0a0c64f5e2e5",
+    "scene-v3.mjs": "b04f31d6be657515cb1e75a8e8cf9b78d4e2e8aac800f503a5b85bb7c9abb8a4",
+    "avatar-v3.mjs": "1474c6a57ec2d3a694fa30122a3909856f01c66c4b1ebf514abdc98eef776cf7",
+    "garden-breeze-v5.mjs": "3f557ca9efcd940eb2f49b158b9322926463e644c889e94cc7b03f0b442e6fa0",
+    "courtyard-details-v5.mjs": "3991c40e036311b26642da09d3e668695096516b4fa44024c7302d768ccab556"
+  },
+  "limits": [
+    "Existing isolated synthetic account database; no production identity or user-facing database changed",
+    "390px/DPR3 browser emulation is not a physical Galaxy S25 or iPhone 15 performance test",
+    "GPU loss and stalled asset requests are deliberately injected browser conditions"
+  ]
+}

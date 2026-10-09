@@ -4,7 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { randomUUID, timingSafeEqual } from 'node:crypto';
-import { Store, now, today, token, hash, publicUser, passwordMatches, passwordHash } from './store.mjs';
+import { Store, now, today, token, hash, publicUser, passwordMatches, passwordHashAsync } from './store.mjs';
+import { createClientAddress, createAttemptLimiter, reserveAttempts, createConcurrencyGuard, publicRequestError } from './request-security.mjs';
 import { normalizeChannelUrl, collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { analyze, companyOverview, analyticsCsv, shiftDate, dateRange, METRICS, metricPoint, compareMetric, metricIndex } from '../analytics.mjs';
 import { providers, createAuthorization, exchangeCode, refreshCredentials } from './oauth.mjs';
@@ -17,6 +18,9 @@ import { createDailyTrendsService } from './daily-trends-service.mjs';
 import { createCreativeResearchService } from './creative-research.mjs';
 import { createCreatorReviewsService } from './creator-reviews.mjs';
 import { createCreatorSourcesService } from './creator-sources.mjs';
+import { createClientProjectsService } from './client-projects.mjs';
+import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
+import { createBrandQualityService } from './brand-quality-service.mjs';
 import { createStaticResponder } from './static-response.mjs';
 import { workroomGuide,workroomSource } from './workroom-guide.mjs';
 import { companyGuide } from './company-guide.mjs';
@@ -27,12 +31,18 @@ import { buildGrowthHistory } from './growth-history.mjs';
 import { buildTeamTrends } from './team-trends.mjs';
 import { buildContentLeaders } from './content-leaders.mjs';
 import { createAssistantService } from './assistant-service.mjs';
+import { createClientWorkflowService } from './client-workflow.mjs';
+import { createClientNotificationsService } from './client-notifications.mjs';
 import { createCrewProfileService } from './crew-profile-service.mjs';
 import { createComputerInterpretationService } from './computer-interpretation-service.mjs';
 import { receiveStudioMedia,commitStudioMedia,discardStudioMedia,serveStudioMedia } from './studio-media.mjs';
 import { createMessenger } from '../../../../../tools/company-messenger/server.mjs';
+import { createWebPushService, generateVapidKeys } from '../../../../../tools/company-messenger/web-push-service.mjs';
 import { resolvePlatformUrl } from '../../../../../tools/company-messenger/platform-navigation.mjs';
 import { createSynkIdentity, synkIdentityConfig } from './synk-identity.mjs';
+import { createCustomerIdentity, customerIdentityConfig } from './customer-identity.mjs';
+import { createCustomerComputerDraft } from './customer-computer-draft.mjs';
+import { createCustomerRoutes } from './customer-routes.mjs';
 
 // This service also loads Domain. Wait until the interpretation runtime has
 // observed its source through the static service dependency before sharing it.
@@ -49,25 +59,47 @@ const count=value=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=
 const isLocalHost=host=>['127.0.0.1','localhost','::1'].includes(host);
 
 export function createCompanyApp(options={}) {
+  const backgroundJobsSetting=process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED??'1';
+  if(!['0','1'].includes(backgroundJobsSetting))throw new Error('SYNK_COMPANY_BACKGROUND_JOBS_ENABLED는 0 또는 1이어야 합니다.');
+  const backgroundJobsEnabled=backgroundJobsSetting==='1';
+  if(options.workNotificationsEnabled!==undefined&&typeof options.workNotificationsEnabled!=='boolean')throw new Error('workNotificationsEnabled는 boolean이어야 합니다.');
+  const workNotificationsSetting=options.workNotificationsEnabled??process.env.SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED??backgroundJobsSetting;
+  if(![true,false,'0','1'].includes(workNotificationsSetting))throw new Error('SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED는 0 또는 1이어야 합니다.');
+  const workNotificationsEnabled=workNotificationsSetting===true||workNotificationsSetting==='1';
+  const clientAddress=createClientAddress(options.trustedProxyIps??process.env.SYNK_COMPANY_TRUSTED_PROXY_IPS??'');
   const port=Number(options.port??process.env.SYNK_COMPANY_PORT??4191);
   const host=options.host??process.env.SYNK_COMPANY_HOST??'127.0.0.1';
+  const production=options.production===true||process.env.NODE_ENV==='production'||!isLocalHost(host);
   const originUrl=new URL(options.origin??process.env.SYNK_COMPANY_ORIGIN??`http://127.0.0.1:${port}`);
   const origin=originUrl.origin;
+  const webPushSetting=options.webPushEnabled??process.env.SYNK_COMPANY_WEB_PUSH_ENABLED??'0';
+  if(![true,false,'0','1'].includes(webPushSetting))throw new Error('SYNK_COMPANY_WEB_PUSH_ENABLED는 0 또는 1이어야 합니다.');
+  const webPushEnabled=webPushSetting===true||webPushSetting==='1';
+  if(webPushEnabled&&originUrl.protocol!=='https:')throw new Error('기기 알림에는 HTTPS 회사 주소가 필요합니다.');
   if(!isLocalHost(host)&&originUrl.protocol!=='https:')throw new Error('크루용 서버에는 HTTPS 회사 주소가 필요합니다.');
   if(originUrl.pathname!=='/'||originUrl.search||originUrl.hash||originUrl.username)throw new Error('회사 주소에는 경로를 넣지 마세요.');
   const platformUrl=resolvePlatformUrl(options.platformUrl===undefined?process.env.SYNK_PLATFORM_URL:options.platformUrl,{origin});
-  const store=options.store??new Store(options.dataDir??process.env.SYNK_COMPANY_DATA??join(here,'data'));
+  const dataDir=options.store?.directory??options.dataDir??process.env.SYNK_COMPANY_DATA??join(here,'data');
+  if(existsSync(join(dataDir,'PREPARATION_INCOMPLETE')))throw new Error('복구 검증을 마치지 않은 데이터입니다. 복구 인수 절차를 완료한 뒤 시작해 주세요.');
+  if((options.requireExistingData??process.env.SYNK_COMPANY_REQUIRE_EXISTING_DATA==='1')&&['company.sqlite','encryption.key','workspace-integration.json'].some(file=>!existsSync(join(dataDir,file))))throw new Error('클라우드용 회사 데이터와 암호화 키를 먼저 복구해야 합니다. 빈 데이터로 시작하지 않습니다.');
+  const store=options.store??new Store(dataDir);
   const integrationFile=join(store.directory,'workspace-integration.json');
   let integrationConfig={};
   if(existsSync(integrationFile)){
     try{integrationConfig=JSON.parse(readFileSync(integrationFile,'utf8'));}catch{throw new Error('사내 앱 통합 설정을 읽을 수 없습니다.');}
   }
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
-  let messenger;
-  const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked()});
-  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,integration:{
+  let messenger,clientNotifications;
+  const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
+  const customerIdentity=createCustomerIdentity({origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
+  messenger=createMessenger({dataDir:messengerDataDir,driveStorage:options.messengerDriveStorage,basePath:'/messenger',platformUrl,backgroundJobsEnabled,workNotificationsEnabled,integration:{
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
+    notifications:{
+      list:companyUserId=>clientNotifications?.list(store.get('users',companyUserId)).notifications||[],
+      read:(companyUserId,id)=>clientNotifications.read(store.get('users',companyUserId),id),
+      readAll:companyUserId=>clientNotifications.readAll(store.get('users',companyUserId)),
+    },
     authenticate(req){const auth=session(req);if(!auth)return null;return {companyUserId:auth.user.id,role:auth.user.role,canWrite:auth.user.role!=='viewer',canManage:auth.user.role==='admin',csrfToken:auth.body.csrfToken,token:auth.hash,parentOrigin:origin};},
     resolveWorkspaceLink({companyUserId,recipientCompanyUserIds,workspaceLink,purpose}){
       const url=new URL(workspaceLink.url,origin),params=new URLSearchParams(url.hash?url.hash.slice(1):url.search),draftId=params.get('draftId');
@@ -84,21 +116,43 @@ export function createCompanyApp(options={}) {
     res.writeHead(302,{'Location':origin+'/?tab=messenger','Cache-Control':'no-store'});res.end();
   });
   const collector=options.collector??collectChannel;
-  const inflight=new Set();let queue=Promise.resolve();let timer;
+  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer;
   let ready=false,startTask=null,shutdownTask=null,stopRequested=false;
-  const failedLogins=new Map();
+  const loginNow=options.loginNow??(()=>Date.now()),loginWork=createConcurrencyGuard(4);
+  const loginPair=createAttemptLimiter({limit:8,windowMs:15*60000,now:loginNow});
+  const loginIp=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
+  const loginAccount=createAttemptLimiter({limit:50,windowMs:15*60000,now:loginNow});
+  const loginGlobal=createAttemptLimiter({limit:120,windowMs:60000,maxEntries:1,now:loginNow});
+  const pulseAttempts=createAttemptLimiter({limit:30,windowMs:15*60000,now:loginNow});
   const clock=()=>options.clock?.()||now();
   const content=createContentService({store,clock,fetchImpl:options.contentFetch,isConnected:hasConnection});
   const dailyTrends=createDailyTrendsService({store,clock,collector:options.dailyTrendsCollector,fetchImpl:options.dailyTrendsFetch});
   const creativeResearch=createCreativeResearchService({store,clock,fetchImpl:options.creativeResearchFetch});
   const creatorReviews=createCreatorReviewsService({store,clock});
   const creatorSources=createCreatorSourcesService({store});
+  const clientProjects=createClientProjectsService({store,clock});
+  const clientWorkflow=createClientWorkflowService({store,clientProjects,clock});
+  clientNotifications=createClientNotificationsService({store,clientProjects,clientWorkflow,clock,onChange:ids=>messenger.notifyCompanyUsers(ids)});
+  let webPushKeys=null;
+  if(webPushEnabled){
+    webPushKeys=store.secret('device-web-push-vapid');
+    if(!webPushKeys){webPushKeys=generateVapidKeys();store.setSecret('device-web-push-vapid',webPushKeys);}
+  }
+  // Explicit device opt-in is independent of restored collection/deletion/reminder queues.
+  const deviceNotifications=createWebPushService({db:store.db,enabled:webPushEnabled,...webPushKeys,subject:origin,now:clock,
+    notificationsForUser:userId=>messenger.notificationsForCompanyUser(userId),
+    currentSession:currentPushSession,...(options.webPushSend?{send:options.webPushSend}:{}),
+  });
+  const clientIntake=createClientIntake({directory:options.clientIntakeDir??process.env.SYNK_PULSE_INBOX??(process.env.LOCALAPPDATA?join(process.env.LOCALAPPDATA,'SYNK','PULSE-Intake','inbox'):null)});
+  const brandQuality=createBrandQualityService({store,clock});
   const studio=createStudioService({store,clock});
   const crewProfiles=createCrewProfileService({store,clock});
   const practiceSync=createPracticeSyncService({store,clock});
-  const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch});
+  const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
+  const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
+  const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
-  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query)});
+  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user)});
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
   for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 시작됐습니다. 수집을 다시 실행해 주세요.'});
@@ -149,6 +203,19 @@ export function createCompanyApp(options={}) {
   function providerStates(){return providers(Object.fromEntries(['youtube','instagram','facebook','tiktok'].map(p=>[p,providerConfig(p)]))).map(p=>({...p,label:p.label||p.name,redirectUri:origin+`/api/oauth/${p.id}/callback`,publicApiConfigured:p.id==='youtube'&&!!providerConfig(p.id).apiKey}));}
   function rawSession(req){const raw=/\bsynk_company_session=([^;]+)/.exec(req.headers.cookie||'')?.[1];const row=store.readToken(raw,'session');if(!row)return null;const user=store.get('users',row.userId);return user?.active?{...row,user,raw}:null;}
   function session(req){const row=rawSession(req);return row&&synkIdentity.sessionAllowed(row)?row:null;}
+  async function currentPushSession(userId,sessionHash){
+    if(stopRequested)return null;
+    const read=()=>{
+      const stored=store.db.prepare("SELECT * FROM tokens WHERE hash=? AND purpose='session' AND userId=? AND expiresAt>?").get(sessionHash,userId,now());
+      const user=stored&&store.get('users',userId);
+      return user?.active?{...stored,body:JSON.parse(stored.body),user}:null;
+    };
+    const row=read();if(!row)return false;
+    let valid;try{valid=await synkIdentity.validateSession(row);}catch{return null;}
+    if(stopRequested)return null;
+    if(valid!==true)return valid===false?false:null;
+    const latest=read();return !!latest&&synkIdentity.sessionAllowed(latest);
+  }
   function setSession(res,user,extra={}){const csrfToken=token(),value=store.mint('session',user.id,{csrfToken,...extra},7*24*60),prior=res.getHeader('Set-Cookie');res.setHeader('Set-Cookie',[...(prior?Array.isArray(prior)?prior:[prior]:[]),`synk_company_session=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${originUrl.protocol==='https:'?'; Secure':''}`]);return {user:publicUser(user),csrfToken,...(extra.synkIdentity?{sessionHash:hash(value)}:{})};}
   function purgeExpired(at=clock()){store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if((row.expiresAt&&Date.parse(row.expiresAt)<=Date.parse(at))||(kind==='hypeObservations'&&(!Number.isFinite(Date.parse(row.checkedAt))||Date.parse(row.checkedAt)<=Date.parse(at)-HYPE_RETENTION_MS)))store.remove(kind,row.id);const postIds=new Set(store.all('posts').map(p=>p.id));for(const row of store.all('hypeObservations'))if(!postIds.has(row.postId))store.remove('hypeObservations',row.id);});}
   function records(channels,{readOnly=false}={}){if(!readOnly)purgeExpired();const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
@@ -280,7 +347,7 @@ export function createCompanyApp(options={}) {
     return{id,channelId:c.id,status:'queued'};
   }
   async function scheduledTick(at=clock()){
-    if(stopRequested)return;
+    if(stopRequested||!backgroundJobsEnabled)return;
     purgeExpired(at);const system=store.all('users').find(u=>u.role==='admin'&&u.active);if(!system)return;
     if(options.schedule!==false||options.dailyTrendsCollector||options.dailyTrendsFetch)dailyTrends.tick(at).catch(()=>{});
     const settings=store.get('settings','company');if(!settings.enabled)return;
@@ -318,7 +385,8 @@ export function createCompanyApp(options={}) {
   }
   const respondStatic=createStaticResponder();
   function responseHeaders(type){return{'Content-Type':type,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer','X-Frame-Options':'DENY','Content-Security-Policy':"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self'; frame-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"};}
-  function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
+  function writeResponse(res,status,body,type='application/json; charset=utf-8'){res.writeHead(status,responseHeaders(type));res.end(type.startsWith('application/json')?JSON.stringify(body):body);}
+  function send(res,status,body,type='application/json; charset=utf-8'){messenger.disconnectRevoked();writeResponse(res,status,body,type);}
   async function body(req,{maxBytes=768000,maxChars=256000}={}){
     if(!req.headers['content-type']?.startsWith('application/json'))throw httpError('JSON 입력이 필요합니다.');
     const chunks=[];let bytes=0;
@@ -330,8 +398,29 @@ export function createCompanyApp(options={}) {
   const server=createServer(async(req,res)=>{try{
     if(req.headers.host!==originUrl.host&&!(options.allowTestHost&&req.headers.host?.startsWith('127.0.0.1:')))throw httpError('등록된 회사 주소로 접속해 주세요.',403);
     const url=new URL(req.url,origin),path=url.pathname,method=req.method;
+    // Customer capabilities never create a staff session or grant workspace access.
+    if(path.startsWith('/pulse/api/')){
+      const customerToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_session=([A-Za-z0-9_-]+)/)?.[1];
+      if(method==='POST'){
+        if(req.headers.origin!==origin)throw httpError('고객 라운지에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:40000,maxChars:12000});
+        if(path==='/pulse/api/open'){
+          const release=pulseAttempts.reserve(clientAddress(req));
+          const result=clientProjects.open(input.invite);release();
+          res.setHeader('Set-Cookie',`synk_pulse_session=${result.session}; Path=/pulse; HttpOnly; SameSite=Strict; Max-Age=43200${originUrl.protocol==='https:'?'; Secure':''}`);
+          return send(res,200,{project:result.project,csrf:result.csrf});
+        }
+        if(path==='/pulse/api/action')return send(res,200,clientProjects.customerAction(customerToken,req.headers['x-pulse-csrf'],input));
+        if(path==='/pulse/api/logout'){const {auth}=clientProjects.session(customerToken);if(req.headers['x-pulse-csrf']!==auth.body.csrf)throw httpError('고객 화면을 다시 열어 주세요.',403);store.db.prepare('DELETE FROM tokens WHERE hash=?').run(auth.hash);res.setHeader('Set-Cookie','synk_pulse_session=; Path=/pulse; HttpOnly; SameSite=Strict; Max-Age=0');return send(res,200,{ok:true});}
+      }
+      if(method==='GET'&&path==='/pulse/api/project')return send(res,200,clientProjects.read(customerToken));
+      const media=path.match(/^\/pulse\/api\/media\/([a-f0-9-]{36})$/);
+      if(['GET','HEAD'].includes(method)&&media)return await serveStudioMedia(req,res,store.directory,clientProjects.customerMedia(customerToken,media[1]),()=>clientProjects.customerMedia(customerToken,media[1]));
+      throw httpError('고객 요청을 찾을 수 없습니다.',404);
+    }
     const demoRequest=path==='/api/demo'||path.startsWith('/api/demo/')||req.headers['x-synk-demo']==='1'||url.searchParams.get('demo')==='1';
     if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 조회만 가능합니다. 실제 화면으로 돌아가 변경해 주세요.',403);
+    if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
     if(!identityControl&&(path.startsWith('/api/')||path.startsWith('/messenger/api/'))){const current=rawSession(req);if(current)await synkIdentity.validateSession(current);}
     if(method==='GET'&&path==='/api/synk-id/callback'){
@@ -340,15 +429,31 @@ export function createCompanyApp(options={}) {
     }
     if(path==='/messenger'){if(!['GET','HEAD'].includes(method))throw httpError('메신저 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/messenger/'});return res.end();}
     if(path.startsWith('/messenger/'))return await messenger.handler(req,res);
-    if(method==='GET'&&path==='/api/health')return send(res,200,{ok:true,app:'synk-company',version:1,workspaceIntegration:true,ready});
+    if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,needsSetup:store.all('users').length===0,platformUrl});
+    if(path==='/api/device-notifications'||path.startsWith('/api/device-notifications/')){
+      if(!auth)throw httpError('회사 계정으로 로그인해 주세요.',401);
+      if(url.search)throw httpError('기기 알림 주소를 확인해 주세요.');
+      const originalHash=auth.hash,originalUserId=user.id;
+      const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==originalUserId)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest;};
+      if(method==='GET'&&path==='/api/device-notifications'){
+        const result=await deviceNotifications.state(user.id,auth.hash);recheck();return send(res,200,result);
+      }
+      const removeId=/^\/api\/device-notifications\/([a-f0-9-]{36})$/.exec(path)?.[1];
+      if(!(method==='POST'&&path==='/api/device-notifications'||method==='DELETE'&&removeId))throw httpError('기기 알림 요청을 확인해 주세요.',405);
+      if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      const input=method==='POST'?await body(req):null;
+      auth=recheck();if(req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',403);
+      const result=method==='POST'?await deviceNotifications.register(user.id,auth.hash,input):await deviceNotifications.remove(user.id,removeId);
+      recheck();return send(res,method==='POST'?201:200,result);
+    }
     if(method==='GET'&&path==='/api/computer-interpretation'){if(url.search)throw httpError('AI 상담 상태 주소를 확인해 주세요.');return send(res,200,computerInterpretation.state(user));}
     if(method==='POST'&&['/api/synk-id/challenge','/api/synk-id/start','/api/synk-id/exchange','/api/synk-id/renew'].includes(path)){
       const input=await body(req);auth=identityControl?rawSession(req):session(req);
-      if(path.endsWith('/challenge'))return send(res,200,synkIdentity.challenge(req,res,input,auth));
-      if(path.endsWith('/start'))return send(res,200,synkIdentity.start(req,res,input,auth));
+      if(path.endsWith('/challenge'))return send(res,200,await synkIdentity.challenge(req,res,input,auth,()=>session(req)));
+      if(path.endsWith('/start'))return send(res,200,await synkIdentity.start(req,res,input,auth,()=>session(req)));
       if(path.endsWith('/exchange'))return send(res,200,await synkIdentity.exchange(req,res,input,()=>session(req),setSession));
       return send(res,200,await synkIdentity.renew(req,input,()=>rawSession(req)));
     }
@@ -357,6 +462,11 @@ export function createCompanyApp(options={}) {
       const unauth=['/api/setup','/api/login','/api/join','/api/launch'];
       if(!unauth.includes(path)&&(!auth||req.headers['x-csrf-token']!==auth.body.csrfToken))throw httpError('로그인 상태를 다시 확인해 주세요.',403);
       const studioUpload=path.match(/^\/api\/studio-productions\/([^/]+)\/media$/);
+      const clientUpload=path.match(/^\/api\/client-projects\/([^/]+)\/media$/);
+      if(clientUpload){
+        const originalHash=auth.hash;let upload;
+        try{clientProjects.project(user,clientUpload[1],true);upload=await receiveStudioMedia(req,store.directory);let latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,clientUpload[1],true);await commitStudioMedia(upload,store.directory);latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);let guide;try{guide=decodeURIComponent(req.headers['x-version-guide']||'');}catch{throw httpError('사용 안내를 확인해 주세요.');}const result=clientProjects.addVersion(latest.user,clientUpload[1],{revision:Number(req.headers['x-project-revision']),label:upload.label,kind:req.headers['x-version-kind'],guide},upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+      }
       if(studioUpload){
         const originalHash=auth.hash;let upload;
         try{
@@ -373,6 +483,24 @@ export function createCompanyApp(options={}) {
       const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:undefined);
       // Receiving a request body yields control. Revalidate revoked sessions and current roles afterward.
       if(!unauth.includes(path)){auth=identityControl?rawSession(req):session(req);user=auth?.user;if(!user||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);}
+      if(path==='/api/client-projects')return send(res,201,clientProjects.save(user,input));
+      if(path==='/api/client-workflow')return send(res,200,clientWorkflow.update(user,input));
+      const clientRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})(?:\/(invite|revoke|versions|messages|resolve))?$/);
+      if(clientRoute){const [,id,action]=clientRoute;return send(res,200,action==='invite'?clientProjects.invite(user,id,input):action==='revoke'?clientProjects.revoke(user,id,input):action==='versions'?clientProjects.addVersion(user,id,input):action==='messages'?clientProjects.message(user,id,input):action==='resolve'?clientProjects.resolveMessage(user,id,input.messageId,input):clientProjects.save(user,input,id));}
+      if(path==='/api/client-intake/import'){
+        admin(user);let prepared;
+        try{
+          const receipt=await clientIntake.read(input.receiptId);
+          let latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);
+          prepared=await clientIntake.prepareFiles(receipt,store.directory);
+          latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);
+          const result=clientProjects.importReceipt(latest.user,prepared);
+          if(result.existing){await discardIntakeFiles(prepared,store.directory);prepared=null;}else prepared=null;
+          return send(res,201,result);
+        }finally{await discardIntakeFiles(prepared,store.directory);}
+      }
+      const brandRoute=path.match(/^\/api\/brand-quality\/(recipes|operations)(?:\/([a-f0-9-]{36}))?$/);
+      if(brandRoute)return send(res,brandRoute[2]?200:201,brandRoute[1]==='recipes'?brandQuality.saveRecipe(user,input,brandRoute[2]||null):brandQuality.saveOperation(user,input,brandRoute[2]||null));
       if(path==='/api/workroom-practice/state'){
         if(url.search)throw httpError('본인의 실습 계정 저장 주소만 사용할 수 있어요.');
         try{return send(res,200,practiceSync.mutate(user,input));}
@@ -386,18 +514,31 @@ export function createCompanyApp(options={}) {
         const result=await dailyTrends.collect({force:input.force??false,requestedBy:user.id});
         audit(user,'daily-trends-collect','daily-trends',{force:input.force??false,alreadyRunning});return send(res,200,result);
       }
-      if(path==='/api/setup'){if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);passwordHash(input.password);if(!store.consume(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);const u=store.createUser({...input,role:'admin'});store.put('settings','company',{...store.get('settings','company'),companyName:text(input.companyName,80)||'SYNK'});return send(res,201,setSession(res,u));}
+      if(path==='/api/setup'){
+        if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);
+        if(!store.readToken(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);
+        const checkedHash=await passwordHashAsync(input.password);
+        const u=store.transaction(()=>{if(store.all('users').length)throw httpError('이미 회사가 설정되어 있습니다.',409);if(!store.readToken(input.setupToken,'setup'))throw httpError('관리자 시작 링크를 다시 열어 주세요.',403);const created=store.createUser({...input,password:undefined,role:'admin'});const user=store.put('users',created.id,{...created,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.setupToken));store.put('settings','company',{...store.get('settings','company'),companyName:text(input.companyName,80)||'SYNK'});return user;});
+        return send(res,201,setSession(res,u));
+      }
       if(path==='/api/launch'){const t=store.consume(input.token,'launch');const u=t&&store.get('users',t.userId);if(!u?.active||!isLocalHost(host))throw httpError('시작 링크가 만료됐습니다. 바탕화면 바로가기를 다시 열어 주세요.',403);return send(res,200,setSession(res,u));}
       if(path==='/api/login'){
-        const email=text(input.email??input.username,254).toLowerCase(),key=req.socket.remoteAddress+':'+email;const attempts=failedLogins.get(key)||{count:0,since:Date.now()};
-        if(Date.now()-attempts.since>15*60000){attempts.count=0;attempts.since=Date.now();}if(attempts.count>=8)throw httpError('로그인 시도가 많습니다. 15분 후 다시 시도해 주세요.',429);
-        let u=store.all('users').find(u=>u.email===email);let valid=passwordMatches(input.password,u?.passwordHash);
-        if(!u){const linkedId=await messenger.authenticateLinkedUsername(email,input.password);const linked=linkedId&&store.get('users',linkedId);if(linked?.active&&!linked.passwordHash){u=linked;valid=true;}}
-        if(!u?.active||!valid){attempts.count++;failedLogins.set(key,attempts);throw httpError('이메일 또는 기존 메신저 아이디와 비밀번호를 확인해 주세요.',401);}failedLogins.delete(key);return send(res,200,setSession(res,u));
+        const email=text(input.email??input.username,254).toLowerCase(),ip=clientAddress(req),account=hash(email);
+        const release=reserveAttempts([[loginPair,ip+':'+account],[loginIp,ip],[loginAccount,account],[loginGlobal,'all']]);
+        let u;
+        try{u=await loginWork(async()=>{
+          let candidate=store.all('users').find(item=>item.email===email),expectedHash=candidate?.passwordHash;
+          let valid=await passwordMatches(input.password,expectedHash);
+          if(!candidate){const linkedId=await messenger.authenticateLinkedUsername(email,input.password);const linked=linkedId&&store.get('users',linkedId);if(linked?.active&&!linked.passwordHash){candidate=linked;expectedHash=linked.passwordHash;valid=true;}}
+          const latest=candidate&&store.get('users',candidate.id);
+          if(!latest?.active||!valid||latest.passwordHash!==expectedHash)throw httpError('이메일 또는 기존 메신저 아이디와 비밀번호를 확인해 주세요.',401);
+          return latest;
+        });}catch(error){if(error.status!==401)release();throw error;}
+        release();return send(res,200,setSession(res,u));
       }
       if(path==='/api/join'){
         const invitation=store.readToken(input.token,'invite');if(!invitation)throw httpError('초대 링크가 만료됐거나 이미 사용됐습니다.',403);
-        const checkedHash=passwordHash(input.password);const result=store.transaction(()=>{const inv=store.readToken(input.token,'invite');if(!inv)throw httpError('이미 사용된 초대입니다.',403);teamFor(inv.body.teamId);const u=store.createUser({email:inv.body.email,name:input.name||inv.body.name,role:inv.body.role||'member',teamId:inv.body.teamId||null});store.put('users',u.id,{...u,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.token));return store.get('users',u.id);});return send(res,201,setSession(res,result));
+        const checkedHash=await passwordHashAsync(input.password);const result=store.transaction(()=>{const inv=store.readToken(input.token,'invite');if(!inv)throw httpError('이미 사용된 초대입니다.',403);teamFor(inv.body.teamId);const u=store.createUser({email:inv.body.email,name:input.name||inv.body.name,role:inv.body.role||'member',teamId:inv.body.teamId||null});store.put('users',u.id,{...u,passwordHash:checkedHash});store.db.prepare('DELETE FROM tokens WHERE hash=?').run(hash(input.token));return store.get('users',u.id);});return send(res,201,setSession(res,result));
       }
       if(!user)throw httpError('먼저 로그인해 주세요.',401);
       if(path==='/api/computer-interpretation/delete'){
@@ -423,8 +564,13 @@ export function createCompanyApp(options={}) {
       if(path==='/api/crew-profile/delete')return send(res,200,crewProfiles.remove(user,input));
       if(path==='/api/crew-work/evaluate')return send(res,200,crewProfiles.evaluate(user,input));
       if(user.role==='viewer'&&!['/api/logout','/api/account/password'].includes(path))throw httpError('열람 계정은 기록을 변경하거나 수집할 수 없습니다.',403);
-      if(path==='/api/logout'){const result=synkIdentity.logout(auth.hash);res.setHeader('Set-Cookie','synk_company_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');return send(res,200,await result);}
-      if(path==='/api/account/password'){if(user.passwordHash&&!passwordMatches(input.oldPassword,user.passwordHash))throw httpError('현재 비밀번호를 확인해 주세요.',403);const changed={...user,passwordHash:passwordHash(input.password)};store.put('users',user.id,changed);store.revokeUser(user.id);return send(res,200,setSession(res,changed));}
+      if(path==='/api/logout'){await deviceNotifications.revokeSession(auth.hash);const result=synkIdentity.logout(auth.hash);res.setHeader('Set-Cookie','synk_company_session=; HttpOnly; SameSite=Lax; Path=/; Max-Age=0');return send(res,200,await result);}
+      if(path==='/api/account/password'){
+        if(user.passwordHash&&!await passwordMatches(input.oldPassword,user.passwordHash))throw httpError('현재 비밀번호를 확인해 주세요.',403);
+        const checkedHash=await passwordHashAsync(input.password),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id||latest.user.passwordHash!==user.passwordHash||req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        const changed={...latest.user,passwordHash:checkedHash};store.put('users',user.id,changed);store.revokeUser(user.id);return send(res,200,setSession(res,changed));
+      }
       if(path==='/api/studio-productions'){const result=studio.saveProduction(user,input);audit(user,'studio-production-created',result.production.id);return send(res,201,result);}
       if(path==='/api/creator-reviews'){if(demoRequest)throw httpError('개인 점검은 실제 작업실에서 저장해 주세요.');const result=creatorReviews.save(user,input);audit(user,'creator-review-created',result.record.id);return send(res,201,result);}
       const creatorReviewRoute=path.match(/^\/api\/creator-reviews\/([^/]+)(?:\/(archive))?$/);
@@ -536,7 +682,7 @@ export function createCompanyApp(options={}) {
           store.put('channels',c.id,{...store.get('channels',c.id),collectionDisabled:false,connectionVersion:(live.connectionVersion||0)+1});
           audit(user,'oauth-connected',c.id);
         });res.writeHead(302,{Location:'/?connected='+encodeURIComponent(c.id)});return res.end();
-      }catch(error){res.writeHead(302,{Location:'/?connectionError='+encodeURIComponent(safeError(error.message))});return res.end();}
+      }catch(error){const failure=publicRequestError(error,{production});res.writeHead(302,{Location:'/?connectionError='+encodeURIComponent(safeError(failure.message))});return res.end();}
     }
     const creatorAssetRoute=path.match(/^\/api\/creator-sources\/assets\/([a-z0-9-]+)$/);
     if(['GET','HEAD'].includes(method)&&creatorAssetRoute){
@@ -548,8 +694,20 @@ export function createCompanyApp(options={}) {
       res.writeHead(200,headers);return res.end(method==='HEAD'?undefined:bytes);
     }
     const studioMediaRoute=path.match(/^\/api\/studio-media\/([^/]+)$/);
+    const intakeFileRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/intake-files\/([a-f0-9-]{36})$/);
+    if(['GET','HEAD'].includes(method)&&intakeFileRoute){
+      if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      const getFile=actor=>{const row=clientProjects.project(actor,intakeFileRoute[1]),file=row.intake?.files?.find(f=>f.id===intakeFileRoute[2]);if(!file)throw httpError('접수 자료를 찾을 수 없습니다.',404);return file;};
+      return await serveIntakeFile(req,res,store.directory,getFile(user),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);getFile(latest.user);});
+    }
+    const clientMediaRoute=path.match(/^\/api\/client-media\/([a-f0-9-]{36})$/);
+    if(['GET','HEAD'].includes(method)&&clientMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,clientProjects.mediaFor(user,clientMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.mediaFor(latest.user,clientMediaRoute[1]);});}
     if(['GET','HEAD'].includes(method)&&studioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,studio.readableMedia(user,studioMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);studio.readableMedia(latest.user,studioMediaRoute[1]);});}
     if(method==='GET'&&path.startsWith('/api/')){if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/client-projects')return send(res,200,clientProjects.workspace(user));
+      if(path==='/api/client-workflow')return send(res,200,clientWorkflow.workspace(user));
+      if(path==='/api/client-intake'){admin(user);const result=await clientIntake.list(),latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);return send(res,200,result);}
+      if(path==='/api/brand-quality')return send(res,200,brandQuality.workspace(user));
       if(path==='/api/workroom-practice/state'){
         if(url.search||req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('본인의 실습 계정 저장 주소만 사용할 수 있어요.');
         return send(res,200,practiceSync.read(user));
@@ -622,11 +780,24 @@ export function createCompanyApp(options={}) {
     }
     const files={'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
+    if(path==='/consultation'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/consultation/'});return res.end();}
+    files['/consultation/']=['public/customer-computer.html','text/html; charset=utf-8'];
+    for(const file of ['customer-computer.js','customer-computer-state.mjs','customer-computer.css'])files['/consultation/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['consultation.mjs','interpretation.mjs','model-host.mjs'])files['/consultation/'+file]=['../../../../../experiences/atlas-lab/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['domain.js','interpretation.js','ask.js'])files['/consultation/core/'+file]=['../../../../../atlas/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['content.js','rules.js'])files['/consultation/computer/'+file]=['../../../맞춤도구/computer/'+file,'text/javascript; charset=utf-8'];
+    files['/consultation/assets/scrapbook.css']=['../../../../디자인/펠트스크랩북/scrapbook.css','text/css; charset=utf-8'];
+    files['/consultation/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
+    for(const file of ['laptop-felt.webp','fb-tile-cream-long.webp','fb-tile-butter-long.webp','fb-slab-black-long.webp'])files['/consultation/assets/'+file]=['../../../맞춤도구/assets/'+file,'image/webp'];
+    for(const file of ['client-projects.js','client-projects.css','brand-quality.js','brand-quality.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    files['/pulse/']=['public/pulse-lounge.html','text/html; charset=utf-8'];
+    files['/pulse/lounge.js']=['public/pulse-lounge.js','text/javascript; charset=utf-8'];
+    files['/pulse/lounge.css']=['public/client-projects.css','text/css; charset=utf-8'];
     // Exact browser dependencies only: server model adapter, fixtures and data
     // directories are intentionally absent from this public asset map.
     if(path==='/atlas-lab'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/atlas-lab/'});return res.end();}
     files['/atlas-lab/']=['../../../../../experiences/atlas-lab/index.html','text/html; charset=utf-8'];
-    for(const file of ['lab.js','lab.css','consultation.mjs','interpretation.mjs','model-host.mjs','matching.mjs','matching-ui.mjs','meeting.mjs','meeting-ui.mjs','reconnect.mjs','discovery.mjs','discovery-ui.mjs','journey-memory.mjs','participant-launcher.mjs'])files['/atlas-lab/'+file]=['../../../../../experiences/atlas-lab/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['lab.js','lab.css','consultation.mjs','interpretation.mjs','model-host.mjs','matching.mjs','matching-ui.mjs','meeting.mjs','meeting-regions.mjs','meeting-ui.mjs','reconnect.mjs','discovery.mjs','discovery-ui.mjs','journey-memory.mjs','participant-launcher.mjs'])files['/atlas-lab/'+file]=['../../../../../experiences/atlas-lab/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     for(const file of ['atlas-learning.js'])files['/learning-hub/'+file]=['../../../../../experiences/learning-hub/'+file,'text/javascript; charset=utf-8'];
     for(const file of ['scrapbook.css','SUIT-Variable.woff2','InterTight-700.woff2','sticker-book.webp','slab-cream-long.webp','slab-blush-long.webp'])files['/learning-hub/assets/'+file]=['../../../../../experiences/learning-hub/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':'image/webp'];
     for(const file of ['engine.js','personalization.js','domain.js','interpretation.js','temper-outcomes.js'])files['/consult/core/'+file]=['../../../../../atlas/'+file,'text/javascript; charset=utf-8'];
@@ -659,9 +830,12 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/company-guide.js':['public/company-guide.js','text/javascript; charset=utf-8'],'/company-guide.css':['public/company-guide.css','text/css; charset=utf-8']});
     Object.assign(files,{'/synk-id.js':['public/synk-id.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/manifest.webmanifest':['public/manifest.webmanifest','application/manifest+json; charset=utf-8'],'/messenger-icon.png':['public/messenger-icon.png','image/png']});
+    files['/device-notifications.js']=['public/device-notifications.js','text/javascript; charset=utf-8'];
+    files['/device-notifications.css']=['public/device-notifications.css','text/css; charset=utf-8'];
+    files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
     if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();return await respondStatic(req,res,{path:join(here,file),type,headers:responseHeaders(type)});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
-  }catch(e){send(res,e.status||400,{error:safeError(e.status||!options.production?e.message:'처리하지 못했습니다. 관리자에게 문의해 주세요.'),...(typeof e.code==='string'&&e.code.startsWith('SYNK_')?{code:e.code}:{})});}});
+  }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&/^SYNK_[A-Z0-9_]{1,80}$/.test(e.code)?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
     return new Promise((resolve,reject)=>{
       const failed=error=>{listener.off('listening',started);reject(error);};
@@ -670,10 +844,10 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);synkIdentity.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);synkIdentity.close();customerIdentity.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop()]);messenger.endConnections();
+      await Promise.all([queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{store.close();}
     })();
@@ -688,15 +862,16 @@ export function createCompanyApp(options={}) {
         synkIdentity.startChecks();
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
-        if(options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
+        if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
         ready=!stopRequested;
+        if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
         return server.address();
       }catch(error){await shutdown().catch(()=>{});throw error;}
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,messenger,dailyTrends,creativeResearch,computerInterpretation,origin,host,port,importLegacy,scheduledTick,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,messenger,deviceNotifications,dailyTrends,creativeResearch,computerInterpretation,origin,host,port,importLegacy,scheduledTick,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

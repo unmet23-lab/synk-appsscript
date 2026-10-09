@@ -1,0 +1,43 @@
+{
+  "checkedAt": "2026-10-08T22:35:09.955Z",
+  "passed": 27,
+  "checks": [
+    "environment v7 has backwards-compatible graphicsVersion",
+    "light pixel ratio and shadow size",
+    "light drawing budget",
+    "detail pixel ratio and shadow size",
+    "detail drawing budget",
+    "balanced pixel ratio and shadow size",
+    "balanced drawing budget",
+    "inactive scene does not render idle frames",
+    "paused scene can export real high-resolution pixels",
+    "photo caps and aspect ratio",
+    "photo restores interactive resolution",
+    "active scene resumes",
+    "runtime reduced motion sleeps without remounting",
+    "WebGL loss test available",
+    "lost context export throws",
+    "lost context emits recovery error",
+    "disposed export throws",
+    "dispose removes canvas",
+    "optional texture deadline is finite",
+    "optional failure is visible in metrics",
+    "late texture is disposed",
+    "no runtime or shader errors",
+    "shader failure rejects mount without ready callback",
+    "shader failure releases its canvas",
+    "early WebGL loss injection available",
+    "context loss during first asset load rejects and reports once",
+    "failed initial render releases the pending canvas"
+  ],
+  "errors": [],
+  "photo": {
+    "width": 1476,
+    "height": 1760,
+    "pixels": 2597760
+  },
+  "limits": [
+    "Browser viewport emulation, not physical mobile sustained performance",
+    "CPU render submission time is not GPU frame time"
+  ]
+}

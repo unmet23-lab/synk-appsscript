@@ -504,8 +504,13 @@ function synkbrief_운영상태읽기_(key) {
     const safeHealth = value => healthCodes.indexOf(value) >= 0 ? value : 'unknown';
     const optionalTime = value => value == null || (typeof value === 'string' && Number.isFinite(Date.parse(value)));
     const optionalHttp = value => value == null || (Number.isInteger(value) && value >= 100 && value <= 599);
+    const driveJobName = 'synkbrief-drive-library';
+    const driveJobHealth = ['ok', 'pending', 'failed', 'stale', 'never', 'disabled'];
     body.jobs.forEach(job => {
       if (!job || typeof job.jobname !== 'string' || !/^[a-z0-9_-]{1,64}$/.test(job.jobname) || typeof job.active !== 'boolean' || typeof job.health !== 'string' || !optionalTime(job.last_run_at) || !optionalHttp(job.http_status)) throw new Error('shape');
+      if (job.jobname === driveJobName && (driveJobHealth.indexOf(job.health) < 0
+        || !Object.prototype.hasOwnProperty.call(job, 'last_run_at')
+        || !Object.prototype.hasOwnProperty.call(job, 'http_status'))) throw new Error('shape');
     });
     const rows = [];
     let healthy = body.healthy;
@@ -530,11 +535,14 @@ function synkbrief_운영상태읽기_(key) {
       if (activeIssues.length) healthy = false;
       activeIssues.forEach(code => rows.push({ name: '@' + account.username, health: code, http: 200, at: new Date(checked).toISOString() }));
     });
-    ['synkbrief-refresh', 'synkbrief-retention'].forEach(name => {
+    const jobNames = ['synkbrief-refresh', 'synkbrief-retention'];
+    // Drive 동기화는 서버에 설정한 때만 내려온다. 기존 필수 잡은 계속 검사한다.
+    if (body.jobs.some(job => job.jobname === driveJobName)) jobNames.push(driveJobName);
+    jobNames.forEach(name => {
       const matches = body.jobs.filter(job => job && job.jobname === name);
       if (matches.length > 1) throw new Error('shape');
       const job = matches[0];
-      const health = !job ? 'missing' : job.active !== true ? 'disabled' : safeHealth(job.health);
+      const health = !job ? 'missing' : job.active !== true ? 'disabled' : name === driveJobName ? job.health : safeHealth(job.health);
       if (health !== 'ok' && health !== 'healthy' && health !== 'pending') healthy = false;
       rows.push({ name: name, health: health, http: job ? safeHttp(job.http_status) : 0, at: job ? safeTime(job.last_run_at) : '-' });
     });

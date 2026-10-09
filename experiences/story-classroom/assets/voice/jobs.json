@@ -1,15 +1,15 @@
 {
   "storyVersion": "classroom-birthday-2",
-  "textVersion": "classroom-birthday-2-voice-1",
+  "textVersion": "classroom-birthday-2-voice-2",
   "sourceHashes": {
-    "story.mjs": "6c139b949559b73cd5d2eeda9263988ef1cb53af1246fea7ffe1febbbae13aa6",
-    "voice-lines.mjs": "4d0d7d77b6132107ab44ba96b6382124e5ee291d763eab01735c195bca6c0fb3"
+    "story.mjs": "89e28577e35dc51bf7cfc59d9d428a86e7b151a136e84f460d2b49f4de942ad7",
+    "voice-lines.mjs": "47fd26eb6aca5e0f966b7e828c65441c24efd034d0cf4898e830d96898116ea7"
   },
   "lines": [
     {
       "id": "dialogue-opening-01",
       "speaker": "narrator",
-      "text": "쉬는 시간이 끝났어요. 교실에는 과자와 종이가 가득해요.",
+      "text": "쉬는 시간이 끝났어요. 그런데 교실이 엉망이에요. 과자와 종이가 여기저기 있어요.",
       "category": "narration",
       "assistanceMissionIds": [],
       "phase": "opening",
@@ -19,7 +19,7 @@
     {
       "id": "dialogue-opening-02",
       "speaker": "mongle",
-      "text": "어? 문밖에서 발소리가 나! 누구지?",
+      "text": "어? 복도에서 발소리가 들려! 누가 오는 걸까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
@@ -29,7 +29,7 @@
     {
       "id": "dialogue-opening-03",
       "speaker": "kkamong",
-      "text": "이 몸이 다 정리할 수 있지. 선생님만 안 오시면…",
+      "text": "이 몸이 금방 치울 수 있어. …그런데 발소리가 점점 가까워지는데?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
@@ -39,7 +39,7 @@
     {
       "id": "dialogue-opening-04",
       "speaker": "teacher",
-      "text": "이게 다 뭐야!",
+      "text": "어머나, 교실이 왜 이렇게 됐어?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
@@ -49,7 +49,7 @@
     {
       "id": "dialogue-opening-05",
       "speaker": "marin",
-      "text": "상황 보고. 선생님 도착. 정리 필요.",
+      "text": "상황 보고. 선생님 도착. 교실 상태, 엉망. …정리를 시작한다.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "opening",
@@ -59,7 +59,7 @@
     {
       "id": "dialogue-cleanup-intro-01",
       "speaker": "teacher",
-      "text": "마린, 까몽. 먼저 교실을 정리하자.",
+      "text": "마린, 까몽! 수업 전에 교실부터 정리하자.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -69,7 +69,7 @@
     {
       "id": "dialogue-cleanup-intro-02",
       "speaker": "mongle",
-      "text": "어? 이 종이에 글자가 있어! 버려도 되는 걸까?",
+      "text": "어? 이 종이에 뭐가 쓰여 있어! 이것도 버려야 해?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -79,7 +79,7 @@
     {
       "id": "dialogue-cleanup-intro-03",
       "speaker": "teacher",
-      "text": "그 종이는 오늘 쓸 장식이야. 버리면 안 돼.",
+      "text": "아니, 그 종이는 버리면 안 돼. 오늘 쓸 장식이거든.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -91,7 +91,7 @@
     {
       "id": "dialogue-cleanup-outro-01",
       "speaker": "kkamong",
-      "text": "이 몸의 정리 실력, 봤지? …종이도 안 구겼어.",
+      "text": "봤지? 이 몸이 치우니까 금방이잖아. …종이도 하나도 안 구겼어.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -101,7 +101,7 @@
     {
       "id": "dialogue-cleanup-outro-02",
       "speaker": "marin",
-      "text": "정리 완료. 종이 보관. …하트 모양 발견.",
+      "text": "정리 완료. 종이 보관. …종이에서 하트 모양 발견.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -111,7 +111,7 @@
     {
       "id": "dialogue-cleanup-outro-03",
       "speaker": "mongle",
-      "text": "오! 하트도 별도 있어! 누가 만들었을까?",
+      "text": "우와! 하트랑 별이야! 누가 이걸 만들었을까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -121,7 +121,7 @@
     {
       "id": "dialogue-clue-intro-01",
       "speaker": "teacher",
-      "text": "꽃도 있네? 이건 어디에 둘까?",
+      "text": "어머, 꽃도 있네? 이 꽃은 어디에 둘까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -131,7 +131,7 @@
     {
       "id": "dialogue-clue-intro-02",
       "speaker": "marin",
-      "text": "꽃 확인. 세 송이. …예쁘다.",
+      "text": "꽃 확인. 세 송이. 상태 양호. …예쁘다.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -143,7 +143,7 @@
     {
       "id": "dialogue-clue-intro-03",
       "speaker": "mongle",
-      "text": "어? 편지도 있어! 누가 썼을까?",
+      "text": "어? 서랍에 편지가 있어! 누가 쓴 걸까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -153,7 +153,7 @@
     {
       "id": "dialogue-clue-outro-01",
       "speaker": "narrator",
-      "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!”라고 쓰여 있어요.",
+      "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!” 하고 쓰여 있어요.",
       "category": "narration",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -163,7 +163,7 @@
     {
       "id": "dialogue-clue-outro-02",
       "speaker": "teacher",
-      "text": "오늘 내 생일인 걸 어떻게 알았니?",
+      "text": "어머… 오늘이 내 생일인 걸 어떻게 알았어?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -173,7 +173,7 @@
     {
       "id": "dialogue-clue-outro-03",
       "speaker": "kkamong",
-      "text": "내가 준비했지. …편지는 세 번 고쳐 썼어.",
+      "text": "내가 다 준비했지. …사실 편지는 세 번이나 다시 썼어.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -183,7 +183,7 @@
     {
       "id": "dialogue-surprise-intro-01",
       "speaker": "mongle",
-      "text": "우와! 깜짝 파티였구나! 같이 준비하자!",
+      "text": "우와! 깜짝 생일 파티였구나! 우리 같이 준비하자!",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -193,7 +193,7 @@
     {
       "id": "dialogue-surprise-intro-02",
       "speaker": "teacher",
-      "text": "아직 케이크를 못 봤는데?",
+      "text": "그런데 케이크는 어디 있니?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "intro",
@@ -203,7 +203,7 @@
     {
       "id": "dialogue-surprise-intro-03",
       "speaker": "kkamong",
-      "text": "내가 숨겨 뒀지. …조금 먹으려 했어, 아니, 잘 지켰어!",
+      "text": "케이크는 내가 숨겨 뒀지. …한 입만 먹으려다가, 아니, 잘 지켰어.",
       "category": "dialogue",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -215,7 +215,7 @@
     {
       "id": "dialogue-surprise-outro-01",
       "speaker": "marin",
-      "text": "파티 준비 완료. …선생님, 생일 축하합니다.",
+      "text": "파티 준비 완료. 전원 확인. …선생님, 생일 축하합니다.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -225,7 +225,7 @@
     {
       "id": "dialogue-surprise-outro-02",
       "speaker": "mongle",
-      "text": "우와! 교실이 파티 장소가 됐어!",
+      "text": "우와! 우리 교실이 파티장이 됐어!",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "outro",
@@ -235,7 +235,7 @@
     {
       "id": "dialogue-ending-01",
       "speaker": "teacher",
-      "text": "교실이 엉망인 줄 알았는데, 나를 위해 준비한 거였구나.",
+      "text": "교실이 엉망인 줄 알았는데… 다 나를 위한 거였구나. 정말 고마워.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
@@ -245,7 +245,7 @@
     {
       "id": "dialogue-ending-02",
       "speaker": "kkamong",
-      "text": "내 작전은 완벽했지. …네가 도와줘서 다행이야.",
+      "text": "훗, 이 몸의 작전이니까. …그래도 네가 도와줘서 다행이야.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
@@ -255,7 +255,7 @@
     {
       "id": "dialogue-ending-03",
       "speaker": "mongle",
-      "text": "같이 하니까 더 재밌어! 다음 파티도 같이 할까?",
+      "text": "같이 하니까 더 신나! 다음 파티도 같이 준비할까?",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
@@ -265,7 +265,7 @@
     {
       "id": "dialogue-ending-04",
       "speaker": "teacher",
-      "text": "이제 새 글을 읽고 마지막 정리를 해 보자. 이번에는 친구와 장소가 달라.",
+      "text": "파티가 끝나면 다시 치워야겠지? 이번에는 부탁이 조금 달라. 잘 읽어 봐.",
       "category": "dialogue",
       "assistanceMissionIds": [],
       "phase": "ending",
@@ -275,49 +275,49 @@
     {
       "id": "feedback-unavailable-story",
       "speaker": "teacher",
-      "text": "먼저 이야기를 읽어 주세요.",
+      "text": "이야기를 먼저 읽어 볼까요?",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-invalid-destination",
       "speaker": "teacher",
-      "text": "물건을 놓을 곳을 골라 주세요.",
+      "text": "이 물건은 어디에 놓을까요? 놓을 곳을 눌러 주세요.",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-selection",
       "speaker": "teacher",
-      "text": "친구와 물건을 먼저 골라 주세요.",
+      "text": "누가 옮길지, 무엇을 옮길지 먼저 골라 주세요.",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-extra-object",
       "speaker": "mongle",
-      "text": "어? 지금 글에는 이 물건이 없네! 맡은 일을 다시 같이 보자!",
+      "text": "어? 그건 부탁에 없는 물건이야! 부탁을 같이 다시 읽어 볼까?",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-help-unavailable",
       "speaker": "teacher",
-      "text": "이 막의 정리가 끝났어요.",
+      "text": "이 장면은 정리가 다 끝났어요.",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-already-marin",
       "speaker": "marin",
-      "text": "확인. 이미 완료한 임무.",
+      "text": "확인. 그 임무는 이미 완료.",
       "category": "feedback",
       "assistanceMissionIds": []
     },
     {
       "id": "feedback-already-kkamong",
       "speaker": "kkamong",
-      "text": "내가 벌써 해 놓았지.",
+      "text": "그건 이 몸이 벌써 끝냈지.",
       "category": "feedback",
       "assistanceMissionIds": []
     },
@@ -335,7 +335,7 @@
     {
       "id": "help-cleanup-snacks",
       "speaker": "teacher",
-      "text": "과자를 옮기는 친구는 마린이에요. 과자가 갈 곳은 상자 안이에요.",
+      "text": "누가 옮겨요? 마린이에요. 과자를 어디에 넣어요? 상자 안이에요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -346,7 +346,7 @@
     {
       "id": "feedback-cleanup-snacks-success",
       "speaker": "marin",
-      "text": "임무 완료. 과자, 상자에 도착.",
+      "text": "임무 완료. 과자, 상자 안에 보관. …흘린 과자 없음.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -356,8 +356,8 @@
     },
     {
       "id": "feedback-cleanup-snacks-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 부탁에는 마린이라고 적혀 있다. …과자는 마린 담당.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -368,7 +368,7 @@
     {
       "id": "feedback-cleanup-snacks-destination",
       "speaker": "mongle",
-      "text": "어? 상자에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 과자는 상자 안에 넣으라고 했어! 같이 다시 넣어 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -379,7 +379,7 @@
     {
       "id": "feedback-cleanup-snacks-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 과자는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 과자를 버리면 어떡해! 이 몸이 얼른 꺼낼게. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-snacks"
@@ -401,7 +401,7 @@
     {
       "id": "help-cleanup-paper",
       "speaker": "teacher",
-      "text": "“버리지 말고”는 버리면 안 된다는 뜻이에요. 까몽이 종이를 서랍에 넣어요.",
+      "text": "“버리지 말고”는 쓰레기통에 넣지 말라는 말이에요. 까몽이 종이를 서랍 안에 넣어요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -412,7 +412,7 @@
     {
       "id": "feedback-cleanup-paper-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 종이도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 넣으니까 딱 맞지. 종이는 서랍 안에 쏙.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -423,7 +423,7 @@
     {
       "id": "feedback-cleanup-paper-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "어이, 그 종이는 이 몸 담당이야. 부탁을 다시 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -434,7 +434,7 @@
     {
       "id": "feedback-cleanup-paper-destination",
       "speaker": "mongle",
-      "text": "어? 서랍에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 종이는 서랍 안에 넣으라고 했어! 우리 다시 넣어 보자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -445,7 +445,7 @@
     {
       "id": "feedback-cleanup-paper-bin",
       "speaker": "teacher",
-      "text": "잠깐! 종이는 버릴 물건이 아니야. 이번 글에서는 까몽이 종이를 서랍에 넣어.",
+      "text": "잠깐! 그 종이는 버리면 안 돼. 까몽이 서랍 안에 넣어야 해.",
       "category": "feedback",
       "assistanceMissionIds": [
         "cleanup-paper"
@@ -467,7 +467,7 @@
     {
       "id": "help-clue-flowers",
       "speaker": "teacher",
-      "text": "마린이 꽃을 옮겨요. “책상 위”는 꽃을 놓을 곳이에요.",
+      "text": "꽃은 마린이 옮겨요. 놓을 곳은 “책상 위”예요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -478,7 +478,7 @@
     {
       "id": "feedback-clue-flowers-success",
       "speaker": "marin",
-      "text": "임무 완료. 꽃, 책상에 도착.",
+      "text": "임무 완료. 꽃, 책상 위에 도착. …교실이 밝아졌다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -488,8 +488,8 @@
     },
     {
       "id": "feedback-clue-flowers-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 꽃 운반은 마린 담당. …꽃은 내가 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -500,7 +500,7 @@
     {
       "id": "feedback-clue-flowers-destination",
       "speaker": "mongle",
-      "text": "어? 책상에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 꽃은 책상 위에 놓으라고 했어! 같이 옮겨 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -511,7 +511,7 @@
     {
       "id": "feedback-clue-flowers-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 꽃은 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 꽃을 버리면 안 되지! 이 몸이 구해 줄게. 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-flowers"
@@ -533,7 +533,7 @@
     {
       "id": "help-clue-letter",
       "speaker": "teacher",
-      "text": "“꽃을 놓은 뒤”이므로 꽃을 먼저 놓아요. 그다음 까몽이 편지를 칠판에 붙여요.",
+      "text": "“꽃을 놓은 뒤”라고 했어요. 꽃이 먼저, 편지는 그다음이에요. 편지는 까몽이 칠판에 붙여요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "clue-letter"
@@ -544,7 +544,7 @@
     {
       "id": "feedback-clue-letter-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 편지도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 붙인 편지, 반듯하지? …손이 조금 떨렸지만.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -555,7 +555,7 @@
     {
       "id": "feedback-clue-letter-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "그 편지는 이 몸이 붙여야 해. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -566,7 +566,7 @@
     {
       "id": "feedback-clue-letter-destination",
       "speaker": "mongle",
-      "text": "어? 칠판에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 편지는 칠판에 붙이라고 했어! 다시 붙여 보자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -577,7 +577,7 @@
     {
       "id": "feedback-clue-letter-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 편지는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "그 편지는 이 몸이… 아니, 누가 정성껏 쓴 편지야. 버리면 안 돼.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -588,7 +588,7 @@
     {
       "id": "feedback-clue-letter-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 꽃부터. 그다음 편지.",
+      "text": "순서 확인. 먼저 꽃. 그다음 편지. …꽃부터 놓는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "clue-letter"
@@ -610,7 +610,7 @@
     {
       "id": "help-surprise-cake",
       "speaker": "teacher",
-      "text": "이번에는 까몽이 케이크를 옮겨요. 케이크는 책상 위에 놓아요.",
+      "text": "이번에는 까몽이 옮겨요. 케이크는 책상 위에 놓아요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -621,7 +621,7 @@
     {
       "id": "feedback-surprise-cake-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 케이크도 제자리를 찾았어.",
+      "text": "훗, 이 몸이 지킨 케이크, 무사히 도착. …한 입도 안 먹었어. 진짜야.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -632,7 +632,7 @@
     {
       "id": "feedback-surprise-cake-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "그 케이크는 이 몸이 지켜 온 거야. 옮기는 것도 이 몸 몫이지.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -643,7 +643,7 @@
     {
       "id": "feedback-surprise-cake-destination",
       "speaker": "mongle",
-      "text": "어? 책상에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "우와, 케이크다! 그런데 책상 위에 놓으라고 했어! 같이 옮기자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -654,7 +654,7 @@
     {
       "id": "feedback-surprise-cake-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 케이크는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익! 케이크를 버리다니! 이 몸이 끝까지 지켰는데… 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-cake"
@@ -676,7 +676,7 @@
     {
       "id": "help-surprise-ribbon",
       "speaker": "teacher",
-      "text": "케이크가 먼저예요. 그다음 마린이 리본을 칠판에 붙여요.",
+      "text": "“케이크를 놓은 다음”이니까 케이크가 먼저예요. 그다음 마린이 리본을 칠판에 붙여요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -687,7 +687,7 @@
     {
       "id": "feedback-surprise-ribbon-success",
       "speaker": "marin",
-      "text": "임무 완료. 리본, 칠판에 도착.",
+      "text": "임무 완료. 리본, 칠판에 부착. …보기 좋다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -697,8 +697,8 @@
     },
     {
       "id": "feedback-surprise-ribbon-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 리본은 마린 담당. …내가 붙인다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -709,7 +709,7 @@
     {
       "id": "feedback-surprise-ribbon-destination",
       "speaker": "mongle",
-      "text": "어? 칠판에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 리본은 칠판에 붙이라고 했어! 같이 다시 해 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -720,7 +720,7 @@
     {
       "id": "feedback-surprise-ribbon-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 리본은 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "리본을 버리면 파티가 심심해지잖아. 이 몸이 꺼내 줄게. 놓을 곳을 다시 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -731,7 +731,7 @@
     {
       "id": "feedback-surprise-ribbon-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 케이크부터. 그다음 리본.",
+      "text": "순서 확인. 먼저 케이크. 그다음 리본. …케이크부터 놓는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "surprise-ribbon"
@@ -753,7 +753,7 @@
     {
       "id": "help-review-snacks",
       "speaker": "teacher",
-      "text": "이번 글에서는 까몽이 과자를 옮겨요. 아까의 상자가 아니라 선반 위에 놓아요.",
+      "text": "이번에는 까몽이 옮겨요. 아까는 상자였지만, 이번에는 선반 위예요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-snacks"
@@ -764,7 +764,7 @@
     {
       "id": "feedback-review-snacks-success",
       "speaker": "kkamong",
-      "text": "훗. 내가 해냈지! 과자도 제자리를 찾았어.",
+      "text": "훗, 과자는 선반 위에. 이 몸은 바뀐 부탁도 한 번에 읽지.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -775,7 +775,7 @@
     {
       "id": "feedback-review-snacks-actor",
       "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 까몽 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "text": "이번 과자는 이 몸 담당이야. 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -786,7 +786,7 @@
     {
       "id": "feedback-review-snacks-destination",
       "speaker": "mongle",
-      "text": "어? 선반에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 이번에는 선반 위라고 했어! 아까랑 달라! 같이 다시 놓아 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -797,7 +797,7 @@
     {
       "id": "feedback-review-snacks-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 과자는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익, 과자를 또 버리면 어떡해! 이 몸이 꺼낼게. 이번 부탁을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-snacks"
@@ -819,7 +819,7 @@
     {
       "id": "help-review-paper",
       "speaker": "teacher",
-      "text": "“서랍이 아니라 상자”예요. 마린이 종이를 상자 안에 넣어요.",
+      "text": "“서랍이 아니라 상자”라고 했어요. 마린이 종이를 상자 안에 넣어요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-paper"
@@ -830,7 +830,7 @@
     {
       "id": "feedback-review-paper-success",
       "speaker": "marin",
-      "text": "임무 완료. 종이, 상자에 도착.",
+      "text": "임무 완료. 종이, 상자 안에 보관. …서랍이 아니라 상자. 확인.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -840,8 +840,8 @@
     },
     {
       "id": "feedback-review-paper-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 이번 종이 담당은 마린. …내가 넣는다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -852,7 +852,7 @@
     {
       "id": "feedback-review-paper-destination",
       "speaker": "mongle",
-      "text": "어? 상자에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 이번에는 서랍이 아니라 상자라고 했어! 같이 다시 넣자!",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -863,7 +863,7 @@
     {
       "id": "feedback-review-paper-bin",
       "speaker": "teacher",
-      "text": "잠깐! 종이는 버릴 물건이 아니야. 이번 글에서는 마린이 종이를 상자에 넣어.",
+      "text": "잠깐! 종이는 버리면 안 돼. 이번에는 마린이 상자 안에 넣어야 해.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-paper"
@@ -885,7 +885,7 @@
     {
       "id": "help-review-cake",
       "speaker": "teacher",
-      "text": "까몽이 과자를 먼저 옮겨요. 그다음 마린이 케이크를 선반 위에 놓아요.",
+      "text": "“과자를 옮긴 뒤”예요. 까몽이 과자를 먼저 옮기고, 그다음 마린이 케이크를 선반 위에 놓아요.",
       "category": "explanation",
       "assistanceMissionIds": [
         "review-cake"
@@ -896,7 +896,7 @@
     {
       "id": "feedback-review-cake-success",
       "speaker": "marin",
-      "text": "임무 완료. 케이크, 선반에 도착.",
+      "text": "임무 완료. 케이크, 선반 위에 도착. …마지막 정리, 끝.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -906,8 +906,8 @@
     },
     {
       "id": "feedback-review-cake-actor",
-      "speaker": "kkamong",
-      "text": "내가 다 하려고 했는데… 이번에는 마린 차례네! 글에서 친구 이름을 다시 찾아봐.",
+      "speaker": "marin",
+      "text": "확인. 이번 케이크는 마린 담당. …내가 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -918,7 +918,7 @@
     {
       "id": "feedback-review-cake-destination",
       "speaker": "mongle",
-      "text": "어? 선반에 놓으라고 했네! 글을 다시 보고 같이 옮겨 보자!",
+      "text": "어? 케이크는 선반 위에 놓으라고 했어! 같이 다시 올려 볼까?",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -929,7 +929,7 @@
     {
       "id": "feedback-review-cake-bin",
       "speaker": "kkamong",
-      "text": "내가 구할게! 케이크는 버릴 물건이 아니야. 글에서 놓을 곳을 다시 찾아봐.",
+      "text": "히익! 케이크는 버리면 안 돼! 이 몸이 구할게. 놓을 곳을 다시 읽어 봐.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"
@@ -940,7 +940,7 @@
     {
       "id": "feedback-review-cake-order",
       "speaker": "marin",
-      "text": "순서 확인. 먼저 과자부터. 그다음 케이크.",
+      "text": "순서 확인. 먼저 과자. 그다음 케이크. …과자부터 옮긴다.",
       "category": "feedback",
       "assistanceMissionIds": [
         "review-cake"

@@ -23,8 +23,8 @@ function attribution(post,channel,observation,users,events,demo){
 
 export function buildContentLeaders(records,catalog,{date,metric='views',mode='change',users=[],ownershipEvents=[],demo=false}){
   dateRange(date,date);
-  if(!METRICS.some(item=>item.key===metric))throw new Error('순위를 확인할 지표를 선택해 주세요.');
-  if(!['change','total'].includes(mode))throw new Error('하루 증감 또는 당일 누적을 선택해 주세요.');
+  if(!METRICS.some(item=>item.key===metric))throw Object.assign(new Error('순위를 확인할 지표를 선택해 주세요.'),{status:400});
+  if(!['change','total'].includes(mode))throw Object.assign(new Error('하루 증감 또는 당일 누적을 선택해 주세요.'),{status:400});
   const channels=new Map(catalog.channels.filter(channel=>channel.ready).map(channel=>[channel.id,channel]));
   const posts=records.posts.filter(post=>channels.has(post.channelId)&&post.publishedDate<=date);
   const result={date,metric,mode,count:0,eligible:posts.length,complete:false,items:[],emptyReason:null,
