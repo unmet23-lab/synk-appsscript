@@ -144,10 +144,10 @@ const RACING_SPOKEN = {
 // 앞에 수를 붙여 「이천 년.」처럼 구운 뒤, 받은 원본의 낱말 시각(words)으로 그 낱말부터 잘라 쓴다(앞 0.02초 여유, 0.015초 페이드 인).
 // 10-09 받아쓰기로 확인: 잘라 여백을 붙인 소리를 「년」·「년대」로 받아 적는다(낱말 하나만 읽은 소리는 「냥」·「연대」).
 const RACING_KEEP = { w0138: { text: '이천 년.', keep: '년.' }, w1001: { text: '이천 년대.', keep: '년대.' } };
-// 낱말 하나를 외치듯 읽어 흐려진 줄(10-09 소진 받아쓰기 대조)은 끝에 마침표 — 목록은 tools/minigame-voice-racing-period.json.
-const RACING_PERIOD_FILE = path.join(__dirname, '..', 'minigame-voice-racing-period.json');
-const RACING_PERIOD = new Set(fs.existsSync(RACING_PERIOD_FILE) ? readJson(RACING_PERIOD_FILE).ids : []);
-const racingSpoken = (id, text) => RACING_KEEP[id]?.text || RACING_SPOKEN[id] || (RACING_PERIOD.has(id) && !/[.!?…]$/.test(text) ? text + '.' : null);
+// 낱말·보기(낱말 하나, 짧은 말)는 모두 끝에 마침표를 붙여 읽는다 — 마침표가 없으면 낱말 하나를 외치듯 읽어 흐려진다.
+// 10-09 받아쓰기 시험 60개: 소진 17→32, 하나 27→32. 10-10 유호님이 하나+마침표 견본을 듣고 「하나가 확실히 발음이 잘 들리네」.
+const RACING_WORD = /^(w\d+|[cf]\d+q\d+o\d+)$/;
+const racingSpoken = (id, text) => RACING_KEEP[id]?.text || RACING_SPOKEN[id] || (RACING_WORD.test(id) && !/[.!?…]$/.test(text) ? text + '.' : null);
 async function keepWord(raw, word, stage) {
   const meta = readJson(raw.replace(/\.wav$/, '.json')), w = (meta.words || []).find(x => x.text === word);
   if (!w) throw Error(`받은 원본에 낱말 시각이 없다: ${word}`);

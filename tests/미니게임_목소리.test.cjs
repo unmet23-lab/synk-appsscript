@@ -112,6 +112,11 @@ test('해설 연출: 감정(smart)은 앞 글이나 뒤 글이 있는 해설 줄
   const plain = all.filter(j => (j.game === 'korean-racing' && /^(w\d+|[cf]\d+q\d+(q|a|o\d+)|lane-.+|cue-.+|answer)$/.test(j.id)) || j.game === 'korean-rhythm');
   assert.ok(plain.length > 2400);
   for (const j of plain) assert.notEqual(j.voice.emotion, V.SMART, `${j.game}/${j.id}`);
+  // 레이싱 낱말·보기는 끝에 마침표를 붙여 읽는다(외치듯 읽으면 흐려짐, 10-10 귀 확인). 화면 글은 그대로.
+  const words = all.filter(j => j.game === 'korean-racing' && /^(w\d+|[cf]\d+q\d+o\d+)$/.test(j.id));
+  assert.ok(words.length > 2200);
+  for (const j of words) assert.match(j.text, /[.!?…]$/, `${j.id} 「${j.text}」`);
+  assert.equal(all.find(j => j.game === 'korean-racing' && j.id === 'w0001').display, '사과');
 });
 
 test('들어 보기: 줄 × 목소리 × 감정마다 하나, smart에만 앞뒤 글, 모르는 줄·감정은 거절', async () => {
