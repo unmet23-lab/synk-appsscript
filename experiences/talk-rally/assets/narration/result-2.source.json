@@ -1,8 +1,8 @@
 {
-  "sourceKey": "7b97c2ab0b62a0252fc4beb1a86c9b50",
+  "sourceKey": "5fed6b623549537b35396dc02acf95e3",
   "text": "아주 잘했어요! 거의 다 받아쳤어요.",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

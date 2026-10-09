@@ -3,15 +3,15 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.23초·끝 0.93초 여백(지금 파일 실측) + 지금 generate-voice.py와 같은 loudnorm I=-18 TP=-2.5 LRA=7 → MP3 mono 24kHz 96kbps",
- "updatedAt": "2026-10-09T08:42:04.637Z",
+ "updatedAt": "2026-10-09T17:58:49.739Z",
  "voices": {
   "narrator": {
    "label": "해설",
-   "id": "tc_666a9871abcf27a5169850d0",
-   "name": "소진",
-   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929141735_666a9871abcf27a5169850d0_SSFM-V3_0.mp3",
-   "measure": "음높이 356Hz · 밝기 1547Hz · 억양 폭 12.6반음 · 빠르기 5.62 · 오디오북·라디오·광고",
-   "why": "높고 밝은 이야기꾼 목소리, 하나보다 15~30% 빨리 읽는다"
+   "id": "tc_61659cc118732016a95fe7c6",
+   "name": "하나",
+   "preview": "https://static2.typecast.ai/c/audio_QA-approved_1761021415637/250929142725_61659cc118732016a95fe7c6_SSFM-V3_0.mp3",
+   "measure": "음높이 281Hz · 밝기 1433Hz · 억양 폭 17반음 · 빠르기 5.08 · 숏폼",
+   "why": "억양 폭이 가장 넓은 상큼한 목소리, 읽는 속도는 느긋하다"
   },
   "mongle": {
    "label": "몽글",
@@ -52,11 +52,11 @@
  "lines": {
   "dialogue-opening-01": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "382d724a7d497cd76493825e599dbc41",
+   "key": "57186e0c774c008de36242a1c368b2d2",
    "sha": {
-    "assets/voice/dialogue-opening-01.mp3": "3879f020b6a0f1b3"
+    "assets/voice/dialogue-opening-01.mp3": "f58ee84499698dac"
    }
   },
   "dialogue-opening-02": {
@@ -178,11 +178,11 @@
   },
   "dialogue-clue-outro-01": {
    "role": "narrator",
-   "voice": "소진",
+   "voice": "하나",
    "tempo": 0.92,
-   "key": "bc11e2dded831854ff97bde9dbb18f59",
+   "key": "fdb2ced28d4edb319166f7ac3119b06c",
    "sha": {
-    "assets/voice/dialogue-clue-outro-01.mp3": "0e1d0eb37c495158"
+    "assets/voice/dialogue-clue-outro-01.mp3": "d4e279e28ec56e17"
    }
   },
   "dialogue-clue-outro-02": {

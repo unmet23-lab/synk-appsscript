@@ -1,9 +1,9 @@
 {
-  "sourceKey": "382d724a7d497cd76493825e599dbc41",
+  "sourceKey": "57186e0c774c008de36242a1c368b2d2",
   "text": "쉬는 시간이 끝났어요. 그런데 교실이 엉망이에요. 과자와 종이가 여기저기 있어요.",
   "speaker": "narrator",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",
