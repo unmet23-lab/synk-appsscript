@@ -193,17 +193,17 @@ test('후처리: 게임마다 지금 파일과 같은 형식(코덱·표본율·
 
 test('레이싱 「년」·「년대」: 수를 붙여 구운 원본을 받은 낱말 시각으로 그 낱말부터 잘라 쓴다', { skip: !hasFfmpeg && 'ffmpeg 없음' }, async () => {
   const all = await jobs(), j = all.find(x => x.game === 'korean-racing' && x.id === 'w0138');
-  assert.deepEqual([j.text, j.keep, j.display], ['이천 년.', '년.', '년'], '소리로 읽을 글·잘라 쓸 낱말·화면 글');
+  assert.deepEqual([j.text, j.keep, j.display], ['오 년.', '년.', '년'], '소리로 읽을 글·잘라 쓸 낱말·화면 글');
   assert.equal(all.find(x => x.game === 'korean-racing' && x.id === 'w1001').keep, '년대.');
   const dir = tmpRoot(), raw = path.join(dir, 'raw.wav'), racing = G.GAMES['korean-racing'];
   fixtureWav(raw, 2.2);
-  fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '이천', start: 0.3, end: 0.9 }, { text: '년.', start: 1.1, end: 1.9 }] }));
+  fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '오', start: 0.3, end: 0.9 }, { text: '년.', start: 1.1, end: 1.9 }] }));
   try {
     const whole = await racing.process({ ...j, keep: undefined }, raw, path.join(dir, 'a'));
     const cut = await racing.process(j, raw, path.join(dir, 'b'));
     assert.ok(cut.metrics.duration < whole.metrics.duration - 0.6, `잘라 쓴 소리 ${cut.metrics.duration}초 < 통째 ${whole.metrics.duration}초`);
     assert.deepEqual(racing.validate(j, cut.metrics), []);
-    fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '이천', start: 0.3, end: 0.9 }] }));
+    fs.writeFileSync(raw.replace(/\.wav$/, '.json'), JSON.stringify({ words: [{ text: '오', start: 0.3, end: 0.9 }] }));
     await assert.rejects(racing.process(j, raw, path.join(dir, 'c')), /낱말 시각/);
   } finally { fs.rmSync(dir, { recursive: true, force: true }); }
 });

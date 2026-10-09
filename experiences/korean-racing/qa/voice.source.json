@@ -3,7 +3,7 @@
  "provider": "Typecast",
  "model": "ssfm-v30",
  "post": "앞 0.15초·끝 0.85초 여백, 고정 이득(MP3 -23.5 LUFS) → MP3 mono 24kHz 48kbps (지금 Windows 음성 파일의 실측과 같게)",
- "updatedAt": "2026-10-09T16:16:12.704Z",
+ "updatedAt": "2026-10-09T16:52:21.035Z",
  "voices": {
   "narrator": {
    "label": "해설",
@@ -1324,9 +1324,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "a39857a68c77b6d6df6628cf06f7e03c",
+   "key": "220e725ffeac1b87f99118efc49626c2",
    "sha": {
-    "assets/narration/w0138.mp3": "19433b8fadc59900"
+    "assets/narration/w0138.mp3": "467c51346ccb0e06"
    }
   },
   "w0139": {
@@ -9091,9 +9091,9 @@
    "role": "narrator",
    "voice": "하나",
    "tempo": 0.92,
-   "key": "42577960782f4a249dfd9f1f21110c7f",
+   "key": "4824fa012e197e78403438343ce78cdb",
    "sha": {
-    "assets/narration/w1001.mp3": "3610bd8e3f16846b"
+    "assets/narration/w1001.mp3": "32f1e5b9218a453b"
    }
   },
   "w1002": {
