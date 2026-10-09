@@ -1,9 +1,9 @@
 {
-  "sourceKey": "bc11e2dded831854ff97bde9dbb18f59",
+  "sourceKey": "fdb2ced28d4edb319166f7ac3119b06c",
   "text": "편지를 펼쳤어요. “선생님, 생일 축하해요!” 하고 쓰여 있어요.",
   "speaker": "narrator",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

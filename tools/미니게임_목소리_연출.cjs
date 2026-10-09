@@ -18,8 +18,9 @@ const SOJIN = { id: 'tc_666a9871abcf27a5169850d0', name: '소진', preview: 'htt
 const GAME_VOICE = {
   // 10-10 유호님 귀 확인(낱말 12개 소진·하나·옛 해설) 「하나가 확실히 발음이 잘 들리네」 → 소진에서 하나로.
   'korean-racing': [HANA, '낱말 하나를 듣고 고르는 게임이라 발음이 또렷한 쪽(10-10 귀 확인) — 낱말·보기는 끝에 마침표'],
-  'story-classroom': [SOJIN, '이야기꾼(오디오북) 목소리 — 몽글(선하)보다 높아 해설과 몽글이 갈린다'],
-  'talk-rally': [SOJIN, '안내 4.5초 한도에 여유가 있고, 몽글(선하)과 음높이가 갈린다'],
+  // 10-10 유호님 소진·하나 비교(이야기 교실·말 랠리 해설 10줄) 뒤 「둘 다 하나로 바꿔줘」 → 모든 게임 해설이 하나.
+  'story-classroom': [HANA, '이야기 해설도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」)'],
+  'talk-rally': [HANA, '안내도 하나로(10-10 소진·하나 비교 뒤 「둘 다 하나로」) — 하나는 느긋해도 안내 4.5초 한도 안(가장 긴 하루 도전 안내 4.2초)'],
   'entry-check': [HANA, '읽는 게임이라 느긋하게(초급) — 손님 사고 이야기에 억양 폭이 산다'],
   'korean-rhythm': [HANA, '듣고 뜻을 가리는 문장이라 느긋하고 또렷하게'],
 };
@@ -90,14 +91,14 @@ async function plan(repo = G.REPO) {
   const narrator = jobs.filter(j => j.role === 'narrator');
   const missing = Object.keys(smart).filter(k => !narrator.some(j => `${j.game}/${j.id}` === k));
   if (missing.length) throw Error('해설 줄에 없는 id: ' + missing.join(', '));
-  // 기본값은 소진, 후보는 하나와 옛 해설(서현) 둘(배역마다 기본 + 후보 둘).
+  // 기본값은 하나(10-10부터 모든 게임 해설이 하나), 후보는 소진과 옛 해설(서현) 둘(배역마다 기본 + 후보 둘).
   const r = casting.roles.narrator, earlier = [r.voice, ...(r.alternates || [])].filter(v => ![HANA.id, SOJIN.id].includes(v.id));
-  r.voice = SOJIN;
-  r.alternates = [HANA, ...earlier.map(v => v.id === 'tc_69f2e455ea79fd197aa0476f' ? { ...v, why: '10-09까지의 해설 — 유호님 「힘 빠지는 목소리」로 하나·소진으로 바꿈' } : v)].slice(0, 2);
+  r.voice = HANA;
+  r.alternates = [SOJIN, ...earlier.map(v => v.id === 'tc_69f2e455ea79fd197aa0476f' ? { ...v, why: '10-09까지의 해설 — 유호님 「힘 빠지는 목소리」로 하나·소진으로 바꿈' } : v)].slice(0, 2);
   r.fixed = '유호님이 고른 하나·소진(10-09 「한 컨텐츠당 하나 OR 소진, 두 명을 섞어 쓰지 말고」) — 게임마다 한 명(games), 줄마다 보통/감정은 Claude 판단(lines의 smart, tools/미니게임_목소리_연출.cjs)';
   r.character = '밝고 상큼한 해설 — 칭찬·위로·놀람·이야기 장면만 감정, 뜻을 전하는 줄은 보통';
   r.why = '10-09 유호님 「목소리가 힘 빠지는 목소리야. 다른 애로 바꿔, 상큼한 애로」 → 견본·게임 문장 들어 보기 → 「하나 또는 소진」. 게임마다 한 목소리: '
-    + Object.entries(GAME_VOICE).map(([g, [v, why]]) => `${G.GAMES[g].label} ${v.name}(${why})`).join(' · ') + '. 다른 게임은 기본값 소진.';
+    + Object.entries(GAME_VOICE).map(([g, [v, why]]) => `${G.GAMES[g].label} ${v.name}(${why})`).join(' · ') + '. 다른 게임은 기본값 하나.';
   casting.games ||= {};
   for (const [g, [v]] of Object.entries(GAME_VOICE)) casting.games[g] = { ...(casting.games[g] || {}), narrator: { ...(casting.games[g]?.narrator || {}), voice: { id: v.id, name: v.name } } };
   casting.lines ||= {};

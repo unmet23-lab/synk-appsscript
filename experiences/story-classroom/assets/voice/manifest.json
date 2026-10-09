@@ -5,7 +5,7 @@
     "story.mjs": "89e28577e35dc51bf7cfc59d9d428a86e7b151a136e84f460d2b49f4de942ad7",
     "voice-lines.mjs": "47fd26eb6aca5e0f966b7e828c65441c24efd034d0cf4898e830d96898116ea7"
   },
-  "generatedAt": "2026-10-09T08:42:04.637Z",
+  "generatedAt": "2026-10-09T17:58:49.782Z",
   "humanRecording": false,
   "normalization": "ffmpeg loudnorm I=-18 TP=-2.5 LRA=7; mono 24 kHz MP3 96 kbps",
   "lines": [
@@ -19,11 +19,11 @@
       "actId": null,
       "index": 0,
       "file": "assets/voice/dialogue-opening-01.mp3",
-      "sha256": "3879f020b6a0f1b3f427d37f027696db6828f92d7994ff8e5887c16fcc91779e",
-      "bytes": 79244,
-      "durationSeconds": 6.506,
-      "peakDbfs": -2.56,
-      "rmsDbfs": -20.76
+      "sha256": "f58ee84499698dacb9a38fc2d3351801abbc2488212ead0c31a1b8c362b68f3a",
+      "bytes": 94508,
+      "durationSeconds": 7.778,
+      "peakDbfs": -2.87,
+      "rmsDbfs": -20.01
     },
     {
       "id": "dialogue-opening-02",
@@ -247,11 +247,11 @@
       "actId": "clue",
       "index": 0,
       "file": "assets/voice/dialogue-clue-outro-01.mp3",
-      "sha256": "0e1d0eb37c495158f90ab4d80696b3a75e406ddd8b66f73c6d5ddf103f5c33d0",
-      "bytes": 61964,
-      "durationSeconds": 5.07,
-      "peakDbfs": -2.86,
-      "rmsDbfs": -20.06
+      "sha256": "d4e279e28ec56e171f135dc59f77eefcce7bc335b59b2b8f62c56848403da7d9",
+      "bytes": 74924,
+      "durationSeconds": 6.155,
+      "peakDbfs": -2.85,
+      "rmsDbfs": -21.06
     },
     {
       "id": "dialogue-clue-outro-02",

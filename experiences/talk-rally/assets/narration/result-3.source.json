@@ -1,8 +1,8 @@
 {
-  "sourceKey": "fa0a276cfe009383873311f9fb2c4978",
+  "sourceKey": "f3f948e569b931b31b57a437d61822de",
   "text": "완벽해요! 하나도 안 놓쳤어요.",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",

@@ -1,8 +1,8 @@
 {
-  "sourceKey": "f34e36ce0975e64dcca599b120d63aca",
+  "sourceKey": "2e44709ca1ab46f935fc915b4d5eeb4b",
   "text": "괜찮아요. 한 번 더 해 볼까요?",
-  "voice": "소진",
-  "voiceId": "tc_666a9871abcf27a5169850d0",
+  "voice": "하나",
+  "voiceId": "tc_61659cc118732016a95fe7c6",
   "provider": "Typecast",
   "model": "ssfm-v30",
   "emotion": "smart",
