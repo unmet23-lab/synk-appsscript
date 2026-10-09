@@ -5,44 +5,44 @@
     {
       "id": "shield-ready",
       "text": "연속 정답! 보호막이 생겼어. 한 번은 부딪혀도 괜찮아.",
-      "duration": 4.954,
-      "bytes": 30332,
-      "rms": 1772
+      "duration": 5.564,
+      "bytes": 33932,
+      "rms": 1927
     },
     {
       "id": "shield-block",
       "text": "휴, 보호막 덕분에 속도가 그대로야. 계속 달려!",
-      "duration": 4.799,
-      "bytes": 29324,
-      "rms": 1684
+      "duration": 5.205,
+      "bytes": 31772,
+      "rms": 1734
     },
     {
       "id": "garage-earned",
       "text": "오늘의 보상을 받았어! 차고에서 새 꾸미기를 구경해 볼까?",
-      "duration": 4.872,
-      "bytes": 29756,
-      "rms": 1746
+      "duration": 4.722,
+      "bytes": 28892,
+      "rms": 1777
     },
     {
       "id": "garage-wish",
       "text": "완주 보상이야! 찜한 자동차에 한 걸음 더 가까워졌어. 차고에서 확인해 봐!",
-      "duration": 6.154,
-      "bytes": 37532,
-      "rms": 1895
+      "duration": 6.528,
+      "bytes": 39836,
+      "rms": 1818
     },
     {
       "id": "mission-complete",
       "text": "와, 오늘의 미션도 성공! 미션 코인까지 받았어.",
-      "duration": 4.869,
-      "bytes": 29756,
-      "rms": 1693
+      "duration": 4.927,
+      "bytes": 30188,
+      "rms": 1814
     },
     {
       "id": "finale-unlock",
       "text": "결승전 통과! 특별한 상품이 열렸어. 차고에서 바로 써 보자!",
-      "duration": 5.74,
-      "bytes": 35084,
-      "rms": 1708
+      "duration": 5.679,
+      "bytes": 34652,
+      "rms": 1848
     }
   ]
 }
