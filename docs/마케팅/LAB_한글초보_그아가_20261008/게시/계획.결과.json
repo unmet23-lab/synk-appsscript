@@ -6,7 +6,7 @@
       "contentHash": "d19d8c8333426d753007a43a4bca517caac6ed98764b9ed4cf90ae0cb6855d90",
       "publicationHash": "ddd30cd03df6cc62bf65a31ad594ea68dd2200f4c825dc9b074bf39a97ac0940",
       "startedAt": "2026-10-08T00:11:32.474Z",
-      "state": "scheduled",
+      "state": "private",
       "id": "FFLpJjDOohI",
       "url": "https://www.youtube.com/watch?v=FFLpJjDOohI",
       "thumbnail": null,
@@ -31,10 +31,19 @@
         "error": "YouTube en 자막 업로드 실패 401: Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project. (기존 YouTube 영상 FFLpJjDOohI; 새로 업로드하지 말고 기존 영상 확인 필요)",
         "note": "업로드는 됐는데 영어 자막 단계에서 구글 401(일시 오류)로 멈춤 → 같은 영상에 자막을 붙이고 같은 재생목록에 넣어 마무리(새로 올리지 않음, 10-08 Claude 세션)"
       },
-      "publishAt": "2026-10-09T23:00:00.000Z",
       "scheduledAt": "2026-10-08T00:18:01.093Z",
       "publicNote": "유호님 10-08 09:17쯤 「10/10 오전 8시로 예약해줘」 — 그 아 가 쇼츠 공개 예약, AI 음악 표시 켬(10-08 결정)",
-      "containsSyntheticMedia": true
+      "containsSyntheticMedia": true,
+      "replaced": {
+        "at": "2026-10-09T13:35:00.000Z",
+        "stateBefore": "scheduled",
+        "state": "private",
+        "by": "XzcEwF1hc0E",
+        "byUrl": "https://www.youtube.com/watch?v=XzcEwF1hc0E",
+        "byPlan": "docs/마케팅/LAB_한글초보_그아가_v4_20261009/게시/계획.json",
+        "what": "10-10 08:00 예약을 풀고 비공개로, 재생목록에서 뺌 — v4를 같은 시각에 예약",
+        "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판(노래 영상 가이드 적용)으로 바꿈. 옛 판은 지우지 않았다(.tmp/hangul-mascot-video-20261006/youtube/기록.jsonl)."
+      }
     }
   }
 }

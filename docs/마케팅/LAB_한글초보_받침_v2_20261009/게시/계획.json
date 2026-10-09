@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-09T12:59:28.216Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Korean batchim (final consonants) in one song! 안 알 암 앙 산 물 밤 강 #learnkorean",
+      "text": "Sing along with Mongle — the Korean final consonants (batchim) ㄴ ㄹ ㅁ ㅇ in one song.\n\nA batchim sits at the bottom of a syllable:\n아 + ㄴ = 안 (an) · 아 + ㄹ = 알 (al) · 아 + ㅁ = 암 (am) · 아 + ㅇ = 앙 (ang)\nThen read real words: 산 (mountain) · 물 (water) · 밤 (chestnut / night) · 강 (river)\n손 (hand) · 눈 (snow) · 별 (star) · 말 (horse) · 곰 (bear) · 몸 (body) · 공 (ball) · 방 (room)\nㅇ on top makes no sound — shh! At the bottom it says \"ng\".\nColors show the parts: first consonant coral, vowel blue, batchim yellow.\n\nRomanization appears under every letter, and English captions (CC) have the lyrics.\nAt the end, try reading 문 · 발 · 콩 (door · foot · bean).\n\nHangul for Beginners · 한글 초보단계 #3 — after the vowel song (#1) and the consonant song (#2).\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #batchim",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle build Korean syllables with a final consonant (아 + ㄴ = 안) — first consonant coral, vowel blue, batchim yellow — under a white card reading “Korean final consonants in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/원고.json",
+          "bytes": 1573,
+          "sha256": "03f066a3c66c710c74c2963caed4c01497485fd19c4781078794a2d71f849c2e",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/제목.txt",
+          "bytes": 92,
+          "sha256": "6e9361276ba2c770ed3f0fda62e1f2d1db0a1b0bcc0d1bb396e0af40a4cb9ca8",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 912,
+          "sha256": "f2a08ad2e46c522f5a1728019c1ccfc675d58574f0d888634265eb6b2077e904",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/video.mp4",
+          "bytes": 21039346,
+          "sha256": "1adfe5d7033dddf18a240631224274c32bf8db9a2f1638e15377d94dec26eb07",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 2947,
+          "sha256": "7547acbc89171c546382460ca4f4537a64afa430bab6d1e9ce0bcde489dbc5fb",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "81735b438e11fd9b6028f8dfd3665787fb189b18f934b65c9b83bd2f0a044666",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "81735b438e11fd9b6028f8dfd3665787fb189b18f934b65c9b83bd2f0a044666",
+        "publicationHash": "98ab20f0d30999eecab4803476a283e57e490c88ce7fdba61eba60b2058f3c73",
+        "approvedAt": "2026-10-09T12:59:43.429Z",
+        "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판 교체(그 아 가 10/10·받침 10/11 예약을 새 판으로, 공개된 모음 댄스를 v6로)와 겹모음 댄스 올리기를 정할 것으로 드린 뒤. 끝 화면 소리는 하나(10-09 해설 규칙)"
+      },
+      "errors": []
+    }
+  ]
+}

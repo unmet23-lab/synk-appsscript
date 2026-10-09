@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "Korean batchim (final consonants) in one song! 안 알 암 앙 산 물 밤 강 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle build Korean syllables with a final consonant (아 + ㄴ = 안) — first consonant coral, vowel blue, batchim yellow — under a white card reading “Korean final consonants in one song!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-09 저녁 유호님 「오케이 이어서 남은것도 전부 하자」(세 곡 새 판 · 겹모음 올리기 · 예약 교체를 정할 것으로 드린 뒤). 새 판: 합쳐지는 조각마다 색(자음 코랄 · 모음 파랑 · 받침 노랑), 모든 한글 칸 아래 로마자, 끝 화면 「읽어 볼까요?」(하나 — 10-09 해설 규칙), 노래 영상 가이드(experiences/hangul-stage/songs/노래영상_가이드.md). 비공개로 올린 뒤 --공개(AI 음악이 중심이라 --합성표시). 받침 v2. 10-11 08:00 예약된 v1(Yvc3VNJOiPQ)를 바꾸는 판 — 같은 시각 예약, v1은 예약을 풀고 비공개로.",
+ "version": "v2-yt"
+}

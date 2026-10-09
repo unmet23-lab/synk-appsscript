@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-09T12:59:28.397Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "All 10 Korean vowels in one song! 아 야 어 여 오 요 우 유 으 이 #learnkorean",
+      "text": "Sing and move along with Mongle — one song, all 10 basic Korean vowels (Hangul).\n\nEach vowel's short stroke points the way your arms go:\n아 (a) → right · 어 (eo) → left · 오 (o) → up · 우 (u) → down\n으 (eu) → stretch out wide · 이 (i) → stand straight\nTwo short strokes = do it twice: 야 (ya) · 여 (yeo) · 요 (yo) · 유 (yu)\n\nRomanization appears under every letter, and English captions (CC) have the lyrics.\n\nAt the end, try reading 아이 · 오이 · 우유 before you hear them!\n\nHangul for Beginners · 한글 초보단계 #1 — made for Hangul Day 2026 (Oct 9).\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #koreanvowels",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle dance the Korean vowels ㅏ ㅓ ㅗ ㅜ ㅡ ㅣ, drawn in blue, under a white card reading “All 10 Korean vowels in one song!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/원고.json",
+          "bytes": 1565,
+          "sha256": "762d9546b1d72943c6bb6f3405755be256150523969cd942a8d29cda0460c0c9",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/제목.txt",
+          "bytes": 87,
+          "sha256": "5c965449322e8f2413899c6f71398736f8d68279b1e2fbc234a921b3ae262e86",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 686,
+          "sha256": "4b4c1a8692d5278a96296b6b5396822687749f9a10decc5088cb9e57968b072f",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/video.mp4",
+          "bytes": 19407640,
+          "sha256": "1535c03e0c1d24bb3b25b48479be33023a960513358375336c5190ba65bd1e9c",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 2743,
+          "sha256": "7a51d2bfa7af3972f53ae05eab1571f32d57e9039d8db17a8c1b4c5d82b00244",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "327cde72ac6e60bbb8aaad82620b19142a24f70053618323f384a32b555ccb11",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "327cde72ac6e60bbb8aaad82620b19142a24f70053618323f384a32b555ccb11",
+        "publicationHash": "b62fc1699338a9b31b5b835c882c6bb205302d54382a9b00432d97b5860aa6c2",
+        "approvedAt": "2026-10-09T12:59:44.179Z",
+        "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판 교체(그 아 가 10/10·받침 10/11 예약을 새 판으로, 공개된 모음 댄스를 v6로)와 겹모음 댄스 올리기를 정할 것으로 드린 뒤. 끝 화면 소리는 하나(10-09 해설 규칙)"
+      },
+      "errors": []
+    }
+  ]
+}

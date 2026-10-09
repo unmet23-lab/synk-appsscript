@@ -6,7 +6,7 @@
       "contentHash": "e5b9a466c3a01465bde30030a86f1fceea61b509cde76393cb4fa4489a919f0d",
       "publicationHash": "b8dd9322c6f79acb0577f92b0cd4ea1b9f003e3fcea2368d77f6674aacdf5a71",
       "startedAt": "2026-10-08T08:41:46.566Z",
-      "state": "scheduled",
+      "state": "private",
       "id": "Yvc3VNJOiPQ",
       "url": "https://www.youtube.com/watch?v=Yvc3VNJOiPQ",
       "thumbnail": null,
@@ -25,10 +25,19 @@
         "visibility": "public"
       },
       "finishedAt": "2026-10-08T08:42:10.162Z",
-      "publishAt": "2026-10-10T23:00:00.000Z",
       "scheduledAt": "2026-10-08T08:46:53.640Z",
       "publicNote": "유호님 10-08 「10/11 오전 8시로 예약해줘」 — 받침 노래 쇼츠 공개 예약, AI 음악 표시 켬(10-08 결정)",
-      "containsSyntheticMedia": true
+      "containsSyntheticMedia": true,
+      "replaced": {
+        "at": "2026-10-09T13:35:00.000Z",
+        "stateBefore": "scheduled",
+        "state": "private",
+        "by": "EcPP6aMC3RA",
+        "byUrl": "https://www.youtube.com/watch?v=EcPP6aMC3RA",
+        "byPlan": "docs/마케팅/LAB_한글초보_받침_v2_20261009/게시/계획.json",
+        "what": "10-11 08:00 예약을 풀고 비공개로, 재생목록에서 뺌 — v2를 같은 시각에 예약",
+        "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판(노래 영상 가이드 적용)으로 바꿈. 옛 판은 지우지 않았다(.tmp/hangul-mascot-video-20261006/youtube/기록.jsonl)."
+      }
     }
   }
 }

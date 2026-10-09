@@ -6,7 +6,7 @@
       "contentHash": "74e369f41f79b7da8cf66ac2627eb009a5531532018fab2a78fe98ee0dd463cd",
       "publicationHash": "02b3513b055bba77fd7dcc8fe5f7ff84c5d8db3acbb246da0d2dd791cbc227fe",
       "startedAt": "2026-10-07T15:28:34.802Z",
-      "state": "scheduled",
+      "state": "unlisted",
       "id": "G21IYoeTEPQ",
       "url": "https://www.youtube.com/watch?v=G21IYoeTEPQ",
       "thumbnail": null,
@@ -31,11 +31,20 @@
         "error": "YouTube 재생목록 항목 조회 실패 404: The playlist identified with the request's <code>playlistId</code> parameter cannot be found. (기존 YouTube 영상 G21IYoeTEPQ; 새로 업로드하지 말고 기존 영상 확인 필요)",
         "note": "방금 만든 재생목록이 404로 답해 넣기 전에 멈춤 → 같은 목록에 넣어 마무리(도구도 고침)"
       },
-      "publishAt": "2026-10-08T23:00:00.000Z",
       "scheduledAt": "2026-10-07T20:00:01.412Z",
       "publicNote": "유호님 「10/9 오전 8시 예약 (추천)」·「켜기 (추천)」 — 공개 시점·AI 음악 표시 질문에 직접 고름(2026-10-08 04:57쯤, Claude 세션). 재생목록은 지금 공개",
       "containsSyntheticMedia": true,
-      "containsSyntheticMediaCheck": "10-08 05:05 같은 값을 다시 PUT하자 응답 status에는 containsSyntheticMedia:true가 있었지만, 곧바로 다시 읽은 status에는 이 값이 없다(API가 목록 조회에 돌려주지 않는 것으로 보임). 공개 뒤 공개 페이지 설명란의 표시로 확인한다."
+      "containsSyntheticMediaCheck": "10-08 05:05 같은 값을 다시 PUT하자 응답 status에는 containsSyntheticMedia:true가 있었지만, 곧바로 다시 읽은 status에는 이 값이 없다(API가 목록 조회에 돌려주지 않는 것으로 보임). 공개 뒤 공개 페이지 설명란의 표시로 확인한다.",
+      "replaced": {
+        "at": "2026-10-09T13:35:00.000Z",
+        "stateBefore": "scheduled",
+        "state": "unlisted",
+        "by": "n-_Vp4PYTcw",
+        "byUrl": "https://www.youtube.com/watch?v=n-_Vp4PYTcw",
+        "byPlan": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/계획.json",
+        "what": "공개 중이던 v5를 일부 공개로(이미 공유된 링크는 열림), 재생목록에서 뺌 — v6를 바로 공개",
+        "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판(노래 영상 가이드 적용)으로 바꿈. 옛 판은 지우지 않았다(.tmp/hangul-mascot-video-20261006/youtube/기록.jsonl)."
+      }
     }
   }
 }
