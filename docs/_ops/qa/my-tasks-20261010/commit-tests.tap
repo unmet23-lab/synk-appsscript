@@ -1,0 +1,1786 @@
+TAP version 13
+# Subtest: a genuinely empty authorized day explicitly says no assigned or customer work
+ok 1 - a genuinely empty authorized day explicitly says no assigned or customer work
+  ---
+  duration_ms: 5.5106
+  type: 'test'
+  ...
+# Subtest: future and undated work are named instead of being declared absent
+ok 2 - future and undated work are named instead of being declared absent
+  ---
+  duration_ms: 0.648
+  type: 'test'
+  ...
+# Subtest: immediate task count is unique while waiting is separately reported
+ok 3 - immediate task count is unique while waiting is separately reported
+  ---
+  duration_ms: 0.2837
+  type: 'test'
+  ...
+# Subtest: a waiting customer does not become today work even if it has a reopen action
+ok 4 - a waiting customer does not become today work even if it has a reopen action
+  ---
+  duration_ms: 0.5189
+  type: 'test'
+  ...
+# Subtest: reply, review and next customer actions are counted once per ID
+ok 5 - reply, review and next customer actions are counted once per ID
+  ---
+  duration_ms: 2.7727
+  type: 'test'
+  ...
+# Subtest: failed customer lookup is unverified and never reports a confirmed empty day
+ok 6 - failed customer lookup is unverified and never reports a confirmed empty day
+  ---
+  duration_ms: 0.3007
+  type: 'test'
+  ...
+# Subtest: a legacy or partial workday payload cannot imply that there is no work
+ok 7 - a legacy or partial workday payload cannot imply that there is no work
+  ---
+  duration_ms: 0.273
+  type: 'test'
+  ...
+# Subtest: specific waiting requests remain scoped to waiting without swallowing pending work
+ok 8 - specific waiting requests remain scoped to waiting without swallowing pending work
+  ---
+  duration_ms: 0.2836
+  type: 'test'
+  ...
+# Subtest: reviewer and assignee blockers are reported instead of actionable transitions
+ok 9 - reviewer and assignee blockers are reported instead of actionable transitions
+  ---
+  duration_ms: 0.3612
+  type: 'test'
+  ...
+# Subtest: plain summaries contain real newlines, preserve records and never acknowledge work
+ok 10 - plain summaries contain real newlines, preserve records and never acknowledge work
+  ---
+  duration_ms: 0.4839
+  type: 'test'
+  ...
+# Subtest: Docker static COPY allowlist contains the complete local server import graph
+ok 11 - Docker static COPY allowlist contains the complete local server import graph
+  ---
+  duration_ms: 884.0107
+  type: 'test'
+  ...
+# Pure file-read verification: 269 image files, 62 transitive runtime imports; no image build, server or database was started.
+# Subtest: Docker COPY payload starts the company host and delivers SHIFT, messenger and current source documents
+ok 12 - Docker COPY payload starts the company host and delivers SHIFT, messenger and current source documents
+  ---
+  duration_ms: 7636.8896
+  type: 'test'
+  ...
+# {"passed":108,"checks":["both databases use the persistent data root","host health","container readiness command runs from the copied payload","Atlas discovery imports its region vocabulary from the image","Atlas region vocabulary is served to the browser","public customer asset /consultation/","public customer asset /consultation/customer-computer.js","public customer asset /consultation/customer-computer-state.mjs","public customer asset /consultation/customer-computer.css","public customer asset /consultation/consultation.mjs","public customer asset /consultation/interpretation.mjs","public customer asset /consultation/model-host.mjs","public customer asset /consultation/core/domain.js","public customer asset /consultation/core/interpretation.js","public customer asset /consultation/core/ask.js","public customer asset /consultation/computer/content.js","public customer asset /consultation/computer/rules.js","public customer asset /consultation/assets/scrapbook.css","public customer asset /consultation/assets/SUIT-Variable.woff2","public customer asset /consultation/assets/laptop-felt.webp","public customer asset /consultation/assets/fb-tile-cream-long.webp","public customer asset /consultation/assets/fb-tile-butter-long.webp","public customer asset /consultation/assets/fb-slab-black-long.webp","anonymous customer draft denied","anonymous record denied","company login","employee cookie does not authenticate a customer","private empty state","validated account save","saved draft restored","company source API","all 17 source documents","creator source API","all approved creator assets available","approved download synk-ink-vector","approved download synk-paper-vector","approved download synk-paper-felt","approved download lab-felt","approved download shift-felt","approved download pulse-felt","approved download mascot-mongle","approved download mascot-kkamong","approved download mascot-marin","approved download suit-variable","approved download inter-tight-medium","approved download dm-mono-medium","approved download felt-coral-action","approved download felt-check","approved download felt-laptop","approved download suit-license","approved download inter-tight-license","approved download dm-mono-license","anonymous private creator download denied","workroom guide API","workroom source common","workroom source brand","workroom source design","workroom source felt","workroom source series-synkbrief-news","workroom source series-synkbrief-use","workroom source series-synkbrief-basics","workroom source series-yuhobuilds","workroom source series-lab-situation","workroom source series-lab-expression","workroom source series-founder-clip","workroom source series-interview","workroom source series-company-work","workroom source series-writing-newsletter","asset /","asset /workroom-practice.js","asset /workroom-practice-sync.js","asset /workroom-practice/model.mjs","asset /workroom-practice/storage-upgrade.mjs","asset /workroom-practice/core.js","asset /workroom-practice/domain.js","asset /workroom-practice/temper-outcomes.js","asset /workroom-practice/personalization.js","asset /messenger/","asset /messenger/app.js","asset /messenger/styles.css","asset /atlas-lab/","asset /atlas-lab/model-host.mjs","asset /learning-hub/atlas-learning.js","asset /learning-hub/assets/scrapbook.css","asset /consult/core/interpretation.js","asset /consult/computer/content.js","asset /consult/computer/rules.js","asset /order-rush/learning.mjs","asset /korean-rhythm/core.mjs","asset /font.woff2","asset /brand-logo.svg","asset /messenger/assets/felt-ui/chip-blush-long.webp","admin source /api/content-benchmarks/research-prompt","admin source /api/content-benchmarks/template","brand experience packaged asset /client-projects.js","brand experience packaged asset /client-projects.css","brand experience packaged asset /brand-quality.js","brand experience packaged asset /brand-quality.css","brand experience packaged asset /pulse/","brand experience packaged asset /pulse/lounge.js","brand experience packaged asset /pulse/lounge.css","packaged brand workspace includes approved source links and six checks","packaged recipe persists immutable first version","packaged operation starts with six unverified checks","packaged client project save","packaged customer invitation","packaged isolated customer view omits internal project fields","packaged verified intake receiver dependency"]}
+# Subtest: Docker keeps both mutable databases on the persistent data volume
+ok 13 - Docker keeps both mutable databases on the persistent data volume
+  ---
+  duration_ms: 3.2273
+  type: 'test'
+  ...
+# Subtest: Marin opens authorized workday, decisions and recorded changes without acknowledging or changing work
+ok 14 - Marin opens authorized workday, decisions and recorded changes without acknowledging or changing work
+  ---
+  duration_ms: 1999.1714
+  type: 'test'
+  ...
+# Subtest: client workflow HTTP integration keeps owner projection, current permissions and CSRF checks
+ok 15 - client workflow HTTP integration keeps owner projection, current permissions and CSRF checks
+  ---
+  duration_ms: 1335.6314
+  type: 'test'
+  ...
+# Subtest: assistant summarizes authorized exact weekly metrics without treating missing values as zero or pruning records
+ok 16 - assistant summarizes authorized exact weekly metrics without treating missing values as zero or pruning records
+  ---
+  duration_ms: 1733.9312
+  type: 'test'
+  ...
+# Subtest: personal channel summaries match marketing scope and do not invent a person or conversational scope
+ok 17 - personal channel summaries match marketing scope and do not invent a person or conversational scope
+  ---
+  duration_ms: 1769.1399
+  type: 'test'
+  ...
+# Subtest: new content uses the same weekly zero baseline as the marketing home without inventing a previous-period comparison
+ok 18 - new content uses the same weekly zero baseline as the marketing home without inventing a previous-period comparison
+  ---
+  duration_ms: 1328.9934
+  type: 'test'
+  ...
+# Subtest: crew and room actions use current membership and expose no private rooms, credentials, or data mutations
+ok 19 - crew and room actions use current membership and expose no private rooms, credentials, or data mutations
+  ---
+  duration_ms: 2096.539
+  type: 'test'
+  ...
+# Subtest: actual file and assigned-task search returns at most three authorized titles and routes without message bodies
+ok 20 - actual file and assigned-task search returns at most three authorized titles and routes without message bodies
+  ---
+  duration_ms: 2465.8511
+  type: 'test'
+  ...
+# Subtest: assistant validates input, CSRF, current login and a session revoked while its request body is arriving
+ok 21 - assistant validates input, CSRF, current login and a session revoked while its request body is arriving
+  ---
+  duration_ms: 1216.839
+  type: 'test'
+  ...
+# Subtest: an explicitly linked legacy account without a team can query the assistant using its existing login
+ok 22 - an explicitly linked legacy account without a team can query the assistant using its existing login
+  ---
+  duration_ms: 10048.9922
+  type: 'test'
+  ...
+# Subtest: an SSE bootstrap refresh keeps concurrent assigned-task reads valid for the same login
+ok 23 - an SSE bootstrap refresh keeps concurrent assigned-task reads valid for the same login
+  ---
+  duration_ms: 10.3986
+  type: 'test'
+  ...
+# Subtest: a same-login bootstrap refresh keeps an already-pending native session recovery valid
+ok 24 - a same-login bootstrap refresh keeps an already-pending native session recovery valid
+  ---
+  duration_ms: 11.2575
+  type: 'test'
+  ...
+# Subtest: an actual company account change still rejects an in-flight request
+ok 25 - an actual company account change still rejects an in-flight request
+  ---
+  duration_ms: 4.899
+  type: 'test'
+  ...
+# Subtest: an actual CSRF token change still rejects an in-flight request
+ok 26 - an actual CSRF token change still rejects an in-flight request
+  ---
+  duration_ms: 0.8692
+  type: 'test'
+  ...
+# Subtest: an actual messenger-user change still rejects an in-flight request
+ok 27 - an actual messenger-user change still rejects an in-flight request
+  ---
+  duration_ms: 0.8002
+  type: 'test'
+  ...
+# Subtest: mentions, replies and DMs notify only recipients; reads are explicit and room mute/all are applied
+ok 28 - mentions, replies and DMs notify only recipients; reads are explicit and room mute/all are applied
+  ---
+  duration_ms: 7349.1537
+  type: 'test'
+  ...
+# Subtest: announcement acknowledgement is explicit, idempotent and reset by editing the announcement
+ok 29 - announcement acknowledgement is explicit, idempotent and reset by editing the announcement
+  ---
+  duration_ms: 12679.5533
+  type: 'test'
+  ...
+# Subtest: tasks restrict assignments and changes, keep original message links and notify the assignee
+ok 30 - tasks restrict assignments and changes, keep original message links and notify the assignee
+  ---
+  duration_ms: 11979.7043
+  type: 'test'
+  ...
+# Subtest: workspace cards alone can be sent, normalize safely and reject credentials and foreign destinations
+ok 31 - workspace cards alone can be sent, normalize safely and reject credentials and foreign destinations
+  ---
+  duration_ms: 2374.6906
+  type: 'test'
+  ...
+# Subtest: search combines author, inclusive KST dates, attachment type and privacy before pagination
+ok 32 - search combines author, inclusive KST dates, attachment type and privacy before pagination
+  ---
+  duration_ms: 4516.4507
+  type: 'test'
+  ...
+# Subtest: saved messages and reminders remain private, survive restart, catch up once and disappear with source deletion
+ok 33 - saved messages and reminders remain private, survive restart, catch up once and disappear with source deletion
+  ---
+  duration_ms: 5294.1825
+  type: 'test'
+  ...
+# Subtest: paused reminders stay pending through startup, reads and restart; enabled restart delivers once
+ok 34 - paused reminders stay pending through startup, reads and restart; enabled restart delivers once
+  ---
+  duration_ms: 2164.0948
+  type: 'test'
+  ...
+# [messenger] Request failed: Error
+# [messenger] Request failed: Error
+# Subtest: company share authorization errors explain recovery without exposing external error text
+ok 35 - company share authorization errors explain recovery without exposing external error text
+  ---
+  duration_ms: 1020.5938
+  type: 'test'
+  ...
+# Subtest: authoritative creation options preserve personal notes and filter posting authority per room
+ok 36 - authoritative creation options preserve personal notes and filter posting authority per room
+  ---
+  duration_ms: 689.1703
+  type: 'test'
+  ...
+# Subtest: direct creation stores source, task, ordinary/task alerts and original workflow together
+ok 37 - direct creation stores source, task, ordinary/task alerts and original workflow together
+  ---
+  duration_ms: 606.5878
+  type: 'test'
+  ...
+# Subtest: personal tasks remain private and accept an explicitly undated deadline
+ok 38 - personal tasks remain private and accept an explicitly undated deadline
+  ---
+  duration_ms: 707.4331
+  type: 'test'
+  ...
+# Subtest: the same creation UUID replays across restart without repeating rows, alerts or stage changes
+ok 39 - the same creation UUID replays across restart without repeating rows, alerts or stage changes
+  ---
+  duration_ms: 488.0725
+  type: 'test'
+  ...
+# Subtest: concurrent identical creation requests produce one task and one receipt
+ok 40 - concurrent identical creation requests produce one task and one receipt
+  ---
+  duration_ms: 610.7295
+  type: 'test'
+  ...
+# Subtest: changed content, assignment or room cannot reuse a successful creation UUID
+ok 41 - changed content, assignment or room cannot reuse a successful creation UUID
+  ---
+  duration_ms: 577.0708
+  type: 'test'
+  ...
+# Subtest: a deleted original is a tombstone rather than a new task on retry
+ok 42 - a deleted original is a tombstone rather than a new task on retry
+  ---
+  duration_ms: 535.0575
+  type: 'test'
+  ...
+# [messenger] Request failed: ERR_SQLITE_ERROR
+# Subtest: failed task insert rolls back every row and emits no SSE update
+ok 43 - failed task insert rolls back every row and emits no SSE update
+  ---
+  duration_ms: 3277.7323
+  type: 'test'
+  ...
+# [messenger] Request failed: ERR_SQLITE_ERROR
+# Subtest: failed receipt insert after task and ordinary notifications rolls back every row and emits no SSE update
+ok 44 - failed receipt insert after task and ordinary notifications rolls back every row and emits no SSE update
+  ---
+  duration_ms: 1596.6697
+  type: 'test'
+  ...
+# Subtest: invalid fields, ineligible crew and readonly actors never leave a source message
+ok 45 - invalid fields, ineligible crew and readonly actors never leave a source message
+  ---
+  duration_ms: 703.0131
+  type: 'test'
+  ...
+# Subtest: integrated mutations require the live CSRF, original company origin and session
+ok 46 - integrated mutations require the live CSRF, original company origin and session
+  ---
+  duration_ms: 573.8609
+  type: 'test'
+  ...
+# Subtest: creation rechecks selected crew after options become stale through departure or role revocation
+ok 47 - creation rechecks selected crew after options become stale through departure or role revocation
+  ---
+  duration_ms: 896.6071
+  type: 'test'
+  ...
+# Subtest: a company session revoked while the request body arrives cannot commit the task
+ok 48 - a company session revoked while the request body arrives cannot commit the task
+  ---
+  duration_ms: 349.0779
+  type: 'test'
+  ...
+# Subtest: a departed reviewer can be replaced by the present requester without changing the result or allowing self approval
+ok 49 - a departed reviewer can be replaced by the present requester without changing the result or allowing self approval
+  ---
+  duration_ms: 1193.7753
+  type: 'test'
+  ...
+# Subtest: disabled or downgraded reviewers require current posting authority for recovery and new review survives restart
+ok 50 - disabled or downgraded reviewers require current posting authority for recovery and new review survives restart
+  ---
+  duration_ms: 838.2073
+  type: 'test'
+  ...
+# Subtest: KST weekday digests start at 09:00, include overdue tasks once, and persist deduplication across restart
+ok 51 - KST weekday digests start at 09:00, include overdue tasks once, and persist deduplication across restart
+  ---
+  duration_ms: 660.9063
+  type: 'test'
+  ...
+# Subtest: weekend and off preferences are personal, defaults do not backfill absent days, and latest digest is the only repeated deadline item
+ok 52 - weekend and off preferences are personal, defaults do not backfill absent days, and latest digest is the only repeated deadline item
+  ---
+  duration_ms: 589.8846
+  type: 'test'
+  ...
+# Subtest: digest projection removes completed, reassigned, muted, archived and inaccessible tasks without losing surviving sources
+ok 53 - digest projection removes completed, reassigned, muted, archived and inaccessible tasks without losing surviving sources
+  ---
+  duration_ms: 1049.8868
+  type: 'test'
+  ...
+# Subtest: background job opt-out suppresses due digests and leaves personal reminders pending through reads and restart
+ok 54 - background job opt-out suppresses due digests and leaves personal reminders pending through reads and restart
+  ---
+  duration_ms: 1652.5156
+  type: 'test'
+  ...
+# Subtest: message, due and external alerts share ordered pagination, exact reads and read-all without a cross-database transaction
+ok 55 - message, due and external alerts share ordered pagination, exact reads and read-all without a cross-database transaction
+  ---
+  duration_ms: 928.1911
+  type: 'test'
+  ...
+# Subtest: structured cards allow only same-origin workspace views and escape labels
+ok 56 - structured cards allow only same-origin workspace views and escape labels
+  ---
+  duration_ms: 7.4385
+  type: 'test'
+  ...
+# Subtest: mention picker includes only conversation crew and selection preserves the text around the caret
+ok 57 - mention picker includes only conversation crew and selection preserves the text around the caret
+  ---
+  duration_ms: 3.1217
+  type: 'test'
+  ...
+# Subtest: compose cards and mentions remain scoped to user and room across selection and restore
+ok 58 - compose cards and mentions remain scoped to user and room across selection and restore
+  ---
+  duration_ms: 1.4692
+  type: 'test'
+  ...
+# Subtest: read-only crew retain private save/remind and explicit acknowledgement without posting controls
+ok 59 - read-only crew retain private save/remind and explicit acknowledgement without posting controls
+  ---
+  duration_ms: 91.0247
+  type: 'test'
+  ...
+# Subtest: task pagination follows the chosen channel and does not duplicate the first page
+ok 60 - task pagination follows the chosen channel and does not duplicate the first page
+  ---
+  duration_ms: 2.168
+  type: 'test'
+  ...
+# Subtest: a late personal panel request cannot repaint after closing the panel
+ok 61 - a late personal panel request cannot repaint after closing the panel
+  ---
+  duration_ms: 1.5349
+  type: 'test'
+  ...
+# Subtest: filtered search supports a blank keyword and paginates with all filters intact
+ok 62 - filtered search supports a blank keyword and paginates with all filters intact
+  ---
+  duration_ms: 2.5738
+  type: 'test'
+  ...
+# Subtest: a card-only share is a draft until send, and sending mention plus card clears only that submitted metadata
+ok 63 - a card-only share is a draft until send, and sending mention plus card clears only that submitted metadata
+  ---
+  duration_ms: 2.1136
+  type: 'test'
+  ...
+# Subtest: a delayed share selection cannot replace the draft after the user navigates elsewhere
+ok 64 - a delayed share selection cannot replace the draft after the user navigates elsewhere
+  ---
+  duration_ms: 1.2261
+  type: 'test'
+  ...
+# Subtest: sending in an old room does not delete a newer card-only draft prepared while the request was pending
+ok 65 - sending in an old room does not delete a newer card-only draft prepared while the request was pending
+  ---
+  duration_ms: 1.3411
+  type: 'test'
+  ...
+# Subtest: an overlaid drawer makes background conversation views inert and moves focus out of a newly covered composer
+ok 66 - an overlaid drawer makes background conversation views inert and moves focus out of a newly covered composer
+  ---
+  duration_ms: 1.2725
+  type: 'test'
+  ...
+# Subtest: closing an overlaid drawer restores background access before returning focus to the original control
+ok 67 - closing an overlaid drawer restores background access before returning focus to the original control
+  ---
+  duration_ms: 1.1082
+  type: 'test'
+  ...
+# Subtest: explicit request, acceptance, delivery, revision and reviewer approval drive personal workday without reads completing work
+ok 68 - explicit request, acceptance, delivery, revision and reviewer approval drive personal workday without reads completing work
+  ---
+  duration_ms: 1101.176
+  type: 'test'
+  ...
+# Subtest: concurrent changes reject stale revisions, duplicate no-op patches do not create events, and legacy tasks remain usable
+ok 69 - concurrent changes reject stale revisions, duplicate no-op patches do not create events, and legacy tasks remain usable
+  ---
+  duration_ms: 617.6332
+  type: 'test'
+  ...
+# Subtest: review result links require the same room and missing results cannot be approved
+ok 70 - review result links require the same room and missing results cannot be approved
+  ---
+  duration_ms: 748.9612
+  type: 'test'
+  ...
+# Subtest: decisions and final versions are explicit, idempotent, replaceable with provenance and cannot revive after successor deletion
+ok 71 - decisions and final versions are explicit, idempotent, replaceable with provenance and cannot revive after successor deletion
+  ---
+  duration_ms: 1178.4657
+  type: 'test'
+  ...
+# Subtest: catch-up paginates visible evidence, never marks work done, remains read-only on GET and persists explicit acknowledgement
+ok 72 - catch-up paginates visible evidence, never marks work done, remains read-only on GET and persists explicit acknowledgement
+  ---
+  duration_ms: 856.7994
+  type: 'test'
+  ...
+# Subtest: current final result messages cannot be edited or deleted until a new final explicitly replaces them
+ok 73 - current final result messages cannot be edited or deleted until a new final explicitly replaces them
+  ---
+  duration_ms: 741.9564
+  type: 'test'
+  ...
+# Subtest: leaving or archiving a project removes tasks, decisions and event bodies from every personal surface
+ok 74 - leaving or archiving a project removes tasks, decisions and event bodies from every personal surface
+  ---
+  duration_ms: 746.2253
+  type: 'test'
+  ...
+# Subtest: today renders actual stage, due urgency and all four work groups without a company API in standalone
+ok 75 - today renders actual stage, due urgency and all four work groups without a company API in standalone
+  ---
+  duration_ms: 4.9979
+  type: 'test'
+  ...
+# Subtest: a late today response cannot overwrite a different personal panel
+ok 76 - a late today response cannot overwrite a different personal panel
+  ---
+  duration_ms: 0.8212
+  type: 'test'
+  ...
+# Subtest: actionable customer work appears before compact empty groups
+ok 77 - actionable customer work appears before compact empty groups
+  ---
+  duration_ms: 1.8011
+  type: 'test'
+  ...
+# Subtest: catch-up stays unread until explicit acknowledgement and sends only the displayed boundary
+ok 78 - catch-up stays unread until explicit acknowledgement and sends only the displayed boundary
+  ---
+  duration_ms: 13.6813
+  type: 'test'
+  ...
+# Subtest: decision pagination preserves query, kind and history selection
+ok 79 - decision pagination preserves query, kind and history selection
+  ---
+  duration_ms: 1.5849
+  type: 'test'
+  ...
+# Subtest: customer destinations allow only one same-origin client context and never credentials or injected routes
+ok 80 - customer destinations allow only one same-origin client context and never credentials or injected routes
+  ---
+  duration_ms: 0.9136
+  type: 'test'
+  ...
+# Subtest: change summaries use crew names, retain both reviewer changes and escape untrusted content
+ok 81 - change summaries use crew names, retain both reviewer changes and escape untrusted content
+  ---
+  duration_ms: 0.8774
+  type: 'test'
+  ...
+# Subtest: reviewers see only allowed transitions and send the existing reviewer when metadata fields are disabled
+ok 82 - reviewers see only allowed transitions and send the existing reviewer when metadata fields are disabled
+  ---
+  duration_ms: 1.633
+  type: 'test'
+  ...
+# Subtest: completed results stay locked and an assignee cannot remove their own reviewer
+ok 83 - completed results stay locked and an assignee cannot remove their own reviewer
+  ---
+  duration_ms: 0.8398
+  type: 'test'
+  ...
+# Subtest: an assignee can nominate the first reviewer before review while existing reviewers stay protected
+ok 84 - an assignee can nominate the first reviewer before review while existing reviewers stay protected
+  ---
+  duration_ms: 1.0972
+  type: 'test'
+  ...
+# Subtest: an optimistic conflict preserves the dialog and requires reloading before resubmission
+ok 85 - an optimistic conflict preserves the dialog and requires reloading before resubmission
+  ---
+  duration_ms: 0.8213
+  type: 'test'
+  ...
+# Subtest: linked message picker ignores late search results after a different modal replaces it
+ok 86 - linked message picker ignores late search results after a different modal replaces it
+  ---
+  duration_ms: 0.9449
+  type: 'test'
+  ...
+# Subtest: unavailable reviewer recovery excludes the assignee and requires the explicit server permission
+ok 87 - unavailable reviewer recovery excludes the assignee and requires the explicit server permission
+  ---
+  duration_ms: 0.7129
+  type: 'test'
+  ...
+# Subtest: reviewer recovery requires confirmation and submits no stage, result or assignment changes
+ok 88 - reviewer recovery requires confirmation and submits no stage, result or assignment changes
+  ---
+  duration_ms: 1.4372
+  type: 'test'
+  ...
+# Subtest: reviewer recovery conflicts keep selection and confirmation while blocking stale resubmission
+ok 89 - reviewer recovery conflicts keep selection and confirmation while blocking stale resubmission
+  ---
+  duration_ms: 0.7436
+  type: 'test'
+  ...
+# Subtest: an unavailable reviewer raw ID survives ordinary metadata save and is never silently removed
+ok 90 - an unavailable reviewer raw ID survives ordinary metadata save and is never silently removed
+  ---
+  duration_ms: 1.246
+  type: 'test'
+  ...
+# Subtest: customer notifications render exact context and read only on opening, even if SSE refreshes the list meanwhile
+ok 91 - customer notifications render exact context and read only on opening, even if SSE refreshes the list meanwhile
+  ---
+  duration_ms: 1.6373
+  type: 'test'
+  ...
+# Subtest: unsafe customer notification links are neither read nor opened
+ok 92 - unsafe customer notification links are neither read nor opened
+  ---
+  duration_ms: 0.7916
+  type: 'test'
+  ...
+# Subtest: deadline notifications with no chat message open their task collection after read
+ok 93 - deadline notifications with no chat message open their task collection after read
+  ---
+  duration_ms: 0.8146
+  type: 'test'
+  ...
+# Subtest: notification badge ignores an older unread response arriving after a newer one
+ok 94 - notification badge ignores an older unread response arriving after a newer one
+  ---
+  duration_ms: 0.6777
+  type: 'test'
+  ...
+# Subtest: deadline setting remains hidden on older servers and activates only on a supported endpoint
+ok 95 - deadline setting remains hidden on older servers and activates only on a supported endpoint
+  ---
+  duration_ms: 1.6234
+  type: 'test'
+  ...
+# Subtest: a delayed deadline setting save cannot overwrite another signed-in users preferences
+ok 96 - a delayed deadline setting save cannot overwrite another signed-in users preferences
+  ---
+  duration_ms: 0.8449
+  type: 'test'
+  ...
+# Subtest: requested: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 97 - requested: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 17.453
+  type: 'test'
+  ...
+# Subtest: requested: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 98 - requested: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 11.8149
+  type: 'test'
+  ...
+# Subtest: requested: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 99 - requested: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 9.5667
+  type: 'test'
+  ...
+# Subtest: accepted: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 100 - accepted: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 14.1062
+  type: 'test'
+  ...
+# Subtest: accepted: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 101 - accepted: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 14.1228
+  type: 'test'
+  ...
+# Subtest: accepted: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 102 - accepted: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 12.9685
+  type: 'test'
+  ...
+# Subtest: doing: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 103 - doing: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 19.3421
+  type: 'test'
+  ...
+# Subtest: doing: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 104 - doing: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 22.1543
+  type: 'test'
+  ...
+# Subtest: doing: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 105 - doing: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 18.7702
+  type: 'test'
+  ...
+# Subtest: changes: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 106 - changes: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 24.4509
+  type: 'test'
+  ...
+# Subtest: changes: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 107 - changes: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 25.3096
+  type: 'test'
+  ...
+# Subtest: changes: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 108 - changes: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 25.7802
+  type: 'test'
+  ...
+# Subtest: review: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 109 - review: departed reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 22.2065
+  type: 'test'
+  ...
+# Subtest: review: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 110 - review: viewer reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 21.2151
+  type: 'test'
+  ...
+# Subtest: review: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+ok 111 - review: disabled reviewer blocks impossible transitions and requester can preserve the task while replacing them
+  ---
+  duration_ms: 21.9468
+  type: 'test'
+  ...
+# Subtest: reviewer preflight preserves authority, optimistic revision and all metadata boundaries
+ok 112 - reviewer preflight preserves authority, optimistic revision and all metadata boundaries
+  ---
+  duration_ms: 25.7301
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for requester after viewer
+ok 113 - preflight replacement requires current posting rights for requester after viewer
+  ---
+  duration_ms: 6.024
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for requester after disabled
+ok 114 - preflight replacement requires current posting rights for requester after disabled
+  ---
+  duration_ms: 5.4099
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for admin after departed
+ok 115 - preflight replacement requires current posting rights for admin after departed
+  ---
+  duration_ms: 5.4503
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for replacement after viewer
+ok 116 - preflight replacement requires current posting rights for replacement after viewer
+  ---
+  duration_ms: 5.9537
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for replacement after disabled
+ok 117 - preflight replacement requires current posting rights for replacement after disabled
+  ---
+  duration_ms: 6.1734
+  type: 'test'
+  ...
+# Subtest: preflight replacement requires current posting rights for replacement after departed
+ok 118 - preflight replacement requires current posting rights for replacement after departed
+  ---
+  duration_ms: 6.2594
+  type: 'test'
+  ...
+# Subtest: an assignee who is also requester or administrator cannot replace a reviewer to self-approve
+ok 119 - an assignee who is also requester or administrator cannot replace a reviewer to self-approve
+  ---
+  duration_ms: 8.6791
+  type: 'test'
+  ...
+# Subtest: an unavailable assignee (departed) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+ok 120 - an unavailable assignee (departed) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+  ---
+  duration_ms: 6.5764
+  type: 'test'
+  ...
+# Subtest: an unavailable assignee (viewer) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+ok 121 - an unavailable assignee (viewer) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+  ---
+  duration_ms: 6.9217
+  type: 'test'
+  ...
+# Subtest: an unavailable assignee (disabled) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+ok 122 - an unavailable assignee (disabled) is explicit and cannot advertise reviewer replacement that the unchanged-assignee patch rejects
+  ---
+  duration_ms: 8.2485
+  type: 'test'
+  ...
+# Subtest: completed task history never becomes reviewer recovery and review cannot change its assignee
+ok 123 - completed task history never becomes reviewer recovery and review cannot change its assignee
+  ---
+  duration_ms: 13.7983
+  type: 'test'
+  ...
+# Subtest: completed task does not offer reopening when reviewer is departed
+ok 124 - completed task does not offer reopening when reviewer is departed
+  ---
+  duration_ms: 15.6133
+  type: 'test'
+  ...
+# Subtest: completed task does not offer reopening when worker is viewer
+ok 125 - completed task does not offer reopening when worker is viewer
+  ---
+  duration_ms: 16.0868
+  type: 'test'
+  ...
+# Subtest: task classification cites the server date rather than the computer clock
+ok 126 - task classification cites the server date rather than the computer clock
+  ---
+  duration_ms: 5.4499
+  type: 'test'
+  ...
+# Subtest: today reason reply tells the person why this task is actionable now
+ok 127 - today reason reply tells the person why this task is actionable now
+  ---
+  duration_ms: 0.8228
+  type: 'test'
+  ...
+# Subtest: today reason due tells the person why this task is actionable now
+ok 128 - today reason due tells the person why this task is actionable now
+  ---
+  duration_ms: 0.6892
+  type: 'test'
+  ...
+# Subtest: today reason review tells the person why this task is actionable now
+ok 129 - today reason review tells the person why this task is actionable now
+  ---
+  duration_ms: 0.6554
+  type: 'test'
+  ...
+# Subtest: today reason recovery tells the person why this task is actionable now
+ok 130 - today reason recovery tells the person why this task is actionable now
+  ---
+  duration_ms: 0.7437
+  type: 'test'
+  ...
+# Subtest: several today reasons are all explained once despite duplicate keys
+ok 131 - several today reasons are all explained once despite duplicate keys
+  ---
+  duration_ms: 0.7513
+  type: 'test'
+  ...
+# Subtest: a future accepted task is described as remaining work rather than due today
+ok 132 - a future accepted task is described as remaining work rather than due today
+  ---
+  duration_ms: 0.8572
+  type: 'test'
+  ...
+# Subtest: an undated task says the deadline is unset without implying that there is no task
+ok 133 - an undated task says the deadline is unset without implying that there is no task
+  ---
+  duration_ms: 0.7211
+  type: 'test'
+  ...
+# Subtest: a waiting task explains the other person or review dependency
+ok 134 - a waiting task explains the other person or review dependency
+  ---
+  duration_ms: 0.7358
+  type: 'test'
+  ...
+# Subtest: a requester awaiting another assignee review sees reviewer response waiting instead of further assignee work
+ok 135 - a requester awaiting another assignee review sees reviewer response waiting instead of further assignee work
+  ---
+  duration_ms: 1.5675
+  type: 'test'
+  ...
+# Subtest: waiting with an unavailable assignee prioritizes access confirmation instead of awaiting an impossible reply
+ok 136 - waiting with an unavailable assignee prioritizes access confirmation instead of awaiting an impossible reply
+  ---
+  duration_ms: 1.0158
+  type: 'test'
+  ...
+# Subtest: waiting with a missing assignee is an unresolved assignment without changing the server classification
+ok 137 - waiting with a missing assignee is an unresolved assignment without changing the server classification
+  ---
+  duration_ms: 1.4298
+  type: 'test'
+  ...
+# Subtest: waiting with an unavailable reviewer requests reassignment while preserving read-only access and escaped records
+ok 138 - waiting with an unavailable reviewer requests reassignment while preserving read-only access and escaped records
+  ---
+  duration_ms: 1.488
+  type: 'test'
+  ...
+# Subtest: a completed task with empty classification has a completion explanation
+ok 139 - a completed task with empty classification has a completion explanation
+  ---
+  duration_ms: 0.8907
+  type: 'test'
+  ...
+# Subtest: missing server classification stays unknown instead of claiming today or no task
+ok 140 - missing server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.7045
+  type: 'test'
+  ...
+# Subtest: null server classification stays unknown instead of claiming today or no task
+ok 141 - null server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.5928
+  type: 'test'
+  ...
+# Subtest: date missing server classification stays unknown instead of claiming today or no task
+ok 142 - date missing server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.5629
+  type: 'test'
+  ...
+# Subtest: invalid date server classification stays unknown instead of claiming today or no task
+ok 143 - invalid date server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.615
+  type: 'test'
+  ...
+# Subtest: today reasons missing server classification stays unknown instead of claiming today or no task
+ok 144 - today reasons missing server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.6013
+  type: 'test'
+  ...
+# Subtest: today reasons wrong type server classification stays unknown instead of claiming today or no task
+ok 145 - today reasons wrong type server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 0.5543
+  type: 'test'
+  ...
+# Subtest: remaining reasons wrong type server classification stays unknown instead of claiming today or no task
+ok 146 - remaining reasons wrong type server classification stays unknown instead of claiming today or no task
+  ---
+  duration_ms: 1.3329
+  type: 'test'
+  ...
+# Subtest: unknown reason keys do not fabricate an actionable or empty classification
+ok 147 - unknown reason keys do not fabricate an actionable or empty classification
+  ---
+  duration_ms: 0.671
+  type: 'test'
+  ...
+# Subtest: classification does not change the server task or the stored reason arrays
+ok 148 - classification does not change the server task or the stored reason arrays
+  ---
+  duration_ms: 0.6168
+  type: 'test'
+  ...
+# Subtest: the task detail integrates the current server classification and explicit management entry
+ok 149 - the task detail integrates the current server classification and explicit management entry
+  ---
+  duration_ms: 0.6349
+  type: 'test'
+  ...
+# Subtest: a writable manageable task offers an explicit button with its exact action label
+ok 150 - a writable manageable task offers an explicit button with its exact action label
+  ---
+  duration_ms: 0.9235
+  type: 'test'
+  ...
+# Subtest: management entry is hidden for task permission denied
+ok 151 - management entry is hidden for task permission denied
+  ---
+  duration_ms: 0.8075
+  type: 'test'
+  ...
+# Subtest: management entry is hidden for company read only
+ok 152 - management entry is hidden for company read only
+  ---
+  duration_ms: 0.5867
+  type: 'test'
+  ...
+# Subtest: management entry is hidden for room read only
+ok 153 - management entry is hidden for room read only
+  ---
+  duration_ms: 0.6096
+  type: 'test'
+  ...
+# Subtest: management entry is hidden for room unavailable
+ok 154 - management entry is hidden for room unavailable
+  ---
+  duration_ms: 0.6806
+  type: 'test'
+  ...
+# Subtest: opening management focuses the enabled stage without writing or changing the chosen stage
+ok 155 - opening management focuses the enabled stage without writing or changing the chosen stage
+  ---
+  duration_ms: 1.0173
+  type: 'test'
+  ...
+# Subtest: opening management falls back to the enabled deadline field when stage is disabled
+ok 156 - opening management falls back to the enabled deadline field when stage is disabled
+  ---
+  duration_ms: 0.7716
+  type: 'test'
+  ...
+# Subtest: reviewer recovery management focuses the enabled replacement field before normal task metadata
+ok 157 - reviewer recovery management focuses the enabled replacement field before normal task metadata
+  ---
+  duration_ms: 0.6966
+  type: 'test'
+  ...
+# Subtest: reviewer recovery with a disabled replacement field falls back to an allowed enabled stage
+ok 158 - reviewer recovery with a disabled replacement field falls back to an allowed enabled stage
+  ---
+  duration_ms: 0.7022
+  type: 'test'
+  ...
+# Subtest: reviewer recovery with a missing replacement field falls back to an allowed enabled stage
+ok 159 - reviewer recovery with a missing replacement field falls back to an allowed enabled stage
+  ---
+  duration_ms: 0.6853
+  type: 'test'
+  ...
+# Subtest: an empty allowed-stage list skips an enabled stage selector and focuses the real deadline field
+ok 160 - an empty allowed-stage list skips an enabled stage selector and focuses the real deadline field
+  ---
+  duration_ms: 0.7292
+  type: 'test'
+  ...
+# Subtest: management entry remains harmless when its rendered nodes were detached
+ok 161 - management entry remains harmless when its rendered nodes were detached
+  ---
+  duration_ms: 1.828
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after closed dialog
+ok 162 - an old management click cannot act after closed dialog
+  ---
+  duration_ms: 0.8334
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after replaced dialog
+ok 163 - an old management click cannot act after replaced dialog
+  ---
+  duration_ms: 0.616
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after changed account
+ok 164 - an old management click cannot act after changed account
+  ---
+  duration_ms: 0.5962
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after changed session
+ok 165 - an old management click cannot act after changed session
+  ---
+  duration_ms: 0.6046
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after lost write access
+ok 166 - an old management click cannot act after lost write access
+  ---
+  duration_ms: 0.619
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after room posting revoked
+ok 167 - an old management click cannot act after room posting revoked
+  ---
+  duration_ms: 0.5811
+  type: 'test'
+  ...
+# Subtest: an old management click cannot act after room no longer available
+ok 168 - an old management click cannot act after room no longer available
+  ---
+  duration_ms: 0.5845
+  type: 'test'
+  ...
+# Subtest: task dialog binds its management entry while preserving the original current stage
+ok 169 - task dialog binds its management entry while preserving the original current stage
+  ---
+  duration_ms: 1.1997
+  type: 'test'
+  ...
+# Subtest: task details retain the full request and escape title, body, people and due date
+ok 170 - task details retain the full request and escape title, body, people and due date
+  ---
+  duration_ms: 4.6472
+  type: 'test'
+  ...
+# Subtest: task details show the recorded request, assignment, review, deadline and completion guidance
+ok 171 - task details show the recorded request, assignment, review, deadline and completion guidance
+  ---
+  duration_ms: 0.9292
+  type: 'test'
+  ...
+# Subtest: the next action changes with the current stage and signed-in role
+ok 172 - the next action changes with the current stage and signed-in role
+  ---
+  duration_ms: 1.7726
+  type: 'test'
+  ...
+# Subtest: read-only requested details explain access instead of instructing an unavailable transition
+ok 173 - read-only requested details explain access instead of instructing an unavailable transition
+  ---
+  duration_ms: 0.7876
+  type: 'test'
+  ...
+# Subtest: read-only review details explain access instead of instructing an unavailable transition
+ok 174 - read-only review details explain access instead of instructing an unavailable transition
+  ---
+  duration_ms: 0.7325
+  type: 'test'
+  ...
+# Subtest: read-only done details explain access instead of instructing an unavailable transition
+ok 175 - read-only done details explain access instead of instructing an unavailable transition
+  ---
+  duration_ms: 0.6407
+  type: 'test'
+  ...
+# Subtest: missing reviewer and deadline are disclosed and completion stays aligned with the recorded workflow
+ok 176 - missing reviewer and deadline are disclosed and completion stays aligned with the recorded workflow
+  ---
+  duration_ms: 0.8475
+  type: 'test'
+  ...
+# Subtest: a departed reviewer is shown as unavailable by name before review and the assignee asks for reassignment
+ok 177 - a departed reviewer is shown as unavailable by name before review and the assignee asks for reassignment
+  ---
+  duration_ms: 1.0156
+  type: 'test'
+  ...
+# Subtest: an unavailable requested assignee is marked and never described as currently working
+ok 178 - an unavailable requested assignee is marked and never described as currently working
+  ---
+  duration_ms: 0.8523
+  type: 'test'
+  ...
+# Subtest: an unavailable review assignee is marked and never described as currently working
+ok 179 - an unavailable review assignee is marked and never described as currently working
+  ---
+  duration_ms: 0.9151
+  type: 'test'
+  ...
+# Subtest: an unavailable done assignee is marked and never described as currently working
+ok 180 - an unavailable done assignee is marked and never described as currently working
+  ---
+  duration_ms: 0.834
+  type: 'test'
+  ...
+# Subtest: a completed task with an unavailable reviewer keeps its record and does not offer an impossible restart
+ok 181 - a completed task with an unavailable reviewer keeps its record and does not offer an impossible restart
+  ---
+  duration_ms: 1.4108
+  type: 'test'
+  ...
+# Subtest: a legacy task without an assignee asks for confirmation instead of claiming that someone is working
+ok 182 - a legacy task without an assignee asks for confirmation instead of claiming that someone is working
+  ---
+  duration_ms: 0.7437
+  type: 'test'
+  ...
+# Subtest: reviewer change history describes preserved task state without inventing a prior result submission
+ok 183 - reviewer change history describes preserved task state without inventing a prior result submission
+  ---
+  duration_ms: 0.7256
+  type: 'test'
+  ...
+# Subtest: task selection explains explicit assignment and deadline order for the chosen scope
+ok 184 - task selection explains explicit assignment and deadline order for the chosen scope
+  ---
+  duration_ms: 0.8902
+  type: 'test'
+  ...
+# Subtest: the task tile opens detail while a separate button still opens the original conversation
+ok 185 - the task tile opens detail while a separate button still opens the original conversation
+  ---
+  duration_ms: 1.327
+  type: 'test'
+  ...
+# Subtest: task panel click fetches detail and original-conversation action navigates without changing the task
+ok 186 - task panel click fetches detail and original-conversation action navigates without changing the task
+  ---
+  duration_ms: 1.1926
+  type: 'test'
+  ...
+# Subtest: existing task detail uses the freshest server message without a task write
+ok 187 - existing task detail uses the freshest server message without a task write
+  ---
+  duration_ms: 0.6724
+  type: 'test'
+  ...
+# Subtest: creating a task from a message opens the existing creation form immediately
+ok 188 - creating a task from a message opens the existing creation form immediately
+  ---
+  duration_ms: 0.7408
+  type: 'test'
+  ...
+# Subtest: a task removed before the latest read stays an error instead of becoming a creation form
+ok 189 - a task removed before the latest read stays an error instead of becoming a creation form
+  ---
+  duration_ms: 0.7189
+  type: 'test'
+  ...
+# Subtest: a late detail response cannot replace a closed modal
+ok 190 - a late detail response cannot replace a closed modal
+  ---
+  duration_ms: 0.7113
+  type: 'test'
+  ...
+# Subtest: a late detail response cannot replace a replaced modal
+ok 191 - a late detail response cannot replace a replaced modal
+  ---
+  duration_ms: 0.6356
+  type: 'test'
+  ...
+# Subtest: a late detail response cannot replace a changed account
+ok 192 - a late detail response cannot replace a changed account
+  ---
+  duration_ms: 0.6676
+  type: 'test'
+  ...
+# Subtest: a newer task click wins when detail requests return out of order
+ok 193 - a newer task click wins when detail requests return out of order
+  ---
+  duration_ms: 0.7015
+  type: 'test'
+  ...
+# Subtest: a failed late read cannot put its error into another dialog
+ok 194 - a failed late read cannot put its error into another dialog
+  ---
+  duration_ms: 1.4333
+  type: 'test'
+  ...
+# Subtest: failed detail reads show a safe error and allow a fresh read-only retry
+ok 195 - failed detail reads show a safe error and allow a fresh read-only retry
+  ---
+  duration_ms: 0.7221
+  type: 'test'
+  ...
+# Subtest: future deadlines do not hide the response reason for new requests or requested changes
+ok 196 - future deadlines do not hide the response reason for new requests or requested changes
+  ---
+  duration_ms: 21.5526
+  type: 'test'
+  ...
+# Subtest: accepted future work and undated work preserve distinct remaining reasons
+ok 197 - accepted future work and undated work preserve distinct remaining reasons
+  ---
+  duration_ms: 10.9817
+  type: 'test'
+  ...
+# Subtest: today and overdue accepted production both carry due while preserving their recorded dates
+ok 198 - today and overdue accepted production both carry due while preserving their recorded dates
+  ---
+  duration_ms: 10.6621
+  type: 'test'
+  ...
+# Subtest: one review record gives the reviewer an action and its assignee and requester a waiting reason
+ok 199 - one review record gives the reviewer an action and its assignee and requester a waiting reason
+  ---
+  duration_ms: 18.2816
+  type: 'test'
+  ...
+# Subtest: a requester who also reviews receives review without an erroneous waiting reason
+ok 200 - a requester who also reviews receives review without an erroneous waiting reason
+  ---
+  duration_ms: 10.5565
+  type: 'test'
+  ...
+# Subtest: completed records have no today or remaining reason for every role even after a reviewer departs
+ok 201 - completed records have no today or remaining reason for every role even after a reviewer departs
+  ---
+  duration_ms: 11.9821
+  type: 'test'
+  ...
+# Subtest: reviewer recovery is explained only to authorized requesters and admins, leaving assignee waiting intact
+ok 202 - reviewer recovery is explained only to authorized requesters and admins, leaving assignee waiting intact
+  ---
+  duration_ms: 17.6249
+  type: 'test'
+  ...
+# Subtest: reviewer recovery before submission does not claim that an assignee already submitted results
+ok 203 - reviewer recovery before submission does not claim that an assignee already submitted results
+  ---
+  duration_ms: 10.9393
+  type: 'test'
+  ...
+# Subtest: losing posting permission does not silently change the pre-existing day classification
+ok 204 - losing posting permission does not silently change the pre-existing day classification
+  ---
+  duration_ms: 5.2008
+  type: 'test'
+  ...
+# Subtest: an inaccessible task does not leak its reason or appear in a workday
+ok 205 - an inaccessible task does not leak its reason or appear in a workday
+  ---
+  duration_ms: 3.2986
+  type: 'test'
+  ...
+# Subtest: latest detail switches at server KST midnight without a client clock or persisted mutation
+ok 206 - latest detail switches at server KST midnight without a client clock or persisted mutation
+  ---
+  duration_ms: 4.1617
+  type: 'test'
+  ...
+# Subtest: workday and nested message tasks use one captured server day even when the next clock read crosses midnight
+ok 207 - workday and nested message tasks use one captured server day even when the next clock read crosses midnight
+  ---
+  duration_ms: 10.6278
+  type: 'test'
+  ...
+# Subtest: a failed nested source render restores the captured-date context for the next read
+ok 208 - a failed nested source render restores the captured-date context for the next read
+  ---
+  duration_ms: 4.6311
+  type: 'test'
+  ...
+# Subtest: today offers direct registration with the server date and suppresses it for a readonly account
+ok 209 - today offers direct registration with the server date and suppresses it for a readonly account
+  ---
+  duration_ms: 4.9338
+  type: 'test'
+  ...
+# Subtest: the today registration click passes the observed server date without creating a task
+ok 210 - the today registration click passes the observed server date without creating a task
+  ---
+  duration_ms: 3.0001
+  type: 'test'
+  ...
+# Subtest: registration gets authoritative room members, defaults to self, and retains the chat draft
+ok 211 - registration gets authoritative room members, defaults to self, and retains the chat draft
+  ---
+  duration_ms: 1.8958
+  type: 'test'
+  ...
+# Subtest: without a self room the room and assignee stay on explicit empty placeholders
+ok 212 - without a self room the room and assignee stay on explicit empty placeholders
+  ---
+  duration_ms: 0.9598
+  type: 'test'
+  ...
+# Subtest: server option names are escaped and unauthorized bootstrap rooms are not offered
+ok 213 - server option names are escaped and unauthorized bootstrap rooms are not offered
+  ---
+  duration_ms: 1.0561
+  type: 'test'
+  ...
+# Subtest: room selection uses only its server roster and preserves an eligible assignee
+ok 214 - room selection uses only its server roster and preserves an eligible assignee
+  ---
+  duration_ms: 1.0909
+  type: 'test'
+  ...
+# Subtest: a local member excluded by the server posting roster is not offered or accepted
+ok 215 - a local member excluded by the server posting roster is not offered or accepted
+  ---
+  duration_ms: 1.4509
+  type: 'test'
+  ...
+# Subtest: room changes clear an ineligible assignee and reviewer rather than assigning somebody else
+ok 216 - room changes clear an ineligible assignee and reviewer rather than assigning somebody else
+  ---
+  duration_ms: 0.9219
+  type: 'test'
+  ...
+# Subtest: the assigned crew cannot also be the reviewer and changing assignee clears that selection
+ok 217 - the assigned crew cannot also be the reviewer and changing assignee clears that selection
+  ---
+  duration_ms: 1.6959
+  type: 'test'
+  ...
+# Subtest: one submit creates both the original request and task through one atomic endpoint
+ok 218 - one submit creates both the original request and task through one atomic endpoint
+  ---
+  duration_ms: 1.3124
+  type: 'test'
+  ...
+# Subtest: an undated request sends null and an optional reviewer is sent separately
+ok 219 - an undated request sends null and an optional reviewer is sent separately
+  ---
+  duration_ms: 0.9726
+  type: 'test'
+  ...
+# Subtest: a saved direct request refreshes today even if the current chat read fails
+ok 220 - a saved direct request refreshes today even if the current chat read fails
+  ---
+  duration_ms: 1.5525
+  type: 'test'
+  ...
+# Subtest: a saved direct request with a failed today refresh never reports an empty day
+ok 221 - a saved direct request with a failed today refresh never reports an empty day
+  ---
+  duration_ms: 1.9143
+  type: 'test'
+  ...
+# Subtest: repeated submit events while pending send only one task creation
+ok 222 - repeated submit events while pending send only one task creation
+  ---
+  duration_ms: 0.9781
+  type: 'test'
+  ...
+# Subtest: network uncertainty preserves entered text and reuses the request ID for the same payload
+ok 223 - network uncertainty preserves entered text and reuses the request ID for the same payload
+  ---
+  duration_ms: 0.9897
+  type: 'test'
+  ...
+# Subtest: editing a failed payload uses a new request ID and preserves the revised original text
+ok 224 - editing a failed payload uses a new request ID and preserves the revised original text
+  ---
+  duration_ms: 1.0014
+  type: 'test'
+  ...
+# Subtest: permission removal before submission refuses a stale form without a POST
+ok 225 - permission removal before submission refuses a stale form without a POST
+  ---
+  duration_ms: 0.9368
+  type: 'test'
+  ...
+# Subtest: an open form reports readonly access after write permission changes and sends no POST
+ok 226 - an open form reports readonly access after write permission changes and sends no POST
+  ---
+  duration_ms: 0.9609
+  type: 'test'
+  ...
+# Subtest: a backend rejection keeps all inputs and does not claim success or open task detail
+ok 227 - a backend rejection keeps all inputs and does not claim success or open task detail
+  ---
+  duration_ms: 1.0403
+  type: 'test'
+  ...
+# Subtest: a pending create cannot submit or paint after account changes
+ok 228 - a pending create cannot submit or paint after account changes
+  ---
+  duration_ms: 0.8794
+  type: 'test'
+  ...
+# Subtest: a late successful create cannot refresh or show detail after account changes
+ok 229 - a late successful create cannot refresh or show detail after account changes
+  ---
+  duration_ms: 0.914
+  type: 'test'
+  ...
+# Subtest: a pending create cannot submit or paint after the same account logs in again
+ok 230 - a pending create cannot submit or paint after the same account logs in again
+  ---
+  duration_ms: 0.9146
+  type: 'test'
+  ...
+# Subtest: a late successful create cannot refresh or show detail after the same account logs in again
+ok 231 - a late successful create cannot refresh or show detail after the same account logs in again
+  ---
+  duration_ms: 0.8437
+  type: 'test'
+  ...
+# Subtest: late options cannot replace another modal or accept a new login session
+ok 232 - late options cannot replace another modal or accept a new login session
+  ---
+  duration_ms: 2.214
+  type: 'test'
+  ...
+# Subtest: write access removed while options are loading cannot expose a registration form
+ok 233 - write access removed while options are loading cannot expose a registration form
+  ---
+  duration_ms: 0.8549
+  type: 'test'
+  ...
+# Subtest: a late create rejection cannot paint an error into a replacement modal
+ok 234 - a late create rejection cannot paint an error into a replacement modal
+  ---
+  duration_ms: 1.7152
+  type: 'test'
+  ...
+# Subtest: closing or replacing the creation modal suppresses automatic detail opening after success
+ok 235 - closing or replacing the creation modal suppresses automatic detail opening after success
+  ---
+  duration_ms: 2.0087
+  type: 'test'
+  ...
+# Subtest: failed options remain a visible recoverable error and never allow a creation POST
+ok 236 - failed options remain a visible recoverable error and never allow a creation POST
+  ---
+  duration_ms: 0.822
+  type: 'test'
+  ...
+# Subtest: a successful task save refreshes today even if the current chat cannot be read
+ok 237 - a successful task save refreshes today even if the current chat cannot be read
+  ---
+  duration_ms: 6.5206
+  type: 'test'
+  ...
+# Subtest: a files refresh failure cannot prevent the personal workday from updating after a save
+ok 238 - a files refresh failure cannot prevent the personal workday from updating after a save
+  ---
+  duration_ms: 1.7898
+  type: 'test'
+  ...
+# Subtest: a saved task with failed chat and workday refreshes never turns unknown work into an empty day
+ok 239 - a saved task with failed chat and workday refreshes never turns unknown work into an empty day
+  ---
+  duration_ms: 1.076
+  type: 'test'
+  ...
+# Subtest: a late save cannot refresh or toast into another account
+ok 240 - a late save cannot refresh or toast into another account
+  ---
+  duration_ms: 1.0441
+  type: 'test'
+  ...
+# Subtest: a late save cannot refresh or toast into a new login session
+ok 241 - a late save cannot refresh or toast into a new login session
+  ---
+  duration_ms: 0.8128
+  type: 'test'
+  ...
+# Subtest: reviewer reassignment refreshes today despite a failed unrelated chat read
+ok 242 - reviewer reassignment refreshes today despite a failed unrelated chat read
+  ---
+  duration_ms: 1.066
+  type: 'test'
+  ...
+# Subtest: a late reviewer reassignment cannot reopen a dialog after the login session changes
+ok 243 - a late reviewer reassignment cannot reopen a dialog after the login session changes
+  ---
+  duration_ms: 0.958
+  type: 'test'
+  ...
+# Subtest: a requested reviewer recovery preserves the existing task and does not claim submitted-result review
+ok 244 - a requested reviewer recovery preserves the existing task and does not claim submitted-result review
+  ---
+  duration_ms: 1.4515
+  type: 'test'
+  ...
+# Subtest: a doing reviewer recovery preserves the existing task and does not claim submitted-result review
+ok 245 - a doing reviewer recovery preserves the existing task and does not claim submitted-result review
+  ---
+  duration_ms: 0.8484
+  type: 'test'
+  ...
+# Subtest: an unavailable assignee starts on a required empty placeholder instead of selecting another crew member
+ok 246 - an unavailable assignee starts on a required empty placeholder instead of selecting another crew member
+  ---
+  duration_ms: 0.9575
+  type: 'test'
+  ...
+# Subtest: returning to a visible document reads today independently of failed chat reads
+ok 247 - returning to a visible document reads today independently of failed chat reads
+  ---
+  duration_ms: 0.8746
+  type: 'test'
+  ...
+# Subtest: showing the workspace module reads today even when channel refresh fails
+ok 248 - showing the workspace module reads today even when channel refresh fails
+  ---
+  duration_ms: 1.5616
+  type: 'test'
+  ...
+# Subtest: one timer uses the server midnight delay even when the PC clock is one second fast
+ok 249 - one timer uses the server midnight delay even when the PC clock is one second fast
+  ---
+  duration_ms: 1.1525
+  type: 'test'
+  ...
+# Subtest: an older response cannot overwrite the next days work loaded on visibility
+ok 250 - an older response cannot overwrite the next days work loaded on visibility
+  ---
+  duration_ms: 0.8422
+  type: 'test'
+  ...
+# Subtest: a response still carrying the previous day schedules another server check rather than waiting a PC day
+ok 251 - a response still carrying the previous day schedules another server check rather than waiting a PC day
+  ---
+  duration_ms: 0.8439
+  type: 'test'
+  ...
+# Subtest: missing or invalid server delays never fall back to the PC clock
+ok 252 - missing or invalid server delays never fall back to the PC clock
+  ---
+  duration_ms: 6.6641
+  type: 'test'
+  ...
+# Subtest: starting another workday read replaces the midnight timer instead of adding one
+ok 253 - starting another workday read replaces the midnight timer instead of adding one
+  ---
+  duration_ms: 1.2267
+  type: 'test'
+  ...
+# Subtest: logging in again as the same user invalidates the old timer without canceling the new one
+ok 254 - logging in again as the same user invalidates the old timer without canceling the new one
+  ---
+  duration_ms: 1.2143
+  type: 'test'
+  ...
+# Subtest: a module hidden behind the workspace does not read workday on document visibility
+ok 255 - a module hidden behind the workspace does not read workday on document visibility
+  ---
+  duration_ms: 0.8504
+  type: 'test'
+  ...
+# Subtest: a session change while views reload suppresses both the old list and the save notification
+ok 256 - a session change while views reload suppresses both the old list and the save notification
+  ---
+  duration_ms: 1.0839
+  type: 'test'
+  ...
+# Subtest: a canceled midnight callback makes no API read after a different panel
+ok 257 - a canceled midnight callback makes no API read after a different panel
+  ---
+  duration_ms: 0.8337
+  type: 'test'
+  ...
+# Subtest: a canceled midnight callback makes no API read after a hidden document
+ok 258 - a canceled midnight callback makes no API read after a hidden document
+  ---
+  duration_ms: 0.6874
+  type: 'test'
+  ...
+# Subtest: a canceled midnight callback makes no API read after logout
+ok 259 - a canceled midnight callback makes no API read after logout
+  ---
+  duration_ms: 0.6538
+  type: 'test'
+  ...
+# Subtest: a workday response from the previous login cannot replace a new session screen
+ok 260 - a workday response from the previous login cannot replace a new session screen
+  ---
+  duration_ms: 0.6297
+  type: 'test'
+  ...
+# Subtest: hiding the workspace module cancels its date timer
+ok 261 - hiding the workspace module cancels its date timer
+  ---
+  duration_ms: 0.7973
+  type: 'test'
+  ...
+# Subtest: a successfully checked empty day states clearly that there is no work to process today
+ok 262 - a successfully checked empty day states clearly that there is no work to process today
+  ---
+  duration_ms: 4.308
+  type: 'test'
+  ...
+# Subtest: a task shown for more than one reason is counted once in the today summary
+ok 263 - a task shown for more than one reason is counted once in the today summary
+  ---
+  duration_ms: 1.0455
+  type: 'test'
+  ...
+# Subtest: future and undated active work stays visible instead of implying there is no work to do
+ok 264 - future and undated active work stays visible instead of implying there is no work to do
+  ---
+  duration_ms: 0.8713
+  type: 'test'
+  ...
+# Subtest: a waiting-only day differs from active remaining work and from a completely empty workspace
+ok 265 - a waiting-only day differs from active remaining work and from a completely empty workspace
+  ---
+  duration_ms: 1.4621
+  type: 'test'
+  ...
+# Subtest: an unavailable customer workflow cannot produce an unqualified empty-day claim
+ok 266 - an unavailable customer workflow cannot produce an unqualified empty-day claim
+  ---
+  duration_ms: 0.7586
+  type: 'test'
+  ...
+# Subtest: a customer read failure retains known actionable work while labelling the count incomplete
+ok 267 - a customer read failure retains known actionable work while labelling the count incomplete
+  ---
+  duration_ms: 0.691
+  type: 'test'
+  ...
+# Subtest: waiting customer work stays waiting even when a reopen action is offered
+ok 268 - waiting customer work stays waiting even when a reopen action is offered
+  ---
+  duration_ms: 0.71
+  type: 'test'
+  ...
+# Subtest: customer reply, review and next-step items count once per recorded item
+ok 269 - customer reply, review and next-step items count once per recorded item
+  ---
+  duration_ms: 0.8148
+  type: 'test'
+  ...
+# Subtest: a legacy response without today classification never confirms an empty day
+ok 270 - a legacy response without today classification never confirms an empty day
+  ---
+  duration_ms: 0.6482
+  type: 'test'
+  ...
+# Subtest: task cards show the next concrete action and keep the original request accessible
+ok 271 - task cards show the next concrete action and keep the original request accessible
+  ---
+  duration_ms: 1.0322
+  type: 'test'
+  ...
+# Subtest: the today panel surfaces active remaining work before the full later and waiting sections
+ok 272 - the today panel surfaces active remaining work before the full later and waiting sections
+  ---
+  duration_ms: 2.0853
+  type: 'test'
+  ...
+# Subtest: quick-list task clicks resolve the recorded task ID and open its detail
+ok 273 - quick-list task clicks resolve the recorded task ID and open its detail
+  ---
+  duration_ms: 1.3868
+  type: 'test'
+  ...
+# Subtest: a failed workday read says that work is unknown and offers refresh without claiming zero
+ok 274 - a failed workday read says that work is unknown and offers refresh without claiming zero
+  ---
+  duration_ms: 0.7979
+  type: 'test'
+  ...
+# Subtest: a customer fetch failure stays visible after the workday API successfully returns zero
+ok 275 - a customer fetch failure stays visible after the workday API successfully returns zero
+  ---
+  duration_ms: 0.9687
+  type: 'test'
+  ...
+# Subtest: a late empty-day response cannot overwrite another personal view
+ok 276 - a late empty-day response cannot overwrite another personal view
+  ---
+  duration_ms: 0.7295
+  type: 'test'
+  ...
+# Subtest: a completely empty workday is distinguishable from unfinished work without an action today
+ok 277 - a completely empty workday is distinguishable from unfinished work without an action today
+  ---
+  duration_ms: 4.7237
+  type: 'test'
+  ...
+# Subtest: future dated only reports no action today while preserving the remaining task
+ok 278 - future dated only reports no action today while preserving the remaining task
+  ---
+  duration_ms: 5.6761
+  type: 'test'
+  ...
+# Subtest: undated only reports no action today while preserving the remaining task
+ok 279 - undated only reports no action today while preserving the remaining task
+  ---
+  duration_ms: 5.5815
+  type: 'test'
+  ...
+# Subtest: requested from another crew only reports no action today while preserving the remaining task
+ok 280 - requested from another crew only reports no action today while preserving the remaining task
+  ---
+  duration_ms: 3.173
+  type: 'test'
+  ...
+# Subtest: my delivery awaiting review only reports no action today while preserving the remaining task
+ok 281 - my delivery awaiting review only reports no action today while preserving the remaining task
+  ---
+  duration_ms: 9.6531
+  type: 'test'
+  ...
+# Subtest: new requests and requested changes require a response today even when their work deadline is in the future
+ok 282 - new requests and requested changes require a response today even when their work deadline is in the future
+  ---
+  duration_ms: 12.438
+  type: 'test'
+  ...
+# Subtest: today counts separate responses from due production and do not count the same task twice
+ok 283 - today counts separate responses from due production and do not count the same task twice
+  ---
+  duration_ms: 24.631
+  type: 'test'
+  ...
+# Subtest: a requester who must review their own request sees an action today instead of a waiting item
+ok 284 - a requester who must review their own request sees an action today instead of a waiting item
+  ---
+  duration_ms: 11.4031
+  type: 'test'
+  ...
+# Subtest: reviewer recovery is an action only for currently authorized requesters and administrators
+ok 285 - reviewer recovery is an action only for currently authorized requesters and administrators
+  ---
+  duration_ms: 17.557
+  type: 'test'
+  ...
+# Subtest: finished tasks and inaccessible rooms are excluded from all new groups and totals
+ok 286 - finished tasks and inaccessible rooms are excluded from all new groups and totals
+  ---
+  duration_ms: 17.051
+  type: 'test'
+  ...
+# Subtest: assigned legacy tasks stay visible after the assignee becomes a viewer
+ok 287 - assigned legacy tasks stay visible after the assignee becomes a viewer
+  ---
+  duration_ms: 3.9805
+  type: 'test'
+  ...
+# Subtest: workday gives a server-relative midnight delay from one clock observation
+ok 288 - workday gives a server-relative midnight delay from one clock observation
+  ---
+  duration_ms: 1.5621
+  type: 'test'
+  ...
+# Subtest: today switches at midnight in Korea instead of midnight in UTC
+ok 289 - today switches at midnight in Korea instead of midnight in UTC
+  ---
+  duration_ms: 4.2851
+  type: 'test'
+  ...
+# Subtest: workspace destinations require the authenticated parent origin and window before any lookup or DM creation
+ok 290 - workspace destinations require the authenticated parent origin and window before any lookup or DM creation
+  ---
+  duration_ms: 5.3644
+  type: 'test'
+  ...
+# Subtest: a room and exact source message are opened only after membership refresh with a current-request guard
+ok 291 - a room and exact source message are opened only after membership refresh with a current-request guard
+  ---
+  duration_ms: 0.9053
+  type: 'test'
+  ...
+# Subtest: unsupported identifiers, arbitrary panels and inaccessible rooms never perform navigation
+ok 292 - unsupported identifiers, arbitrary panels and inaccessible rooms never perform navigation
+  ---
+  duration_ms: 1.1206
+  type: 'test'
+  ...
+# Subtest: leaving the messenger while destination lookup is pending cancels late navigation
+ok 293 - leaving the messenger while destination lookup is pending cancels late navigation
+  ---
+  duration_ms: 0.9085
+  type: 'test'
+  ...
+# Subtest: a newer destination or a manual room choice wins over an older pending request
+ok 294 - a newer destination or a manual room choice wins over an older pending request
+  ---
+  duration_ms: 1.4734
+  type: 'test'
+  ...
+# Subtest: personal shortcuts open assigned tasks and saved messages even after using other filters
+ok 295 - personal shortcuts open assigned tasks and saved messages even after using other filters
+  ---
+  duration_ms: 0.7259
+  type: 'test'
+  ...
+1..295
+# tests 295
+# suites 0
+# pass 295
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 109145.3443

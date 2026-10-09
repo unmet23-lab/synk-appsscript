@@ -1,0 +1,284 @@
+{
+  "createdAt": "2026-10-09T20:19:47.555Z",
+  "baseRef": "origin/master",
+  "baseCommit": "4127b4bc5d639a058ae85aec2a57b0c96ad9fe49",
+  "files": [
+    {
+      "path": "tools/company-messenger/public/app.js",
+      "baseSHA256": "99b38b9346aacebe0790e99241c562e22da436036ad1de3a10f5d1dae1968487",
+      "sha256": "f8bccbdf714b4d94cb7111701ac2dad1586f80768a890c3a0d2ea1b77c41aaf6",
+      "bytes": 259547
+    },
+    {
+      "path": "tools/company-messenger/server.mjs",
+      "baseSHA256": "3af57b38ba2bd2652c4ec2eed18ec893de6e623ec396b43ab3859cfe2c3d559d",
+      "sha256": "79234de6b84e28c86567ceb925b90cbefc57b28cddbe8237cc46f58903243cb2",
+      "bytes": 89213
+    }
+  ],
+  "hunks": [
+    {
+      "label": "app-own-release-0",
+      "number": 1,
+      "header": "@@ -74,6 +74,7 @@ function channelCategory(channel){return channel?.kind==='self'||channel?.kind==",
+      "oldSHA256": "fd4c01f0ed53ba23be23c13fe416431527ceefa0082058c343b0547e25da7af0",
+      "newSHA256": "909a4ebfb1a6ecaeee8f6135b714c94cc456f1474ec1d00b7aec5906f1fe9abc",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 2,
+      "header": "@@ -156,7 +157,9 @@ async function refreshStorageProvider(){",
+      "oldSHA256": "c06f027f34c9e121281c5cab5330882f3f433ccf801976bfaf5b29dc79a781c7",
+      "newSHA256": "0a5af10742d3346217ae17c0d36466ce7556c4bb75eb3106ff57b90d6a295f29",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 3,
+      "header": "@@ -618,9 +621,10 @@ function connectEvents(){",
+      "oldSHA256": "1fa9278af54a8628b08d0a64eb093c3e5a1a0e9da258270f20a305eeb8085f17",
+      "newSHA256": "2ba4e3d063ab9bb9dbf62bf67042275853e325ce7cf81f1f184b698f17ec1942",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 4,
+      "header": "@@ -658,7 +662,7 @@ function syncDrawerAccess(){",
+      "oldSHA256": "5e11191513aaa41d8f3794a1be302c0e7ca88350a5e51b238de4c8b9b4f9a974",
+      "newSHA256": "0062bf4dd5528492c39cfbc8b52471272085e265293a471f34a6b28597af9b6b",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 5,
+      "header": "@@ -692,7 +696,7 @@ async function openSearchMessage(message,{isCurrent=()=>true}={}){",
+      "oldSHA256": "6471236ad0f17c842157c0b2fe30ba3e7ff238116640fc1746df52e88c53ada5",
+      "newSHA256": "68b340ff40ebf1622a8c69568a3ef8ce02112adff9bc9f8eac36a359f4e9e0ef",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 6,
+      "header": "@@ -868,7 +872,7 @@ document.addEventListener('keydown',event=>{",
+      "oldSHA256": "1bbb0ddf4016460dc554acbd1dd5decdc8bc68b6e9b7789ab40916a862f3140c",
+      "newSHA256": "1d95d3b24b944797aab93f00ccdc57a138f7b65323adcce1e9c4e28041e5755a",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 7,
+      "header": "@@ -1073,7 +1077,7 @@ async function handleWorkspaceOpen(value){",
+      "oldSHA256": "d9d29f70efae23e3d4c1ce69bf8865991e6a1aba6af0000b5bef9af419754858",
+      "newSHA256": "539b39b4c4b460ddec7b3989707c1cc771d9f1191ccbb3d6b4fa933f32876396",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 8,
+      "header": "@@ -1082,7 +1086,7 @@ async function handleWorkspaceOpen(value){",
+      "oldSHA256": "17739440dea0ffa0fea1b40c1264b2d1a1731bd2cadfa0573013839425633c27",
+      "newSHA256": "7e6fd0aab2dc9611ac37cb258d20d68d1b9933ff3abd2422aa91f3a36661f774",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 9,
+      "header": "@@ -1156,34 +1160,49 @@ async function refreshNotificationCount(){const seq=state.notificationSeq=(state",
+      "oldSHA256": "4b13d6e5e56b7b8ce005b5d045a0baeef456d87101b5ef1c25a085abc21322b4",
+      "newSHA256": "6d12e46447479560cbfbdc4426095cf21e497ce44118b6e4bf101fbd39f3d428",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 10,
+      "header": "@@ -1207,7 +1226,7 @@ async function openPersonalNotification(item){",
+      "oldSHA256": "53e6b61d27a221ae83023dce61363a720e8580693f8e1cf523c4e36a8ffb4bf5",
+      "newSHA256": "895e3ef338bee3509aa866d0317e6f956bfdfd919d026e59786fe40627baa005",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 11,
+      "header": "@@ -1225,7 +1244,7 @@ async function attachDeadlineSettings(){",
+      "oldSHA256": "d4027acc93174423bf772b5823235f9ea88d6b71ab366303039493482e5b3704",
+      "newSHA256": "97e72121d3c026f17688d80b8139760ce7dd66b94dfee533bd2015887f625a60",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 12,
+      "header": "@@ -1251,6 +1270,29 @@ function deadlineSettingsDialog(){",
+      "oldSHA256": "8063a363d59b0fadc60ed03692131e7a6c0404a6e14a8ec75d50a1d29de6c194",
+      "newSHA256": "b79130bb3d1930b298606a1dffb06c44da53c0d9830c976da6ff04f41523e4bb",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 13,
+      "header": "@@ -1260,9 +1302,9 @@ function sourceButton(message,label='원래 대화',attributes=''){",
+      "oldSHA256": "8dc8f4a863073e088f40e43da3e67228ca45ee26154b0122b3fb36988984a013",
+      "newSHA256": "4109b7656266cc6693550df5c54f883e87fb310dd401b2f3677d86d1399e5816",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 14,
+      "header": "@@ -1272,10 +1314,10 @@ async function clientWorkflowApi(options={}){",
+      "oldSHA256": "b2b3a36fe294152c600a23a080bb747fe87c16ab14a72002ba3456f9bac3a615",
+      "newSHA256": "bbb908049609813947ca3b58d91c405b36111181fb0bc0e360c7bb6f3be046db",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 15,
+      "header": "@@ -1283,7 +1325,7 @@ function catchUpChangeText(event){",
+      "oldSHA256": "739b91132692443565329718e98cd76d614bde1f3c5493a8efe48460aff6aff8",
+      "newSHA256": "62b12dd69f84672977b913e4406a45e6df58c9f2ae13175efea9a05dd4bb5c69",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 16,
+      "header": "@@ -1303,17 +1345,20 @@ async function showDecision(decisionId){",
+      "oldSHA256": "75329b753cbedb73f85579006aa405f5f66cef487897eda70c3cc759b5797d43",
+      "newSHA256": "a542abb131ed95f4467c6b210b94825a9754d7209abd9464180dfcd59bc50e11",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 17,
+      "header": "@@ -1328,14 +1373,15 @@ async function loadProductivityPanel({tab,seq,append=false}){",
+      "oldSHA256": "59ae30fe6dc7643414183b32c40fd2b238312817b86b7aae7f798c9f0b2f45f0",
+      "newSHA256": "a4c1041511350e75a4aa600f35e1b1d84ff87744ce5545edf084bebeceeae2b6",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 18,
+      "header": "@@ -1344,7 +1390,7 @@ async function channelNotificationsDialog(){",
+      "oldSHA256": "81d0c7b94a3bdec0f9cd4a5dd2eac448ed9adac15cbfeba8326a7b7198120dcd",
+      "newSHA256": "8b189fc2fa7df5f9986d6c8689a47b638b17e9d27876f10d6d76ee0f3748803a",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-0",
+      "number": 19,
+      "header": "@@ -1354,48 +1400,101 @@ async function ackListDialog(message){",
+      "oldSHA256": "66c9ade6d1a83a0ab1015a773dc3ee971867285af2650ceee25f9a4b50d06a9e",
+      "newSHA256": "90446f1827909051e36de22b6b84a3823c0fc2c139a3dae4af319a4d67c70690",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-1",
+      "number": 1,
+      "header": "@@ -1357,7 +1357,7 @@ async function loadProductivityPanel({tab,seq,append=false}){",
+      "oldSHA256": "29d9cf84b2c202a52772a3c0739974e124b694b4e2727d41ff30a0faa49eeb89",
+      "newSHA256": "30ae6c7b6258dc2d346decf5658bedd528819b1471d150091d9cbf3b88762491",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-1",
+      "number": 2,
+      "header": "@@ -1372,6 +1372,7 @@ async function loadProductivityPanel({tab,seq,append=false}){",
+      "oldSHA256": "e8dc68299babd7872cc6d2ffa2c84f49b75d6bfc47d206c602c061dde5bc1e48",
+      "newSHA256": "2c167c304890f6b3ae40b54e7501af792f47efdc15571a5a4e755aeb3ef591fa",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-1",
+      "number": 3,
+      "header": "@@ -1470,6 +1471,46 @@ async function refreshTaskViews(context,successMessage){",
+      "oldSHA256": "21c229cefa0eb85e2af18b5b3240efe231784f0331a08abd1314af3b0aa78afd",
+      "newSHA256": "21b8f13ecea3d15c8a5fe32ddb79f8db0dc80ccf71926ee138084e982f38571b",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-2",
+      "number": 1,
+      "header": "@@ -1435,12 +1435,36 @@ function taskNextSteps(task){",
+      "oldSHA256": "e1042266039f9652d1c6a50aa4dab71fdff052a850e72dde44ef41934d7d1d79",
+      "newSHA256": "70835b80905e4c28d1a8be97e921f67078cf796f025e96d1bc8a6dbaf03f08be",
+      "preimages": 1
+    },
+    {
+      "label": "app-own-release-2",
+      "number": 2,
+      "header": "@@ -1516,9 +1540,10 @@ function taskDialog(message){",
+      "oldSHA256": "11bf706ebb98e166885ffca23a5dea6de99cccda1c441b806d03be8336c712d4",
+      "newSHA256": "cefaa91bb591082e57195d713847303b8ed56ffbadf8f59110ae9d6de87f9c09",
+      "preimages": 1
+    },
+    {
+      "label": "server-direct-registration",
+      "number": 1,
+      "header": "@@ -10,6 +10,7 @@ import { pipeline } from 'node:stream/promises';",
+      "oldSHA256": "787f5528699a209b9138668f96e63a332115d53b7374017b62772c4452fce64a",
+      "newSHA256": "e1f009a39aed6bc449f62204bdcfb0abb76494887c9081f9caa16fffef03fca5",
+      "preimages": 1
+    },
+    {
+      "label": "server-direct-registration",
+      "number": 2,
+      "header": "@@ -180,6 +181,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa",
+      "oldSHA256": "324fecd4c51b5d22963efa31b980dad66fd89a87caa139239468b3b0116ba6ff",
+      "newSHA256": "e373603dbe3acc3a9e8f2b249d176bf32294998a3021d5215942ddf5b6e69d15",
+      "preimages": 1
+    },
+    {
+      "label": "server-direct-registration",
+      "number": 3,
+      "header": "@@ -647,6 +651,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa",
+      "oldSHA256": "80c8c1295c1979da236e3acb63c6d26a28ceb700faa7a32d8ecf2da56e3537ff",
+      "newSHA256": "c9e3a83bbcd7e78b89e5fa64ad91df7b2a7f32ec0e480d281fb98ecd2cf8f469",
+      "preimages": 1
+    }
+  ],
+  "dependencies": [
+    {
+      "label": "companySessionRecovery and guarded api",
+      "sourcePath": ".tmp/task-action-20261010/release-v3/candidate/tools/company-messenger/public/app.js",
+      "sha256": "8b0f03eb3b01e92b50c253013c08b860e6edece50a3ecc0eda86f5c9ac12e8e0",
+      "bytes": 2868,
+      "frozenSourceUnmodified": true
+    },
+    {
+      "label": "transferContext and transferContextCurrent",
+      "sourcePath": ".tmp/task-action-20261010/release-v3/candidate/tools/company-messenger/public/app.js",
+      "sha256": "e8a1f968304922ee6f9d734b195f082eedeb5cd87999701e08a425ffc8d82798",
+      "bytes": 237,
+      "frozenSourceUnmodified": true
+    },
+    {
+      "label": "initial transferSession property",
+      "sourcePath": ".tmp/task-action-20261010/release-v3/candidate/tools/company-messenger/public/app.js",
+      "sha256": "5089b851d7f21916b998380a8594f46eb55bf43d5808dabf0c09669912c311e0",
+      "bytes": 17,
+      "frozenSourceUnmodified": true
+    },
+    {
+      "label": "requestId validator",
+      "sourcePath": ".tmp/direct-task-release-20261010/release-v2/candidate/tools/company-messenger/server.mjs",
+      "sha256": "d70a2c71ee6222fd2907e990697a8f67d7bf90d55b2ab39446fa47f66fa075f3",
+      "bytes": 247,
+      "frozenSourceUnmodified": true
+    },
+    {
+      "label": "message_send_requests schema",
+      "sourcePath": ".tmp/direct-task-release-20261010/release-v2/candidate/tools/company-messenger/server.mjs",
+      "sha256": "6bc3b5244aa268a33cd848cf327f6ee447891d799dd3cff9499c3252a4acb515",
+      "bytes": 445,
+      "frozenSourceUnmodified": true
+    }
+  ],
+  "sharedFilesChanged": false,
+  "gitIndexChanged": false,
+  "refsChanged": false,
+  "excludedPeerFeatures": {
+    "generalMessageSendRecovery": true,
+    "fileUploadRecovery": true,
+    "fileDeletionReceipts": true,
+    "teacherWorld": true
+  },
+  "dependencyCodeMutatedRows": 0
+}

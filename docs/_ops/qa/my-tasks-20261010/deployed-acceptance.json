@@ -1,0 +1,172 @@
+{
+  "acceptedAt": "2026-10-09T19:27:31.706Z",
+  "status": "production-deployed-and-accepted",
+  "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+  "parentManifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+  "image": "sha256:1769caf965a25ddd85b32a0484b582310c33f3bcb2fe19fb81cd8ee25546c49d",
+  "sourceFiles": 510,
+  "parentFiles": 508,
+  "runtimeFiles": 3,
+  "verificationFiles": 2,
+  "deletedFiles": 0,
+  "teacherAndOtherParentChangesPreserved": true,
+  "sourceAndParentHashesReverified": true,
+  "tests": {
+    "windows": {
+      "tests": 339,
+      "pass": 339,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "linux": {
+      "tests": 339,
+      "pass": 339,
+      "fail": 0,
+      "skipped": 0,
+      "cancelled": 0
+    },
+    "nativeLinuxTestFiles": 20,
+    "operationalGuardsPassed": 85
+  },
+  "syntheticUI": {
+    "checks": 11,
+    "curatedScreenshots": 7,
+    "syntheticTaskStageChanges": 1,
+    "syntheticCrewDeactivations": 2,
+    "widths": [
+      390,
+      320
+    ],
+    "horizontalOverflow": 0,
+    "entryMinHeight": 44,
+    "replacementVisibleAndFocusedAt320": true,
+    "physicalPhoneVerified": false
+  },
+  "officialReview": {
+    "requestedModel": "claude-opus-5-5",
+    "actualModels": [
+      "claude-opus-5-5"
+    ],
+    "effort": "max",
+    "completed": true,
+    "verdict": "PASS",
+    "actionableFindingsP0P1P2": 0,
+    "rawSHA256": "cbba15f7f3bea586a3a6bd2a0c7e930da6354a76cfeab259d9e41593702658d7",
+    "previousFindingsResolved": 2,
+    "waived": false,
+    "originalFiveInputsAndReviewFilesUnchanged": true
+  },
+  "production": {
+    "appliedAt": "2026-10-09T19:15:55.555Z",
+    "finalVerifiedAt": "2026-10-09T19:22:01.815146+00:00",
+    "release": "/opt/synk/releases/f1d808a761db",
+    "health": "healthy",
+    "units": {
+      "synk-company.service": "active",
+      "synk-company-health.timer": "active",
+      "synk-company-backup.timer": "active",
+      "synk-company-backup-watch.timer": "active"
+    },
+    "startedAt": "2026-10-09T19:18:12.582064808Z",
+    "environmentFieldCount": 31,
+    "environmentChanges": [
+      "SYNK_COMPANY_IMAGE"
+    ],
+    "volumePathUnchanged": true,
+    "systemdUnitsChanged": 0,
+    "caddySHA256": "b26fea1a328f8c704d3430c8ad0995b00a718d362e6ce84cb28f5011550d8606",
+    "paidAIEnabled": false,
+    "backgroundJobsEnabled": false,
+    "workNotificationsEnabled": true,
+    "webPushEnabled": true,
+    "manualBackups": 1,
+    "backupUploadComplete": true,
+    "logicalAllowedChanges": {
+      "customerSessionsExpiredBeforeBootDeleted": 0,
+      "schemaChanges": 0,
+      "staffCiphertextReencryptedSamePlaintext": 1,
+      "tokensExpiredBeforeBootDeleted": 0
+    },
+    "issueCodes": [],
+    "staffSessionContinuityVerified": 5,
+    "activeCustomerContinuity": "not-applicable-no-active-customer-baseline",
+    "sameStaffSessionCsrfAndExpiry": true,
+    "keysAndBusinessDataUnchanged": true,
+    "containerReplacementConfirmed": true,
+    "publicFilesMatched": 5,
+    "publicHealthReady": true,
+    "realAccountDOMAndPixelsVerified": true,
+    "realTaskCreationVerified": false,
+    "productionTaskWrites": 0
+  },
+  "liveUI": {
+    "at": "2026-10-09T19:27:31.703Z",
+    "status": "passed",
+    "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+    "accountName": "유호",
+    "reloginRequired": false,
+    "existingNoteVisible": true,
+    "existing111ByteDriveAttachmentVisible": true,
+    "route": "내 작업실 → 내 할 일 → 오늘 할 일",
+    "todayText": "오늘 처리할 일이 없습니다",
+    "registrationEntryVisible": true,
+    "productionTaskRegistrationVerified": false,
+    "productionTaskWrites": 0,
+    "consoleWarningsOrErrors": [],
+    "liveScreenshot": "today.jpg",
+    "liveScreenshotSHA256": "e6ec22ef59ea45b85716257fc52d76f98ecc8db9152fc767b85c05ef8e59f1de",
+    "positiveTaskDetailsVerifiedInExactSyntheticCandidate": true,
+    "physicalPhoneVerified": false,
+    "viewportOverrideReset": true,
+    "originalTabPreserved": true
+  },
+  "preservedEarlierEvidence": {
+    "v1Review": "completed-with-two-P2-not-deployed",
+    "v2Linux": "parent-changed-refused-before-build-or-test",
+    "v3LinuxFirstAttempt": "336-pass-and-three-packaging-input-ENOENT-failures-preserved; same-image-RO-input-retry339-pass",
+    "firstApply": "preconditions-failed-before-artifacts-or-service-change; read-only17-checks-pass then unchanged retry succeeded; initial cause not conclusively identified"
+  },
+  "evidence": {
+    "prepare": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-prepare-1791572904158.json",
+      "sha256": "4ac69aab9bccc06fb4f06f1841763d29596c4d6c8b63e700ee719cc5da212dad",
+      "at": "2026-10-09T19:08:24.156Z"
+    },
+    "before": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-proof-before-1791572917984.json",
+      "sha256": "6b36453f9999ec9905f1b26a30437116d50d504a225e201733153f7a729884ad",
+      "at": "2026-10-09T19:08:37.981Z"
+    },
+    "backup": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-backup-1791572932512.json",
+      "sha256": "b040963ba9bb79999f5b676f9e0e6fbb9b23c44903b3d7dcb247ea2e2bd49783",
+      "at": "2026-10-09T19:08:52.507Z"
+    },
+    "apply": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-apply-1791573355913.json",
+      "sha256": "3e02476d7be6aae18ae930dd2ba6638d295411fa6dbf3fd46abeef7e0e508f45",
+      "at": "2026-10-09T19:15:55.850Z"
+    },
+    "capture": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-capture-1791573499199.json",
+      "sha256": "0c56b2f110211c98560be20a9fbb3bc34b3e5fe4271bd755b1bd3978d1684c6f",
+      "at": "2026-10-09T19:18:19.195Z"
+    },
+    "compare": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-compare-1791573551661.json",
+      "sha256": "5ef6869a9bc8deee012a3d26ddb724a4a0e0ff47b3c9e76dce019d9a8576aedd",
+      "at": "2026-10-09T19:19:11.658Z"
+    },
+    "after": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-proof-after-1791573717956.json",
+      "sha256": "3ac2a34e28f531bf7863ee484cdcbc4d52b89bd42b023ce0d47480f1b09b455d",
+      "at": "2026-10-09T19:21:57.941Z"
+    },
+    "status": {
+      "path": ".tmp/task-action-20261010/operator-v3/operator-status-1791573722020.json",
+      "sha256": "0d0198c2b390b83d196d685bac87d99bc1546cd5646c6f7dd4d6e6ef8efdbedf",
+      "at": "2026-10-09T19:22:02.012Z"
+    }
+  }
+}

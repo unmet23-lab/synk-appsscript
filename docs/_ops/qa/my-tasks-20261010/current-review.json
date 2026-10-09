@@ -1,0 +1,21 @@
+{
+  "startedAt": "2026-10-09T18:52:58.806Z",
+  "finishedAt": "2026-10-09T18:59:04.256Z",
+  "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+  "parentManifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+  "requestedModel": "claude-opus-5-5",
+  "effort": "max",
+  "exitCode": 0,
+  "isError": false,
+  "apiErrorStatus": null,
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "completed": true,
+  "result": "# v3 보완본 재검수 결과: 할 일 상세 판정 근거와 관리 단추\n\n**결론: P0·P1·P2 모두 없습니다. 이 보완 후보 `release-v3/candidate`는 PASS입니다.**\n\n검수는 config와 scope가 가리키는 `release-v3/candidate`와 `review-v3/inputs`를 기준으로 했습니다. CLI가 실행된 v1 디렉터리와는 구분했습니다. 파일은 수정하지 않았고 Read/Glob/Grep만 썼습니다.\n\n## 직전 P2 두 건: 둘 다 해결됨\n\n**1. 대기 근거 문구** (`app.js:1443`)\n- 이제 담당 불가·담당 없음 → 검토자 불가 → 검토 요청 단계 → 그 밖의 단계 순서로 문구가 갈립니다.\n- 직전에 지적한 세 경우가 모두 같은 화면의 다른 문구와 맞습니다.\n\n| 보는 사람과 상태 | 이제 나오는 근거 문구 | 맞춰 본 기존 문구 |\n|---|---|---|\n| 요청자, 검토 요청 단계 | 「지정된 검토자의 답변을 기다리는 업무」 | 지금 할 일 `:1429`, 목록 `:1292` |\n| 담당자, 검토자 불가 | 「검토가 멈춘 업무 … 요청자나 관리자에게 새 검토자 지정을 요청」 | 지금 할 일 `:1425`, 목록 `:1291` |\n| 요청자, 담당 불가 | 「담당 크루를 확인할 수 없거나 참여 권한이 없어 진행 상태를 확인」 | 지금 할 일 `:1420`, 목록 `:1288` |\n\n- 서버의 오늘·남은 일 분류는 그대로입니다. 서버 파일 해시가 v1과 같고, 시험 `task-action-client.test.mjs:72-80`이 분류 배열이 바뀌지 않는지 확인합니다.\n\n**2. 검토자 재지정 때 포커스** (`app.js:1458`)\n- 재지정 권한(`canReassignReviewer`)이 있으면 관리 영역 안의 새 검토자 선택칸이 첫 포커스 대상입니다(`:1474`, 관리 영역 `:1543`).\n- 선택칸이 없거나 꺼져 있으면 기존 순서(진행 상태 → 기한 → 제목 → 접힘 제목)로 넘어갑니다.\n- 단추는 접힌 관리 영역을 펼치고 포커스만 옮깁니다. 값 변경이나 API 요청은 없습니다(시험 `:124-136`).\n- 실제 화면에서도 확인했습니다. 데스크톱, 390px, 320px 캡처 모두 「새 검토 크루」 선택칸에 포커스 테두리가 있고, 320px에서 선택칸이 화면 안(291–336px / 높이 628px)에 보입니다.\n\n## 새 부모로 옮긴 범위\n\n- 이번 변경 다섯 파일 가운데 v1과 달라진 것은 `app.js`와 클라이언트 시험뿐입니다. 서버 파일과 CSS는 v1과 바이트까지 같습니다(diff 기준 해시도 v1과 동일).\n- 서버 판정이 기대는 연결 파일(`server.mjs`, `collaboration-service.mjs`, `direct-task-service.mjs`, `index.html`)은 v1 부모, 새 부모 e01, v3 후보에서 해시가 모두 같습니다. 그래서 판정 일치, 자정 날짜 일관성, try/finally 복원, 권한·저장에 대한 이전 결론이 그대로 적용됩니다.\n- 파일 수는 부모 508 + 새 시험 2 = 510이고, 지운 파일은 없으며 DB 스키마도 바뀌지 않았습니다.\n\n## 시험 개수 대조 (TAP 원문까지 확인)\n\n- 개수 구성:\n  - 클라이언트 시험 파일에서 직접 센 시험이 44개, 서버 시험이 13개입니다(서버 시험 파일 해시는 v1과 같음).\n  - 기존 시험 18개 파일은 v1 부모와 e01의 해시가 모두 같아서 282개 그대로입니다.\n  - 합계 282 + 44 + 13 = **339**입니다.\n- Windows TAP과 Linux 최종 TAP 모두 「tests 339 / pass 339 / fail 0」이고, 통과 줄이 각각 339개, 실패 줄은 0개입니다. 새 시험 이름도 양쪽 원문에 통과로 찍혀 있습니다.\n- 참고로, Linux 1차 실행은 336/339였습니다.\n  - 실패 3건은 모두 container-delivery 시험이 이미지 안에서 Dockerfile을 찾지 못한 오류(ENOENT)였습니다.\n  - 2차 실행에서 Dockerfile과 .dockerignore를 읽기 전용으로 붙인 뒤 통과했습니다.\n  - 이번 변경과는 관계없는 실행 환경 문제입니다. 다만 1차 기록은 입력 파일에는 없고 `linux-v3/` 폴더에서 따로 찾아 확인했습니다.\n\n## 참고 (조치 필요 없음)\n\n- `future-work-detail.jpg`는 대화창이 반투명하게 찍혀 있습니다. 대화창이 0.18초 동안 서서히 나타나는 애니메이션(`styles.css:20`) 도중에 찍힌 것입니다. 제품 결함이 아니고, 문구와 화면 검사 결과는 정상입니다.\n\n## 읽은 범위와 못 읽은 범위\n\n- **읽음:**\n  - 입력 파일: config, scope, 목록의 변경 부분과 관련 파일 항목, diff 3개, 검증 JSON 5개\n  - v3 후보 원본: `app.js` 1404–1493행과 1543·1546행, 서버와 CSS의 해당 줄, 새 클라이언트 시험 전체\n  - TAP 원문: 요약 줄, 통과·실패 줄, 1차 실패 내용\n  - 기타: 이전 보존 기록, 스키마 결과, v1 부모·e01 부모 목록의 핵심 해시, v3 화면 캡처 7장\n- **못 읽음 (지적 없음):**\n  - TAP 본문 전체, 화면 검증 스크립트 소스, `final-verification-handoff.json`\n  - e01의 teaching·teacher-world 변경 내용 (범위 밖)\n  - v3의 서버 시험 파일 (해시가 v1과 같고, 지난번에 전체를 읽음)\n- 해시는 다시 계산하지 못했습니다. 실행이 금지돼 있어서 입력에 적힌 값끼리만 대조했습니다.",
+  "rawSHA256": "cbba15f7f3bea586a3a6bd2a0c7e930da6354a76cfeab259d9e41593702658d7",
+  "frozenSourceHashesUnchanged": true,
+  "frozenParentHashesUnchanged": true,
+  "frozenEvidenceHashesUnchanged": true,
+  "previousReviewExceptionApplicable": false
+}

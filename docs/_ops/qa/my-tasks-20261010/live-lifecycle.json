@@ -1,0 +1,108 @@
+{
+  "at": "2026-10-09T19:58:48.510Z",
+  "status": "passed",
+  "scope": "actual workspace.synk.im user-owned private self-room task; UI only; no code or release changes",
+  "accountName": "유호",
+  "title": "[운영 검증] 내 할 일 실사용 점검 · 2026-10-10",
+  "channelId": "5418b02a-34e5-4e28-bdaa-f61753f04d0d",
+  "taskId": "c6ac846c-6990-4760-b933-be0fd73b3e07",
+  "requestMessageId": "3",
+  "resultMessageId": "4",
+  "reviewerAssigned": false,
+  "stages": [
+    {
+      "stage": "requested",
+      "ids": {
+        "channelId": "5418b02a-34e5-4e28-bdaa-f61753f04d0d",
+        "messageId": "3",
+        "taskId": "c6ac846c-6990-4760-b933-be0fd73b3e07"
+      },
+      "at": "2026-10-09T19:50:59.025Z",
+      "today": "오늘 처리할 일 1개\n\n아래 업무를 지금 처리하세요.\n\n[운영 검증] 내 할 일 실사용 점검 · 2026-10-10\n요청 내용과 기한을 확인하고 수락하세요.\n오늘 할 일 기준"
+    },
+    {
+      "stage": "accepted",
+      "at": "2026-10-09T19:51:22.344Z",
+      "heading": "수락함\n[운영 검증] 내 할 일 실사용 점검 · 2026-10-10"
+    },
+    {
+      "stage": "doing",
+      "at": "2026-10-09T19:51:52.944Z",
+      "heading": "진행 중\n[운영 검증] 내 할 일 실사용 점검 · 2026-10-10"
+    },
+    {
+      "stage": "result-selected",
+      "resultMessageId": "4",
+      "at": "2026-10-09T19:54:59.701Z"
+    },
+    {
+      "stage": "done-saved",
+      "at": "2026-10-09T19:55:11.372Z",
+      "resultMessageId": "4"
+    },
+    {
+      "stage": "excluded-from-today",
+      "at": "2026-10-09T19:55:11.740Z",
+      "summary": "오늘 처리할 일이 없습니다\n\n내게 배정된 미완료 업무와 내가 처리할 고객 업무도 없습니다.\n\n오늘 할 일 기준"
+    },
+    {
+      "stage": "done-after-reload",
+      "at": "2026-10-09T19:56:09.190Z",
+      "sources": [
+        {
+          "channelId": "5418b02a-34e5-4e28-bdaa-f61753f04d0d",
+          "messageId": "3",
+          "text": "요청 원문·답글 열기 "
+        },
+        {
+          "channelId": "5418b02a-34e5-4e28-bdaa-f61753f04d0d",
+          "messageId": "4",
+          "text": "결과물·첨부 열기 "
+        }
+      ],
+      "requestMatches": true,
+      "resultMatches": true
+    }
+  ],
+  "taskRegistrations": 1,
+  "newMessages": 2,
+  "taskStageSaves": 3,
+  "resultLinkedAtCompletion": true,
+  "requestAndResultPreservedAfterReload": true,
+  "completedFilterRecordCount": 1,
+  "todayCounts": {
+    "before": 0,
+    "during": 1,
+    "after": 0
+  },
+  "existingNoteAnd111ByteAttachmentStillVisible": true,
+  "consoleWarningsOrErrors": [],
+  "toolRecovery": [
+    {
+      "action": "select result memo",
+      "issue": "CDP command deadline before dispatch",
+      "observed": "fresh DOM showed no selection; current semantic click selected the existing memo successfully",
+      "productFailureObserved": false
+    },
+    {
+      "action": "optional return-to-top presentation after completed evidence captured",
+      "issue": "CDP click deadline before dispatch",
+      "observed": "fresh task heading still confirmed the same completed record; deliverable tab preserved",
+      "productFailureObserved": false,
+      "coreCycleAlreadyPassed": true
+    }
+  ],
+  "productionTaskCreationVerified": true,
+  "operatingTaskCycleVerified": true,
+  "twoPersonReviewVerified": false,
+  "physicalPhoneVerified": false,
+  "codeChanges": 0,
+  "deployments": 0,
+  "paidFeatureCalls": 0,
+  "recordsRetained": true,
+  "retentionReason": "User-authorized operational verification record; completed task and linked memo remain in the private self room",
+  "screenshots": [
+    "done-after-reload.jpg",
+    "result-section-after-reload.jpg"
+  ]
+}

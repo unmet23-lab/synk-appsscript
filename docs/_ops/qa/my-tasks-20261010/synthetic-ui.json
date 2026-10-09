@@ -1,0 +1,123 @@
+{
+  "at": "2026-10-09T18:52:23.588Z",
+  "status": "passed",
+  "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+  "candidate": "release-v3",
+  "checked": 11,
+  "checks": [
+    "future requested task appears today with server-dated reply reason",
+    "management entry opens existing form and focuses stage without changing requested state or saving",
+    "existing save accepts future task and today changes 3 to 2 with task moving to upcoming",
+    "normal assignee review waiting and current reviewer are explained separately",
+    "remaining future and undated tasks show server-dated reasons while today-action absence stays explicit",
+    "normal requester in review waits for reviewer response rather than assignee work",
+    "unavailable assignee waiting explains assignment and participation confirmation instead of normal waiting",
+    "unavailable reviewer waiting explains blocked review and requesting replacement from creator or admin",
+    "creator recovery entry opens and focuses active replacement reviewer with review stage unchanged",
+    "390px recovery detail has zero page/dialog overflow and 44px management entry",
+    "320px recovery after management click has visible focused replacement input and zero page/dialog/form overflow"
+  ],
+  "errors": [],
+  "consoleWarnings": [],
+  "syntheticExistingWorkflowUpdates": 1,
+  "syntheticCrewDeactivations": 2,
+  "productionTaskWrites": 0,
+  "providerCalls": 0,
+  "paidCalls": 0,
+  "responsive": [
+    {
+      "width": 390,
+      "frameDocumentOverflow": 0,
+      "dialogOverflow": 0,
+      "entryHeight": 44
+    },
+    {
+      "width": 320,
+      "frameDocumentOverflow": 0,
+      "dialogOverflow": 0,
+      "formOverflow": 0,
+      "entryHeight": 44
+    }
+  ],
+  "toolRecovery": [
+    {
+      "kind": "selector readiness timeout on account navigation",
+      "observed": "fresh DOM contained expected remaining-work heading and task button; direct current locator succeeded",
+      "productFailureObserved": false
+    },
+    {
+      "kind": "optional final screenshot key press CDP deadline before dispatch",
+      "observed": "all eleven core flows already verified; optional extra screenshot omitted; fresh DOM/console checked",
+      "productFailureObserved": false
+    }
+  ],
+  "screenshots": [
+    "future-request-detail.jpg",
+    "future-work-detail.jpg",
+    "recovery-320-focused.jpg",
+    "recovery-390.jpg",
+    "reviewer-recovery-focus.jpg",
+    "unavailable-assignee.jpg",
+    "unavailable-reviewer.jpg"
+  ],
+  "screenshotEvidence": [
+    {
+      "path": "future-request-detail.jpg",
+      "sha256": "4b65a699ac9f386cc45120f24eec4a914c59df3edb69d87c742623a5df1ea1a7",
+      "bytes": 57288
+    },
+    {
+      "path": "future-work-detail.jpg",
+      "sha256": "23066276b9cd20c61cf03600d318f1e268345a1ca034867c74ae9c366a49b949",
+      "bytes": 56276
+    },
+    {
+      "path": "recovery-320-focused.jpg",
+      "sha256": "e4a89ee51a0cb6c5c8c25f8d5632e780584015736edcf1a4d62d1c26b8393024",
+      "bytes": 32809
+    },
+    {
+      "path": "recovery-390.jpg",
+      "sha256": "acc0e70a680b8f4d2df1a4201974b5923c63c9dbe706a5911b5bcbb0e1cd2dfa",
+      "bytes": 42620
+    },
+    {
+      "path": "reviewer-recovery-focus.jpg",
+      "sha256": "431b016225d8b92da9d6597a0bb27fb9bfb966ded4690cf6b08768f66b23baac",
+      "bytes": 68970
+    },
+    {
+      "path": "unavailable-assignee.jpg",
+      "sha256": "e8e07c6464581faff8ba7148d0b10b07092ad2a4d8c889f461ad694d9950a691",
+      "bytes": 60596
+    },
+    {
+      "path": "unavailable-reviewer.jpg",
+      "sha256": "6ba4da1b67174f11942d65d8f713d55ab5c1f22778d38e31bb9cdea0f09f01dd",
+      "bytes": 58893
+    }
+  ],
+  "viewportReset": true,
+  "replacementVisibleAt320": {
+    "top": 291.140625,
+    "bottom": 336.640625,
+    "viewportHeight": 628,
+    "focused": true
+  },
+  "physicalPhoneVerified": false,
+  "productionDeployment": false,
+  "fixtureScope": {
+    "sourceSHA256": "2855b1cfbcc5302fd5386b9ac08e4c30d27f604909e0a7e418a82bf09153f1ac",
+    "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+    "runtimeImportsFrozenCandidate": true,
+    "testFixtureOutsideRuntimeRelease": true,
+    "privateSyntheticDataOnly": true,
+    "inactiveCrewStatusChanges": 2,
+    "productionAccessOrWrites": 0,
+    "paidCalls": 0,
+    "parentManifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+    "parentFiles": 508,
+    "candidateFiles": 510,
+    "previousV2FixturePreserved": true
+  }
+}

@@ -506,3 +506,41 @@ button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(
   .workday-item h3,.workday-item h4{font-size:14px}.workflow-form .modal-actions .button{width:100%;min-height:48px}
   .reviewer-recovery{padding:12px}.reviewer-recovery>.button{width:100%}.notification-toolbar>span{font-size:11px}.deadline-digest-list{max-height:48vh}
 }
+
+.workday-status{padding:18px 0 20px;margin-bottom:8px;border-bottom:1px solid #eadfd4;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.workday-status h3{font-size:20px;font-weight:750;line-height:1.55;color:#352821;margin:0 0 12px}
+.workday-status p{font-size:13px;line-height:1.8;margin:8px 0;color:#63564e}.workday-status .workday-status-note{font-size:12px;color:#776b62}.workday-remaining-counts{font-weight:700;color:#49372c}
+.workday-quick-list{display:grid;gap:8px;margin:16px 0 10px}.workday-quick-task{display:block;min-width:0;width:100%;text-align:left;padding:12px 16px;background:url(assets/felt-ui/slab-cream-long.webp) center/100% 100% no-repeat;border:0;color:#49372c;text-decoration:none;line-height:1.65;min-height:62px}
+.workday-quick-task strong{display:block;font-size:14px;font-weight:750;overflow-wrap:anywhere}.workday-quick-task span{display:block;font-size:12px;margin-top:3px;overflow-wrap:anywhere}.workday-quick-task:focus-visible{outline:2px solid #815f47;outline-offset:3px}
+.workday-criteria summary{cursor:pointer;font-size:12px;min-height:36px;padding:8px 0;color:#706158}.workday-criteria p{font-size:12px;line-height:1.8}.workday-criteria summary:focus-visible{outline:2px solid #815f47;outline-offset:3px}
+.workday-unverified h3{color:#865038}.workday-remaining-heading{font-size:15px;line-height:1.6;margin:26px 0 6px;padding-top:20px;border-top:1px solid #eadfd4;color:#49372c}
+.workday-item .workday-request-preview{font-size:12px;line-height:1.75;white-space:pre-wrap;color:#74665d;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.workday-item .workday-next-action{font-size:13px;line-height:1.8;margin:12px 0;color:#49372c}.workday-next-action strong{display:block;font-size:12px;margin-bottom:4px}
+@media(max-width:700px){.workday-status h3{font-size:19px}.workday-status{padding-top:14px}.workday-item .workday-next-action{font-size:13px}}
+.task-detail-dialog{width:min(640px,calc(100vw - 24px))}
+.task-detail,.task-selection,.task-management{min-width:0;word-break:keep-all;overflow-wrap:anywhere;color:#493930}
+.task-detail-heading h3{margin:12px 0 20px;font-size:21px;line-height:1.5;font-weight:750}
+.task-detail-meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;margin:0 0 24px}
+.task-detail-meta div{min-width:0}.task-detail-meta dt{font-size:12px;line-height:1.5;color:#786b62}.task-detail-meta dd{margin:4px 0 0;font-size:14px;line-height:1.65}
+.task-detail-section{padding:20px 0;border-top:1px solid #eadfd4}
+.task-detail-section h4,.task-reference h4{margin:0 0 10px;font-size:14px;line-height:1.6;color:#493930;font-weight:750}
+.task-detail-section p,.task-detail-section li{font-size:14px;line-height:1.85}.task-request-body{white-space:pre-wrap;margin:0}
+.task-detail-section ol{margin:0;padding-left:23px}.task-detail-section li+li{margin-top:8px}.task-detail-section>p{margin:0}.task-detail-section>.workflow-help{font-size:12px;color:#786b62;margin:14px 0}
+.task-reference{margin-top:20px}.task-reference .file-card{margin-top:10px}.task-reference .workspace-link-card{margin-top:10px;max-width:100%}.task-detail-source .text-button{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-size:13px}.task-detail-source svg{width:14px;height:14px;flex:none}
+.task-selection{margin:8px 0 18px;padding:14px 0;border-top:1px solid #eadfd4;border-bottom:1px solid #eadfd4}
+.task-selection summary,.task-management summary{cursor:pointer;font-size:13px;font-weight:650;line-height:1.7;min-height:32px;padding:5px 0}
+.task-selection p{margin:10px 0 0;font-size:12px;line-height:1.85;color:#6c605a}.task-selection summary:focus-visible,.task-management summary:focus-visible{outline:2px solid #815f47;outline-offset:4px;border-radius:3px}
+.task-management{margin-top:6px}.task-management>summary{min-height:44px;padding:12px 18px;background:url(assets/felt-ui/slab-cream-long.webp) center/100% 100% no-repeat;color:#49372c}.task-management[open]>summary{margin-bottom:20px}
+@media(max-width:700px){.task-detail-heading h3{font-size:18px}.task-detail-meta{gap:12px}.task-detail-section{padding:17px 0}.task-detail-section p,.task-detail-section li{font-size:13px}.task-selection summary{min-height:44px}.task-management>summary{padding:12px 14px}}
+/* Direct task registration shares the existing felt controls and paper fields. */
+.task-create-entry{display:flex;align-items:center;gap:14px;margin:4px 0 24px;padding:14px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.task-create-entry .button.primary{flex:none;min-height:44px;padding:11px 18px;border:0;border-radius:11px;background:#de9078 url(assets/felt-v2/texture-coral.webp) 0 0/256px 256px repeat;color:#38231b;font-size:14px;line-height:1.5}
+.task-create-entry p{margin:0;color:#776b5e;font-size:12px;line-height:1.75}
+#task-create-form{min-width:0}#task-create-form textarea{resize:vertical;min-height:132px}#task-create-scope{overflow-wrap:anywhere}
+@media(max-width:680px){.task-create-entry{gap:10px;align-items:flex-start;flex-direction:column}.task-create-entry .button.primary{width:100%}}
+
+/* Task detail basis and management entry 20261010 */
+.task-workday-basis ul{margin:8px 0 0;padding-left:20px;line-height:1.85;overflow-wrap:anywhere}
+.task-management-entry{display:grid;gap:8px;margin-top:16px;min-width:0}
+.task-management-entry>.button{min-height:44px;width:100%;white-space:normal;overflow-wrap:anywhere}
+.task-management-entry>.workflow-help{margin:0}

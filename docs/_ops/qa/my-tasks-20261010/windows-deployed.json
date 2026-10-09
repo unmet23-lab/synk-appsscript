@@ -1,0 +1,76 @@
+{
+  "at": "2026-10-09T18:39:39.833Z",
+  "manifestPath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\task-action-20261010\\release-v3\\candidate-manifest.json",
+  "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+  "parentManifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\task-action-20261010\\release-v3\\candidate",
+  "node": "v24.18.0",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=1",
+    "tools/company-messenger/tests/bootstrap-session-client.test.mjs",
+    "tools/company-messenger/tests/productivity-ui.test.mjs",
+    "tools/company-messenger/tests/productivity-workspace-ui.test.mjs",
+    "tools/company-messenger/tests/send-recovery-client.test.mjs",
+    "tools/company-messenger/tests/task-detail-client.test.mjs",
+    "tools/company-messenger/tests/workday-refresh-client.test.mjs",
+    "tools/company-messenger/tests/workday-truth-client.test.mjs",
+    "tools/company-messenger/tests/workspace-open-ui.test.mjs",
+    "tools/company-messenger/tests/workday-truth.test.mjs",
+    "tools/company-messenger/tests/productivity-workflow.test.mjs",
+    "tools/company-messenger/tests/productivity-followup.test.mjs",
+    "tools/company-messenger/tests/reviewer-preflight.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/assistant-workday-truth.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-assistant.test.mjs",
+    "tools/company-messenger/tests/workday-create-client.test.mjs",
+    "tools/company-messenger/tests/direct-task-create.test.mjs",
+    "tools/company-messenger/tests/collaboration.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/container-delivery.test.mjs",
+    "tools/company-messenger/tests/task-action-client.test.mjs",
+    "tools/company-messenger/tests/task-workday-basis.test.mjs"
+  ],
+  "testFiles": 20,
+  "parentTests282Retained": true,
+  "baselineTestManifestSHA256": "92e7854bc156140b6c65a3fd1b64ce9fd96562dfaca1ab78307076ead6472a9a",
+  "expectedTests": 339,
+  "newVerificationFiles": [
+    "tools/company-messenger/tests/task-action-client.test.mjs",
+    "tools/company-messenger/tests/task-workday-basis.test.mjs"
+  ],
+  "exitCode": 0,
+  "error": null,
+  "summary": {
+    "tests": 339,
+    "pass": 339,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "syntaxChecks": [
+    {
+      "file": "tools/company-messenger/public/app.js",
+      "exitCode": 0
+    },
+    {
+      "file": "tools/company-messenger/productivity-service.mjs",
+      "exitCode": 0
+    }
+  ],
+  "sourceClosurePassed": true,
+  "syntaxPassed": true,
+  "candidateAllHashesUnchanged": true,
+  "parentAllHashesUnchanged": true,
+  "tapSHA256": "19e0ac12936ae86deed60c7e70b145b43b96c821a24db9f31e5738d6eb307214",
+  "testOnlyEnvironmentIsolation": {
+    "host": "127.0.0.1",
+    "removedKeys": [
+      "MESSENGER_DATA_DIR"
+    ],
+    "nodeEnvChanged": false
+  },
+  "remoteWrites": 0,
+  "paidCalls": 0,
+  "status": "passed"
+}

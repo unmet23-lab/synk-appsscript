@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-09T20:26:03.819588+00:00",
+  "baseRef": "4127b4bc5d639a058ae85aec2a57b0c96ad9fe49",
+  "testFiles": 19,
+  "excludedPeerTest": "send-recovery-client.test.mjs covers a different uncommitted feature",
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "--test-concurrency=1",
+    "tools/company-messenger/tests/bootstrap-session-client.test.mjs",
+    "tools/company-messenger/tests/productivity-ui.test.mjs",
+    "tools/company-messenger/tests/productivity-workspace-ui.test.mjs",
+    "tools/company-messenger/tests/task-detail-client.test.mjs",
+    "tools/company-messenger/tests/workday-refresh-client.test.mjs",
+    "tools/company-messenger/tests/workday-truth-client.test.mjs",
+    "tools/company-messenger/tests/workspace-open-ui.test.mjs",
+    "tools/company-messenger/tests/workday-truth.test.mjs",
+    "tools/company-messenger/tests/productivity-workflow.test.mjs",
+    "tools/company-messenger/tests/productivity-followup.test.mjs",
+    "tools/company-messenger/tests/reviewer-preflight.test.mjs",
+    "docs/\ub9c8\ucf00\ud305/\uc628\ub77c\uc778\ub9c8\ucf00\ud305\uc9c0\ub3c4/engagement/company/assistant-workday-truth.test.mjs",
+    "docs/\ub9c8\ucf00\ud305/\uc628\ub77c\uc778\ub9c8\ucf00\ud305\uc9c0\ub3c4/engagement/company/server-assistant.test.mjs",
+    "tools/company-messenger/tests/workday-create-client.test.mjs",
+    "tools/company-messenger/tests/direct-task-create.test.mjs",
+    "tools/company-messenger/tests/collaboration.test.mjs",
+    "docs/\ub9c8\ucf00\ud305/\uc628\ub77c\uc778\ub9c8\ucf00\ud305\uc9c0\ub3c4/engagement/company/container-delivery.test.mjs",
+    "tools/company-messenger/tests/task-action-client.test.mjs",
+    "tools/company-messenger/tests/task-workday-basis.test.mjs"
+  ],
+  "summary": {
+    "tests": 295,
+    "pass": 295,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "exitCode": 0,
+  "operatingDataAccess": false,
+  "sharedSourceChanges": false
+}

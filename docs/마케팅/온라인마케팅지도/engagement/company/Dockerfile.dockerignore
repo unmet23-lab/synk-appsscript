@@ -22,6 +22,7 @@
 !tools/company-messenger/company-integration.mjs
 !tools/company-messenger/collaboration-service.mjs
 !tools/company-messenger/productivity-service.mjs
+!tools/company-messenger/direct-task-service.mjs
 !tools/company-messenger/web-push-service.mjs
 !tools/company-messenger/platform-navigation.mjs
 !tools/company-messenger/public

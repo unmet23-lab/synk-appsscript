@@ -10,6 +10,7 @@ import { pipeline } from 'node:stream/promises';
 import { createDriveStorage } from './drive-storage.mjs';
 import { createCompanyIdentityBridge } from './company-integration.mjs';
 import { createCollaborationService } from './collaboration-service.mjs';
+import { createDirectTaskService } from './direct-task-service.mjs';
 import { resolvePlatformUrl } from './platform-navigation.mjs';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
@@ -44,6 +45,10 @@ function textField(value, label, max, min = 0) {
   const text = value.trim();
   assert(text.length >= min && text.length <= max, 400, `${label}은(는) ${min}~${max}자여야 합니다.`);
   return text;
+}
+function requestId(value, label) {
+  assert(typeof value === 'string' && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value), 400, `${label} 식별자를 확인해 주세요.`);
+  return value.toLowerCase();
 }
 function accountInput(body) {
   const name = textField(body.name, '이름', 40, 1);
@@ -112,6 +117,7 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
     CREATE TABLE IF NOT EXISTS reactions (message_id INTEGER NOT NULL REFERENCES messages(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, emoji TEXT NOT NULL, PRIMARY KEY(message_id,user_id,emoji));
     CREATE TABLE IF NOT EXISTS message_pins (message_id INTEGER PRIMARY KEY REFERENCES messages(id) ON DELETE CASCADE, user_id TEXT NOT NULL REFERENCES users(id), created_at TEXT NOT NULL);
     CREATE TABLE IF NOT EXISTS drive_delete_outbox (file_id TEXT PRIMARY KEY, connection_id TEXT NOT NULL, remote_id TEXT NOT NULL, created_at TEXT NOT NULL, attempts INTEGER NOT NULL DEFAULT 0, last_attempt_at TEXT, last_error TEXT);
+    CREATE TABLE IF NOT EXISTS message_send_requests (user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE, channel_id TEXT NOT NULL REFERENCES channels(id) ON DELETE CASCADE, request_id TEXT NOT NULL, payload_hash TEXT NOT NULL, message_id INTEGER REFERENCES messages(id) ON DELETE SET NULL, state TEXT NOT NULL DEFAULT 'sent' CHECK(state IN ('sent','cancelled')), created_at TEXT NOT NULL, PRIMARY KEY(user_id,channel_id,request_id));
   `);
   const existingFileColumns = new Set(db.prepare('PRAGMA table_info(files)').all().map(column => column.name));
   for (const [name, type] of [['storage_provider', "TEXT NOT NULL DEFAULT 'local'"], ['storage_connection_id', 'TEXT'], ['storage_remote_id', 'TEXT'], ['md5', 'TEXT']]) {
@@ -165,6 +171,9 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       read: (userId, notificationId) => integration.notifications.read(bridge.companyUserId(userId), notificationId),
       readAll: userId => integration.notifications.readAll(bridge.companyUserId(userId)),
     } : null,
+  });
+  const directTasks = createDirectTaskService({ db, assert, textField, validateRequestId: requestId, now, transaction, requirePosting, channelShape, channelMembers, collaboration, messageShape,
+    onPublishError: error => console.error('[messenger] Committed task update publication:', String(error?.code || error?.name || 'Error').replace(/[^A-Za-z0-9_]/g, '').slice(0, 80)),
   });
 
   function resolveWorkspaceLink({ userId, channelId, workspaceLink, recipientIds, purpose = 'share' }) {
@@ -577,6 +586,11 @@ export function createMessenger({ dataDir = process.env.MESSENGER_DATA_DIR || pa
       }
       if (p.startsWith('/api/')) {
         assert(user, 401, '로그인이 필요합니다.');
+        if (method === 'GET' && p === '/api/tasks/create-options') return respond(200, directTasks.options(user.id));
+        if (method === 'POST' && p === '/api/tasks') {
+          const body = await readBody(), result = directTasks.create(user.id, body);
+          return respond(result.created ? 201 : 200, result);
+        }
         if (await collaboration.handle({ p, method, url, user, readBody, respond })) return;
         revalidate();
         if (method === 'POST' && p === '/api/logout') {

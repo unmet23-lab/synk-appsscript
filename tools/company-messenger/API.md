@@ -98,6 +98,23 @@ Project deletion is reversible. The SQLite channel stores nullable deleted_at/de
 
 UI wording should explain: “대화와 파일은 삭제된 대화방에서 복원할 수 있습니다.”
 
+## 오늘 할 일에서 직접 등록 · 2026-10-10
+
+- GET `/api/tasks/create-options` → `{date,channels:[Channel+{taskAssignees:User[]}]}`. `date`는 서버 한국 날짜이고, 대화방과 크루는 현재 작성 권한으로 걸러 반환한다. GET은 업무를 생성하지 않는다.
+- POST `/api/tasks`는 `{requestId,channelId,title,body,assigneeId,reviewerId?,dueDate?}`만 받으며 `{message,task,created}`를 반환한다(신규201, 같은 요청 재시도200). `requestId`는 UUID, 제목은1~200, 요청 원문은1~8000 UTF-16단위다. 검토자와 기한은 생략/null일 수 있으며 담당/검토는 현재 그 방에서 작성 가능한 크루여야 하고 서로 달라야 한다. 기한은 유효한 `YYYY-MM-DD`다.
+- 현재 세션·Origin/CSRF·작성 권한을 유지하며 회사 연동에서는 본문 수신 뒤 다시 확인한다. creator·stage·결과물·파일 등 추가 필드는400이다. 새 업무는 `requested`로 시작하고 기존 메시지 업무 API로 수락·작업·검토·완료한다.
+- 원문 메시지·업무·변경 기록·일반/업무 알림·전송 영수증을 한 트랜잭션으로 저장하고 실패 시 모두 롤백한다. SSE는 커밋 뒤에 발행한다. 기존 표와 스키마를 재사용한다.
+- 영수증은 사용자 단위 `direct-task:`+UUID로 일반 채팅 전송과 구분한다. 같은ID·같은 등록 내용이면 원래 메시지와 현재 업무를 반환하며 행/알림을 추가하지 않는다. 같은ID로 내용이나 방을 바꾸면409, 원래 메시지/업무가 삭제됐으면410이다. 수정 입력이나 새 등록 창은 새 요청으로 취급한다.
+
+### 오늘 분류 근거와 관리 버튼 · 2026-10-10 운영 반영
+
+- `Task.workday`는 `{date:string,todayReasons:string[],remainingReasons:string[]}`다. `date`는 관측한 서버 한국 날짜 `YYYY-MM-DD`이며, 요청한 사용자의 현재 담당·검토·요청 역할로 계산한다. GET `/api/messages/:id`의 `message.task`에도 포함되므로 상세를 열 때 최신 원문·단계·권한과 함께 다시 확인한다. PC 시계로 오늘 분류를 계산하지 않는다.
+- `todayReasons` 키는 `reply`(내가 담당인 새 요청·수정 요청 확인), `due`(내가 수락·진행 중이며 오늘 또는 지난 기한), `review`(현재 내 검토 차례), `recovery`(현재 권한으로 검토자를 다시 지정할 차례)다. 새 요청·수정 요청은 작업 기한이 미래여도 `reply`로 표시하며, 이것이 작업 결과를 오늘까지 제출해야 한다는 뜻은 아니다.
+- `remainingReasons` 키는 `upcoming`(내 수락·진행 작업의 미래 기한), `undated`(내 수락·진행 작업의 기한 미정), `waiting`(다른 담당자의 작업 또는 지정 검토자의 답변 대기)다. `waiting`은 해당 업무에 오늘 처리 이유가 없을 때만 붙는다. 담당·검토자가 참여할 수 없는 경우 분류는 유지하되 확인·재지정이 필요한 상태로 설명한다. 완료 업무는 두 배열이 모두 비어 있다. 열람 가능한 다른 크루의 업무라도 내 역할이 없으면 두 배열이 비어 있을 수 있다.
+- GET `/api/workday`는 기존 legacy `groups/counts/total`을 유지하고 `today:{groups:{reply,due,review,recovery},counts,total}`, `remaining:{groups:{upcoming,undated,waiting},counts,total}`, `openTotal`, `serverNow`, `nextDayRefreshAfterMs`를 반환한다. 이 응답의 분류와 모든 업무·중첩 `message.task.workday`는 한 번 관측한 같은 서버 날짜를 사용한다. 다른 API 응답의 별도 직렬화까지 한 번의 시간 관측으로 묶는다는 보장은 아니다.
+- 상세의 관리 버튼은 기존 상태·담당·기한·결과물 입력을 펼치고 허용된 입력으로 이동한다. 검토자 재지정 권한이 있으면 활성 새 검토자 선택칸을 먼저 열어 준다. 클릭만으로 PATCH·수락·완료를 실행하지 않으며, 확인한 내용을 **변경 저장**으로 명시적으로 적용한다. 조회 전용·대기·완료 및 참여 불가 안내는 기존 현재 권한과 `allowedStages`를 따른다.
+- 새 스키마·저장 규칙·작성 권한은 추가하지 않는다. 현재 원문 접근 검사를 유지하고 읽기·관리 영역 펼치기로 업무나 알림을 변경하지 않는다. Windows·Linux 각각339/339과 합성 CUA11흐름·390/320px 화면 검증을 마쳤으며 실물 휴대폰 시험과 구분한다. 공식 Claude Opus5.5/max 재검수 완료·PASS 뒤 운영 반영과 기존 계정·자료 보존을 확인했다. 인수 기록은 [보완 검증 기록](qa-output/task-action-20261010/README.md)에 정리한다.
+
 ## 검토 복구·고객 알림·마감 묶음 · 2026-10-08 후속
 
 - Task에 `reviewerId`, `reviewerUnavailable`, `canReassignReviewer`를 추가한다. 검토자가 현재 방에서 작성할 수 없는 `review` 업무만 PATCH `/api/messages/:id/task` `{revision,reviewerId,reassignReviewer:true}`로 재배정한다. 현재 작성 권한이 있는 요청자 또는 관리자만 가능하며 업무 담당자 본인은 제외한다. 새 검토자는 현재 방의 작성 가능한 다른 크루여야 한다. 담당자·결과물·기한·제목·단계는 유지하며, 별도 `task_reviewer_reassigned` 이력과 새 검토 알림을 남긴다. 새 검토자의 명시적 승인이 필요하다.

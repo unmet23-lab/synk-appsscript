@@ -8,7 +8,7 @@ COPY ["docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/BENCHMARK_RESEARCH_PROMPT.md"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/public","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/public"]
 COPY ["docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs","/workspace/docs/마케팅/온라인마케팅지도/engagement/company/deploy/healthcheck.mjs"]
-COPY ["tools/company-messenger/server.mjs","tools/company-messenger/drive-storage.mjs","tools/company-messenger/company-integration.mjs","tools/company-messenger/collaboration-service.mjs","tools/company-messenger/productivity-service.mjs","tools/company-messenger/web-push-service.mjs","tools/company-messenger/platform-navigation.mjs","/workspace/tools/company-messenger/"]
+COPY ["tools/company-messenger/server.mjs","tools/company-messenger/drive-storage.mjs","tools/company-messenger/company-integration.mjs","tools/company-messenger/collaboration-service.mjs","tools/company-messenger/productivity-service.mjs","tools/company-messenger/direct-task-service.mjs","tools/company-messenger/web-push-service.mjs","tools/company-messenger/platform-navigation.mjs","/workspace/tools/company-messenger/"]
 COPY ["tools/company-messenger/public","/workspace/tools/company-messenger/public"]
 COPY ["atlas/engine.js","atlas/trail.js","atlas/personalization.js","atlas/domain.js","atlas/temper-outcomes.js","atlas/interpretation.js","atlas/work.js","/workspace/atlas/"]
 COPY ["atlas/ask.js","/workspace/atlas/ask.js"]

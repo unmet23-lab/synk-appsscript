@@ -1,0 +1,89 @@
+{
+  "at": "2026-10-09T19:19:09.685Z",
+  "status": "passed",
+  "manifestSHA256": "f1d808a761dbf73024f2959dac66f81c6de1e058171a541937509a4133070ab3",
+  "parentManifestSHA256": "e01fe60531bcbde9966770b7eedb90a4aed1e9c6ab55b8ddfc8672595be3d118",
+  "publicFiles": 5,
+  "publicFilesPassed": 5,
+  "results": [
+    {
+      "file": "tools/company-messenger/public/app.js",
+      "url": "https://workspace.synk.im/messenger/app.js",
+      "status": 200,
+      "bytes": 278717,
+      "sha256": "17d5fcf3c2dd91d7a318682343c867300fed26a57e5ff0fa95930f03b087b9bc",
+      "expectedBytes": 278717,
+      "expectedSHA256": "17d5fcf3c2dd91d7a318682343c867300fed26a57e5ff0fa95930f03b087b9bc",
+      "contentType": "text/javascript; charset=utf-8",
+      "expectedContentType": "text/javascript; charset=utf-8",
+      "statusBytesHashAndMIMEPassed": true
+    },
+    {
+      "file": "tools/company-messenger/public/messenger-design.css",
+      "url": "https://workspace.synk.im/messenger/messenger-design.css",
+      "status": 200,
+      "bytes": 94563,
+      "sha256": "7607c860c36b1907baf7020472398a15f07e1e0621833126800f52644fb1f346",
+      "expectedBytes": 94563,
+      "expectedSHA256": "7607c860c36b1907baf7020472398a15f07e1e0621833126800f52644fb1f346",
+      "contentType": "text/css; charset=utf-8",
+      "expectedContentType": "text/css; charset=utf-8",
+      "statusBytesHashAndMIMEPassed": true
+    },
+    {
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.js",
+      "url": "https://workspace.synk.im/workroom.js",
+      "status": 200,
+      "bytes": 49027,
+      "sha256": "f5806d58c0fae7cde66bb56c40b612a7f6d34adebf50953d3b2c6c61017d390d",
+      "expectedBytes": 49027,
+      "expectedSHA256": "f5806d58c0fae7cde66bb56c40b612a7f6d34adebf50953d3b2c6c61017d390d",
+      "contentType": "text/javascript; charset=utf-8",
+      "expectedContentType": "text/javascript; charset=utf-8",
+      "statusBytesHashAndMIMEPassed": true
+    },
+    {
+      "file": "docs/마케팅/온라인마케팅지도/engagement/company/public/workroom.css",
+      "url": "https://workspace.synk.im/workroom.css",
+      "status": 200,
+      "bytes": 22552,
+      "sha256": "b84dc19c0e98f9206fa6979d1619f88ba6a3970df7fdfdc7a361c2b2d5f6f882",
+      "expectedBytes": 22552,
+      "expectedSHA256": "b84dc19c0e98f9206fa6979d1619f88ba6a3970df7fdfdc7a361c2b2d5f6f882",
+      "contentType": "text/css; charset=utf-8",
+      "expectedContentType": "text/css; charset=utf-8",
+      "statusBytesHashAndMIMEPassed": true
+    },
+    {
+      "file": "tools/company-messenger/public/assets/felt-ui/slab-cream-long.webp",
+      "url": "https://workspace.synk.im/messenger/assets/felt-ui/slab-cream-long.webp",
+      "status": 200,
+      "bytes": 21294,
+      "sha256": "0920b4896f7f42be6e9f08b5f281612e86c8c236a03a122ee5a08c8701c40212",
+      "expectedBytes": 21294,
+      "expectedSHA256": "0920b4896f7f42be6e9f08b5f281612e86c8c236a03a122ee5a08c8701c40212",
+      "contentType": "image/webp",
+      "expectedContentType": "image/webp",
+      "statusBytesHashAndMIMEPassed": true
+    }
+  ],
+  "health": {
+    "url": "https://workspace.synk.im/api/health",
+    "status": 200,
+    "bytes": 85,
+    "sha256": "a272ccd0a94c66bc64abd2d3b904bf31be95cc18bb025f8ed3d8ae20be5f80fe",
+    "expectedSHA256": "a272ccd0a94c66bc64abd2d3b904bf31be95cc18bb025f8ed3d8ae20be5f80fe",
+    "contentType": "application/json; charset=utf-8",
+    "expectedContentType": "application/json; charset=utf-8",
+    "statusBytesHashAndMIMEPassed": true,
+    "ready": true
+  },
+  "urlSource": "Previously verified parente01 public routes and exact task-action candidate indices/server routes",
+  "credentialHeadersSent": false,
+  "authenticationEndpointsAccessed": 0,
+  "tokenOrSessionAccessed": 0,
+  "providerCalls": 0,
+  "paidCalls": 0,
+  "productionWrites": 0,
+  "productionServiceActions": 0
+}
