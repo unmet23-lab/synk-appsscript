@@ -1,0 +1,256 @@
+diff --git a/desktop/renderer/member-home.mjs b/desktop/renderer/member-home.mjs
+index 69f3567f1..92c0bffc2 100644
+--- a/desktop/renderer/member-home.mjs
++++ b/desktop/renderer/member-home.mjs
+@@ -7,6 +7,7 @@ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;
+ const clean=(value,max)=>typeof value==='string'?value.trim().slice(0,max):'';
+ const stamp=value=>Number.isSafeInteger(value)&&value>0&&value<=8640000000000000;
+ const canSave=library=>library?.status==='ready'&&!!library.owner&&library.owner!=='anonymous-local';
++const activeApp=id=>id==='partners'?'pulse':id;
+ const arrow='<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>';
+ 
+ export function parseHomeRecords(raw,owner){
+@@ -14,7 +15,7 @@ export function parseHomeRecords(raw,owner){
+     const doc=JSON.parse(raw);
+     if(doc?.version!==1||doc.owner!==owner||!Array.isArray(doc.records))return [];
+     const seen=new Set();
+-    return doc.records.filter(row=>row&&typeof row.id==='string'&&/^[a-z0-9-]{1,80}$/.test(row.id)&&!seen.has(row.id)&&seen.add(row.id)&&['task','note'].includes(row.kind)&&APP_IDS.includes(row.appId)&&clean(row.title,80)&&stamp(row.createdAt)).slice(0,MAX_RECORDS).map(row=>({id:row.id,kind:row.kind,appId:row.appId,title:clean(row.title,80),body:clean(row.body,1200),done:row.kind==='task'&&row.done===true,createdAt:row.createdAt}));
++    return doc.records.filter(row=>row&&typeof row.id==='string'&&/^[a-z0-9-]{1,80}$/.test(row.id)&&!seen.has(row.id)&&seen.add(row.id)&&['task','note'].includes(row.kind)&&APP_IDS.includes(activeApp(row.appId))&&clean(row.title,80)&&stamp(row.createdAt)).slice(0,MAX_RECORDS).map(row=>({id:row.id,kind:row.kind,appId:row.appId,title:clean(row.title,80),body:clean(row.body,1200),done:row.kind==='task'&&row.done===true,createdAt:row.createdAt}));
+   }catch{return [];}
+ }
+ 
+@@ -30,7 +31,7 @@ export function createHomeStore(storage,{clock=Date.now}={}){
+   }
+   function requireMember(library){if(!canSave(library))throw Error('SYNK ID로 로그인하고 앱 목록을 확인한 뒤 저장해 주세요.');}
+   return {
+-    list(library){return read(library).filter(row=>library.appIds.includes(row.appId)).map(row=>{const entry=row.appId,appId=displayLibraryAppId(entry,library);return {...row,appId,...(entry!==appId?{entryId:entry}:{})};});},
++    list(library){return read(library).filter(row=>library.appIds.includes(activeApp(row.appId))).map(row=>{const entry=activeApp(row.appId),appId=displayLibraryAppId(entry,library);return {...row,appId,...(entry!==appId?{entryId:entry}:{})};});},
+     add(library,input){
+       requireMember(library);
+       if(input?.consent!==true)throw Error('이 기기에 저장하는 데 동의해 주세요.');
+@@ -43,7 +44,7 @@ export function createHomeStore(storage,{clock=Date.now}={}){
+       write(library,[row,...records]);return row;
+     },
+     change(library,id,action){
+-      requireMember(library);const records=read(library),row=records.find(item=>item.id===id&&library.appIds.includes(item.appId));
++      requireMember(library);const records=read(library),row=records.find(item=>item.id===id&&library.appIds.includes(activeApp(item.appId)));
+       if(!row||!['toggle','remove'].includes(action))throw Error('기록과 앱 이용 권한을 다시 확인해 주세요.');
+       if(action==='toggle'&&row.kind!=='task')throw Error('할 일만 완료 표시를 바꿀 수 있어요.');
+       write(library,action==='remove'?records.filter(item=>item.id!==id):records.map(item=>item.id===id?{...item,done:!item.done}:item));
+diff --git a/desktop/tests/member-home.test.cjs b/desktop/tests/member-home.test.cjs
+index 4389dc843..31bf44481 100644
+--- a/desktop/tests/member-home.test.cjs
++++ b/desktop/tests/member-home.test.cjs
+@@ -5,6 +5,20 @@ const member=(owner='member-a',appIds=['world','messenger'])=>({owner,status:'re
+ const memory=()=>{const values=new Map();return {values,getItem:key=>values.get(key)||null,setItem:(key,value)=>values.set(key,value)};};
+ const input={kind:'task',appId:'world',title:'다음 연습',body:'한 번 더 읽기',consent:true};
+ 
++test('Partners notes remain intact through PULSE display and unrelated writes, with explicit PULSE access',async()=>{
++  const {createHomeStore,HOME_KEY}=await loaded,storage=memory();
++  const original={id:'legacy-partner',kind:'task',appId:'partners',title:'작품 검토',body:'창작자와 확인',done:false,createdAt:100};
++  const key=HOME_KEY+':account:member-a';storage.setItem(key,JSON.stringify({version:1,owner:'member-a',records:[original]}));
++  const store=createHomeStore(storage,{clock:()=>200}),withPulse=member('member-a',['pulse','world']);
++  assert.deepEqual(store.list(member('member-a',['partners'])),[]);
++  assert.throws(()=>store.change(member('member-a',['partners']),original.id,'toggle'),/권한/);
++  assert.deepEqual(store.list(withPulse),[{...original,appId:'pulse'}]);
++  assert.deepEqual(JSON.parse(storage.getItem(key)).records,[original]);
++  store.add(withPulse,input);assert.deepEqual(JSON.parse(storage.getItem(key)).records[1],original);
++  store.change(withPulse,original.id,'toggle');assert.deepEqual(JSON.parse(storage.getItem(key)).records[1],{...original,done:true});
++  assert.deepEqual(store.list(member('member-b',['pulse'])),[]);
++});
++
+ test('home records require a confirmed member, an allowed app and explicit storage consent',async()=>{
+   const {createHomeStore}=await loaded,storage=memory(),store=createHomeStore(storage,{clock:()=>100});
+   for(const library of [{owner:'anonymous-local',status:'guest',appIds:['world']},{owner:null,status:'loading',appIds:[]},{...member(),status:'unavailable'}])assert.throws(()=>store.add(library,input),/로그인/);
+diff --git a/experiences/synk-account/src/platform-library-data.mjs b/experiences/synk-account/src/platform-library-data.mjs
+index 4ceeeb3a4..baf8e7484 100644
+--- a/experiences/synk-account/src/platform-library-data.mjs
++++ b/experiences/synk-account/src/platform-library-data.mjs
+@@ -1,5 +1,9 @@
+ // Shared web/PC selections. No URLs, app permissions, or private product contents.
+ export const PLATFORM_APP_IDS = Object.freeze(['world','messenger','teacher','path','pulse','partners','care','fortune','rehearsal','family-album']);
++// Keep the v1 storage contract, including historical Partners records. New UI
++// selections use the merged catalogue without rewriting an account document.
++export const ACTIVE_PLATFORM_APP_IDS = Object.freeze(PLATFORM_APP_IDS.filter(id=>id!=='partners'));
++export const platformAppId = id => id==='partners'?'pulse':id;
+ export const PLATFORM_NOTE_LIMIT = 60;
+ const object = value => value && typeof value === 'object' && !Array.isArray(value);
+ const invalid = () => { throw Object.assign(new TypeError('플랫폼 기록 형식을 확인해 주세요.'), { code:'INVALID_PERSONAL_STATE' }); };
+@@ -19,17 +23,25 @@ export function validatePlatformLibrary(value) {
+   for (const row of value.notes) { if (!note(row) || seen.has(row.id)) invalid(); seen.add(row.id); }
+   return structuredClone(value);
+ }
++export function projectPlatformLibrary(value) {
++  const next=validatePlatformLibrary(value);
++  next.favorites=[...new Set(next.favorites.map(platformAppId))];
++  const recent=new Map();
++  for(const row of next.recent){const id=platformAppId(row.id),previous=recent.get(id);if(!previous||row.at>previous.at)recent.set(id,{...row,id});}
++  next.recent=[...recent.values()].sort((a,b)=>b.at-a.at);
++  return next;
++}
+ export function updatePlatformLibrary(value, action, now = Date.now()) {
+   const next = validatePlatformLibrary(value);
+   if (action.type === 'consent') { if (action.value !== true) return emptyPlatformLibrary(); next.consent=true; return next; }
+   if (!next.consent) throw new Error('계정에 저장할 항목을 확인하고 연결을 켜 주세요.');
+-  if (['favorite','launch','note','edit-note'].includes(action.type) && !PLATFORM_APP_IDS.includes(action.id)) invalid();
+-  if (action.type === 'favorite') next.favorites = next.favorites.includes(action.id) ? next.favorites.filter(id=>id!==action.id) : [...next.favorites,action.id];
+-  else if (action.type === 'launch' && next.rememberRecent) next.recent=[{id:action.id,at:now,mode:action.mode},...next.recent.filter(row=>row.id!==action.id)];
++  if (['favorite','launch','note'].includes(action.type) && !ACTIVE_PLATFORM_APP_IDS.includes(action.id)) invalid();
++  if (action.type === 'favorite') next.favorites = next.favorites.some(id=>platformAppId(id)===action.id) ? next.favorites.filter(id=>platformAppId(id)!==action.id) : [...next.favorites,action.id];
++  else if (action.type === 'launch' && next.rememberRecent) next.recent=[{id:action.id,at:now,mode:action.mode},...next.recent.filter(row=>platformAppId(row.id)!==action.id)];
+   else if (action.type === 'remember') { next.rememberRecent=action.value; if (!action.value) next.recent=[]; }
+   else if (action.type === 'clear-recent') next.recent=[];
+   else if (action.type === 'note') { if(next.notes.length>=PLATFORM_NOTE_LIMIT)noteLimit();next.notes.unshift({id:globalThis.crypto.randomUUID(),appId:action.id,title:String(action.title||'').trim(),done:false,createdAt:now}); }
+-  else if (action.type === 'edit-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row||!text(action.title,240))invalid();row.title=action.title.trim();row.appId=action.id; }
++  else if (action.type === 'edit-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row||!text(action.title,240)||!ACTIVE_PLATFORM_APP_IDS.includes(action.id)&&!(action.id==='partners'&&row.appId==='partners'))invalid();row.title=action.title.trim();row.appId=action.id; }
+   else if (action.type === 'restore-note') { if(!note(action.note)||!Number.isSafeInteger(action.index)||action.index<0||action.index>next.notes.length||next.notes.some(row=>row.id===action.note.id))invalid();if(next.notes.length>=PLATFORM_NOTE_LIMIT)noteLimit();next.notes.splice(action.index,0,structuredClone(action.note)); }
+   else if (action.type === 'toggle-note') { const row=next.notes.find(row=>row.id===action.noteId);if(!row)invalid();row.done=!row.done; }
+   else if (action.type === 'remove-note') next.notes=next.notes.filter(row=>row.id!==action.noteId);
+diff --git a/experiences/synk-account/src/platform-library-view.mjs b/experiences/synk-account/src/platform-library-view.mjs
+index 35bc27e52..ed05cb2c3 100644
+--- a/experiences/synk-account/src/platform-library-view.mjs
++++ b/experiences/synk-account/src/platform-library-view.mjs
+@@ -1,8 +1,8 @@
+ import { createAccountNotebook } from './account-notebook.mjs';
+-import { emptyPlatformLibrary, validatePlatformLibrary, updatePlatformLibrary, PLATFORM_APP_IDS, PLATFORM_NOTE_LIMIT } from './platform-library-data.mjs';
++import { emptyPlatformLibrary, validatePlatformLibrary, updatePlatformLibrary, projectPlatformLibrary, platformAppId, PLATFORM_APP_IDS, ACTIVE_PLATFORM_APP_IDS, PLATFORM_NOTE_LIMIT } from './platform-library-data.mjs';
+ import { platformLibraryAccount } from './platform-library-account.mjs';
+ 
+-const names={world:'WORLD',messenger:'메신저',teacher:'교사',path:'PATH',pulse:'PULSE',partners:'파트너스',care:'플레저',fortune:'운세',rehearsal:'대화 리허설','family-album':'가족 앨범'};
++const names={world:'WORLD',messenger:'메신저',teacher:'교사',path:'PATH',pulse:'PULSE',partners:'PULSE · 이전 Partners 기록',care:'플레저',fortune:'운세',rehearsal:'대화 리허설','family-album':'가족 앨범'};
+ const esc=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+ let librarySequence=0;
+ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},native=false,getDevice=()=>({}),onChange=()=>{},onOpen=()=>{},onLogin=()=>{},onManage=onLogin,storage=globalThis.localStorage}={}) {
+@@ -15,7 +15,7 @@ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},nativ
+   function expand(value){panel.hidden=!value;toggle.setAttribute('aria-expanded',String(value));toggle.textContent=value?'접어두기':'메모·계정 설정';}
+   function summary(){
+     const available=!pageSuspended&&!disposed&&!!notebook?.active&&notebook.canEdit&&doc.consent;
+-    const note=available?doc.notes.find(row=>!row.done):null,recent=available?doc.recent[0]:null,hasDraft=available&&(!!draft.title.trim()||!!parkedDraft?.title.trim());
++    const note=available?doc.notes.find(row=>!row.done):null,recent=available?projectPlatformLibrary(doc).recent[0]:null,hasDraft=available&&(!!draft.title.trim()||!!parkedDraft?.title.trim());
+     resumeId=note?.appId||recent?.id||null;
+     root.querySelector('[data-library-title]').textContent=hasDraft?(editing?'수정 중인 메모가 있어요':'작성 중인 메모가 있어요'):note?.title||(recent?'다시 '+names[recent.id]+'에서':'계정으로 이어가기');
+     root.querySelector('[data-library-detail]').textContent=message||(hasDraft?'접어두어도 이 화면의 입력은 유지돼요.':note?names[note.appId]+' · 남겨 둔 다음 할 일':recent?'최근 열었던 공간을 바로 열 수 있어요.':available?'다음에 할 일을 남겨 두면 여기서 바로 이어갈 수 있어요.':'즐겨찾기와 다음에 할 일을 같은 SYNK ID로 이어가세요.');
+@@ -28,7 +28,9 @@ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},nativ
+   function clearNoteSession(){editing=null;parkedDraft=null;deletedNotes=[];completedExpanded=false;}
+   function discardDraft(){clearNoteSession();draft.title='';render({captureDraft:false});}
+   function focusDraft(){expand(true);content.querySelector('[name=title]')?.focus?.();}
+-  function setEditorDraft(value){draft={...value};const field=content.querySelector('[name=title]'),select=content.querySelector('[name=appId]');if(field)field.value=draft.title;if(select)select.value=draft.appId;}
++  function editorOptions(selected){const ids=editing?.appId==='partners'?[...ACTIVE_PLATFORM_APP_IDS,'partners']:ACTIVE_PLATFORM_APP_IDS;return ids.map(id=>'<option value="'+id+'" '+(selected===id?'selected':'')+'>'+names[id]+'</option>').join('');}
++  function favoriteSelected(id){return doc.favorites.some(saved=>platformAppId(saved)===id);}
++  function setEditorDraft(value){draft={...value};const field=content.querySelector('[name=title]'),select=content.querySelector('[name=appId]');if(field)field.value=draft.title;if(select){select.innerHTML=editorOptions(draft.appId);select.value=draft.appId;}}
+   function finishEditing(){const next=parkedDraft||{appId:'world',title:''};editing=null;parkedDraft=null;setEditorDraft(next);}
+   function beginEditing(id){
+     const row=doc.notes.find(note=>note.id===id);if(!row||!notebook?.canEdit)return;
+@@ -68,12 +70,12 @@ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},nativ
+       content.querySelector('[data-cloud-message]').textContent=message;
+       content.querySelector('[data-cloud="remember"]').checked=doc.rememberRecent;
+       for(const button of content.querySelectorAll('[data-cloud="favorite"]')){
+-        const selected=doc.favorites.includes(button.dataset.id);
++        const selected=favoriteSelected(button.dataset.id);
+         button.setAttribute('aria-pressed',String(selected));button.textContent=(selected?'★ ':'☆ ')+names[button.dataset.id];
+       }
+       if(nextNotes!==renderedNotes)content.querySelector('.continuity-notes').innerHTML=nextNotes;
+     }else{
+-      content.innerHTML=active?'<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>'+esc(message)+'</p>'+(!doc.consent?'<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>':'<label><input type="checkbox" data-cloud="remember" '+(doc.rememberRecent?'checked':'')+'> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">'+PLATFORM_APP_IDS.map(id=>'<button type="button" data-cloud="favorite" data-id="'+id+'" aria-pressed="'+doc.favorites.includes(id)+'">'+(doc.favorites.includes(id)?'★ ':'☆ ')+names[id]+'</button>').join('')+'</div><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="'+panelId+'-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">'+PLATFORM_APP_IDS.map(id=>'<option value="'+id+'" '+(draft.appId===id?'selected':'')+'>'+names[id]+'</option>').join('')+'</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="'+panelId+'-capacity" value="'+esc(draft.title)+'" placeholder="예: 다음 부탁 대화의 첫 문장 다듬기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-notes">'+nextNotes+'</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>'):'<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>';
++      content.innerHTML=active?'<h2>내 계정의 이어쓰기</h2><p role="status" data-cloud-message>'+esc(message)+'</p>'+(!doc.consent?'<p>계정 연결을 켜면 지금부터 선택한 즐겨찾기와 최근 열기를 계정에 저장해요. 기존 기기 목록은 위의 옮기기 버튼으로 직접 가져올 수 있어요.</p><button data-cloud="enable">계정 저장 켜기</button>':'<label><input type="checkbox" data-cloud="remember" '+(doc.rememberRecent?'checked':'')+'> 최근 열기 시각도 계정에 보관</label><div class="continuity-apps">'+ACTIVE_PLATFORM_APP_IDS.map(id=>'<button type="button" data-cloud="favorite" data-id="'+id+'" aria-pressed="'+favoriteSelected(id)+'">'+(favoriteSelected(id)?'★ ':'☆ ')+names[id]+'</button>').join('')+'</div><form data-note-form><h3 data-editor-heading>새 메모</h3><p data-edit-detail hidden></p><p id="'+panelId+'-capacity" data-note-capacity role="status"></p><label>이어 쓸 공간<select name="appId">'+editorOptions(draft.appId)+'</select></label><label>다음에 할 일<input name="title" maxlength="240" required aria-describedby="'+panelId+'-capacity" value="'+esc(draft.title)+'" placeholder="예: 다음 부탁 대화의 첫 문장 다듬기"></label><button type="submit" data-note-submit>계정에 메모 남기기</button><button type="button" data-cloud="cancel-edit" hidden>수정 취소</button></form><div class="continuity-undo" data-note-undo hidden><p role="status" data-note-undo-message></p><button type="button" data-cloud="undo-note">삭제 되돌리기</button><p data-note-undo-detail></p></div><div class="continuity-notes">'+nextNotes+'</div><p>최근 열기는 실제 작업 완료나 학습 성과를 뜻하지 않아요.</p>'):'<p>계정에 로그인한 뒤 라이브러리를 연결할 수 있어요. 기기의 바로가기는 그대로 유지됩니다.</p>';
+     }
+     renderedNotes=nextNotes;
+     for(const el of content.querySelectorAll('button,input,select'))el.disabled=!editable;
+@@ -98,12 +100,12 @@ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},nativ
+     finally{connecting=false;if(!disposed){connect.disabled=false;connect.setAttribute('aria-busy','false');connect.textContent='계정 라이브러리 연결';summary();}}
+   };
+   toggle.onclick=()=>{capture();initialExpansionPending=false;expand(panel.hidden);summary();};
+-  resumeButton.onclick=()=>{capture();if(draft.title.trim()||parkedDraft?.title.trim()){focusDraft();return;}if(resumeId)onOpen(resumeId);};
++  resumeButton.onclick=()=>{capture();if(draft.title.trim()||parkedDraft?.title.trim()){focusDraft();return;}if(resumeId)onOpen(platformAppId(resumeId));};
+   content.addEventListener('input',()=>{capture();summary();});
+   content.addEventListener('change',event=>{if(event.target.dataset.cloud==='remember')void change({type:'remember',value:event.target.checked}).catch(error=>{message=error.message;render();});});
+   content.addEventListener('click',event=>{
+     const button=event.target.closest('button[data-cloud]');if(!button||button.disabled)return;const action=button.dataset.cloud,id=button.dataset.id;
+-    if(action==='open'){if(hasUnsavedDraft()&&!globalThis.confirm('작성 중인 이어쓰기 메모를 닫고 이동할까요?'))return;onOpen(id);return;}
++    if(action==='open'){if(hasUnsavedDraft()&&!globalThis.confirm('작성 중인 이어쓰기 메모를 닫고 이동할까요?'))return;onOpen(platformAppId(id));return;}
+     if(!notebook?.canEdit)return;
+     if(action==='show-completed'){completedExpanded=!completedExpanded;render();content.querySelector('[data-cloud="show-completed"]')?.focus?.();return;}
+     if(action==='edit-note'){beginEditing(id);return;}
+@@ -125,7 +127,7 @@ export function mountPlatformLibrary(root,{getHost,ensureReady=async()=>{},nativ
+   const beforeUnload=event=>{if(hasUnsavedDraft()){event.preventDefault();event.returnValue='';}};
+   globalThis.addEventListener('pagehide',suspend);globalThis.addEventListener('pageshow',resume);
+   globalThis.addEventListener('beforeunload',beforeUnload);
+-  return {connected:()=>!!notebook?.active&&doc.consent,projection(){return notebook?.active&&notebook.canEdit&&doc.consent?structuredClone(doc):null;},async dispatch(action){if(!notebook?.active||!doc.consent)return false;return change(action);},hasPending:()=>!!notebook?.pending,
++  return {connected:()=>!!notebook?.active&&doc.consent,projection(){return notebook?.active&&notebook.canEdit&&doc.consent?projectPlatformLibrary(doc):null;},async dispatch(action){if(!notebook?.active||!doc.consent)return false;return change(action);},hasPending:()=>!!notebook?.pending,
+     hasUnsavedDraft,discardDraft,focusDraft,
+     dispose(){disposed=true;notebook?.dispose();globalThis.removeEventListener('pagehide',suspend);globalThis.removeEventListener('pageshow',resume);globalThis.removeEventListener('beforeunload',beforeUnload);},render};
+ }
+diff --git a/experiences/synk-account/tests/platform-library.test.mjs b/experiences/synk-account/tests/platform-library.test.mjs
+index 0a82f4264..1a1bff2fb 100644
+--- a/experiences/synk-account/tests/platform-library.test.mjs
++++ b/experiences/synk-account/tests/platform-library.test.mjs
+@@ -1,7 +1,7 @@
+ import test from 'node:test';
+ import assert from 'node:assert/strict';
+ import {createRequire} from 'node:module';
+-import {emptyPlatformLibrary,validatePlatformLibrary,updatePlatformLibrary} from '../src/platform-library-data.mjs';
++import {emptyPlatformLibrary,validatePlatformLibrary,updatePlatformLibrary,projectPlatformLibrary,PLATFORM_APP_IDS,ACTIVE_PLATFORM_APP_IDS} from '../src/platform-library-data.mjs';
+ import {platformLibraryAccount} from '../src/platform-library-account.mjs';
+ import {validatePersonalState} from '../src/personal-data.mjs';
+ import {createDocumentSync} from '../src/document-sync.mjs';
+@@ -18,6 +18,27 @@ test('unknown app IDs, arbitrary links, duplicate records and unsafe dates are r
+  for(const patch of [{favorites:['admin']},{favorites:['world','world']},{recent:[{id:'world',at:Infinity,mode:'web'}]},{recent:[{id:'world',at:1,mode:'web',url:'https://other.test'}]},{notes:[{id:'x',appId:'world',title:'a',createdAt:1,done:false,body:'private'}]}])assert.throws(()=>validatePlatformLibrary({...make(),...patch}));
+ });
+ 
++test('merged catalogue keeps historical Partners records valid and projects duplicate shortcuts without changing storage',()=>{
++ const doc={...make(),favorites:['pulse','partners','world'],recent:[{id:'pulse',at:10,mode:'web'},{id:'partners',at:20,mode:'client'}],notes:[{id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:true}]},before=structuredClone(doc);
++ assert.equal(PLATFORM_APP_IDS.length,10);assert.equal(ACTIVE_PLATFORM_APP_IDS.length,9);assert.equal(ACTIVE_PLATFORM_APP_IDS.includes('partners'),false);
++ assert.deepEqual(validatePersonalState('platform-library',doc),doc);
++ const visible=projectPlatformLibrary(doc);assert.deepEqual(visible.favorites,['pulse','world']);assert.deepEqual(visible.recent,[{id:'pulse',at:20,mode:'client'}]);assert.deepEqual(visible.notes,doc.notes);assert.deepEqual(doc,before);
++});
++
++test('only an existing Partners note may retain the retired identifier during an explicit edit',()=>{
++ const note={id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:true},doc={...make(),notes:[note]};
++ const edited=updatePlatformLibrary(doc,{type:'edit-note',noteId:'legacy',id:'partners',title:'수정한 검토'});
++ assert.deepEqual(edited.notes,[{...note,title:'수정한 검토'}]);assert.deepEqual(doc.notes,[note]);
++ for(const type of ['note','favorite','launch'])assert.throws(()=>updatePlatformLibrary(doc,{type,id:'partners',title:'새 기록',mode:'web'}));
++ assert.throws(()=>updatePlatformLibrary({...make(),notes:[{...note,appId:'world'}]},{type:'edit-note',noteId:'legacy',id:'partners',title:'수정'}));
++ assert.equal(updatePlatformLibrary(doc,{type:'edit-note',noteId:'legacy',id:'pulse',title:'옮긴 검토'}).notes[0].appId,'pulse');
++});
++
++test('explicit PULSE shortcut actions fold historical duplicate selections while retaining notes',()=>{
++ const note={id:'legacy',appId:'partners',title:'이전 검토',createdAt:1,done:false},doc={...make(),favorites:['partners','pulse','world'],recent:[{id:'partners',at:1,mode:'web'},{id:'pulse',at:2,mode:'client'}],notes:[note]};
++ assert.deepEqual(updatePlatformLibrary(doc,{type:'favorite',id:'pulse'}).favorites,['world']);
++ const launched=updatePlatformLibrary(doc,{type:'launch',id:'pulse',mode:'web'},3);assert.deepEqual(launched.recent,[{id:'pulse',at:3,mode:'web'}]);assert.deepEqual(launched.notes,[note]);
++});
+ test('disabled recent capture clears history and later launches cannot restore it',()=>{
+  let doc=updatePlatformLibrary(make(),{type:'launch',id:'world',mode:'client'},100);
+  doc=updatePlatformLibrary(doc,{type:'remember',value:false});doc=updatePlatformLibrary(doc,{type:'launch',id:'world',mode:'web'},101);assert.deepEqual(doc.recent,[]);
+diff --git a/experiences/synk-account/tests/platform-library-view.test.mjs b/experiences/synk-account/tests/platform-library-view.test.mjs
+index bac279761..0f4ff3c09 100644
+--- a/experiences/synk-account/tests/platform-library-view.test.mjs
++++ b/experiences/synk-account/tests/platform-library-view.test.mjs
+@@ -102,6 +102,28 @@ test('connecting reads only; explicit enable does not implicitly import existing
+   assert.deepEqual(f.records.get('A').state, state()); assert.deepEqual(f.view.projection(),state());
+ });
+ 
++test('merged account choices show one PULSE shortcut and preserve previous Partners notes on open and edit',async t=>{
++  const legacy={...memo('legacy'),appId:'partners',title:'파트너 작업 이어가기'},record={...state(['partners','pulse']),recent:[{id:'partners',at:20,mode:'web'},{id:'pulse',at:10,mode:'client'}],notes:[legacy]},f=await fixture(t,{records:new Map([['A',{revision:4,state:record}]])});await f.connect();
++  assert.equal(f.writes().length,0);assert.deepEqual(f.records.get('A').state,record);
++  assert.equal(f.content.querySelectorAll('[data-cloud="favorite"]').length,9);assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="partners"]'),null);
++  assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="pulse"]').getAttribute('aria-pressed'),'true');
++  assert.equal(f.content.querySelectorAll('option').length,9);assert.equal(f.content.querySelector('option[value="partners"]'),null);
++  assert.match(f.content.querySelector('[data-note-id="legacy"]').textContent,/PULSE · 이전 Partners 기록/);
++  assert.deepEqual(f.view.projection().favorites,['pulse']);assert.deepEqual(f.view.projection().recent,[{id:'pulse',at:20,mode:'web'}]);assert.deepEqual(f.view.projection().notes,[legacy]);
++  f.root.querySelector('[data-resume]').onclick();clickCloud(f,'open','partners');assert.deepEqual(f.opened,['pulse','pulse']);assert.equal(f.writes().length,0);
++  clickCloud(f,'edit-note','legacy');assert.equal(f.content.querySelector('[name=appId]').value,'partners');assert.equal(f.content.querySelectorAll('option').length,10);
++  f.input('작품 검토 이어가기');f.submit();await until(()=>!f.view.hasPending()&&f.records.get('A').state.notes[0].title==='작품 검토 이어가기');
++  assert.deepEqual(f.records.get('A').state.notes,[{...legacy,title:'작품 검토 이어가기'}]);assert.deepEqual(f.records.get('A').state.favorites,record.favorites);assert.deepEqual(f.records.get('A').state.recent,record.recent);
++  assert.equal(f.content.querySelectorAll('option').length,9);assert.equal(f.content.querySelector('option[value="partners"]'),null);
++});
++
++test('the displayed PULSE favorite explicitly clears both previous catalog selections without deleting legacy notes',async t=>{
++  const legacy={...memo('legacy'),appId:'partners'},record={...state(['partners','pulse','world']),notes:[legacy]},f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();
++  clickCloud(f,'favorite','pulse');await until(()=>f.writes().length===1&&!f.view.hasPending());
++  assert.deepEqual(f.records.get('A').state.favorites,['world']);assert.deepEqual(f.records.get('A').state.notes,[legacy]);
++  assert.equal(f.content.querySelector('[data-cloud="favorite"][data-id="pulse"]').getAttribute('aria-pressed'),'false');
++});
++
+ test('unfinished notes lead the list and completed notes expand without saving or replacing the editor', async t => {
+   const record={...state(),notes:[memo('done',true),memo('next')]},f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();
+   const form=f.content.querySelector('[data-note-form]'),input=f.content.querySelector('[name=title]');f.input('새 초안');

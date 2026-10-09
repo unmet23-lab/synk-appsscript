@@ -55,7 +55,7 @@
 .brand-messenger,:root[data-product=messenger]{--face:var(--messenger-face);--on-face:#C5D6F5;--glow:#3D6BC9}
 .brand-path,:root[data-product=path]{--face:#526956;--on-face:#FFFFFF;--glow:#7DB45A}
 .brand-pulse,:root[data-product=pulse]{--face:#99295D;--on-face:#FFFFFF;--glow:#E05C97}
-.brand-partners,.brand-family-album,:root[data-product=partners],:root[data-product=family-album]{--face:#F5C445;--on-face:#251A04;--glow:#F5C445}
+.brand-family-album,:root[data-product=family-album]{--face:#F5C445;--on-face:#251A04;--glow:#F5C445}
 .brand-care,:root[data-product=care]{--face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9}
 .brand-fortune,:root[data-product=fortune]{--face:#E05C97;--on-face:#1C0711;--glow:#E05C97}
 :root{--face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9}
@@ -515,9 +515,11 @@ dialog .fine-print{margin-top:18px;font-size:.75rem;color:var(--ink-3)}
   .hero-text p{font-size:.9375rem}
   .hero-caption{display:none}
   .action-strip{flex-direction:column;align-items:stretch;gap:14px}
-  .launch-group .primary{flex:1;min-width:0}
-  .readouts{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--line);padding-top:12px}
-  .readouts>div{padding:0 12px 0 0;border-left:0}
+  .launch-group{min-width:0;width:100%}
+  .launch-group .primary{flex:1;min-width:0;white-space:normal;line-height:1.25;text-align:center}
+  .readouts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:1px solid var(--line);padding-top:12px}
+  .readouts>div{min-width:0;padding:0 12px 0 0;border-left:0}
+  .readouts dd{white-space:normal}
   .readouts>div+div{padding-left:12px;border-left:1px solid var(--line)}
   .detail-tabs{width:100%}
   .detail-tabs button{flex:1;padding:0 10px}
@@ -567,7 +569,7 @@ dialog .fine-print{margin-top:18px;font-size:.75rem;color:var(--ink-3)}
 @media (max-width:360px){
   .edition{display:none}
   .nav-pill button{padding:0 9px;font-size:.75rem}
-  .readouts{grid-template-columns:1fr}
+  .readouts{grid-template-columns:minmax(0,1fr);width:100%}
   .readouts>div+div{padding-left:0;border-left:0}
   .hero{min-height:400px}
   .product-stage{font-size:.6875rem;padding:0 10px;height:28px}

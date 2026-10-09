@@ -37,6 +37,13 @@ test('missing or unavailable contracts fail closed instead of using universal de
 });
 
 test('retired Studio and SHIFT menu grants never migrate into company access',()=>{const retired=['studio','shift'].map(id=>({product:'platform',key:'library.'+id}));assert.deepEqual(projectLibrary(payload([],retired),now),{status:'ready',appIds:[]});assert.deepEqual(projectLibrary(payload([teacher],retired),now).appIds,['teacher']);assert.deepEqual(projectLibrary(payload([],retired.concat({product:'platform',key:'library.messenger'})),now).appIds,['messenger']);});
+
+test('Partners menu permission cannot grant PULSE after the catalogue merge',()=>{
+  const old={product:'platform',key:'library.partners'},pulse={product:'platform',key:'library.pulse'};
+  assert.deepEqual(projectLibrary(payload([],[old]),now).appIds,[]);
+  assert.deepEqual(projectLibrary(payload([],[old,pulse]),now).appIds,['pulse']);
+  assert.deepEqual(projectLibrary(payload([],[old,{...pulse,active:false}]),now).appIds,[]);
+});
 test('care is visible only with its own active menu grant and does not add company or learning rights',()=>{
   const grant={product:'platform',key:'library.care'};
   assert.deepEqual(projectLibrary(payload([],[grant]),now).appIds,['care']);
