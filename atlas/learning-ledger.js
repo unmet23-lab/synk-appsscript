@@ -17,8 +17,10 @@
  * the cutoff: they are read with the ledger as earlier history (never as first exposures),
  * folded first answers after them on the same family stop counting (`demote`), and an entry
  * whose item was folded here stays on the server only (`stray`): an exclusion of a folded
- * answer still removes it from the evidence. Temper's counts are not corrected for such
- * late entries.
+ * answer still removes it from the evidence. `adjusted` counts such entries. Temper's counts
+ * cannot be corrected for them here (a late reveal can turn any later repeat into a helped
+ * one), so they are approximate once `adjusted` is above zero; measurement reads the
+ * server's whole log.
  */
 const Trail = require('./trail');
 const Temper = require('./temper');
@@ -43,7 +45,8 @@ function validate(ledger) {
   const cellOk = cell => plain(cell) && Array.isArray(cell.ind) && cell.ind.length <= KEEP
     && cell.ind.every(r => Array.isArray(r) && (r.length === 4 || r.length === 5 && typeof r[4] === 'string')
       && typeof r[0] === 'string' && Number.isFinite(r[1]) && ['correct', 'incorrect'].includes(r[2]) && typeof r[3] === 'string')
-    && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES && cell.helped.every(Number.isFinite)
+    && Array.isArray(cell.helped) && cell.helped.length <= MAX_ENTRIES
+    && cell.helped.every(h => Number.isFinite(h) || Array.isArray(h) && h.length === 2 && typeof h[0] === 'string' && Number.isFinite(h[1]))
     && Number.isInteger(cell.unassessed) && cell.unassessed >= 0;
   if (!plain(ledger) || ledger.version !== VERSION || !Number.isInteger(ledger.folded) || ledger.folded < 0
     || !(ledger.cutoff === null || Number.isFinite(ledger.cutoff))
@@ -52,7 +55,8 @@ function validate(ledger) {
     || ledger.presented.some(r => !Array.isArray(r) || r.length !== 4 || r.slice(0, 3).some(v => typeof v !== 'string') || !Number.isInteger(r[3]) || r[3] < 1)
     || !plain(ledger.cells) || !Object.values(ledger.cells).every(cellOk)
     || !plain(ledger.content) || !Object.values(ledger.content).every(cellOk)
-    || !(ledger.counts === null || plain(ledger.counts))) throw new TypeError('Ledger: unreadable');
+    || !(ledger.counts === null || plain(ledger.counts))
+    || !(ledger.adjusted === undefined || Number.isInteger(ledger.adjusted) && ledger.adjusted >= 0)) throw new TypeError('Ledger: unreadable');
   return ledger;
 }
 // Whether `kinds` ('attempt', 'answer', 'help') happened on this trace key in folded entries.
@@ -61,13 +65,15 @@ const before = (ledger, traceKey, kinds) => {
   return kinds.some(kind => bits & BITS[kind]);
 };
 // Rows the policy reads, rebuilt from a cell (see Learning.formatEvidence). An independent
-// row is [event id, time, verdict, family] plus the item when it is not the family.
+// row is [event id, time, verdict, family] plus the item when it is not the family; a helped
+// answer is [event id, time] (a bare time in a ledger written before ids were kept).
+const helpedAt = h => (Array.isArray(h) ? h[1] : h);
 function rows(cell) {
   if (!cell) return { rows: [], unassessed: 0 };
   const iso = ms => new Date(ms).toISOString();
   return { unassessed: cell.unassessed, rows: [
     ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
-    ...cell.helped.map(at => ({ eventId: null, at: iso(at), verdict: 'correct', independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } })),
+    ...cell.helped.map(h => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso(helpedAt(h)), verdict: 'correct', independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } })),
   ] };
 }
 const cellOf = (ledger, key) => (ledger && own(ledger.cells, key) ? ledger.cells[key] : null);
@@ -108,7 +114,7 @@ function fold(previous, events, { scope, log = events }) {
     table[key] = cell; touched.add(cell);
     const at = Date.parse(a.at);
     if (a.independent) cell.ind.push([a.eventId, at, a.verdict, a.measure.familyKey, ...(a.itemKey !== a.measure.familyKey ? [a.itemKey] : [])]);
-    if (!a.exclusionReason && a.assisted === true && a.verdict === 'correct') cell.helped.push(at);
+    if (!a.exclusionReason && a.assisted === true && a.verdict === 'correct') cell.helped.push([a.eventId, at]);
     if (a.verdict === 'unassessed' || a.verdict === 'skipped') cell.unassessed += 1;
   };
   for (const a of summary.attempts) {
@@ -119,9 +125,9 @@ function fold(previous, events, { scope, log = events }) {
   }
   // Old helped answers expire in every cell; a cell this fold did not touch is replaced, not edited.
   for (const table of [ledger.cells, ledger.content]) for (const [key, cell] of Object.entries(table)) {
-    const helped = cell.helped.filter(at => at > latest - HELP_MS);
+    const helped = cell.helped.filter(h => helpedAt(h) > latest - HELP_MS);
     if (!touched.has(cell) && helped.length === cell.helped.length) continue;
-    table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => x - y), unassessed: cell.unassessed };
+    table[key] = { ind: [...cell.ind].sort((x, y) => x[1] - y[1]).slice(-KEEP), helped: helped.sort((x, y) => helpedAt(x) - helpedAt(y)), unassessed: cell.unassessed };
   }
   ledger.counts = ledger.counts ? Temper.combine(ledger.counts, Temper.measure(summary)) : Temper.measure(summary);
   ledger.cutoff = Math.max(ledger.cutoff ?? -Infinity, events.reduce((max, e) => Math.max(max, time(e)), -Infinity));
@@ -180,21 +186,23 @@ function compare(a, b) {
   return ca === cb ? 0 : ca > cb ? 1 : -1;
 }
 /* Late entries (from before the cutoff) that met an item or family: folded first answers on
- * that family after them are first answers no longer. `find` returns a log entry by id;
- * `excluded` lists folded answers another device has excluded since. */
-function demote(ledger, late, find, excluded = []) {
+ * that family after them are first answers no longer. `excluded` lists folded answers another
+ * device has excluded since; `strays` counts entries of folded items kept on the server only.
+ * `find` returns a log entry by id. */
+function demote(ledger, { late = [], excluded = [], strays = 0 }, find) {
   const marks = [], gone = new Set(excluded);
   for (const e of late) {
     if (e.type !== 'practice.attempted' && e.type !== 'practice.helped') continue;
     const p = find(e.presentationId);
     if (p) marks.push({ keys: new Set(Trail.traceKeys(p)), at: Date.parse(e.at) });
   }
-  if (!ledger || !marks.length && !gone.size) return ledger;
+  if (!ledger || !late.length && !gone.size && !strays) return ledger;
   const after = ([eventId, at, , familyKey, itemKey = familyKey]) => gone.has(eventId)
     || marks.some(m => (m.keys.has(`item:${itemKey}`) || m.keys.has(`family:${familyKey}`)) && at > m.at);
-  const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content } };
+  const excludedHelp = h => Array.isArray(h) && gone.has(h[0]);
+  const next = { ...ledger, cells: { ...ledger.cells }, content: { ...ledger.content }, adjusted: (ledger.adjusted || 0) + late.length + strays };
   for (const table of [next.cells, next.content]) for (const [key, cell] of Object.entries(table)) {
-    if (cell.ind.some(after)) table[key] = { ...cell, ind: cell.ind.filter(row => !after(row)) };
+    if (cell.ind.some(after) || cell.helped.some(excludedHelp)) table[key] = { ...cell, ind: cell.ind.filter(row => !after(row)), helped: cell.helped.filter(h => !excludedHelp(h)) };
   }
   return next;
 }

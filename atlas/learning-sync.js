@@ -24,11 +24,14 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length
     || backoffMs.some(ms => !Number.isFinite(ms) || ms < 0)) throw new TypeError('Atlas sync: invalid retry bounds');
   const key = `${SYNC_KEY}.${accountKey}`;
-  let state = { version: 1, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [] };
+  // Outbox v2 keeps ids only: the account log holds every queued entry (v1 kept a second copy).
+  // `missing` names acknowledged entries the log has lost; they are fetched from the server again.
+  let state = { version: 2, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [], missing: [] };
   let phase = 'idle', code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null, flushRequested = false;
   const controllers = new Set();
+  const whole = () => state.complete && !state.missing.length;
   const status = () => ({ phase, code, message, revision, cursor: state.cursor, queued: state.pending.length,
-    complete: state.complete && phase !== 'blocked' && phase !== 'stopped', accountKey, durable: !['STORAGE_ERROR', 'HISTORY_CAPACITY'].includes(code) });
+    complete: whole() && phase !== 'blocked' && phase !== 'stopped', accountKey, durable: !['STORAGE_ERROR', 'HISTORY_CAPACITY'].includes(code) });
   const publish = () => { try { onStatus(status()); } catch { /* UI observers cannot change the log. */ } };
   const block = error => {
     generation++; clearTimeout(timer); timer = null;
@@ -42,27 +45,33 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
   try {
     const raw = storage.getItem(key);
     if (raw != null) {
-      const stored = JSON.parse(raw);
-      if (!stored || stored.version !== 1 || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0
+      const stored = JSON.parse(raw), v1 = stored?.version === 1;
+      if (!stored || ![1, 2].includes(stored.version) || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0
         || typeof stored.complete !== 'boolean' || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id)
-        || !Array.isArray(stored.pending) || stored.pending.some(e => !id(e?.id))
-        || stored.pending.length + stored.acknowledged.length > 40000) throw failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement');
+        || !Array.isArray(stored.pending) || !stored.pending.every(v1 ? e => id(e?.id) : id)
+        || !(stored.missing === undefined || Array.isArray(stored.missing) && stored.missing.every(id))
+        || stored.pending.length + stored.acknowledged.length + (stored.missing?.length || 0) > 40000) throw failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement');
       if (stored.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: a new consent revision requires a fresh account store');
-      state = stored;
+      state = { ...stored, version: 2, pending: v1 ? stored.pending.map(e => e.id) : stored.pending, missing: stored.missing || [] };
     }
-    port.markComplete(state.complete);
+    port.markComplete(whole());
   } catch (error) { block(error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement')); }
   const collect = () => {
-    const known = new Map(state.pending.map(event => [event.id, event])), acknowledged = new Set(state.acknowledged);
-    const local = port.events(), localById = new Map(local.map(event => [event.id, event]));
-    if (state.pending.some(event => !localById.has(event.id) || !sameEvent(localById.get(event.id), event))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
-    // Entries a synchronised log folded are on the server and never come back: forget their ids.
-    if (state.acknowledged.some(eventId => !localById.has(eventId))) state.acknowledged = state.acknowledged.filter(eventId => localById.has(eventId));
-    for (const event of local) {
-      if (known.has(event.id) && !sameEvent(known.get(event.id), event)) throw failure('EVENT_CONFLICT', 'Atlas sync: conflicting queued event');
-      if (!known.has(event.id) && !acknowledged.has(event.id)) { known.set(event.id, event); state.pending.push(clone(event)); }
-    }
+    const local = port.events(), localIds = new Set(local.map(event => event.id));
+    if (state.pending.some(eventId => !localIds.has(eventId))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
+    // Entries the log folded away are on the server: they are no longer expected locally.
+    const folded = new Set(typeof port.dropped === 'function' ? port.dropped() : []);
+    // Any other acknowledged entry the log no longer has was lost here (an older history
+    // written over a newer one): fetch it from the server again.
+    const lost = state.acknowledged.filter(eventId => !localIds.has(eventId) && !folded.has(eventId));
+    if (lost.length) { state.missing = [...new Set([...state.missing, ...lost])]; port.markComplete(false); }
+    state.acknowledged = state.acknowledged.filter(eventId => localIds.has(eventId));
+    state.missing = state.missing.filter(eventId => !localIds.has(eventId));
+    const queued = new Set(state.pending), acknowledged = new Set(state.acknowledged);
+    for (const event of local) if (!queued.has(event.id) && !acknowledged.has(event.id)) { queued.add(event.id); state.pending.push(event.id); }
     save();
+    // Only once the outbox no longer expects them may the log forget it folded them.
+    if (folded.size && typeof port.forget === 'function') port.forget([...folded]);
   };
   const schedule = () => {
     if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline' || timer) return;
@@ -108,24 +117,50 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
         || typeof response.hasMore !== 'boolean' || response.hasMore && response.cursor <= before
         || response.events.length && response.cursor <= before) throw failure('INVALID_RESPONSE', 'Atlas sync: invalid or stalled server cursor');
       if (!active(token)) return;
-      try { port.importEvents(response.events); }
+      let result;
+      try { result = port.importEvents(response.events); }
       catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
-      const remote = new Set(state.acknowledged);
-      for (const event of response.events) remote.add(event.id);
-      state.acknowledged = [...remote]; state.pending = state.pending.filter(event => !remote.has(event.id)); state.cursor = response.cursor;
+      // An entry of an item the log already folded stays on the server only.
+      const skipped = new Set(result?.skipped || []), remote = new Set(state.acknowledged);
+      for (const event of response.events) if (!skipped.has(event.id)) remote.add(event.id);
+      state.acknowledged = [...remote]; state.pending = state.pending.filter(eventId => !remote.has(eventId)); state.cursor = response.cursor;
       if (!response.hasMore) state.complete = true;
-      save(); port.markComplete(state.complete); publish();
+      save(); port.markComplete(whole()); publish();
       // Everything the server held when this pull began has come back by now, so the log may
       // fold those entries (game-learning.js `fold.remote`); an older adapter has no settle().
       if (!response.hasMore) { if (typeof port.settle === 'function') port.settle(state.acknowledged); return; }
     }
     throw failure('INVALID_RESPONSE', 'Atlas sync: page limit exceeded');
   };
+  // Lost entries come back from the server: read it from the start, take only those ids.
+  const recover = async token => {
+    let after = 0;
+    for (let page = 0; page < maxPages && state.missing.length; page++) {
+      const response = await request('get', { after, revision }, token);
+      if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < after
+        || typeof response.hasMore !== 'boolean' || response.hasMore && response.cursor <= after) throw failure('INVALID_RESPONSE', 'Atlas sync: invalid or stalled server cursor');
+      if (!active(token)) return;
+      const wanted = new Set(state.missing), found = response.events.filter(event => wanted.has(event.id));
+      if (found.length) {
+        let result;
+        try { result = port.importEvents(found); }
+        catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
+        const skipped = new Set(result?.skipped || []), back = new Set(found.map(event => event.id));
+        state.acknowledged = [...new Set([...state.acknowledged, ...[...back].filter(eventId => !skipped.has(eventId))])];
+        state.missing = state.missing.filter(eventId => !back.has(eventId));
+      }
+      after = response.cursor;
+      // The whole server log has been read: what is still missing is not there (stop asking).
+      if (!response.hasMore || after >= state.cursor) { state.missing = []; }
+      save(); port.markComplete(whole()); publish();
+    }
+  };
   const flushQueue = async token => {
     let emptyAcks = 0;
     for (let batch = 0; batch < maxPages; batch++) {
       collect(); if (!state.pending.length) return;
-      const events = state.pending.slice(0, batchSize).map(clone), sent = new Set(events.map(event => event.id));
+      const local = new Map(port.events().map(event => [event.id, event]));
+      const events = state.pending.slice(0, batchSize).map(eventId => clone(local.get(eventId))), sent = new Set(events.map(event => event.id));
       const response = await request('post', { revision, events }, token);
       if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length
         || response.accepted.some(eventId => !sent.has(eventId))) throw failure('INVALID_RESPONSE', 'Atlas sync: acknowledgement contains an unsent event');
@@ -137,7 +172,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
       emptyAcks = 0;
       const accepted = new Set(response.accepted), acknowledged = new Set(state.acknowledged);
       for (const eventId of accepted) acknowledged.add(eventId);
-      state.acknowledged = [...acknowledged]; state.pending = state.pending.filter(event => !accepted.has(event.id)); save(); publish();
+      state.acknowledged = [...acknowledged]; state.pending = state.pending.filter(eventId => !accepted.has(eventId)); save(); publish();
     }
     throw failure('NETWORK_ERROR', 'Atlas sync: batch limit reached; remaining events stay queued');
   };
@@ -149,6 +184,7 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     running = (async () => {
       try {
         await pullPages(token);
+        if (active(token) && state.missing.length) await recover(token);
         if (active(token) && flushRequested) await flushQueue(token);
         if (active(token)) { phase = 'synced';code = null;message = null;publish(); }
       } catch (error) {

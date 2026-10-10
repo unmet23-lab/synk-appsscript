@@ -133,8 +133,8 @@ test('a long history stays small and quick: 5,000 items with the default fold', 
   }
   const seconds = Number(process.hrtime.bigint() - start) / 1e9;
   const raw = p.storage.getItem(`${KEY}.device`), stored = JSON.parse(raw);
-  assert.ok(stored.events.length <= 2000, `kept entries ${stored.events.length}`);
-  assert.ok(raw.length < 2.5e6, `stored size ${(raw.length / 1e6).toFixed(2)}M characters`);
+  assert.ok(stored.events.length <= 600, `kept entries ${stored.events.length}`);
+  assert.ok(raw.length < 1.5e6, `stored size ${(raw.length / 1e6).toFixed(2)}M characters`);
   assert.equal(p.game.summary().counts.attempts, 5000, 'every answer is still counted');
   assert.ok(seconds < 120, `5,000 items took ${seconds.toFixed(1)}s`);
   assert.ok(Ledger.validate(stored.ledger));

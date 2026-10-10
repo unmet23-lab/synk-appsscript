@@ -16,9 +16,19 @@ function host() {
   return null;
 }
 const factory = config => learning.createGame({ ...config, map });
+// Before the page closes or hides, every game here writes its entries again, joining what
+// other tabs wrote meanwhile (game-learning.js flush).
+const games = new Set();
+const flushAll = () => { for (const game of games) { try { game.flush?.(); } catch { /* a closing page has no one to tell */ } } };
+if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+  window.addEventListener('pagehide', flushAll);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushAll(); });
+}
 // `engine` lets a host page build its own account-wide adapter in its own window.
 module.exports = { ...learning, Flow, TemperFlow, VellumFlow, Ask, SKILLS: map.allNodes(),
   engine: Object.freeze({ createGame: factory, createLearningSync: learning.createLearningSync }), createGame: options => {
     const owner = host();
-    return owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+    const game = owner ? owner.createGame(options, factory, learning.createLearningSync) : factory(options);
+    games.add(game);
+    return game;
   } };
