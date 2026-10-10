@@ -1,0 +1,174 @@
+1
+00:00:00,100 --> 00:00:03,040
+Ready? 인사!
+Ready? Greetings! (insa)
+
+2
+00:00:03,040 --> 00:00:05,970
+안! 녕! 안녕, 안녕!
+an! nyeong! annyeong, annyeong! (hi! — to friends)
+
+3
+00:00:05,970 --> 00:00:08,180
+반! 가! 워! 요!
+ban! ga! wo! yo! (read one block at a time)
+
+4
+00:00:08,180 --> 00:00:10,650
+반가워요, 반가워요!
+bangawoyo, bangawoyo! (nice to meet you!)
+
+5
+00:00:10,650 --> 00:00:12,860
+고! 마! 워! 요!
+go! ma! wo! yo!
+
+6
+00:00:12,860 --> 00:00:15,370
+고마워요, 고마워요!
+gomawoyo, gomawoyo! (thank you!)
+
+7
+00:00:15,370 --> 00:00:17,150
+잘! 가! 요!
+jal! ga! yo!
+
+8
+00:00:17,150 --> 00:00:19,320
+잘 가요, 잘 가요!
+jal gayo, jal gayo! (bye! take care)
+
+9
+00:00:19,320 --> 00:00:20,930
+모두 이어 봐!
+modu ieo bwa! (now put them together!)
+
+10
+00:00:20,930 --> 00:00:24,141
+이건 뭐?
+igeon mwo? (what is this? read it before the song does!)
+
+11
+00:00:24,141 --> 00:00:24,741
+반가워요!
+bangawoyo! (nice to meet you!)
+
+12
+00:00:24,741 --> 00:00:28,362
+이건 뭐?
+igeon mwo? (what is this? read it first!)
+
+13
+00:00:28,362 --> 00:00:28,950
+잘 가요!
+jal gayo! (bye! take care)
+
+14
+00:00:28,950 --> 00:00:31,162
+안녕 안녕, 반가워요!
+annyeong annyeong, bangawoyo! (hi, hi — nice to meet you!)
+
+15
+00:00:31,162 --> 00:00:33,512
+고마워요, 고마워요!
+gomawoyo, gomawoyo! (thank you, thank you!)
+
+16
+00:00:33,512 --> 00:00:38,202
+잘 가요, 잘 가요, 안녕!
+jal gayo, jal gayo, annyeong! (bye, take care — bye!)
+
+17
+00:00:38,202 --> 00:00:40,532
+안녕 안녕, 반가워요!
+annyeong annyeong, bangawoyo! (hi, hi — nice to meet you!)
+
+18
+00:00:40,532 --> 00:00:42,882
+고마워요, 고마워요!
+gomawoyo, gomawoyo! (thank you, thank you!)
+
+19
+00:00:42,882 --> 00:00:46,392
+잘 가요, 잘 가요, 안녕!
+jal gayo, jal gayo, annyeong! (bye, take care — bye!)
+
+20
+00:00:46,392 --> 00:00:48,162
+안녕, 반가워요!
+annyeong, bangawoyo! (hi — nice to meet you!)
+
+21
+00:00:48,162 --> 00:00:50,492
+저! 는! 몽! 글!
+jeo! neun! mong! geul!
+
+22
+00:00:50,492 --> 00:00:52,832
+저는 몽글, 저는 몽글!
+jeoneun monggeul! (I'm Mongle!)
+
+23
+00:00:52,832 --> 00:00:57,492
+다시 만나요!
+dasi mannayo! (see you again!)
+
+24
+00:00:57,492 --> 00:00:59,822
+안녕 안녕, 반가워요!
+annyeong annyeong, bangawoyo! (hi, hi — nice to meet you!)
+
+25
+00:00:59,822 --> 00:01:02,182
+고마워요, 고마워요!
+gomawoyo, gomawoyo! (thank you, thank you!)
+
+26
+00:01:02,182 --> 00:01:05,672
+잘 가요, 잘 가요, 안녕!
+jal gayo, jal gayo, annyeong! (bye, take care — bye!)
+
+27
+00:01:05,672 --> 00:01:07,882
+안녕 안녕, 반가워요!
+annyeong annyeong, bangawoyo! (hi, hi — nice to meet you!)
+
+28
+00:01:08,862 --> 00:01:11,782
+다시 만나요! 안녕!
+dasi mannayo! annyeong! (see you again — bye!)
+
+29
+00:01:11,782 --> 00:01:12,932
+이건 뭐?
+igeon mwo? (can you read these?)
+
+30
+00:01:12,982 --> 00:01:13,982
+잘 자요
+Try reading it first!
+
+31
+00:01:13,982 --> 00:01:14,932
+잘 자요!
+jal jayo! (good night)
+
+32
+00:01:14,982 --> 00:01:15,982
+어서 와요
+Try reading it first!
+
+33
+00:01:15,982 --> 00:01:16,932
+어서 와요!
+eoseo wayo! (welcome)
+
+34
+00:01:16,982 --> 00:01:17,982
+파이팅
+Try reading it first!
+
+35
+00:01:17,982 --> 00:01:20,032
+파이팅!
+paiting! (you can do it!)
