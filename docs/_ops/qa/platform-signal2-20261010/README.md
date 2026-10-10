@@ -62,6 +62,14 @@
 - 공개 전: 공개본 트리(`4a5d20d`)에 이 CSS만 바꾼 후보로 비회원(밤)·합성 회원(낮) 1440·390 넘침·콘솔 오류·실패 요청 0, 단추 높이 그대로.
 - 공개 뒤: synk.im의 파일이 올린 파일과 바이트로 같음(19:20). 실제 주소에서 「→」가 들어간 링크를 브라우저가 Inter Tight(`SYNK Arrow`)로 그리는 것을 글꼴 정보로 확인, 콘솔 오류·실패 요청 0. 배포 점검 통과.
 
+### 휴대폰 위쪽 메뉴 고정 공개 (2026-10-10)
+
+유호님 「웅 synk.im에 공개해줘」에 따라 휴대폰 위쪽 메뉴 고정(원본 `0aaeeba28`·`53ebdf486`)을 공개했다(synk-policy `eae53c9`). 바꾼 공개 파일은 `account/platform.css` 하나다.
+
+- 공개 전: 공개본 트리에 이 CSS만 바꾼 후보로 합성 회원(밤)·비회원(낮) 320·390·760에서 700px 스크롤 뒤 메뉴 캡슐 8px, 검색 줄 흘러감, 붙은 메뉴로 이동, 캡슐 옆 빈 자리 누르기는 아래 내용으로, 넘침·콘솔 오류·실패 요청 0. 1440은 그대로.
+- 처음 만든 주석에 검수 도구 이름을 적었다가 공개 전 확인에서 걸러져 빼고(`53ebdf486`) 올렸다.
+- 공개 뒤: synk.im 파일이 올린 파일과 바이트로 같음(19:39). 배포 점검 통과.
+
 ### 공개 그림의 생성 도구 표시 빼기
 
 공개 전 검수 때 공개본 그림·영상 4,255개를 훑어보니 세 장에 생성 도구 출처 표시(C2PA, OpenAI·ChatGPT·gpt-image 이름)가 들어 있었다: `account/assets/member/teacher-cover.png`, 같은 그림인 `rehearsal/assets/teacher-cover.png`, 어디서도 부르지 않는 `world/korean-rhythm/assets/signal-stage-original.png`. 유호님 「그리고 저거 지워줘 GPT」에 따라 뺐다.
@@ -71,3 +79,4 @@
 - 원본(SYNK-appsscript `e6f55504a`): 정본 `docs/디자인/웹_단락이미지/20260919/lab-presentation.png`과 사본 `desktop/assets/launcher/teacher-cover.png`·`experiences/synk-account/assets/member/teacher-cover.png`, `experiences/korean-rhythm/assets/signal-stage-original.png`, 해시 기록 `정본.json`·`desktop/assets/launcher/sources.json`·`experiences/synk-account/build-manifest.json`. 다음에 다시 묶어 올려도 표시가 되살아나지 않는다. 데스크톱 「정본 바이트와 같은 사본」 시험 통과.
 - 원래 표시가 든 파일은 git 기록에 남아 있다(교사 그림 blob `8157dc3f69`, 무대 원본 `94e8e9c47c`).
 - 반영: synk.im 바이트 10:37, 배포 점검 통과. 설치된 PC 앱과 재설치 파일 속 교사 그림은 다음 재설치 파일을 만들 때 바뀐다.
+- 그중 어디서도 부르지 않는 무대 원본(`world/korean-rhythm/assets/signal-stage-original.png`)은 유호님 「무대 원본 그림 지워줘」로 공개 사이트에서 지웠다(synk-policy `35f30fd`, 19:30부터 404, 배포 점검 통과). 게임이 쓰는 `signal-stage.webp`와 원본 저장소의 제작 원본은 그대로다. WORLD 공개 묶음을 다시 만들 때 `*-original.*`을 빼야 되살아나지 않는다.
