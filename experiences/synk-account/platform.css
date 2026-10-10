@@ -1,4 +1,4 @@
-/* SYNK 플랫폼(웹) — 싱ㅋ 시그널 2 (2026-10-10 Claude 업그레이드, 1차 2026-10-06)
+/* SYNK 플랫폼(웹) — 싱ㅋ 시그널 2 (2026-10-10 업그레이드, 1차 2026-10-06)
    데스크톱 런처(desktop/renderer/launcher.css)와 같은 토큰·부품. 바탕(책상) 위에 둥근 본문 판을 띄우고,
    위쪽 줄은 판 위에 떠 있는 유리 캡슐로 둔다. 앱마다 사업 색 하나, 아주 큰 한글, 펠트 물건은 제 색 그대로.
    스스로 움직이는 효과는 두지 않는다. */
@@ -333,6 +333,9 @@ body.launcher .platform-continuity :is(.continuity-notes article,.continuity-und
   .main-nav::-webkit-scrollbar{display:none}
   .main-nav a{flex:none;height:36px;padding:0 13px;border-radius:999px;font-size:.8125rem;gap:6px}
   .main-nav .nav-mark{display:none}
+  .filter-buttons,.collections{flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+  .filter-buttons::-webkit-scrollbar,.collections::-webkit-scrollbar{display:none}
+  .filter-buttons .filter-chip,.collections .filter-chip{flex:none}
   .launcher-main{margin:0;border-radius:22px 22px 0 0;min-height:auto}
   .topbar{position:sticky;top:8px;height:auto;margin:10px 10px 0;padding:8px 8px 8px 14px;gap:10px}
   #search-form{max-width:none}
