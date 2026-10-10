@@ -6,7 +6,7 @@
       "contentHash": "90c865bccc7bcac5a4186db6841d998d5ca122d5aac228f16e073938c4874c23",
       "publicationHash": "d46e4d3efadc761c991cc0cfc192bc125e9f49c861bebb159c2fa9cdaa0a389e",
       "startedAt": "2026-10-10T07:13:52.091Z",
-      "state": "private",
+      "state": "scheduled",
       "id": "V9ccOv2s9CU",
       "url": "https://www.youtube.com/watch?v=V9ccOv2s9CU",
       "thumbnail": null,
@@ -21,9 +21,14 @@
         "title": "Hangul for Beginners · 한글 초보단계",
         "created": false,
         "itemId": "UExZVDh5R2dFNDE0NC5EMEEwRUY5M0RDRTU3NDJC",
-        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144"
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
       },
-      "finishedAt": "2026-10-10T07:14:12.333Z"
+      "finishedAt": "2026-10-10T07:14:12.333Z",
+      "publishAt": "2026-10-12T23:00:00.000Z",
+      "scheduledAt": "2026-10-10T09:54:33.958Z",
+      "publicNote": "유호님 10-10 「10/13 오전 8시로 예약해줘」 — 첫 인사 공개 예약, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
     }
   }
 }
