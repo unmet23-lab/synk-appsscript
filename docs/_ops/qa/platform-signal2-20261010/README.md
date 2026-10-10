@@ -47,6 +47,14 @@
 - 실제 계정으로 로그인한 화면은 보지 않았다(비회원·합성 회원만).
 - 되돌리려면 synk-policy에서 `a4c8f92`를 되돌리는 커밋을 올린다(두 파일만 바뀐다).
 
+### 웹 낮 테마·검색 축소 공개 (2026-10-10 19:06)
+
+유호님 「웅 synk.im에 공개해줘」에 따라 웹 낮 테마와 검색 축소(원본 `e70312502`)를 공개했다(synk-policy `4a5d20d`).
+
+- 바꾼 공개 파일은 `account/platform.html`(공개본에 같은 바꾸기를 얹음)·`account/platform.css`·새 `account/theme.js` 셋이다. 화면 스크립트 `dist/platform.js`는 그대로라 원본 쪽의 아직 공개 안 된 기능은 나가지 않았다.
+- 공개 전: 공개본 트리(`a9af8be`)에 세 파일만 바꾼 후보로 합성 회원·비회원, 밤·낮·기기 설정(밝음), 1440·390에서 넘침·콘솔 오류·실패 요청 0, Ctrl+K 펼침(380px)·Esc 접힘(42px). 세 파일에 제작 도구 이름 0건.
+- 공개 뒤: synk.im 세 파일이 올린 파일과 바이트로 같음(19:07). 실제 주소(비회원)에서 밤·낮이 바뀌고 테마 단추·검색 아이콘·Ctrl+K가 동작, 콘솔 오류·실패 요청 0. 배포 점검 통과.
+
 ### 공개 그림의 생성 도구 표시 빼기
 
 공개 전 검수 때 공개본 그림·영상 4,255개를 훑어보니 세 장에 생성 도구 출처 표시(C2PA, OpenAI·ChatGPT·gpt-image 이름)가 들어 있었다: `account/assets/member/teacher-cover.png`, 같은 그림인 `rehearsal/assets/teacher-cover.png`, 어디서도 부르지 않는 `world/korean-rhythm/assets/signal-stage-original.png`. 유호님 「그리고 저거 지워줘 GPT」에 따라 뺐다.
