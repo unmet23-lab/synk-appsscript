@@ -1,0 +1,39 @@
+{
+  "currentInstalledASARSHA256": "a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53",
+  "actualEvidence": "result.json",
+  "cases": [
+    {
+      "id": "pc-existing-login-and-notes",
+      "status": "PASS"
+    },
+    {
+      "id": "pc-normal-exit-and-reopen",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "pc-logout-and-same-account-restore",
+      "status": "PASS"
+    },
+    {
+      "id": "pc-web-qa-note-roundtrip",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "teacher-student-enrollment-sharing",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "physical-pc-phone-roundtrip",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "closed-public-care-os-notification",
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "physical-korean-ime",
+      "status": "NOT_RUN"
+    }
+  ],
+  "originalNotRunTemplatePreserved": true
+}

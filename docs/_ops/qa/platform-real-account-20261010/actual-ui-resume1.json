@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-10-10T10:48:43.647Z",
+  "installedAsarSHA256": "a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53",
+  "observationSource": "Official Windows Computer Use, normal installed Platform UI",
+  "before": {
+    "total": 5,
+    "completed": 5,
+    "pending": 0,
+    "recovery": 1
+  },
+  "after": {
+    "total": 5,
+    "completed": 5,
+    "pending": 0,
+    "recovery": 1
+  },
+  "existingLoginAndLoadPassed": true,
+  "logoutPassed": true,
+  "reloginPassed": true,
+  "restorationPassed": true,
+  "sameFiveItems": true,
+  "sameRecoveryRecord": true,
+  "completedControls": 5,
+  "logoutToastNotCaptured": true,
+  "serverSessionRevocationNotIndependentlyVerified": true,
+  "noteMutationActions": 0,
+  "noteDeletionActions": 0,
+  "recoveryDeletionActions": 0,
+  "passwordOrCodeEnteredByAgent": false,
+  "credentialStoreRead": false,
+  "accountIdentifierRecorded": false,
+  "normalProfileFilesRead": false,
+  "finalSignedIn": true,
+  "memoContentRecordedInArtifact": false,
+  "comparisonHelperFirstAttempt": "UI role was toggle button; initial ordinary-button regex count 0 corrected against observed tree. No product failure."
+}

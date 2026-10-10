@@ -1,0 +1,38 @@
+{
+  "status": "DEFERRED_AT_USER_REQUEST",
+  "deferralReason": "User says Claude is currently working on Platform and requests postponing this verification.",
+  "resumeRequires": "User asks to resume after concurrent Platform work; recheck then-current installed bytes and UI before any account action.",
+  "scope": "Latest installed Platform: real account login/logout and PC account note restoration",
+  "toolFailure": {
+    "error": "failed to write kernel assets: 지정된 경로를 찾을 수 없습니다. (os error 3)",
+    "originalErrorKorean": "지정된 경로를 찾을 수 없습니다.",
+    "windowsComputerUseInitializationAttempts": 2,
+    "windowsKernelResetPerformed": true,
+    "browserInitializationAttempts": 1,
+    "appInputPerformed": false
+  },
+  "initialObservation": {
+    "source": null,
+    "signedIn": null,
+    "totalNotes": null,
+    "completedNotes": null,
+    "recoveryRecords": null,
+    "unsavedInput": null,
+    "restartDraftCandidate": null
+  },
+  "cases": [
+    {"id": "pc-existing-login-and-notes", "status": "NOT_RUN"},
+    {"id": "pc-logout-and-same-account-login", "status": "NOT_RUN"},
+    {"id": "pc-account-notes-restored-after-login", "status": "NOT_RUN"}
+  ],
+  "logoutPerformed": false,
+  "oauthPerformed": false,
+  "noteChangesPerformed": false,
+  "dataDeleted": false,
+  "normalProfileRead": false,
+  "vaultRead": false,
+  "credentialsRead": false,
+  "importantBoundary": "Normal logout clears encrypted restart drafts. Save or restore unsaved content before logout. Account notebook recovery records are a separate store.",
+  "productFailureReproduced": false,
+  "syntheticTestsUsedAsRealAccountPass": false
+}

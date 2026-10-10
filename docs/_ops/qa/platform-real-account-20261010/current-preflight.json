@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-09T21:39:11.024Z",
+  "ok": true,
+  "checks": [
+    {
+      "name": "current-platform-archive",
+      "ok": true
+    },
+    {
+      "name": "current-platform-executable",
+      "ok": true
+    },
+    {
+      "name": "current-platform-metadata",
+      "ok": true
+    },
+    {
+      "name": "current-all100-source-files",
+      "ok": true
+    }
+  ],
+  "actualAccountTestPerformed": false,
+  "normalProfileRead": false,
+  "vaultRead": false,
+  "accountRecordsRead": false,
+  "credentialsRead": false
+}
