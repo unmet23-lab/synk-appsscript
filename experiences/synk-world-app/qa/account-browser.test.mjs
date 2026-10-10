@@ -126,10 +126,10 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   for(const question of lifeLesson.questions.slice(1)){await page.locator('[data-life-choice="'+question.answerId+'"]').click();await page.locator('[data-life-question-next]').click();}
   await page.locator('.life-complete').waitFor();await page.waitForFunction(()=>window.__synkLife.summary().status.phase==='synced');
   const lifeComplete=JSON.parse(playState.records[lifeKey]);assert.notEqual(lifeComplete.lessons[lifeLesson.id].completedAt,null);assert.equal(Object.keys(lifeComplete.lessons[lifeLesson.id].answers).length,3);
-  await page.locator('[data-life-home]').click();assert.match(await page.locator('#life-progress-caption').textContent(),/1\s*\/\s*18/);
+  await page.locator('[data-life-home]').click();assert.match(await page.locator('#life-progress-caption').textContent(),new RegExp('^1\\s*/\\s*'+LESSONS.length+'\\b'));
   await page.reload({waitUntil:'domcontentloaded'});await page.waitForFunction(()=>window.__synkWorld?.client.status==='ready');
   await page.waitForFunction(()=>{try{return window.__synkLife.summary().completed===1;}catch{return false;}});
-  assert.equal(await page.evaluate(()=>window.__synkLife.summary().nextLesson.id),lifeStory.id);assert.match(await page.locator('#life-progress-caption').textContent(),/1\s*\/\s*18/);
+  assert.equal(await page.evaluate(()=>window.__synkLife.summary().nextLesson.id),lifeStory.id);assert.match(await page.locator('#life-progress-caption').textContent(),new RegExp('^1\\s*/\\s*'+LESSONS.length+'\\b'));
   lifeEvidence.completedLessonRestored=true;
   await page.locator('[data-life-next]').click();await page.locator('[data-life-begin]').click();await page.locator('[data-life-scene-next]').click();
   const storyBefore=await page.evaluate(()=>({timeOrigin:performance.timeOrigin,scene:window.__synkWorld.life().progress.lessons['greetings-story'].stage.sceneIndex,text:document.querySelector('.life-dialogue p').textContent}));
