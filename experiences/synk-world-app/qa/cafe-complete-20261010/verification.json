@@ -1,0 +1,72 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-10T13:29:38.625Z",
+  "content": {
+    "version": "life-ko-20261010-v3",
+    "packs": 6,
+    "lessons": 22,
+    "coreQuestions": 66,
+    "transferQuestions": 66,
+    "cafeVisits": 5,
+    "orderCombinations": 12,
+    "preservedLessons": 21
+  },
+  "tests": {
+    "unitAndRealLocalSQL": 57,
+    "sourceBrowser": 32,
+    "standaloneBrowser": 32,
+    "existingVisits": 64,
+    "frozenAccountTransport": 26
+  },
+  "audio": {
+    "clips": 15,
+    "bytes": 650100,
+    "voice": "하나",
+    "provider": "Typecast",
+    "approvedCreditMaximum": 329,
+    "newCharacters": 310,
+    "additionalPayment": false,
+    "completeDecode": true,
+    "allQuestionsPlayedInBrowser": 15,
+    "playbackEvidence": "all-questions-playback.json",
+    "localAutomatedTextMatches": 15,
+    "runtimeGeneration": false,
+    "humanListening": false,
+    "missingFromPayload": []
+  },
+  "payload": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-cafe-complete-20261010-r3\\world",
+    "files": 1810,
+    "totalBytes": 185762732,
+    "missing": [],
+    "sourceChangesDuringBuild": [],
+    "currentSourceMismatches": [],
+    "privateArtifacts": [],
+    "publicToolNames": [],
+    "oldPayloadUnchanged": true
+  },
+  "localApp": {
+    "url": "http://127.0.0.1:4313/mobile.html?opening=off&cafe=1",
+    "health": {
+      "ok": true,
+      "mode": "rehearsal",
+      "rehearsal": true,
+      "database": "local-postgresql",
+      "production": false
+    }
+  },
+  "scope": {
+    "local": true,
+    "realLocalJSONB": true,
+    "syntheticAccountProvider": true,
+    "actualAudioPlayback": true,
+    "deviceAvailability": "user-confirmed none",
+    "published": false,
+    "remoteDatabase": false,
+    "liveOAuth": false,
+    "realPhones": false,
+    "nativeInstall": false,
+    "newImageGeneration": false,
+    "studentLearningEffects": false
+  }
+}

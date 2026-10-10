@@ -496,7 +496,9 @@ byId('world').addEventListener('pointerup', (e) => {
   const value = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'slide' : 'jump';
   action(value); flash(value);
 });
-byId('world').addEventListener('pointercancel', () => { gesture = null; });
+function cancelGesture(e) { if (!e || gesture?.id === e.pointerId) gesture = null; }
+byId('world').addEventListener('pointercancel', cancelGesture);
+byId('world').addEventListener('lostpointercapture', cancelGesture);
 stageEl.addEventListener('contextmenu', (e) => e.preventDefault());
 document.addEventListener('visibilitychange', () => { if (document.hidden && running && !paused && model && !model.finished) pause(); });
 window.addEventListener('blur', () => { keyboard.reset(); if (running && !paused && model && !model.finished) pause(); });
@@ -515,7 +517,7 @@ byId('learning-reset').addEventListener('click', () => {
 const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; } });
 
 let resizeT = 0;
-window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });
+window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });
 // 입구에서 펠트 그림과 3D 무대를 미리 받아 둔다(시작 단추를 누른 뒤 기다림이 짧게)
 preloadImages(['tex-cream', 'tex-coral', 'badge-cream', 'badge-check', 'badge-coral', 'sparkle', 'cushion-blush-strip', 'cushion-butter-strip', 'cushion-lapis-strip'].map((n) => `kit/felt/${n}.webp`));
 (window.requestIdleCallback || ((fn) => setTimeout(fn, 700)))(() => { ensureWorld().catch(() => { /* 시작할 때 다시 시도하고 안내한다 */ }); }, { timeout: 2500 });

@@ -1,0 +1,457 @@
+{
+  "generatedAt": "2026-10-10T12:46:00.595Z",
+  "provider": "Typecast",
+  "voice": "하나",
+  "request": {
+    "mode": "audition",
+    "name": "world-cafe-staff-20261010",
+    "voices": [
+      {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      }
+    ],
+    "emotions": [
+      "normal"
+    ],
+    "lines": [
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0v0",
+        "text": "어서 오세요. 어떤 음료로 드릴까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0v1",
+        "text": "가져가실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0r",
+        "text": "따뜻한 차가 준비됐어요. 매장에서 드시나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1v0",
+        "text": "어서 오세요. 오늘은 어떤 음료를 드릴까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1v1",
+        "text": "따뜻한 차를 몇 잔 준비할까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1r",
+        "text": "가져가실 건가요, 여기서 드실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2v0",
+        "text": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요."
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2v1",
+        "text": "따뜻한 차, 두 잔, 맞으시죠?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2r",
+        "text": "차가 준비됐어요. 매장에서 드시나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3v0",
+        "text": "따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3v1",
+        "text": "따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3r",
+        "text": "세 잔 모두 매장에서 드실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4v0",
+        "text": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4v1",
+        "text": "따뜻한 차, 두 잔, 맞으시죠?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4r",
+        "text": "가져가실 건가요, 여기서 드실 건가요?"
+      }
+    ]
+  },
+  "clips": [
+    {
+      "id": "t0q0v0",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q0v0.mp3",
+      "sourceSha256": "51ed954840e077fe04d1f61ead4d11ffd38479c504561133a4f59a60b65e834a",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "어서 오세요. 어떤 음료로 드릴까요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.85,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q0v0.mp3",
+      "key": "5a6bc3b3816fb303a538dcf5118752f5",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 2.957,
+        "peakDbfs": -2.59,
+        "rmsDbfs": -18.23
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q0v1",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q0v1.mp3",
+      "sourceSha256": "22349749e2c7ee796ba96efc21b700d755f80c0611f242a04bde57590371475a",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "가져가실 건가요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 2.411,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q0v1.mp3",
+      "key": "3b4e4c85bc8463c34d32fc6024086b26",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 1.538,
+        "peakDbfs": -2.41,
+        "rmsDbfs": -18.73
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q0r",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q0r.mp3",
+      "sourceSha256": "8d2fb9d8f1ef48fbb46883a41c544406e1799c38f4aec722dbac052a8ab099d9",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 차가 준비됐어요. 매장에서 드시나요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 4.82,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q0r.mp3",
+      "key": "dd4685e2c21126650aa9566e8025ad8f",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.944,
+        "peakDbfs": -2.48,
+        "rmsDbfs": -17.8
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1v0",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q1v0.mp3",
+      "sourceSha256": "773c97776a209ba246289047244c829619d9d2abc77e63ee9154d764fc01279f",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "어서 오세요. 오늘은 어떤 음료를 드릴까요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 4.763,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q1v0.mp3",
+      "key": "5a091c5d86a1136c3d92c4eef1777299",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.879,
+        "peakDbfs": -3.69,
+        "rmsDbfs": -18.01
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1v1",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q1v1.mp3",
+      "sourceSha256": "485cda2a1a5897bceb55e6177e788dbe0180bc49ab1f3a36b92553531992c82a",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 차를 몇 잔 준비할까요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.406,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q1v1.mp3",
+      "key": "58a3ea7933cd590c50f1de0e5fcd9014",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 2.519,
+        "peakDbfs": -3.22,
+        "rmsDbfs": -18.08
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q1r",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q1r.mp3",
+      "sourceSha256": "7541d33f3a8653944432ce3c38ddb104ca064256b55eab07a29516f2710bc7a5",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "가져가실 건가요, 여기서 드실 건가요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 4.211,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q1r.mp3",
+      "key": "6dc73a816a63c7aeaca0a036faab62d6",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.338,
+        "peakDbfs": -2.49,
+        "rmsDbfs": -17.91
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2v0",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q2v0.mp3",
+      "sourceSha256": "feb7f6ad13318c63e8f5bd87c4f2a447a0ea9e02ade84a4a2fe8d417d9b222c5",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 5.646,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q2v0.mp3",
+      "key": "4ebf8708201c41b93ada4ac6d93ca096",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 4.746,
+        "peakDbfs": -2.47,
+        "rmsDbfs": -18.4
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2v1",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q2v1.mp3",
+      "sourceSha256": "b95c98df1b729c1ac61dd784c12dea70002256aad14f26fb5017be9c1498bb36",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 차, 두 잔, 맞으시죠?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.899,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q2v1.mp3",
+      "key": "7748a196bbceb31e5461b2e5b5fc510c",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.028,
+        "peakDbfs": -2.23,
+        "rmsDbfs": -17.9
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q2r",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q2r.mp3",
+      "sourceSha256": "5c12c84c0dc7e840da9921ccde6022b5c871f26bb44601f2e2abeb5caef37f23",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "차가 준비됐어요. 매장에서 드시나요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.925,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q2r.mp3",
+      "key": "8d04a6e2b2de77e335d0c0a6d4e2a63d",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.047,
+        "peakDbfs": -2.44,
+        "rmsDbfs": -17.8
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3v0",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q3v0.mp3",
+      "sourceSha256": "8de0c67ffab1c9c6089b7940b6ff515d4908fcab0b379979e0e5968e777e7c70",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 6.335,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q3v0.mp3",
+      "key": "3ae8411313d885c14df16f802cf0ca87",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 5.454,
+        "peakDbfs": -2.35,
+        "rmsDbfs": -18.6
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3v1",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q3v1.mp3",
+      "sourceSha256": "5cd032899371a7685e5b44021583960bc0317171a85a918f30114c4d8c52fea1",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 5.937,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q3v1.mp3",
+      "key": "54c483c2271ebb3efe37dbdec6fa3af1",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 5.066,
+        "peakDbfs": -2.44,
+        "rmsDbfs": -17.66
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q3r",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q3r.mp3",
+      "sourceSha256": "ac05859de2cfeea441fcabcf4f2c23e9f077bd417465fa189569675c2f12e297",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "세 잔 모두 매장에서 드실 건가요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.828,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q3r.mp3",
+      "key": "b518c4e374fa6e58094432776cfe5d69",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 2.963,
+        "peakDbfs": -3.61,
+        "rmsDbfs": -18.37
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4v0",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q4v0.mp3",
+      "sourceSha256": "2b37e3e778838f4a2bc0652c330d775731f2caa6d5f521a2a85b857260c62a62",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 4.865,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q4v0.mp3",
+      "key": "cbefdf9ea0e21db17e335ef747526e20",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.973,
+        "peakDbfs": -3.02,
+        "rmsDbfs": -17.82
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4v1",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q4v1.mp3",
+      "sourceSha256": "b95c98df1b729c1ac61dd784c12dea70002256aad14f26fb5017be9c1498bb36",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "따뜻한 차, 두 잔, 맞으시죠?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 3.899,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q4v1.mp3",
+      "key": "7748a196bbceb31e5461b2e5b5fc510c",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.028,
+        "peakDbfs": -2.23,
+        "rmsDbfs": -17.9
+      },
+      "completeDecode": true
+    },
+    {
+      "id": "t0q4r",
+      "source": "C:\\Users\\q1212\\Documents\\synk-vendor\\minigame-voice\\audition\\world-cafe-staff-20261010\\tc_61659cc118732016a95fe7c6\\normal\\korean-rhythm__t0q4r.mp3",
+      "sourceSha256": "7541d33f3a8653944432ce3c38ddb104ca064256b55eab07a29516f2710bc7a5",
+      "game": "korean-rhythm",
+      "role": "narrator",
+      "text": "가져가실 건가요, 여기서 드실 건가요?",
+      "voice": {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      },
+      "emotion": "normal",
+      "tempo": 0.92,
+      "seconds": 4.211,
+      "file": "tc_61659cc118732016a95fe7c6/normal/korean-rhythm__t0q4r.mp3",
+      "key": "6dc73a816a63c7aeaca0a036faab62d6",
+      "problems": [],
+      "metrics": {
+        "durationSeconds": 3.338,
+        "peakDbfs": -2.49,
+        "rmsDbfs": -17.91
+      },
+      "completeDecode": true
+    }
+  ]
+}

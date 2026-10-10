@@ -10,3 +10,20 @@ html[data-layout=mobile] .world-wardrobe-preview img{height:185px}
 @media(max-width:799px){.world-hanger{padding:0 18px;margin:22px auto}.world-hanger-list{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.world-hanger article{padding:8px}.world-hanger img{height:86px}.world-hanger strong{font-size:12px}.world-hanger .felt-button{font-size:12px;padding:9px 4px}}
 .world-hanger .felt-button{min-width:0;max-width:100%;width:100%;white-space:normal;overflow-wrap:anywhere}.world-hanger strong{overflow-wrap:anywhere}
 
+/* Connected Maru: keep decisions and the fitting scene visible on short phones. */
+@media(orientation:landscape) and (min-width:560px) and (max-height:500px){
+ html[data-connected=true] #world-panel.world-play-panel{inset:8px 12px;margin:auto;width:min(920px,calc(100vw - 24px));height:calc(100dvh - 16px);max-height:none;padding:8px 16px 12px;border-radius:20px;overflow:hidden}
+ html[data-connected=true] .world-play-panel .sheet-handle,html[data-connected=true] .world-play-panel #panel-eyebrow{display:none}
+ html[data-connected=true] .world-play-panel .panel-header{height:44px;min-height:44px;margin:0 0 6px}
+ html[data-connected=true] .world-play-panel .panel-header h2{font-size:20px;margin:0}
+ html[data-connected=true] .world-play-panel #panel-content{height:calc(100% - 50px);min-height:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:18px 4px minmax(0,1fr) auto 50px;grid-template-areas:"meta answers" "progress answers" "prompt answers" "note answers" "actions actions";gap:7px 22px}
+ html[data-connected=true] .world-play-panel .world-game-top{grid-area:meta;font-size:12px}
+ html[data-connected=true] .world-play-panel .world-progress{grid-area:progress;margin:0}
+ html[data-connected=true] .world-play-panel .world-prompt{grid-area:prompt;font-size:20px;line-height:1.5;margin:0;align-self:center;max-height:100%;overflow:auto}
+ html[data-connected=true] .world-play-panel .world-answers{grid-area:answers;min-height:0;gap:6px;grid-auto-rows:minmax(44px,1fr)}
+ html[data-connected=true] .world-play-panel .world-answer{min-height:44px;padding:8px 18px;font-size:15px;gap:10px}
+ html[data-connected=true] .world-play-panel .dialog-note{grid-area:note;font-size:11px;line-height:1.5;margin:0}
+ html[data-connected=true] .world-play-panel .world-actions{grid-area:actions;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0}
+ html[data-connected=true] .world-play-panel .world-actions button{min-height:48px;padding:6px 16px 10px;font-size:13px}
+
+}

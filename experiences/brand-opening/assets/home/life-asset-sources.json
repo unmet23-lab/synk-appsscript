@@ -1,0 +1,35 @@
+[
+  {
+    "id": "mongle",
+    "source": "docs\\캐릭터\\정본_4K\\몽글_본체.png",
+    "output": "experiences\\brand-opening\\assets\\home\\friend-mongle.webp",
+    "sourceSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+    "sha256": "55063c37ab52664db9cabf6b5f5b1556c71e79fbbd2d8d9abf38912d64ad6b2f",
+    "width": 512,
+    "height": 507,
+    "bytes": 99312,
+    "treatment": "existing approved transparent source, content-bounds crop plus downsample; no recolor or face edit"
+  },
+  {
+    "id": "kkamong",
+    "source": "docs\\캐릭터\\정본_4K\\까몽_본체.png",
+    "output": "experiences\\brand-opening\\assets\\home\\friend-kkamong.webp",
+    "sourceSha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845",
+    "sha256": "4765ab3d3b710c97f4f2eb47f5e071465ef46eb6f8a6f74de2edf0e43cc77cb5",
+    "width": 512,
+    "height": 486,
+    "bytes": 44608,
+    "treatment": "existing approved transparent source, content-bounds crop plus downsample; no recolor or face edit"
+  },
+  {
+    "id": "marine",
+    "source": "docs\\캐릭터\\정본_4K\\마린_본체.png",
+    "output": "experiences\\brand-opening\\assets\\home\\friend-marine.webp",
+    "sourceSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+    "sha256": "11315854a1b465201b0c329b8e3faf3d85bc5a9c675c59e29a8295667bb7c4df",
+    "width": 337,
+    "height": 512,
+    "bytes": 56744,
+    "treatment": "existing approved transparent source, content-bounds crop plus downsample; no recolor or face edit"
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "role": "카페 직원",
+  "voice": "하나",
+  "lines": [
+    {
+      "id": "cafe-apply-1",
+      "text": "어서 오세요. 어떤 음료로 드릴까요?"
+    },
+    {
+      "id": "cafe-apply-2",
+      "text": "가져가실 건가요?"
+    },
+    {
+      "id": "cafe-apply-3",
+      "text": "따뜻한 차가 준비됐어요. 매장에서 드시나요?"
+    },
+    {
+      "id": "cafe-visit-taste-1",
+      "text": "어서 오세요. 오늘은 어떤 음료를 드릴까요?"
+    },
+    {
+      "id": "cafe-visit-taste-2",
+      "text": "따뜻한 차를 몇 잔 준비할까요?"
+    },
+    {
+      "id": "cafe-visit-taste-3",
+      "text": "가져가실 건가요, 여기서 드실 건가요?"
+    },
+    {
+      "id": "cafe-visit-soldout-1",
+      "text": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요."
+    },
+    {
+      "id": "cafe-visit-soldout-2",
+      "text": "따뜻한 차 두 잔 맞으시죠?"
+    },
+    {
+      "id": "cafe-visit-soldout-3",
+      "text": "차가 준비됐어요. 매장에서 드시나요?"
+    },
+    {
+      "id": "cafe-visit-change-1",
+      "text": "따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?"
+    },
+    {
+      "id": "cafe-visit-change-2",
+      "text": "따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?"
+    },
+    {
+      "id": "cafe-visit-change-3",
+      "text": "세 잔 모두 매장에서 드실 건가요?"
+    },
+    {
+      "id": "cafe-compose-1",
+      "text": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?"
+    },
+    {
+      "id": "cafe-compose-2",
+      "text": "따뜻한 차 두 잔 맞으시죠?"
+    },
+    {
+      "id": "cafe-compose-3",
+      "text": "가져가실 건가요, 여기서 드실 건가요?"
+    }
+  ]
+}

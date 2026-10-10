@@ -1,0 +1,1461 @@
+{
+  "date": "2026-10-09T19:22:26.369Z",
+  "passed": 181,
+  "failed": [],
+  "checks": [
+    {
+      "name": "step-1 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-1 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-1 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-1 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "feedback-1 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-1 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-1 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-1 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 1,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/z2l.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 1,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/z2l.mp3",
+            "time": 0.230287,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 1",
+      "ok": true
+    },
+    {
+      "name": "step-2 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-2 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-2 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-2 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "feedback-2 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-2 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-2 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-2 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 3,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/mongle-miyu.wav",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 3,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/mongle-miyu.wav",
+            "time": 0.288542,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 2",
+      "ok": true
+    },
+    {
+      "name": "step-3 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-3 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-3 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-3 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "partial-build-3 same game document",
+      "ok": true
+    },
+    {
+      "name": "partial-build-3 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "partial-build-3 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "partial-build-3 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "partial build selection survives 3",
+      "ok": true
+    },
+    {
+      "name": "feedback-3 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-3 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-3 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-3 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.093174,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": []
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 3",
+      "ok": true
+    },
+    {
+      "name": "step-4 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-4 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-4 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-4 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": [
+          {
+            "id": 6,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/128g.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback-4 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-4 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-4 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-4 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.01536,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 6,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/128g.mp3",
+            "time": 0.333863,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 6,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/128g.mp3",
+            "time": 0.626711,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 4",
+      "ok": true
+    },
+    {
+      "name": "step-5 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-5 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-5 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-5 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": [
+          {
+            "id": 7,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12yt.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "step-6 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-6 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-6 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-6 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "selected-answer-6 same game document",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-6 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-6 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "selected-answer-6 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 8,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/11l1.mp3",
+            "time": 0.000191,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 8,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/11l1.mp3",
+            "time": 0.281204,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "selected answer survives rotation 6",
+      "ok": true
+    },
+    {
+      "name": "feedback-6 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-6 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-6 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-6 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.016472,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 9,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/11l1.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 9,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/11l1.mp3",
+            "time": 0.264576,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 6",
+      "ok": true
+    },
+    {
+      "name": "step-7 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-7 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-7 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-7 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "step-8 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-8 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-8 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-8 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "selected-answer-8 same game document",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-8 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-8 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "selected-answer-8 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 11,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12hv.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 11,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12hv.mp3",
+            "time": 0.23416,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "selected answer survives rotation 8",
+      "ok": true
+    },
+    {
+      "name": "feedback-8 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-8 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-8 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-8 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 12,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12hv.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 12,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12hv.mp3",
+            "time": 0.20624,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 8",
+      "ok": true
+    },
+    {
+      "name": "step-9 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-9 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-9 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-9 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "partial-match-9-0 same game document",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-0 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-0 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "partial-match-9-0 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 13,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/yvs.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 13,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/yvs.mp3",
+            "time": 0.199705,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial match survives 9-0",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-1 same game document",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-1 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-1 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "partial-match-9-1 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.069536,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 14,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/1224.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 14,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/1224.mp3",
+            "time": 0.187473,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial match survives 9-1",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-2 same game document",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-2 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "partial-match-9-2 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "partial-match-9-2 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.022296,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 15,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14bs.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 15,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14bs.mp3",
+            "time": 0.218261,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial match survives 9-2",
+      "ok": true
+    },
+    {
+      "name": "feedback-9 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-9 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-9 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-9 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.017484,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": []
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 9",
+      "ok": true
+    },
+    {
+      "name": "step-10 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-10 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-10 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-10 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": [
+          {
+            "id": 16,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/130c.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback-10 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-10 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-10 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-10 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.015614,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 16,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/130c.mp3",
+            "time": 0.080073,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 16,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/130c.mp3",
+            "time": 0.369071,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 10",
+      "ok": true
+    },
+    {
+      "name": "step-11 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-11 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-11 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-11 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "selected-answer-11 same game document",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-11 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "selected-answer-11 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "selected-answer-11 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 17,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12yszqc.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 17,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12yszqc.mp3",
+            "time": 0.161916,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "selected answer survives rotation 11",
+      "ok": true
+    },
+    {
+      "name": "feedback-11 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-11 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-11 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-11 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.01789,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 18,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12yszqc.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 18,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/12yszqc.mp3",
+            "time": 0.228157,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 11",
+      "ok": true
+    },
+    {
+      "name": "step-12 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-12 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-12 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-12 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": [
+          {
+            "id": 19,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14gg.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial-build-12 same game document",
+      "ok": true
+    },
+    {
+      "name": "partial-build-12 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "partial-build-12 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "partial-build-12 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 19,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14gg.mp3",
+            "time": 0.067533,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 19,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14gg.mp3",
+            "time": 0.348606,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "partial build selection survives 12",
+      "ok": true
+    },
+    {
+      "name": "feedback-12 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-12 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-12 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-12 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 19,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/14gg.mp3",
+            "time": 0.460243,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": []
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 12",
+      "ok": true
+    },
+    {
+      "name": "step-13 same game document",
+      "ok": true
+    },
+    {
+      "name": "step-13 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "step-13 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "step-13 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": [
+          {
+            "id": 20,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/yvs10z8.mp3",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback-13 same game document",
+      "ok": true
+    },
+    {
+      "name": "feedback-13 question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "feedback-13 no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "feedback-13 existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 4,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/earn.wav",
+            "time": 0.013097,
+            "paused": false,
+            "ended": false
+          },
+          {
+            "id": 20,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/yvs10z8.mp3",
+            "time": 0.077452,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 20,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/voice/yvs10z8.mp3",
+            "time": 0.361879,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "feedback does not duplicate answer 13",
+      "ok": true
+    },
+    {
+      "name": "intermediate exercise types covered",
+      "ok": true,
+      "detail": [
+        "pair",
+        "teach",
+        "build",
+        "listen_pick",
+        "see_pick",
+        "match"
+      ]
+    },
+    {
+      "name": "full session reaches result",
+      "ok": true,
+      "detail": {
+        "steps": 13,
+        "types": [
+          "pair",
+          "teach",
+          "build",
+          "listen_pick",
+          "see_pick",
+          "match"
+        ]
+      }
+    },
+    {
+      "name": "approved static voice used",
+      "ok": true,
+      "detail": "files"
+    },
+    {
+      "name": "at most one letter voice at a time",
+      "ok": true,
+      "detail": 1
+    },
+    {
+      "name": "exactly one completed session is recorded",
+      "ok": true,
+      "detail": [
+        {
+          "day": "2026-10-10",
+          "sessionNo": 0,
+          "total": 11,
+          "independent": 8
+        }
+      ]
+    },
+    {
+      "name": "result-small same game document",
+      "ok": true
+    },
+    {
+      "name": "result-small question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "result-small no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "result-small existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 21,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/achieve.wav",
+            "time": 0,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 21,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/achieve.wav",
+            "time": 0.240591,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "result-wide same game document",
+      "ok": true
+    },
+    {
+      "name": "result-wide question and progress preserved",
+      "ok": true
+    },
+    {
+      "name": "result-wide no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "result-wide existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 21,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/sound/achieve.wav",
+            "time": 0.241477,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": []
+      }
+    },
+    {
+      "name": "result rotation never records twice",
+      "ok": true
+    },
+    {
+      "name": "song-portrait same game document",
+      "ok": true
+    },
+    {
+      "name": "song-portrait no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "song-portrait existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 10.704818,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 10.948913,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "song-landscape same game document",
+      "ok": true
+    },
+    {
+      "name": "song-landscape no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "song-landscape existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 10.957533,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 11.245209,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "real song continues without restarting",
+      "ok": true,
+      "detail": {
+        "songBefore": {
+          "id": "batchim",
+          "time": 10.7,
+          "paused": false,
+          "ended": false
+        },
+        "songAfter": {
+          "id": "batchim",
+          "time": 11.253122,
+          "paused": false,
+          "ended": false
+        }
+      }
+    },
+    {
+      "name": "song-small-landscape same game document",
+      "ok": true
+    },
+    {
+      "name": "song-small-landscape no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "song-small-landscape existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 11.354999,
+            "paused": false,
+            "ended": false
+          }
+        ],
+        "after": [
+          {
+            "id": 22,
+            "src": "http://127.0.0.1:4307/hangul-stage/assets/songs/batchim.mp3",
+            "time": 11.62589,
+            "paused": false,
+            "ended": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "song-paused same game document",
+      "ok": true
+    },
+    {
+      "name": "song-paused no horizontal clipping",
+      "ok": true,
+      "detail": 0
+    },
+    {
+      "name": "song-paused existing media never restarts",
+      "ok": true,
+      "detail": {
+        "before": [],
+        "after": []
+      }
+    },
+    {
+      "name": "paused song stays paused at same time",
+      "ok": true,
+      "detail": {
+        "songBefore": {
+          "id": "batchim",
+          "time": 11.85591,
+          "paused": true,
+          "ended": false
+        },
+        "songAfter": {
+          "id": "batchim",
+          "time": 11.85591,
+          "paused": true,
+          "ended": false
+        }
+      }
+    },
+    {
+      "name": "song close returns home",
+      "ok": true
+    },
+    {
+      "name": "home return retains completed session",
+      "ok": true
+    },
+    {
+      "name": "closing unloads game iframe",
+      "ok": true
+    },
+    {
+      "name": "no JavaScript or resource errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "no external/mutating calls",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "multiple live rotations covered",
+      "ok": true,
+      "detail": 38
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-1.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-1.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-2.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-2.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-3.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-3.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-4.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-4.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-5.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-6.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-6.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-7.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-8.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-8.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-9.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-9.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-10.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-10.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-11.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-11.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-12.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-12.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-question-13.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-answer-13.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-result-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-song-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-song-small-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\hangul-advanced-song-paused-small.jpg"
+  ],
+  "fixture": "Locally seeded intermediate batchim learner, no real account data.",
+  "scope": "Isolated guest, real static voice and song playback, read-only test instrumentation appended to the served module. Browser viewport rotation, not physical device verification."
+}

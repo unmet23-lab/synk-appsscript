@@ -1,0 +1,111 @@
+{
+  "checkedAt": "2026-10-09T21:41:51.306Z",
+  "sourceUrl": "http://127.0.0.1:4312",
+  "sourceHashes": {
+    "experiences/synk-world-app/life-content.mjs": "0e7de53552f0cfacccb5a0b79d9ae7a030517f4adfc73e5270fb5e345a2c8a41",
+    "experiences/synk-world-app/life-progress.mjs": "689836fa78d67654bd5a3cc69d147a7ab2b3b9bdbb2537b572dbf40eeef9ffbb",
+    "experiences/synk-world-app/life-progress-port.mjs": "e2baa93cf31d1f5993aee4cdbeef010a14b3132db07dcf188e12e77a1c79a163",
+    "experiences/synk-world-app/life-ui.mjs": "bb00307555874635e3529b485e76a88067c6f1ac51850006b7935b7389d35718",
+    "experiences/synk-world-app/life-ui.css": "66bf4b2850c3b01a399b144f2a30a29bf3baa0b446763e528aa181aae9280548",
+    "experiences/synk-world-app/app-shell.mjs": "3f80c1f34db7df339368402b289d069cf3d00dcc4e09239753814181e0d456c9",
+    "experiences/brand-opening/home.html": "d9bff5889e7948a79aa4c9a327f95f4590cef4ec3c423f6e1caf3d50168620f1",
+    "experiences/brand-opening/home.mjs": "1e1071d31fa46559cf847d4e9526445dbccceaff562cf5957397407d17aed865",
+    "experiences/brand-opening/home.css": "5bf653c5720264f10c8f1541267d3fd9446335e8bffea79e3dde0e037d8bc55a"
+  },
+  "original": {
+    "file": "source-r2/report.json",
+    "functionalPassed": 189,
+    "assetCheckFailed": 1,
+    "jsErrors": 0,
+    "externalRequests": 0,
+    "problem": "relative --life-blush URL resolved outside brand-opening"
+  },
+  "recheck": {
+    "file": "source-r3/report.json",
+    "passed": 67,
+    "failed": 0,
+    "jsErrors": 0,
+    "externalRequests": 0,
+    "unexpectedHttpErrors": 0,
+    "problemResolved": true
+  },
+  "coverage": {
+    "packs": 6,
+    "lessons": 18,
+    "stories": 6,
+    "originalQuestions": 54,
+    "transferQuestions": 54
+  },
+  "note": "Recheck includes repeated cases; do not add the two pass counts as a unique test total.",
+  "finalAccountStatic": {
+    "checkedAt": "2026-10-09T22:20:13.005Z",
+    "publicPayload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-life-20261010-r4\\world",
+    "report": "account-static-r4/report.json",
+    "nodeBrowserTests": 1,
+    "verifiedScopes": 23,
+    "ok": true,
+    "lifeEvidence": {
+      "firstAnswerSaved": true,
+      "storageKey": "synk.life-korean.progress.v1",
+      "reloadResumedSameAttempt": true,
+      "completedLessonRestored": true,
+      "storyRotationPreserved": true,
+      "logoutReleasedAccountScope": true,
+      "guestLearningWorksAfterLogout": true,
+      "guestKeepsAccountRecordUnchanged": true
+    },
+    "jsErrors": 0,
+    "unexpectedAssetErrors": 0,
+    "realExternalRequests": 0,
+    "syntheticAccount": true,
+    "liveProviderCalls": false,
+    "manifestSha256": "7ec49467adc44a198165b72c0b4418482a6739f5762b4d3cf2d3788dd0dd6ca9",
+    "manifest": {
+      "ok": true,
+      "files": 1735,
+      "sourceChanges": [],
+      "missing": [],
+      "privateArtifacts": []
+    },
+    "payloadHashes": {
+      "index.html": "768b224ea6eb1ad8f2d96846cade1f969b40fc0143d0b3f172538ba5fd689ecd",
+      "mobile.html": "768b224ea6eb1ad8f2d96846cade1f969b40fc0143d0b3f172538ba5fd689ecd",
+      "desktop.html": "768b224ea6eb1ad8f2d96846cade1f969b40fc0143d0b3f172538ba5fd689ecd",
+      "app-shell.mjs": "83fd0891238b4038ad8cdc98793da5723edf83f44f9f0fcd8acfc3b47e46dbca",
+      "life-content.mjs": "0e7de53552f0cfacccb5a0b79d9ae7a030517f4adfc73e5270fb5e345a2c8a41",
+      "life-progress.mjs": "689836fa78d67654bd5a3cc69d147a7ab2b3b9bdbb2537b572dbf40eeef9ffbb",
+      "life-ui.mjs": "bb00307555874635e3529b485e76a88067c6f1ac51850006b7935b7389d35718",
+      "life-ui.css": "66bf4b2850c3b01a399b144f2a30a29bf3baa0b446763e528aa181aae9280548",
+      "world-account.bundle.mjs": "9b43b972c949d44cc249d68a9943c96ac15c8fd861045b4f9897f1dec309e676",
+      "brand-opening/home.mjs": "1e1071d31fa46559cf847d4e9526445dbccceaff562cf5957397407d17aed865",
+      "brand-opening/home.css": "5bf653c5720264f10c8f1541267d3fd9446335e8bffea79e3dde0e037d8bc55a"
+    },
+    "priorFailedStatic": "account-static-r3/failure-observation.md",
+    "resolvedBoundary": "Reinitialize the life owner binding when the client generation changes, including repeated guest invalidation.",
+    "runnerCleanup": {
+      "productScenarioOutcome": "PASS in both r4 runs",
+      "ordinaryCliExitVerified": false,
+      "connectClientCloseAdded": true,
+      "closePromisesBounded": true,
+      "onlyVerifiedOwnQaProcessesStopped": true,
+      "knownQaWorkersRemaining": 0,
+      "userServersHealthVerified": [
+        4312,
+        4307
+      ],
+      "auxiliaryTransport": {
+        "productPageUsed": false,
+        "accountUsed": false,
+        "runs": 3,
+        "exitCodes": [
+          1,
+          1,
+          1
+        ],
+        "gracefulExitVerified": false,
+        "source": "account-static-r4/transport-close-smoke.source.txt"
+      },
+      "note": "Product assertions and environment cleanup are separate. No further SDK investigation or product rerun was performed after the bounded auxiliary checks."
+    }
+  }
+}

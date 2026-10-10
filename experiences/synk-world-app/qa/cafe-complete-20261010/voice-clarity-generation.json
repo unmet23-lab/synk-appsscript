@@ -1,0 +1,25 @@
+{
+  "reason": "Separate the quantity in the short confirmation question with natural pauses",
+  "totalCharacterCeiling": 329,
+  "earlierNewCharacters": 293,
+  "estimate": {
+    "needConfirm": true,
+    "tasks": 15,
+    "lines": 1,
+    "chars": 17,
+    "contextChars": 0,
+    "estimate": 17,
+    "left": 127503,
+    "share": 0.01
+  },
+  "started": {
+    "started": true,
+    "estimate": {
+      "lines": 1,
+      "chars": 17,
+      "contextChars": 0,
+      "credits": 17,
+      "left": 127503
+    }
+  }
+}

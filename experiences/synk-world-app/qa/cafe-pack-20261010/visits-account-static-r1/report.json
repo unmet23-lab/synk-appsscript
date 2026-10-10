@@ -1,0 +1,366 @@
+{
+  "ok": true,
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-cafe-visits-20261010-r2\\world",
+  "checkedAt": "2026-10-10T11:48:45.712Z",
+  "checks": [
+    "first wrong response and one-cup repair checkpoint saved together",
+    "frozen account page reload restores the same unreceived order",
+    "choosing a seat and receiving cups creates a real table checkpoint",
+    "rotation keeps the received two-cup visit",
+    "all language responses remain incomplete before actual tea pickup",
+    "fresh frozen page preserves tea awaiting pickup",
+    "explicit takeaway pickup completes exactly once with the first error retained",
+    "cafe-visit-taste first error and physical order are saved atomically",
+    "cafe-visit-taste fresh static page restores its own attempt",
+    "cafe-visit-taste all responses still wait for actual pickup",
+    "cafe-visit-taste account completion retains the immutable first error",
+    "cafe-visit-soldout first error and physical order are saved atomically",
+    "cafe-visit-soldout fresh static page restores its own attempt",
+    "cafe-visit-soldout all responses still wait for actual pickup",
+    "cafe-visit-soldout account completion retains the immutable first error",
+    "cafe-visit-change first error and physical order are saved atomically",
+    "cafe-visit-change fresh static page restores its own attempt",
+    "cafe-visit-change all responses still wait for actual pickup",
+    "cafe-visit-change account completion retains the immutable first error",
+    "four visit records are completed independently in the frozen account app",
+    "only scoped progress was written and the account wallet remains unchanged",
+    "frozen runtime modules, tutor dependencies, art and CSS load without errors"
+  ],
+  "calls": [
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "unexpected": [],
+  "scope": {
+    "frozenStatic": true,
+    "officialAccountTransport": true,
+    "syntheticProvider": true,
+    "liveOAuth": false,
+    "remoteDatabase": false,
+    "published": false
+  }
+}

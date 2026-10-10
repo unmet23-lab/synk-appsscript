@@ -1,0 +1,145 @@
+{
+  "checkedAt": "2026-10-09T20:17:20.621Z",
+  "base": "http://127.0.0.1:4310/",
+  "passed": 5,
+  "cases": [
+    {
+      "name": "prepare-close",
+      "passed": true,
+      "before": {
+        "title": "바람길",
+        "kind": "",
+        "screen": "",
+        "open": false,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "after": {
+        "title": "바람길",
+        "kind": "",
+        "screen": "",
+        "open": false,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 1
+      },
+      "errors": []
+    },
+    {
+      "name": "prepare-close-reopen",
+      "passed": true,
+      "before": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-loading",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "after": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-loading",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 1
+      },
+      "errors": []
+    },
+    {
+      "name": "resolve-normal",
+      "passed": true,
+      "before": {
+        "title": "이어서 할 진도를 골라 주세요",
+        "kind": "world-game-conflict",
+        "screen": "world-game-conflict",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "after": {
+        "title": "바람길",
+        "kind": "game",
+        "screen": "game",
+        "open": true,
+        "frames": 1,
+        "toast": false,
+        "prepares": 2,
+        "disposes": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "resolve-close-reopen-success",
+      "passed": true,
+      "before": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-conflict",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "after": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-conflict",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "resolve-close-reopen-failure",
+      "passed": true,
+      "before": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-conflict",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "after": {
+        "title": "편안하게 머물러요.",
+        "kind": "",
+        "screen": "world-game-conflict",
+        "open": true,
+        "frames": 0,
+        "toast": false,
+        "prepares": 1,
+        "disposes": 0
+      },
+      "errors": []
+    }
+  ],
+  "errors": [],
+  "blockedRequests": [],
+  "sourceHashes": {
+    "app-shell.mjs": "6e1f0fe597963af479a38937af080f53796139dff1e78925c4d821456ed0136e",
+    "../brand-opening/home.mjs": "3aacae2f876677e97150811025fe8ec43e08d9076efb4881902c242b4a7cfcad"
+  },
+  "limits": [
+    "Real app-shell.mjs and brand-opening/home.mjs execute in isolated Edge contexts.",
+    "world-account.bundle.mjs is replaced only in browser routing with an in-memory account stub. No credentials, OAuth, or server account writes are used.",
+    "Only GET requests to the selected loopback origin are allowed; all other requests are blocked.",
+    "Same-task close and immediate settings reopening deliberately exercise a queued dialog close event. This is a synthetic ordering test, not physical-device timing evidence.",
+    "Game entry and panel lifecycle only; no playthrough, purchases, or learning effects are tested."
+  ]
+}

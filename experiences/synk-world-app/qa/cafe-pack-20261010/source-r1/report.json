@@ -1,0 +1,28 @@
+{
+  "ok": false,
+  "checkedAt": "2026-10-10T10:43:21.851Z",
+  "base": "http://127.0.0.1:4313",
+  "checks": [
+    {
+      "name": "home exposes a cafe entrance",
+      "passed": true
+    }
+  ],
+  "passed": 1,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r1\\home-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r1\\failure.png"
+  ],
+  "failure": "locator.click: Timeout 20000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.cafe-pack-preview [data-life-lesson=cafe-apply]')\u001b[22m\n\n    at cafe (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:8:140)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:24:2)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:43:28",
+  "scope": {
+    "local": true,
+    "syntheticAccounts": true,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false,
+    "liveOAuth": false
+  }
+}

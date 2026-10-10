@@ -7,7 +7,8 @@ export const PLAY_RECORD_KEYS=Object.freeze([
   'synk.word-magic.progress.v1','synk.order-rush.beginner.v1','synk.order-rush.picnic.v1',
   'SYNK_SHIP_STARBOOK_V1','SYNK_LAB_PLAY_PROGRESS_V1','SYNK_RACING_TUTORIAL_V1',
   'synk.talk-rally.daily.v1','synk.order-rush.flow-mode','synk.windrun.best',
-  'synk.blank-slice.v1','synk.entry-check.v1','synk.talk-rally.v1'
+  'synk.blank-slice.v1','synk.entry-check.v1','synk.talk-rally.v1',
+  'synk.life-korean.progress.v1'
 ]);
 export const isPlayRecordKey=key=>PLAY_RECORD_KEYS.includes(key)||typeof key==='string'&&/^SYNK_SHIP_STARBOOK_V1:kept:[a-f0-9]{32}$/.test(key);
 const fail=(code='INVALID_PLAY_STATE')=>{throw Object.assign(new Error(code),{code,status:code==='PLAY_DATA_TOO_LARGE'?413:400});};

@@ -1,0 +1,23 @@
+{
+  "ok": false,
+  "checkedAt": "2026-10-10T10:56:14.261Z",
+  "base": "http://127.0.0.1:4307",
+  "entry": "http://127.0.0.1:4307/brand-opening/home.html",
+  "checks": [],
+  "passed": 0,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\standalone\\failure.png"
+  ],
+  "failure": "page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:4307/brand-opening/home.html\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:4307/brand-opening/home.html\", waiting until \"load\"\u001b[22m\n\n    at run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:24:13)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:44:28",
+  "scope": {
+    "local": true,
+    "syntheticAccounts": false,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false,
+    "liveOAuth": false
+  }
+}

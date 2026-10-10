@@ -1,0 +1,56 @@
+{
+  "ok": true,
+  "localApp": "http://127.0.0.1:4310/mobile.html",
+  "build": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-maru-20261010-r6\\world",
+  "checks": {
+    "integration": 111,
+    "compactLayout": 5,
+    "wardrobeInteractions": 10,
+    "finalStatic": 16,
+    "lateResponses": 5,
+    "accountScenarioGroups": 16
+  },
+  "buildFiles": 1726,
+  "missing": [],
+  "sourceChanges": [],
+  "frozenSource": [
+    {
+      "file": "app-shell.css",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "app-shell.mjs",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "brand-opening/home.css",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "brand-opening/home.mjs",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "brand-opening/opening.css",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "brand-opening/opening.mjs",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "index.html",
+      "sourceMatchesBuild": true
+    },
+    {
+      "file": "world-account.bundle.mjs",
+      "sourceMatchesBuild": true
+    }
+  ],
+  "scope": {
+    "published": false,
+    "liveOAuthTested": false,
+    "physicalDeviceTested": false,
+    "nativePackageBuilt": false
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "ok": false,
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-cafe-20261010-r2\\world",
+  "checkedAt": "2026-10-10T11:00:28.185Z",
+  "checks": [],
+  "calls": [
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "unexpected": [],
+  "failure": "page.waitForFunction: Timeout 15000ms exceeded.\n    at synced (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-static.test.mjs:40:25)\n    at TestContext.<anonymous> (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-static.test.mjs:41:183)",
+  "scope": {
+    "frozenStatic": true,
+    "officialAccountTransport": true,
+    "syntheticProvider": true,
+    "liveOAuth": false,
+    "remoteDatabase": false,
+    "published": false
+  }
+}

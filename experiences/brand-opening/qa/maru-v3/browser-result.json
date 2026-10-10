@@ -1,0 +1,5650 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "traceOnly": false,
+  "passed": 162,
+  "failed": [],
+  "checks": [
+    {
+      "name": "phone-auto-portrait: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "auto",
+        "saved": null,
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "name": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "name": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "name": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "name": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "name": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-auto-portrait: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "phone-auto-portrait: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-auto-portrait: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-auto-portrait: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "phone-auto-landscape: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "landscape",
+        "preference": "auto",
+        "saved": null,
+        "width": 844,
+        "height": 390,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 390,
+          "right": 844,
+          "bottom": 390
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 12,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 67
+          },
+          {
+            "name": "화면 설정",
+            "x": 778,
+            "y": 15.5,
+            "width": 48,
+            "height": 48,
+            "right": 826,
+            "bottom": 63.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 24,
+            "y": 236,
+            "width": 225,
+            "height": 57,
+            "right": 249,
+            "bottom": 293
+          },
+          {
+            "name": "마루",
+            "x": 20,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 78.5,
+            "bottom": 378
+          },
+          {
+            "name": "놀이",
+            "x": 78.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 137,
+            "bottom": 378
+          },
+          {
+            "name": "옷장",
+            "x": 137,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 195.5,
+            "bottom": 378
+          },
+          {
+            "name": "나",
+            "x": 195.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 254,
+            "bottom": 378
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-auto-landscape: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp"
+      }
+    },
+    {
+      "name": "phone-auto-landscape: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-auto-landscape: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "name": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "name": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "name": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "name": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "name": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ]
+    },
+    {
+      "name": "phone-auto-landscape: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "phone-landscape-preference: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "phone-landscape-preference: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "phone-landscape-hint: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "landscape",
+        "saved": "landscape",
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": true,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "name": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "name": "자동으로보기",
+            "x": 308.53125,
+            "y": 103,
+            "width": 48.46875,
+            "height": 48,
+            "right": 357,
+            "bottom": 151
+          },
+          {
+            "name": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "name": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "name": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "name": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "name": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-landscape-hint: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "phone-landscape-hint: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-landscape-hint: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 308.53125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 357,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-landscape-hint: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "Phone mismatch shows a rotation hint without squeezing the viewport",
+      "passed": true
+    },
+    {
+      "name": "phone-preference-restored: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "landscape",
+        "saved": "landscape",
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": true,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "name": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "name": "자동으로보기",
+            "x": 308.53125,
+            "y": 103,
+            "width": 48.46875,
+            "height": 48,
+            "right": 357,
+            "bottom": 151
+          },
+          {
+            "name": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "name": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "name": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "name": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "name": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-preference-restored: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "phone-preference-restored: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-preference-restored: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 308.53125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 357,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-preference-restored: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "Phone orientation preference survives reload",
+      "passed": true
+    },
+    {
+      "name": "phone-auto-restored: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "auto",
+        "saved": "auto",
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "name": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "name": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "name": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "name": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "name": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-auto-restored: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "phone-auto-restored: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-auto-restored: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-auto-restored: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "Auto button clears mismatch hint and saves auto",
+      "passed": true
+    },
+    {
+      "name": "phone-portrait-preference: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "phone-portrait-preference: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "phone-portrait-hint: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "landscape",
+        "preference": "portrait",
+        "saved": "portrait",
+        "width": 844,
+        "height": 390,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 390,
+          "right": 844,
+          "bottom": 390
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": true,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 12,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 67
+          },
+          {
+            "name": "화면 설정",
+            "x": 778,
+            "y": 15.5,
+            "width": 48,
+            "height": 48,
+            "right": 826,
+            "bottom": 63.5
+          },
+          {
+            "name": "자동으로보기",
+            "x": 536.03125,
+            "y": 103,
+            "width": 48.46875,
+            "height": 48,
+            "right": 584.5,
+            "bottom": 151
+          },
+          {
+            "name": "놀러 가기",
+            "x": 24,
+            "y": 236,
+            "width": 225,
+            "height": 57,
+            "right": 249,
+            "bottom": 293
+          },
+          {
+            "name": "마루",
+            "x": 20,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 78.5,
+            "bottom": 378
+          },
+          {
+            "name": "놀이",
+            "x": 78.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 137,
+            "bottom": 378
+          },
+          {
+            "name": "옷장",
+            "x": 137,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 195.5,
+            "bottom": 378
+          },
+          {
+            "name": "나",
+            "x": 195.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 254,
+            "bottom": 378
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-portrait-hint: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp"
+      }
+    },
+    {
+      "name": "phone-portrait-hint: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-portrait-hint: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "name": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 536.03125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 584.5,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "name": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "name": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "name": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "name": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ]
+    },
+    {
+      "name": "phone-portrait-hint: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "Landscape phone keeps usable actual layout with portrait preference",
+      "passed": true
+    },
+    {
+      "name": "phone-portrait-matched: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "portrait",
+        "saved": "portrait",
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "name": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "name": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "name": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "name": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "name": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone-portrait-matched: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "phone-portrait-matched: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "phone-portrait-matched: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-portrait-matched: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "Rotating to desired direction clears mismatch hint",
+      "passed": true
+    },
+    {
+      "name": "phone-reset-auto: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "phone-reset-auto: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "desktop-auto-landscape: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "landscape",
+        "preference": "auto",
+        "saved": null,
+        "width": 1440,
+        "height": 1000,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 80,
+          "y": 140,
+          "width": 1280,
+          "height": 720,
+          "right": 1360,
+          "bottom": 860
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 105,
+            "y": 162,
+            "width": 150,
+            "height": 55,
+            "right": 255,
+            "bottom": 217
+          },
+          {
+            "name": "화면 설정",
+            "x": 1287,
+            "y": 165.5,
+            "width": 48,
+            "height": 48,
+            "right": 1335,
+            "bottom": 213.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 131.1875,
+            "y": 675,
+            "width": 280,
+            "height": 67,
+            "right": 411.1875,
+            "bottom": 742
+          },
+          {
+            "name": "마루",
+            "x": 126.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 198.6875,
+            "bottom": 834
+          },
+          {
+            "name": "놀이",
+            "x": 198.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 271.1875,
+            "bottom": 834
+          },
+          {
+            "name": "옷장",
+            "x": 271.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 343.6875,
+            "bottom": 834
+          },
+          {
+            "name": "나",
+            "x": 343.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 416.1875,
+            "bottom": 834
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop-auto-landscape: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp"
+      }
+    },
+    {
+      "name": "desktop-auto-landscape: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "desktop-auto-landscape: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    },
+    {
+      "name": "desktop-auto-landscape: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "PC auto defaults to landscape viewport",
+      "passed": true
+    },
+    {
+      "name": "desktop-portrait: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "desktop-portrait: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "desktop-selected-portrait: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "portrait",
+        "saved": "portrait",
+        "width": 1440,
+        "height": 1000,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 505,
+          "y": 34,
+          "width": 430,
+          "height": 932,
+          "right": 935,
+          "bottom": 966
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 523,
+            "y": 50,
+            "width": 150,
+            "height": 55,
+            "right": 673,
+            "bottom": 105
+          },
+          {
+            "name": "화면 설정",
+            "x": 869,
+            "y": 53.5,
+            "width": 48,
+            "height": 48,
+            "right": 917,
+            "bottom": 101.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 550,
+            "y": 790,
+            "width": 340,
+            "height": 72,
+            "right": 890,
+            "bottom": 862
+          },
+          {
+            "name": "마루",
+            "x": 521,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 613.75,
+            "bottom": 954
+          },
+          {
+            "name": "놀이",
+            "x": 622.75,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 715.5,
+            "bottom": 954
+          },
+          {
+            "name": "옷장",
+            "x": 724.5,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 817.25,
+            "bottom": 954
+          },
+          {
+            "name": "나",
+            "x": 826.25,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 919,
+            "bottom": 954
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop-selected-portrait: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "desktop-selected-portrait: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "desktop-selected-portrait: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "name": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "name": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "name": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "name": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "name": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ]
+    },
+    {
+      "name": "desktop-selected-portrait: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "PC portrait is a central tall frame",
+      "passed": true
+    },
+    {
+      "name": "desktop-portrait-restored: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "portrait",
+        "preference": "portrait",
+        "saved": "portrait",
+        "width": 1440,
+        "height": 1000,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 505,
+          "y": 34,
+          "width": 430,
+          "height": 932,
+          "right": 935,
+          "bottom": 966
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 523,
+            "y": 50,
+            "width": 150,
+            "height": 55,
+            "right": 673,
+            "bottom": 105
+          },
+          {
+            "name": "화면 설정",
+            "x": 869,
+            "y": 53.5,
+            "width": 48,
+            "height": 48,
+            "right": 917,
+            "bottom": 101.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 550,
+            "y": 790,
+            "width": 340,
+            "height": 72,
+            "right": 890,
+            "bottom": 862
+          },
+          {
+            "name": "마루",
+            "x": 521,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 613.75,
+            "bottom": 954
+          },
+          {
+            "name": "놀이",
+            "x": 622.75,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 715.5,
+            "bottom": 954
+          },
+          {
+            "name": "옷장",
+            "x": 724.5,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 817.25,
+            "bottom": 954
+          },
+          {
+            "name": "나",
+            "x": 826.25,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 919,
+            "bottom": 954
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop-portrait-restored: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "desktop-portrait-restored: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "desktop-portrait-restored: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "name": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "name": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "name": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "name": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "name": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ]
+    },
+    {
+      "name": "desktop-portrait-restored: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "PC portrait preference survives reload",
+      "passed": true
+    },
+    {
+      "name": "desktop-landscape: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "desktop-landscape: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "desktop-selected-landscape: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "landscape",
+        "preference": "landscape",
+        "saved": "landscape",
+        "width": 1440,
+        "height": 1000,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 80,
+          "y": 140,
+          "width": 1280,
+          "height": 720,
+          "right": 1360,
+          "bottom": 860
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 105,
+            "y": 162,
+            "width": 150,
+            "height": 55,
+            "right": 255,
+            "bottom": 217
+          },
+          {
+            "name": "화면 설정",
+            "x": 1287,
+            "y": 165.5,
+            "width": 48,
+            "height": 48,
+            "right": 1335,
+            "bottom": 213.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 131.1875,
+            "y": 675,
+            "width": 280,
+            "height": 67,
+            "right": 411.1875,
+            "bottom": 742
+          },
+          {
+            "name": "마루",
+            "x": 126.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 198.6875,
+            "bottom": 834
+          },
+          {
+            "name": "놀이",
+            "x": 198.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 271.1875,
+            "bottom": 834
+          },
+          {
+            "name": "옷장",
+            "x": 271.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 343.6875,
+            "bottom": 834
+          },
+          {
+            "name": "나",
+            "x": 343.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 416.1875,
+            "bottom": 834
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop-selected-landscape: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp"
+      }
+    },
+    {
+      "name": "desktop-selected-landscape: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "desktop-selected-landscape: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    },
+    {
+      "name": "desktop-selected-landscape: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "PC landscape is a central wide frame",
+      "passed": true
+    },
+    {
+      "name": "desktop-auto: all three direction options have 44px targets",
+      "passed": true
+    },
+    {
+      "name": "desktop-auto: chosen radio is checked",
+      "passed": true
+    },
+    {
+      "name": "desktop-auto-return: layout and preference match the contract",
+      "passed": true,
+      "details": {
+        "layout": "landscape",
+        "preference": "auto",
+        "saved": "auto",
+        "width": 1440,
+        "height": 1000,
+        "overflowX": 0,
+        "overflowY": 0,
+        "shell": {
+          "x": 80,
+          "y": 140,
+          "width": 1280,
+          "height": 720,
+          "right": 1360,
+          "bottom": 860
+        },
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "duration": 10,
+        "loop": true,
+        "muted": true,
+        "notice": false,
+        "fullscreen": false,
+        "controls": [
+          {
+            "name": "나의 공간 열기",
+            "x": 105,
+            "y": 162,
+            "width": 150,
+            "height": 55,
+            "right": 255,
+            "bottom": 217
+          },
+          {
+            "name": "화면 설정",
+            "x": 1287,
+            "y": 165.5,
+            "width": 48,
+            "height": 48,
+            "right": 1335,
+            "bottom": 213.5
+          },
+          {
+            "name": "놀러 가기",
+            "x": 131.1875,
+            "y": 675,
+            "width": 280,
+            "height": 67,
+            "right": 411.1875,
+            "bottom": 742
+          },
+          {
+            "name": "마루",
+            "x": 126.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 198.6875,
+            "bottom": 834
+          },
+          {
+            "name": "놀이",
+            "x": 198.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 271.1875,
+            "bottom": 834
+          },
+          {
+            "name": "옷장",
+            "x": 271.1875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 343.6875,
+            "bottom": 834
+          },
+          {
+            "name": "나",
+            "x": 343.6875,
+            "y": 762,
+            "width": 72.5,
+            "height": 72,
+            "right": 416.1875,
+            "bottom": 834
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop-auto-return: exact layout-specific v9 video and poster are connected",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp"
+      }
+    },
+    {
+      "name": "desktop-auto-return: no horizontal or vertical page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "desktop-auto-return: visible controls fit and have 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    },
+    {
+      "name": "desktop-auto-return: no forced fullscreen",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-road",
+          "backingWidth": 358,
+          "backingHeight": 187,
+          "x": 16,
+          "y": 355.609375,
+          "width": 358,
+          "height": 187.1875,
+          "bottom": 542.796875,
+          "right": 374,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner/landscape: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "runner/landscape: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/landscape: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-road",
+          "backingWidth": 812,
+          "backingHeight": 300,
+          "x": 16,
+          "y": 477.140625,
+          "width": 812,
+          "height": 300,
+          "bottom": 777.140625,
+          "right": 828,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner/return-portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "runner/return-portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/return-portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-road",
+          "backingWidth": 358,
+          "backingHeight": 187,
+          "x": 16,
+          "y": 355.609375,
+          "width": 358,
+          "height": 187.1875,
+          "bottom": 542.796875,
+          "right": 374,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner: real local game startup succeeds",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "runner/portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "world",
+          "backingWidth": 390,
+          "backingHeight": 521,
+          "x": 0,
+          "y": 158,
+          "width": 390,
+          "height": 521.953125,
+          "bottom": 679.953125,
+          "right": 390,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner/portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 336,
+          "y": 105,
+          "width": 42,
+          "height": 42,
+          "bottom": 147,
+          "right": 378
+        },
+        {
+          "id": "say-text",
+          "label": "글로 보기",
+          "x": 291.546875,
+          "y": 179,
+          "width": 74.453125,
+          "height": 36,
+          "bottom": 215,
+          "right": 366
+        },
+        {
+          "id": "",
+          "label": "왼쪽 길로 (← 키)",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 94
+        },
+        {
+          "id": "",
+          "label": "점프 (↑ 키)",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 188
+        },
+        {
+          "id": "",
+          "label": "숙이기 (↓ 키)",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 282
+        },
+        {
+          "id": "",
+          "label": "오른쪽 길로 (→ 키)",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 376
+        }
+      ]
+    },
+    {
+      "name": "runner/landscape: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "runner/landscape: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "runner/landscape: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/landscape: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "world",
+          "backingWidth": 844,
+          "backingHeight": 132,
+          "x": 0,
+          "y": 112,
+          "width": 844,
+          "height": 132.421875,
+          "bottom": 244.421875,
+          "right": 844,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner/landscape: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 796,
+          "y": 66,
+          "width": 38,
+          "height": 38,
+          "bottom": 104,
+          "right": 834
+        },
+        {
+          "id": "say-text",
+          "label": "글로 보기",
+          "x": 595.546875,
+          "y": 131,
+          "width": 74.453125,
+          "height": 32,
+          "bottom": 163,
+          "right": 670
+        },
+        {
+          "id": "",
+          "label": "왼쪽 길로 (← 키)",
+          "x": 79.75,
+          "y": 253.421875,
+          "width": 62,
+          "height": 63.578125,
+          "bottom": 317,
+          "right": 141.75
+        },
+        {
+          "id": "",
+          "label": "점프 (↑ 키)",
+          "x": 287.25,
+          "y": 253.421875,
+          "width": 62,
+          "height": 63.578125,
+          "bottom": 317,
+          "right": 349.25
+        },
+        {
+          "id": "",
+          "label": "숙이기 (↓ 키)",
+          "x": 494.75,
+          "y": 253.421875,
+          "width": 62,
+          "height": 63.578125,
+          "bottom": 317,
+          "right": 556.75
+        },
+        {
+          "id": "",
+          "label": "오른쪽 길로 (→ 키)",
+          "x": 702.25,
+          "y": 253.421875,
+          "width": 62,
+          "height": 63.578125,
+          "bottom": 317,
+          "right": 764.25
+        }
+      ]
+    },
+    {
+      "name": "runner/return-portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "runner/return-portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "runner/return-portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "runner/return-portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "world",
+          "backingWidth": 390,
+          "backingHeight": 521,
+          "x": 0,
+          "y": 158,
+          "width": 390,
+          "height": 521.953125,
+          "bottom": 679.953125,
+          "right": 390,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "runner/return-portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 336,
+          "y": 105,
+          "width": 42,
+          "height": 42,
+          "bottom": 147,
+          "right": 378
+        },
+        {
+          "id": "say-text",
+          "label": "글로 보기",
+          "x": 291.546875,
+          "y": 179,
+          "width": 74.453125,
+          "height": 36,
+          "bottom": 215,
+          "right": 366
+        },
+        {
+          "id": "",
+          "label": "왼쪽 길로 (← 키)",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 94
+        },
+        {
+          "id": "",
+          "label": "점프 (↑ 키)",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 188
+        },
+        {
+          "id": "",
+          "label": "숙이기 (↓ 키)",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 282
+        },
+        {
+          "id": "",
+          "label": "오른쪽 길로 (→ 키)",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "bottom": 771,
+          "right": 376
+        }
+      ]
+    },
+    {
+      "name": "runner: closing disposes the game iframe",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-runway",
+          "backingWidth": 358,
+          "backingHeight": 172,
+          "x": 16,
+          "y": 355.609375,
+          "width": 358,
+          "height": 171.59375,
+          "bottom": 527.203125,
+          "right": 374,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm/landscape: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "rhythm/landscape: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/landscape: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-runway",
+          "backingWidth": 812,
+          "backingHeight": 300,
+          "x": 16,
+          "y": 477.140625,
+          "width": 812,
+          "height": 300,
+          "bottom": 777.140625,
+          "right": 828,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm/return-portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "rhythm/return-portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/return-portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "hero-runway",
+          "backingWidth": 358,
+          "backingHeight": 172,
+          "x": 16,
+          "y": 355.609375,
+          "width": 358,
+          "height": 171.59375,
+          "bottom": 527.203125,
+          "right": 374,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm: real local game startup succeeds",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "rhythm/portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "stage",
+          "backingWidth": 390,
+          "backingHeight": 623,
+          "x": 0,
+          "y": 158,
+          "width": 390,
+          "height": 623,
+          "bottom": 781,
+          "right": 390,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm/portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 336,
+          "y": 105,
+          "width": 42,
+          "height": 42,
+          "bottom": 147,
+          "right": 378
+        },
+        {
+          "id": "pad-0",
+          "label": "O, 맞아요 (F 키)",
+          "x": 10,
+          "y": 665,
+          "width": 179,
+          "height": 104,
+          "bottom": 769,
+          "right": 189
+        },
+        {
+          "id": "pad-1",
+          "label": "X, 아니에요 (J 키)",
+          "x": 201,
+          "y": 665,
+          "width": 179,
+          "height": 104,
+          "bottom": 769,
+          "right": 380
+        }
+      ]
+    },
+    {
+      "name": "rhythm/landscape: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "rhythm/landscape: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "rhythm/landscape: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/landscape: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "stage",
+          "backingWidth": 844,
+          "backingHeight": 215,
+          "x": 0,
+          "y": 112,
+          "width": 844,
+          "height": 215,
+          "bottom": 327,
+          "right": 844,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm/landscape: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 796,
+          "y": 66,
+          "width": 38,
+          "height": 38,
+          "bottom": 104,
+          "right": 834
+        },
+        {
+          "id": "pad-0",
+          "label": "O, 맞아요 (F 키)",
+          "x": 122,
+          "y": 235,
+          "width": 294,
+          "height": 80,
+          "bottom": 315,
+          "right": 416
+        },
+        {
+          "id": "pad-1",
+          "label": "X, 아니에요 (J 키)",
+          "x": 428,
+          "y": 235,
+          "width": 294,
+          "height": 80,
+          "bottom": 315,
+          "right": 722
+        }
+      ]
+    },
+    {
+      "name": "rhythm/return-portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "rhythm/return-portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "game"
+      ]
+    },
+    {
+      "name": "rhythm/return-portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "rhythm/return-portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": [
+        {
+          "id": "stage",
+          "backingWidth": 390,
+          "backingHeight": 623,
+          "x": 0,
+          "y": 158,
+          "width": 390,
+          "height": 623,
+          "bottom": 781,
+          "right": 390,
+          "sameNode": true
+        }
+      ]
+    },
+    {
+      "name": "rhythm/return-portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "label": "잠깐 멈춤",
+          "x": 336,
+          "y": 105,
+          "width": 42,
+          "height": 42,
+          "bottom": 147,
+          "right": 378
+        },
+        {
+          "id": "pad-0",
+          "label": "O, 맞아요 (F 키)",
+          "x": 10,
+          "y": 665,
+          "width": 179,
+          "height": 104,
+          "bottom": 769,
+          "right": 189
+        },
+        {
+          "id": "pad-1",
+          "label": "X, 아니에요 (J 키)",
+          "x": 201,
+          "y": 665,
+          "width": 179,
+          "height": 104,
+          "bottom": 769,
+          "right": 380
+        }
+      ]
+    },
+    {
+      "name": "rhythm: closing disposes the game iframe",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul/landscape: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "hangul/landscape: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/landscape: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul/return-portrait: entrance iframe and child document stay identical",
+      "passed": true
+    },
+    {
+      "name": "hangul/return-portrait: entrance has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/return-portrait: visible entrance canvas backing size follows CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul: real local game startup succeeds",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "session"
+      ]
+    },
+    {
+      "name": "hangul/portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul/portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "quit",
+          "label": "그만하기",
+          "x": 16,
+          "y": 14,
+          "width": 46,
+          "height": 46,
+          "bottom": 60,
+          "right": 62
+        },
+        {
+          "id": "",
+          "label": "시작",
+          "x": 16,
+          "y": 703,
+          "width": 358,
+          "height": 64,
+          "bottom": 767,
+          "right": 374
+        }
+      ]
+    },
+    {
+      "name": "hangul/landscape: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "hangul/landscape: active screen remains open",
+      "passed": true,
+      "details": [
+        "session"
+      ]
+    },
+    {
+      "name": "hangul/landscape: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/landscape: active canvas backing size matches CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul/landscape: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "quit",
+          "label": "그만하기",
+          "x": 138,
+          "y": 30,
+          "width": 46,
+          "height": 46,
+          "bottom": 76,
+          "right": 184
+        },
+        {
+          "id": "",
+          "label": "시작",
+          "x": 138,
+          "y": 249,
+          "width": 568,
+          "height": 64,
+          "bottom": 313,
+          "right": 706
+        }
+      ]
+    },
+    {
+      "name": "hangul/return-portrait: active iframe, document, and canvas nodes survive rotation",
+      "passed": true
+    },
+    {
+      "name": "hangul/return-portrait: active screen remains open",
+      "passed": true,
+      "details": [
+        "session"
+      ]
+    },
+    {
+      "name": "hangul/return-portrait: active game has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "hangul/return-portrait: active canvas backing size matches CSS",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "hangul/return-portrait: primary play controls are not clipped vertically",
+      "passed": true,
+      "details": [
+        {
+          "id": "quit",
+          "label": "그만하기",
+          "x": 16,
+          "y": 14,
+          "width": 46,
+          "height": 46,
+          "bottom": 60,
+          "right": 62
+        },
+        {
+          "id": "",
+          "label": "시작",
+          "x": 16,
+          "y": 703,
+          "width": 358,
+          "height": 64,
+          "bottom": 767,
+          "right": 374
+        }
+      ]
+    },
+    {
+      "name": "hangul: closing disposes the game iframe",
+      "passed": true
+    },
+    {
+      "name": "No browser JavaScript errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No HTTP resource failures",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No mutating or external requests attempted",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "phone-auto-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "saved": null,
+      "width": 390,
+      "height": 844,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-auto-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "saved": null,
+      "width": 844,
+      "height": 390,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390,
+        "right": 844,
+        "bottom": 390
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "name": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "name": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "name": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "name": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "name": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ]
+    },
+    {
+      "name": "phone-landscape-hint",
+      "layout": "portrait",
+      "preference": "landscape",
+      "saved": "landscape",
+      "width": 390,
+      "height": 844,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": true,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 308.53125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 357,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-preference-restored",
+      "layout": "portrait",
+      "preference": "landscape",
+      "saved": "landscape",
+      "width": 390,
+      "height": 844,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": true,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 308.53125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 357,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-auto-restored",
+      "layout": "portrait",
+      "preference": "auto",
+      "saved": "auto",
+      "width": 390,
+      "height": 844,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "phone-portrait-hint",
+      "layout": "landscape",
+      "preference": "portrait",
+      "saved": "portrait",
+      "width": 844,
+      "height": 390,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390,
+        "right": 844,
+        "bottom": 390
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": true,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "name": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "name": "자동으로보기",
+          "x": 536.03125,
+          "y": 103,
+          "width": 48.46875,
+          "height": 48,
+          "right": 584.5,
+          "bottom": 151
+        },
+        {
+          "name": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "name": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "name": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "name": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "name": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ]
+    },
+    {
+      "name": "phone-portrait-matched",
+      "layout": "portrait",
+      "preference": "portrait",
+      "saved": "portrait",
+      "width": 390,
+      "height": 844,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "name": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "name": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "name": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "name": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "name": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "desktop-auto-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "saved": null,
+      "width": 1440,
+      "height": 1000,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 80,
+        "y": 140,
+        "width": 1280,
+        "height": 720,
+        "right": 1360,
+        "bottom": 860
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    },
+    {
+      "name": "desktop-selected-portrait",
+      "layout": "portrait",
+      "preference": "portrait",
+      "saved": "portrait",
+      "width": 1440,
+      "height": 1000,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 505,
+        "y": 34,
+        "width": 430,
+        "height": 932,
+        "right": 935,
+        "bottom": 966
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "name": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "name": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "name": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "name": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "name": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ]
+    },
+    {
+      "name": "desktop-portrait-restored",
+      "layout": "portrait",
+      "preference": "portrait",
+      "saved": "portrait",
+      "width": 1440,
+      "height": 1000,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 505,
+        "y": 34,
+        "width": 430,
+        "height": 932,
+        "right": 935,
+        "bottom": 966
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "name": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "name": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "name": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "name": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "name": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ]
+    },
+    {
+      "name": "desktop-selected-landscape",
+      "layout": "landscape",
+      "preference": "landscape",
+      "saved": "landscape",
+      "width": 1440,
+      "height": 1000,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 80,
+        "y": 140,
+        "width": 1280,
+        "height": 720,
+        "right": 1360,
+        "bottom": 860
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    },
+    {
+      "name": "desktop-auto-return",
+      "layout": "landscape",
+      "preference": "auto",
+      "saved": "auto",
+      "width": 1440,
+      "height": 1000,
+      "overflowX": 0,
+      "overflowY": 0,
+      "shell": {
+        "x": 80,
+        "y": 140,
+        "width": 1280,
+        "height": 720,
+        "right": 1360,
+        "bottom": 860
+      },
+      "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+      "poster": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+      "duration": 10,
+      "loop": true,
+      "muted": true,
+      "notice": false,
+      "fullscreen": false,
+      "controls": [
+        {
+          "name": "나의 공간 열기",
+          "x": 105,
+          "y": 162,
+          "width": 150,
+          "height": 55,
+          "right": 255,
+          "bottom": 217
+        },
+        {
+          "name": "화면 설정",
+          "x": 1287,
+          "y": 165.5,
+          "width": 48,
+          "height": 48,
+          "right": 1335,
+          "bottom": 213.5
+        },
+        {
+          "name": "놀러 가기",
+          "x": 131.1875,
+          "y": 675,
+          "width": 280,
+          "height": 67,
+          "right": 411.1875,
+          "bottom": 742
+        },
+        {
+          "name": "마루",
+          "x": 126.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 198.6875,
+          "bottom": 834
+        },
+        {
+          "name": "놀이",
+          "x": 198.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 271.1875,
+          "bottom": 834
+        },
+        {
+          "name": "옷장",
+          "x": 271.1875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 343.6875,
+          "bottom": 834
+        },
+        {
+          "name": "나",
+          "x": 343.6875,
+          "y": 762,
+          "width": 72.5,
+          "height": 72,
+          "right": 416.1875,
+          "bottom": 834
+        }
+      ]
+    }
+  ],
+  "gameRotations": [
+    {
+      "id": "runner",
+      "name": "바람길",
+      "initial": {
+        "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+        "timeOrigin": 1791572084426.2,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 818,
+        "screens": [
+          "lobby"
+        ],
+        "accountMode": "guest",
+        "canvases": [
+          {
+            "id": "hero-road",
+            "backingWidth": 358,
+            "backingHeight": 187,
+            "x": 16,
+            "y": 355.609375,
+            "width": 358,
+            "height": 187.1875,
+            "bottom": 542.796875,
+            "right": 374,
+            "sameNode": true
+          }
+        ],
+        "controls": [],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": null
+      },
+      "entrance": [
+        {
+          "orientation": "portrait",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 818,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-road",
+              "backingWidth": 358,
+              "backingHeight": 187,
+              "x": 16,
+              "y": 355.609375,
+              "width": 358,
+              "height": 187.1875,
+              "bottom": 542.796875,
+              "right": 374,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "landscape",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 1291,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-road",
+              "backingWidth": 812,
+              "backingHeight": 300,
+              "x": 16,
+              "y": 477.140625,
+              "width": 812,
+              "height": 300,
+              "bottom": 777.140625,
+              "right": 828,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 818,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-road",
+              "backingWidth": 358,
+              "backingHeight": 187,
+              "x": 16,
+              "y": 355.609375,
+              "width": 358,
+              "height": 187.1875,
+              "bottom": 542.796875,
+              "right": 374,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        }
+      ],
+      "started": true,
+      "active": [
+        {
+          "orientation": "portrait",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "world",
+              "backingWidth": 390,
+              "backingHeight": 521,
+              "x": 0,
+              "y": 158,
+              "width": 390,
+              "height": 521.953125,
+              "bottom": 679.953125,
+              "right": 390,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 336,
+              "y": 105,
+              "width": 42,
+              "height": 42,
+              "bottom": 147,
+              "right": 378
+            },
+            {
+              "id": "say-text",
+              "label": "글로 보기",
+              "x": 291.546875,
+              "y": 179,
+              "width": 74.453125,
+              "height": 36,
+              "bottom": 215,
+              "right": 366
+            },
+            {
+              "id": "",
+              "label": "왼쪽 길로 (← 키)",
+              "x": 14,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 94
+            },
+            {
+              "id": "",
+              "label": "점프 (↑ 키)",
+              "x": 108,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 188
+            },
+            {
+              "id": "",
+              "label": "숙이기 (↓ 키)",
+              "x": 202,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 282
+            },
+            {
+              "id": "",
+              "label": "오른쪽 길로 (→ 키)",
+              "x": 296,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 376
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "landscape",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "world",
+              "backingWidth": 844,
+              "backingHeight": 132,
+              "x": 0,
+              "y": 112,
+              "width": 844,
+              "height": 132.421875,
+              "bottom": 244.421875,
+              "right": 844,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 796,
+              "y": 66,
+              "width": 38,
+              "height": 38,
+              "bottom": 104,
+              "right": 834
+            },
+            {
+              "id": "say-text",
+              "label": "글로 보기",
+              "x": 595.546875,
+              "y": 131,
+              "width": 74.453125,
+              "height": 32,
+              "bottom": 163,
+              "right": 670
+            },
+            {
+              "id": "",
+              "label": "왼쪽 길로 (← 키)",
+              "x": 79.75,
+              "y": 253.421875,
+              "width": 62,
+              "height": 63.578125,
+              "bottom": 317,
+              "right": 141.75
+            },
+            {
+              "id": "",
+              "label": "점프 (↑ 키)",
+              "x": 287.25,
+              "y": 253.421875,
+              "width": 62,
+              "height": 63.578125,
+              "bottom": 317,
+              "right": 349.25
+            },
+            {
+              "id": "",
+              "label": "숙이기 (↓ 키)",
+              "x": 494.75,
+              "y": 253.421875,
+              "width": 62,
+              "height": 63.578125,
+              "bottom": 317,
+              "right": 556.75
+            },
+            {
+              "id": "",
+              "label": "오른쪽 길로 (→ 키)",
+              "x": 702.25,
+              "y": 253.421875,
+              "width": 62,
+              "height": 63.578125,
+              "bottom": 317,
+              "right": 764.25
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+          "timeOrigin": 1791572084426.2,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "world",
+              "backingWidth": 390,
+              "backingHeight": 521,
+              "x": 0,
+              "y": 158,
+              "width": 390,
+              "height": 521.953125,
+              "bottom": 679.953125,
+              "right": 390,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 336,
+              "y": 105,
+              "width": 42,
+              "height": 42,
+              "bottom": 147,
+              "right": 378
+            },
+            {
+              "id": "say-text",
+              "label": "글로 보기",
+              "x": 291.546875,
+              "y": 179,
+              "width": 74.453125,
+              "height": 36,
+              "bottom": 215,
+              "right": 366
+            },
+            {
+              "id": "",
+              "label": "왼쪽 길로 (← 키)",
+              "x": 14,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 94
+            },
+            {
+              "id": "",
+              "label": "점프 (↑ 키)",
+              "x": 108,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 188
+            },
+            {
+              "id": "",
+              "label": "숙이기 (↓ 키)",
+              "x": 202,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 282
+            },
+            {
+              "id": "",
+              "label": "오른쪽 길로 (→ 키)",
+              "x": 296,
+              "y": 688.953125,
+              "width": 80,
+              "height": 82.046875,
+              "bottom": 771,
+              "right": 376
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        }
+      ],
+      "activeStart": {
+        "token": "86b7d069-613a-4104-bfa3-96c45e2e7a90",
+        "timeOrigin": 1791572084426.2,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 0,
+        "screens": [
+          "game"
+        ],
+        "accountMode": "guest",
+        "canvases": [
+          {
+            "id": "world",
+            "backingWidth": 390,
+            "backingHeight": 521,
+            "x": 0,
+            "y": 158,
+            "width": 390,
+            "height": 521.953125,
+            "bottom": 679.953125,
+            "right": 390,
+            "sameNode": true
+          }
+        ],
+        "controls": [
+          {
+            "id": "pause-button",
+            "label": "잠깐 멈춤",
+            "x": 336,
+            "y": 105,
+            "width": 42,
+            "height": 42,
+            "bottom": 147,
+            "right": 378
+          },
+          {
+            "id": "",
+            "label": "왼쪽 길로 (← 키)",
+            "x": 14,
+            "y": 688.953125,
+            "width": 80,
+            "height": 82.046875,
+            "bottom": 771,
+            "right": 94
+          },
+          {
+            "id": "",
+            "label": "점프 (↑ 키)",
+            "x": 108,
+            "y": 688.953125,
+            "width": 80,
+            "height": 82.046875,
+            "bottom": 771,
+            "right": 188
+          },
+          {
+            "id": "",
+            "label": "숙이기 (↓ 키)",
+            "x": 202,
+            "y": 688.953125,
+            "width": 80,
+            "height": 82.046875,
+            "bottom": 771,
+            "right": 282
+          },
+          {
+            "id": "",
+            "label": "오른쪽 길로 (→ 키)",
+            "x": 296,
+            "y": 688.953125,
+            "width": 80,
+            "height": 82.046875,
+            "bottom": 771,
+            "right": 376
+          }
+        ],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": null
+      }
+    },
+    {
+      "id": "rhythm",
+      "name": "말의 리듬",
+      "initial": {
+        "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+        "timeOrigin": 1791572090659,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 886,
+        "screens": [
+          "lobby"
+        ],
+        "accountMode": "guest",
+        "canvases": [
+          {
+            "id": "hero-runway",
+            "backingWidth": 358,
+            "backingHeight": 172,
+            "x": 16,
+            "y": 355.609375,
+            "width": 358,
+            "height": 171.59375,
+            "bottom": 527.203125,
+            "right": 374,
+            "sameNode": true
+          }
+        ],
+        "controls": [],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": null
+      },
+      "entrance": [
+        {
+          "orientation": "portrait",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 886,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-runway",
+              "backingWidth": 358,
+              "backingHeight": 172,
+              "x": 16,
+              "y": 355.609375,
+              "width": 358,
+              "height": 171.59375,
+              "bottom": 527.203125,
+              "right": 374,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "landscape",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 1395,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-runway",
+              "backingWidth": 812,
+              "backingHeight": 300,
+              "x": 16,
+              "y": 477.140625,
+              "width": 812,
+              "height": 300,
+              "bottom": 777.140625,
+              "right": 828,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 886,
+          "screens": [
+            "lobby"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "hero-runway",
+              "backingWidth": 358,
+              "backingHeight": 172,
+              "x": 16,
+              "y": 355.609375,
+              "width": 358,
+              "height": 171.59375,
+              "bottom": 527.203125,
+              "right": 374,
+              "sameNode": true
+            }
+          ],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        }
+      ],
+      "started": true,
+      "active": [
+        {
+          "orientation": "portrait",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "stage",
+              "backingWidth": 390,
+              "backingHeight": 623,
+              "x": 0,
+              "y": 158,
+              "width": 390,
+              "height": 623,
+              "bottom": 781,
+              "right": 390,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 336,
+              "y": 105,
+              "width": 42,
+              "height": 42,
+              "bottom": 147,
+              "right": 378
+            },
+            {
+              "id": "pad-0",
+              "label": "O, 맞아요 (F 키)",
+              "x": 10,
+              "y": 665,
+              "width": 179,
+              "height": 104,
+              "bottom": 769,
+              "right": 189
+            },
+            {
+              "id": "pad-1",
+              "label": "X, 아니에요 (J 키)",
+              "x": 201,
+              "y": 665,
+              "width": 179,
+              "height": 104,
+              "bottom": 769,
+              "right": 380
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "landscape",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "stage",
+              "backingWidth": 844,
+              "backingHeight": 215,
+              "x": 0,
+              "y": 112,
+              "width": 844,
+              "height": 215,
+              "bottom": 327,
+              "right": 844,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 796,
+              "y": 66,
+              "width": 38,
+              "height": 38,
+              "bottom": 104,
+              "right": 834
+            },
+            {
+              "id": "pad-0",
+              "label": "O, 맞아요 (F 키)",
+              "x": 122,
+              "y": 235,
+              "width": 294,
+              "height": 80,
+              "bottom": 315,
+              "right": 416
+            },
+            {
+              "id": "pad-1",
+              "label": "X, 아니에요 (J 키)",
+              "x": 428,
+              "y": 235,
+              "width": 294,
+              "height": 80,
+              "bottom": 315,
+              "right": 722
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+          "timeOrigin": 1791572090659,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 0,
+          "screens": [
+            "game"
+          ],
+          "accountMode": "guest",
+          "canvases": [
+            {
+              "id": "stage",
+              "backingWidth": 390,
+              "backingHeight": 623,
+              "x": 0,
+              "y": 158,
+              "width": 390,
+              "height": 623,
+              "bottom": 781,
+              "right": 390,
+              "sameNode": true
+            }
+          ],
+          "controls": [
+            {
+              "id": "pause-button",
+              "label": "잠깐 멈춤",
+              "x": 336,
+              "y": 105,
+              "width": 42,
+              "height": 42,
+              "bottom": 147,
+              "right": 378
+            },
+            {
+              "id": "pad-0",
+              "label": "O, 맞아요 (F 키)",
+              "x": 10,
+              "y": 665,
+              "width": 179,
+              "height": 104,
+              "bottom": 769,
+              "right": 189
+            },
+            {
+              "id": "pad-1",
+              "label": "X, 아니에요 (J 키)",
+              "x": 201,
+              "y": 665,
+              "width": 179,
+              "height": 104,
+              "bottom": 769,
+              "right": 380
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        }
+      ],
+      "activeStart": {
+        "token": "eed6c7ee-4640-45f4-90c4-398e7cf536af",
+        "timeOrigin": 1791572090659,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 0,
+        "screens": [
+          "game"
+        ],
+        "accountMode": "guest",
+        "canvases": [
+          {
+            "id": "stage",
+            "backingWidth": 390,
+            "backingHeight": 623,
+            "x": 0,
+            "y": 158,
+            "width": 390,
+            "height": 623,
+            "bottom": 781,
+            "right": 390,
+            "sameNode": true
+          }
+        ],
+        "controls": [
+          {
+            "id": "pause-button",
+            "label": "잠깐 멈춤",
+            "x": 336,
+            "y": 105,
+            "width": 42,
+            "height": 42,
+            "bottom": 147,
+            "right": 378
+          },
+          {
+            "id": "pad-0",
+            "label": "O, 맞아요 (F 키)",
+            "x": 10,
+            "y": 665,
+            "width": 179,
+            "height": 104,
+            "bottom": 769,
+            "right": 189
+          },
+          {
+            "id": "pad-1",
+            "label": "X, 아니에요 (J 키)",
+            "x": 201,
+            "y": 665,
+            "width": 179,
+            "height": 104,
+            "bottom": 769,
+            "right": 380
+          }
+        ],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": null
+      }
+    },
+    {
+      "id": "hangul",
+      "name": "한글 만나기",
+      "initial": {
+        "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+        "timeOrigin": 1791572097250.7,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 1730,
+        "screens": [
+          "home"
+        ],
+        "accountMode": null,
+        "canvases": [],
+        "controls": [],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": null
+      },
+      "entrance": [
+        {
+          "orientation": "portrait",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 1730,
+          "screens": [
+            "home"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "landscape",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 2566,
+          "screens": [
+            "home"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 1730,
+          "screens": [
+            "home"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": null
+        }
+      ],
+      "started": true,
+      "active": [
+        {
+          "orientation": "portrait",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 32,
+          "screens": [
+            "session"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [
+            {
+              "id": "quit",
+              "label": "그만하기",
+              "x": 16,
+              "y": 14,
+              "width": 46,
+              "height": 46,
+              "bottom": 60,
+              "right": 62
+            },
+            {
+              "id": "",
+              "label": "시작",
+              "x": 16,
+              "y": 703,
+              "width": 358,
+              "height": 64,
+              "bottom": 767,
+              "right": 374
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": "0%"
+        },
+        {
+          "orientation": "landscape",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 844,
+          "height": 327,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 211,
+          "screens": [
+            "session"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [
+            {
+              "id": "quit",
+              "label": "그만하기",
+              "x": 138,
+              "y": 30,
+              "width": 46,
+              "height": 46,
+              "bottom": 76,
+              "right": 184
+            },
+            {
+              "id": "",
+              "label": "시작",
+              "x": 138,
+              "y": 249,
+              "width": 568,
+              "height": 64,
+              "bottom": 313,
+              "right": 706
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": "0%"
+        },
+        {
+          "orientation": "return-portrait",
+          "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+          "timeOrigin": 1791572097250.7,
+          "width": 390,
+          "height": 781,
+          "dpr": 1,
+          "overflowX": 0,
+          "overflowY": 32,
+          "screens": [
+            "session"
+          ],
+          "accountMode": null,
+          "canvases": [],
+          "controls": [
+            {
+              "id": "quit",
+              "label": "그만하기",
+              "x": 16,
+              "y": 14,
+              "width": 46,
+              "height": 46,
+              "bottom": 60,
+              "right": 62
+            },
+            {
+              "id": "",
+              "label": "시작",
+              "x": 16,
+              "y": 703,
+              "width": 358,
+              "height": 64,
+              "bottom": 767,
+              "right": 374
+            }
+          ],
+          "pauseVisible": [],
+          "distance": null,
+          "progress": "0%"
+        }
+      ],
+      "activeStart": {
+        "token": "8915fb49-67c6-4b22-9894-b8df25241680",
+        "timeOrigin": 1791572097250.7,
+        "width": 390,
+        "height": 781,
+        "dpr": 1,
+        "overflowX": 0,
+        "overflowY": 32,
+        "screens": [
+          "session"
+        ],
+        "accountMode": null,
+        "canvases": [],
+        "controls": [
+          {
+            "id": "quit",
+            "label": "그만하기",
+            "x": 16,
+            "y": 14,
+            "width": 46,
+            "height": 46,
+            "bottom": 60,
+            "right": 62
+          },
+          {
+            "id": "",
+            "label": "시작",
+            "x": 16,
+            "y": 703,
+            "width": 358,
+            "height": 64,
+            "bottom": 767,
+            "right": 374
+          }
+        ],
+        "pauseVisible": [],
+        "distance": null,
+        "progress": "0%"
+      }
+    }
+  ],
+  "traceObservations": [],
+  "screenshots": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-auto-portrait.jpg",
+      "bytes": 92780,
+      "sha256": "eb543689e8ca6879c9e9313dd72f01b9e8ed28ba5022065a481881aa2d6a5202"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-auto-landscape.jpg",
+      "bytes": 99340,
+      "sha256": "4df92fd9db3340a3dc0bc7033c4e47bbf0594f89cc1f39708ad03a62ce5bc68b"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-landscape-preference-settings.jpg",
+      "bytes": 32371,
+      "sha256": "f9fbc93002a61582db9b335dab456fe274783269e04be9e6d05f332520f23abe"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-landscape-hint.jpg",
+      "bytes": 94131,
+      "sha256": "58ae137643b181999abbce40bbdcde275f897e0314e45c7572f5fbb405a09df0"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-preference-restored.jpg",
+      "bytes": 94243,
+      "sha256": "151dc6c5e5e27421f6f347355fcc171c94c113f7ab2163a8fbf01189f2da54b7"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-auto-restored.jpg",
+      "bytes": 92895,
+      "sha256": "59eeec71b6b729b040f344b18943028532309e9fdefccb55118bbb70cca250dc"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-portrait-preference-settings.jpg",
+      "bytes": 32720,
+      "sha256": "77477048179f770ace30dbc637315f0a84d13a542092a2e61b3a8dff6d92660c"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-portrait-hint.jpg",
+      "bytes": 101270,
+      "sha256": "fcb01ce2b8f938bf3cc8aac4f25f760e977254ba94412c627086bbe0d9fe0cd9"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-portrait-matched.jpg",
+      "bytes": 92381,
+      "sha256": "41eafa6dcb3df681d5c9c45965897acb8ebf823db69837a8a291fb88af08b454"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\phone-reset-auto-settings.jpg",
+      "bytes": 32678,
+      "sha256": "934001fa80fb5ece5c34279e0fe62c9ea77b53337dd278e453eb77d66242206b"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-auto-landscape.jpg",
+      "bytes": 234371,
+      "sha256": "0cc8898580ee8a21f483fee4c4638ff7215c1461dce7a4af9afedd6bcd9b7628"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-portrait-settings.jpg",
+      "bytes": 47475,
+      "sha256": "27bf997882771f8e3cba6f9f14a544eec06a2d61aa51b80b2f3ab629ded1b114"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-selected-portrait.jpg",
+      "bytes": 127675,
+      "sha256": "5aa35e0e01d976194ab44ee35135fa8a6010195e694af937010677b344b6a077"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-portrait-restored.jpg",
+      "bytes": 128020,
+      "sha256": "e2e68e4c5c39dc8b176382bdb14c7f593059f6306ae0ce218c65ac39ace4a0aa"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-landscape-settings.jpg",
+      "bytes": 81493,
+      "sha256": "176f0eeb67d2d974be3a2d338c4e2a809b77fa0910949b8722e1dc67dfb12c7e"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-selected-landscape.jpg",
+      "bytes": 233892,
+      "sha256": "cb378893ef46d905a17d250eb789dfe988495fa84a61d8808a1051f8da25f668"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-auto-settings.jpg",
+      "bytes": 83214,
+      "sha256": "48d8e03ebfbac03cf6e1270ce62cd5cc3b0e0cdc2d2190f50372e338778a859a"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\desktop-auto-return.jpg",
+      "bytes": 233722,
+      "sha256": "9ac1b8c19dee20f04a3bea2bc281974b32946ea2cdcb13ff9fb82bf62359f9ba"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-entrance-portrait.jpg",
+      "bytes": 80887,
+      "sha256": "1bd5481f26f240ce5745ca3f0275a4243ed86860b01906bd2925f200318248f7"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-entrance-landscape.jpg",
+      "bytes": 73697,
+      "sha256": "8c80d406e6e767e59a1da2b2da40426241276139c6bd9bcab2944cc128166472"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-entrance-return-portrait.jpg",
+      "bytes": 81179,
+      "sha256": "67e16555f9eb198652e2da5108b3e764e694eb83f4185e7f34c62da61357ff6b"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-active-portrait.jpg",
+      "bytes": 61158,
+      "sha256": "79b51542d159ac1b9d490ad45b48fb1d42803bc3cb7dafd6932e1f7af005e6b3"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-active-landscape.jpg",
+      "bytes": 56588,
+      "sha256": "286e5a66acffb71fcf9750f7821989726cfbc85fedd89ab9ade81c28d09c320d"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\runner-active-return-portrait.jpg",
+      "bytes": 60278,
+      "sha256": "7945459be34997a42113e9f94bc4aa0ddf6bac39d0025c33d6be75717e4051a2"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-entrance-portrait.jpg",
+      "bytes": 83043,
+      "sha256": "81bd69a98f2fa21eb588ce13afd13c7a330902c9a19c8c88a00a493e6e00ec70"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-entrance-landscape.jpg",
+      "bytes": 74234,
+      "sha256": "497c205b3455bb7e2b0687f4e5caa640d30766ecdc7a2371ba8f44d3651d78f1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-entrance-return-portrait.jpg",
+      "bytes": 83308,
+      "sha256": "22fdeee2b5daa24748e7cd23fe007ae9948466804f7a13eae7d30694e6110ad0"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-active-portrait.jpg",
+      "bytes": 66594,
+      "sha256": "c23644bd4f3cb4fb97fff0f142a111ef59fbda0fe875271b9d8172585411f714"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-active-landscape.jpg",
+      "bytes": 54959,
+      "sha256": "ea0bc6a5f9a885ff985a24b1fb9a1c97d3e17a680f510509af5eedd6b08873b3"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\rhythm-active-return-portrait.jpg",
+      "bytes": 66513,
+      "sha256": "c78955ede1c7a31073b83f0ec03bad96a6b796f31294734df190a8d893e6e04b"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-entrance-portrait.jpg",
+      "bytes": 63655,
+      "sha256": "c74d755e7de93b3a714507c5f6362e7dd92fc1f3f340c825e94a2f0edbadbfe9"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-entrance-landscape.jpg",
+      "bytes": 54896,
+      "sha256": "84ca8d48f1a180f2fc6c3764571b233b57f46f9d0bd0c3574c34d2f8224d7fb1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-entrance-return-portrait.jpg",
+      "bytes": 63667,
+      "sha256": "c1f42999fb0692d7f8e1b04c86ba6564ee24564804b3f3ab488d6338d7b7749f"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-active-portrait.jpg",
+      "bytes": 25839,
+      "sha256": "106cc362239dffb4dcbc85925229e55b7db25dcae97dd3b67b32f0b1185ce9c7"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-active-landscape.jpg",
+      "bytes": 22581,
+      "sha256": "90ebd111fc562128d10ba104782d33ba4f66e0db85e0185efd03d5e34ba5684e"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-active-return-portrait.jpg",
+      "bytes": 25839,
+      "sha256": "106cc362239dffb4dcbc85925229e55b7db25dcae97dd3b67b32f0b1185ce9c7"
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blocked": [],
+  "scope": "Isolated guest Edge contexts. Real orientation preference UI, viewport changes, and same iframe/document/canvas identities. Game startup uses existing local sound assets; no answers, completed rounds, account actions, or paid requests. Emulation does not certify physical OS orientation locks."
+}

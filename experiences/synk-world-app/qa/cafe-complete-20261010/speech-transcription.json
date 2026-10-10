@@ -1,0 +1,98 @@
+{
+  "model": "cached local large-v3-turbo",
+  "network": false,
+  "humanListening": false,
+  "clips": [
+    {
+      "id": "cafe-apply-1",
+      "expected": "어서 오세요. 어떤 음료로 드릴까요?",
+      "recognized": "어서오세요 어떤 음료로 드릴까요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-apply-2",
+      "expected": "가져가실 건가요?",
+      "recognized": "가져가실 건가요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-apply-3",
+      "expected": "따뜻한 차가 준비됐어요. 매장에서 드시나요?",
+      "recognized": "따뜻한 차가 준비됐어요. 매장에서 드시나요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-taste-1",
+      "expected": "어서 오세요. 오늘은 어떤 음료를 드릴까요?",
+      "recognized": "어서오세요 오늘은 어떤 음료를 드릴까요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-taste-2",
+      "expected": "따뜻한 차를 몇 잔 준비할까요?",
+      "recognized": "따뜻한 차를 몇 잔 준비할까요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-taste-3",
+      "expected": "가져가실 건가요, 여기서 드실 건가요?",
+      "recognized": "가져가실 건가요? 여기서 드실 건가요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-soldout-1",
+      "expected": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.",
+      "recognized": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-soldout-2",
+      "expected": "따뜻한 차 두 잔 맞으시죠?",
+      "recognized": "따뜻한 차 2점 맞으시죠?",
+      "exactNormalizedMatch": false
+    },
+    {
+      "id": "cafe-visit-soldout-3",
+      "expected": "차가 준비됐어요. 매장에서 드시나요?",
+      "recognized": "차가 준비됐어요? 매장에서 드시나요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-change-1",
+      "expected": "따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?",
+      "recognized": "따뜻한 주스 2잔! 아직 만들기 전이에요. 주문을 바꾸시겠어요?",
+      "exactNormalizedMatch": false
+    },
+    {
+      "id": "cafe-visit-change-2",
+      "expected": "따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?",
+      "recognized": "따뜻한 차 두 잔으로 바꿨어요 더 필요한 것이 있나요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-visit-change-3",
+      "expected": "세 잔 모두 매장에서 드실 건가요?",
+      "recognized": "세 잔 모두 매장에서 드실 건가요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-compose-1",
+      "expected": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?",
+      "recognized": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?",
+      "exactNormalizedMatch": true
+    },
+    {
+      "id": "cafe-compose-2",
+      "expected": "따뜻한 차 두 잔 맞으시죠?",
+      "recognized": "따뜻한 차 2점 맞으시죠?",
+      "exactNormalizedMatch": false
+    },
+    {
+      "id": "cafe-compose-3",
+      "expected": "가져가실 건가요, 여기서 드실 건가요?",
+      "recognized": "가져가실 건가요? 여기서 드실 건가요?",
+      "exactNormalizedMatch": true
+    }
+  ],
+  "matched": 12
+}

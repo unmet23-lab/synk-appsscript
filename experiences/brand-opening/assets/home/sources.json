@@ -1,0 +1,79 @@
+{
+  "newImageGeneration": false,
+  "files": [
+    {
+      "source": "experiences/synk-world-home/assets/logo.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "logo.webp",
+      "sha256": "602ab698b7e06b0af176ba45bb10fa2fec0705a7c96c40f0f03a9cf8bd3654b7"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/headphones.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "headphones.webp",
+      "sha256": "aed79440b44a2e6fa7a1f21f08fcd43791cd4d758c2d6033cc7305fb3a2c2e64"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/scarf.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "scarf.webp",
+      "sha256": "a5c9f907c91f314d4e408a8bdf7bea63fc91266970c13ff345bacf120c496b09"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/mongle-smile.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "mongle-smile.webp",
+      "sha256": "4cac4359b807915ae8e0054aa2b831c5172b5dd849b3ff97c9d460ba099bd051"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/button-white.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "button-white.webp",
+      "sha256": "84569abd7fed8e954281cd109f19def8288321c41c8bbbe3f8804208fe43f6ac"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/button-coral.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "button-coral.webp",
+      "sha256": "d58a4c8912eba6972ef1a38a7f701b7d841970a164524d41f267984949686849"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/quality-cream.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "quality-cream.webp",
+      "sha256": "6f5d6593da6f7e845a33f3579f684be82ef8b81dc7a80555962261824a442c1a"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/quality-blush.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "quality-blush.webp",
+      "sha256": "b7c5d1ce2744196d728ca145eeca6ff531b629d3d2e5ba37e94fd9432f5c57fa"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/felt-blue.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "felt-blue.webp",
+      "sha256": "15267ac2ca5b8e01ac28436a96ff7aa153a92961b669dd133ca2f6d4ddc828ca"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/felt-butter.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "felt-butter.webp",
+      "sha256": "d58e05da20f74089a004cd7af0c19092508110a51bd401dd8535bfe45578e6b1"
+    },
+    {
+      "source": "experiences/synk-world-home/assets/DMMono.woff2",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "DMMono.woff2",
+      "sha256": "845728ef62631a81b4bdcd05a8157fdb3fac058bf6b23a93b838206a265da8b8"
+    },
+    {
+      "source": "experiences/word-magic/assets/objects/book.webp",
+      "transform": "Exact existing optimized asset, unchanged",
+      "file": "book.webp",
+      "sha256": "98601e0ee25557d39c26a676418d7fc445d62847b1a1b78b21adf4331aa3aa28"
+    }
+  ],
+  "scope": "Post-opening WORLD home preview",
+  "date": "2026-10-10"
+}

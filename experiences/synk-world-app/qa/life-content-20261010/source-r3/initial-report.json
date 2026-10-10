@@ -1,0 +1,358 @@
+{
+  "checkedAt": "2026-10-09T21:37:44.346Z",
+  "base": "http://127.0.0.1:4312",
+  "passed": 25,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "all four felt variables resolve to the approved brand asset directory",
+      "passed": true,
+      "detail": [
+        {
+          "name": "--life-paper-button",
+          "value": "url(\"http://127.0.0.1:4312/brand-opening/assets/home/button-white.webp\")"
+        },
+        {
+          "name": "--life-coral-button",
+          "value": "url(\"http://127.0.0.1:4312/brand-opening/assets/home/button-coral.webp\")"
+        },
+        {
+          "name": "--life-cream",
+          "value": "url(\"http://127.0.0.1:4312/brand-opening/assets/home/quality-cream.webp\")"
+        },
+        {
+          "name": "--life-blush",
+          "value": "url(\"http://127.0.0.1:4312/brand-opening/assets/home/quality-blush.webp\")"
+        }
+      ]
+    },
+    {
+      "name": "answer/320x740: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "answer/320x740: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/320x740: each answer keeps a 44px target",
+      "passed": true,
+      "detail": [
+        {
+          "width": 288,
+          "height": 45.296875
+        },
+        {
+          "width": 288,
+          "height": 45.296875
+        },
+        {
+          "width": 288,
+          "height": 45.296875
+        }
+      ]
+    },
+    {
+      "name": "answer/320x740: answer 1 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/320x740: answer 2 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/320x740: answer 3 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/740x320: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "answer/740x320: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/740x320: each answer keeps a 44px target",
+      "passed": true,
+      "detail": [
+        {
+          "width": 343,
+          "height": 44
+        },
+        {
+          "width": 343,
+          "height": 44
+        },
+        {
+          "width": 343,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "answer/740x320: answer 1 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/740x320: answer 2 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/740x320: answer 3 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/390x844: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "answer/390x844: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/390x844: each answer keeps a 44px target",
+      "passed": true,
+      "detail": [
+        {
+          "width": 350,
+          "height": 46.75
+        },
+        {
+          "width": 350,
+          "height": 46.75
+        },
+        {
+          "width": 350,
+          "height": 46.75
+        }
+      ]
+    },
+    {
+      "name": "answer/390x844: answer 1 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/390x844: answer 2 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/390x844: answer 3 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/844x390: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "answer/844x390: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/844x390: each answer keeps a 44px target",
+      "passed": true,
+      "detail": [
+        {
+          "width": 393,
+          "height": 44
+        },
+        {
+          "width": 393,
+          "height": 44
+        },
+        {
+          "width": 393,
+          "height": 44
+        }
+      ]
+    },
+    {
+      "name": "answer/844x390: answer 1 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/844x390: answer 2 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "answer/844x390: answer 3 is reachable",
+      "passed": true,
+      "detail": {
+        "inside": true,
+        "hit": true
+      }
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "resources": [],
+  "observations": [
+    {
+      "name": "answer/320x740",
+      "layout": "portrait",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "answer/740x320",
+      "layout": "landscape",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "answer/390x844",
+      "layout": "portrait",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "answer/844x390",
+      "layout": "landscape",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r3\\failure.jpg"
+  ],
+  "coverage": {
+    "lessons": [],
+    "stories": [],
+    "originalQuestions": [],
+    "reviewQuestions": []
+  },
+  "error": "page.waitForResponse: Timeout 20000ms exceeded while waiting for event \"response\"\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r3\\targeted-assets.cjs:33:25",
+  "limits": [
+    "Isolated Edge browser contexts; physical phones and native apps are not covered.",
+    "Dedicated local rehearsal database and synthetic accounts; no real OAuth, remote publication, AI, or paid calls.",
+    "Prepared reading-and-choice content is verified here; spoken audio or student learning effects are not inferred."
+  ]
+}

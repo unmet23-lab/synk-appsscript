@@ -1,0 +1,535 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-10T11:45:14.460Z",
+  "base": "http://127.0.0.1:4313",
+  "entry": "http://127.0.0.1:4313/mobile.html?opening=off&cafe=1",
+  "checks": [
+    {
+      "name": "cafe library exposes all four visits",
+      "passed": true
+    },
+    {
+      "name": "the original visit still completes",
+      "passed": true
+    },
+    {
+      "name": "home proposes taste story before the untouched greeting pack",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste opens the next playable story",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste welcome portrait fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-taste allows repair without advancing",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 844x390 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 844x390 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          844,
+          390
+        ],
+        "panel": [
+          2,
+          0,
+          840,
+          390
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-taste reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "new visit help persists before a response",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 320x740 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 320x740 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          10,
+          320,
+          720
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-taste 740x320 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 740x320 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-taste waits for pickup after all three responses",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste finishes on pickup and retains its first error",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 390x844 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste 390x844 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          32.984375,
+          390,
+          778.03125
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "home naturally advances to 주스가 없는 날",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout opens the next playable story",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout welcome portrait fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-soldout allows repair without advancing",
+      "passed": true
+    },
+    {
+      "name": "sold out juice creates zero cups",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 844x390 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 844x390 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          844,
+          390
+        ],
+        "panel": [
+          2,
+          0,
+          840,
+          390
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-soldout reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 320x740 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 320x740 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          10,
+          320,
+          720
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-soldout 740x320 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 740x320 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-soldout waits for pickup after all three responses",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout finishes on pickup and retains its first error",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 390x844 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-soldout 390x844 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          32.984375,
+          390,
+          778.03125
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "home naturally advances to 까몽의 마음이 바뀌었어요",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change opens the next playable story",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change welcome portrait fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-change allows repair without advancing",
+      "passed": true
+    },
+    {
+      "name": "unchanged juice order is still two warm juice cups",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 844x390 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 844x390 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          844,
+          390
+        ],
+        "panel": [
+          2,
+          0,
+          840,
+          390
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-change reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "adding one cup changes two to three",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 320x740 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 320x740 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          10,
+          320,
+          720
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-change 740x320 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 740x320 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "cafe-visit-change waits for pickup after all three responses",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change reload restores the exact checkpoint",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change finishes on pickup and retains its first error",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 390x844 keeps visit and attempt",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-change 390x844 fits with full cups, 44px controls and reachable main action",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          20.734375,
+          390,
+          802.53125
+        ],
+        "overflow": false,
+        "short": [],
+        "clippedCups": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "four independent visits are completed exactly once",
+      "passed": true
+    },
+    {
+      "name": "new cafe expression returns in a transfer scene: cafe-visit-taste-drink-transfer",
+      "passed": true
+    },
+    {
+      "name": "new cafe expression returns in a transfer scene: cafe-visit-taste-count-transfer",
+      "passed": true
+    },
+    {
+      "name": "new cafe expression returns in a transfer scene: cafe-visit-soldout-menu-transfer",
+      "passed": true
+    },
+    {
+      "name": "new cafe expression returns in a transfer scene: cafe-visit-change-drink-transfer",
+      "passed": true
+    },
+    {
+      "name": "all four difficult or helped expressions are reviewed",
+      "passed": true
+    },
+    {
+      "name": "three new cafe stories are discoverable in the story library",
+      "passed": true
+    },
+    {
+      "name": "no JavaScript, HTTP or external request errors",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "httpErrors": [],
+        "external": []
+      }
+    }
+  ],
+  "passed": 63,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\library-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\home-next-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-taste-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-taste-repair-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-taste-ready-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-taste-ready-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-taste-complete-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-soldout-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-soldout-repair-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-soldout-ready-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-soldout-ready-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-soldout-complete-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-change-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-change-repair-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-change-ready-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-change-ready-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-visits-20261010\\source-r2\\cafe-visit-change-complete-390.png"
+  ],
+  "scope": {
+    "local": true,
+    "guest": true,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false
+  }
+}

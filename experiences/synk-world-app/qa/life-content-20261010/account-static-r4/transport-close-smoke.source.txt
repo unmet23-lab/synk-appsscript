@@ -1,0 +1,31 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {createRequire} from 'node:module';
+import {fileURLToPath} from 'node:url';
+const require=createRequire(import.meta.url);
+const {chromium}=require('C:/Users/q1212/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+
+const bounded=async(promise,ms)=>{let timer;try{return await Promise.race([promise.then(()=>({completed:true})),new Promise(resolve=>timer=setTimeout(()=>resolve({completed:false,timedOut:true}),ms))]);}finally{clearTimeout(timer);}};
+
+test('isolated fixture browser process stops with bounded cleanup and explicit Node runner exit',{timeout:30000},async()=>{
+ const server=await chromium.launchServer({channel:'msedge',headless:true});
+ let browser;
+ try{
+  browser=await chromium.connect(server.wsEndpoint());
+  const context=await browser.newContext(),page=await context.newPage();
+  await page.goto('data:text/html,<title>Transport fixture</title><p>Empty local fixture</p>');
+  assert.equal(await page.locator('p').textContent(),'Empty local fixture');
+  const disconnect=await bounded(browser.close(),3000),serverClose=await bounded(server.close(),8000);
+  if(server.process().exitCode===null)server.process().kill('SIGKILL');
+  for(let i=0;i<30&&server.process().exitCode===null&&server.process().signalCode===null;i++)await new Promise(resolve=>setTimeout(resolve,100));
+  await new Promise(resolve=>setTimeout(resolve,100));
+  const resources=process.getActiveResourcesInfo(),listeners=resources.filter(name=>name==='TCPServerWrap').length;
+  assert.ok(listeners<=1);assert.ok(server.process().exitCode!==null||server.process().signalCode!==null);
+  fs.writeFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)),'transport-close.json'),JSON.stringify({ok:true,emptyFixture:true,browserProcessExited:true,tcpListenersBeforeRunnerExit:listeners,listenerPort:Number(new URL(server.wsEndpoint()).port),testWorkerPid:process.pid,disconnect,serverClose,remainingResourceTypes:resources,testRunnerFlag:'--test-force-exit',note:'No product page, account, or paid network request is used. Browser API close promises are bounded exactly as in the real harness. The remaining SDK listener, when present, is deliberately closed by official Node runner exit; this is not a claim of graceful zero handles before process exit.'},null,2));
+ }finally{
+  if(browser?.isConnected())await bounded(browser.close().catch(()=>{}),1000);
+  if(server.process().exitCode===null&&server.process().signalCode===null)server.process().kill('SIGKILL');
+ }
+});

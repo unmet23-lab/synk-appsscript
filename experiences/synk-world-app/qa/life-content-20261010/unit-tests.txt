@@ -1,0 +1,36 @@
+✔ six complete packs contain eighteen lessons and 108 authored questions (3.5985ms)
+✔ stable identifiers are unique and exported lookups return the same catalog (0.5221ms)
+✔ every question has one answer among distinct short choices and an explanation (1.4477ms)
+✔ questions and reviews retain an existing reading skill and expression family (0.4086ms)
+✔ all reviews change the supplied situation rather than only shuffling answers (0.9054ms)
+✔ six story episodes contain a complete scene and all three distinct friends (0.2009ms)
+✔ character dialogue preserves the approved text voice and contains no added narration channel (0.4482ms)
+✔ content is serializable and does not claim speech practice, levels, or proven outcomes (3.2394ms)
+✔ the complete real life record survives canonical JSONB storage and a fresh device (2099.5746ms)
+✔ the real server preserves the alternate device until an explicit progress choice (1595.3661ms)
+✔ the life key is allowed directly, with no borrowing another game record (0.9048ms)
+✔ lesson starts, intermediate story stage and answer resume across reloads (6.4105ms)
+✔ first answers persist; a retry cannot erase an error or a help-used review (37.8058ms)
+✔ lesson replay preserves scheduled transfer review, and new errors only bring it forward (1.0637ms)
+✔ help opened before choosing is remembered through reload in lessons and reviews (0.4317ms)
+✔ completion requires all questions, is idempotent, and selects the next lesson (0.8541ms)
+✔ wrong/help reviews become due in a minute; successful transfer reviews expand intervals (1.0086ms)
+✔ a review session resumes from remaining questions after reload (0.2519ms)
+✔ guest, account A and account B retain separate local progress without implicit import (0.2496ms)
+✔ malformed and wrong-owner originals remain untouched instead of being silently reset (1.4434ms)
+✔ a failed local write retains an unsaved draft and retry saves it explicitly (0.4007ms)
+✔ an owner guard and stop prevent old callbacks from changing progress (0.3904ms)
+✔ verified life port exposes only the dedicated key and saves actual record through the official contract (14.1211ms)
+✔ a lost acknowledgement retries the same cryptographic command id, without duplicating completion (2.1867ms)
+✔ an unprepared remote key rejects and preserves draft, and cannot be called account-saved (2.4991ms)
+✔ a rejected draft survives a new port and requires an explicit local/remote choice (6.0658ms)
+✔ choosing remote progress keeps the rejected original archived without silently importing it (3.7244ms)
+✔ logout beats a delayed life save; old port cannot read, save or apply its acknowledgement (7.6965ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4041.8446

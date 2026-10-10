@@ -1,0 +1,74 @@
+[
+  {
+    "id": "greetings-expressions",
+    "sha256": "2194e5ac6395f27dc5e62c149effdc921441060bca569f2608a6844c0d90b6ed"
+  },
+  {
+    "id": "greetings-story",
+    "sha256": "807a337aafe088948d40e8991240ffb087cc2a501fb7d48c8b29d6f22329a1ae"
+  },
+  {
+    "id": "greetings-apply",
+    "sha256": "c98fbadbcbf88ca859e3fa13e40c207e4db8e89836877a0e3536b3b72ae9b814"
+  },
+  {
+    "id": "cafe-expressions",
+    "sha256": "4ac1fd4ed6e0bc3fd5be9bcfb800a3d9f1a3e6b2169921ee03d49e98d8d6ecc9"
+  },
+  {
+    "id": "cafe-story",
+    "sha256": "d9547d22c1d9a09899a841e12cab0462652796b91f1652b5d377ac42940a2192"
+  },
+  {
+    "id": "cafe-apply",
+    "sha256": "4332423a9459191b895606a3481fe95939180bb74a2d6d0a0619804c300413ea"
+  },
+  {
+    "id": "store-expressions",
+    "sha256": "7450705ab9ce0546eb33a6c4822187ba9d644fa18b9c3c8068e4efb8054430db"
+  },
+  {
+    "id": "store-story",
+    "sha256": "f13354569612066691de60c3c4fb64cfbd9ce9defa14cd26ca7561ca8a47b2c2"
+  },
+  {
+    "id": "store-apply",
+    "sha256": "2a850071456f114703ad32e95f7f7726336010b24c8e4d64a6c5865748572927"
+  },
+  {
+    "id": "directions-expressions",
+    "sha256": "11a0406458603df75602172d4df306599637a6e2c90276ba614af1afa7650be5"
+  },
+  {
+    "id": "directions-story",
+    "sha256": "4c1fa31bab6d14e0e91c61d665a90438ff2ab0b03c5f58f503e0e86379f46fc1"
+  },
+  {
+    "id": "directions-apply",
+    "sha256": "7c279707c1024eac88e9a4e50cb63d7f793a18c2dca7d84bc82fdf6c74bf070e"
+  },
+  {
+    "id": "transit-expressions",
+    "sha256": "38013f94afd51a0e559dc7bbe16e5cfabcbf17e61dead529c7f9b63fdc0fcdcf"
+  },
+  {
+    "id": "transit-story",
+    "sha256": "8737860ba01a5b45ff4e466c31b49093e5d6c7c4e1e8b16be94c80feba2c0266"
+  },
+  {
+    "id": "transit-apply",
+    "sha256": "f720b928c1bf6773ed2d108399ffaba60ae0117ad7c96c31b4b26b859a11f0c2"
+  },
+  {
+    "id": "plans-expressions",
+    "sha256": "d532066720ca4a748af7f081c73e0b85ce880e767e3cc968d7381c867f562c67"
+  },
+  {
+    "id": "plans-story",
+    "sha256": "c7f5be9450e519b3859f5e25371731a333a906c82a6296a0fa6a735546d5fb1f"
+  },
+  {
+    "id": "plans-apply",
+    "sha256": "029a998494cb6d4c3dacd6bf4f03c7878cbf2bacbc430006a9e7c5721712542f"
+  }
+]

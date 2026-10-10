@@ -1,0 +1,600 @@
+{
+  "ok": true,
+  "syntheticAccount": true,
+  "liveProviderCalls": false,
+  "actualBrowser": "Chromium/Edge",
+  "mode": "account",
+  "publicPayload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-maru-20261010-r6\\world",
+  "health": {
+    "mode": "account",
+    "database": null,
+    "rehearsal": false,
+    "static": true
+  },
+  "checks": [
+    "verified-account",
+    "explicit-learning-consent",
+    "enrollment-preview-before-claim",
+    "bfcache-reverification",
+    "verified-town-sharing",
+    "town-logout-relogin",
+    "embedded-runner-and-rhythm",
+    "same-iframe-rotation",
+    "account-wallet-save",
+    "duplicate-reward-prevention",
+    "runner-progress-save",
+    "in-app-progress-conflict-recovery",
+    "hangul-return",
+    "logout-removes-game-hosts",
+    "guest-sign-in-before-game",
+    "no-real-external-traffic"
+  ],
+  "actualBfcache": false,
+  "forcedBfcacheBranch": true,
+  "hangulHref": "http://127.0.0.1:56767/world/hangul-stage/",
+  "privateArtifacts": [],
+  "conflictInjected": true,
+  "gameEntrances": [
+    {
+      "game": "runner",
+      "href": "http://127.0.0.1:56767/world/korean-runner/",
+      "reward": {
+        "saved": true,
+        "coins": 25,
+        "repeatCoins": 0,
+        "mode": "account"
+      },
+      "rotationDocumentPreserved": true
+    },
+    {
+      "game": "rhythm",
+      "href": "http://127.0.0.1:56767/world/korean-rhythm/",
+      "reward": {
+        "saved": true,
+        "coins": 25,
+        "repeatCoins": 0,
+        "mode": "account"
+      },
+      "rotationDocumentPreserved": true
+    }
+  ],
+  "calls": [
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "learning-consent",
+        "enabled": true,
+        "expected_revision": 1
+      }
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-classroom/api/enrollment/preview",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "token": "synthetic_invite_1234567890123456"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-classroom/api/enrollment/claim",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "token": "synthetic_invite_1234567890123456",
+        "confirm": true
+      }
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/entry",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/state",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-classroom/api/world/town/sharing",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "enabled": true,
+        "revision": 1
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/entry",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/state",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/state",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "4c5d45f2-56ee-4912-b775-60043ab9405a",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "4c5d45f2-56ee-4912-b775-60043ab9405a",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/command",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "id": "c65e9949-0bc3-45ee-8a64-e127c423c943",
+        "type": "DAY_WALK_ENABLE",
+        "payload": {
+          "surfaceId": "4c5d45f2-56ee-4912-b775-60043ab9405a",
+          "fence": 1
+        },
+        "expectedRevision": 2
+      }
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "revoke-session",
+        "session_id": "22222222-2222-4222-8222-222222222222"
+      }
+    },
+    {
+      "path": "/auth/v1/logout",
+      "classId": null,
+      "method": "POST",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/entry",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/state",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/state",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "ef6cc15f-8897-40e4-9efb-9e1a0af95cf6",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "ef6cc15f-8897-40e4-9efb-9e1a0af95cf6",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "ef6cc15f-8897-40e4-9efb-9e1a0af95cf6",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-town/presence",
+      "classId": "22222222-2222-4222-8222-222222222222",
+      "method": "POST",
+      "body": {
+        "surfaceId": "ef6cc15f-8897-40e4-9efb-9e1a0af95cf6",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "wallet",
+        "method": "awardMiniGame",
+        "args": [
+          {
+            "game": "runner",
+            "total": 5,
+            "correct": 5,
+            "completed": true,
+            "automatic": false,
+            "roundId": "synthetic-world-runner"
+          }
+        ],
+        "id": "8c41d349-62d7-445d-80bd-e95f353a59b9"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "wallet",
+        "method": "awardMiniGame",
+        "args": [
+          {
+            "game": "runner",
+            "total": 5,
+            "correct": 5,
+            "completed": true,
+            "automatic": false,
+            "roundId": "synthetic-world-runner"
+          }
+        ],
+        "id": "2e7ac57c-c96b-48fb-9bd0-0b706a6a84ce"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "progress",
+        "changes": [
+          {
+            "key": "synk.windrun.best",
+            "previous": null,
+            "value": "123"
+          }
+        ],
+        "id": "d7bb74f6-1ced-4354-89ea-1eb4f5026d67"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "progress",
+        "changes": [
+          {
+            "key": "synk.windrun.best",
+            "previous": "123",
+            "value": "234"
+          }
+        ],
+        "id": "1cba7e47-1a6d-4ccf-9d2c-afd7ab300ef0"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "wallet",
+        "method": "awardMiniGame",
+        "args": [
+          {
+            "game": "rhythm",
+            "total": 5,
+            "correct": 5,
+            "completed": true,
+            "automatic": false,
+            "roundId": "synthetic-world-rhythm"
+          }
+        ],
+        "id": "fdbb352c-03e0-436b-8892-fa885a924224"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "wallet",
+        "method": "awardMiniGame",
+        "args": [
+          {
+            "game": "rhythm",
+            "total": 5,
+            "correct": 5,
+            "completed": true,
+            "automatic": false,
+            "roundId": "synthetic-world-rhythm"
+          }
+        ],
+        "id": "97d69758-ca84-441f-92bc-5431f6af62bd"
+      }
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-learning",
+      "classId": null,
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "classId": null,
+      "method": "POST",
+      "body": {
+        "action": "revoke-session",
+        "session_id": "22222222-2222-4222-8222-222222222222"
+      }
+    },
+    {
+      "path": "/auth/v1/logout",
+      "classId": null,
+      "method": "POST",
+      "body": null
+    }
+  ],
+  "errors": [],
+  "assetErrors": [],
+  "external": []
+}

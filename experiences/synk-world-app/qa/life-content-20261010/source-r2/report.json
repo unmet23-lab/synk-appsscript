@@ -1,0 +1,1638 @@
+{
+  "checkedAt": "2026-10-09T21:33:23.941Z",
+  "base": "http://127.0.0.1:4312",
+  "passed": 189,
+  "failed": 1,
+  "checks": [
+    {
+      "name": "dedicated endpoint is a local rehearsal server",
+      "passed": true,
+      "detail": {
+        "ok": true,
+        "mode": "rehearsal",
+        "rehearsal": true,
+        "database": "local-postgresql",
+        "production": false
+      }
+    },
+    {
+      "name": "prepared curriculum has six packs, eighteen lessons, six stories, and 54 transfer questions",
+      "passed": true
+    },
+    {
+      "name": "fresh guest starts with real next progress and no invented completion",
+      "passed": true
+    },
+    {
+      "name": "home library exposes all six prepared life packs",
+      "passed": true
+    },
+    {
+      "name": "greetings: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "cafe: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "store: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "directions: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "transit: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "plans: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "story library exposes the six actual episodes",
+      "passed": true
+    },
+    {
+      "name": "lesson describes actual reading and choice work",
+      "passed": true
+    },
+    {
+      "name": "new content has no fake listening or recording control",
+      "passed": true
+    },
+    {
+      "name": "keyboard focus stays inside the learning dialog",
+      "passed": true
+    },
+    {
+      "name": "first-question/740x320: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "first-question/740x320: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/740x320: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "first-question/740x320: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 343,
+          "height": 44,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 343,
+          "height": 44,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 343,
+          "height": 44,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "first-question/740x320: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/740x320: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/740x320: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/320x740: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "first-question/320x740: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/320x740: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "first-question/320x740: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "first-question/320x740: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/320x740: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/320x740: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/844x390: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "first-question/844x390: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/844x390: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "first-question/844x390: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 393,
+          "height": 44,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 393,
+          "height": 44,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 393,
+          "height": 44,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "first-question/844x390: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/844x390: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/844x390: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/390x844: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "first-question/390x844: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/390x844: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "first-question/390x844: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "first-question/390x844: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/390x844: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "first-question/390x844: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "wrong answer retains its first judgement and schedules remediation",
+      "passed": true
+    },
+    {
+      "name": "feedback prevents changing the first answer into a correct score",
+      "passed": true
+    },
+    {
+      "name": "wrong-feedback: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "첫 인사 세 마디"
+      }
+    },
+    {
+      "name": "wrong-feedback: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "pause and reload resume at the next unanswered question",
+      "passed": true
+    },
+    {
+      "name": "help reveals the explanation before answering",
+      "passed": true
+    },
+    {
+      "name": "help used before pause remains visible after reload",
+      "passed": true
+    },
+    {
+      "name": "helped correct answer is kept separate from unaided correctness",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "help from one question does not leak to the next",
+      "passed": true
+    },
+    {
+      "name": "expression completion offers its matching character story",
+      "passed": true
+    },
+    {
+      "name": "the story presents all three official friends",
+      "passed": true
+    },
+    {
+      "name": "story-scene: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-story",
+        "title": "이름표를 찾아서"
+      }
+    },
+    {
+      "name": "story-scene: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "story-scene-portrait: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-story",
+        "title": "이름표를 찾아서"
+      }
+    },
+    {
+      "name": "story-scene-portrait: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "story close and reload restore the exact read scene",
+      "passed": true
+    },
+    {
+      "name": "greetings-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "greetings-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "cafe-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "cafe-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "store-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "store-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "store-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "directions-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "directions-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "directions-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "transit-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "transit-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "transit-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "plans-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "plans-story: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "plans-apply: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "all eighteen prepared lessons are truly completed through the UI",
+      "passed": true
+    },
+    {
+      "name": "six character stories were read and answered",
+      "passed": true
+    },
+    {
+      "name": "before its due time review shows the genuine next schedule",
+      "passed": true
+    },
+    {
+      "name": "difficult first answers return in a new situation",
+      "passed": true
+    },
+    {
+      "name": "transformed-review/740x320: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "다른 장면에서 다시 만나요"
+      }
+    },
+    {
+      "name": "transformed-review/740x320: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/740x320: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "transformed-review/740x320: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 343,
+          "height": 44,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 343,
+          "height": 44,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 343,
+          "height": 44,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "transformed-review/740x320: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/740x320: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/740x320: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/320x740: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "다른 장면에서 다시 만나요"
+      }
+    },
+    {
+      "name": "transformed-review/320x740: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/320x740: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "transformed-review/320x740: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 288,
+          "height": 45.296875,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "transformed-review/320x740: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/320x740: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/320x740: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/844x390: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "다른 장면에서 다시 만나요"
+      }
+    },
+    {
+      "name": "transformed-review/844x390: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/844x390: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "transformed-review/844x390: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 393,
+          "height": 44,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 393,
+          "height": 44,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 393,
+          "height": 44,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "transformed-review/844x390: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/844x390: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/844x390: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/390x844: orientation follows viewport without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "life-question",
+        "title": "다른 장면에서 다시 만나요"
+      }
+    },
+    {
+      "name": "transformed-review/390x844: close stays visible and at least 44px",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "inside": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/390x844: learning phase, step, attempt, and answers survive rotation",
+      "passed": true
+    },
+    {
+      "name": "transformed-review/390x844: all answer targets are at least 44px",
+      "passed": true,
+      "detail": [
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "다녀왔어요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "안녕하세요.",
+          "inside": true,
+          "hit": true
+        },
+        {
+          "width": 350,
+          "height": 46.75,
+          "text": "감사합니다.",
+          "inside": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "transformed-review/390x844: answer 1 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/390x844: answer 2 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "transformed-review/390x844: answer 3 can be reached and tapped",
+      "passed": true,
+      "detail": {
+        "visible": true,
+        "hit": true
+      }
+    },
+    {
+      "name": "review resumes the same bounded session after reload",
+      "passed": true
+    },
+    {
+      "name": "review help survives pause and reload",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-thanks-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-here-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-order-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-takeout-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-expressions-here-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-expressions-order-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-expressions-takeout-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "cafe-story-here-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-story-order-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "cafe-story-takeout-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-apply-landmark-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-apply-turn-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-apply-where-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "directions-expressions-beside-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-expressions-right-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-expressions-where-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-story-landmark-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-story-turn-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "directions-story-where-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "greetings-apply-hello-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-apply-introduction-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-apply-thanks-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-name-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-story-hello-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-story-name-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "greetings-story-thanks-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-apply-delay-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-apply-place-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-apply-time-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-expressions-delay-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-expressions-place-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "plans-expressions-time-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-story-delay-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-story-place-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "plans-story-time-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-apply-bag-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-apply-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "store-apply-price-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-expressions-bag-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-expressions-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-expressions-price-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-story-bag-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "store-story-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "store-story-price-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-apply-alight-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-apply-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-apply-route-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-expressions-alight-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-expressions-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "transit-expressions-route-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-story-alight-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-story-card-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "transit-story-route-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-thanks-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: transformed review prompt is visible",
+      "passed": true
+    },
+    {
+      "name": "review round completes only after each visible choice",
+      "passed": true
+    },
+    {
+      "name": "all 54 transformed review questions are reachable and answerable",
+      "passed": true,
+      "detail": [
+        "cafe-apply-here-transfer",
+        "cafe-apply-order-transfer",
+        "cafe-apply-takeout-transfer",
+        "cafe-expressions-here-transfer",
+        "cafe-expressions-order-transfer",
+        "cafe-expressions-takeout-transfer",
+        "cafe-story-here-transfer",
+        "cafe-story-order-transfer",
+        "cafe-story-takeout-transfer",
+        "directions-apply-landmark-transfer",
+        "directions-apply-turn-transfer",
+        "directions-apply-where-transfer",
+        "directions-expressions-beside-transfer",
+        "directions-expressions-right-transfer",
+        "directions-expressions-where-transfer",
+        "directions-story-landmark-transfer",
+        "directions-story-turn-transfer",
+        "directions-story-where-transfer",
+        "greetings-apply-hello-transfer",
+        "greetings-apply-introduction-transfer",
+        "greetings-apply-thanks-transfer",
+        "greetings-expressions-name-transfer",
+        "greetings-story-hello-transfer",
+        "greetings-story-name-transfer",
+        "greetings-story-thanks-transfer",
+        "plans-apply-delay-transfer",
+        "plans-apply-place-transfer",
+        "plans-apply-time-transfer",
+        "plans-expressions-delay-transfer",
+        "plans-expressions-place-transfer",
+        "plans-expressions-time-transfer",
+        "plans-story-delay-transfer",
+        "plans-story-place-transfer",
+        "plans-story-time-transfer",
+        "store-apply-bag-transfer",
+        "store-apply-card-transfer",
+        "store-apply-price-transfer",
+        "store-expressions-bag-transfer",
+        "store-expressions-card-transfer",
+        "store-expressions-price-transfer",
+        "store-story-bag-transfer",
+        "store-story-card-transfer",
+        "store-story-price-transfer",
+        "transit-apply-alight-transfer",
+        "transit-apply-card-transfer",
+        "transit-apply-route-transfer",
+        "transit-expressions-alight-transfer",
+        "transit-expressions-card-transfer",
+        "transit-expressions-route-transfer",
+        "transit-story-alight-transfer",
+        "transit-story-card-transfer",
+        "transit-story-route-transfer",
+        "greetings-expressions-thanks-transfer",
+        "greetings-expressions-hello-transfer"
+      ]
+    },
+    {
+      "name": "successful review moves each expression into a future interval",
+      "passed": true
+    },
+    {
+      "name": "completed lesson replay starts at its introduction instead of skipping",
+      "passed": true
+    },
+    {
+      "name": "account A cannot inherit guest progress",
+      "passed": true
+    },
+    {
+      "name": "logout returns to the preserved guest curriculum",
+      "passed": true
+    },
+    {
+      "name": "account B cannot inherit A or guest answers",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions: all real choices complete the prepared lesson",
+      "passed": true
+    },
+    {
+      "name": "returning to A restores A own paused attempt and answers",
+      "passed": true
+    },
+    {
+      "name": "no credentials are stored alongside curriculum progress",
+      "passed": true
+    },
+    {
+      "name": "no JavaScript errors occur in the new curriculum flow",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no external or paid requests are attempted",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no unexpected asset or API errors occur",
+      "passed": false,
+      "detail": [
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        },
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        },
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        },
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        },
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        },
+        {
+          "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+          "status": 500
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "resources": [
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/assets/home/quality-blush.webp",
+      "status": 500
+    }
+  ],
+  "observations": [
+    {
+      "name": "first-question/740x320",
+      "layout": "landscape",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "first-question/320x740",
+      "layout": "portrait",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "first-question/844x390",
+      "layout": "landscape",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "first-question/390x844",
+      "layout": "portrait",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "wrong-feedback",
+      "layout": "landscape",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "첫 인사 세 마디"
+    },
+    {
+      "name": "story-scene",
+      "layout": "landscape",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-story",
+      "title": "이름표를 찾아서"
+    },
+    {
+      "name": "story-scene-portrait",
+      "layout": "portrait",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-story",
+      "title": "이름표를 찾아서"
+    },
+    {
+      "name": "transformed-review/740x320",
+      "layout": "landscape",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "다른 장면에서 다시 만나요"
+    },
+    {
+      "name": "transformed-review/320x740",
+      "layout": "portrait",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "다른 장면에서 다시 만나요"
+    },
+    {
+      "name": "transformed-review/844x390",
+      "layout": "landscape",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "다른 장면에서 다시 만나요"
+    },
+    {
+      "name": "transformed-review/390x844",
+      "layout": "portrait",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "life-question",
+      "title": "다른 장면에서 다시 만나요"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\home-fresh-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\home-fresh-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\story-library-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\first-question-740x320.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\first-question-390x844.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\wrong-feedback-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\story-scene-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\story-scene-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\home-all-content-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\home-all-content-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\transformed-review-740x320.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\transformed-review-390x844.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\account-a-own-resume.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r2\\failure.jpg"
+  ],
+  "coverage": {
+    "lessons": [
+      "greetings-expressions",
+      "greetings-story",
+      "greetings-apply",
+      "cafe-expressions",
+      "cafe-story",
+      "cafe-apply",
+      "store-expressions",
+      "store-story",
+      "store-apply",
+      "directions-expressions",
+      "directions-story",
+      "directions-apply",
+      "transit-expressions",
+      "transit-story",
+      "transit-apply",
+      "plans-expressions",
+      "plans-story",
+      "plans-apply",
+      "greetings-expressions"
+    ],
+    "stories": [
+      "greetings-story",
+      "cafe-story",
+      "store-story",
+      "directions-story",
+      "transit-story",
+      "plans-story"
+    ],
+    "originalQuestions": [
+      "greetings-expressions-hello",
+      "greetings-expressions-thanks",
+      "greetings-expressions-name",
+      "greetings-story-name",
+      "greetings-story-thanks",
+      "greetings-story-hello",
+      "greetings-apply-introduction",
+      "greetings-apply-thanks",
+      "greetings-apply-hello",
+      "cafe-expressions-order",
+      "cafe-expressions-here",
+      "cafe-expressions-takeout",
+      "cafe-story-order",
+      "cafe-story-here",
+      "cafe-story-takeout",
+      "cafe-apply-order",
+      "cafe-apply-here",
+      "cafe-apply-takeout",
+      "store-expressions-price",
+      "store-expressions-bag",
+      "store-expressions-card",
+      "store-story-price",
+      "store-story-bag",
+      "store-story-card",
+      "store-apply-price",
+      "store-apply-bag",
+      "store-apply-card",
+      "directions-expressions-where",
+      "directions-expressions-right",
+      "directions-expressions-beside",
+      "directions-story-where",
+      "directions-story-turn",
+      "directions-story-landmark",
+      "directions-apply-where",
+      "directions-apply-turn",
+      "directions-apply-landmark",
+      "transit-expressions-route",
+      "transit-expressions-alight",
+      "transit-expressions-card",
+      "transit-story-route",
+      "transit-story-alight",
+      "transit-story-card",
+      "transit-apply-route",
+      "transit-apply-alight",
+      "transit-apply-card",
+      "plans-expressions-time",
+      "plans-expressions-place",
+      "plans-expressions-delay",
+      "plans-story-time",
+      "plans-story-place",
+      "plans-story-delay",
+      "plans-apply-time",
+      "plans-apply-place",
+      "plans-apply-delay",
+      "greetings-expressions-hello",
+      "greetings-expressions-hello",
+      "greetings-expressions-thanks",
+      "greetings-expressions-name"
+    ],
+    "reviewQuestions": [
+      "greetings-expressions-hello-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-hello-transfer",
+      "cafe-apply-here-transfer",
+      "cafe-apply-order-transfer",
+      "cafe-apply-takeout-transfer",
+      "cafe-expressions-here-transfer",
+      "cafe-expressions-order-transfer",
+      "cafe-expressions-takeout-transfer",
+      "cafe-story-here-transfer",
+      "cafe-story-order-transfer",
+      "cafe-story-takeout-transfer",
+      "directions-apply-landmark-transfer",
+      "directions-apply-turn-transfer",
+      "directions-apply-where-transfer",
+      "directions-expressions-beside-transfer",
+      "directions-expressions-right-transfer",
+      "directions-expressions-where-transfer",
+      "directions-story-landmark-transfer",
+      "directions-story-turn-transfer",
+      "directions-story-where-transfer",
+      "greetings-apply-hello-transfer",
+      "greetings-apply-introduction-transfer",
+      "greetings-apply-thanks-transfer",
+      "greetings-expressions-name-transfer",
+      "greetings-story-hello-transfer",
+      "greetings-story-name-transfer",
+      "greetings-story-thanks-transfer",
+      "plans-apply-delay-transfer",
+      "plans-apply-place-transfer",
+      "plans-apply-time-transfer",
+      "plans-expressions-delay-transfer",
+      "plans-expressions-place-transfer",
+      "plans-expressions-time-transfer",
+      "plans-story-delay-transfer",
+      "plans-story-place-transfer",
+      "plans-story-time-transfer",
+      "store-apply-bag-transfer",
+      "store-apply-card-transfer",
+      "store-apply-price-transfer",
+      "store-expressions-bag-transfer",
+      "store-expressions-card-transfer",
+      "store-expressions-price-transfer",
+      "store-story-bag-transfer",
+      "store-story-card-transfer",
+      "store-story-price-transfer",
+      "transit-apply-alight-transfer",
+      "transit-apply-card-transfer",
+      "transit-apply-route-transfer",
+      "transit-expressions-alight-transfer",
+      "transit-expressions-card-transfer",
+      "transit-expressions-route-transfer",
+      "transit-story-alight-transfer",
+      "transit-story-card-transfer",
+      "transit-story-route-transfer",
+      "greetings-expressions-thanks-transfer",
+      "greetings-expressions-hello-transfer"
+    ]
+  },
+  "error": "AssertionError [ERR_ASSERTION]: no unexpected asset or API errors occur\n    at check (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-browser.cjs:22:10)\n    at scenario (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-browser.cjs:349:3)",
+  "limits": [
+    "Isolated Edge browser contexts; physical phones and native apps are not covered.",
+    "Dedicated local rehearsal database and synthetic accounts; no real OAuth, remote publication, AI, or paid calls.",
+    "Prepared reading-and-choice content is verified here; spoken audio or student learning effects are not inferred."
+  ]
+}

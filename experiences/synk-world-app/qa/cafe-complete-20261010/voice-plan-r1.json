@@ -1,0 +1,100 @@
+{
+  "lines": 15,
+  "chars": 329,
+  "newCharacters": 293,
+  "cached": 2,
+  "estimatedMonthlyCredits": 246,
+  "maximumMonthlyCredits": 293,
+  "voice": "하나",
+  "additionalPayment": 0,
+  "request": {
+    "mode": "audition",
+    "name": "world-cafe-staff-20261010",
+    "voices": [
+      {
+        "id": "tc_61659cc118732016a95fe7c6",
+        "name": "하나"
+      }
+    ],
+    "emotions": [
+      "normal"
+    ],
+    "lines": [
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0v0",
+        "text": "어서 오세요. 어떤 음료로 드릴까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0v1",
+        "text": "가져가실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q0r",
+        "text": "따뜻한 차가 준비됐어요. 매장에서 드시나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1v0",
+        "text": "어서 오세요. 오늘은 어떤 음료를 드릴까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1v1",
+        "text": "따뜻한 차를 몇 잔 준비할까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q1r",
+        "text": "가져가실 건가요, 여기서 드실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2v0",
+        "text": "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요."
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2v1",
+        "text": "따뜻한 차 두 잔 맞으시죠?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q2r",
+        "text": "차가 준비됐어요. 매장에서 드시나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3v0",
+        "text": "따뜻한 주스 두 잔, 아직 만들기 전이에요. 주문을 바꾸시겠어요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3v1",
+        "text": "따뜻한 차 두 잔으로 바꿨어요. 더 필요한 것이 있나요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q3r",
+        "text": "세 잔 모두 매장에서 드실 건가요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4v0",
+        "text": "어서 오세요. 어떤 음료를 몇 잔 준비할까요?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4v1",
+        "text": "따뜻한 차 두 잔 맞으시죠?"
+      },
+      {
+        "game": "korean-rhythm",
+        "id": "t0q4r",
+        "text": "가져가실 건가요, 여기서 드실 건가요?"
+      }
+    ]
+  }
+}

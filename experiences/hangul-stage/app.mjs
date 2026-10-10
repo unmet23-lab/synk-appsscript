@@ -277,31 +277,49 @@ function tracePad(g) {
   const wrap = el('div', { class: 'trace' }), canvas = el('canvas', { 'aria-label': `${g} 따라 쓰는 칸` });
   wrap.append(canvas);
   const ctx = canvas.getContext('2d');
-  let ready = false, drawing = false, last = null;
+  const extent = 260, strokes = [];
+  let ready = false, drawing = false, last = null, current = null;
   function size() {
     const r = canvas.getBoundingClientRect(), d = devicePixelRatio || 1;
     if (!r.width) return;
-    canvas.width = Math.round(r.width * d); canvas.height = Math.round(r.height * d);
-    ctx.setTransform(d, 0, 0, d, 0, 0); base(r); ready = true;
+    const width = Math.round(r.width * d), height = Math.round(r.height * d);
+    if (ready && canvas.width === width && canvas.height === height) return;
+    canvas.width = width; canvas.height = height;
+    ctx.setTransform(width / extent, 0, 0, height / extent, 0, 0); ready = true; redraw();
   }
-  function base(r = canvas.getBoundingClientRect()) {
-    ctx.clearRect(0, 0, r.width, r.height);
+  function base() {
+    ctx.clearRect(0, 0, extent, extent);
     ctx.fillStyle = '#eadfd2'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.font = `900 ${Math.round(r.width * 0.72)}px SUIT, "Malgun Gothic", sans-serif`;
-    ctx.fillText(g, r.width / 2, r.height / 2 + r.width * 0.03);
+    ctx.font = `900 ${Math.round(extent * 0.72)}px SUIT, "Malgun Gothic", sans-serif`;
+    ctx.fillText(g, extent / 2, extent / 2 + extent * 0.03);
   }
-  const point = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
-  canvas.addEventListener('pointerdown', e => { if (!ready) size(); drawing = true; last = point(e); canvas.setPointerCapture(e.pointerId); });
+  function line(a, b) {
+    ctx.strokeStyle = '#f96859'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+  }
+  function knot(p) { ctx.fillStyle = '#ae322a'; ctx.beginPath(); ctx.arc(p.x, p.y, 7, 0, Math.PI * 2); ctx.fill(); }
+  function redraw() {
+    base();
+    for (const stroke of strokes) {
+      for (let i = 1; i < stroke.points.length; i++) line(stroke.points[i - 1], stroke.points[i]);
+      if (stroke.ended) knot(stroke.points.at(-1));
+    }
+  }
+  // Keep ink in a fixed coordinate space so rotating or resizing preserves it
+  // and the next pointer event still lands directly beneath the fingertip.
+  const point = e => { const r = canvas.getBoundingClientRect(); return { x: (e.clientX - r.left) * extent / r.width, y: (e.clientY - r.top) * extent / r.height }; };
+  canvas.addEventListener('pointerdown', e => { if (!ready) size(); drawing = true; last = point(e); current = { points: [last], ended: false }; strokes.push(current); canvas.setPointerCapture(e.pointerId); });
   canvas.addEventListener('pointermove', e => {
     if (!drawing) return;
     const p = point(e);
-    ctx.strokeStyle = '#f96859'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p;
+    line(last, p); current.points.push(p); last = p;
   });
-  const end = () => { if (!drawing) return; drawing = false; if (last) { ctx.fillStyle = '#ae322a'; ctx.beginPath(); ctx.arc(last.x, last.y, 7, 0, Math.PI * 2); ctx.fill(); } };
-  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
-  requestAnimationFrame(size); document.fonts?.ready.then(() => { if (ready) base(); else size(); });
-  return { node: wrap, clear: () => (ready ? base() : size()) };
+  const end = () => { if (!drawing) return; drawing = false; if (last) { current.ended = true; knot(last); } };
+  canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end); canvas.addEventListener('lostpointercapture', end);
+  const observer = new ResizeObserver(() => { if (!canvas.isConnected) { observer.disconnect(); return; } size(); });
+  observer.observe(canvas);
+  requestAnimationFrame(size); document.fonts?.ready.then(() => { if (!canvas.isConnected) return; if (ready) redraw(); else size(); });
+  return { node: wrap, clear: () => { drawing = false; last = null; current = null; strokes.length = 0; if (ready) redraw(); else size(); } };
 }
 
 // ── 문항 공통 ──
@@ -750,7 +768,7 @@ $('song-stage').addEventListener('click', e => {
 });
 
 // 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 노래는 소리 없이 시각만 옮겨 그린다. 보통 화면에는 없다.
-if (audio.voiceStatus() === 'silent') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
+if (audio.voiceStatus() === 'silent'||new URLSearchParams(location.search).get('qa')==='inspect') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
   songAt: t => { const r = renderSongAt(t); return r && { kind: r.cue?.kind || null, step: r.step, text: r.cue?.text || '', done: !!r.done }; }, song: () => SP?.song.id || null, songMode: () => SP?.mode || null, songTime: () => (SP ? SP.audio.currentTime : null), songSeek: t => { if (SP) SP.audio.currentTime = t; } });
 
 renderHome(); show('home');

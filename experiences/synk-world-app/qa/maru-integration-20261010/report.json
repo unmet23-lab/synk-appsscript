@@ -1,0 +1,1789 @@
+{
+  "checkedAt": "2026-10-09T19:54:19.030Z",
+  "base": "http://127.0.0.1:4310",
+  "passed": 111,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "dedicated server is a local rehearsal",
+      "passed": true,
+      "detail": {
+        "ok": true,
+        "mode": "rehearsal",
+        "rehearsal": true,
+        "database": "local-postgresql",
+        "production": false
+      }
+    },
+    {
+      "name": "root app entrance opens the approved company/title flow",
+      "passed": true
+    },
+    {
+      "name": "home film is suspended behind opening",
+      "passed": true
+    },
+    {
+      "name": "opening-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": false,
+        "videoPaused": true,
+        "screen": ""
+      }
+    },
+    {
+      "name": "opening hands off directly to new home without forced account dialog",
+      "passed": true
+    },
+    {
+      "name": "actual root route uses the Maru home",
+      "passed": true
+    },
+    {
+      "name": "home-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": false,
+        "videoPaused": false,
+        "screen": ""
+      }
+    },
+    {
+      "name": "mode selection is saved",
+      "passed": true
+    },
+    {
+      "name": "same session reload skips opening and keeps selected direction",
+      "passed": true
+    },
+    {
+      "name": "runner: home video pauses behind game",
+      "passed": true
+    },
+    {
+      "name": "runner/small-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "runner/small-landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "runner/small-landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575589892.3,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 1172,
+            "height": 310,
+            "cssWidth": 586,
+            "cssHeight": 155,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "runner/small-landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "runner/small-landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "runner/small-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "runner/small-portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "runner/small-portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575589892.3,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 568,
+            "height": 830,
+            "cssWidth": 284,
+            "cssHeight": 415.390625,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "runner/small-portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "runner/small-portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "runner/landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "runner/landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "runner/landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575589892.3,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 1380,
+            "height": 450,
+            "cssWidth": 690,
+            "cssHeight": 225,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "runner/landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "runner/landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "runner/portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "runner/portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575589892.3,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 780,
+            "height": 1039,
+            "cssWidth": 390,
+            "cssHeight": 519.953125,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "runner/portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "runner/portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "runner: return removes old iframe and resumes the home film",
+      "passed": true
+    },
+    {
+      "name": "runner: return restores focus to a useful home button",
+      "passed": true
+    },
+    {
+      "name": "rhythm: home video pauses behind game",
+      "passed": true
+    },
+    {
+      "name": "rhythm/small-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "rhythm/small-landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "rhythm/small-landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575594580.9,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 814,
+            "height": 361,
+            "cssWidth": 407,
+            "cssHeight": 180.5,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "rhythm/small-landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "rhythm/small-landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "rhythm/small-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "rhythm/small-portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "rhythm/small-portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575594580.9,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 568,
+            "height": 998,
+            "cssWidth": 284,
+            "cssHeight": 499,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "rhythm/small-portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "rhythm/small-portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "rhythm/landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "rhythm/landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "rhythm/landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575594580.9,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 928,
+            "height": 501,
+            "cssWidth": 464.1875,
+            "cssHeight": 250.5,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "rhythm/landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "rhythm/landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "rhythm/portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "rhythm/portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575594580.9,
+        "overflow": 0,
+        "canvases": [
+          {
+            "width": 780,
+            "height": 1242,
+            "cssWidth": 390,
+            "cssHeight": 621,
+            "dpr": 2
+          }
+        ]
+      }
+    },
+    {
+      "name": "rhythm/portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "rhythm/portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "rhythm: return removes old iframe and resumes the home film",
+      "passed": true
+    },
+    {
+      "name": "rhythm: return restores focus to a useful home button",
+      "passed": true
+    },
+    {
+      "name": "hangul: home video pauses behind game",
+      "passed": true
+    },
+    {
+      "name": "hangul/small-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "hangul/small-landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "hangul/small-landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575602644.7,
+        "overflow": 0,
+        "canvases": []
+      }
+    },
+    {
+      "name": "hangul/small-landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "hangul/small-landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "hangul/small-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 320,
+        "height": 740,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "hangul/small-portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "hangul/small-portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575602644.7,
+        "overflow": 0,
+        "canvases": []
+      }
+    },
+    {
+      "name": "hangul/small-portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "hangul/small-portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "hangul/landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "hangul/landscape: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "hangul/landscape: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575602644.7,
+        "overflow": 0,
+        "canvases": []
+      }
+    },
+    {
+      "name": "hangul/landscape: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "hangul/landscape: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "hangul/portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "hangul/portrait: the same active iframe and document stay alive",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: child document has no horizontal overflow",
+      "passed": true,
+      "detail": {
+        "timeOrigin": 1791575602644.7,
+        "overflow": 0,
+        "canvases": []
+      }
+    },
+    {
+      "name": "hangul/portrait: active screen remains visible",
+      "passed": true
+    },
+    {
+      "name": "hangul/portrait: return button remains reachable",
+      "passed": true,
+      "detail": {
+        "width": 44,
+        "height": 44,
+        "hit": true,
+        "inside": true
+      }
+    },
+    {
+      "name": "hangul: return removes old iframe and resumes the home film",
+      "passed": true
+    },
+    {
+      "name": "hangul: return restores focus to a useful home button",
+      "passed": true
+    },
+    {
+      "name": "song-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "world-song"
+      }
+    },
+    {
+      "name": "song rotates in place without restarting playback",
+      "passed": true
+    },
+    {
+      "name": "leaving a song releases its media and resumes home",
+      "passed": true
+    },
+    {
+      "name": "settings can replay the opening without leaving the app route",
+      "passed": true
+    },
+    {
+      "name": "replay-opening-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": false,
+        "videoPaused": true,
+        "screen": ""
+      }
+    },
+    {
+      "name": "replayed opening returns to the same account-ready Maru home",
+      "passed": true
+    },
+    {
+      "name": "synthetic A restores server inventory",
+      "passed": true
+    },
+    {
+      "name": "first-sentence-selected-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "world-play"
+      }
+    },
+    {
+      "name": "first sentence selection survives rotation",
+      "passed": true
+    },
+    {
+      "name": "paused first sentence resumes at next unanswered question after reload",
+      "passed": true
+    },
+    {
+      "name": "first-sentence-return-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "world-play"
+      }
+    },
+    {
+      "name": "first sentence grants one server-owned reward",
+      "passed": true
+    },
+    {
+      "name": "completion records original request for retry",
+      "passed": true
+    },
+    {
+      "name": "repeated completion remains idempotent",
+      "passed": true
+    },
+    {
+      "name": "reward equip reaches server account",
+      "passed": true
+    },
+    {
+      "name": "wardrobe renderer shows the server-confirmed scarf",
+      "passed": true
+    },
+    {
+      "name": "wardrobe opens in the same Maru shell",
+      "passed": true
+    },
+    {
+      "name": "wardrobe uses the currently signed-in account inventory",
+      "passed": true
+    },
+    {
+      "name": "wardrobe-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 844,
+        "height": 390,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "world-wardrobe"
+      }
+    },
+    {
+      "name": "reload restores account and equipped reward",
+      "passed": true
+    },
+    {
+      "name": "Town preview connects from the same Maru account",
+      "passed": true,
+      "detail": {
+        "ready": true,
+        "cameraRevision": 4,
+        "cameraFov": 44,
+        "cameraDirection": [
+          0,
+          -0.5843047258450761,
+          -0.8115343414514945
+        ],
+        "playerScreenHeight": 18.934761198317297,
+        "cameraMotion": {
+          "walkingTracking": "direct",
+          "followDistance": 18.483506160899235,
+          "viewTransition": "cut",
+          "dialogueReframes": false,
+          "followResidual": 0
+        },
+        "playerHeadScreen": {
+          "x": 422,
+          "y": 193.12727872490046,
+          "inFrustum": true
+        },
+        "graphicsVersion": 20,
+        "brandArt": {
+          "revision": 13,
+          "palette": {
+            "coral": "#F96859",
+            "lapis": "#3D6BC9",
+            "lapisDeep": "#24448C",
+            "meadow": "#7DB45A",
+            "butter": "#F5C445",
+            "pop": "#E05C97",
+            "paper": "#FFFFFF",
+            "black": "#000000"
+          },
+          "materialVersion": 19,
+          "memoryMarkers": []
+        },
+        "rendering": {
+          "contactOcclusion": true,
+          "aoSamples": 8,
+          "aoResolution": [
+            633,
+            245
+          ],
+          "colorResolution": [
+            1266,
+            490
+          ],
+          "samples": 2,
+          "directRendering": false,
+          "estimatedTargetBytes": 27915300,
+          "allocations": 1,
+          "releases": 0,
+          "renderStatsIncludeShadows": true,
+          "revision": 6
+        },
+        "conversationHeads": [],
+        "residents": [
+          {
+            "id": "cafe-owner",
+            "visible": true,
+            "identity": {
+              "id": "cafe-owner",
+              "kind": "human",
+              "description": "넓고 둥근 얼굴, 밤색 묶은 머리, 버터색 자수를 놓은 청금석 앞치마",
+              "silhouette": "bun/apron/0.98/1.03"
+            },
+            "height": 1.265192947115097,
+            "headHeight": 0.98784,
+            "pose": "working"
+          },
+          {
+            "id": "workshop-owner",
+            "visible": true,
+            "identity": {
+              "id": "workshop-owner",
+              "kind": "human",
+              "description": "짧은 머리, 넓은 어깨, 작은 코랄 실땀의 짙은 남색 작업복",
+              "silhouette": "short/work-jacket/1.055/1.2"
+            },
+            "height": 1.3779160986292742,
+            "headHeight": 1.0634400000000002,
+            "pose": "working"
+          },
+          {
+            "id": "researcher",
+            "visible": true,
+            "identity": {
+              "id": "researcher",
+              "kind": "professor",
+              "description": "연보라 타원몸, 둥근 검은 안경, 아이보리 두갈래 콧수염",
+              "silhouette": "oval/glasses/two-lobe-moustache"
+            },
+            "height": 1.1759999465942381,
+            "headHeight": 0.7672000000000001,
+            "pose": "working"
+          },
+          {
+            "id": "visitor-tea-reader",
+            "visible": false,
+            "identity": {
+              "id": "visitor-tea-reader",
+              "kind": "human",
+              "description": "은발 단발, 둥근 안경, 베리색 니트 카디건",
+              "silhouette": "silver-bob/cardigan/0.925/0.98"
+            },
+            "height": 1.1854550265586221,
+            "headHeight": 0.9324000000000001,
+            "pose": "resting"
+          },
+          {
+            "id": "book-guest",
+            "visible": false,
+            "identity": {
+              "id": "book-guest",
+              "kind": "human",
+              "description": "웨이브 단발, 긴 얼굴, 버터빛 니트와 남색 책",
+              "silhouette": "wave-bob/knit/1.015/0.91"
+            },
+            "height": 1.3231948123013084,
+            "headHeight": 1.02312,
+            "pose": "resting"
+          },
+          {
+            "id": "companion",
+            "visible": false,
+            "identity": {
+              "id": "companion",
+              "kind": "human",
+              "description": "긴 묶은 머리, 메도우 재킷, 남색 어깨 가방",
+              "silhouette": "ponytail/travel-jacket/1.045/0.92"
+            },
+            "height": 1.3465702555573418,
+            "headHeight": 1.05336,
+            "pose": "resting"
+          }
+        ],
+        "assetsReady": true,
+        "assetFailures": [],
+        "environment": {
+          "artRevision": 20,
+          "environmentMeshes": 261,
+          "environmentInstances": 13523,
+          "environmentGeometries": 134,
+          "environmentMaterials": 29,
+          "environmentTriangles": 476522,
+          "environmentVertices": 424231,
+          "gardenBorders": 6,
+          "neighbouringHouses": 8,
+          "walkableNeighbourhood": true,
+          "neighbourMaterialCategories": 4,
+          "botanicalTrees": 6,
+          "treeLeaves": 3072,
+          "largeBranchCrowns": 6,
+          "mergedSoilPockets": 16,
+          "soilPocketMeshes": 1,
+          "prunedLowerBranches": true,
+          "distantBranchClusters": 175,
+          "distantLeaves": 2800,
+          "floweringTrees": 2,
+          "layeredFlowerGardens": 6,
+          "meadowIslands": 16,
+          "landscapePigmentFields": 4,
+          "facadeOpeningStyles": 3,
+          "levelWalkingMeadow": {
+            "minX": -22.6,
+            "maxX": 22.6,
+            "minZ": -25.4,
+            "maxZ": 9.6,
+            "worldY": 0.075
+          },
+          "linkedLeisureCircuits": 2,
+          "generousFrontCourt": true,
+          "artLanguage": "sculpted-future-korean-village",
+          "heroBuildingSilhouettes": 3,
+          "wideRoundedHomeWindows": 1,
+          "domesticReadingBayRoof": true,
+          "homeWindowWidth": 2.04,
+          "roofConnectedHomeColumns": true,
+          "closedReadingBooks": 4,
+          "asymmetricWorkshopRoofs": 1,
+          "communalPavilionRoofs": 1,
+          "sharedTimberMaru": 1,
+          "signatureWaveAwnings": 1,
+          "embroideredLapisGuides": 1,
+          "coralMailboxes": 1,
+          "historyHangers": 4,
+          "neutralRoofFamily": 1,
+          "frozenStaticTransforms": true,
+          "warmRecessedWindowLayers": 3,
+          "staggeredMaruJoints": 15,
+          "ceramicWallAndRims": true
+        },
+        "surfaceAlignment": {
+          "revision": 20,
+          "floorY": 0.10300000000000001,
+          "surfaceOffset": -0.016999999999999987,
+          "footWorldY": 0.10237557371844197,
+          "nominalFootWorldY": 0.10300000000000001,
+          "bob": -0.0006244262815580462,
+          "shadowWorldY": 0.10700000000000001,
+          "contactShadowVisible": true,
+          "anchorY": 0.12,
+          "gameplayYChanged": false
+        },
+        "propContacts": [
+          {
+            "id": "home-cushion",
+            "kind": "cushion",
+            "x": -6.7,
+            "z": -0.2,
+            "bottomY": 0.12949999999999998,
+            "supportY": 0.1295,
+            "gap": -2.7755575615628914e-17
+          },
+          {
+            "id": "cafe-tray",
+            "kind": "tray",
+            "x": -0.7,
+            "z": -0.65,
+            "bottomY": 0.12949999999999998,
+            "supportY": 0.1295,
+            "gap": -2.7755575615628914e-17,
+            "plateTopY": 0.23949999940395353,
+            "drinkBottomY": 0.23949999940395356,
+            "drinkGap": 2.7755575615628914e-17
+          },
+          {
+            "id": "researcher-board",
+            "kind": "board",
+            "x": -0.3,
+            "z": -6.4,
+            "bottomY": 0.12950000000000006,
+            "supportY": 0.1295,
+            "gap": 5.551115123125783e-17
+          },
+          {
+            "id": "workshop-support",
+            "kind": "support",
+            "x": 6.6,
+            "z": 0.3,
+            "bottomY": 0.1295,
+            "supportY": 0.1295,
+            "gap": 0
+          }
+        ],
+        "occlusionReuse": {
+          "queries": 2,
+          "reusedFrames": 9,
+          "fadedMeshCount": 3,
+          "roofCutaways": 0
+        },
+        "shadowFocus": {
+          "x": -6.013448435453395,
+          "z": 1.6980223685918712,
+          "texelStep": 0.02734375,
+          "extent": 14,
+          "far": 45,
+          "mapSize": 1024,
+          "direction": "unchanged-sun-axis",
+          "tracking": "player"
+        },
+        "playerAvatar": {
+          "avatarVersion": "mongle-v3",
+          "materialRevision": 4,
+          "wardrobeRevision": 6,
+          "dyeRevision": 1,
+          "pose": "neutral",
+          "equipment": {
+            "body": "",
+            "neck": "mongle-scarf-first-steps"
+          },
+          "dyes": {},
+          "wardrobe": {
+            "builtGarments": [
+              "mongle-scarf-first-steps"
+            ],
+            "visibleGarments": [
+              "mongle-scarf-first-steps"
+            ],
+            "revision": 6,
+            "dyeRevision": 1,
+            "dyes": {},
+            "fitting": "derived-from-existing-body-profile",
+            "microGeometry": false,
+            "microKnitInstances": 0,
+            "detailTextureSize": 512
+          },
+          "outfit": "scarf",
+          "bodyBounds": {
+            "width": 1.8004822731018066,
+            "height": 1.8342324290424585,
+            "depth": 1.609148919582367
+          },
+          "assetFailures": [],
+          "productionAsset": false
+        },
+        "appearanceVerified": true,
+        "playerScreen": {
+          "x": 422,
+          "y": 197.9898951413671,
+          "inFrustum": true
+        },
+        "cameraNear": 0.1,
+        "cameraDistance": 18.33012880460906,
+        "requestedSerial": 6,
+        "renderedSerial": 6,
+        "renderer": "Three.js r180",
+        "webgl": "WebGL2",
+        "contextLost": false,
+        "drawCalls": 1334,
+        "triangles": 1870156,
+        "geometries": 286,
+        "textures": 50,
+        "dpr": 1.5,
+        "drawingBuffer": {
+          "width": 1266,
+          "height": 490
+        },
+        "frameCount": 11,
+        "samples": 11,
+        "cpuRenderMs": {
+          "p50": 15.8,
+          "p95": 7993.8
+        },
+        "frameIntervalMs": {
+          "p50": 16.7,
+          "p95": 33.3
+        },
+        "frameCap": 60,
+        "quality": "balanced",
+        "camera": "follow",
+        "location": "home",
+        "freeWalk": true,
+        "locomotion": {
+          "revision": 6,
+          "requestedHeading": 3.141592653589793,
+          "displayedHeading": 0.8896769507663755,
+          "gaitBlend": 0.3074674233962271,
+          "phase": 0,
+          "bob": -0.0006244262815580462,
+          "roll": 0,
+          "positionResidual": 0,
+          "headingResponse": "shortest-angle-body-only",
+          "gaitClock": "travel-distance"
+        },
+        "playerPose": {
+          "x": -6,
+          "y": 0.12,
+          "z": 1.7,
+          "heading": 0.8896769507663755,
+          "moving": false
+        },
+        "cameraPosition": [
+          -6,
+          12.359059008129103,
+          15.345477514147046
+        ],
+        "cameraTarget": [
+          -6,
+          1.559059008129103,
+          0.34547751414704586
+        ],
+        "obscuredBuildingCount": 0,
+        "obscuredPropCount": 1,
+        "paused": false,
+        "reducedMotion": false,
+        "actorCount": 4,
+        "propCount": 4,
+        "productionAsset": false,
+        "physicalDeviceVerified": false,
+        "connected": true,
+        "fallback": false,
+        "worldLinked": true,
+        "walk": {
+          "enabled": true,
+          "x": -6,
+          "z": 1.7,
+          "heading": 3.141592653589793,
+          "moving": false,
+          "inputActive": false,
+          "nearby": "home",
+          "interactionOpen": false,
+          "input": "touch",
+          "pending": 0,
+          "pendingMs": 0,
+          "sending": false,
+          "backpressured": false,
+          "correctionDistance": 0,
+          "maxCorrection": 0
+        }
+      }
+    },
+    {
+      "name": "town-landscape: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "landscape",
+        "preference": "auto",
+        "width": 740,
+        "height": 320,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "Town rotation keeps its existing scene/document",
+      "passed": true
+    },
+    {
+      "name": "town-portrait: home follows available aspect without horizontal overflow",
+      "passed": true,
+      "detail": {
+        "layout": "portrait",
+        "preference": "auto",
+        "width": 390,
+        "height": 844,
+        "overflow": 0,
+        "open": true,
+        "videoPaused": true,
+        "screen": "game"
+      }
+    },
+    {
+      "name": "Town return disposes the old iframe and resumes home",
+      "passed": true
+    },
+    {
+      "name": "separate desktop session shares A inventory and outfit",
+      "passed": true
+    },
+    {
+      "name": "B cannot inherit A reward or equipped outfit",
+      "passed": true
+    },
+    {
+      "name": "/mobile.html: actual app entrance renders Maru and restores account",
+      "passed": true
+    },
+    {
+      "name": "/desktop.html: actual app entrance renders Maru and restores account",
+      "passed": true
+    },
+    {
+      "name": "no credentials persist in localStorage",
+      "passed": true
+    },
+    {
+      "name": "no JavaScript runtime errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no external or paid requests attempted",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "no unexpected HTTP asset/API errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "resources": [],
+  "observations": [
+    {
+      "name": "opening-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": false,
+      "videoPaused": true,
+      "screen": ""
+    },
+    {
+      "name": "home-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": false,
+      "videoPaused": false,
+      "screen": ""
+    },
+    {
+      "name": "runner/small-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "runner/small-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "runner/landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "runner/portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "rhythm/small-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "rhythm/small-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "rhythm/landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "rhythm/portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "hangul/small-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "hangul/small-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 320,
+      "height": 740,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "hangul/landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "hangul/portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "song-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "world-song"
+    },
+    {
+      "name": "replay-opening-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": false,
+      "videoPaused": true,
+      "screen": ""
+    },
+    {
+      "name": "first-sentence-selected-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "world-play"
+    },
+    {
+      "name": "first-sentence-return-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "world-play"
+    },
+    {
+      "name": "wardrobe-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 844,
+      "height": 390,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "world-wardrobe"
+    },
+    {
+      "name": "town-landscape",
+      "layout": "landscape",
+      "preference": "auto",
+      "width": 740,
+      "height": 320,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    },
+    {
+      "name": "town-portrait",
+      "layout": "portrait",
+      "preference": "auto",
+      "width": 390,
+      "height": 844,
+      "overflow": 0,
+      "open": true,
+      "videoPaused": true,
+      "screen": "game"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\opening-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\opening-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\home-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\runner-small-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\runner-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\runner-returned-home.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\rhythm-small-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\rhythm-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\rhythm-returned-home.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\hangul-small-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\hangul-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\hangul-returned-home.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\song-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\replay-returned-home.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\first-sentence-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\first-sentence-reward.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\wardrobe-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\wardrobe-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\town-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\desktop-account-home.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\maru-integration-20261010\\account-b-home.jpg"
+  ],
+  "calls": [
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/session",
+      "method": "POST",
+      "body": {
+        "accountKey": "player-a"
+      }
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/play/start",
+      "method": "POST",
+      "body": {
+        "requestId": "1e18ba16-76c0-4aef-b0b7-9a7b68741331"
+      }
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/play/complete",
+      "method": "POST",
+      "body": {
+        "runId": "66fe6085-7475-4407-8ec5-e931ce1d71e9",
+        "answers": [
+          {
+            "questionId": "greeting",
+            "optionId": "hello"
+          },
+          {
+            "questionId": "water",
+            "optionId": "water"
+          },
+          {
+            "questionId": "location",
+            "optionId": "front"
+          }
+        ],
+        "requestId": "7552ea7b-7ceb-4903-baf0-e744e7d47e66"
+      }
+    },
+    {
+      "path": "/api/world/play/complete",
+      "method": "POST",
+      "body": {
+        "runId": "66fe6085-7475-4407-8ec5-e931ce1d71e9",
+        "answers": [
+          {
+            "questionId": "greeting",
+            "optionId": "hello"
+          },
+          {
+            "questionId": "water",
+            "optionId": "water"
+          },
+          {
+            "questionId": "location",
+            "optionId": "front"
+          }
+        ],
+        "requestId": "7552ea7b-7ceb-4903-baf0-e744e7d47e66"
+      }
+    },
+    {
+      "path": "/api/world/avatar/outfit",
+      "method": "PUT",
+      "body": {
+        "slots": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "expectedRevision": 2,
+        "requestId": "6439743b-64a4-448a-915f-0cd1325394eb"
+      }
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/town/state",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/command",
+      "method": "POST",
+      "body": {
+        "id": "37b33f18-b17b-4f90-8a82-5807b678a4bb",
+        "type": "DAY_WALK_ENABLE",
+        "payload": {
+          "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+          "fence": 1
+        },
+        "expectedRevision": 2
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": true,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/town/presence",
+      "method": "POST",
+      "body": {
+        "surfaceId": "f1b2100d-6b85-43fd-b4b4-88a3891b1a85",
+        "surface": "day",
+        "foreground": false,
+        "safe": false
+      }
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/session",
+      "method": "POST",
+      "body": {
+        "accountKey": "player-a"
+      }
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/logout",
+      "method": "POST",
+      "body": {}
+    },
+    {
+      "path": "/api/world/rehearsal/session",
+      "method": "POST",
+      "body": {
+        "accountKey": "player-b"
+      }
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/rehearsal/status",
+      "method": "GET",
+      "body": null
+    },
+    {
+      "path": "/api/world/bootstrap",
+      "method": "GET",
+      "body": null
+    }
+  ],
+  "limits": [
+    "Isolated Edge browser contexts, not physical phones.",
+    "Synthetic local accounts in the dedicated rehearsal database; no real OAuth or paid calls.",
+    "Integration boundaries and rotation verified here; complete rounds are covered separately by brand-opening/qa/maru-v4."
+  ]
+}

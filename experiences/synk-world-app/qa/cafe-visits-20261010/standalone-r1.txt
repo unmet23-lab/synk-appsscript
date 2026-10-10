@@ -1,0 +1,63 @@
+PASS cafe library exposes all four visits
+PASS the original visit still completes
+PASS home proposes taste story before the untouched greeting pack
+PASS cafe-visit-taste opens the next playable story
+PASS cafe-visit-taste welcome portrait fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-taste allows repair without advancing
+PASS cafe-visit-taste 844x390 keeps visit and attempt
+PASS cafe-visit-taste 844x390 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-taste reload restores the exact checkpoint
+PASS cafe-visit-taste reload restores the exact checkpoint
+PASS new visit help persists before a response
+PASS cafe-visit-taste 320x740 keeps visit and attempt
+PASS cafe-visit-taste 320x740 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-taste 740x320 keeps visit and attempt
+PASS cafe-visit-taste 740x320 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-taste waits for pickup after all three responses
+PASS cafe-visit-taste reload restores the exact checkpoint
+PASS cafe-visit-taste finishes on pickup and retains its first error
+PASS cafe-visit-taste 390x844 keeps visit and attempt
+PASS cafe-visit-taste 390x844 fits with full cups, 44px controls and reachable main action
+PASS home naturally advances to 주스가 없는 날
+PASS cafe-visit-soldout opens the next playable story
+PASS cafe-visit-soldout welcome portrait fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-soldout allows repair without advancing
+PASS sold out juice creates zero cups
+PASS cafe-visit-soldout 844x390 keeps visit and attempt
+PASS cafe-visit-soldout 844x390 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-soldout reload restores the exact checkpoint
+PASS cafe-visit-soldout 320x740 keeps visit and attempt
+PASS cafe-visit-soldout 320x740 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-soldout 740x320 keeps visit and attempt
+PASS cafe-visit-soldout 740x320 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-soldout waits for pickup after all three responses
+PASS cafe-visit-soldout reload restores the exact checkpoint
+PASS cafe-visit-soldout finishes on pickup and retains its first error
+PASS cafe-visit-soldout 390x844 keeps visit and attempt
+PASS cafe-visit-soldout 390x844 fits with full cups, 44px controls and reachable main action
+PASS home naturally advances to 까몽의 마음이 바뀌었어요
+PASS cafe-visit-change opens the next playable story
+PASS cafe-visit-change welcome portrait fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-change allows repair without advancing
+PASS unchanged juice order is still two warm juice cups
+PASS cafe-visit-change 844x390 keeps visit and attempt
+PASS cafe-visit-change 844x390 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-change reload restores the exact checkpoint
+PASS adding one cup changes two to three
+PASS cafe-visit-change 320x740 keeps visit and attempt
+PASS cafe-visit-change 320x740 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-change 740x320 keeps visit and attempt
+PASS cafe-visit-change 740x320 fits with full cups, 44px controls and reachable main action
+PASS cafe-visit-change waits for pickup after all three responses
+PASS cafe-visit-change reload restores the exact checkpoint
+PASS cafe-visit-change finishes on pickup and retains its first error
+PASS cafe-visit-change 390x844 keeps visit and attempt
+PASS cafe-visit-change 390x844 fits with full cups, 44px controls and reachable main action
+PASS four independent visits are completed exactly once
+PASS new cafe expression returns in a transfer scene: cafe-visit-taste-drink-transfer
+PASS new cafe expression returns in a transfer scene: cafe-visit-taste-count-transfer
+PASS new cafe expression returns in a transfer scene: cafe-visit-soldout-menu-transfer
+PASS new cafe expression returns in a transfer scene: cafe-visit-change-drink-transfer
+PASS all four difficult or helped expressions are reviewed
+PASS three new cafe stories are discoverable in the story library
+PASS no JavaScript, HTTP or external request errors

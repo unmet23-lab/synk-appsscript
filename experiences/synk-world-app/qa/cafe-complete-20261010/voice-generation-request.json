@@ -1,0 +1,24 @@
+{
+  "approvedMaximumCredits": 329,
+  "estimate": {
+    "needConfirm": true,
+    "tasks": 15,
+    "lines": 13,
+    "chars": 293,
+    "contextChars": 0,
+    "estimate": 293,
+    "left": 127796,
+    "share": 0.23
+  },
+  "started": {
+    "started": true,
+    "estimate": {
+      "lines": 13,
+      "chars": 293,
+      "contextChars": 0,
+      "credits": 293,
+      "left": 127796
+    }
+  },
+  "startedAt": "2026-10-10T12:16:46.183Z"
+}

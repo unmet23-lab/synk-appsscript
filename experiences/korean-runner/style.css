@@ -12,7 +12,11 @@
 .fine.warn{color:var(--coral-deep);font-weight:700}
 
 /* ── 게임: 위 막대 · 무대(3D 길 + 말 카드) · 코랄 펠트 받침(움직이기 단추) ── */
-body.playing{overflow:hidden;overscroll-behavior:none}
+body.playing{overflow:hidden;overscroll-behavior:none;display:flex;flex-direction:column;height:100dvh}
+/* Account status stays visible; the arena uses only the remaining viewport. */
+body.playing>.synk-play-account{flex:none}
+body.playing>.game{flex:1;min-height:0;height:auto}
+body.playing>.game>.game-bar{flex-shrink:0}
 .game .arena.run{display:flex;flex-direction:column;background:#efe3d0}
 .game .arena.run::after{display:none}   /* 코랄 받침은 아래 단추 받침(.moves)이 맡는다 */
 /* 무대 벽: 키트 판과 같은 크림 펠트, 가운데 빛 번짐 없이 고르게(먼 길이 world.mjs FOG_COLOR로 이 벽에 녹아든다) */
@@ -214,4 +218,28 @@ dialog.check h2{margin:8px 0 4px;font-size:22px}
   .hero h1{font-size:clamp(64px,9vw,112px)}
   .hero .sub{display:none}
   .hero-art{height:320px}
+}
+/* 가로로 돌려도 게임의 보조 조작은 손가락으로 누를 크기를 유지한다. */
+#pause-button{width:44px;height:44px;min-width:44px;min-height:44px}
+#say-text{min-height:44px}
+/* 짧은 가로 화면은 조작판을 옆으로 옮겨 길과 표시선을 볼 높이를 남긴다. */
+@media (min-width:560px) and (max-height:500px){
+  body.playing>.synk-play-account[data-phase="guest"]{gap:8px;padding:2px 12px;min-height:44px;flex-wrap:nowrap}
+  body.playing>.synk-play-account[data-phase="guest"]>span{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+  body.playing>.synk-play-account[data-phase="guest"]::before{content:"이 기기의 체험 기록";font-size:11px;white-space:nowrap}
+  body.playing>.synk-play-account[data-phase="guest"]>a{display:flex;align-items:center;min-height:44px;white-space:nowrap}
+  .game-bar{padding:4px 10px}
+  .game .arena.run{flex-direction:row}
+  .stage{min-width:0;height:100%}
+  .moves{width:154px;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:4px;padding:6px;align-content:center}
+  .move{width:min(100%,62px)}
+  .move[data-action=left]{grid-column:1;grid-row:2}
+  .move[data-action=jump]{grid-column:2;grid-row:1}
+  .move[data-action=slide]{grid-column:1;grid-row:1}
+  .move[data-action=right]{grid-column:2;grid-row:2}
+  .say{left:8px;top:8px;transform:none;width:min(224px,calc(100% - 16px));max-height:calc(100% - 16px);overflow:auto;padding:5px 10px 12px;gap:2px;animation:none}
+  .say-line{font-size:15px}
+  .say.texted .say-line,.say[data-phase=missed] .say-line{font-size:14px}
+  .say-hint{font-size:11.5px}
+  .game .tip{left:auto;right:8px;top:8px;transform:none;width:min(190px,38%);font-size:12px}
 }

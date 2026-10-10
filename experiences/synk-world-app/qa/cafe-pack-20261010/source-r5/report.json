@@ -1,0 +1,356 @@
+{
+  "ok": false,
+  "checkedAt": "2026-10-10T10:48:16.382Z",
+  "base": "http://127.0.0.1:4313",
+  "checks": [
+    {
+      "name": "home exposes a cafe entrance",
+      "passed": true
+    },
+    {
+      "name": "welcome portrait panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "ordering portrait panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              33,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          }
+        ],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "wrong one-cup order creates one cup and waits for repair",
+      "passed": true
+    },
+    {
+      "name": "rotation 844x390 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "wrong order landscape panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          844,
+          390
+        ],
+        "panel": [
+          2,
+          0,
+          840,
+          390
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              33,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          },
+          {
+            "box": [
+              33,
+              44
+            ],
+            "display": "block",
+            "bg": "url(\"http://127.0.0.1:4313/brand-opening/assets/home/cafe-drinks-v2.png\")",
+            "parent": [
+              66,
+              44
+            ],
+            "overflow": "visible"
+          }
+        ],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "reload restores the wrong order and the same first response",
+      "passed": true
+    },
+    {
+      "name": "repair changes to two cups without erasing the first error",
+      "passed": true
+    },
+    {
+      "name": "help opened before the response survives reload",
+      "passed": true
+    },
+    {
+      "name": "seat choice is persisted before actual pickup",
+      "passed": true
+    },
+    {
+      "name": "pause and home resume keep the chosen seat and unreceived cups",
+      "passed": true
+    },
+    {
+      "name": "rotation 320x740 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "ready cups 320 portrait panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          10,
+          320,
+          720
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "explicit pickup places two cups at the chosen table",
+      "passed": true
+    },
+    {
+      "name": "rotation 740x320 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "table 740 landscape panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "wrong store-use request keeps a ceramic tea cup",
+      "passed": true
+    },
+    {
+      "name": "cancellation confirmation shows no delivered drink",
+      "passed": true
+    },
+    {
+      "name": "corrected takeaway switches to a lidded felt cup",
+      "passed": true
+    },
+    {
+      "name": "takeaway ready landscape panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "drinkStyles": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "all answered questions still resume before the last physical pickup",
+      "passed": true
+    },
+    {
+      "name": "completion is granted only after pickup, once",
+      "passed": true
+    },
+    {
+      "name": "rotation 390x844 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "returning to home resumes the approved scene video",
+      "passed": false
+    }
+  ],
+  "passed": 23,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\home-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-welcome-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-order-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-repair-844.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-seat-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-table-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-table-740.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-takeout-740.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\cafe-complete-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r5\\failure.png"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: returning to home resumes the approved scene video\n    at check (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:6:160)\n    at run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:34:128)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:43:28",
+  "scope": {
+    "local": true,
+    "syntheticAccounts": true,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false,
+    "liveOAuth": false
+  }
+}

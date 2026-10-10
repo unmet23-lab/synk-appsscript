@@ -1,0 +1,9 @@
+✔ frozen /world cafe completes and restores the physical checkpoint through the official account transport (24472.8877ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 25919.3248

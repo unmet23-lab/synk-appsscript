@@ -1,0 +1,41 @@
+{
+  "date": "2026-10-10",
+  "version": 9,
+  "model": "gemini-omni-1.1-flash-preview",
+  "passed": true,
+  "outputs": {
+    "portrait": {"file": "assets/world-menu-mobile-omni11-v9-web.mp4", "sha256": "cdb0dfcd54bd91e4b3f3198aedbbf63e6634f91130d427aafad55b3171a96a72", "passingStaticAnchors": 7, "totalStaticAnchors": 7, "commonAdjacentP95Px": 0.0062, "commonAdjacentMaxPx": 0.0077},
+    "landscape": {"file": "assets/world-menu-desktop-omni11-v9-web.mp4", "sha256": "99ee4d1ca7e338994e493b3cae91a23b8e40d1003f9e3ee831efcf99cbedf5fc", "passingStaticAnchors": 8, "totalStaticAnchors": 8, "commonAdjacentP95Px": 0.0003, "commonAdjacentMaxPx": 0.0034}
+  },
+  "method": "Independent visual review of 21 sequential samples per aspect (0.5-second spacing plus last frame), face and river contacts, native-resolution boundary and 3x falling-leaf comparisons. Static architecture tracked over all 240 frames per aspect, including four time bands and last-to-first seam. Complete decode and per-second pixel-motion checks. Browser UI and natural loops recorded separately.",
+  "finishing": "New v9 generation registered to its own first frame; rigid architecture/deck background held fixed. Generated whole-trio region, river and boat, sky, foliage tips, falling leaves and lantern interiors remain moving. Soft 3.5px motion-region edges; falling-leaf envelopes preserve the whole original leaf including pale edges and motion blur. No individual face, head or boat overlay; no zoom/crop, reverse, retime or still-tail extension.",
+  "findings": {
+    "mongle": "No invented mouth in reviewed frames; original embroidered curved eyes retained",
+    "marin": "Single navy head, yellow felt appliques retained; no invented black pupils or eyelashes observed",
+    "kkamong": "Brown felt and green eyes retained, natural head/body reaction",
+    "boat": "One right-to-left passage; foreground vegetation occludes the boat in the correct order, with no boat-over-tree inversion in reviewed samples",
+    "boundaries": "No double head, visible rectangular seam or ghost at checked portrait boundaries; final landscape 6.5s leaf tip/outline/motion blur fully restored against the native generated frame",
+    "stability": "15 of 15 fixed-background anchors pass the project target over all frames and at the loop seam; moving-object motion is assessed separately",
+    "motion": "Decoded motion remains in every second, including the final second; entire ten-second clip retained"
+  },
+  "rejectedCandidates": {
+    "v6": "Earlier approved visual samples missed high-frequency source jitter subsequently reported by the user; superseded",
+    "v7": "New generation rejected for source jitter and invented black facial features on Marin",
+    "v8": "Existing-video edit route returned provider content block and no output; stopped",
+    "v9Native": "Identity/occlusion accepted, raw background jitter persisted; only the finished output above is selected"
+  },
+  "limits": [
+    "Numerical stability covers selected rigid points, not every animated pixel; visual samples do not prove every frame is defect-free",
+    "Moving felt textures, water and leaves differ at the loop join; this is not a mathematically seamless loop",
+    "Browser playback and UI acceptance are separate records; physical-phone performance and speaker quality are unverified",
+    "This is local web application and preview, not public or native-app deployment"
+  ],
+  "evidence": [
+    "portrait/static-plate-web.json", "landscape/static-plate-web.json",
+    "portrait/background-lock.json", "landscape/background-lock.json",
+    "portrait/locked/scene-contact.jpg", "portrait/locked/faces-contact.jpg", "portrait/locked/river-contact.jpg",
+    "landscape/locked/scene-contact.jpg", "landscape/locked/faces-contact.jpg", "landscape/locked/river-contact.jpg",
+    "portrait/motion.json", "landscape/motion.json",
+    "browser-result.json", "full-loop-playback.json", "generation-cost.json"
+  ]
+}

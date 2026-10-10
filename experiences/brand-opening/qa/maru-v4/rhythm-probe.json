@@ -1,0 +1,5524 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "probe": true,
+  "landscapeFirst": true,
+  "checks": [
+    {
+      "name": "landscape-first-start: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "landscape-first-start: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "landscape-first-start: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ]
+    },
+    {
+      "name": "landscape-first-start: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "landscape-first-start: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "landscape-first-start: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "Five questions and empty guest wallet before play",
+      "passed": true
+    },
+    {
+      "name": "opening-pause-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "opening-pause-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "opening-pause-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 46,
+          "y": 136.78125,
+          "width": 111.453125,
+          "height": 44.421875,
+          "right": 157.453125,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 163.453125,
+          "y": 136.78125,
+          "width": 79.203125,
+          "height": 44.421875,
+          "right": 242.65625,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 387,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 431,
+          "bottom": 173.203125
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 495,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 539,
+          "bottom": 173.203125
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 46,
+          "y": 189.203125,
+          "width": 648,
+          "height": 44,
+          "right": 694,
+          "bottom": 233.203125
+        }
+      ]
+    },
+    {
+      "name": "opening-pause-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "opening-pause-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        "pause-dialog": {
+          "x": 30,
+          "y": 11.78125,
+          "width": 680,
+          "height": 233.421875,
+          "right": 710,
+          "bottom": 245.203125
+        },
+        "resume-button": {
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        }
+      }
+    },
+    {
+      "name": "opening-pause-portrait: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "opening-pause-portrait: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "opening-pause-portrait: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 39,
+          "y": 236.03125,
+          "width": 134.859375,
+          "height": 44,
+          "right": 173.859375,
+          "bottom": 280.03125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 39,
+          "y": 288.03125,
+          "width": 100.40625,
+          "height": 44,
+          "right": 139.40625,
+          "bottom": 332.03125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 81,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 125,
+          "bottom": 586.21875
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 189,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 233,
+          "bottom": 586.21875
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 39,
+          "y": 796.40625,
+          "width": 206,
+          "height": 44,
+          "right": 245,
+          "bottom": 840.40625
+        }
+      ]
+    },
+    {
+      "name": "opening-pause-portrait: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 499,
+        "right": 284,
+        "bottom": 677
+      }
+    },
+    {
+      "name": "opening-pause-portrait: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        "pause-dialog": {
+          "x": 19,
+          "y": 19,
+          "width": 246,
+          "height": 639,
+          "right": 265,
+          "bottom": 658
+        },
+        "resume-button": {
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        }
+      }
+    },
+    {
+      "name": "opening: paused music time and score stay fixed",
+      "passed": true,
+      "details": {
+        "before": 0.1597062000432059,
+        "after": 0.1597062000432059
+      }
+    },
+    {
+      "name": "opening: resumes same music clock",
+      "passed": true
+    },
+    {
+      "name": "beats-rotation-1: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "beats-rotation-1: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "beats-rotation-1: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ]
+    },
+    {
+      "name": "beats-rotation-1: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "beats-rotation-1: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 186,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 252
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "beats-rotation-1: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-listening-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "q1-listening-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "q1-listening-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        }
+      ]
+    },
+    {
+      "name": "q1-listening-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "q1-listening-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-listening-landscape: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-listening-landscape: question does not cover controls",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1: audio and question schedule continue through rotation",
+      "passed": true,
+      "details": {
+        "before": 9.698036666666667,
+        "after": 9.967369999999999
+      }
+    },
+    {
+      "name": "q1: listening tap does not answer",
+      "passed": true
+    },
+    {
+      "name": "narration-pause-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "narration-pause-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "narration-pause-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 46,
+          "y": 136.78125,
+          "width": 111.453125,
+          "height": 44.421875,
+          "right": 157.453125,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 163.453125,
+          "y": 136.78125,
+          "width": 79.203125,
+          "height": 44.421875,
+          "right": 242.65625,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 387,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 431,
+          "bottom": 173.203125
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 495,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 539,
+          "bottom": 173.203125
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 46,
+          "y": 189.203125,
+          "width": 648,
+          "height": 44,
+          "right": 694,
+          "bottom": 233.203125
+        }
+      ]
+    },
+    {
+      "name": "narration-pause-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "narration-pause-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        "pause-dialog": {
+          "x": 30,
+          "y": 11.78125,
+          "width": 680,
+          "height": 233.421875,
+          "right": 710,
+          "bottom": 245.203125
+        },
+        "resume-button": {
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        }
+      }
+    },
+    {
+      "name": "narration-pause-portrait: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "narration-pause-portrait: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "narration-pause-portrait: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 193.546875,
+          "y": 197.2713165283203,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241.2713165283203
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 39,
+          "y": 236.03125,
+          "width": 134.859375,
+          "height": 44,
+          "right": 173.859375,
+          "bottom": 280.03125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 39,
+          "y": 288.03125,
+          "width": 100.40625,
+          "height": 44,
+          "right": 139.40625,
+          "bottom": 332.03125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 81,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 125,
+          "bottom": 586.21875
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 189,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 233,
+          "bottom": 586.21875
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 39,
+          "y": 796.40625,
+          "width": 206,
+          "height": 44,
+          "right": 245,
+          "bottom": 840.40625
+        }
+      ]
+    },
+    {
+      "name": "narration-pause-portrait: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 499,
+        "right": 284,
+        "bottom": 677
+      }
+    },
+    {
+      "name": "narration-pause-portrait: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 187.2713165283203,
+          "width": 264,
+          "height": 114.93748474121094,
+          "right": 274,
+          "bottom": 302.20880126953125
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        "pause-dialog": {
+          "x": 19,
+          "y": 19,
+          "width": 246,
+          "height": 639,
+          "right": 265,
+          "bottom": 658
+        },
+        "resume-button": {
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        }
+      }
+    },
+    {
+      "name": "narration: paused music time and score stay fixed",
+      "passed": true,
+      "details": {
+        "before": 10.028703333333333,
+        "after": 10.028703333333333
+      }
+    },
+    {
+      "name": "narration: resumes same music clock",
+      "passed": true
+    },
+    {
+      "name": "q1-resumed-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "q1-resumed-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "q1-resumed-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        }
+      ]
+    },
+    {
+      "name": "q1-resumed-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "q1-resumed-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-resumed-landscape: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-resumed-landscape: question does not cover controls",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-text-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "q1-text-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "q1-text-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ]
+    },
+    {
+      "name": "q1-text-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "q1-text-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 130.484375,
+          "right": 327,
+          "bottom": 214.984375
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-text-landscape: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-text-landscape: question does not cover controls",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 130.484375,
+          "right": 327,
+          "bottom": 214.984375
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1: actual O/X pointer answer persists",
+      "passed": true,
+      "details": {
+        "state": "answered",
+        "response": 0,
+        "answer": "O",
+        "correct": true,
+        "texted": true,
+        "delivered": "completed",
+        "showTime": 9.63737,
+        "voiceEnd": 16.554078,
+        "answerOpen": 19.63737,
+        "time": 21.63737,
+        "closeTime": 22.28737,
+        "independent": false,
+        "buttonTime": 19.80737
+      }
+    },
+    {
+      "name": "q1-answer-landscape: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "q1-answer-landscape: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "q1-answer-landscape: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ]
+    },
+    {
+      "name": "q1-answer-landscape: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 333,
+        "y": 76.5,
+        "width": 407,
+        "height": 180.5,
+        "right": 740,
+        "bottom": 257
+      }
+    },
+    {
+      "name": "q1-answer-landscape: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 152.28125,
+          "right": 327,
+          "bottom": 236.78125
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-answer-landscape: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-answer-landscape: question does not cover controls",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 152.28125,
+          "right": 327,
+          "bottom": 236.78125
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      }
+    },
+    {
+      "name": "q1-answered-return: same iframe document/canvas/audio context",
+      "passed": true
+    },
+    {
+      "name": "q1-answered-return: no gameplay scroll overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "q1-answered-return: auxiliary controls retain 44px touch targets",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        }
+      ]
+    },
+    {
+      "name": "q1-answered-return: canvas backing follows layout",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 499,
+        "right": 284,
+        "bottom": 677
+      }
+    },
+    {
+      "name": "q1-answered-return: O/X controls inside viewport",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 178,
+          "width": 264,
+          "height": 188,
+          "right": 274,
+          "bottom": 366
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        }
+      }
+    },
+    {
+      "name": "q1-answered-return: O/X button centers are unobscured",
+      "passed": true,
+      "details": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ]
+    },
+    {
+      "name": "q1-answered-return: question does not cover controls",
+      "passed": true,
+      "details": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 178,
+          "width": 264,
+          "height": 188,
+          "right": 274,
+          "bottom": 366
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        }
+      }
+    },
+    {
+      "name": "q1: answered response not duplicated/reset",
+      "passed": true
+    }
+  ],
+  "failures": [],
+  "samples": [
+    {
+      "name": "landscape-first-start",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 0.010372866709872586,
+      "track": 0,
+      "level": "easy",
+      "phase": null,
+      "result": null,
+      "score": 0,
+      "combo": 0,
+      "maxCombo": 0,
+      "processed": 0,
+      "duration": 202.68,
+      "hits": 0,
+      "missed": 0,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 121,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 0.010372866709872586,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.0016065572186723818,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 0,
+        "combo": 0,
+        "correct": 0,
+        "processed": 0,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": ""
+    },
+    {
+      "name": "opening-pause-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": true,
+      "time": 0.1597062000432059,
+      "track": 0,
+      "level": "easy",
+      "phase": null,
+      "result": null,
+      "score": 0,
+      "combo": 0,
+      "maxCombo": 0,
+      "processed": 0,
+      "duration": 202.68,
+      "hits": 0,
+      "missed": 0,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 140,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1,
+        "screen": "game",
+        "paused": true,
+        "loading": false,
+        "time": 0.1597062000432059,
+        "audioState": "suspended",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.02605880593052692,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 0,
+        "combo": 0,
+        "correct": 0,
+        "processed": 0,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        "pause-dialog": {
+          "x": 30,
+          "y": 11.78125,
+          "width": 680,
+          "height": 233.421875,
+          "right": 710,
+          "bottom": 245.203125
+        },
+        "resume-button": {
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 46,
+          "y": 136.78125,
+          "width": 111.453125,
+          "height": 44.421875,
+          "right": 157.453125,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 163.453125,
+          "y": 136.78125,
+          "width": 79.203125,
+          "height": 44.421875,
+          "right": 242.65625,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 387,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 431,
+          "bottom": 173.203125
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 495,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 539,
+          "bottom": 173.203125
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 46,
+          "y": 189.203125,
+          "width": 648,
+          "height": 44,
+          "right": 694,
+          "bottom": 233.203125
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": false
+        },
+        {
+          "disabled": false,
+          "reachable": false
+        }
+      ],
+      "modal": true,
+      "questionText": ""
+    },
+    {
+      "name": "opening-pause-portrait",
+      "screen": "game",
+      "loading": false,
+      "paused": true,
+      "time": 0.1597062000432059,
+      "track": 0,
+      "level": "easy",
+      "phase": null,
+      "result": null,
+      "score": 0,
+      "combo": 0,
+      "maxCombo": 0,
+      "processed": 0,
+      "duration": 202.68,
+      "hits": 0,
+      "missed": 0,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 158,
+      "width": 284,
+      "height": 677,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1,
+        "screen": "game",
+        "paused": true,
+        "loading": false,
+        "time": 0.1597062000432059,
+        "audioState": "suspended",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.02605880593052692,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 0,
+        "combo": 0,
+        "correct": 0,
+        "processed": 0,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        "pause-dialog": {
+          "x": 19,
+          "y": 19,
+          "width": 246,
+          "height": 639,
+          "right": 265,
+          "bottom": 658
+        },
+        "resume-button": {
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 39,
+          "y": 236.03125,
+          "width": 134.859375,
+          "height": 44,
+          "right": 173.859375,
+          "bottom": 280.03125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 39,
+          "y": 288.03125,
+          "width": 100.40625,
+          "height": 44,
+          "right": 139.40625,
+          "bottom": 332.03125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 81,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 125,
+          "bottom": 586.21875
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 189,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 233,
+          "bottom": 586.21875
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 39,
+          "y": 796.40625,
+          "width": 206,
+          "height": 44,
+          "right": 245,
+          "bottom": 840.40625
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 284,
+        "height": 499,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": false
+        },
+        {
+          "disabled": false,
+          "reachable": false
+        }
+      ],
+      "modal": true,
+      "questionText": ""
+    },
+    {
+      "name": "beats-rotation-1",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 9.548703333333332,
+      "track": 0,
+      "level": "easy",
+      "phase": null,
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 197,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 9.548703333333332,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.0467314651566944,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 186,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 252
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": ""
+    },
+    {
+      "name": "q1-listening-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 9.91937,
+      "track": 0,
+      "level": "easy",
+      "phase": "listening",
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 213,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 9.908703333333333,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.05546789295790485,
+        "voiceLevel": 0.0791681283157816,
+        "activeVoice": {
+          "id": "t0q0v0",
+          "url": "assets/narration/t0q0v0.mp3",
+          "start": 9.63737,
+          "end": 16.554078333333333
+        },
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": ""
+    },
+    {
+      "name": "narration-pause-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": true,
+      "time": 10.028703333333333,
+      "track": 0,
+      "level": "easy",
+      "phase": "listening",
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 233,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": true,
+        "loading": false,
+        "time": 10.028703333333333,
+        "audioState": "suspended",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.10083372626471028,
+        "voiceLevel": 0.14430190971910437,
+        "activeVoice": {
+          "id": "t0q0v0",
+          "url": "assets/narration/t0q0v0.mp3",
+          "start": 9.63737,
+          "end": 16.554078333333333
+        },
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        "pause-dialog": {
+          "x": 30,
+          "y": 11.78125,
+          "width": 680,
+          "height": 233.421875,
+          "right": 710,
+          "bottom": 245.203125
+        },
+        "resume-button": {
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 46,
+          "y": 80.375,
+          "width": 317,
+          "height": 48.40625,
+          "right": 363,
+          "bottom": 128.78125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 46,
+          "y": 136.78125,
+          "width": 111.453125,
+          "height": 44.421875,
+          "right": 157.453125,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 163.453125,
+          "y": 136.78125,
+          "width": 79.203125,
+          "height": 44.421875,
+          "right": 242.65625,
+          "bottom": 181.203125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 387,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 431,
+          "bottom": 173.203125
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 495,
+          "y": 129.203125,
+          "width": 44,
+          "height": 44,
+          "right": 539,
+          "bottom": 173.203125
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 46,
+          "y": 189.203125,
+          "width": 648,
+          "height": 44,
+          "right": 694,
+          "bottom": 233.203125
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": true,
+          "reachable": false
+        },
+        {
+          "disabled": true,
+          "reachable": false
+        }
+      ],
+      "modal": true,
+      "questionText": ""
+    },
+    {
+      "name": "narration-pause-portrait",
+      "screen": "game",
+      "loading": false,
+      "paused": true,
+      "time": 10.028703333333333,
+      "track": 0,
+      "level": "easy",
+      "phase": "listening",
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 245,
+      "width": 284,
+      "height": 677,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": true,
+        "loading": false,
+        "time": 10.028703333333333,
+        "audioState": "suspended",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.10083372626471028,
+        "voiceLevel": 0.14430190971910437,
+        "activeVoice": {
+          "id": "t0q0v0",
+          "url": "assets/narration/t0q0v0.mp3",
+          "start": 9.63737,
+          "end": 16.554078333333333
+        },
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 187.2713165283203,
+          "width": 264,
+          "height": 114.93748474121094,
+          "right": 274,
+          "bottom": 302.20880126953125
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        "pause-dialog": {
+          "x": 19,
+          "y": 19,
+          "width": 246,
+          "height": 639,
+          "right": 265,
+          "bottom": 658
+        },
+        "resume-button": {
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 193.546875,
+          "y": 197.2713165283203,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241.2713165283203
+        },
+        {
+          "id": "resume-button",
+          "text": "이어 하기",
+          "x": 39,
+          "y": 164.03125,
+          "width": 206,
+          "height": 62,
+          "right": 245,
+          "bottom": 226.03125
+        },
+        {
+          "id": "",
+          "text": "배경 음악 켜짐",
+          "x": 39,
+          "y": 236.03125,
+          "width": 134.859375,
+          "height": 44,
+          "right": 173.859375,
+          "bottom": 280.03125
+        },
+        {
+          "id": "",
+          "text": "효과 줄이기",
+          "x": 39,
+          "y": 288.03125,
+          "width": 100.40625,
+          "height": 44,
+          "right": 139.40625,
+          "bottom": 332.03125
+        },
+        {
+          "id": "",
+          "text": "−",
+          "x": 81,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 125,
+          "bottom": 586.21875
+        },
+        {
+          "id": "",
+          "text": "+",
+          "x": 189,
+          "y": 542.21875,
+          "width": 44,
+          "height": 44,
+          "right": 233,
+          "bottom": 586.21875
+        },
+        {
+          "id": "leave-button",
+          "text": "처음으로",
+          "x": 39,
+          "y": 796.40625,
+          "width": 206,
+          "height": 44,
+          "right": 245,
+          "bottom": 840.40625
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 284,
+        "height": 499,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": true,
+          "reachable": false
+        },
+        {
+          "disabled": true,
+          "reachable": false
+        }
+      ],
+      "modal": true,
+      "questionText": ""
+    },
+    {
+      "name": "q1-resumed-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 10.52737,
+      "track": 0,
+      "level": "easy",
+      "phase": "listening",
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 284,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 10.52737,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.006339585290041829,
+        "voiceLevel": 0.005675672006203398,
+        "activeVoice": {
+          "id": "t0q0v0",
+          "url": "assets/narration/t0q0v0.mp3",
+          "start": 9.63737,
+          "end": 16.554078333333333
+        },
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 109.90625,
+          "right": 327,
+          "bottom": 194.40625
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        },
+        {
+          "id": "q-text-btn",
+          "text": "글로 보기",
+          "x": 251.28125,
+          "y": 93.5,
+          "width": 64.71875,
+          "height": 44,
+          "right": 316,
+          "bottom": 137.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": ""
+    },
+    {
+      "name": "q1-text-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 10.708703333333332,
+      "track": 0,
+      "level": "easy",
+      "phase": "listening",
+      "result": null,
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 15,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": true,
+          "delivered": null,
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 293,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 10.708703333333332,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.05669997713566419,
+        "voiceLevel": 0.08094630883230536,
+        "activeVoice": {
+          "id": "t0q0v0",
+          "url": "assets/narration/t0q0v0.mp3",
+          "start": 9.63737,
+          "end": 16.554078333333333
+        },
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 0,
+        "processed": 15,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 130.484375,
+          "right": 327,
+          "bottom": 214.984375
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": true,
+          "reachable": true
+        },
+        {
+          "disabled": true,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": "“오늘은 바빠서 내일 도서관에 갈 거예요.”도서관에는 내일 가나요?"
+    },
+    {
+      "name": "q1-answer-landscape",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 22.32737,
+      "track": 0,
+      "level": "easy",
+      "phase": "answered",
+      "result": "ok",
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 16,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "answered",
+          "response": 0,
+          "answer": "O",
+          "correct": true,
+          "texted": true,
+          "delivered": "completed",
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": false
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 947,
+      "width": 740,
+      "height": 257,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 22.32737,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.04454012074195066,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 1,
+        "processed": 16,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "answered",
+            "response": 0,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 333,
+          "y": 76.5,
+          "width": 407,
+          "height": 180.5,
+          "right": 740,
+          "bottom": 257
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 84.5,
+          "width": 317,
+          "height": 152.28125,
+          "right": 327,
+          "bottom": 236.78125
+        },
+        "pad-0": {
+          "x": 333,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 527.5,
+          "bottom": 249
+        },
+        "pad-1": {
+          "x": 537.5,
+          "y": 183,
+          "width": 194.5,
+          "height": 66,
+          "right": 732,
+          "bottom": 249
+        },
+        "pause-button": {
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 686,
+          "y": 28.5,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 72.5
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 407,
+        "height": 181,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": "“오늘은 바빠서 내일 도서관에 갈 거예요.”도서관에는 내일 가나요?"
+    },
+    {
+      "name": "q1-answered-return",
+      "screen": "game",
+      "loading": false,
+      "paused": false,
+      "time": 22.778036666666665,
+      "track": 0,
+      "level": "easy",
+      "phase": "answered",
+      "result": "ok",
+      "score": 1000,
+      "combo": 0,
+      "maxCombo": 1,
+      "processed": 16,
+      "duration": 202.68,
+      "hits": 1,
+      "missed": 13,
+      "questions": [
+        {
+          "state": "answered",
+          "response": 0,
+          "answer": "O",
+          "correct": true,
+          "texted": true,
+          "delivered": "completed",
+          "showTime": 9.63737,
+          "voiceEnd": 16.554078,
+          "answerOpen": 19.63737,
+          "time": 21.63737,
+          "closeTime": 22.28737,
+          "independent": false
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 48.53896,
+          "voiceEnd": 54.045585,
+          "answerOpen": 58.53896,
+          "time": 60.53896,
+          "closeTime": 61.18896,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "X",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 85.22558,
+          "voiceEnd": 91.68628799999999,
+          "answerOpen": 95.22558,
+          "time": 97.22558,
+          "closeTime": 97.87558,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 119.82292000000001,
+          "voiceEnd": 125.336003,
+          "answerOpen": 129.82292,
+          "time": 131.82292,
+          "closeTime": 132.47292000000002,
+          "independent": null
+        },
+        {
+          "state": "pending",
+          "response": null,
+          "answer": "O",
+          "correct": false,
+          "texted": false,
+          "delivered": null,
+          "showTime": 156.55347,
+          "voiceEnd": 163.244012,
+          "answerOpen": 166.55347,
+          "time": 168.55347,
+          "closeTime": 169.20347,
+          "independent": null
+        }
+      ],
+      "frames": 957,
+      "width": 284,
+      "height": 677,
+      "timeOrigin": 1791573713667.7,
+      "sameCanvas": true,
+      "sameAudio": true,
+      "audio": {
+        "timing": 1.35,
+        "screen": "game",
+        "paused": false,
+        "loading": false,
+        "time": 22.76737,
+        "audioState": "running",
+        "recording": {
+          "title": "초록",
+          "sourceId": "94e8eeb8-fcba-4434-a0ba-cd1490d8c6d3",
+          "url": "assets/music/blue-signal.mp3",
+          "duration": 202.68,
+          "sampleRate": 48000,
+          "channels": 2
+        },
+        "signalLevel": 0.09496648065804254,
+        "voiceLevel": 0,
+        "activeVoice": null,
+        "scheduledVoices": [
+          {
+            "id": "t0q0v0",
+            "url": "assets/narration/t0q0v0.mp3",
+            "start": 9.63737,
+            "end": 16.554078333333333
+          },
+          {
+            "id": "t0q1v1",
+            "url": "assets/narration/t0q1v1.mp3",
+            "start": 48.53896,
+            "end": 54.045585
+          },
+          {
+            "id": "t0q2v1",
+            "url": "assets/narration/t0q2v1.mp3",
+            "start": 85.22558,
+            "end": 91.68628833333332
+          },
+          {
+            "id": "t0q3v0",
+            "url": "assets/narration/t0q3v0.mp3",
+            "start": 119.82292000000001,
+            "end": 125.33600333333334
+          },
+          {
+            "id": "t0q4v0",
+            "url": "assets/narration/t0q4v0.mp3",
+            "start": 156.55347,
+            "end": 163.24401166666667
+          }
+        ],
+        "score": 1000,
+        "combo": 0,
+        "correct": 1,
+        "processed": 16,
+        "questions": [
+          {
+            "time": 21.63737,
+            "showTime": 9.63737,
+            "voiceEnd": 16.554078,
+            "answerOpen": 19.63737,
+            "voice": {
+              "url": "assets/narration/t0q0v0.mp3",
+              "duration": 6.916708
+            },
+            "state": "answered",
+            "response": 0,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "오늘은 바빠서 내일 도서관에 갈 거예요."
+          },
+          {
+            "time": 60.53896,
+            "showTime": 48.53896,
+            "voiceEnd": 54.045585,
+            "answerOpen": 58.53896,
+            "voice": {
+              "url": "assets/narration/t0q1v1.mp3",
+              "duration": 5.506625
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "카페에서 친구를 기다리고 있어요."
+          },
+          {
+            "time": 97.22558,
+            "showTime": 85.22558,
+            "voiceEnd": 91.68628799999999,
+            "answerOpen": 95.22558,
+            "voice": {
+              "url": "assets/narration/t0q2v1.mp3",
+              "duration": 6.460708
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "X",
+            "prompt": "아침에는 비가 왔지만 지금은 맑아요."
+          },
+          {
+            "time": 131.82292,
+            "showTime": 119.82292000000001,
+            "voiceEnd": 125.336003,
+            "answerOpen": 129.82292,
+            "voice": {
+              "url": "assets/narration/t0q3v0.mp3",
+              "duration": 5.513083
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "저는 커피 대신 차를 주문했어요."
+          },
+          {
+            "time": 168.55347,
+            "showTime": 156.55347,
+            "voiceEnd": 163.244012,
+            "answerOpen": 166.55347,
+            "voice": {
+              "url": "assets/narration/t0q4v0.mp3",
+              "duration": 6.690542
+            },
+            "state": "pending",
+            "response": null,
+            "options": [
+              "O",
+              "X"
+            ],
+            "answer": "O",
+            "prompt": "회의가 두 시에서 세 시로 바뀌었어요."
+          }
+        ],
+        "duration": 202.68,
+        "level": "easy",
+        "track": 0
+      },
+      "boxes": {
+        "stage": {
+          "x": 0,
+          "y": 178,
+          "width": 284,
+          "height": 499,
+          "right": 284,
+          "bottom": 677
+        },
+        "phrase-card": {
+          "x": 10,
+          "y": 178,
+          "width": 264,
+          "height": 188,
+          "right": 274,
+          "bottom": 366
+        },
+        "pad-0": {
+          "x": 6,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 138,
+          "bottom": 665
+        },
+        "pad-1": {
+          "x": 146,
+          "y": 577,
+          "width": 132,
+          "height": 88,
+          "right": 278,
+          "bottom": 665
+        },
+        "pause-button": {
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        }
+      },
+      "touchTargets": [
+        {
+          "id": "pause-button",
+          "text": "Ⅱ",
+          "x": 228,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 272,
+          "bottom": 167
+        }
+      ],
+      "overflowX": 0,
+      "overflowY": 0,
+      "canvas": {
+        "width": 284,
+        "height": 499,
+        "dpr": 1
+      },
+      "pads": [
+        {
+          "disabled": false,
+          "reachable": true
+        },
+        {
+          "disabled": false,
+          "reachable": true
+        }
+      ],
+      "modal": false,
+      "questionText": "“오늘은 바빠서 내일 도서관에 갈 거예요.”도서관에는 내일 가나요?"
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "resources": [],
+  "shots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-landscape-first-start.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-opening-pause-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-opening-pause-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-beats-rotation-1.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-q1-listening-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-narration-pause-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-narration-pause-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-q1-resumed-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-q1-text-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-q1-answer-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-q1-answered-return.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\rhythm-probe-probe-finish.jpg"
+  ],
+  "scope": "Isolated guest Edge, existing local MP3 decode/playback. Full run does not seek or accelerate music; ordinary rhythm notes use the existing QA input hook, listening answers use actual pointer buttons. Viewport emulation is not physical-device rotation, latency, heat, or audible listening proof."
+}

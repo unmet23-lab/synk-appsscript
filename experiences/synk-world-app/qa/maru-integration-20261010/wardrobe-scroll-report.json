@@ -1,0 +1,89 @@
+{
+  "checkedAt": "2026-10-09T20:00:46.735Z",
+  "passed": 10,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "looks: same fitting stage survives tab switch",
+      "passed": true
+    },
+    {
+      "name": "looks: return control remains reachable",
+      "passed": true
+    },
+    {
+      "name": "photo: same fitting stage survives tab switch",
+      "passed": true
+    },
+    {
+      "name": "photo: return control remains reachable",
+      "passed": true
+    },
+    {
+      "name": "fitting: same fitting stage survives tab switch",
+      "passed": true
+    },
+    {
+      "name": "fitting: return control remains reachable",
+      "passed": true
+    },
+    {
+      "name": "scrolling collection and trying an item keeps the stage visible",
+      "passed": true,
+      "detail": {
+        "draft": {
+          "body": "mongle-apron-starter",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "confirmed": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "canvas": {
+          "x": 14,
+          "y": 110,
+          "bottom": 250,
+          "height": 140,
+          "hit": true
+        },
+        "browseScroll": 236,
+        "same": true
+      }
+    },
+    {
+      "name": "local try-on does not mutate the server outfit",
+      "passed": true,
+      "detail": {
+        "draft": {
+          "body": "mongle-apron-starter",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "confirmed": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "canvas": {
+          "x": 14,
+          "y": 110,
+          "bottom": 250,
+          "height": 140,
+          "hit": true
+        },
+        "browseScroll": 236,
+        "same": true
+      }
+    },
+    {
+      "name": "after tab switching and scrolling, close releases stage and resumes home",
+      "passed": true
+    },
+    {
+      "name": "no runtime errors or external calls",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "blocked": []
+      }
+    }
+  ]
+}

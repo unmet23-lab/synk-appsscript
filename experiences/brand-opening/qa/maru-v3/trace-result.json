@@ -1,0 +1,192 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "traceOnly": true,
+  "passed": 10,
+  "failed": [],
+  "checks": [
+    {
+      "name": "Hangul trace receives a real initial pointer stroke",
+      "passed": true
+    },
+    {
+      "name": "Trace canvas node survives rotation",
+      "passed": true
+    },
+    {
+      "name": "Existing trace stroke remains after rotation",
+      "passed": true
+    },
+    {
+      "name": "Trace backing store follows resized CSS dimensions",
+      "passed": true,
+      "details": {
+        "label": "landscape-before-second-stroke",
+        "same": true,
+        "width": 740,
+        "height": 257,
+        "cssWidth": 260,
+        "cssHeight": 260,
+        "backingWidth": 260,
+        "backingHeight": 260,
+        "dpr": 1,
+        "pointY": 61.340624999999996,
+        "redCount": 1048,
+        "redSha256": "f72370f5f42af70c638d666b60ab6e8821dc7fdb223a1185f36dcb39a3eca3ea"
+      }
+    },
+    {
+      "name": "New trace stroke remains under the pointer after rotation",
+      "passed": true,
+      "details": {
+        "expectedCssY": 161.2,
+        "actualCssY": 160.54459203036052,
+        "errorPx": -0.6554079696394695
+      }
+    },
+    {
+      "name": "Both strokes survive returning to portrait",
+      "passed": true
+    },
+    {
+      "name": "Clear removes the stored strokes and canvas marks",
+      "passed": true
+    },
+    {
+      "name": "A new stroke after clear still follows the pointer",
+      "passed": true,
+      "details": {
+        "expectedCssY": 92.0109375,
+        "actualCssY": 91.61061321783906,
+        "errorPx": -0.40032428216093763
+      }
+    },
+    {
+      "name": "Trace test has no page errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "Trace test has no network errors or disallowed calls",
+      "passed": true,
+      "details": {
+        "resources": [],
+        "blocked": []
+      }
+    }
+  ],
+  "layouts": [],
+  "gameRotations": [],
+  "traceObservations": [
+    {
+      "label": "portrait-after-first-stroke",
+      "same": true,
+      "width": 284,
+      "height": 677,
+      "cssWidth": 204.46875,
+      "cssHeight": 204.46875,
+      "backingWidth": 204,
+      "backingHeight": 204,
+      "dpr": 1,
+      "pointY": 61.340624999999996,
+      "redCount": 676,
+      "redSha256": "b4ab7ca2cee945a900dad3d35a8ee5bae24ef957270df747f0961c2af35dbb05"
+    },
+    {
+      "label": "landscape-before-second-stroke",
+      "same": true,
+      "width": 740,
+      "height": 257,
+      "cssWidth": 260,
+      "cssHeight": 260,
+      "backingWidth": 260,
+      "backingHeight": 260,
+      "dpr": 1,
+      "pointY": 61.340624999999996,
+      "redCount": 1048,
+      "redSha256": "f72370f5f42af70c638d666b60ab6e8821dc7fdb223a1185f36dcb39a3eca3ea"
+    },
+    {
+      "label": "landscape-after-second-stroke",
+      "same": true,
+      "width": 740,
+      "height": 257,
+      "cssWidth": 260,
+      "cssHeight": 260,
+      "backingWidth": 260,
+      "backingHeight": 260,
+      "dpr": 1,
+      "pointY": 161.2,
+      "redCount": 2102,
+      "redSha256": "6cd2dfe194ce61f8d7a4064f529fcdfe1285e84ff524a70fd7365a771116bfa1"
+    },
+    {
+      "label": "portrait-return",
+      "same": true,
+      "width": 284,
+      "height": 677,
+      "cssWidth": 204.46875,
+      "cssHeight": 204.46875,
+      "backingWidth": 204,
+      "backingHeight": 204,
+      "dpr": 1,
+      "pointY": 161.2,
+      "redCount": 1300,
+      "redSha256": "34272b2ce8dce646d42c3fa5bc46e9f9b63df6820533918ed1d7a01296943d4a"
+    },
+    {
+      "label": "portrait-cleared",
+      "same": true,
+      "width": 284,
+      "height": 677,
+      "cssWidth": 204.46875,
+      "cssHeight": 204.46875,
+      "backingWidth": 204,
+      "backingHeight": 204,
+      "dpr": 1,
+      "pointY": 161.2,
+      "redCount": 0,
+      "redSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "portrait-after-clear-redraw",
+      "same": true,
+      "width": 284,
+      "height": 677,
+      "cssWidth": 204.46875,
+      "cssHeight": 204.46875,
+      "backingWidth": 204,
+      "backingHeight": 204,
+      "dpr": 1,
+      "pointY": 92.0109375,
+      "redCount": 674,
+      "redSha256": "7a96d65884ec892c4b5b84bcb96bffb849c8598f129f9a519e8ff79b16fcce10"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-trace-portrait-before.jpg",
+      "bytes": 19169,
+      "sha256": "4ad5591b51f34733f4a5d3be90e5d9bb5f5c26b05c93d3b977f1cf44fc5560c7"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-trace-landscape-after.jpg",
+      "bytes": 18324,
+      "sha256": "dce7a109ca3ca8c273f86844012d08429ad4c086df3f297888192ad12c14768c"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-trace-portrait-return.jpg",
+      "bytes": 20754,
+      "sha256": "7644375919881e8de3045db82524802d5bc1a6f85a117f6952ec3bee66a8d112"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v3\\hangul-trace-clear-redraw.jpg",
+      "bytes": 20287,
+      "sha256": "e02001bc52a60143e336a59155666ca2dc4789c4b0f15e827e05ff5a4051cefc"
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blocked": [],
+  "scope": "Fresh guest Hangul first-letter trace pad only. Real pointer strokes, 320x740 to 740x320 and back; no answers, completed rounds, account actions, or paid calls."
+}

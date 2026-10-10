@@ -1,0 +1,75 @@
+{
+  "ok": true,
+  "source": "http://127.0.0.1:4312/mobile.html?opening=off",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-life-20261010-r4\\world",
+  "authored": {
+    "packs": 6,
+    "lessons": 18,
+    "storiesIncludedInLessons": 6,
+    "learningQuestions": 54,
+    "transferQuestions": 54
+  },
+  "checks": {
+    "sourceFunctional": 189,
+    "assetAndViewportRecheck": 67,
+    "unitContentAndProgress": 28,
+    "finalStaticAccountScenarioGroups": 23
+  },
+  "missing": [],
+  "sourceChanges": [],
+  "verifiedSources": [
+    {
+      "file": "app-shell.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "brand-opening/content/life-standalone.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "brand-opening/content/life-ui.css",
+      "matchesSource": true
+    },
+    {
+      "file": "brand-opening/home.css",
+      "matchesSource": true
+    },
+    {
+      "file": "brand-opening/home.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "index.html",
+      "matchesSource": true
+    },
+    {
+      "file": "life-content.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "life-progress.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "life-ui.css",
+      "matchesSource": true
+    },
+    {
+      "file": "life-ui.mjs",
+      "matchesSource": true
+    },
+    {
+      "file": "world-account.bundle.mjs",
+      "matchesSource": true
+    }
+  ],
+  "scope": {
+    "publiclyDeployed": false,
+    "liveOAuthTested": false,
+    "nativePackageBuilt": false,
+    "physicalPhoneTested": false,
+    "learningEffectsTested": false,
+    "content": "reading and choosing",
+    "newPaidApiCalls": 0
+  }
+}

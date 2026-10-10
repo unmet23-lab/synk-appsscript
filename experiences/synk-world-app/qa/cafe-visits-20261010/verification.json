@@ -1,0 +1,70 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-10T11:55:27.168Z",
+  "contentVersion": "life-ko-20261010-v2",
+  "content": {
+    "packs": 6,
+    "lessons": 21,
+    "coreQuestions": 63,
+    "transferQuestions": 63,
+    "cafeVisits": 4,
+    "newVisits": 3,
+    "earlierLessonSignatures": 18
+  },
+  "tests": {
+    "unitAndRealLocalSQL": {
+      "passed": 46,
+      "log": "unit-tests.txt"
+    },
+    "sourceBrowser": {
+      "checks": 64,
+      "report": "source-r3/report.json"
+    },
+    "standaloneBrowser": {
+      "checks": 64,
+      "report": "standalone-r2/report.json"
+    },
+    "originalVisitBrowser": {
+      "checks": 34,
+      "report": "../cafe-pack-20261010/visits-regression-r1/report.json"
+    },
+    "frozenAccountTransport": {
+      "checks": 22,
+      "report": "../cafe-pack-20261010/visits-account-static-r2/report.json"
+    }
+  },
+  "payload": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-cafe-visits-20261010-r3\\world",
+    "files": 1786,
+    "totalBytes": 184800190,
+    "missing": [],
+    "sourceChangesDuringBuild": [],
+    "criticalSourceMismatches": [],
+    "privateArtifacts": [],
+    "publicToolNames": [],
+    "oldPayloadUnchanged": true
+  },
+  "localApp": {
+    "url": "http://127.0.0.1:4313/mobile.html?opening=off&cafe=1",
+    "health": {
+      "ok": true,
+      "mode": "rehearsal",
+      "rehearsal": true,
+      "database": "local-postgresql",
+      "production": false
+    }
+  },
+  "scope": {
+    "local": true,
+    "realLocalJSONB": true,
+    "accountProviderMocked": true,
+    "published": false,
+    "remoteDatabase": false,
+    "liveOAuth": false,
+    "realPhones": false,
+    "newImageGeneration": false,
+    "newAudioGeneration": false,
+    "paidAI": false,
+    "studentLearningEffects": false
+  }
+}

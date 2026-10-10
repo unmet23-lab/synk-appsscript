@@ -1,0 +1,613 @@
+{
+  "checkedAt": "2026-10-09T19:58:54.671Z",
+  "passed": 5,
+  "failed": 0,
+  "results": [
+    {
+      "name": "first sentence 740x320: all answer/advance/exit controls fit and are hittable",
+      "passed": true,
+      "detail": [
+        {
+          "label": "",
+          "width": 44,
+          "height": 44,
+          "x": 668,
+          "y": 16,
+          "bottom": 60,
+          "right": 712,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "1안녕하세요.",
+          "width": 364.109375,
+          "height": 55,
+          "x": 347.890625,
+          "y": 66,
+          "bottom": 121,
+          "right": 712,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "2감사합니다.",
+          "width": 364.109375,
+          "height": 55,
+          "x": 347.890625,
+          "y": 127,
+          "bottom": 182,
+          "right": 712,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "3미안합니다.",
+          "width": 364.109375,
+          "height": 55,
+          "x": 347.890625,
+          "y": 188,
+          "bottom": 243,
+          "right": 712,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "다음 문장 →",
+          "width": 336,
+          "height": 50,
+          "x": 28,
+          "y": 250,
+          "bottom": 300,
+          "right": 364,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "홈에서 잠깐 쉬기",
+          "width": 336,
+          "height": 50,
+          "x": 376,
+          "y": 250,
+          "bottom": 300,
+          "right": 712,
+          "visible": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "wardrobe 740x320: usable 3D stage remains visible",
+      "passed": true,
+      "detail": {
+        "canvas": {
+          "x": 14,
+          "y": 110,
+          "width": 310.1875,
+          "height": 140,
+          "right": 324.1875,
+          "bottom": 250,
+          "centerHit": true
+        },
+        "stage": {
+          "stageRevision": 3,
+          "avatar": {
+            "avatarVersion": "mongle-v3",
+            "materialRevision": 4,
+            "wardrobeRevision": 6,
+            "dyeRevision": 1,
+            "pose": "neutral",
+            "equipment": {
+              "body": "",
+              "neck": "mongle-scarf-first-steps"
+            },
+            "dyes": {},
+            "wardrobe": {
+              "builtGarments": [
+                "mongle-scarf-first-steps",
+                "mongle-apron-starter"
+              ],
+              "visibleGarments": [
+                "mongle-scarf-first-steps"
+              ],
+              "revision": 8,
+              "dyeRevision": 1,
+              "dyes": {},
+              "fitting": "derived-from-existing-body-profile",
+              "microGeometry": true,
+              "microKnitInstances": 0,
+              "detailTextureSize": 512
+            },
+            "outfit": "scarf",
+            "bodyBounds": {
+              "width": 1.8004822731018066,
+              "height": 1.8342324290424585,
+              "depth": 1.609148919582367
+            },
+            "assetFailures": [],
+            "productionAsset": false
+          },
+          "contactLight": {
+            "enabled": false,
+            "quality": "balanced",
+            "mobile": true,
+            "passCount": 1,
+            "aoSamples": 0,
+            "beautySize": null,
+            "aoSize": null,
+            "msaaSamples": 0,
+            "estimatedTargetBytes": 0,
+            "drawCalls": 105,
+            "triangles": 84654,
+            "cpuSubmissionMs": 2.199999988079071,
+            "allocations": 0,
+            "releases": 0,
+            "disposed": false
+          },
+          "shadowMapSize": 512,
+          "shadowTechnique": "VSM",
+          "slots": {
+            "body": "",
+            "neck": "mongle-scarf-first-steps"
+          },
+          "dyes": {},
+          "view": {
+            "angle": 0,
+            "zoom": 0,
+            "detail": false
+          },
+          "angle": 0,
+          "targetAngle": 0,
+          "detail": false,
+          "zoom": 0,
+          "light": "daylight",
+          "pose": "neutral",
+          "background": "room",
+          "disposed": false,
+          "lost": false,
+          "active": true,
+          "inView": true,
+          "paused": false,
+          "frames": 4,
+          "dpr": 1.5,
+          "drawCalls": 105,
+          "triangles": 84654,
+          "textures": 14,
+          "geometries": 80,
+          "renderSubmissionMs": 2.2999999970197678,
+          "drawingBuffer": {
+            "width": 465,
+            "height": 210
+          }
+        },
+        "confirmed": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "overflow": 0
+      }
+    },
+    {
+      "name": "first sentence 844x390: all answer/advance/exit controls fit and are hittable",
+      "passed": true,
+      "detail": [
+        {
+          "label": "",
+          "width": 44,
+          "height": 44,
+          "x": 772,
+          "y": 16,
+          "bottom": 60,
+          "right": 816,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "1책 주세요.",
+          "width": 421.3125,
+          "height": 78.328125,
+          "x": 394.6875,
+          "y": 66,
+          "bottom": 144.328125,
+          "right": 816,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "2물 주세요.",
+          "width": 421.3125,
+          "height": 78.328125,
+          "x": 394.6875,
+          "y": 150.328125,
+          "bottom": 228.65625,
+          "right": 816,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "3의자 주세요.",
+          "width": 421.3125,
+          "height": 78.34375,
+          "x": 394.6875,
+          "y": 234.65625,
+          "bottom": 313,
+          "right": 816,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "다음 문장 →",
+          "width": 388,
+          "height": 50,
+          "x": 28,
+          "y": 320,
+          "bottom": 370,
+          "right": 416,
+          "visible": true,
+          "hit": true
+        },
+        {
+          "label": "홈에서 잠깐 쉬기",
+          "width": 388,
+          "height": 50,
+          "x": 428,
+          "y": 320,
+          "bottom": 370,
+          "right": 816,
+          "visible": true,
+          "hit": true
+        }
+      ]
+    },
+    {
+      "name": "wardrobe 844x390: usable 3D stage remains visible",
+      "passed": true,
+      "detail": {
+        "canvas": {
+          "x": 14,
+          "y": 110,
+          "width": 357,
+          "height": 210,
+          "right": 371,
+          "bottom": 320,
+          "centerHit": true
+        },
+        "stage": {
+          "stageRevision": 3,
+          "avatar": {
+            "avatarVersion": "mongle-v3",
+            "materialRevision": 4,
+            "wardrobeRevision": 6,
+            "dyeRevision": 1,
+            "pose": "neutral",
+            "equipment": {
+              "body": "",
+              "neck": "mongle-scarf-first-steps"
+            },
+            "dyes": {},
+            "wardrobe": {
+              "builtGarments": [
+                "mongle-scarf-first-steps"
+              ],
+              "visibleGarments": [
+                "mongle-scarf-first-steps"
+              ],
+              "revision": 8,
+              "dyeRevision": 1,
+              "dyes": {},
+              "fitting": "derived-from-existing-body-profile",
+              "microGeometry": true,
+              "microKnitInstances": 0,
+              "detailTextureSize": 1024
+            },
+            "outfit": "scarf",
+            "bodyBounds": {
+              "width": 1.8004822731018066,
+              "height": 1.8342324290424585,
+              "depth": 1.609148919582367
+            },
+            "assetFailures": [],
+            "productionAsset": false
+          },
+          "contactLight": {
+            "enabled": true,
+            "quality": "balanced",
+            "mobile": false,
+            "passCount": 6,
+            "aoSamples": 8,
+            "beautySize": [
+              624,
+              367
+            ],
+            "aoSize": [
+              312,
+              184
+            ],
+            "msaaSamples": 2,
+            "estimatedTargetBytes": 10310976,
+            "drawCalls": 162,
+            "triangles": 128866,
+            "cpuSubmissionMs": 4.399999991059303,
+            "allocations": 1,
+            "releases": 0,
+            "disposed": false
+          },
+          "shadowMapSize": 1024,
+          "shadowTechnique": "VSM",
+          "slots": {
+            "body": "",
+            "neck": "mongle-scarf-first-steps"
+          },
+          "dyes": {},
+          "view": {
+            "angle": 0,
+            "zoom": 0,
+            "detail": false
+          },
+          "angle": 0,
+          "targetAngle": 0,
+          "detail": false,
+          "zoom": 0,
+          "light": "daylight",
+          "pose": "neutral",
+          "background": "room",
+          "disposed": false,
+          "lost": false,
+          "active": true,
+          "inView": true,
+          "paused": false,
+          "frames": 3,
+          "dpr": 1.75,
+          "drawCalls": 162,
+          "triangles": 128866,
+          "textures": 18,
+          "geometries": 57,
+          "renderSubmissionMs": 4.399999991059303,
+          "drawingBuffer": {
+            "width": 624,
+            "height": 367
+          }
+        },
+        "confirmed": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "overflow": 0
+      }
+    },
+    {
+      "name": "no JS errors or external calls",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "blocked": []
+      }
+    }
+  ],
+  "frames": [
+    {
+      "width": 740,
+      "height": 320,
+      "canvas": {
+        "x": 14,
+        "y": 110,
+        "width": 310.1875,
+        "height": 140,
+        "right": 324.1875,
+        "bottom": 250,
+        "centerHit": true
+      },
+      "stage": {
+        "stageRevision": 3,
+        "avatar": {
+          "avatarVersion": "mongle-v3",
+          "materialRevision": 4,
+          "wardrobeRevision": 6,
+          "dyeRevision": 1,
+          "pose": "neutral",
+          "equipment": {
+            "body": "",
+            "neck": "mongle-scarf-first-steps"
+          },
+          "dyes": {},
+          "wardrobe": {
+            "builtGarments": [
+              "mongle-scarf-first-steps",
+              "mongle-apron-starter"
+            ],
+            "visibleGarments": [
+              "mongle-scarf-first-steps"
+            ],
+            "revision": 8,
+            "dyeRevision": 1,
+            "dyes": {},
+            "fitting": "derived-from-existing-body-profile",
+            "microGeometry": true,
+            "microKnitInstances": 0,
+            "detailTextureSize": 512
+          },
+          "outfit": "scarf",
+          "bodyBounds": {
+            "width": 1.8004822731018066,
+            "height": 1.8342324290424585,
+            "depth": 1.609148919582367
+          },
+          "assetFailures": [],
+          "productionAsset": false
+        },
+        "contactLight": {
+          "enabled": false,
+          "quality": "balanced",
+          "mobile": true,
+          "passCount": 1,
+          "aoSamples": 0,
+          "beautySize": null,
+          "aoSize": null,
+          "msaaSamples": 0,
+          "estimatedTargetBytes": 0,
+          "drawCalls": 105,
+          "triangles": 84654,
+          "cpuSubmissionMs": 2.199999988079071,
+          "allocations": 0,
+          "releases": 0,
+          "disposed": false
+        },
+        "shadowMapSize": 512,
+        "shadowTechnique": "VSM",
+        "slots": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "dyes": {},
+        "view": {
+          "angle": 0,
+          "zoom": 0,
+          "detail": false
+        },
+        "angle": 0,
+        "targetAngle": 0,
+        "detail": false,
+        "zoom": 0,
+        "light": "daylight",
+        "pose": "neutral",
+        "background": "room",
+        "disposed": false,
+        "lost": false,
+        "active": true,
+        "inView": true,
+        "paused": false,
+        "frames": 4,
+        "dpr": 1.5,
+        "drawCalls": 105,
+        "triangles": 84654,
+        "textures": 14,
+        "geometries": 80,
+        "renderSubmissionMs": 2.2999999970197678,
+        "drawingBuffer": {
+          "width": 465,
+          "height": 210
+        }
+      },
+      "confirmed": {
+        "body": "",
+        "neck": "mongle-scarf-first-steps"
+      },
+      "overflow": 0
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "canvas": {
+        "x": 14,
+        "y": 110,
+        "width": 357,
+        "height": 210,
+        "right": 371,
+        "bottom": 320,
+        "centerHit": true
+      },
+      "stage": {
+        "stageRevision": 3,
+        "avatar": {
+          "avatarVersion": "mongle-v3",
+          "materialRevision": 4,
+          "wardrobeRevision": 6,
+          "dyeRevision": 1,
+          "pose": "neutral",
+          "equipment": {
+            "body": "",
+            "neck": "mongle-scarf-first-steps"
+          },
+          "dyes": {},
+          "wardrobe": {
+            "builtGarments": [
+              "mongle-scarf-first-steps"
+            ],
+            "visibleGarments": [
+              "mongle-scarf-first-steps"
+            ],
+            "revision": 8,
+            "dyeRevision": 1,
+            "dyes": {},
+            "fitting": "derived-from-existing-body-profile",
+            "microGeometry": true,
+            "microKnitInstances": 0,
+            "detailTextureSize": 1024
+          },
+          "outfit": "scarf",
+          "bodyBounds": {
+            "width": 1.8004822731018066,
+            "height": 1.8342324290424585,
+            "depth": 1.609148919582367
+          },
+          "assetFailures": [],
+          "productionAsset": false
+        },
+        "contactLight": {
+          "enabled": true,
+          "quality": "balanced",
+          "mobile": false,
+          "passCount": 6,
+          "aoSamples": 8,
+          "beautySize": [
+            624,
+            367
+          ],
+          "aoSize": [
+            312,
+            184
+          ],
+          "msaaSamples": 2,
+          "estimatedTargetBytes": 10310976,
+          "drawCalls": 162,
+          "triangles": 128866,
+          "cpuSubmissionMs": 4.399999991059303,
+          "allocations": 1,
+          "releases": 0,
+          "disposed": false
+        },
+        "shadowMapSize": 1024,
+        "shadowTechnique": "VSM",
+        "slots": {
+          "body": "",
+          "neck": "mongle-scarf-first-steps"
+        },
+        "dyes": {},
+        "view": {
+          "angle": 0,
+          "zoom": 0,
+          "detail": false
+        },
+        "angle": 0,
+        "targetAngle": 0,
+        "detail": false,
+        "zoom": 0,
+        "light": "daylight",
+        "pose": "neutral",
+        "background": "room",
+        "disposed": false,
+        "lost": false,
+        "active": true,
+        "inView": true,
+        "paused": false,
+        "frames": 3,
+        "dpr": 1.75,
+        "drawCalls": 162,
+        "triangles": 128866,
+        "textures": 18,
+        "geometries": 57,
+        "renderSubmissionMs": 4.399999991059303,
+        "drawingBuffer": {
+          "width": 624,
+          "height": 367
+        }
+      },
+      "confirmed": {
+        "body": "",
+        "neck": "mongle-scarf-first-steps"
+      },
+      "overflow": 0
+    }
+  ],
+  "errors": [],
+  "blocked": []
+}

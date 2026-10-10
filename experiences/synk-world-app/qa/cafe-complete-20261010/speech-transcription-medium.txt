@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "C:\Users\q1212\Documents\SYNK-appsscript\experiences\synk-world-app\qa\check-cafe-speech.py", line 9, in <module>
+    model_dir=next(p for p in snapshots.iterdir() if (p/'model.bin').exists())
+StopIteration

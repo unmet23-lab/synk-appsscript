@@ -1,0 +1,15 @@
+PASS real complete playback cafe-apply-1
+PASS real complete playback cafe-apply-2
+PASS real complete playback cafe-apply-3
+PASS real complete playback cafe-visit-taste-1
+PASS real complete playback cafe-visit-taste-2
+PASS real complete playback cafe-visit-taste-3
+PASS real complete playback cafe-visit-soldout-1
+PASS real complete playback cafe-visit-soldout-2
+PASS real complete playback cafe-visit-soldout-3
+PASS real complete playback cafe-visit-change-1
+PASS real complete playback cafe-visit-change-2
+PASS real complete playback cafe-visit-change-3
+PASS real complete playback cafe-compose-1
+PASS real complete playback cafe-compose-2
+PASS real complete playback cafe-compose-3

@@ -1,0 +1,139 @@
+{
+  "ok": false,
+  "checkedAt": "2026-10-10T10:47:12.390Z",
+  "base": "http://127.0.0.1:4313",
+  "checks": [
+    {
+      "name": "home exposes a cafe entrance",
+      "passed": true
+    },
+    {
+      "name": "welcome portrait panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "ordering portrait panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "wrong one-cup order creates one cup and waits for repair",
+      "passed": true
+    },
+    {
+      "name": "rotation 844x390 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "wrong order landscape panel, touch controls, and main action fit",
+      "passed": true,
+      "detail": {
+        "viewport": [
+          844,
+          390
+        ],
+        "panel": [
+          2,
+          0,
+          840,
+          390
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "actionHit": true
+      }
+    },
+    {
+      "name": "reload restores the wrong order and the same first response",
+      "passed": true
+    },
+    {
+      "name": "repair changes to two cups without erasing the first error",
+      "passed": true
+    },
+    {
+      "name": "help opened before the response survives reload",
+      "passed": true
+    },
+    {
+      "name": "seat choice is persisted before actual pickup",
+      "passed": true
+    },
+    {
+      "name": "pause and home resume keep the chosen seat and unreceived cups",
+      "passed": true
+    },
+    {
+      "name": "rotation 320x740 retains exact activity and attempt",
+      "passed": true
+    },
+    {
+      "name": "ready cups 320 portrait panel, touch controls, and main action fit",
+      "passed": false,
+      "detail": {
+        "viewport": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          42,
+          320,
+          720
+        ],
+        "horizontalOverflow": false,
+        "shortButtons": [],
+        "actionHit": true
+      }
+    }
+  ],
+  "passed": 12,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r4\\home-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r4\\cafe-welcome-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r4\\cafe-order-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r4\\cafe-repair-844.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-pack-20261010\\source-r4\\failure.png"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: ready cups 320 portrait panel, touch controls, and main action fit\n    at check (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:6:160)\n    at layout (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:15:835)\n    at async run (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:31:24)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-browser.cjs:43:28",
+  "scope": {
+    "local": true,
+    "syntheticAccounts": true,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false,
+    "liveOAuth": false
+  }
+}

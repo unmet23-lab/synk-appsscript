@@ -1,0 +1,76 @@
+{
+  "checkedAt": "2026-10-09T21:31:58.192Z",
+  "base": "http://127.0.0.1:4312",
+  "passed": 10,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "dedicated endpoint is a local rehearsal server",
+      "passed": true,
+      "detail": {
+        "ok": true,
+        "mode": "rehearsal",
+        "rehearsal": true,
+        "database": "local-postgresql",
+        "production": false
+      }
+    },
+    {
+      "name": "prepared curriculum has six packs, eighteen lessons, six stories, and 54 transfer questions",
+      "passed": true
+    },
+    {
+      "name": "fresh guest starts with real next progress and no invented completion",
+      "passed": true
+    },
+    {
+      "name": "home library exposes all six prepared life packs",
+      "passed": true
+    },
+    {
+      "name": "greetings: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "cafe: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "store: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "directions: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "transit: expressions, story, and application are genuinely available",
+      "passed": true
+    },
+    {
+      "name": "plans: expressions, story, and application are genuinely available",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "resources": [],
+  "observations": [],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r1\\home-fresh-portrait.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r1\\home-fresh-landscape.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-20261010\\source-r1\\failure.jpg"
+  ],
+  "coverage": {
+    "lessons": [],
+    "stories": [],
+    "originalQuestions": [],
+    "reviewQuestions": []
+  },
+  "error": "locator.click: Error: strict mode violation: locator('[data-life-stories]') resolved to 2 elements:\n    1) <button data-view=\"stories\" data-life-stories=\"\" aria-label=\"까몽 몽글 마린 이야기 모아 보기\">…</button> aka getByRole('button', { name: '까몽 몽글 마린 이야기 모아 보기' })\n    2) <button class=\"plain-button\" data-life-stories=\"\">세 친구 이야기 모아 보기</button> aka getByRole('button', { name: '세 친구 이야기 모아 보기' })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-life-stories]')\u001b[22m\n\n    at scenario (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-content-browser.cjs:270:45)",
+  "limits": [
+    "Isolated Edge browser contexts; physical phones and native apps are not covered.",
+    "Dedicated local rehearsal database and synthetic accounts; no real OAuth, remote publication, AI, or paid calls.",
+    "Prepared reading-and-choice content is verified here; spoken audio or student learning effects are not inferred."
+  ]
+}

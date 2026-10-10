@@ -1,0 +1,142 @@
+{
+  "ok": true,
+  "clips": [
+    {
+      "id": "cafe-apply-1",
+      "sha256": "0495c9fbbd6024bb1283bff230222e638faf86a8a4cbd40a6920e328d67cb65d",
+      "matched": true,
+      "recognized": [
+        "어서오세요. 어떤 음료로 드릴까요?",
+        "어서오세요 어떤 음료로 드릴까요?"
+      ]
+    },
+    {
+      "id": "cafe-apply-2",
+      "sha256": "aa062bc00d9d997b45981783fd00fcd28e41f68dd263cadbfe4f521c7685fb0b",
+      "matched": true,
+      "recognized": [
+        "가져가실 건가요?",
+        "가져가실 건가요?"
+      ]
+    },
+    {
+      "id": "cafe-apply-3",
+      "sha256": "c7e23ab7b92a1dd0d9919145fbcc68b15f39b22ba6cf764206c3d87bd8c1d009",
+      "matched": true,
+      "recognized": [
+        "따뜻한 차가 준비됐어요. 매장에서 드시나요?",
+        "따뜻한 차가 준비됐어요. 매장에서 드시나요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-taste-1",
+      "sha256": "45946b376df2302339bbbbc4f6b84ea21d7785eed1571106c9b155f6654d1d9c",
+      "matched": true,
+      "recognized": [
+        "어서오세요! 오늘은 어떤 음료를 드릴까요?",
+        "어서오세요 오늘은 어떤 음료를 드릴까요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-taste-2",
+      "sha256": "70978dd0c9284ae36c687cefc4a0dbc68e4baadedfcbe20c2d934b33eb11b2f1",
+      "matched": true,
+      "recognized": [
+        "따뜻한 차를 몇 잔 준비할까요?",
+        "따뜻한 차를 몇 잔 준비할까요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-taste-3",
+      "sha256": "d083f6301971dad4f4b609aa0f86b4a70dd936f06a247d6b42fa2490aa18bf36",
+      "matched": true,
+      "recognized": [
+        "가져가실 건가요? 여기서 드실 건가요?",
+        "가져가실 건가요? 여기서 드실 건가요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-soldout-1",
+      "sha256": "496cf98c03530f15b4925ef6b3a5a5dd6d3843fe7bd1fbfdcb0060fa4218ec80",
+      "matched": true,
+      "recognized": [
+        "오늘 주스는 품절이에요 따뜻한 차는 주문하실 수 있어요",
+        "오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요."
+      ]
+    },
+    {
+      "id": "cafe-visit-soldout-2",
+      "sha256": "d4022d6e0f20c0c1b8205406242ddc8866f00962e61f431fc3904baa88535399",
+      "matched": true,
+      "recognized": [
+        "따뜻한 차 두 잔 맞으시죠?"
+      ]
+    },
+    {
+      "id": "cafe-visit-soldout-3",
+      "sha256": "6d2b9e5d4878941a58681713d5f4ea6ef9984e0da156f7dd8a6030e960300271",
+      "matched": true,
+      "recognized": [
+        "차가 준비됐어요? 내장에서 드시나요?",
+        "차가 준비됐어요? 매장에서 드시나요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-change-1",
+      "sha256": "1e88e4f1a4cecd0ae5c25d4c1347e393469e3c262a91db9cb96645f5c2dc30c2",
+      "matched": true,
+      "recognized": [
+        "따뜻한 주스 두 잔! 아직 만들기 전이에요 주문을 바꾸시겠어요?",
+        "따뜻한 주스 2잔! 아직 만들기 전이에요. 주문을 바꾸시겠어요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-change-2",
+      "sha256": "d430d12217e45f9f130ce162db7e4efebdcc260d53d3e2924384f6312d2e316c",
+      "matched": true,
+      "recognized": [
+        "따뜻한 차 두 잔으로 바꿨어요 더 필요한 것이 있나요?",
+        "따뜻한 차 두 잔으로 바꿨어요 더 필요한 것이 있나요?"
+      ]
+    },
+    {
+      "id": "cafe-visit-change-3",
+      "sha256": "e20b5fcea1418ef46b6043e3ec2bed58d29bbdf6c37ccff60ffb7e225323d1cd",
+      "matched": true,
+      "recognized": [
+        "세 잔 모두 매장에서 드실 건가요?",
+        "세 잔 모두 매장에서 드실 건가요?"
+      ]
+    },
+    {
+      "id": "cafe-compose-1",
+      "sha256": "5c9dd33f05f594238db3eee6a42e661b04fc1e8521fc1938a34b6b97a0b66af6",
+      "matched": true,
+      "recognized": [
+        "어서오세요! 어떤 음료를 몇 잔 준비할까요?",
+        "어서 오세요. 어떤 음료를 몇 잔 준비할까요?"
+      ]
+    },
+    {
+      "id": "cafe-compose-2",
+      "sha256": "d4022d6e0f20c0c1b8205406242ddc8866f00962e61f431fc3904baa88535399",
+      "matched": true,
+      "recognized": [
+        "따뜻한 차 두 잔 맞으시죠?"
+      ]
+    },
+    {
+      "id": "cafe-compose-3",
+      "sha256": "d083f6301971dad4f4b609aa0f86b4a70dd936f06a247d6b42fa2490aa18bf36",
+      "matched": true,
+      "recognized": [
+        "가져가실 건가요? 여기서 드실 건가요?",
+        "가져가실 건가요? 여기서 드실 건가요?"
+      ]
+    }
+  ],
+  "matched": 15,
+  "localOnly": true,
+  "numericCounterNormalized": true,
+  "humanListening": false
+}

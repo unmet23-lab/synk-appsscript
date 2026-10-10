@@ -1,0 +1,932 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "layoutOnly": true,
+  "passed": 36,
+  "failed": [],
+  "checks": [
+    {
+      "name": "mobile390: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile390: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile390: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile390: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "scrollY": 0,
+        "scrollWidth": 390,
+        "bodyWidth": 390,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 646.8125,
+          "bottom": 702.3125
+        },
+        "nav": {
+          "top": 771
+        }
+      }
+    },
+    {
+      "name": "mobile390: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile390: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 646.8125,
+          "bottom": 702.3125
+        },
+        "nav": {
+          "top": 771
+        }
+      }
+    },
+    {
+      "name": "mobile390: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "mobile320: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile320: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile320: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile320: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "scrollY": 0,
+        "scrollWidth": 320,
+        "bodyWidth": 320,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 667
+        }
+      }
+    },
+    {
+      "name": "mobile320: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile320: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 667
+        }
+      }
+    },
+    {
+      "name": "mobile320: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "mobile322: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile322: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile322: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile322: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "scrollY": 0,
+        "scrollWidth": 322,
+        "bodyWidth": 322,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 631
+        }
+      }
+    },
+    {
+      "name": "mobile322: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile322: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 631
+        }
+      }
+    },
+    {
+      "name": "mobile322: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "desktop: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "desktop: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "desktop: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "desktop: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "scrollY": 0,
+        "scrollWidth": 1440,
+        "bodyWidth": 1440,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 437.890625,
+          "bottom": 495.890625
+        },
+        "nav": {
+          "top": 155
+        }
+      }
+    },
+    {
+      "name": "desktop: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "desktop: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "landscape: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "landscape: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "landscape: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "landscape: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "scrollY": 209,
+        "scrollWidth": 844,
+        "bodyWidth": 844,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 614.890625,
+          "bottom": 672.890625
+        },
+        "nav": {
+          "top": -54
+        }
+      }
+    },
+    {
+      "name": "landscape: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "landscape: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "No page JavaScript errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No failed HTTP assets",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No mutating or external network calls attempted",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "mobile390",
+      "width": 390,
+      "height": 844,
+      "scrollY": 0,
+      "scrollWidth": 390,
+      "bodyWidth": 390,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 646.8125,
+        "bottom": 702.3125
+      },
+      "nav": {
+        "top": 771
+      }
+    },
+    {
+      "name": "mobile320",
+      "width": 320,
+      "height": 740,
+      "scrollY": 0,
+      "scrollWidth": 320,
+      "bodyWidth": 320,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 539.875,
+        "bottom": 595.375
+      },
+      "nav": {
+        "top": 667
+      }
+    },
+    {
+      "name": "mobile322",
+      "width": 322,
+      "height": 704,
+      "scrollY": 0,
+      "scrollWidth": 322,
+      "bodyWidth": 322,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 539.875,
+        "bottom": 595.375
+      },
+      "nav": {
+        "top": 631
+      }
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "scrollY": 0,
+      "scrollWidth": 1440,
+      "bodyWidth": 1440,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 437.890625,
+        "bottom": 495.890625
+      },
+      "nav": {
+        "top": 155
+      }
+    },
+    {
+      "name": "landscape",
+      "width": 844,
+      "height": 390,
+      "scrollY": 209,
+      "scrollWidth": 844,
+      "bodyWidth": 844,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 614.890625,
+        "bottom": 672.890625
+      },
+      "nav": {
+        "top": -54
+      }
+    }
+  ],
+  "games": [],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-fullpage.jpg"
+  ],
+  "captureHashes": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-first-viewport.jpg",
+      "sha256": "dc9682aaad273d47e375dd55cd5b94ca5d448a2a62efd15b70199a3c884c5148",
+      "bytes": 80184,
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-fullpage.jpg",
+      "sha256": "d32a6d11915dbf14a9fbb6193f835c7eab355d40da7e6bd21f223acc01d9481d",
+      "bytes": 96311,
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-first-viewport.jpg",
+      "sha256": "3126b298bdb0442f9c998f31dd98c29ac5aafe98c5bf31054d2f3581c7b6a12b",
+      "bytes": 58868,
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-fullpage.jpg",
+      "sha256": "6cc6623c75b9bf1e7b5cd364827e9073ceb715fddeef626092a5d35a3e80bbb0",
+      "bytes": 72670,
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-first-viewport.jpg",
+      "sha256": "9081ee0a25697d2bfa31184be5e462d0bdc036763b61eff3d76d2dffaa0c4d6b",
+      "bytes": 58429,
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-fullpage.jpg",
+      "sha256": "a1398ad5f231d8e0e5bbc74b1170006441e446e4682232363e0f3f5b44b725ce",
+      "bytes": 74462,
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-first-viewport.jpg",
+      "sha256": "07e6274cd45e4ad9d50d8187f2385eb9dd6b2d0ddc0ad69e7fc1d40b19eb9f30",
+      "bytes": 204295,
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-fullpage.jpg",
+      "sha256": "c5cfb11a98ffd4084d767abb8a76747310faf49412759fc8b9ca91667ae2dad3",
+      "bytes": 204189,
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-first-viewport.jpg",
+      "sha256": "084f43618f6fb29707d4bb01ffe3c84f5a894926b9cbb2a9b68c656b6f5b3c1f",
+      "bytes": 47986,
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-fullpage.jpg",
+      "sha256": "11e07d9f554dbdd1e5f538385bf2c2b8f8657aad64eb16b49dd90a585a2956b3",
+      "bytes": 155682,
+      "fullPage": true
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blockedRequests": [],
+  "scope": "Independent headless Edge; five viewport sizes, first-screen primary action visibility, asset loading, video playback, and refreshed screenshots only. Functional game/panel checks are in browser-result.json."
+}

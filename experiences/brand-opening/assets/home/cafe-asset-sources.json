@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "createdDate": "2026-10-10",
+  "route": "built-in image_gen",
+  "actualModel": null,
+  "actualQuality": null,
+  "modelNote": "The built-in tool does not expose model or quality selection; GPT Image 2.5 max execution is not claimed.",
+  "separatePaidApiInvoked": false,
+  "generatedSource": "C:/Users/q1212/.codex/generated_images/01a1202c-6f43-7dd0-b08a-c9b4d9e77990/exec-cd0652c5-c483-409b-8df4-2e74cc5ff7cc.png",
+  "selected": "cafe-drinks-v2.png",
+  "treatment": "Exact transparent source copied. Four equal CSS sprite cells; no creative raster modifications.",
+  "finishPrompt": "Edit this game prop sprite atlas, preserving exactly the four physical felt cups and their left-to-right order: iced orange juice, warm orange juice without ice, ceramic teacup, lidded takeaway tea cup. Fix the alpha extraction and production finish: remove ALL bright yellow/red pixels, all loose white background remnants and speckles outside the physical wool objects, all dark matting. Retain natural tiny felt fibres, clean antialiased semi-transparent wool edges. The background must be genuinely fully transparent. Do not add shadows, letters, faces, labels or extra objects. Recompose into exactly four equal square cells on a horizontal 4:1 sheet, each prop fully contained in the center of its own cell, all objects same visual height, generous 12% transparent padding on every side, no overlap between cells. Props must look like polished physical needle-felt photographs under one consistent soft upper-left light. Beautiful clean crop-safe game artwork.",
+  "room": {
+    "source": "docs/디자인/앱시안_20261002/order-rush-kit/assets/cafe.webp",
+    "selected": "cafe-room-v1.webp",
+    "treatment": "Exact existing artwork copied."
+  },
+  "characters": "Existing approved friend-mongle, friend-kkamong and friend-marine WebP assets retained."
+}

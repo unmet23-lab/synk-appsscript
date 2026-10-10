@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-10T12:28:39.590Z",
+  "approvedMaximum": 329,
+  "called": 13,
+  "failed": 0,
+  "phase": "끝",
+  "additionalPayment": 0,
+  "reportedCreditDelta": 0,
+  "creditObservation": "provider subscription response immediately after generation",
+  "requestedNewCharacters": 293
+}

@@ -1,0 +1,167 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-10T13:17:43.490Z",
+  "checks": [
+    {
+      "id": "cafe-apply-1",
+      "passed": true,
+      "actualPlaybackSeconds": 2.957333,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-apply-2",
+      "passed": true,
+      "actualPlaybackSeconds": 1.537958,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-apply-3",
+      "passed": true,
+      "actualPlaybackSeconds": 3.944125,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-taste-1",
+      "passed": true,
+      "actualPlaybackSeconds": 3.878542,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-taste-2",
+      "passed": true,
+      "actualPlaybackSeconds": 2.519083,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-taste-3",
+      "passed": true,
+      "actualPlaybackSeconds": 3.33825,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-soldout-1",
+      "passed": true,
+      "actualPlaybackSeconds": 4.746167,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-soldout-2",
+      "passed": true,
+      "actualPlaybackSeconds": 3.028417,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-soldout-3",
+      "passed": true,
+      "actualPlaybackSeconds": 3.04675,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-change-1",
+      "passed": true,
+      "actualPlaybackSeconds": 5.454417,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-change-2",
+      "passed": true,
+      "actualPlaybackSeconds": 5.065958,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-visit-change-3",
+      "passed": true,
+      "actualPlaybackSeconds": 2.962625,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-compose-1",
+      "passed": true,
+      "actualPlaybackSeconds": 3.972875,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-compose-2",
+      "passed": true,
+      "actualPlaybackSeconds": 3.028417,
+      "transcriptShown": false
+    },
+    {
+      "id": "cafe-compose-3",
+      "passed": true,
+      "actualPlaybackSeconds": 3.33825,
+      "transcriptShown": false
+    }
+  ],
+  "audioRequests": [
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-apply-1.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-apply-2.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-apply-3.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-taste-1.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-taste-2.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-taste-3.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-soldout-1.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-soldout-2.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-soldout-3.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-change-1.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-change-2.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-visit-change-3.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-compose-1.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-compose-2.mp3",
+      "status": 206
+    },
+    {
+      "url": "http://127.0.0.1:4313/brand-opening/assets/cafe-voice/cafe-compose-3.mp3",
+      "status": 206
+    }
+  ],
+  "errors": [],
+  "http": [],
+  "scope": {
+    "realAudioPlayback": true,
+    "allQuestions": true,
+    "realPhones": false,
+    "humanListening": false,
+    "published": false
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-10-09T20:21:50.742Z",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-maru-20261010-r6",
+  "passed": 16,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "built account-mode /world/ opens Maru with the approved opening",
+      "passed": true
+    },
+    {
+      "name": "built opening rotation preserves playback position within 0.8 seconds",
+      "passed": true,
+      "detail": {
+        "before": 1.583966,
+        "after": 1.663623,
+        "difference": 0.07965700000000009
+      }
+    },
+    {
+      "name": "built opening switches to landscape media under /world/",
+      "passed": true
+    },
+    {
+      "name": "built opening hands its playback position to home within 0.8 seconds",
+      "passed": true,
+      "detail": {
+        "opening": 1.998099,
+        "home": 2.031057,
+        "difference": 0.03295800000000004
+      }
+    },
+    {
+      "name": "built opening hands off to account-ready home without forced sign-in",
+      "passed": true
+    },
+    {
+      "name": "runner: guest sign-in stays in the app shell",
+      "passed": true
+    },
+    {
+      "name": "rhythm: guest sign-in stays in the app shell",
+      "passed": true
+    },
+    {
+      "name": "hangul: guest sign-in stays in the app shell",
+      "passed": true
+    },
+    {
+      "name": "built mode selection preserves usable portrait layout with rotation hint",
+      "passed": true
+    },
+    {
+      "name": "built mode selection survives reload without replaying opening",
+      "passed": true
+    },
+    {
+      "name": "built home switches to approved landscape movie and clears hint",
+      "passed": true
+    },
+    {
+      "name": "built mobile.html resolves shell and home assets",
+      "passed": true
+    },
+    {
+      "name": "built desktop.html resolves shell and home assets",
+      "passed": true
+    },
+    {
+      "name": "built payload has no JS errors",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "built payload has no missing/failed assets",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "static guest smoke submitted no remote/mutating requests",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blocked": [],
+  "limits": [
+    "Final static artifact served under /world/, with remote requests blocked.",
+    "No real account login or remote deployment tested."
+  ]
+}

@@ -1,8 +1,11 @@
 import {readConfig,beginOAuth,consumeCallback,tokenRequest} from '../synk-account/src/core.mjs';
 import {createPlatformEntry} from '../synk-account/src/platform-entry.mjs';
 import accountClient from '../synk-account/src/generated/account-client.cjs';
+import {createWorldGameHost} from './world-game-host.mjs';
+import {createLifeProgressPort} from './life-progress-port.mjs';
+export {createLifeProgressPort} from './life-progress-port.mjs';
 const changed=()=>Object.assign(Error('계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});
-const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED']);
+const authErrors=new Set(['AUTH_REQUIRED','AUTH_SESSION_MISSING','SESSION_REVOKED','UNAUTHORIZED','ACCOUNT_UNAVAILABLE','PRODUCT_FORBIDDEN','PLATFORM_ACCOUNT_MISMATCH']);
 const routes=new Map([['bootstrap','GET'],['play/start','POST'],['play/complete','POST'],['avatar/outfit','PUT'],['wardrobe/looks','PUT'],['town/entry','GET'],['town/state','GET'],['town/sharing','POST'],['town/command','POST'],['town/presence','POST'],['enrollment/preview','POST'],['enrollment/claim','POST']]);
 
 // Credentials are owned by the WORLD entry. A game receives only scoped methods.
@@ -12,10 +15,12 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
  const config=readConfig(raw,getUrl()),key='synk.oauth.session.world';
  const binding=[config.supabaseUrl,config.accountApiUrl,config.clients.world.clientId,config.clients.world.redirectUri].join('|');
  const entry=createPlatformEntry({clientKey:'world',getUrl,replaceUrl});
- let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1;
+ let session=null,rawSession=null,owner=null,currentSessionId=null,currentAccount=null,epoch=0,closed=false,refreshing=null,pendingExchange=null,townBinding=null,townStateRevision=-1,verifiedClient=null,gameHost=null,gameLaunch=0,lifeHost=null,lifeLaunch=0,verification=0;
  const controllers=new Set();
  const guard=expected=>{if(closed||expected!==epoch)throw changed();if(session&&storage.getItem(key)!==rawSession){clear();throw changed();}};
- function clear(){epoch++;session=null;owner=null;currentSessionId=null;currentAccount=null;townBinding=null;townStateRevision=-1;for(const c of controllers)c.abort();onInvalidate();}
+ const gameBinding=data=>JSON.stringify([data?.account?.synk_user_id,data?.account?.status,data?.learning?.enabled,data?.learning?.revision,data?.capabilities?.learningSync]);
+ function stopGames(){gameHost?.dispose();gameHost=null;}
+ function clear(){epoch++;gameLaunch++;lifeLaunch++;verification++;stopGames();lifeHost?.dispose();lifeHost=null;session=null;owner=null;currentSessionId=null;currentAccount=null;verifiedClient=null;townBinding=null;townStateRevision=-1;for(const c of controllers)c.abort();onInvalidate();}
  function save(value){session=value;rawSession=JSON.stringify({...value,configKey:binding});storage.setItem(key,rawSession);}
  async function renew(expected){
   guard(expected);if(refreshing)return refreshing;if(!session?.refresh_token)return null;
@@ -23,14 +28,15 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   refreshing=promise;try{return await promise;}finally{if(refreshing===promise)refreshing=null;}
  }
  async function verify(expected){
-  guard(expected);if(!session)return false;
+  guard(expected);if(!session)return false;const read=++verification;
   if(session.expires_at<=now()+30000){await renew(expected);guard(expected);}
   const client=accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher});
-  const data=await client.load();guard(expected);
+  const data=await client.load();guard(expected);if(read!==verification)throw changed();
   const id=data.account?.synk_user_id;
   if(data.ok!==true||typeof id!=='string'||!id||data.account.status!=='active')throw Object.assign(Error('활성화된 SYNK ID를 확인해 주세요.'),{code:'ACCOUNT_UNAVAILABLE'});
-  entry.assertAccount(id);if(owner&&id!==owner)throw changed();owner=id;
-  currentSessionId=data.sessions?.find(s=>s.current&&!s.revoked)?.id||null;currentAccount=data;return true;
+  entry.assertAccount(id);if(owner&&id!==owner){clear();throw changed();}owner=id;
+  if(currentAccount&&gameBinding(currentAccount)!==gameBinding(data))stopGames();
+  currentSessionId=data.sessions?.find(s=>s.current&&!s.revoked)?.id||null;currentAccount=data;verifiedClient=client;return true;
  }
  async function restore(){
   const expected=epoch;entry.capture(storage);entry.restore(storage);guard(expected);
@@ -50,6 +56,39 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
   try{return await verify(expected);}catch(error){if(authErrors.has(error.code)){clear();storage.removeItem(key);}throw error;}
  }
  async function signIn(){clear();entry.resume();entry.stop();const expected=epoch;const url=await beginOAuth({config,product:'world',storage,now:now()});guard(expected);navigate(url);}
+ async function prepareGame(options={}){
+  const expected=epoch,launch=++gameLaunch;guard(expected);
+  if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인한 뒤 놀이를 이어가요.'),{code:'AUTH_REQUIRED',status:401});
+  stopGames();
+  try{
+   await verify(expected);guard(expected);if(launch!==gameLaunch)throw changed();
+   const id=owner,bound=gameBinding(currentAccount),client=verifiedClient,prefs=currentAccount.learning;
+   if(!client?.play||!prefs||typeof prefs.enabled!=='boolean'||!Number.isSafeInteger(prefs.revision)||prefs.revision<1)throw Object.assign(Error('계정의 게임 저장과 학습 설정을 다시 확인해 주세요.'),{code:'PLAY_NOT_READY'});
+   const check=()=>{guard(expected);if(launch!==gameLaunch||owner!==id||gameBinding(currentAccount)!==bound)throw changed();};
+   const wrap=port=>port&&Object.freeze(Object.fromEntries(Object.entries(port).filter(([,fn])=>typeof fn==='function').map(([name,fn])=>[name,async(...args)=>{
+    check();try{const value=await fn(...args);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();storage.removeItem(key);}throw error;}
+   }])));
+   const current=createWorldGameHost({...options,accountId:id,revision:prefs.revision,connected:prefs.enabled&&currentAccount.capabilities?.learningSync===true,
+    play:wrap(client.play),learning:wrap(client.learning),memory:wrap(client.memory),guard:check});
+   gameHost=current;
+   try{await current.ready();check();current.install();return current.publicHandle;}
+   catch(error){current.dispose();if(gameHost===current)gameHost=null;throw error;}
+  }catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();storage.removeItem(key);}throw error;}
+ }
+ async function prepareLifeProgress({storage:cache=globalThis.localStorage,onStatus=()=>{},target=globalThis}={}){
+  const expected=epoch,launch=++lifeLaunch;guard(expected);
+  if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인한 뒤 생활 한국어를 이어가요.'),{code:'AUTH_REQUIRED',status:401});
+  lifeHost?.dispose();lifeHost=null;
+  try{await verify(expected);guard(expected);if(launch!==lifeLaunch)throw changed();}
+  catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();storage.removeItem(key);}throw error;}
+  const id=owner,client=verifiedClient;
+  if(typeof client?.play?.load!=='function'||typeof client?.play?.mutate!=='function')throw Object.assign(Error('계정의 생활 한국어 저장 연결을 확인해 주세요.'),{code:'PLAY_NOT_READY'});
+  const check=()=>{guard(expected);if(launch!==lifeLaunch||owner!==id)throw changed();};
+  const wrap=fn=>async(...args)=>{check();try{const value=await fn(...args);check();return value;}catch(error){if(expected===epoch&&authErrors.has(error.code)){clear();storage.removeItem(key);}throw error;}};
+  const port=await createLifeProgressPort({accountId:id,client:{load:wrap(()=>client.play.load()),mutate:wrap(body=>client.play.mutate(body))},guard:check,storage:cache,target,onStatus,
+   onDispose:value=>{if(lifeHost===value)lifeHost=null;}});
+  check();lifeHost=port;return port;
+ }
  async function request(path,options={}){
   if(!routes.has(path)||(options.method||'GET')!==routes.get(path))throw new TypeError('Unsupported WORLD request');
   const expected=epoch;guard(expected);if(!owner||!session)throw Object.assign(Error('SYNK ID로 로그인해 주세요.'),{code:'AUTH_REQUIRED',status:401});
@@ -86,7 +125,7 @@ export function createWorldAccount({config:raw,storage=globalThis.sessionStorage
    const response=await revokeFetch(new URL('/auth/v1/logout?scope=local',config.supabaseUrl).href,{method:'POST',credentials:'omit',cache:'no-store',headers:{apikey:config.supabasePublishableKey,Authorization:`Bearer ${captured.access_token}`}});serverRevoked=response.ok&&serverRevoked;
   }catch{}finally{clearTimeout(timer);}return {serverRevoked};
  }
- return Object.freeze({mode:'account',restore,signIn,request,logout,identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
+ return Object.freeze({mode:'account',restore,signIn,request,logout,prepareGame,prepareLifeProgress,identity:()=>({accountId:owner,generation:epoch}),assertActive(){guard(epoch);if(!owner)throw changed();},
   preferences(){const learning=currentAccount?.learning;return learning&&typeof learning.enabled==='boolean'&&Number.isSafeInteger(learning.revision)?{enabled:learning.enabled,revision:learning.revision}:null;},
   async setLearning(enabled,expectedRevision){const expected=epoch;guard(expected);if(!owner||typeof enabled!=='boolean'||!Number.isSafeInteger(expectedRevision)||expectedRevision<0)throw new TypeError('Invalid account learning preference');
    const client=accountFactory({url:config.accountApiUrl,anonKey:config.supabasePublishableKey,product:'world',getAccessToken:()=>session?.access_token,refresh:()=>renew(expected),guard:()=>guard(expected),fetch:fetcher});

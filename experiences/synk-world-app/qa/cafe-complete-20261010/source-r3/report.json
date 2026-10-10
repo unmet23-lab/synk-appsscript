@@ -1,0 +1,222 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-10T12:48:00.072Z",
+  "entry": "http://127.0.0.1:4313/mobile.html?opening=off&cafe=1",
+  "checks": [
+    {
+      "name": "all five cafe visits including direct ordering are available",
+      "passed": true
+    },
+    {
+      "name": "new ordering starts in genuine listening mode",
+      "passed": true
+    },
+    {
+      "name": "welcome has complete cups, 44px targets and reachable action",
+      "passed": true,
+      "detail": {
+        "view": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "overflow": false,
+        "small": 0,
+        "clipped": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "staff transcript is hidden and unanswered submission is gated",
+      "passed": true
+    },
+    {
+      "name": "reload restores draft, audio help and physical stage",
+      "passed": true
+    },
+    {
+      "name": "a partial order is stored without manufacturing a response",
+      "passed": true
+    },
+    {
+      "name": "cold tea, three cups and the complete sentence match the draft",
+      "passed": true
+    },
+    {
+      "name": "320x740 keeps the exact draft and attempt",
+      "passed": true
+    },
+    {
+      "name": "320x740 has complete cups, 44px targets and reachable action",
+      "passed": true,
+      "detail": {
+        "view": [
+          320,
+          740
+        ],
+        "panel": [
+          0,
+          10,
+          320,
+          720
+        ],
+        "overflow": false,
+        "small": 0,
+        "clipped": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "740x320 keeps the exact draft and attempt",
+      "passed": true
+    },
+    {
+      "name": "740x320 has complete cups, 44px targets and reachable action",
+      "passed": true,
+      "detail": {
+        "view": [
+          740,
+          320
+        ],
+        "panel": [
+          0,
+          0,
+          740,
+          320
+        ],
+        "overflow": false,
+        "small": 0,
+        "clipped": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "actual question playback continues across rotation",
+      "passed": true
+    },
+    {
+      "name": "explicit pause keeps the same audio cursor",
+      "passed": true
+    },
+    {
+      "name": "only complete real playback unlocks submission",
+      "passed": true
+    },
+    {
+      "name": "wrong assembled order creates repair with exact original components",
+      "passed": true
+    },
+    {
+      "name": "repair changes cups and sentence without erasing first response",
+      "passed": true
+    },
+    {
+      "name": "reload restores draft, audio help and physical stage",
+      "passed": true
+    },
+    {
+      "name": "text help opened before a response survives reload",
+      "passed": true
+    },
+    {
+      "name": "text-assisted listening is retained as help-used",
+      "passed": true
+    },
+    {
+      "name": "390x844 keeps the exact draft and attempt",
+      "passed": true
+    },
+    {
+      "name": "390x844 has complete cups, 44px targets and reachable action",
+      "passed": true,
+      "detail": {
+        "view": [
+          390,
+          844
+        ],
+        "panel": [
+          0,
+          10,
+          390,
+          824
+        ],
+        "overflow": false,
+        "small": 0,
+        "clipped": 0,
+        "actionHit": true
+      }
+    },
+    {
+      "name": "reload restores draft, audio help and physical stage",
+      "passed": true
+    },
+    {
+      "name": "all language responses still wait for explicit cup pickup",
+      "passed": true
+    },
+    {
+      "name": "received order completes once with original components retained",
+      "passed": true
+    },
+    {
+      "name": "composed or assisted response returns in a new transfer situation",
+      "passed": true
+    },
+    {
+      "name": "composed or assisted response returns in a new transfer situation",
+      "passed": true
+    },
+    {
+      "name": "first order error and text-assisted confirmation both enter review",
+      "passed": true
+    },
+    {
+      "name": "failed audio never manufactures listening completion or an answer",
+      "passed": true
+    },
+    {
+      "name": "retry fetches and plays the real question to completion",
+      "passed": true
+    },
+    {
+      "name": "missing question bank keeps the saved listening stage and offers explicit text help",
+      "passed": true
+    },
+    {
+      "name": "explicit fallback preserves text help rather than claiming an unheard answer",
+      "passed": true
+    },
+    {
+      "name": "no JS, HTTP or external service requests from gameplay",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "httpErrors": [],
+        "external": []
+      }
+    }
+  ],
+  "passed": 32,
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-complete-20261010\\source-r3\\order-draft-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-complete-20261010\\source-r3\\order-repaired-landscape.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-complete-20261010\\source-r3\\cups-ready-390.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\cafe-complete-20261010\\source-r3\\complete-390.png"
+  ],
+  "scope": {
+    "local": true,
+    "realAudioPlayback": true,
+    "reviewClockAdvanced": true,
+    "realPhones": false,
+    "published": false,
+    "humanListening": false
+  }
+}

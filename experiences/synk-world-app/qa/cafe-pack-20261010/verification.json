@@ -1,0 +1,115 @@
+{
+  "checkedAt": "2026-10-10T11:02:16.020Z",
+  "ok": true,
+  "source": {
+    "report": "source-r7/report.json",
+    "passed": 34
+  },
+  "standalone": {
+    "report": "standalone-r2/report.json",
+    "passed": 31,
+    "entry": "http://127.0.0.1:4313/brand-opening/home.html"
+  },
+  "static": {
+    "report": "account-static-r3/report.json",
+    "passedChecks": 9,
+    "browserTests": 1
+  },
+  "unit": {
+    "tests": 38,
+    "passed": 38,
+    "report": "unit-tests.txt"
+  },
+  "build": {
+    "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-cafe-20261010-r2\\world",
+    "files": 1781,
+    "missing": [],
+    "sourceChanges": [],
+    "mismatches": [],
+    "privateArtifacts": [],
+    "oldPayloadUnchanged": true,
+    "note": "Source hashes are compared with sourceSha256; public HTML and module URLs are intentionally transformed by the builder."
+  },
+  "sourceHashes": {
+    "experiences/synk-world-app/app-shell.mjs": "521554982f71ad8d1c7f0082019dddcfa545d8049c63fb5ae816a8625d806a89",
+    "experiences/brand-opening/assets/home/cafe-drinks-v2.png": "595cde42686892bfd41a570e50b863dbe5551cc970558d9a2a2e0394c7cada16",
+    "experiences/brand-opening/assets/home/cafe-room-v1.webp": "e0e60f83fd04e8d2bf5a2bfaaf382cccb80dbd7e29730078f8650f26b2668c94",
+    "experiences/brand-opening/assets/tutors/kkamong-기본.webp": "fd1dcb1003a465db0e588728acde069664d13d382823866bb332045f7a7d1722",
+    "experiences/brand-opening/assets/tutors/kkamong-기쁨.webp": "847b7554d5dcf37547a84c0cff8818be5d6cac75def8076062206da76c739f4d",
+    "experiences/brand-opening/assets/tutors/kkamong-놀람.webp": "e617965194adc969c3721c923b3991f8191d27e91d14eed523b74acfacaae347",
+    "experiences/brand-opening/assets/tutors/kkamong-눈웃음.webp": "847b7554d5dcf37547a84c0cff8818be5d6cac75def8076062206da76c739f4d",
+    "experiences/brand-opening/assets/tutors/kkamong-민망.webp": "1115569c9cc1c631721263dcbc3c359719b0b24c7e473db8a18544692b8b5e25",
+    "experiences/brand-opening/assets/tutors/kkamong-윙크.webp": "60a58000eaefcd458b3b35a2606274926978962c29a2f3005b30121884e807fa",
+    "experiences/brand-opening/assets/tutors/kkamong-으쓱.webp": "c4fc486f09dd914e17c6470eadc292a6883b387663b3c5cc0ab443b632943724",
+    "experiences/brand-opening/assets/tutors/kkamong-잔잔감음.webp": "b92506f6a01e10f710eff9edfd5dc059bf3936f5417d54ee9b396fd541b0834b",
+    "experiences/brand-opening/assets/tutors/kkamong-졸림.webp": "e3a5f0ebbba1e8415a07383be61f71bec5b761ab4e2b2ffbed5b94ac3db5be18",
+    "experiences/brand-opening/assets/tutors/kkamong-ansim.wav": "f755e6a057adcdb51faeabac5ffcb9e5a538de5a468a507d2e30a800df92fb70",
+    "experiences/brand-opening/assets/tutors/kkamong-bee.wav": "9a2113ae4d7a4db61f3ed4cbab4b75c4ebe56a8bc0f0221110355e61a5996a89",
+    "experiences/brand-opening/assets/tutors/kkamong-nyamnyam.wav": "70653af350f6d6fcac0700e473beb5252f8aca214fb2dea0d6896fd7c6eaa27a",
+    "experiences/brand-opening/assets/tutors/marin-기본.webp": "4cb24338578df4cd184104ed95988551476ef567062220f701509ba78d93a2fc",
+    "experiences/brand-opening/assets/tutors/marin-기쁨.webp": "f216e39c1bd5d547229e87c9b04084b4ac5151532a6385ba3bee292d680d9043",
+    "experiences/brand-opening/assets/tutors/marin-놀람.webp": "179046bce140e1a4d7201e30b220f70a271acfcecd1c6877ed8f024b15049c5b",
+    "experiences/brand-opening/assets/tutors/marin-눈웃음.webp": "34b60fa5a3129c5352ee0a79875b02ba5a3a3f5882cc050fa0acf2f43a014477",
+    "experiences/brand-opening/assets/tutors/marin-민망.webp": "1eb66331494916aa6d775589091bf285c3fa01b96fd378a32ea10823cd742210",
+    "experiences/brand-opening/assets/tutors/marin-잔잔감음.webp": "6392c31f45b51b074e3b9b2a5fc28d93cc120cd8f0c54deff27bd82150d461da",
+    "experiences/brand-opening/assets/tutors/marin-졸림.webp": "3897cbe4224cdf91f5dd4b616b3fc2a3fa215f2364b7f829c6ed72617c592aec",
+    "experiences/brand-opening/assets/tutors/marin-집중.webp": "7b017ff287e3dae3d0d4edec6071e347f8362afdce039faa604fe823ea9d4199",
+    "experiences/brand-opening/assets/tutors/marine-ansim.wav": "3bb0d21b5d91e906def423a56b66772fb566626e24e0685eaf6751168e12afff",
+    "experiences/brand-opening/assets/tutors/marine-gidong.wav": "1fa8c28fb4e50cefbaccbc84cffe0d958867affad43f3eb280e151d0e4c6d5f3",
+    "experiences/brand-opening/assets/tutors/marine-mollae.wav": "9439612d332b38263b41bfbcec7dbaed7a387513a43006d04911fa62ca574fad",
+    "experiences/brand-opening/assets/tutors/mii.wav": "0de5136ab4b97e0f1931f0a718b62cf629e0059c28d09930bc76dfd1b656dd64",
+    "experiences/brand-opening/assets/tutors/miyu.wav": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652",
+    "experiences/brand-opening/assets/tutors/miyuu.wav": "57304714351c58ef9e94adb8f9db21263a8154c5e074f38877d069272c15a30a",
+    "experiences/brand-opening/assets/tutors/mongle-기본.webp": "1d75c8fc59639ecf658c23cac632339f8eb5656f298758faf7b513867e84ce34",
+    "experiences/brand-opening/assets/tutors/mongle-기쁨.webp": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac",
+    "experiences/brand-opening/assets/tutors/mongle-놀람.webp": "127ec7d0ca5c10fe47e39c18f8c13bbae5c4f43ca15f7bf70307dee2b38ef5d3",
+    "experiences/brand-opening/assets/tutors/mongle-눈웃음.webp": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac",
+    "experiences/brand-opening/assets/tutors/mongle-민망.webp": "68359f6565fef05c8b6279ed0795e6d14d795bb050d993f617827de21f69fdfa",
+    "experiences/brand-opening/assets/tutors/mongle-윙크.webp": "d9159f837829ace13ce4e029241a71ee3883ad61cb031c2ce00359160fd45c3e",
+    "experiences/brand-opening/assets/tutors/mongle-으쓱.webp": "e5a00d54b96526400a85c7b6748146cbe58d7f7d84970685bb0ac7c3eaa9e629",
+    "experiences/brand-opening/assets/tutors/mongle-잔잔감음.webp": "78167b162955cfbca025e10aec86ca9e65cc65f1b19f3bcaa1bee01570fdabc5",
+    "experiences/brand-opening/assets/tutors/mongle-졸림.webp": "d9aa666fd0894628b1f9beb30728ed98895bd7872241f8a5ff8bc41631de1036",
+    "experiences/brand-opening/assets/tutors/mu.wav": "6f41871330fa446639f3b488cc4bbb2ac4a79e0094bb246701d238b7b015f8b1",
+    "experiences/brand-opening/assets/tutors/myang.wav": "02dcf0695cf0e0f063ed43d4cd2f1539f3109449671dbc036846892ee3b1eee4",
+    "experiences/brand-opening/assets/tutors/ppuu.wav": "eb7ace56f11b1198d3020e02b80d85d0c7916a8b7f91c02a5e26140c7af4bb02",
+    "experiences/brand-opening/content/life-ui.css": "3dcd03ff162836a056c8bd4b6b7e669aff08837b4e134fa22ab8a445b610c486",
+    "experiences/brand-opening/home.css": "3691428c772ef3382024b307b848eff5e9893b04bb93f20d5531664251b3e3ce",
+    "experiences/brand-opening/home.mjs": "437dde11460bfe19bfbb84970f7d280ddeff8b50b84a1219647e786e75586d1c",
+    "experiences/brand-opening/tutor-choice.mjs": "554c583b14799a61a22f5dcd89d4eaaf0a48b3244c79fc7b733062b7e5f0020f",
+    "experiences/brand-opening/tutor-onboarding.css": "ce5077404e91d17520d7752009b1a08afde7d0d97a1f1dc910f4b0e2c702b577",
+    "experiences/brand-opening/tutor-onboarding.mjs": "84a8444d477b301bab8915af6f18d8089332c0e6ce69db51b297b5ee4a6aa987",
+    "experiences/brand-opening/tutor-profiles.mjs": "4c68e91787f460a7a35269cdfd26077e66194d4358f311310a3745917379f73d",
+    "experiences/synk-world-app/cafe-activity.mjs": "5fd1443cad5bebdf794990f00e882f947b0dda562d270da83cd3c55ab803b9b1",
+    "experiences/synk-world-app/cafe-ui.mjs": "619459fd3d021d8e6adf7528456d054dd94bd343b22e914e6fffe75f31203f7c",
+    "experiences/brand-opening/home.html": "ee338934339c37548838db5cece581f215b156a8de3c36baa1902eb44efa0e7e",
+    "experiences/synk-world-home/graphics-home.css": "0731df5d980c04ad65b94f7b45d17778a4eac902281d7ce635c264b746f3bcda",
+    "experiences/synk-world-app/life-progress.mjs": "fb00521ec7817f72eca2ca361243537eeb65f882f8e349a84c5bb0f0799e6dfd",
+    "experiences/synk-world-app/life-ui.css": "3dcd03ff162836a056c8bd4b6b7e669aff08837b4e134fa22ab8a445b610c486",
+    "experiences/synk-world-app/life-ui.mjs": "c728bd7538f54a5bdb269113306140c625157b2cfabe688b290087f5dc43235c",
+    "experiences/synk-town/assets/residents/cafe-owner.png": "78e489d4712a2a295d976468e15786cc28dd9317cc3da09b58547bf6dd3521f8"
+  },
+  "art": [
+    {
+      "file": "experiences/brand-opening/assets/home/cafe-drinks-v2.png",
+      "bytes": 1723737,
+      "sha256": "595cde42686892bfd41a570e50b863dbe5551cc970558d9a2a2e0394c7cada16",
+      "width": 2172,
+      "height": 724,
+      "colorType": 6
+    },
+    {
+      "file": "experiences/brand-opening/assets/home/cafe-room-v1.webp",
+      "bytes": 231856,
+      "sha256": "e0e60f83fd04e8d2bf5a2bfaaf382cccb80dbd7e29730078f8650f26b2668c94"
+    }
+  ],
+  "scope": {
+    "published": false,
+    "remoteDatabase": false,
+    "liveOAuth": false,
+    "realPhones": false,
+    "listeningOrSpeechAssessment": false,
+    "studentLearningEffects": false,
+    "separatePaidApiInvoked": false
+  }
+}

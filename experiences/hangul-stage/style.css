@@ -199,7 +199,7 @@ h1,h2{margin:0;letter-spacing:-.01em}
 .trace canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:22px}
 .trace-head{display:flex;align-items:center;justify-content:space-between;align-self:stretch;max-width:260px;margin:0 auto;width:min(260px,72vw)}
 .trace-head span{font:800 14px/1 var(--sans);color:var(--ink-2)}
-.redo{width:40px;height:40px;border:0;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;position:relative}
+.redo{width:44px;height:44px;border:0;background:url(assets/kit/badge-cream.webp) center/contain no-repeat;position:relative}
 .redo::before{content:"";position:absolute;inset:0;margin:auto;width:17px;height:17px;background:var(--ink);-webkit-mask:var(--i-redo) center/contain no-repeat;mask:var(--i-redo) center/contain no-repeat}
 .examples{display:flex;flex-wrap:wrap;justify-content:center;gap:10px}
 .example{min-width:64px;min-height:56px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 14px 4px;font:800 26px/1 var(--sans);background:url(assets/kit/slab-cream.webp) center/100% 100% no-repeat;filter:drop-shadow(0 5px 6px rgba(120,60,40,.14))}
@@ -337,6 +337,72 @@ h1,h2{margin:0;letter-spacing:-.01em}
   .hero{border-radius:28px;margin:0 16px}
   .road .stop{width:64px;height:64px}
   .opt{min-height:120px}
+}
+@media (max-width:380px){
+  .song-blend{gap:5px}
+  .song-blend .song-tile{width:54px;height:54px;font-size:28px}
+  .song-blend .song-mn{width:54px;height:54px}
+  .song-blend .op{font-size:22px}
+  .song-blend small{font-size:13px}
+}
+/* 짧은 가로 화면: 문제와 다음/확인을 나란히 두어 고정 단추가 보기를 덮지 않는다.
+ * 긴 만나기·결과 설명은 자기 영역에서만 스크롤한다. DOM과 필기·답 상태는 유지한다. */
+@media (orientation:landscape) and (max-height:560px){
+  body:has(#session:not([hidden]),#song:not([hidden]),#finish:not([hidden]),#graduation:not([hidden])){height:100dvh;min-height:0;overflow:hidden}
+  #app{max-width:100%;padding:0}
+  #session,#song,#finish,#graduation{height:100dvh;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 170px;grid-template-rows:50px minmax(0,1fr);gap:0}
+  .session-top{grid-column:1/-1;position:static;padding:2px 12px;gap:12px}
+  .stage{grid-column:1;grid-row:2;min-height:0;overflow:auto;overscroll-behavior:contain;padding:4px 12px 10px;gap:8px}
+  .dock{grid-column:2;grid-row:2;min-height:0;position:static;overflow:auto;align-content:center;padding:8px 10px 10px 2px;background:var(--cream);gap:12px}
+  .dock .felt-cta{min-height:64px;padding-left:16px;padding-right:9px;gap:4px}
+  .dock .felt-cta b{font-size:17px}
+  .dock .felt-cta .disc{width:32px;height:32px}
+  .prompt{font-size:15px;gap:8px;min-height:36px}
+  .prompt .mini{width:32px}
+  .stage:has(>.options){display:grid;grid-template-columns:minmax(100px,.7fr) minmax(190px,1.3fr);grid-template-rows:auto minmax(110px,1fr);align-items:center;align-content:start;gap:6px 12px}
+  .stage:has(>.options)>.prompt{grid-column:1/-1;grid-row:1}
+  .stage:has(>.options)>.options{grid-column:2;grid-row:2;gap:8px;align-self:center}
+  .stage:has(>.options)>.speak-row,.stage:has(>.options)>.shown{grid-column:1;grid-row:2;justify-self:center}
+  .speak{width:72px;height:72px}
+  .speak::before{width:30px;height:30px}
+  .speak-row{flex-wrap:wrap;justify-content:center;gap:6px}
+  .shown{min-width:110px;min-height:100px;font-size:70px;padding:8px 12px}
+  .shown.word{font-size:48px}
+  .opt,.options.pair .opt{min-height:66px;padding:4px 6px 8px}
+  .opt .big{font-size:34px}.opt .big.word{font-size:26px}
+  .opt.sound .icon{width:24px;height:24px}
+  .stage:has(>.teach){grid-template-rows:auto 64px 76px}
+  .stage:has(>.teach)>.teach{grid-column:1;grid-row:2;gap:8px}
+  .stage:has(>.teach)>.speak-row{grid-row:3}
+  .stage:has(>.teach)>.options{grid-row:2/4}
+  .teach .mongle{width:54px}.held{min-width:50px;min-height:50px;padding:5px 8px}.held .big{font-size:28px}
+  .meet{width:100%;grid-template-columns:minmax(0,1fr) minmax(140px,1fr);align-items:center;gap:8px 12px;padding:10px}
+  .meet>:not(.trace):not(.trace-head){grid-column:1}
+  .meet .glyph{grid-row:1;font-size:64px}
+  .meet>.speak{grid-row:2;width:64px;height:64px}
+  .meet>.trace-head{grid-column:2;grid-row:1;width:100%;max-width:180px}
+  .meet>.trace{grid-column:2;grid-row:2/7;align-self:start;width:min(180px,100%,calc(100dvh - 126px))}
+  .meet .note{font-size:13px}.meet .examples{gap:6px}
+  .meet .example{min-width:48px;min-height:44px;font-size:22px;padding:0 8px 4px}
+  .mnemonic{padding:4px 8px;gap:6px}.mnemonic img{width:52px;height:52px}.mnemonic .mn-word{font-size:23px}
+  .derive,.trio,.sum{flex-wrap:wrap;gap:4px}.derive .piece,.sum .piece{width:44px;height:44px}
+  .reason{width:100%;gap:10px;padding:12px}.reason .mongle{width:70px}.reason p{font-size:17px}
+  .stage:has(>.pieces){display:grid;grid-template-columns:120px minmax(0,1fr);grid-template-rows:auto 1fr;align-items:center;gap:8px}
+  .stage:has(>.pieces)>.prompt{grid-column:1/-1}.stage:has(>.pieces)>.slot{grid-column:1;grid-row:2}
+  .stage:has(>.pieces)>.pieces{grid-column:2;grid-row:2;gap:6px;align-self:center}
+  .slot{width:108px;height:108px;font-size:68px}.piece-row{gap:6px}.piece{width:48px;height:48px;font-size:26px}
+  .match{gap:10px}.match .col{gap:6px}.card{min-height:48px;font-size:28px}
+  .song-main{grid-column:1;grid-row:2;min-height:0;overflow:auto;margin:4px 12px 10px;padding:10px;gap:6px;grid-template-rows:auto minmax(min-content,1fr) auto auto}
+  .song-title{font-size:17px}.song-stage{min-height:0;gap:6px}.song-line{font-size:15px}.song-hint{margin:0;font-size:12px}
+  .song-stage:has(.song-vowel){grid-template-columns:auto auto;justify-content:center;gap:16px}.song-cue{font-size:18px}
+  .song-tile.big{width:88px;height:88px;font-size:50px}.song-mongle{width:78px}.song-text{font-size:24px}
+  .song-tile,.song-row.n10 .song-tile{width:44px;height:44px;font-size:24px}.song-tile.result{width:58px;height:58px;font-size:32px}
+  .song-row{gap:6px}.song-vowel{gap:12px}.move .arrow{width:32px;height:32px}.song-mn{width:44px;height:44px}
+  #finish,#graduation{grid-template-rows:minmax(0,1fr)}
+  #finish .dock,#graduation .dock{grid-row:1;grid-template-columns:1fr}
+  .finish-card,.graduation-card{grid-column:1;grid-row:1;min-height:0;overflow:auto;margin:10px 12px;padding:14px;gap:10px;align-content:start}
+  .finish-card .mongle,.graduation-card .mongle{width:64px}.finish-card h1,.graduation-card h1{font-size:21px}
+  .sheet-card{max-height:100dvh;overflow:auto;padding:16px}.sheet-actions{grid-template-columns:1fr 1fr}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{transition:none!important;animation:none!important}

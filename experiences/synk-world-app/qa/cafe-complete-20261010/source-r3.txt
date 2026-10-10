@@ -1,0 +1,32 @@
+PASS all five cafe visits including direct ordering are available
+PASS new ordering starts in genuine listening mode
+PASS welcome has complete cups, 44px targets and reachable action
+PASS staff transcript is hidden and unanswered submission is gated
+PASS reload restores draft, audio help and physical stage
+PASS a partial order is stored without manufacturing a response
+PASS cold tea, three cups and the complete sentence match the draft
+PASS 320x740 keeps the exact draft and attempt
+PASS 320x740 has complete cups, 44px targets and reachable action
+PASS 740x320 keeps the exact draft and attempt
+PASS 740x320 has complete cups, 44px targets and reachable action
+PASS actual question playback continues across rotation
+PASS explicit pause keeps the same audio cursor
+PASS only complete real playback unlocks submission
+PASS wrong assembled order creates repair with exact original components
+PASS repair changes cups and sentence without erasing first response
+PASS reload restores draft, audio help and physical stage
+PASS text help opened before a response survives reload
+PASS text-assisted listening is retained as help-used
+PASS 390x844 keeps the exact draft and attempt
+PASS 390x844 has complete cups, 44px targets and reachable action
+PASS reload restores draft, audio help and physical stage
+PASS all language responses still wait for explicit cup pickup
+PASS received order completes once with original components retained
+PASS composed or assisted response returns in a new transfer situation
+PASS composed or assisted response returns in a new transfer situation
+PASS first order error and text-assisted confirmation both enter review
+PASS failed audio never manufactures listening completion or an answer
+PASS retry fetches and plays the real question to completion
+PASS missing question bank keeps the saved listening stage and offers explicit text help
+PASS explicit fallback preserves text help rather than claiming an unheard answer
+PASS no JS, HTTP or external service requests from gameplay

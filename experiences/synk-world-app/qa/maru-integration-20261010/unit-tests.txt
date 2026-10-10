@@ -1,0 +1,54 @@
+✔ logout invalidates slow decoded responses (20.9673ms)
+✔ server snapshot revision never moves backward (0.8529ms)
+✔ appearance broadcasts only invalidate distinct server state and can be disabled for a receiving bridge (1.2266ms)
+✔ network failure retains exact outfit request for replay (0.676ms)
+✔ conflict does not silently rebase and overwrite (0.3698ms)
+✔ failed server logout does not silently re-login on restart (0.413ms)
+✔ pending outfit belongs only to its account (0.2429ms)
+✔ a different tab login cannot redirect an existing tab outfit write to the shared-cookie account (30.7434ms)
+✔ a restored tab pins its restored identity before another tab changes the cookie (0.8627ms)
+✔ a late superseded login cookie cannot replace the latest identity before or after reload (1.8217ms)
+✔ logging out one tab leaves a different tab account usable (0.7017ms)
+✔ a late old logout must not clear a newly signed-in account token (0.5791ms)
+✔ default browser fetch keeps its Window receiver (0.222ms)
+✔ tab identifiers survive reload without placing credentials in either storage (0.6783ms)
+﹣ real browser tabs retain separate accounts across reload and logout (0.1363ms) # SKIP
+✔ Connected Maru mounts once at / (3.5313ms)
+✔ Connected Maru mounts once at /world/ (0.3854ms)
+✔ Connected Maru mounts once at /preview/world/ (0.2244ms)
+✔ Config cannot close the bootstrap script (0.225ms)
+✔ Reject paths which could escape the mounted app (2.3066ms)
+✔ logout during a delayed appearance refresh immediately clears the published avatar and rejects late state (9.3129ms)
+✔ A to B account switch during a refresh ends the old visit before any command can reach either account (2.0029ms)
+✔ a second same-account revision notice during a refresh triggers a trailing authoritative read (0.9739ms)
+✔ Town API 401 clears and publishes the avatar immediately (1.8215ms)
+✔ Town 409 preserves its string error code and Korean recovery message without ending the account (1.0776ms)
+✔ a namespace change while a Town response is pending cannot publish or return the old visit result (0.6441ms)
+✔ disposing a bridge removes event resources and suppresses delayed appearance results (0.4442ms)
+✔ town host rejects missing or path-shaped identities (1.6152ms)
+✔ authenticated accounts own separate durable town fixtures (85.331ms)
+✔ restarting a host preserves the same account and leaves another unchanged (8.2203ms)
+✔ rejected commands cannot change revision or another account (2.6137ms)
+✔ appearance only renders known slots with server-returned ownership (0.6325ms)
+✔ unauthenticated appearance is empty and not verified (0.2614ms)
+✔ visual items match authoritative IDs, slots and names; every server combination round-trips (1.4778ms)
+✔ a lost lookbook save resumes the same request after a client restart; it cannot be replaced by equip (7.8015ms)
+✔ town accepts new clothes only if the same authenticated snapshot owns them (0.5867ms)
+✔ confirmed town appearance carries only owned dyed slots with normalized independent colors (2.2544ms)
+✔ host subscribers get new server dyes and an ended host clears them (0.7761ms)
+(node:56080) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/synk-world-home/scene-assets/three.module.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\q1212\Documents\SYNK-appsscript\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ view values survive a JSON round trip and zoom uses the shared 0..1 range (3.0397ms)
+✔ dyes only accept two six-digit colors in an equipped part and are detached (0.6639ms)
+✔ cloth and trim change on real materials, default reset restores every material and body stays intact (115.3159ms)
+✔ a changed garment never inherits the previous garment palette (95.5096ms)
+ℹ tests 42
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 1
+ℹ todo 0
+ℹ duration_ms 618.8128

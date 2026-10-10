@@ -61,9 +61,9 @@ export class Stage {
     this.canvas.width = W; this.canvas.height = H;
     this.dpr = dpr; this.g = g;
     if (this.preview) { this.paintPreview(); return; }
-    const host = this.canvas.parentElement?.style;
-    host?.setProperty('--runway-x', `${g.vx.toFixed(1)}px`);
-    host?.setProperty('--runway-y', `${(g.yL + 3).toFixed(1)}px`);
+    const parent = this.canvas.parentElement, host = parent?.style, parentRect = parent?.getBoundingClientRect();
+    host?.setProperty('--runway-x', `${(g.vx + r.left - (parentRect?.left ?? r.left)).toFixed(1)}px`);
+    host?.setProperty('--runway-y', `${(g.yL + 3 + r.top - (parentRect?.top ?? r.top)).toFixed(1)}px`);
     this.paintBackground();
   }
 
@@ -78,11 +78,12 @@ export class Stage {
       padW = rects[0].width;
       padTop = Math.min(rects[0].top, rects[1].top) - r.top;
     }
-    const yJ = padTop - Math.round(Math.max(20, Math.min(34, H * 0.04)));   // 판정선: 단추 바로 위
-    const yh = Math.round(Math.max(52, H * 0.22));                         // 벽과 바닥이 만나는 선(지평선)
+    const compact = H < 280;
+    const yJ = padTop - (compact ? 14 : Math.round(Math.max(20, Math.min(34, H * 0.04))));   // 판정선: 단추 바로 위
+    const yh = Math.round(compact ? Math.max(14, H * 0.08) : Math.max(52, H * 0.22));       // 낮은 가로 무대에도 노트가 내려올 길을 남긴다.
     const vx = (x0 + x1) / 2;
     const wJ = Math.min(padW * 0.9, (x1 - x0) * 0.86);                     // 판정선에서 레인 폭
-    return { W, H, yh, yJ, vx, lx: [x0, x1], wJ, d: Math.min(wJ * 0.58, 92),
+    return { W, H, yh, yJ, vx, lx: [x0, x1], wJ, d: Math.min(wJ * 0.58, compact ? H * 0.25 : 92),
       yF: yh + (yJ - yh) / DEPTH, yL: yh + (yJ - yh) / LANE_DEPTH, yN: yJ + (yJ - yh) * 0.08 };
   }
 

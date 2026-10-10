@@ -1,0 +1,5170 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "passed": 36,
+  "failed": [],
+  "checks": [
+    {
+      "name": "portrait-input: active game fits without page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "portrait-input: controls are visible and at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 178.5840606689453,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 222.5840606689453
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ]
+    },
+    {
+      "name": "portrait-input: the road keeps a usable vertical play area",
+      "passed": true,
+      "details": {
+        "height": 519.953125,
+        "width": 390
+      }
+    },
+    {
+      "name": "portrait-input: canvas follows CSS and retains its node",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      }
+    },
+    {
+      "name": "portrait-input: same iframe document, model, and progression",
+      "passed": true,
+      "details": {
+        "before": {
+          "elapsed": 0.05,
+          "score": 0.6501375,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "listening"
+          },
+          "model": 1
+        },
+        "after": {
+          "elapsed": 0.11669999999999983,
+          "score": 1.5175738574499977,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "listening"
+          },
+          "model": 1
+        }
+      }
+    },
+    {
+      "name": "portrait-input: a single narration source remains active",
+      "passed": true,
+      "details": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      }
+    },
+    {
+      "name": "portrait-input: one real tap moves exactly one lane",
+      "passed": true,
+      "details": {
+        "before": 1,
+        "after": 0
+      }
+    },
+    {
+      "name": "landscape-input: active game fits without page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "landscape-input: controls are visible and at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ]
+    },
+    {
+      "name": "landscape-input: the road keeps a usable vertical play area",
+      "passed": true,
+      "details": {
+        "height": 225,
+        "width": 690
+      }
+    },
+    {
+      "name": "landscape-input: canvas follows CSS and retains its node",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      }
+    },
+    {
+      "name": "landscape-input: same iframe document, model, and progression",
+      "passed": true,
+      "details": {
+        "before": {
+          "elapsed": 0.5160999999999999,
+          "score": 6.717048393949998,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "listening"
+          },
+          "model": 1
+        },
+        "after": {
+          "elapsed": 0.7409999999999998,
+          "score": 9.648769505949993,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "listening"
+          },
+          "model": 1
+        }
+      }
+    },
+    {
+      "name": "landscape-input: a single narration source remains active",
+      "passed": true,
+      "details": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      }
+    },
+    {
+      "name": "landscape-input: one real tap moves exactly one lane",
+      "passed": true,
+      "details": {
+        "before": 1,
+        "after": 0
+      }
+    },
+    {
+      "name": "small-input: active game fits without page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "small-input: controls are visible and at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 197,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ]
+    },
+    {
+      "name": "small-input: the road keeps a usable vertical play area",
+      "passed": true,
+      "details": {
+        "height": 415.390625,
+        "width": 284
+      }
+    },
+    {
+      "name": "small-input: canvas follows CSS and retains its node",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      }
+    },
+    {
+      "name": "small-input: same iframe document, model, and progression",
+      "passed": true,
+      "details": {
+        "before": {
+          "elapsed": 1.0243,
+          "score": 23.3455523513,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "move"
+          },
+          "model": 1
+        },
+        "after": {
+          "elapsed": 1.4323999999999992,
+          "score": 28.67861601579999,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "move"
+          },
+          "model": 1
+        }
+      }
+    },
+    {
+      "name": "small-input: a single narration source remains active",
+      "passed": true,
+      "details": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      }
+    },
+    {
+      "name": "small-input: one real tap moves exactly one lane",
+      "passed": true,
+      "details": {
+        "before": 1,
+        "after": 0
+      }
+    },
+    {
+      "name": "small-landscape-input: active game fits without page overflow",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "name": "small-landscape-input: controls are visible and at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "id": "pause-button",
+          "x": 686,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 595.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 248.03125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 668.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 595.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 668.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 248.03125
+        }
+      ]
+    },
+    {
+      "name": "small-landscape-input: the road keeps a usable vertical play area",
+      "passed": true,
+      "details": {
+        "height": 155,
+        "width": 586
+      }
+    },
+    {
+      "name": "small-landscape-input: canvas follows CSS and retains its node",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 102,
+        "width": 586,
+        "height": 155,
+        "right": 586,
+        "bottom": 257,
+        "backingWidth": 586,
+        "backingHeight": 155
+      }
+    },
+    {
+      "name": "small-landscape-input: same iframe document, model, and progression",
+      "passed": true,
+      "details": {
+        "before": {
+          "elapsed": 1.6492999999999993,
+          "score": 31.516797125149992,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "move"
+          },
+          "model": 1
+        },
+        "after": {
+          "elapsed": 1.907299999999998,
+          "score": 34.89621606649998,
+          "current": {
+            "index": 0,
+            "id": "jump",
+            "text": "낮은 울타리를 뛰어넘으세요.",
+            "steps": [
+              "jump"
+            ],
+            "texted": false,
+            "phase": "move"
+          },
+          "model": 1
+        }
+      }
+    },
+    {
+      "name": "small-landscape-input: a single narration source remains active",
+      "passed": true,
+      "details": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      }
+    },
+    {
+      "name": "small-landscape-input: one real tap moves exactly one lane",
+      "passed": true,
+      "details": {
+        "before": 1,
+        "after": 0
+      }
+    },
+    {
+      "name": "Resize cancels the pending gesture without adding an action",
+      "passed": true,
+      "details": {
+        "before": [
+          {
+            "action": "left",
+            "elapsed": 0.4326999999999998,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 0.5160999999999999,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 0.9243,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 1.0243,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 1.5990999999999995,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 1.6492999999999993,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 2.1737999999999973,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 2.2738999999999985,
+            "lane": 0
+          }
+        ],
+        "after": [
+          {
+            "action": "left",
+            "elapsed": 0.4326999999999998,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 0.5160999999999999,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 0.9243,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 1.0243,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 1.5990999999999995,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 1.6492999999999993,
+            "lane": 0
+          },
+          {
+            "action": "left",
+            "elapsed": 2.1737999999999973,
+            "lane": 1
+          },
+          {
+            "action": "right",
+            "elapsed": 2.2738999999999985,
+            "lane": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "pointercancel discards the pending swipe",
+      "passed": true
+    },
+    {
+      "name": "Lost pointer capture discards the pending swipe",
+      "passed": true,
+      "details": {
+        "before": 8,
+        "after": 8
+      }
+    },
+    {
+      "name": "Blur/pause clears held keys and a fresh key moves once",
+      "passed": true,
+      "details": {
+        "before": 0,
+        "after": 1
+      }
+    },
+    {
+      "name": "Input drill returns to the game lobby",
+      "passed": true
+    },
+    {
+      "name": "Only one audio context and at most one narration play simultaneously",
+      "passed": true,
+      "details": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      }
+    },
+    {
+      "name": "No JavaScript or HTTP errors",
+      "passed": true,
+      "details": {
+        "errors": [],
+        "httpErrors": []
+      }
+    },
+    {
+      "name": "No external or mutating request attempted",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "observations": [
+    {
+      "label": "portrait-input-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.05,
+      "distance": 0.6501375,
+      "speed": 13.00275,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 0.010666666666666713,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 2268.6000000089407,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 0.6501375,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 173,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 217
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "portrait-input",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.11669999999999983,
+      "distance": 1.5175738574499977,
+      "speed": 13.0064185,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 0.34133333333333327,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 2602.9000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 1.5175738574499977,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 178.5840606689453,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 222.5840606689453
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "portrait-input-tap-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.34119999999999984,
+      "distance": 4.439146772349997,
+      "speed": 13.018766,
+      "lane": 1,
+      "x": 0,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 1.3519999999999999,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 3607.4000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 4.439146772349997,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 181,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 225
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "portrait-input-tap-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.4660999999999999,
+      "distance": 6.065674952099998,
+      "speed": 13.0256355,
+      "lane": 0,
+      "x": -1.104153363453541,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 1.472,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 3724.7999999970198,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 6.065674952099998,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 181,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 225
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "landscape-input-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.5160999999999999,
+      "distance": 6.717048393949998,
+      "speed": 13.0283855,
+      "lane": 1,
+      "x": -1.8681799967146744,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 1.52,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 3778.5,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 6.717048393949998,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 181,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 225
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 691.7676391601562,
+          "width": 80,
+          "height": 82.04693603515625,
+          "right": 94,
+          "bottom": 773.8145751953125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "landscape-input",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.7409999999999998,
+      "distance": 9.648769505949993,
+      "speed": 13.040755,
+      "lane": 1,
+      "x": -0.02603963947324288,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 1.96,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 4222.100000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 9.648769505949993,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "landscape-input-tap-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.8743,
+      "distance": 11.387651874099996,
+      "speed": 13.0480865,
+      "lane": 1,
+      "x": -0.00206869913417495,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 2.1013333333333333,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 4355.70000000298,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 11.387651874099996,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "landscape-input-tap-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 0.9408999999999995,
+      "distance": 12.256806907649988,
+      "speed": 13.0517495,
+      "lane": 0,
+      "x": -0.6362656445144792,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "listening"
+      },
+      "card": {
+        "phase": "listening",
+        "line": "잘 들어 보세요",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": "jump",
+        "offset": 2.16,
+        "duration": 2.2225208333333333
+      },
+      "coins": "",
+      "wall": 4423.4000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 22.25680690764999,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 1,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-input-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.0243,
+      "distance": 13.345552351299995,
+      "speed": 13.0563365,
+      "lane": 1,
+      "x": -1.9986334073233185,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 4502.79999999702,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 23.3455523513,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 239.7672576904297,
+          "width": 62,
+          "height": 63.57814025878906,
+          "right": 761.5,
+          "bottom": 303.34539794921875
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-input",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.4323999999999992,
+      "distance": 18.67861601579998,
+      "speed": 13.078782,
+      "lane": 1,
+      "x": -0.0008575454740812544,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 4905.4000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 28.67861601579999,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 197,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-input-tap-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.5330999999999997,
+      "distance": 19.99597471294999,
+      "speed": 13.0843205,
+      "lane": 1,
+      "x": -0.00012656730330656065,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5009.600000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 29.995974712949998,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 197,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-input-tap-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.5990999999999995,
+      "distance": 20.85968960619999,
+      "speed": 13.0879505,
+      "lane": 0,
+      "x": -0.00003611738067560279,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5075.70000000298,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 30.859689606199996,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 197,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-landscape-input-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.6492999999999993,
+      "distance": 21.516797125149985,
+      "speed": 13.0907115,
+      "lane": 1,
+      "x": -1.4446195537850026,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5124.600000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 31.516797125149992,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 197,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 241
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 604.654052734375,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 669.263427734375
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-landscape-input",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 1.907299999999998,
+      "distance": 24.89621606649997,
+      "speed": 13.1049015,
+      "lane": 1,
+      "x": -0.010735986054738463,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5525.100000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 34.89621606649998,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 740,
+      "height": 257,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 586,
+        "height": 155,
+        "right": 586,
+        "bottom": 257,
+        "backingWidth": 586,
+        "backingHeight": 155
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 686,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 595.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 248.03125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 668.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 595.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 668.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 248.03125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-landscape-input-tap-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.073899999999998,
+      "distance": 27.08033226384998,
+      "speed": 13.1140645,
+      "lane": 1,
+      "x": -0.0004530291899058652,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5690.100000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 37.08033226384997,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 740,
+      "height": 257,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 586,
+        "height": 155,
+        "right": 586,
+        "bottom": 257,
+        "backingWidth": 586,
+        "backingHeight": 155
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 686,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 595.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 248.03125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 668.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 595.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 668.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 248.03125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "small-landscape-input-tap-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.1737999999999973,
+      "distance": 28.390747503099973,
+      "speed": 13.119559,
+      "lane": 0,
+      "x": -0.00006788781478993506,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 5784.79999999702,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 38.39074750309997,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 740,
+      "height": 257,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 586,
+        "height": 155,
+        "right": 586,
+        "bottom": 257,
+        "backingWidth": 586,
+        "backingHeight": 155
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 686,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 730,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 595.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 248.03125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 668.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 595.5,
+          "y": 110.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 657.5,
+          "bottom": 174.53125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 668.5,
+          "y": 184.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 730.5,
+          "bottom": 248.03125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "resize-gesture-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.4154999999999984,
+      "distance": 31.563551956549986,
+      "speed": 13.1328525,
+      "lane": 1,
+      "x": -0.13565269583526196,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6316.4000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 41.563551956549986,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 390,
+      "height": 781,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 160,
+        "width": 390,
+        "height": 519.953125,
+        "right": 390,
+        "bottom": 679.953125,
+        "backingWidth": 390,
+        "backingHeight": 519
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 334,
+          "y": 105,
+          "width": 44,
+          "height": 44,
+          "right": 378,
+          "bottom": 149
+        },
+        {
+          "id": "say-text",
+          "x": 291.546875,
+          "y": 177.20840454101562,
+          "width": 74.453125,
+          "height": 44,
+          "right": 366,
+          "bottom": 221.20840454101562
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 14,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 94,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 108,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 188,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 202,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 282,
+          "bottom": 771
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 296,
+          "y": 688.953125,
+          "width": 80,
+          "height": 82.046875,
+          "right": 376,
+          "bottom": 771
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "resize-gesture-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.8074999999999983,
+      "distance": 36.716094778599995,
+      "speed": 13.1544125,
+      "lane": 1,
+      "x": -0.00007903202826267609,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6697.79999999702,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 46.716094778599995,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "cancel-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.923899999999998,
+      "distance": 38.24769422065,
+      "speed": 13.1608145,
+      "lane": 1,
+      "x": -0.00000865600406181622,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6814.600000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 48.24769422065,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "cancel-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.940399999999998,
+      "distance": 38.46486263365,
+      "speed": 13.161722,
+      "lane": 1,
+      "x": -0.000006326538153373223,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6831.79999999702,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 48.46486263365,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "lost-capture-before",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.940399999999998,
+      "distance": 38.46486263365,
+      "speed": 13.161722,
+      "lane": 1,
+      "x": -0.000006326538153373223,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6840.600000008941,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 48.46486263365,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "lost-capture-after",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.9736999999999982,
+      "distance": 38.9031937181,
+      "speed": 13.163553499999999,
+      "lane": 1,
+      "x": -0.0000033603770715451233,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 6869.4000000059605,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 48.9031937181,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 844,
+      "height": 327,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 102,
+        "width": 690,
+        "height": 225,
+        "right": 690,
+        "bottom": 327,
+        "backingWidth": 690,
+        "backingHeight": 225
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 790,
+          "y": 53,
+          "width": 44,
+          "height": 44,
+          "right": 834,
+          "bottom": 97
+        },
+        {
+          "id": "say-text",
+          "x": 147.546875,
+          "y": 115,
+          "width": 74.453125,
+          "height": 44,
+          "right": 222,
+          "bottom": 159
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 699.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 300.53125
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 772.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 699.5,
+          "y": 128.453125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 761.5,
+          "bottom": 192.03125
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 772.5,
+          "y": 236.953125,
+          "width": 62,
+          "height": 63.578125,
+          "right": 834.5,
+          "bottom": 300.53125
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "held-key-after-resume",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 2.990399999999998,
+      "distance": 39.123040400499995,
+      "speed": 13.164472,
+      "lane": 0,
+      "x": -0.0000024467318403595105,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 7168.70000000298,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 49.123040400499995,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 196.52987670898438,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 240.52987670898438
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.990399999999998,
+          "lane": 1
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    },
+    {
+      "label": "held-key-fresh-press",
+      "screen": "game",
+      "running": true,
+      "paused": false,
+      "ending": false,
+      "starting": false,
+      "sound": true,
+      "finished": false,
+      "reason": null,
+      "elapsed": 3.0070999999999977,
+      "distance": 39.34290242184999,
+      "speed": 13.165390499999999,
+      "lane": 1,
+      "x": -0.638937903119203,
+      "y": 0,
+      "slide": 0,
+      "hearts": 3,
+      "shield": 0,
+      "combo": 0,
+      "correct": 0,
+      "answers": [],
+      "current": {
+        "index": 0,
+        "id": "jump",
+        "text": "낮은 울타리를 뛰어넘으세요.",
+        "steps": [
+          "jump"
+        ],
+        "texted": false,
+        "phase": "move"
+      },
+      "card": {
+        "phase": "move",
+        "line": "들은 대로 움직여요!",
+        "hint": "",
+        "texted": false
+      },
+      "voice": {
+        "state": "running",
+        "clips": 16,
+        "id": null,
+        "offset": 0,
+        "duration": 0
+      },
+      "coins": "",
+      "wall": 7182.29999999702,
+      "origin": 1791573290560.2,
+      "modelId": 1,
+      "score": 49.34290242184999,
+      "missionCount": 3,
+      "answersLength": 0,
+      "frameToken": "a5891968-4402-4502-9c98-ab61e6459fce",
+      "canvasSame": true,
+      "width": 284,
+      "height": 677,
+      "dpr": 1,
+      "canvas": {
+        "x": 0,
+        "y": 178,
+        "width": 284,
+        "height": 415.390625,
+        "right": 284,
+        "bottom": 593.390625,
+        "backingWidth": 284,
+        "backingHeight": 415
+      },
+      "overflowX": 0,
+      "overflowY": 0,
+      "controls": [
+        {
+          "id": "pause-button",
+          "x": 236,
+          "y": 123,
+          "width": 44,
+          "height": 44,
+          "right": 280,
+          "bottom": 167
+        },
+        {
+          "id": "say-text",
+          "x": 193.546875,
+          "y": 196.69259643554688,
+          "width": 68.453125,
+          "height": 44,
+          "right": 262,
+          "bottom": 240.69259643554688
+        },
+        {
+          "id": "",
+          "action": "left",
+          "x": 10,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 73,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "jump",
+          "x": 77,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 140,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "slide",
+          "x": 144,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 207,
+          "bottom": 667
+        },
+        {
+          "id": "",
+          "action": "right",
+          "x": 211,
+          "y": 602.390625,
+          "width": 63,
+          "height": 64.609375,
+          "right": 274,
+          "bottom": 667
+        }
+      ],
+      "inputs": [
+        {
+          "action": "left",
+          "elapsed": 0.4326999999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 0.5160999999999999,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 0.9243,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.0243,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 1.5990999999999995,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 1.6492999999999993,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.1737999999999973,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 2.2738999999999985,
+          "lane": 0
+        },
+        {
+          "action": "left",
+          "elapsed": 2.990399999999998,
+          "lane": 1
+        },
+        {
+          "action": "right",
+          "elapsed": 3.0070999999999977,
+          "lane": 0
+        }
+      ],
+      "audio": {
+        "contexts": 1,
+        "starts": 1,
+        "active": 0,
+        "maxActive": 1,
+        "events": [
+          {
+            "kind": "start",
+            "time": 0.96,
+            "duration": 2.2225208333333333
+          },
+          {
+            "kind": "ended",
+            "time": 3.192
+          }
+        ]
+      },
+      "pop": {
+        "visible": false,
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "right": 0,
+        "bottom": 0
+      }
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\runner-portrait-input.jpg",
+      "bytes": 61638,
+      "sha256": "1582b47320696ef4c067f74956bd5a1a3545edcda6b8f3cce9d538866d30730f"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\runner-landscape-input.jpg",
+      "bytes": 50876,
+      "sha256": "a2f469b90aac3fe99e862d24aaa75b7d05549bb36dd7e0ed83e02a75307653d1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\runner-small-input.jpg",
+      "bytes": 46557,
+      "sha256": "482b6309195b81b0a447d54a87052ee203f6ea492094683d59515004171825d2"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\runner-small-landscape-input.jpg",
+      "bytes": 37922,
+      "sha256": "76ee247ea6b57514f6188b96ea0b2cc20dbbfbb4f0b16d875645d74c2d4dddc1"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v4\\runner-pending-gesture-rotation.jpg",
+      "bytes": 49465,
+      "sha256": "b173460c40027e48c2469a5e23deb7b51c771c01296d58df4b6caf7f01e7dd86"
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "blocked": [],
+  "terminal": null,
+  "scope": "Isolated guest Edge, local static clips and local storage only. Existing QA autopilot at scale 1 completes a real-time 90-second game; real browser input, repeated resize, pause/resume and result navigation. No student learning claim, physical-device or human listening certification. External and non-GET/HEAD requests blocked."
+}

@@ -1,0 +1,1670 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "passed": 170,
+  "failed": [],
+  "checks": [
+    {
+      "name": "mobile390: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile390: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile390: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile390: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "scrollY": 0,
+        "scrollWidth": 390,
+        "bodyWidth": 390,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 646.8125,
+          "bottom": 702.3125
+        },
+        "nav": {
+          "top": 771
+        }
+      }
+    },
+    {
+      "name": "mobile390: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile390: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 646.8125,
+          "bottom": 702.3125
+        },
+        "nav": {
+          "top": 771
+        }
+      }
+    },
+    {
+      "name": "mobile390: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "mobile390/play: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile390: play selector exposes three entrances",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.729506,
+        "after": 2.150515
+      }
+    },
+    {
+      "name": "mobile390/wardrobe: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile390: wardrobe keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 2.2741,
+        "after": 2.698045
+      }
+    },
+    {
+      "name": "mobile390/me: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile390: profile keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 2.795846,
+        "after": 3.217784
+      }
+    },
+    {
+      "name": "mobile390/runner: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "runner",
+        "url": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "mobile390/runner: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 3.324598,
+        "after": 3.747743
+      }
+    },
+    {
+      "name": "mobile390/hangul: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "hangul",
+        "url": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "mobile390/hangul: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 3.852078,
+        "after": 4.264607
+      }
+    },
+    {
+      "name": "mobile390/rhythm: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "rhythm",
+        "url": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "mobile390/rhythm: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 4.324545,
+        "after": 4.74577
+      }
+    },
+    {
+      "name": "mobile390: reduced setting pauses video and shows poster",
+      "passed": true
+    },
+    {
+      "name": "mobile390: reduced preference survives reload without video source",
+      "passed": true
+    },
+    {
+      "name": "mobile390: leaving reduced setting restores playback",
+      "passed": true
+    },
+    {
+      "name": "mobile320: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile320: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile320: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile320: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "scrollY": 0,
+        "scrollWidth": 320,
+        "bodyWidth": 320,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 667
+        }
+      }
+    },
+    {
+      "name": "mobile320: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile320: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 667
+        }
+      }
+    },
+    {
+      "name": "mobile320: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "mobile320/play: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile320: play selector exposes three entrances",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 0.480246,
+        "after": 0.906329
+      }
+    },
+    {
+      "name": "mobile320/wardrobe: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile320: wardrobe keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.066046,
+        "after": 1.48566
+      }
+    },
+    {
+      "name": "mobile320/me: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile320: profile keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.570936,
+        "after": 1.980659
+      }
+    },
+    {
+      "name": "mobile322: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile322: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "mobile322: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "mobile322: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "scrollY": 0,
+        "scrollWidth": 322,
+        "bodyWidth": 322,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 631
+        }
+      }
+    },
+    {
+      "name": "mobile322: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile322: primary play button is fully visible above the bottom navigation before scrolling",
+      "passed": true,
+      "details": {
+        "scrollY": 0,
+        "primary": {
+          "top": 539.875,
+          "bottom": 595.375
+        },
+        "nav": {
+          "top": 631
+        }
+      }
+    },
+    {
+      "name": "mobile322: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "mobile322/play: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile322: play selector exposes three entrances",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 0.535432,
+        "after": 0.954255
+      }
+    },
+    {
+      "name": "mobile322/wardrobe: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile322: wardrobe keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.159502,
+        "after": 1.573205
+      }
+    },
+    {
+      "name": "mobile322/me: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "mobile322: profile keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.678464,
+        "after": 2.100367
+      }
+    },
+    {
+      "name": "desktop: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "desktop: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "desktop: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "desktop: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "scrollY": 0,
+        "scrollWidth": 1440,
+        "bodyWidth": 1440,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 437.890625,
+          "bottom": 495.890625
+        },
+        "nav": {
+          "top": 155
+        }
+      }
+    },
+    {
+      "name": "desktop: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "desktop: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "desktop/play: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "desktop: play selector exposes three entrances",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 0.555482,
+        "after": 0.969695
+      }
+    },
+    {
+      "name": "desktop/wardrobe: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "desktop: wardrobe keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.083577,
+        "after": 1.504135
+      }
+    },
+    {
+      "name": "desktop/me: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "desktop: profile keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.661038,
+        "after": 2.071032
+      }
+    },
+    {
+      "name": "desktop/runner: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "runner",
+        "url": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "desktop/runner: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 2.284971,
+        "after": 2.702252
+      }
+    },
+    {
+      "name": "desktop/hangul: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "hangul",
+        "url": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "desktop/hangul: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 2.83089,
+        "after": 3.242385
+      }
+    },
+    {
+      "name": "desktop/rhythm: real game entrance heading loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "rhythm",
+        "url": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "desktop/rhythm: scene paused while game is open",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 3.325555,
+        "after": 3.746254
+      }
+    },
+    {
+      "name": "desktop: reduced setting pauses video and shows poster",
+      "passed": true
+    },
+    {
+      "name": "desktop: reduced preference survives reload without video source",
+      "passed": true
+    },
+    {
+      "name": "desktop: leaving reduced setting restores playback",
+      "passed": true
+    },
+    {
+      "name": "landscape: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+          "width": 1920,
+          "height": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "landscape: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "landscape: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "landscape: zero horizontal overflow",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "scrollY": 219,
+        "scrollWidth": 844,
+        "bodyWidth": 844,
+        "horizontalOverflow": 0,
+        "minimumTextPx": 11,
+        "tiny": [],
+        "overflow": [],
+        "primary": {
+          "top": 202.890625,
+          "bottom": 260.890625
+        },
+        "nav": {
+          "top": -64
+        }
+      }
+    },
+    {
+      "name": "landscape: rendered text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "landscape: current v9 scene uses matching responsive source",
+      "passed": true,
+      "details": {
+        "src": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "duration": 10,
+        "loop": true,
+        "muted": true
+      }
+    },
+    {
+      "name": "landscape/play: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "landscape: play selector exposes three entrances",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 0.367461,
+        "after": 0.790342
+      }
+    },
+    {
+      "name": "landscape/wardrobe: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "landscape: wardrobe keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 0.868367,
+        "after": 1.285106
+      }
+    },
+    {
+      "name": "landscape/me: panel heading and navigation state",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: main scene pauses under dialog",
+      "passed": true
+    },
+    {
+      "name": "landscape: profile keeps existing account entrance",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: closing removes embedded media",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: closing restores trigger focus",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: visible main video resumes and advances",
+      "passed": true,
+      "details": {
+        "before": 1.392322,
+        "after": 1.806618
+      }
+    },
+    {
+      "name": "os-reduced: all required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/logo.webp",
+          "width": 744,
+          "height": 360
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080,
+          "height": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/book.webp",
+          "width": 240,
+          "height": 217
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024,
+          "height": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "name": "os-reduced: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/felt-blue.webp",
+          "width": 398
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        }
+      ]
+    },
+    {
+      "name": "os-reduced: SUIT, Inter and DM Mono load",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "ready": true
+        },
+        {
+          "family": "HomeInter",
+          "ready": true
+        },
+        {
+          "family": "HomeMono",
+          "ready": true
+        }
+      ]
+    },
+    {
+      "name": "OS reduced motion never starts or sources background video",
+      "passed": true
+    },
+    {
+      "name": "OS reduced motion is reflected by a checked disabled control",
+      "passed": true
+    },
+    {
+      "name": "OS reduced scene enlargement remains a still image",
+      "passed": true
+    },
+    {
+      "name": "opening-title: opening click enters the new home",
+      "passed": true
+    },
+    {
+      "name": "opening-company: opening click enters the new home",
+      "passed": true
+    },
+    {
+      "name": "No page JavaScript errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No failed HTTP assets",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No mutating or external network calls attempted",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "mobile390",
+      "width": 390,
+      "height": 844,
+      "scrollY": 0,
+      "scrollWidth": 390,
+      "bodyWidth": 390,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 646.8125,
+        "bottom": 702.3125
+      },
+      "nav": {
+        "top": 771
+      }
+    },
+    {
+      "name": "mobile320",
+      "width": 320,
+      "height": 740,
+      "scrollY": 0,
+      "scrollWidth": 320,
+      "bodyWidth": 320,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 539.875,
+        "bottom": 595.375
+      },
+      "nav": {
+        "top": 667
+      }
+    },
+    {
+      "name": "mobile322",
+      "width": 322,
+      "height": 704,
+      "scrollY": 0,
+      "scrollWidth": 322,
+      "bodyWidth": 322,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 539.875,
+        "bottom": 595.375
+      },
+      "nav": {
+        "top": 631
+      }
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "scrollY": 0,
+      "scrollWidth": 1440,
+      "bodyWidth": 1440,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 437.890625,
+        "bottom": 495.890625
+      },
+      "nav": {
+        "top": 155
+      }
+    },
+    {
+      "name": "landscape",
+      "width": 844,
+      "height": 390,
+      "scrollY": 219,
+      "scrollWidth": 844,
+      "bodyWidth": 844,
+      "horizontalOverflow": 0,
+      "minimumTextPx": 11,
+      "tiny": [],
+      "overflow": [],
+      "primary": {
+        "top": 202.890625,
+        "bottom": 260.890625
+      },
+      "nav": {
+        "top": -64
+      }
+    }
+  ],
+  "games": [
+    {
+      "name": "mobile390",
+      "id": "runner",
+      "url": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "mobile390",
+      "id": "hangul",
+      "url": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "mobile390",
+      "id": "rhythm",
+      "url": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "desktop",
+      "id": "runner",
+      "url": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "desktop",
+      "id": "hangul",
+      "url": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "desktop",
+      "id": "rhythm",
+      "url": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    }
+  ],
+  "screenshots": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-runner-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-hangul-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile390-rhythm-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile320-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\mobile322-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-runner-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-hangul-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\desktop-rhythm-entrance.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-first-viewport.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\landscape-fullpage.jpg",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v1\\os-reduced-poster.jpg"
+  ],
+  "errors": [],
+  "resources": [],
+  "blockedRequests": [],
+  "scope": "Independent headless Edge; five viewport sizes, first-screen primary action visibility, and real embedded game entrance headings. No game was started, account created, or paid AI request made. This is browser emulation, not a physical-device test."
+}

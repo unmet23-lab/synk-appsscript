@@ -1,0 +1,186 @@
+{
+  "date": "2026-10-10",
+  "pricingSource": "https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing",
+  "estimatedUsd": 6.123342,
+  "actualChargesVerified": false,
+  "currentCreditBalanceVerified": false,
+  "note": "v7 generated but rejected by QA; v8 video-edit provider content block returned no video; v9 landscape internal-error request returned no video and was manually retried once. Invalid-format HTTP400 requests returned no usage and are preserved separately. Only v9 new image generations selected.",
+  "jobs": [
+    {
+      "revision": "v7",
+      "variant": "portrait",
+      "status": "complete",
+      "usage": {
+        "total_tokens": 90506,
+        "total_input_tokens": 3046,
+        "input_tokens_by_modality": [
+          {
+            "modality": "image",
+            "tokens": 2200
+          },
+          {
+            "modality": "text",
+            "tokens": 846
+          }
+        ],
+        "total_output_tokens": 86880,
+        "output_tokens_by_modality": [
+          {
+            "modality": "video",
+            "tokens": 86880
+          }
+        ],
+        "total_thought_tokens": 580
+      },
+      "evidence": "raw/felt-trio-v7/portrait.job.json",
+      "estimatedUsd": 1.530189
+    },
+    {
+      "revision": "v7",
+      "variant": "landscape",
+      "status": "complete",
+      "usage": {
+        "total_tokens": 90070,
+        "total_input_tokens": 3046,
+        "input_tokens_by_modality": [
+          {
+            "modality": "image",
+            "tokens": 2200
+          },
+          {
+            "modality": "text",
+            "tokens": 846
+          }
+        ],
+        "total_output_tokens": 86880,
+        "output_tokens_by_modality": [
+          {
+            "modality": "video",
+            "tokens": 86880
+          }
+        ],
+        "total_thought_tokens": 144
+      },
+      "evidence": "raw/felt-trio-v7/landscape.job.json",
+      "estimatedUsd": 1.526265
+    },
+    {
+      "revision": "v8",
+      "variant": "portrait",
+      "status": "failed",
+      "usage": {
+        "total_tokens": 1761,
+        "total_input_tokens": 1534,
+        "input_tokens_by_modality": [
+          {
+            "modality": "video",
+            "tokens": 660
+          },
+          {
+            "modality": "audio",
+            "tokens": 251
+          },
+          {
+            "modality": "text",
+            "tokens": 623
+          }
+        ],
+        "total_thought_tokens": 227
+      },
+      "evidence": "raw/felt-trio-v8/portrait.job.json",
+      "estimatedUsd": 0.004344
+    },
+    {
+      "revision": "v8",
+      "variant": "landscape",
+      "status": "failed",
+      "usage": {
+        "total_tokens": 1680,
+        "total_input_tokens": 1534,
+        "input_tokens_by_modality": [
+          {
+            "modality": "audio",
+            "tokens": 251
+          },
+          {
+            "modality": "video",
+            "tokens": 660
+          },
+          {
+            "modality": "text",
+            "tokens": 623
+          }
+        ],
+        "total_thought_tokens": 146
+      },
+      "evidence": "raw/felt-trio-v8/landscape.job.json",
+      "estimatedUsd": 0.003615
+    },
+    {
+      "revision": "v9",
+      "variant": "portrait",
+      "status": "complete",
+      "usage": {
+        "total_tokens": 90244,
+        "total_input_tokens": 2668,
+        "input_tokens_by_modality": [
+          {
+            "modality": "text",
+            "tokens": 468
+          },
+          {
+            "modality": "image",
+            "tokens": 2200
+          }
+        ],
+        "total_output_tokens": 86880,
+        "output_tokens_by_modality": [
+          {
+            "modality": "video",
+            "tokens": 86880
+          }
+        ],
+        "total_thought_tokens": 696
+      },
+      "evidence": "raw/felt-trio-v9/portrait.job.json",
+      "estimatedUsd": 1.530666
+    },
+    {
+      "revision": "v9",
+      "variant": "landscape",
+      "status": "complete",
+      "usage": {
+        "total_tokens": 89977,
+        "total_input_tokens": 2668,
+        "input_tokens_by_modality": [
+          {
+            "modality": "text",
+            "tokens": 468
+          },
+          {
+            "modality": "image",
+            "tokens": 2200
+          }
+        ],
+        "total_output_tokens": 86880,
+        "output_tokens_by_modality": [
+          {
+            "modality": "video",
+            "tokens": 86880
+          }
+        ],
+        "total_thought_tokens": 429
+      },
+      "evidence": "raw/felt-trio-v9/landscape.job.json",
+      "estimatedUsd": 1.528263
+    },
+    {
+      "revision": "v9",
+      "variant": "landscape",
+      "status": "failed",
+      "usage": {},
+      "evidence": "raw/felt-trio-v9/landscape.request-failed-api-error.json",
+      "estimatedUsd": 0
+    }
+  ]
+}

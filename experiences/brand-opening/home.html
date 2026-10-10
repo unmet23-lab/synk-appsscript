@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#373a32">
+  <title>한강 마루 · SYNK WORLD</title>
+  <link rel="icon" href="assets/home/mongle-smile.webp">
+  <link rel="preload" href="assets/SUIT.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="home.css">
+  <script type="module" src="home.mjs"></script>
+</head>
+<body>
+<a class="skip-link" href="#home-main">본문으로 이동</a>
+<div class="world-shell">
+  <main id="home-main" tabindex="-1">
+    <section class="maru-scene" aria-label="한강 마루에서 함께하는 까몽, 몽글, 마린">
+      <img class="scene-poster" src="assets/felt-world-scene-mobile-v9.webp" alt="노을 진 한강과 한옥 마루에 함께 앉은 펠트 까몽, 몽글, 마린">
+      <video class="scene-video" muted loop playsinline preload="none" aria-hidden="true"></video>
+      <div class="scene-shade" aria-hidden="true"></div>
+    </section>
+    <header class="world-topbar">
+      <button class="profile-control" data-view="me" aria-label="나의 공간 열기">
+        <span class="profile-portrait"><img src="assets/home/mongle-smile.webp" alt=""></span>
+        <span class="profile-copy"><small id="home-account-status">나의 작은 세계</small><strong>나의 마루</strong></span>
+      </button>
+      <button class="icon-button" id="settings-open" aria-label="화면 설정">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m9 3-.7 2.1-1.8 1-2.2-.4-2 3.5 1.5 1.7v2.2l-1.5 1.7 2 3.5 2.2-.4 1.8 1L9 21h4l.7-2.1 1.8-1 2.2.4 2-3.5-1.5-1.7v-2.2l1.5-1.7-2-3.5-2.2.4-1.8-1L13 3Z" transform="translate(1)"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </header>
+    <div class="place-heading">
+      <p class="place-kicker">SEOUL · HANGANG</p>
+      <h1>한강 마루</h1>
+      <p>세 친구와 오늘의 한국어</p>
+    </div>
+    <div class="orientation-notice" role="status" hidden>
+      <span><strong id="orientation-message"></strong><small>선택한 방향으로 이어서 볼 수 있어요.</small></span>
+      <button data-orientation-auto>자동으로<br>보기</button>
+    </div>
+    <div class="lobby-action life-home-board" aria-label="생활 한국어 이어 하기와 복습">
+      <button class="adventure-button life-next-button" id="life-next-button" data-view="learn" data-life-next aria-label="생활 한국어 다음 학습 이어 하기"><span class="life-next-copy"><small id="life-next-kicker">생활 한국어</small><strong id="life-next-title">친구들과 첫 인사</strong></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+      <p id="life-progress-caption">6개 생활 팩 · 22개 짧은 학습</p>
+      <div class="life-home-shortcuts">
+        <button data-view="cafe" aria-label="카페 팩 열기"><span>카페</span></button>
+        <button data-view="packs" data-life-library aria-label="생활 한국어 팩 모아 보기"><span>생활 팩</span></button>
+        <button data-view="review" data-life-review aria-label="나의 복습 일정 보기"><span>복습</span><small id="life-review-count">일정</small></button>
+        <button data-view="stories" data-life-stories aria-label="까몽 몽글 마린 이야기 모아 보기"><span>이야기</span></button>
+      </div>
+    </div>
+  </main>
+  <nav class="world-nav" aria-label="WORLD 주 메뉴">
+    <button data-view="home" aria-current="page"><span class="nav-object"><img src="assets/home/mongle-smile.webp" alt=""></span><span>마루</span></button>
+    <button data-view="play"><span class="nav-object"><img src="assets/home/headphones.webp" alt=""></span><span>놀이</span></button>
+    <button data-view="wardrobe"><span class="nav-object"><img src="assets/home/scarf.webp" alt=""></span><span>옷장</span></button>
+    <button data-view="me"><span class="nav-object"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></span><span>나</span></button>
+  </nav>
+</div>
+<dialog class="world-panel" id="world-panel" aria-labelledby="panel-title">
+  <div class="sheet-handle" aria-hidden="true"></div>
+  <header class="panel-header dialog-top"><div><p class="eyebrow" id="panel-eyebrow">SYNK WORLD</p><h2 id="panel-title"></h2></div><button class="close-button dialog-close" id="panel-close" aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+  <div id="panel-content"></div>
+</dialog>
+<div id="home-toast" class="home-toast" role="status" aria-live="polite" hidden></div>
+<noscript><p>화면을 이용하려면 JavaScript를 켜 주세요. <a href="../korean-runner/">바람길 열기</a></p></noscript>
+</body>
+</html>

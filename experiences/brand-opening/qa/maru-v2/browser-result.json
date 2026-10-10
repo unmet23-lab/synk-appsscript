@@ -1,0 +1,5322 @@
+{
+  "date": "2026-10-10",
+  "base": "http://127.0.0.1:4307",
+  "layoutOnly": false,
+  "passed": 420,
+  "failed": [],
+  "checks": [
+    {
+      "name": "mobile390: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile390: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "mobile390: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "mobile390: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "mobile390: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 0,
+          "y": 0,
+          "width": 390,
+          "height": 844,
+          "right": 390,
+          "bottom": 844
+        },
+        "nav": {
+          "x": 16,
+          "y": 755,
+          "width": 358,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "label": "화면 설정",
+            "x": 324,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 372,
+            "bottom": 67.5
+          },
+          {
+            "label": "놀러 가기",
+            "x": 28,
+            "y": 668,
+            "width": 334,
+            "height": 72,
+            "right": 362,
+            "bottom": 740
+          },
+          {
+            "label": "마루",
+            "x": 16,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 98.75,
+            "bottom": 832
+          },
+          {
+            "label": "놀이",
+            "x": 107.75,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 190.5,
+            "bottom": 832
+          },
+          {
+            "label": "옷장",
+            "x": 199.5,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 282.25,
+            "bottom": 832
+          },
+          {
+            "label": "나",
+            "x": 291.25,
+            "y": 755,
+            "width": 82.75,
+            "height": 77,
+            "right": 374,
+            "bottom": 832
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72
+        }
+      }
+    },
+    {
+      "name": "mobile390: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "label": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "label": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "label": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "label": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "label": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ]
+    },
+    {
+      "name": "mobile390: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile390: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 28,
+        "y": 668,
+        "width": 334,
+        "height": 72
+      }
+    },
+    {
+      "name": "mobile390: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72
+        },
+        "nav": {
+          "x": 16,
+          "y": 755,
+          "width": 358,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      }
+    },
+    {
+      "name": "mobile390: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 82.75,
+          "height": 77
+        },
+        {
+          "width": 82.75,
+          "height": 77
+        },
+        {
+          "width": 82.75,
+          "height": 77
+        },
+        {
+          "width": 82.75,
+          "height": 77
+        }
+      ]
+    },
+    {
+      "name": "mobile390: portrait world background covers the complete viewport",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      }
+    },
+    {
+      "name": "mobile390: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "mobile390: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "mobile390/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 324.671875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/primary: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 324.671875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.040248,
+        "after": 1.406381
+      }
+    },
+    {
+      "name": "mobile390/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 324.671875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/play: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 324.671875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.462554,
+        "after": 1.837986
+      }
+    },
+    {
+      "name": "mobile390/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 352.296875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/wardrobe: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 352.296875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "mobile390/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.917436,
+        "after": 2.285696
+      }
+    },
+    {
+      "name": "mobile390/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 309.796875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/me: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 309.796875,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "mobile390/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.350875,
+        "after": 2.721251
+      }
+    },
+    {
+      "name": "mobile390/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "mobile390/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/runner: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.777591,
+        "after": 3.147728
+      }
+    },
+    {
+      "name": "mobile390/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "mobile390/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/hangul: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.19992,
+        "after": 3.569389
+      }
+    },
+    {
+      "name": "mobile390/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile390",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "mobile390/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/rhythm: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 390,
+        "height": 844,
+        "x": 0,
+        "y": 0,
+        "right": 390,
+        "bottom": 844,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile390/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile390/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.618629,
+        "after": 3.986673
+      }
+    },
+    {
+      "name": "mobile390: manual reduced setting shows a still poster",
+      "passed": true
+    },
+    {
+      "name": "mobile390: saved reduced setting prevents video sourcing on reload",
+      "passed": true
+    },
+    {
+      "name": "mobile390/reduced-off: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.466644,
+        "after": 0.836484
+      }
+    },
+    {
+      "name": "mobile320: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile320: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "mobile320: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "mobile320: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "mobile320: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 0,
+          "y": 0,
+          "width": 320,
+          "height": 740,
+          "right": 320,
+          "bottom": 740
+        },
+        "nav": {
+          "x": 13,
+          "y": 655,
+          "width": 294,
+          "height": 77,
+          "right": 307,
+          "bottom": 732
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 13,
+            "y": 12,
+            "width": 142,
+            "height": 52,
+            "right": 155,
+            "bottom": 64
+          },
+          {
+            "label": "화면 설정",
+            "x": 259,
+            "y": 14,
+            "width": 48,
+            "height": 48,
+            "right": 307,
+            "bottom": 62
+          },
+          {
+            "label": "놀러 가기",
+            "x": 22,
+            "y": 577,
+            "width": 276,
+            "height": 65,
+            "right": 298,
+            "bottom": 642
+          },
+          {
+            "label": "마루",
+            "x": 13,
+            "y": 655,
+            "width": 70.5,
+            "height": 77,
+            "right": 83.5,
+            "bottom": 732
+          },
+          {
+            "label": "놀이",
+            "x": 87.5,
+            "y": 655,
+            "width": 70.5,
+            "height": 77,
+            "right": 158,
+            "bottom": 732
+          },
+          {
+            "label": "옷장",
+            "x": 162,
+            "y": 655,
+            "width": 70.5,
+            "height": 77,
+            "right": 232.5,
+            "bottom": 732
+          },
+          {
+            "label": "나",
+            "x": 236.5,
+            "y": 655,
+            "width": 70.5,
+            "height": 77,
+            "right": 307,
+            "bottom": 732
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 22,
+          "y": 577,
+          "width": 276,
+          "height": 65
+        }
+      }
+    },
+    {
+      "name": "mobile320: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 13,
+          "y": 12,
+          "width": 142,
+          "height": 52,
+          "right": 155,
+          "bottom": 64
+        },
+        {
+          "label": "화면 설정",
+          "x": 259,
+          "y": 14,
+          "width": 48,
+          "height": 48,
+          "right": 307,
+          "bottom": 62
+        },
+        {
+          "label": "놀러 가기",
+          "x": 22,
+          "y": 577,
+          "width": 276,
+          "height": 65,
+          "right": 298,
+          "bottom": 642
+        },
+        {
+          "label": "마루",
+          "x": 13,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 83.5,
+          "bottom": 732
+        },
+        {
+          "label": "놀이",
+          "x": 87.5,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 158,
+          "bottom": 732
+        },
+        {
+          "label": "옷장",
+          "x": 162,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 232.5,
+          "bottom": 732
+        },
+        {
+          "label": "나",
+          "x": 236.5,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 307,
+          "bottom": 732
+        }
+      ]
+    },
+    {
+      "name": "mobile320: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile320: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 22,
+        "y": 577,
+        "width": 276,
+        "height": 65
+      }
+    },
+    {
+      "name": "mobile320: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 22,
+          "y": 577,
+          "width": 276,
+          "height": 65
+        },
+        "nav": {
+          "x": 13,
+          "y": 655,
+          "width": 294,
+          "height": 77,
+          "right": 307,
+          "bottom": 732
+        }
+      }
+    },
+    {
+      "name": "mobile320: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 70.5,
+          "height": 77
+        },
+        {
+          "width": 70.5,
+          "height": 77
+        },
+        {
+          "width": 70.5,
+          "height": 77
+        },
+        {
+          "width": 70.5,
+          "height": 77
+        }
+      ]
+    },
+    {
+      "name": "mobile320: portrait world background covers the complete viewport",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 740,
+        "right": 320,
+        "bottom": 740
+      }
+    },
+    {
+      "name": "mobile320: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "mobile320: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "mobile320/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 245.421875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/primary: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 245.421875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.655782,
+        "after": 1.030539
+      }
+    },
+    {
+      "name": "mobile320/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 245.421875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/play: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 245.421875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.084823,
+        "after": 1.450715
+      }
+    },
+    {
+      "name": "mobile320/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 233.359375,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/wardrobe: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 233.359375,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "mobile320/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.521593,
+        "after": 1.883024
+      }
+    },
+    {
+      "name": "mobile320/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 209.546875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/me: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 209.546875,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "mobile320/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.944877,
+        "after": 2.314152
+      }
+    },
+    {
+      "name": "mobile320/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile320",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "mobile320/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile320/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/runner: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.377862,
+        "after": 2.743319
+      }
+    },
+    {
+      "name": "mobile320/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile320",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "mobile320/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile320/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/hangul: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.797842,
+        "after": 3.168652
+      }
+    },
+    {
+      "name": "mobile320/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile320",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "mobile320/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile320/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/rhythm: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "height": 740,
+        "x": 0,
+        "y": 0,
+        "right": 320,
+        "bottom": 740,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile320/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile320/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile320/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile320/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.233227,
+        "after": 3.607147
+      }
+    },
+    {
+      "name": "mobile322: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile322: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "mobile322: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "mobile322: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "mobile322: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 0,
+          "y": 0,
+          "width": 322,
+          "height": 704,
+          "right": 322,
+          "bottom": 704
+        },
+        "nav": {
+          "x": 13,
+          "y": 619,
+          "width": 296,
+          "height": 77,
+          "right": 309,
+          "bottom": 696
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 13,
+            "y": 12,
+            "width": 142,
+            "height": 52,
+            "right": 155,
+            "bottom": 64
+          },
+          {
+            "label": "화면 설정",
+            "x": 261,
+            "y": 14,
+            "width": 48,
+            "height": 48,
+            "right": 309,
+            "bottom": 62
+          },
+          {
+            "label": "놀러 가기",
+            "x": 22,
+            "y": 541,
+            "width": 278,
+            "height": 65,
+            "right": 300,
+            "bottom": 606
+          },
+          {
+            "label": "마루",
+            "x": 13,
+            "y": 619,
+            "width": 71,
+            "height": 77,
+            "right": 84,
+            "bottom": 696
+          },
+          {
+            "label": "놀이",
+            "x": 88,
+            "y": 619,
+            "width": 71,
+            "height": 77,
+            "right": 159,
+            "bottom": 696
+          },
+          {
+            "label": "옷장",
+            "x": 163,
+            "y": 619,
+            "width": 71,
+            "height": 77,
+            "right": 234,
+            "bottom": 696
+          },
+          {
+            "label": "나",
+            "x": 238,
+            "y": 619,
+            "width": 71,
+            "height": 77,
+            "right": 309,
+            "bottom": 696
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 22,
+          "y": 541,
+          "width": 278,
+          "height": 65
+        }
+      }
+    },
+    {
+      "name": "mobile322: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 13,
+          "y": 12,
+          "width": 142,
+          "height": 52,
+          "right": 155,
+          "bottom": 64
+        },
+        {
+          "label": "화면 설정",
+          "x": 261,
+          "y": 14,
+          "width": 48,
+          "height": 48,
+          "right": 309,
+          "bottom": 62
+        },
+        {
+          "label": "놀러 가기",
+          "x": 22,
+          "y": 541,
+          "width": 278,
+          "height": 65,
+          "right": 300,
+          "bottom": 606
+        },
+        {
+          "label": "마루",
+          "x": 13,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 84,
+          "bottom": 696
+        },
+        {
+          "label": "놀이",
+          "x": 88,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 159,
+          "bottom": 696
+        },
+        {
+          "label": "옷장",
+          "x": 163,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 234,
+          "bottom": 696
+        },
+        {
+          "label": "나",
+          "x": 238,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 309,
+          "bottom": 696
+        }
+      ]
+    },
+    {
+      "name": "mobile322: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile322: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 22,
+        "y": 541,
+        "width": 278,
+        "height": 65
+      }
+    },
+    {
+      "name": "mobile322: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 22,
+          "y": 541,
+          "width": 278,
+          "height": 65
+        },
+        "nav": {
+          "x": 13,
+          "y": 619,
+          "width": 296,
+          "height": 77,
+          "right": 309,
+          "bottom": 696
+        }
+      }
+    },
+    {
+      "name": "mobile322: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 71,
+          "height": 77
+        },
+        {
+          "width": 71,
+          "height": 77
+        },
+        {
+          "width": 71,
+          "height": 77
+        },
+        {
+          "width": 71,
+          "height": 77
+        }
+      ]
+    },
+    {
+      "name": "mobile322: portrait world background covers the complete viewport",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0,
+        "width": 322,
+        "height": 704,
+        "right": 322,
+        "bottom": 704
+      }
+    },
+    {
+      "name": "mobile322: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "mobile322: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "mobile322/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 209.421875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/primary: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 209.421875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.984703,
+        "after": 1.381796
+      }
+    },
+    {
+      "name": "mobile322/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 209.421875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/play: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 209.421875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.46804,
+        "after": 1.828041
+      }
+    },
+    {
+      "name": "mobile322/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 197.359375,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/wardrobe: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 197.359375,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "mobile322/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.07444,
+        "after": 2.442308
+      }
+    },
+    {
+      "name": "mobile322/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 173.546875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/me: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 173.546875,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "mobile322/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.603368,
+        "after": 2.990247
+      }
+    },
+    {
+      "name": "mobile322/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile322",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "mobile322/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile322/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/runner: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.175699,
+        "after": 3.557177
+      }
+    },
+    {
+      "name": "mobile322/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile322",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "mobile322/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile322/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/hangul: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.649229,
+        "after": 4.017819
+      }
+    },
+    {
+      "name": "mobile322/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile322",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "mobile322/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile322/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/rhythm: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 322,
+        "height": 704,
+        "x": 0,
+        "y": 0,
+        "right": 322,
+        "bottom": 704,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile322/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile322/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile322/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile322/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 4.093719,
+        "after": 4.459118
+      }
+    },
+    {
+      "name": "mobile430: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "mobile430: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "mobile430: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "mobile430: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "mobile430: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 932,
+          "right": 430,
+          "bottom": 932
+        },
+        "nav": {
+          "x": 16,
+          "y": 843,
+          "width": 398,
+          "height": 77,
+          "right": 414,
+          "bottom": 920
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 18,
+            "y": 16,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 71
+          },
+          {
+            "label": "화면 설정",
+            "x": 364,
+            "y": 19.5,
+            "width": 48,
+            "height": 48,
+            "right": 412,
+            "bottom": 67.5
+          },
+          {
+            "label": "놀러 가기",
+            "x": 45,
+            "y": 756,
+            "width": 340,
+            "height": 72,
+            "right": 385,
+            "bottom": 828
+          },
+          {
+            "label": "마루",
+            "x": 16,
+            "y": 843,
+            "width": 92.75,
+            "height": 77,
+            "right": 108.75,
+            "bottom": 920
+          },
+          {
+            "label": "놀이",
+            "x": 117.75,
+            "y": 843,
+            "width": 92.75,
+            "height": 77,
+            "right": 210.5,
+            "bottom": 920
+          },
+          {
+            "label": "옷장",
+            "x": 219.5,
+            "y": 843,
+            "width": 92.75,
+            "height": 77,
+            "right": 312.25,
+            "bottom": 920
+          },
+          {
+            "label": "나",
+            "x": 321.25,
+            "y": 843,
+            "width": 92.75,
+            "height": 77,
+            "right": 414,
+            "bottom": 920
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 45,
+          "y": 756,
+          "width": 340,
+          "height": 72
+        }
+      }
+    },
+    {
+      "name": "mobile430: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "label": "화면 설정",
+          "x": 364,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 412,
+          "bottom": 67.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 45,
+          "y": 756,
+          "width": 340,
+          "height": 72,
+          "right": 385,
+          "bottom": 828
+        },
+        {
+          "label": "마루",
+          "x": 16,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 108.75,
+          "bottom": 920
+        },
+        {
+          "label": "놀이",
+          "x": 117.75,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 210.5,
+          "bottom": 920
+        },
+        {
+          "label": "옷장",
+          "x": 219.5,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 312.25,
+          "bottom": 920
+        },
+        {
+          "label": "나",
+          "x": 321.25,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 414,
+          "bottom": 920
+        }
+      ]
+    },
+    {
+      "name": "mobile430: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "mobile430: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 45,
+        "y": 756,
+        "width": 340,
+        "height": 72
+      }
+    },
+    {
+      "name": "mobile430: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 45,
+          "y": 756,
+          "width": 340,
+          "height": 72
+        },
+        "nav": {
+          "x": 16,
+          "y": 843,
+          "width": 398,
+          "height": 77,
+          "right": 414,
+          "bottom": 920
+        }
+      }
+    },
+    {
+      "name": "mobile430: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        }
+      ]
+    },
+    {
+      "name": "mobile430: portrait world background covers the complete viewport",
+      "passed": true,
+      "details": {
+        "x": 0,
+        "y": 0,
+        "width": 430,
+        "height": 932,
+        "right": 430,
+        "bottom": 932
+      }
+    },
+    {
+      "name": "mobile430: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "mobile430: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "mobile430/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 412.671875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/primary: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 412.671875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.742965,
+        "after": 1.110404
+      }
+    },
+    {
+      "name": "mobile430/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 412.671875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/play: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 412.671875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.169171,
+        "after": 1.527607
+      }
+    },
+    {
+      "name": "mobile430/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 440.296875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/wardrobe: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 440.296875,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "mobile430/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.592479,
+        "after": 1.958932
+      }
+    },
+    {
+      "name": "mobile430/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "mobile430/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 422.984375,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/me: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 422.984375,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "mobile430/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.020344,
+        "after": 2.378835
+      }
+    },
+    {
+      "name": "mobile430/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile430",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "mobile430/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile430/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/runner: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.435414,
+        "after": 2.79622
+      }
+    },
+    {
+      "name": "mobile430/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile430",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "mobile430/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile430/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/hangul: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.842328,
+        "after": 3.21512
+      }
+    },
+    {
+      "name": "mobile430/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "mobile430",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "mobile430/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "mobile430/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/rhythm: mobile panel is a bottom sheet",
+      "passed": true,
+      "details": {
+        "width": 430,
+        "height": 932,
+        "x": 0,
+        "y": 0,
+        "right": 430,
+        "bottom": 932,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "mobile430/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "mobile430/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "mobile430/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "mobile430/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.282865,
+        "after": 3.66432
+      }
+    },
+    {
+      "name": "landscape: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+          "width": 1920
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "landscape: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "landscape: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "landscape: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "landscape: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 0,
+          "y": 0,
+          "width": 844,
+          "height": 390,
+          "right": 844,
+          "bottom": 390
+        },
+        "nav": {
+          "x": 20,
+          "y": 306,
+          "width": 234,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 18,
+            "y": 12,
+            "width": 150,
+            "height": 55,
+            "right": 168,
+            "bottom": 67
+          },
+          {
+            "label": "화면 설정",
+            "x": 778,
+            "y": 15.5,
+            "width": 48,
+            "height": 48,
+            "right": 826,
+            "bottom": 63.5
+          },
+          {
+            "label": "놀러 가기",
+            "x": 24,
+            "y": 236,
+            "width": 225,
+            "height": 57,
+            "right": 249,
+            "bottom": 293
+          },
+          {
+            "label": "마루",
+            "x": 20,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 78.5,
+            "bottom": 378
+          },
+          {
+            "label": "놀이",
+            "x": 78.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 137,
+            "bottom": 378
+          },
+          {
+            "label": "옷장",
+            "x": 137,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 195.5,
+            "bottom": 378
+          },
+          {
+            "label": "나",
+            "x": 195.5,
+            "y": 306,
+            "width": 58.5,
+            "height": 72,
+            "right": 254,
+            "bottom": 378
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57
+        }
+      }
+    },
+    {
+      "name": "landscape: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "label": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "label": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "label": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "label": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "label": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ]
+    },
+    {
+      "name": "landscape: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "landscape: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 24,
+        "y": 236,
+        "width": 225,
+        "height": 57
+      }
+    },
+    {
+      "name": "landscape: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57
+        },
+        "nav": {
+          "x": 20,
+          "y": 306,
+          "width": 234,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      }
+    },
+    {
+      "name": "landscape: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 58.5,
+          "height": 72
+        },
+        {
+          "width": 58.5,
+          "height": 72
+        },
+        {
+          "width": 58.5,
+          "height": 72
+        },
+        {
+          "width": 58.5,
+          "height": 72
+        }
+      ]
+    },
+    {
+      "name": "landscape: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "landscape: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "landscape/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 182,
+        "y": 16,
+        "right": 662,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.788954,
+        "after": 1.152132
+      }
+    },
+    {
+      "name": "landscape/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 182,
+        "y": 16,
+        "right": 662,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.215502,
+        "after": 1.674832
+      }
+    },
+    {
+      "name": "landscape/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 182,
+        "y": 16,
+        "right": 662,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "landscape/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.880538,
+        "after": 2.25939
+      }
+    },
+    {
+      "name": "landscape/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 182,
+        "y": 16,
+        "right": 662,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "landscape/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.339245,
+        "after": 2.704144
+      }
+    },
+    {
+      "name": "landscape/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "landscape",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "landscape/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "landscape/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 0,
+        "y": 0,
+        "right": 844,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.848833,
+        "after": 3.208014
+      }
+    },
+    {
+      "name": "landscape/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "landscape",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "landscape/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "landscape/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 0,
+        "y": 0,
+        "right": 844,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.272619,
+        "after": 3.633684
+      }
+    },
+    {
+      "name": "landscape/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "landscape",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "landscape/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "landscape/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 844,
+        "height": 390,
+        "x": 0,
+        "y": 0,
+        "right": 844,
+        "bottom": 390,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "landscape/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "landscape/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "landscape/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "landscape/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.697448,
+        "after": 4.056824
+      }
+    },
+    {
+      "name": "desktop: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "desktop: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "desktop: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "desktop: lobby has no horizontal overflow",
+      "passed": true,
+      "details": 0
+    },
+    {
+      "name": "desktop: lobby fits one screen without scrolling",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "scrollX": 0,
+        "scrollY": 0,
+        "horizontalOverflow": 0,
+        "verticalOverflow": 0,
+        "scene": {
+          "x": 505,
+          "y": 34,
+          "width": 430,
+          "height": 932,
+          "right": 935,
+          "bottom": 966
+        },
+        "nav": {
+          "x": 521,
+          "y": 877,
+          "width": 398,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        },
+        "controls": [
+          {
+            "label": "나의 공간 열기",
+            "x": 523,
+            "y": 50,
+            "width": 150,
+            "height": 55,
+            "right": 673,
+            "bottom": 105
+          },
+          {
+            "label": "화면 설정",
+            "x": 869,
+            "y": 53.5,
+            "width": 48,
+            "height": 48,
+            "right": 917,
+            "bottom": 101.5
+          },
+          {
+            "label": "놀러 가기",
+            "x": 550,
+            "y": 790,
+            "width": 340,
+            "height": 72,
+            "right": 890,
+            "bottom": 862
+          },
+          {
+            "label": "마루",
+            "x": 521,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 613.75,
+            "bottom": 954
+          },
+          {
+            "label": "놀이",
+            "x": 622.75,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 715.5,
+            "bottom": 954
+          },
+          {
+            "label": "옷장",
+            "x": 724.5,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 817.25,
+            "bottom": 954
+          },
+          {
+            "label": "나",
+            "x": 826.25,
+            "y": 877,
+            "width": 92.75,
+            "height": 77,
+            "right": 919,
+            "bottom": 954
+          }
+        ],
+        "minFont": 11,
+        "tiny": [],
+        "primary": {
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72
+        }
+      }
+    },
+    {
+      "name": "desktop: all lobby controls fit the viewport",
+      "passed": true,
+      "details": [
+        {
+          "label": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "label": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "label": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "label": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "label": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "label": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ]
+    },
+    {
+      "name": "desktop: all visible lobby text is at least 11px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "desktop: large play action has a usable touch target",
+      "passed": true,
+      "details": {
+        "x": 550,
+        "y": 790,
+        "width": 340,
+        "height": 72
+      }
+    },
+    {
+      "name": "desktop: primary action is entirely above the bottom navigation",
+      "passed": true,
+      "details": {
+        "primary": {
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72
+        },
+        "nav": {
+          "x": 521,
+          "y": 877,
+          "width": 398,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      }
+    },
+    {
+      "name": "desktop: nav touch targets are at least 44px",
+      "passed": true,
+      "details": [
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        },
+        {
+          "width": 92.75,
+          "height": 77
+        }
+      ]
+    },
+    {
+      "name": "desktop: approved ten-second v9 shot plays silently in a full loop",
+      "passed": true,
+      "details": {
+        "source": "http://127.0.0.1:4307/brand-opening/assets/world-menu-mobile-omni11-v9-web.mp4",
+        "loop": true,
+        "muted": true,
+        "duration": 10
+      }
+    },
+    {
+      "name": "desktop: main play action opens three-game selection",
+      "passed": true
+    },
+    {
+      "name": "desktop/primary: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 446.671875,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/primary: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/primary: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/primary: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/primary: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.075589,
+        "after": 1.470468
+      }
+    },
+    {
+      "name": "desktop/play: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 446.671875,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop: navigation play sheet includes all three games",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/play: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 1.768296,
+        "after": 2.127636
+      }
+    },
+    {
+      "name": "desktop/wardrobe: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 474.296875,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/wardrobe: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?wardrobe=1&opening=off"
+    },
+    {
+      "name": "desktop/wardrobe: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/wardrobe: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.22215,
+        "after": 2.586314
+      }
+    },
+    {
+      "name": "desktop/me: navigation opens a named panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: background pauses below the panel",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 456.984375,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/me: existing account flow remains the destination",
+      "passed": true,
+      "details": "../mobile.html?opening=off"
+    },
+    {
+      "name": "desktop/me: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/me: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 2.655911,
+        "after": 3.027049
+      }
+    },
+    {
+      "name": "desktop/runner: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "runner",
+        "source": "../korean-runner/",
+        "title": "바람길 · SYNK LAB PLAY",
+        "heading": "바람길"
+      }
+    },
+    {
+      "name": "desktop/runner: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 34,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/runner: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/runner: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.091839,
+        "after": 3.456358
+      }
+    },
+    {
+      "name": "desktop/hangul: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "hangul",
+        "source": "../hangul-stage/",
+        "title": "한글 단계 · SYNK WORLD",
+        "heading": "가나다부터"
+      }
+    },
+    {
+      "name": "desktop/hangul: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 34,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/hangul: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/hangul: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 3.51913,
+        "after": 3.881696
+      }
+    },
+    {
+      "name": "desktop/rhythm: actual game entrance loads",
+      "passed": true,
+      "details": {
+        "name": "desktop",
+        "id": "rhythm",
+        "source": "../korean-rhythm/",
+        "title": "말의 리듬 · SYNK LAB PLAY",
+        "heading": "말의 리듬"
+      }
+    },
+    {
+      "name": "desktop/rhythm: background stays paused behind game",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: sheet fits horizontally and contains keyboard focus",
+      "passed": true,
+      "details": {
+        "width": 1440,
+        "height": 1000,
+        "x": 505,
+        "y": 34,
+        "right": 935,
+        "bottom": 966,
+        "overflow": 0,
+        "activeInside": true
+      }
+    },
+    {
+      "name": "desktop/rhythm: closing removes iframe and dialog media",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: closing restores the original lobby trigger",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: home navigation becomes current again",
+      "passed": true
+    },
+    {
+      "name": "desktop/rhythm: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 4.03727,
+        "after": 4.735269
+      }
+    },
+    {
+      "name": "desktop: manual reduced setting shows a still poster",
+      "passed": true
+    },
+    {
+      "name": "desktop: saved reduced setting prevents video sourcing on reload",
+      "passed": true
+    },
+    {
+      "name": "desktop/reduced-off: background playback advances",
+      "passed": true,
+      "details": {
+        "before": 0.543192,
+        "after": 0.909294
+      }
+    },
+    {
+      "name": "os-reduced: required image assets decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+          "width": 1080
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/mongle-smile.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/headphones.webp",
+          "width": 1024
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/scarf.webp",
+          "width": 1024
+        }
+      ]
+    },
+    {
+      "name": "os-reduced: felt backgrounds decode",
+      "passed": true,
+      "details": [
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-white.webp",
+          "width": 1792
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-cream.webp",
+          "width": 550
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/button-coral.webp",
+          "width": 1797
+        },
+        {
+          "source": "http://127.0.0.1:4307/brand-opening/assets/home/quality-blush.webp",
+          "width": 556
+        }
+      ]
+    },
+    {
+      "name": "os-reduced: a local brand font is loaded and no font has failed",
+      "passed": true,
+      "details": [
+        {
+          "family": "HomeSUIT",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeInter",
+          "status": "loaded"
+        },
+        {
+          "family": "HomeMono",
+          "status": "loaded"
+        }
+      ]
+    },
+    {
+      "name": "OS reduced motion uses a poster without sourcing video",
+      "passed": true
+    },
+    {
+      "name": "OS reduced motion is exposed by a checked disabled control",
+      "passed": true
+    },
+    {
+      "name": "opening-company: opening leads directly to the game lobby",
+      "passed": true
+    },
+    {
+      "name": "opening-title: opening leads directly to the game lobby",
+      "passed": true
+    },
+    {
+      "name": "No browser JavaScript errors",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No failed HTTP assets",
+      "passed": true,
+      "details": []
+    },
+    {
+      "name": "No external or mutating request attempted",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "mobile390",
+      "width": 390,
+      "height": 844,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844,
+        "right": 390,
+        "bottom": 844
+      },
+      "nav": {
+        "x": 16,
+        "y": 755,
+        "width": 358,
+        "height": 77,
+        "right": 374,
+        "bottom": 832
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "label": "화면 설정",
+          "x": 324,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 372,
+          "bottom": 67.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 28,
+          "y": 668,
+          "width": 334,
+          "height": 72,
+          "right": 362,
+          "bottom": 740
+        },
+        {
+          "label": "마루",
+          "x": 16,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 98.75,
+          "bottom": 832
+        },
+        {
+          "label": "놀이",
+          "x": 107.75,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 190.5,
+          "bottom": 832
+        },
+        {
+          "label": "옷장",
+          "x": 199.5,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 282.25,
+          "bottom": 832
+        },
+        {
+          "label": "나",
+          "x": 291.25,
+          "y": 755,
+          "width": 82.75,
+          "height": 77,
+          "right": 374,
+          "bottom": 832
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 28,
+        "y": 668,
+        "width": 334,
+        "height": 72
+      }
+    },
+    {
+      "name": "mobile320",
+      "width": 320,
+      "height": 740,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 740,
+        "right": 320,
+        "bottom": 740
+      },
+      "nav": {
+        "x": 13,
+        "y": 655,
+        "width": 294,
+        "height": 77,
+        "right": 307,
+        "bottom": 732
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 13,
+          "y": 12,
+          "width": 142,
+          "height": 52,
+          "right": 155,
+          "bottom": 64
+        },
+        {
+          "label": "화면 설정",
+          "x": 259,
+          "y": 14,
+          "width": 48,
+          "height": 48,
+          "right": 307,
+          "bottom": 62
+        },
+        {
+          "label": "놀러 가기",
+          "x": 22,
+          "y": 577,
+          "width": 276,
+          "height": 65,
+          "right": 298,
+          "bottom": 642
+        },
+        {
+          "label": "마루",
+          "x": 13,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 83.5,
+          "bottom": 732
+        },
+        {
+          "label": "놀이",
+          "x": 87.5,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 158,
+          "bottom": 732
+        },
+        {
+          "label": "옷장",
+          "x": 162,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 232.5,
+          "bottom": 732
+        },
+        {
+          "label": "나",
+          "x": 236.5,
+          "y": 655,
+          "width": 70.5,
+          "height": 77,
+          "right": 307,
+          "bottom": 732
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 22,
+        "y": 577,
+        "width": 276,
+        "height": 65
+      }
+    },
+    {
+      "name": "mobile322",
+      "width": 322,
+      "height": 704,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 322,
+        "height": 704,
+        "right": 322,
+        "bottom": 704
+      },
+      "nav": {
+        "x": 13,
+        "y": 619,
+        "width": 296,
+        "height": 77,
+        "right": 309,
+        "bottom": 696
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 13,
+          "y": 12,
+          "width": 142,
+          "height": 52,
+          "right": 155,
+          "bottom": 64
+        },
+        {
+          "label": "화면 설정",
+          "x": 261,
+          "y": 14,
+          "width": 48,
+          "height": 48,
+          "right": 309,
+          "bottom": 62
+        },
+        {
+          "label": "놀러 가기",
+          "x": 22,
+          "y": 541,
+          "width": 278,
+          "height": 65,
+          "right": 300,
+          "bottom": 606
+        },
+        {
+          "label": "마루",
+          "x": 13,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 84,
+          "bottom": 696
+        },
+        {
+          "label": "놀이",
+          "x": 88,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 159,
+          "bottom": 696
+        },
+        {
+          "label": "옷장",
+          "x": 163,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 234,
+          "bottom": 696
+        },
+        {
+          "label": "나",
+          "x": 238,
+          "y": 619,
+          "width": 71,
+          "height": 77,
+          "right": 309,
+          "bottom": 696
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 22,
+        "y": 541,
+        "width": 278,
+        "height": 65
+      }
+    },
+    {
+      "name": "mobile430",
+      "width": 430,
+      "height": 932,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 430,
+        "height": 932,
+        "right": 430,
+        "bottom": 932
+      },
+      "nav": {
+        "x": 16,
+        "y": 843,
+        "width": 398,
+        "height": 77,
+        "right": 414,
+        "bottom": 920
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 16,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 71
+        },
+        {
+          "label": "화면 설정",
+          "x": 364,
+          "y": 19.5,
+          "width": 48,
+          "height": 48,
+          "right": 412,
+          "bottom": 67.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 45,
+          "y": 756,
+          "width": 340,
+          "height": 72,
+          "right": 385,
+          "bottom": 828
+        },
+        {
+          "label": "마루",
+          "x": 16,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 108.75,
+          "bottom": 920
+        },
+        {
+          "label": "놀이",
+          "x": 117.75,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 210.5,
+          "bottom": 920
+        },
+        {
+          "label": "옷장",
+          "x": 219.5,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 312.25,
+          "bottom": 920
+        },
+        {
+          "label": "나",
+          "x": 321.25,
+          "y": 843,
+          "width": 92.75,
+          "height": 77,
+          "right": 414,
+          "bottom": 920
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 45,
+        "y": 756,
+        "width": 340,
+        "height": 72
+      }
+    },
+    {
+      "name": "landscape",
+      "width": 844,
+      "height": 390,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 0,
+        "y": 0,
+        "width": 844,
+        "height": 390,
+        "right": 844,
+        "bottom": 390
+      },
+      "nav": {
+        "x": 20,
+        "y": 306,
+        "width": 234,
+        "height": 72,
+        "right": 254,
+        "bottom": 378
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 18,
+          "y": 12,
+          "width": 150,
+          "height": 55,
+          "right": 168,
+          "bottom": 67
+        },
+        {
+          "label": "화면 설정",
+          "x": 778,
+          "y": 15.5,
+          "width": 48,
+          "height": 48,
+          "right": 826,
+          "bottom": 63.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 24,
+          "y": 236,
+          "width": 225,
+          "height": 57,
+          "right": 249,
+          "bottom": 293
+        },
+        {
+          "label": "마루",
+          "x": 20,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 78.5,
+          "bottom": 378
+        },
+        {
+          "label": "놀이",
+          "x": 78.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 137,
+          "bottom": 378
+        },
+        {
+          "label": "옷장",
+          "x": 137,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 195.5,
+          "bottom": 378
+        },
+        {
+          "label": "나",
+          "x": 195.5,
+          "y": 306,
+          "width": 58.5,
+          "height": 72,
+          "right": 254,
+          "bottom": 378
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 24,
+        "y": 236,
+        "width": 225,
+        "height": 57
+      }
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1000,
+      "scrollX": 0,
+      "scrollY": 0,
+      "horizontalOverflow": 0,
+      "verticalOverflow": 0,
+      "scene": {
+        "x": 505,
+        "y": 34,
+        "width": 430,
+        "height": 932,
+        "right": 935,
+        "bottom": 966
+      },
+      "nav": {
+        "x": 521,
+        "y": 877,
+        "width": 398,
+        "height": 77,
+        "right": 919,
+        "bottom": 954
+      },
+      "controls": [
+        {
+          "label": "나의 공간 열기",
+          "x": 523,
+          "y": 50,
+          "width": 150,
+          "height": 55,
+          "right": 673,
+          "bottom": 105
+        },
+        {
+          "label": "화면 설정",
+          "x": 869,
+          "y": 53.5,
+          "width": 48,
+          "height": 48,
+          "right": 917,
+          "bottom": 101.5
+        },
+        {
+          "label": "놀러 가기",
+          "x": 550,
+          "y": 790,
+          "width": 340,
+          "height": 72,
+          "right": 890,
+          "bottom": 862
+        },
+        {
+          "label": "마루",
+          "x": 521,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 613.75,
+          "bottom": 954
+        },
+        {
+          "label": "놀이",
+          "x": 622.75,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 715.5,
+          "bottom": 954
+        },
+        {
+          "label": "옷장",
+          "x": 724.5,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 817.25,
+          "bottom": 954
+        },
+        {
+          "label": "나",
+          "x": 826.25,
+          "y": 877,
+          "width": 92.75,
+          "height": 77,
+          "right": 919,
+          "bottom": 954
+        }
+      ],
+      "minFont": 11,
+      "tiny": [],
+      "primary": {
+        "x": 550,
+        "y": 790,
+        "width": 340,
+        "height": 72
+      }
+    }
+  ],
+  "games": [
+    {
+      "name": "mobile390",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "mobile390",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "mobile390",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "mobile320",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "mobile320",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "mobile320",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "mobile322",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "mobile322",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "mobile322",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "mobile430",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "mobile430",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "mobile430",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "landscape",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "landscape",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "landscape",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    },
+    {
+      "name": "desktop",
+      "id": "runner",
+      "source": "../korean-runner/",
+      "title": "바람길 · SYNK LAB PLAY",
+      "heading": "바람길"
+    },
+    {
+      "name": "desktop",
+      "id": "hangul",
+      "source": "../hangul-stage/",
+      "title": "한글 단계 · SYNK WORLD",
+      "heading": "가나다부터"
+    },
+    {
+      "name": "desktop",
+      "id": "rhythm",
+      "source": "../korean-rhythm/",
+      "title": "말의 리듬 · SYNK LAB PLAY",
+      "heading": "말의 리듬"
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-lobby.jpg",
+      "bytes": 91924,
+      "sha256": "088b6b732c792ef68976531ff34c6b500fbc71e4fd836ad74f08226c79687339",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-fullpage.jpg",
+      "bytes": 92593,
+      "sha256": "1a377f528cf6c1ba9d80c26ee7481ad416757372b021f301cd0da591240c2470",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-play-sheet.jpg",
+      "bytes": 41102,
+      "sha256": "da5044726014020805bfd9dc9ea3f020752c35c72ff1f24f5c108674aab27ea4",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-runner-entrance.jpg",
+      "bytes": 80887,
+      "sha256": "1bd5481f26f240ce5745ca3f0275a4243ed86860b01906bd2925f200318248f7",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-hangul-entrance.jpg",
+      "bytes": 63667,
+      "sha256": "c1f42999fb0692d7f8e1b04c86ba6564ee24564804b3f3ab488d6338d7b7749f",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile390-rhythm-entrance.jpg",
+      "bytes": 83049,
+      "sha256": "56398d620f07c3d32e12090a8ab992b427b1f3c16da53d41144beb63e0045d16",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-lobby.jpg",
+      "bytes": 70626,
+      "sha256": "e1aac41c82ea7bc67f5619f03aca84a4f053449636cbde94cbe58c1c32dd2f96",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-fullpage.jpg",
+      "bytes": 70092,
+      "sha256": "64e5396cb069419e3785f4a4f749c087d3de260ebc46e619a3a4ff27955b678d",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-play-sheet.jpg",
+      "bytes": 32024,
+      "sha256": "64ab344b48f41b160977eb4755369e2757601fe70b997e71767b14c1a4918f6c",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-runner-entrance.jpg",
+      "bytes": 54339,
+      "sha256": "8a281b9f556a00f823c9d3e2caa3b44447178a4f755a85e4c8ac27cd1dcf501e",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-hangul-entrance.jpg",
+      "bytes": 49516,
+      "sha256": "7a50ee4c346a765650dafd90723ba4a6368cf069eccc4491ff7a7489ec17d857",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile320-rhythm-entrance.jpg",
+      "bytes": 58342,
+      "sha256": "b291dfc4655299342e759a5ff3af383620809035acc723a05437511b1bbf1a1f",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-lobby.jpg",
+      "bytes": 70018,
+      "sha256": "1197411a125a191066e1e835ad0622e15f5289dec03ecc70637dc269bcf89a64",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-fullpage.jpg",
+      "bytes": 70214,
+      "sha256": "2e70df15c3a12a646be0f40ba2857535ecec97f121bed3597d2eae253e39e0e0",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-play-sheet.jpg",
+      "bytes": 31967,
+      "sha256": "84539441743e62406ff758e59100f09e7ec20b3c644ecc5cd73177097832762d",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-runner-entrance.jpg",
+      "bytes": 52375,
+      "sha256": "e403c0217e6a1e48ffd93b5b3df7cb55d28bbdc5c21cb39a03885f11418716fc",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-hangul-entrance.jpg",
+      "bytes": 48002,
+      "sha256": "45d024f35aea2275b0ddf03ea115f65ec168079a85b0501e71c60dac6093082c",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile322-rhythm-entrance.jpg",
+      "bytes": 55867,
+      "sha256": "a2cec7ecbd5856e26a4fe5d8d825b590cb5222a9ec02f4be092065346b7c66cb",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-lobby.jpg",
+      "bytes": 107545,
+      "sha256": "3eab1d1350a4cdd9a19fa4f79eab5dfc6594edcb4c8451ed3030f16af3b44c78",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-fullpage.jpg",
+      "bytes": 107344,
+      "sha256": "0f611feed828c6867737d1b812def46a0e108fe81d6b9e72972d721a9e5d0553",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-play-sheet.jpg",
+      "bytes": 46722,
+      "sha256": "ca681c2851bfbfcb08fb8fed348ed3f32aec52c83b43c27850a763467c29e80b",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-runner-entrance.jpg",
+      "bytes": 92510,
+      "sha256": "d6f422bd78b1412ecda972d984f23dbdfabff75d36fb66614ba5ecedab6e8b08",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-hangul-entrance.jpg",
+      "bytes": 72036,
+      "sha256": "c2cb9fd2bab5cf795990d23af302c9a84d681dab16a8381f89eab634cb83cc47",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\mobile430-rhythm-entrance.jpg",
+      "bytes": 102074,
+      "sha256": "02dd32028a57d0e3db1a8bc7fb010edbf147aa9b2fedad8606f1f7a51d07760f",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-lobby.jpg",
+      "bytes": 99698,
+      "sha256": "2a6eea861995d0ea39f30b22a9288e61659dbd06ac83d26289038c8abf46087f",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-fullpage.jpg",
+      "bytes": 99685,
+      "sha256": "ba1c22123090d154d08ea399df20bed0a1de4307bccf2e7d7b48172f42efb37f",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-play-sheet.jpg",
+      "bytes": 45748,
+      "sha256": "ed2533ebc3735cc52b989b27a7860cd5b182428c57d16271e5118a16e49d128e",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-runner-entrance.jpg",
+      "bytes": 73716,
+      "sha256": "cb286225ab9ea6f702bb871d9256e2539da911ef57b48900c9d7547a5fd52fcf",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-hangul-entrance.jpg",
+      "bytes": 54919,
+      "sha256": "9754951c73f1437a360038a5e6570ad0a2f64236f7b1caf12072857fd6af3c9a",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\landscape-rhythm-entrance.jpg",
+      "bytes": 74234,
+      "sha256": "497c205b3455bb7e2b0687f4e5caa640d30766ecdc7a2371ba8f44d3651d78f1",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-lobby.jpg",
+      "bytes": 127531,
+      "sha256": "a23eb287b3988b2efd6d0c70200462b0c386c779cd1f69c5bc7911188ae38197",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-fullpage.jpg",
+      "bytes": 127487,
+      "sha256": "55ffe7164b26b9a21e228ec7d6413960ff36c2575b8e0822d2ce22030693c5e1",
+      "fullPage": true
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-play-sheet.jpg",
+      "bytes": 62046,
+      "sha256": "cde5aa4744e5f11568c763bae78b87b25142515d51a8406d7ebb48b3217d7d6e",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-runner-entrance.jpg",
+      "bytes": 111558,
+      "sha256": "b6939a607b369c6359bdb99a57bf1d880317df00f847bd77674b5125209aab08",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-hangul-entrance.jpg",
+      "bytes": 90749,
+      "sha256": "b28b7f3233113e83136616e66c231826fac95c4741402d160eb603962b3ffc17",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\desktop-rhythm-entrance.jpg",
+      "bytes": 122389,
+      "sha256": "686da47b82d18f20eaee0d103da113fbbfe5580fe49c40845afb4d6df93995d3",
+      "fullPage": false
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\maru-v2\\os-reduced-lobby.jpg",
+      "bytes": 93313,
+      "sha256": "dddcb30b307fc1eeaabca10682c4b4594b0875bc8f31d446745754fe065b86ac",
+      "fullPage": false
+    }
+  ],
+  "errors": [],
+  "resources": [],
+  "blockedRequests": [],
+  "scope": "Six emulated Edge viewports: one-screen lobby, bottom sheets, three real game entrance headings, return/cleanup/focus, reduced motion, and opening handoff. No game starts, account mutations, or paid AI calls. This is not physical-device proof."
+}

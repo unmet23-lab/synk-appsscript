@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-10",
+  "browserCommand": "node experiences/brand-opening/qa/verify-runner-rotation.cjs",
+  "browserPassed": 221,
+  "browserFailed": 0,
+  "browserExitCode": 0,
+  "unitCommand": "node --test experiences/korean-runner/controls.test.mjs experiences/korean-runner/core.test.mjs experiences/korean-runner/audio.test.mjs",
+  "unitPassed": 20,
+  "unitFailed": 0,
+  "files": [
+    {
+      "path": "experiences/korean-runner/app.mjs",
+      "sha256": "7f7ae38bdf1a9d4768948e2d887e9fa0177fe1f9aea2ce23402b54a60f27089f"
+    },
+    {
+      "path": "experiences/korean-runner/style.css",
+      "sha256": "f4c1200e8f275c167c0a6c62043ea7d1a5f929325868a17dfe166657d354bcf9"
+    },
+    {
+      "path": "experiences/korean-runner/world.mjs",
+      "sha256": "dd419cc7b8b5826c2f3ccd6abe9e67d6948927ef5eeaf48c9dbe75a2709edb90"
+    },
+    {
+      "path": "experiences/brand-opening/qa/verify-runner-rotation.cjs",
+      "sha256": "8bd9259a2fa807623850288fb0d087381872b62104aba4607ff3fa69b379d414"
+    }
+  ],
+  "limits": [
+    "Headless Edge viewport/touch emulation, not a physical phone",
+    "Existing QA autopilot at scale 1, not a human learning test",
+    "Audio lifecycle measured; pronunciation and physical speakers not heard"
+  ],
+  "changes": [
+    "Cancel pending swipe immediately on resize or lost pointer capture",
+    "44px pause and text-help touch targets",
+    "Short landscape layout uses a right-side 2x2 action pad and compact guest account message; original account link and screen-reader status retained"
+  ]
+}

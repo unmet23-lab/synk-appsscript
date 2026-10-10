@@ -1,0 +1,16 @@
+cafe-apply-1: 어서오세요 어떤 음료로 드릴까요?
+cafe-apply-2: 가져가실 건가요?
+cafe-apply-3: 따뜻한 차가 준비됐어요. 매장에서 드시나요?
+cafe-visit-taste-1: 어서오세요 오늘은 어떤 음료를 드릴까요?
+cafe-visit-taste-2: 따뜻한 차를 몇 잔 준비할까요?
+cafe-visit-taste-3: 가져가실 건가요? 여기서 드실 건가요?
+cafe-visit-soldout-1: 오늘 주스는 품절이에요. 따뜻한 차는 주문하실 수 있어요.
+cafe-visit-soldout-2: 따뜻한 차 2점 맞으시죠?
+cafe-visit-soldout-3: 차가 준비됐어요? 매장에서 드시나요?
+cafe-visit-change-1: 따뜻한 주스 2잔! 아직 만들기 전이에요. 주문을 바꾸시겠어요?
+cafe-visit-change-2: 따뜻한 차 두 잔으로 바꿨어요 더 필요한 것이 있나요?
+cafe-visit-change-3: 세 잔 모두 매장에서 드실 건가요?
+cafe-compose-1: 어서 오세요. 어떤 음료를 몇 잔 준비할까요?
+cafe-compose-2: 따뜻한 차 2점 맞으시죠?
+cafe-compose-3: 가져가실 건가요? 여기서 드실 건가요?
+{"matched": 12, "total": 15}

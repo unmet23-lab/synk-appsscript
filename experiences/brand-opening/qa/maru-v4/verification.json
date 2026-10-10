@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-10",
+  "scope": "Local home plus three games, isolated Edge viewport rotation. No physical-device or public-deployment certification.",
+  "browserResults": {
+    "runner-result.json": {
+      "passed": 221,
+      "failed": 0
+    },
+    "rhythm-result.json": {
+      "passed": 255,
+      "failed": 0
+    },
+    "rhythm-probe.json": {
+      "passed": 76,
+      "failed": 0
+    },
+    "hangul-result.json": {
+      "passed": 129,
+      "failed": 0
+    },
+    "hangul-advanced-result.json": {
+      "passed": 181,
+      "failed": 0
+    }
+  },
+  "browserTotalPassed": 862,
+  "units": {
+    "hangul": {
+      "passed": 30,
+      "failed": 0
+    },
+    "runner": {
+      "passed": 20,
+      "failed": 0
+    },
+    "rhythm": {
+      "passed": 34,
+      "existingAppLearningFixtureFailures": 6
+    }
+  },
+  "files": [
+    {
+      "path": "experiences/brand-opening/home.html",
+      "sha256": "4e974f69fa52c5575d6f956381d83188ac7ac6221cb4ee032e9562acffbe40f8"
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "a122ace024e0621fe34ad2a8d3e5abad6f4353c89c1e9af652b345ea719b7e59"
+    },
+    {
+      "path": "experiences/brand-opening/home.mjs",
+      "sha256": "3a04fd47679ee924f97a2979cabc69b53ef6ffd3a30196fdde715f4b129d54b8"
+    },
+    {
+      "path": "experiences/hangul-stage/app.mjs",
+      "sha256": "7a8ddbdd02d2dd81bff44ad57f645d8ca5b6e288d666ae6caea33142781368af"
+    },
+    {
+      "path": "experiences/hangul-stage/style.css",
+      "sha256": "cb6a41ae9182f6c935bfc782c97721121076bdd2c9818ea355b37b0c1af580b3"
+    },
+    {
+      "path": "experiences/korean-runner/app.mjs",
+      "sha256": "7f7ae38bdf1a9d4768948e2d887e9fa0177fe1f9aea2ce23402b54a60f27089f"
+    },
+    {
+      "path": "experiences/korean-runner/style.css",
+      "sha256": "f4c1200e8f275c167c0a6c62043ea7d1a5f929325868a17dfe166657d354bcf9"
+    },
+    {
+      "path": "experiences/korean-rhythm/style.css",
+      "sha256": "38e28fee7b4268f851e02d783ae4a4cd1d40e20fcdd09ca97319f5f568abf24f"
+    },
+    {
+      "path": "experiences/korean-rhythm/stage.mjs",
+      "sha256": "3c3fd49d99b7bac2538fedd3997090f21af179ae313cf941ff4ebaa2aa3a62ef"
+    },
+    {
+      "path": "experiences/brand-opening/qa/verify-hangul-rotation.cjs",
+      "sha256": "9ad6c9ed3dfda36fbc1a586db993dcce4a708fb861b5b69c88dcbf96313302f2"
+    }
+  ]
+}
