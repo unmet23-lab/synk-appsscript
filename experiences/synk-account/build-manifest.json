@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "sdk": "2.117.2",
+  "sha256": {
+    "src/generated/account-client.cjs": "1cb49318dd26237734c29345c1bdda9d93c94f9c7d43ffd6d519283318451751",
+    "src/generated/world-learning-host.cjs": "928bf5228661dce8ce4507e39575b2791273bdfe6a90d26c51a7cc1b297222bd",
+    "assets/SUIT-Variable.woff2": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+    "assets/InterTight-700.woff2": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e",
+    "assets/scrapbook.css": "b565d9dfe0b7ad700587ba37031cd797709fca91a606b5e13646e14aed659572",
+    "assets/sticker-book.webp": "c16dbf3db9716ae6d7d44a9d3d87dc6dded858d4027fb2a2cf0e31a1222c633e",
+    "assets/thread-shift.webp": "123cc5ccf392346e5beffc2f195c3b0315fddcfb24881b33fefdba110061d483",
+    "assets/slab-coral-long.webp": "32b19166bd9253fc20c6ba7ed4c88870e269248710ea0354d0d87d81d0470cbe",
+    "assets/slab-cream-long.webp": "290fbf1b54679c534809f8a04714e87b9684361c59a51d0f5d2c1e064ea1cedd",
+    "assets/chip-blush-long.webp": "bb917c7113a1839f392076ad35d8cf40ff9f3c9c8fcd2e565f86eb33ecac1f33",
+    "dist/app.js": "0a4b61675a7fd0eefc8bf2ca6b0b20c9464197f0ddfba03ba1ac320a3b5b5bea",
+    "dist/client.js": "956d6ff95c149fd14499a1cba00d5f4df6a203f87853aeaf6195e8e2801a9093",
+    "dist/preview.js": "b12d07bb6399c379fdbd3aa628c638342bd8ceaaeb29c3c072f97b7c8b56fc12",
+    "preview.html": "992c83fe43ff529a608618ea31eea6903f3ac6d2bc5dc757edc92aec88764760"
+  }
+}

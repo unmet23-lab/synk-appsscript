@@ -6,11 +6,14 @@ const Core = require('./education');
 const Trail = require('./trail');
 const Learning = require('./learning');
 const Temper = require('./temper');
+const { createLearningSync, sameEvent } = require('./learning-sync');
 const KEY = 'synk.atlas.learning.v1';
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
-function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true } = {}) {
+function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
+  storageScope = 'device', accountKey = null } = {}) {
   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
+  if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
   let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null;
@@ -18,6 +21,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   let lastStoredRaw = Symbol('unread-history');
   let lastTime = 0;
   const active = new Map();
+  const listeners = new Set();
+  const notify = kind => { for (const listener of listeners) { try { listener({ kind }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
   const newSession = events => {
     lastTime = Math.max(lastTime, ...events.map(e => Date.parse(e.at)).filter(Number.isFinite));
@@ -27,7 +32,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     if (raw == null) return null;
     const value = JSON.parse(raw);
     if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 20000
-      || Object.keys(value).some(k => !['version', 'epoch', 'events'].includes(k))) throw new Error('Atlas: unreadable history');
+      || Object.keys(value).some(k => !['version', 'epoch', 'events', 'owner'].includes(k))) throw new Error('Atlas: unreadable history');
+    // An account store must have been created for this account. Merely passing
+    // account options over the guest device key never adopts its old events.
+    if (storageScope === 'account' ? value.owner !== accountKey : value.owner != null) throw new Error('Atlas: local history belongs to a different storage scope');
     // Validate ownership, event links and duplicate IDs before accepting stored data.
     newSession(value.events);
     return value;
@@ -49,19 +57,19 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     if (stored.epoch !== epoch) { epoch = stored.epoch; session = newSession(stored.events); active.clear(); return; }
     const combined = session.events(), known = new Map(combined.map(e => [e.id, e]));
     for (const e of stored.events) {
-      if (known.has(e.id)) { if (JSON.stringify(known.get(e.id)) !== JSON.stringify(e)) { readable = false; complete = false; throw new Error('Atlas: conflicting stored event'); } }
+      if (known.has(e.id)) { if (!sameEvent(known.get(e.id), e)) { readable = false; complete = false; throw new Error('Atlas: conflicting stored event'); } }
       else { known.set(e.id, e); combined.push(e); }
     }
     session = newSession(combined);
   }
-  function persist() {
-    if (!storage || !readable) { complete = false; return; }
+  function persist(kind = 'append') {
+    if (!storage || !readable) { complete = false; return false; }
     try {
       const events = session.events();
       if (events.length > 20000) throw new Error('Atlas: local history limit');
-      const raw = JSON.stringify({ version: 1, epoch, events });
-      storage.setItem(key, raw); lastStoredRaw = raw; writable = true;
-    } catch { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; }
+      const raw = JSON.stringify({ version: 1, epoch, events, ...(storageScope === 'account' ? { owner: accountKey } : {}) });
+      storage.setItem(key, raw); lastStoredRaw = raw; writable = true; notify(kind); return true;
+    } catch { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; return false; }
   }
   // Initialize one shared epoch before a second game/tab opens it.
   if (!initial && readable && storage) persist();
@@ -73,12 +81,34 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function summary() {
     refresh(); const observed = view();
     return { ...Learning.summarizeLearning({ summary: observed, map, complete: complete && readable && writable }),
-      storage: { available: readable && writable, scope: 'device', warning }, counts: Temper.measure(observed) };
+      storage: { available: readable && writable, scope: storageScope, warning }, counts: Temper.measure(observed) };
   }
   function requireActive(pid) {
     refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
   }
   return {
+    syncPort: Object.freeze({
+      scope: storageScope, accountKey,
+      events() { refresh(); return session.events(); },
+      subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
+      markComplete(value) { complete = value === true; },
+      importEvents(incoming) {
+        refresh();
+        if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
+        if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
+        const combined = session.events(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event]));
+        for (const event of incoming) {
+          if (known.has(event?.id)) {
+            if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
+          } else { known.set(event?.id, event);combined.push(event); }
+        }
+        // Construct before replacing: wrong scope, parent links, schema or IDs
+        // reject the entire incoming batch without changing the local log.
+        const imported = newSession(combined); session = imported;
+        if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
+        return { added: combined.length - previousLength };
+      },
+    }),
     summary,
     recommend(candidates, options = {}) {
       const profile = summary();
@@ -140,9 +170,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
     events() { refresh(); return session.events(); },
     reset() {
+      if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
       epoch = uid(); session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
       return summary();
     },
   };
 }
-module.exports = { createGame, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+module.exports = { createGame, createLearningSync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };

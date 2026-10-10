@@ -33,7 +33,7 @@ test('selected consumer syncs the shared files without touching the other app', 
   fs.unlinkSync(path.join(website, 'package.json'));
   const result = run('--consumer', 'talk');
   assert.equal(result.status, 0, result.stderr);
-  for (const name of ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js']) {
+  for (const name of ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js', 'learning-sync.js']) {
     assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)));
   }
   for (const name of ['index.js', 'maps/ko.json', 'maps/topik-i.json']) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));

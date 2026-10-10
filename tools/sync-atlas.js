@@ -18,7 +18,7 @@ const consumers = {
 };
 const targets = (selected.size ? [...selected] : Object.keys(consumers)).map(name => consumers[name]);
 // Validate every selected source/consumer before writing any copies.
-const sources = ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js']
+const sources = ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js', 'learning-sync.js']
   .map(name => [name, fs.readFileSync(path.join(root, 'atlas', name))]);
 sources.push(...['index.js', 'maps/ko.json', 'maps/topik-i.json'].map(name => ['strata/' + name, fs.readFileSync(path.join(root, 'strata', name))]));
 for (const [repo] of targets) {

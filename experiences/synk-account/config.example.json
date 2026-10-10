@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "supabaseUrl": "",
+  "supabasePublishableKey": "",
+  "accountApiUrl": "",
+  "portalUrl": "",
+  "learningUrl": "../learning-hub/",
+  "authorizationClients": [{ "product": "world", "clientId": "", "redirectUris": ["synktalk://oauth/callback"] }],
+  "clients": {
+    "platform": { "clientId": "", "redirectUri": "" },
+    "world": { "clientId": "", "redirectUri": "" }
+  }
+}

@@ -1,0 +1,478 @@
+diff --git a/atlas/game-learning.js b/atlas/game-learning.js
+index 0d4dff38d..c85d63cfa 100644
+--- a/atlas/game-learning.js
++++ b/atlas/game-learning.js
+@@ -6,11 +6,14 @@ const Core = require('./education');
+ const Trail = require('./trail');
+ const Learning = require('./learning');
+ const Temper = require('./temper');
++const { createLearningSync, sameEvent } = require('./learning-sync');
+ const KEY = 'synk.atlas.learning.v1';
+ const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+ const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+-function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true } = {}) {
++function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
++  storageScope = 'device', accountKey = null } = {}) {
+   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
++  if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
+   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
+   const key = `${KEY}.${learnerKey}`;
+   let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null;
+@@ -18,6 +21,8 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock
+   let lastStoredRaw = Symbol('unread-history');
+   let lastTime = 0;
+   const active = new Map();
++  const listeners = new Set();
++  const notify = kind => { for (const listener of listeners) { try { listener({ kind }); } catch { /* Host notifications cannot corrupt learning events. */ } } };
+   const monotonicClock = () => { const value = Date.parse(clock()); if (!Number.isFinite(value)) throw new TypeError('Atlas: invalid clock'); lastTime = Math.max(value, lastTime); return new Date(lastTime).toISOString(); };
+   const newSession = events => {
+     lastTime = Math.max(lastTime, ...events.map(e => Date.parse(e.at)).filter(Number.isFinite));
+@@ -27,7 +32,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock
+     if (raw == null) return null;
+     const value = JSON.parse(raw);
+     if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 20000
+-      || Object.keys(value).some(k => !['version', 'epoch', 'events'].includes(k))) throw new Error('Atlas: unreadable history');
++      || Object.keys(value).some(k => !['version', 'epoch', 'events', 'owner'].includes(k))) throw new Error('Atlas: unreadable history');
++    // An account store must have been created for this account. Merely passing
++    // account options over the guest device key never adopts its old events.
++    if (storageScope === 'account' ? value.owner !== accountKey : value.owner != null) throw new Error('Atlas: local history belongs to a different storage scope');
+     // Validate ownership, event links and duplicate IDs before accepting stored data.
+     newSession(value.events);
+     return value;
+@@ -49,19 +57,19 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock
+     if (stored.epoch !== epoch) { epoch = stored.epoch; session = newSession(stored.events); active.clear(); return; }
+     const combined = session.events(), known = new Map(combined.map(e => [e.id, e]));
+     for (const e of stored.events) {
+-      if (known.has(e.id)) { if (JSON.stringify(known.get(e.id)) !== JSON.stringify(e)) { readable = false; complete = false; throw new Error('Atlas: conflicting stored event'); } }
++      if (known.has(e.id)) { if (!sameEvent(known.get(e.id), e)) { readable = false; complete = false; throw new Error('Atlas: conflicting stored event'); } }
+       else { known.set(e.id, e); combined.push(e); }
+     }
+     session = newSession(combined);
+   }
+-  function persist() {
+-    if (!storage || !readable) { complete = false; return; }
++  function persist(kind = 'append') {
++    if (!storage || !readable) { complete = false; return false; }
+     try {
+       const events = session.events();
+       if (events.length > 20000) throw new Error('Atlas: local history limit');
+-      const raw = JSON.stringify({ version: 1, epoch, events });
+-      storage.setItem(key, raw); lastStoredRaw = raw; writable = true;
+-    } catch { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; }
++      const raw = JSON.stringify({ version: 1, epoch, events, ...(storageScope === 'account' ? { owner: accountKey } : {}) });
++      storage.setItem(key, raw); lastStoredRaw = raw; writable = true; notify(kind); return true;
++    } catch { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; return false; }
+   }
+   // Initialize one shared epoch before a second game/tab opens it.
+   if (!initial && readable && storage) persist();
+@@ -73,12 +81,34 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock
+   function summary() {
+     refresh(); const observed = view();
+     return { ...Learning.summarizeLearning({ summary: observed, map, complete: complete && readable && writable }),
+-      storage: { available: readable && writable, scope: 'device', warning }, counts: Temper.measure(observed) };
++      storage: { available: readable && writable, scope: storageScope, warning }, counts: Temper.measure(observed) };
+   }
+   function requireActive(pid) {
+     refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
+   }
+   return {
++    syncPort: Object.freeze({
++      scope: storageScope, accountKey,
++      events() { refresh(); return session.events(); },
++      subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
++      markComplete(value) { complete = value === true; },
++      importEvents(incoming) {
++        refresh();
++        if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
++        if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
++        const combined = session.events(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event]));
++        for (const event of incoming) {
++          if (known.has(event?.id)) {
++            if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
++          } else { known.set(event?.id, event);combined.push(event); }
++        }
++        // Construct before replacing: wrong scope, parent links, schema or IDs
++        // reject the entire incoming batch without changing the local log.
++        const imported = newSession(combined); session = imported;
++        if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
++        return { added: combined.length - previousLength };
++      },
++    }),
+     summary,
+     recommend(candidates, options = {}) {
+       const profile = summary();
+@@ -140,9 +170,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock
+     exclude(eventId) { refresh(); const event = session.exclude(eventId); persist(); return event; },
+     events() { refresh(); return session.events(); },
+     reset() {
++      if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
+       epoch = uid(); session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
+       return summary();
+     },
+   };
+ }
+-module.exports = { createGame, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
++module.exports = { createGame, createLearningSync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+diff --git a/atlas/learning-sync.js b/atlas/learning-sync.js
+new file mode 100644
+index 000000000..04bc68f51
+--- /dev/null
++++ b/atlas/learning-sync.js
+@@ -0,0 +1,163 @@
++'use strict';
++// Authenticated hosts provide the account-isolated stores and transport. This
++// module never discovers identities, adopts guest history, or uploads snapshots.
++const SYNC_KEY = 'synk.atlas.learning-sync.v1';
++const id = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
++const clone = value => JSON.parse(JSON.stringify(value));
++const canonical = value => JSON.stringify(value, function (_key, entry) {
++  return entry && typeof entry === 'object' && !Array.isArray(entry)
++    ? Object.fromEntries(Object.keys(entry).sort().map(key => [key, entry[key]])) : entry;
++});
++const sameEvent = (a, b) => canonical(a) === canonical(b);
++const failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
++const errorCode = error => error?.code || error?.error?.code || error?.body?.error?.code || 'NETWORK_ERROR';
++const FATAL = new Set(['REVISION_CONFLICT', 'LEARNING_DISABLED', 'EVENT_CONFLICT', 'INVALID_EVENTS', 'INVALID_RESPONSE', 'STORAGE_ERROR', 'UNAUTHORIZED']);
++
++function createLearningSync({ adapter, accountKey, revision, storage, transport, onStatus = () => {},
++  batchSize = 100, maxAttempts = 3, maxPages = 200, timeoutMs = 15000,
++  backoffMs = [500, 1500, 5000], sleep = ms => new Promise(resolve => setTimeout(resolve, ms)), auto = true } = {}) {
++  const port = adapter?.syncPort;
++  if (!id(accountKey) || !Number.isSafeInteger(revision) || revision < 1 || !port
++    || port.scope !== 'account' || port.accountKey !== accountKey || !storage?.getItem || !storage?.setItem
++    || typeof transport?.get !== 'function' || typeof transport?.post !== 'function') throw new TypeError('Atlas sync: an authenticated account adapter, isolated durable store and transport are required');
++  if (![batchSize, maxAttempts, maxPages, timeoutMs].every(n => Number.isInteger(n) && n > 0)
++    || batchSize > 500 || maxAttempts > 10 || !Array.isArray(backoffMs) || !backoffMs.length
++    || backoffMs.some(ms => !Number.isFinite(ms) || ms < 0)) throw new TypeError('Atlas sync: invalid retry bounds');
++  const key = `${SYNC_KEY}.${accountKey}`;
++  let state = { version: 1, accountKey, revision, cursor: 0, complete: false, acknowledged: [], pending: [] };
++  let phase = 'idle', code = null, message = null, stopped = false, started = false, generation = 0, running = null, timer = null;
++  const controllers = new Set();
++  const status = () => ({ phase, code, message, revision, cursor: state.cursor, queued: state.pending.length,
++    complete: state.complete && phase !== 'blocked' && phase !== 'stopped', accountKey, durable: code !== 'STORAGE_ERROR' });
++  const publish = () => { try { onStatus(status()); } catch { /* UI observers cannot change the log. */ } };
++  const block = error => { phase = 'blocked'; code = errorCode(error); message = error?.message || code; port.markComplete(false); publish(); };
++  const save = () => {
++    try { storage.setItem(key, JSON.stringify(state)); }
++    catch { throw failure('STORAGE_ERROR', 'Atlas sync: the durable outbox could not be saved'); }
++  };
++  try {
++    const raw = storage.getItem(key);
++    if (raw != null) {
++      const stored = JSON.parse(raw);
++      if (!stored || stored.version !== 1 || stored.accountKey !== accountKey || !Number.isSafeInteger(stored.cursor) || stored.cursor < 0
++        || typeof stored.complete !== 'boolean' || !Array.isArray(stored.acknowledged) || !stored.acknowledged.every(id)
++        || !Array.isArray(stored.pending) || stored.pending.some(e => !id(e?.id))
++        || stored.pending.length + stored.acknowledged.length > 40000) throw failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement');
++      if (stored.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: a new consent revision requires a fresh account store');
++      state = stored;
++    }
++    port.markComplete(state.complete);
++  } catch (error) { block(error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement')); }
++  const collect = () => {
++    const known = new Map(state.pending.map(event => [event.id, event])), acknowledged = new Set(state.acknowledged);
++    const local = port.events(), localById = new Map(local.map(event => [event.id, event]));
++    if (state.pending.some(event => !localById.has(event.id) || !sameEvent(localById.get(event.id), event))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
++    for (const event of local) {
++      if (known.has(event.id) && !sameEvent(known.get(event.id), event)) throw failure('EVENT_CONFLICT', 'Atlas sync: conflicting queued event');
++      if (!known.has(event.id) && !acknowledged.has(event.id)) { known.set(event.id, event); state.pending.push(clone(event)); }
++    }
++    save();
++  };
++  const schedule = () => {
++    if (!auto || !started || stopped || phase === 'blocked' || phase === 'offline' || timer) return;
++    timer = setTimeout(() => { timer = null; void run(); }, 0);
++  };
++  const unsubscribe = port.subscribe(change => {
++    if (stopped || phase === 'blocked' || change.kind === 'import') return;
++    try { collect(); publish(); schedule(); } catch (error) { block(error); }
++  });
++  if (phase !== 'blocked') { try { collect(); } catch (error) { block(error); } }
++  const active = token => !stopped && token === generation;
++  const request = async (method, body, token) => {
++    let last;
++    for (let attempt = 0; attempt < maxAttempts; attempt++) {
++      if (!active(token)) throw failure('STOPPED', 'Atlas sync: stopped');
++      const controller = new AbortController(); controllers.add(controller);
++      let deadline;
++      try {
++        const response = await Promise.race([
++          Promise.resolve().then(() => transport[method]({ ...body, signal: controller.signal })),
++          new Promise((_, reject) => {
++            deadline = setTimeout(() => { reject(failure('NETWORK_ERROR', 'Atlas sync: request timed out')); controller.abort(); }, timeoutMs);
++            controller.signal.addEventListener('abort', () => reject(failure('STOPPED', 'Atlas sync: request cancelled')), { once: true });
++          }),
++        ]);
++        if (!active(token)) throw failure('STOPPED', 'Atlas sync: stale request');
++        if (response?.ok === false) throw failure(response.error?.code || 'INVALID_RESPONSE', response.error?.message || 'Atlas sync: rejected', { revision: response.revision });
++        if (!response || response.revision !== revision) throw failure('REVISION_CONFLICT', 'Atlas sync: server revision changed', { revision: response?.revision });
++        return response;
++      } catch (error) {
++        last = error;
++        if (!active(token) || FATAL.has(errorCode(error))) throw error;
++      } finally { clearTimeout(deadline); controllers.delete(controller); }
++      if (attempt + 1 < maxAttempts) await sleep(backoffMs[Math.min(attempt, backoffMs.length - 1)]);
++    }
++    throw last;
++  };
++  const pullPages = async token => {
++    for (let page = 0; page < maxPages; page++) {
++      const before = state.cursor, response = await request('get', { after: before, revision }, token);
++      if (!Array.isArray(response.events) || !Number.isSafeInteger(response.cursor) || response.cursor < before
++        || typeof response.hasMore !== 'boolean' || response.hasMore && response.cursor <= before
++        || response.events.length && response.cursor <= before) throw failure('INVALID_RESPONSE', 'Atlas sync: invalid or stalled server cursor');
++      if (!active(token)) return;
++      try { port.importEvents(response.events); }
++      catch (error) { throw failure(error?.code || 'INVALID_EVENTS', error.message); }
++      const remote = new Set(state.acknowledged);
++      for (const event of response.events) remote.add(event.id);
++      state.acknowledged = [...remote]; state.pending = state.pending.filter(event => !remote.has(event.id)); state.cursor = response.cursor;
++      if (!response.hasMore) state.complete = true;
++      save(); port.markComplete(state.complete); publish();
++      if (!response.hasMore) return;
++    }
++    throw failure('INVALID_RESPONSE', 'Atlas sync: page limit exceeded');
++  };
++  const flushQueue = async token => {
++    let emptyAcks = 0;
++    for (let batch = 0; batch < maxPages; batch++) {
++      collect(); if (!state.pending.length) return;
++      const events = state.pending.slice(0, batchSize).map(clone), sent = new Set(events.map(event => event.id));
++      const response = await request('post', { revision, events }, token);
++      if (!Array.isArray(response.accepted) || new Set(response.accepted).size !== response.accepted.length
++        || response.accepted.some(eventId => !sent.has(eventId))) throw failure('INVALID_RESPONSE', 'Atlas sync: acknowledgement contains an unsent event');
++      if (!active(token)) return;
++      if (!response.accepted.length) {
++        if (++emptyAcks >= maxAttempts) throw failure('NETWORK_ERROR', 'Atlas sync: no acknowledged progress');
++        await sleep(backoffMs[Math.min(emptyAcks - 1, backoffMs.length - 1)]);continue;
++      }
++      emptyAcks = 0;
++      const accepted = new Set(response.accepted), acknowledged = new Set(state.acknowledged);
++      for (const eventId of accepted) acknowledged.add(eventId);
++      state.acknowledged = [...acknowledged]; state.pending = state.pending.filter(event => !accepted.has(event.id)); save(); publish();
++    }
++    throw failure('NETWORK_ERROR', 'Atlas sync: batch limit reached; remaining events stay queued');
++  };
++  function run(pullOnly = false) {
++    if (running) return running;
++    if (stopped || phase === 'blocked') return Promise.resolve(status());
++    const token = generation;phase = 'syncing';code = null;message = null;publish();
++    running = (async () => {
++      try {
++        await pullPages(token);
++        if (active(token) && !pullOnly) await flushQueue(token);
++        if (active(token)) { phase = 'synced';code = null;message = null;publish(); }
++      } catch (error) {
++        if (active(token)) {
++          if (FATAL.has(errorCode(error))) block(error);
++          else { phase = 'offline';code = errorCode(error);message = error?.message || code;publish(); }
++        }
++      } finally { running = null; }
++      return status();
++    })();
++    return running;
++  }
++  return Object.freeze({
++    start() { started = true;return run(); },
++    pull: () => run(true), flush: () => run(), retry: () => run(), status,
++    stop() {
++      if (!stopped) { stopped = true;generation++;clearTimeout(timer);timer = null;unsubscribe();for (const controller of controllers) controller.abort();phase = 'stopped';publish(); }
++      return status();
++    },
++  });
++}
++module.exports = { createLearningSync, sameEvent, SYNC_KEY };
+diff --git a/tests/atlas-learning-sync.test.js b/tests/atlas-learning-sync.test.js
+new file mode 100644
+index 000000000..5b04ab272
+--- /dev/null
++++ b/tests/atlas-learning-sync.test.js
+@@ -0,0 +1,162 @@
++'use strict';
++const test = require('node:test');
++const assert = require('node:assert/strict');
++const { createGame, createLearningSync, KEY } = require('../atlas/game-learning');
++const { SYNC_KEY, sameEvent } = require('../atlas/learning-sync');
++const Atlas = require('../atlas/engine');
++const { createMap } = require('../strata');
++const map = createMap(require('../strata/maps/topik-i.json'));
++const copy = value => JSON.parse(JSON.stringify(value));
++const scope = { domain: 'LAB', workspace: 'learning', subject: 'device' };
++const disk = () => { const values = new Map();return { values, getItem: k => values.get(k) ?? null, setItem: (k, v) => values.set(k, v) }; };
++const error = (code, revision = 1) => Object.assign(new Error(code), { code, revision });
++function server({ pageSize = 100, partial = false } = {}) {
++  const s = { revision: 1, enabled: true, offline: false, log: [], gets: [], posts: [], lostAck: false };
++  const check = revision => { if (s.offline) throw new Error('offline');if (!s.enabled) throw error('LEARNING_DISABLED', s.revision);if (revision !== s.revision) throw error('REVISION_CONFLICT', s.revision); };
++  s.get = async ({ after, revision }) => {
++    s.gets.push(after);check(revision);const events = copy(s.log.slice(after, after + pageSize));
++    return { events, cursor: after + events.length, hasMore: after + events.length < s.log.length, revision: s.revision };
++  };
++  s.post = async ({ revision, events }) => {
++    s.posts.push(copy(events));check(revision);
++    const accepted = partial ? events.slice(0, Math.max(1, Math.floor(events.length / 2))) : events;
++    const combined = copy(s.log);
++    for (const event of accepted) {
++      const prior = combined.find(e => e.id === event.id);
++      if (prior && !sameEvent(prior, event)) throw error('EVENT_CONFLICT');
++      if (!prior) combined.push(copy(event));
++    }
++    Atlas.createSession({ scope, events: combined });s.log = combined;
++    if (s.lostAck) { s.lostAck = false;throw new Error('ack lost'); }
++    return { accepted: accepted.map(e => e.id), revision: s.revision };
++  };
++  return s;
++}
++function client(s, { storage = disk(), accountKey = 'account.a', revision = 1, options = {}, gameId = 'test-game' } = {}) {
++  const adapter = createGame({ gameId, map, storage, storageScope: 'account', accountKey, historyComplete: false });
++  const sync = createLearningSync({ adapter, accountKey, revision, storage, transport: s, auto: false,
++    maxAttempts: 3, backoffMs: [0], sleep: async () => {}, ...options });
++  const answer = (id = `item.${Date.now()}.${Math.random().toString(36).slice(2)}`) => {
++    const pid = adapter.present({ id, itemKey: id, familyKey: id, skillId: 'ko.reading.detail', difficulty: 1,
++      responseFormat: 'single-choice', modality: 'reading', audioRequired: false, confounded: false });
++    return adapter.answer(pid, { correct: true, assessable: true });
++  };
++  return { adapter, sync, storage, answer };
++}
++
++test('append-only events converge on another device through advancing pages without changing evidence', async () => {
++  const s = server({ pageSize: 2 }), a = client(s);await a.sync.start();a.answer('original');
++  const source = a.adapter.events();assert.equal((await a.sync.flush()).queued, 0);assert.deepEqual(s.log, source);
++  assert.ok(s.posts.every(batch => Array.isArray(batch) && batch.every(e => typeof e.type === 'string')));
++  const b = client(s, { gameId: 'second-game' });await b.sync.start();
++  assert.deepEqual(b.adapter.events(), source);assert.equal(b.adapter.summary().independent, 1);
++  assert.equal(b.sync.status().cursor, source.length);assert.equal(b.sync.status().queued, 0);
++  assert.equal(s.posts.length, 1);assert.equal(source.find(e => e.type === 'decision.made').candidateSnapshot[0].learning.policy, 'learning-priority-2');
++  a.sync.stop();b.sync.stop();
++});
++
++test('lost acknowledgement retries identical event IDs and bodies without replacing the server log', async () => {
++  const s = server(), c = client(s);await c.sync.start();c.answer();s.lostAck = true;
++  await c.sync.flush();assert.equal(c.sync.status().queued, 0);assert.equal(s.posts.length, 2);
++  assert.deepEqual(s.posts[0], s.posts[1]);assert.equal(s.log.length, c.adapter.events().length);c.sync.stop();
++});
++
++test('partial acknowledgement removes only accepted IDs and retries the remaining ordered events', async () => {
++  const s = server({ partial: true }), c = client(s);await c.sync.start();c.answer();await c.sync.flush();
++  assert.ok(s.posts.length > 1);assert.equal(c.sync.status().queued, 0);
++  const firstAccepted = s.posts[0].slice(0, Math.floor(s.posts[0].length / 2)).map(e => e.id);
++  assert.ok(s.posts[1].every(e => !firstAccepted.includes(e.id)));assert.deepEqual(s.log, c.adapter.events());c.sync.stop();
++});
++
++test('offline outbox survives closing and a new instance resumes without adopting guest storage', async () => {
++  const s = server(), storage = disk(), a = client(s, { storage });await a.sync.start();a.answer('offline.item');
++  const source = a.adapter.events();s.offline = true;await a.sync.flush();assert.equal(a.sync.status().phase, 'offline');
++  assert.equal(JSON.parse(storage.getItem(`${SYNC_KEY}.account.a`)).pending.length, source.length);a.sync.stop();
++  s.offline = false;const b = client(s, { storage });await b.sync.start();
++  assert.deepEqual(s.log, source);assert.equal(b.sync.status().queued, 0);b.sync.stop();
++  const guest = createGame({ gameId: 'guest', map, storage: disk() });
++  assert.throws(() => createLearningSync({ adapter: guest, accountKey: 'account.a', revision: 1, storage: disk(), transport: s }), /authenticated account adapter/);
++});
++
++test('a stopped account cannot apply an old pull response or acknowledge an old upload', async () => {
++  const source = client(server());await source.sync.start();source.answer();const events = source.adapter.events();source.sync.stop();
++  let resolvePull;
++  const transport = { get: () => new Promise(resolve => { resolvePull = resolve; }), post: async () => assert.fail('stopped account uploaded') };
++  const a = client(transport), request = a.sync.start();await Promise.resolve();a.sync.stop();
++  resolvePull({ events, cursor: events.length, hasMore: false, revision: 1 });await request;
++  assert.equal(a.adapter.events().length, 0);assert.equal(a.sync.status().cursor, 0);assert.equal(a.sync.status().phase, 'stopped');
++  const s = server(), b = client(s);await b.sync.start();b.answer();let resolvePost;
++  s.post = () => new Promise(resolve => { resolvePost = resolve; });
++  const upload = b.sync.flush();while (!resolvePost) await new Promise(resolve => setImmediate(resolve));
++  const queued = b.sync.status().queued;b.sync.stop();resolvePost({ accepted: b.adapter.events().map(e => e.id), revision: 1 });await upload;
++  assert.equal(b.sync.status().queued, queued);assert.equal(b.sync.status().phase, 'stopped');
++});
++
++test('revision change, disabled consent and event conflict block retries and preserve the old outbox', async () => {
++  for (const code of ['REVISION_CONFLICT', 'LEARNING_DISABLED', 'EVENT_CONFLICT']) {
++    const s = server(), c = client(s);await c.sync.start();c.answer();let calls = 0;
++    s.get = async () => { calls++;throw error(code, 2); };await c.sync.flush();
++    assert.equal(c.sync.status().phase, 'blocked');assert.equal(c.sync.status().code, code);assert.equal(calls, 1);assert.ok(c.sync.status().queued > 0);
++    assert.equal((await c.sync.retry()).code, code);assert.equal(calls, 1);c.sync.stop();
++  }
++});
++
++test('reusing an old consent store for a new revision is blocked before any network call', async () => {
++  const s = server(), storage = disk(), a = client(s, { storage });await a.sync.start();a.answer();a.sync.stop();
++  const before = storage.getItem(`${SYNC_KEY}.account.a`), calls = s.gets.length;
++  const b = client(s, { storage, revision: 2 });await b.sync.start();
++  assert.equal(b.sync.status().code, 'REVISION_CONFLICT');assert.equal(s.gets.length, calls);assert.equal(storage.getItem(`${SYNC_KEY}.account.a`), before);b.sync.stop();
++});
++
++test('stalled cursors, unsent acknowledgements and conflicting imported IDs cannot erase pending work', async () => {
++  const c = client({ get: async () => ({ events: [], cursor: 0, hasMore: true, revision: 1 }), post: async () => assert.fail() });
++  await c.sync.start();assert.equal(c.sync.status().code, 'INVALID_RESPONSE');c.sync.stop();
++  const s = server(), d = client(s);await d.sync.start();d.answer();s.post = async () => ({ accepted: ['not.sent'], revision: 1 });
++  await d.sync.flush();assert.equal(d.sync.status().code, 'INVALID_RESPONSE');assert.ok(d.sync.status().queued > 0);d.sync.stop();
++  const source = d.adapter.events(), conflicting = copy(source);conflicting[0].policy = 'not-the-original-policy';
++  assert.throws(() => d.adapter.syncPort.importEvents(conflicting), /conflicting/);assert.deepEqual(d.adapter.events(), source);
++});
++
++test('JSON property order is immaterial while duplicate raw event content remains exact', async () => {
++  const s = server(), c = client(s);await c.sync.start();c.answer();const source = c.adapter.events();
++  const reordered = source.map(event => Object.fromEntries(Object.entries(event).reverse()));
++  assert.equal(c.adapter.syncPort.importEvents(reordered).added, 0);assert.deepEqual(c.adapter.events(), source);c.sync.stop();
++});
++
++test('transient failures have bounded attempts and backoff and can be retried explicitly', async () => {
++  const s = server(), delays = [], c = client(s, { options: { maxAttempts: 3, backoffMs: [10, 20], sleep: async ms => delays.push(ms) } });
++  s.offline = true;await c.sync.start();assert.equal(s.gets.length, 3);assert.deepEqual(delays, [10, 20]);
++  assert.equal(c.sync.status().phase, 'offline');s.offline = false;await c.sync.retry();assert.equal(c.sync.status().phase, 'synced');c.sync.stop();
++});
++
++test('a hanging transport times out within bounded retries', async () => {
++  let calls = 0;const c = client({ get: () => { calls++;return new Promise(() => {}); }, post: async () => assert.fail() },
++    { options: { maxAttempts: 2, timeoutMs: 5 } });
++  await c.sync.start();assert.equal(calls, 2);assert.equal(c.sync.status().phase, 'offline');c.sync.stop();
++});
++
++test('account reset cannot masquerade as deleting remote records; device reset is unchanged', async () => {
++  const s = server(), c = client(s);await c.sync.start();c.answer();await c.sync.flush();const before = copy(s.log);
++  assert.throws(() => c.adapter.reset(), { code: 'ACCOUNT_RESET_REQUIRED' });assert.deepEqual(s.log, before);c.sync.stop();
++  const guest = createGame({ gameId: 'guest', map, storage: disk() });assert.equal(guest.reset().independent, 0);
++});
++
++test('corrupt or unavailable outbox storage is preserved and prevents transmission', async () => {
++  const storage = disk(), s = server();storage.setItem(`${SYNC_KEY}.account.a`, 'broken');
++  const c = client(s, { storage });await c.sync.start();assert.equal(c.sync.status().code, 'STORAGE_ERROR');assert.equal(storage.getItem(`${SYNC_KEY}.account.a`), 'broken');assert.equal(s.gets.length, 0);c.sync.stop();
++  const limited = disk(), d = client(s, { storage: limited });await d.sync.start();
++  const set = limited.setItem;limited.setItem = (key, value) => { if (key.startsWith(SYNC_KEY)) throw new Error('quota');set(key, value); };
++  d.answer();assert.equal(d.sync.status().code, 'STORAGE_ERROR');assert.ok(limited.getItem(`${KEY}.device`));d.sync.stop();
++});
++
++test('passing account options over a guest or another account store never adopts that history', async () => {
++  const storage = disk(), guest = createGame({ gameId: 'guest', map, storage });
++  const pid = guest.present({ id: 'guest.item', itemKey: 'guest.item', skillId: 'ko.reading.detail', modality: 'reading', difficulty: 1 });
++  guest.answer(pid, { correct: true, assessable: true });const original = storage.getItem(`${KEY}.device`);
++  const s = server(), adopted = client(s, { storage });await adopted.sync.start();
++  assert.equal(adopted.sync.status().code, 'STORAGE_ERROR');assert.equal(adopted.adapter.summary().independent, 0);
++  assert.equal(storage.getItem(`${KEY}.device`), original);assert.equal(s.posts.length, 0);adopted.sync.stop();
++  const proper = client(s);await proper.sync.start();proper.answer();proper.sync.stop();
++  const wrongAccount = client(s, { storage: proper.storage, accountKey: 'account.b' });await wrongAccount.sync.start();
++  assert.equal(wrongAccount.sync.status().code, 'STORAGE_ERROR');assert.equal(wrongAccount.adapter.events().length, 0);wrongAccount.sync.stop();
++});
+diff --git a/tests/sync-atlas.test.js b/tests/sync-atlas.test.js
+index 08a1d9b7e..ed4978b56 100644
+--- a/tests/sync-atlas.test.js
++++ b/tests/sync-atlas.test.js
+@@ -33,7 +33,7 @@ test('selected consumer syncs the shared files without touching the other app',
+   fs.unlinkSync(path.join(website, 'package.json'));
+   const result = run('--consumer', 'talk');
+   assert.equal(result.status, 0, result.stderr);
+-  for (const name of ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js']) {
++  for (const name of ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js', 'learning-sync.js']) {
+     assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas', name)), fs.readFileSync(path.join(root, 'atlas', name)));
+   }
+   for (const name of ['index.js', 'maps/ko.json', 'maps/topik-i.json']) assert.deepEqual(fs.readFileSync(path.join(talk, 'lib/atlas/strata', name)), fs.readFileSync(path.join(root, 'strata', name)));
+diff --git a/tools/sync-atlas.js b/tools/sync-atlas.js
+index 58afadbf8..8696709e4 100644
+--- a/tools/sync-atlas.js
++++ b/tools/sync-atlas.js
+@@ -18,7 +18,7 @@ const consumers = {
+ };
+ const targets = (selected.size ? [...selected] : Object.keys(consumers)).map(name => consumers[name]);
+ // Validate every selected source/consumer before writing any copies.
+-const sources = ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js']
++const sources = ['engine.js', 'experiences.js', 'preferences.js', 'education.js', 'vellum.js', 'trail.js', 'temper.js', 'learning.js', 'game-learning.js', 'learning-sync.js']
+   .map(name => [name, fs.readFileSync(path.join(root, 'atlas', name))]);
+ sources.push(...['index.js', 'maps/ko.json', 'maps/topik-i.json'].map(name => ['strata/' + name, fs.readFileSync(path.join(root, 'strata', name))]));
+ for (const [repo] of targets) {
