@@ -230,3 +230,5 @@
 @media(prefers-reduced-motion:reduce){:root body *{transition:none!important}}
 /* 휴대폰: iOS 입력 확대를 막는 16px(앞 층 messenger-design.css의 700px 이하 규칙과 같게, 10-10 공식 검수 P2) */
 @media(max-width:700px){:root body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
+/* 높은 대비 모드: 입력·단추 초점을 윤곽선으로(5판 공식 검수 P3) */
+@media(forced-colors:active){:root body :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root body :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}}

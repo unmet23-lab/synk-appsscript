@@ -607,6 +607,16 @@
 
 /* 휴대폰: 16px보다 작은 입력 칸은 iOS가 누를 때 화면을 확대한다. 앞 층처럼 700px 이하에서는 16px로 둔다(10-10 공식 검수 P2) */
 @media(max-width:700px){:root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
+/* 휴대폰: 16px 날짜 칸 두 개를 나란히 두기엔 좁다 — 이력 「날짜 직접 선택」과 작업실 트렌드 필터를 420px 이하에서 한 줄에 하나씩(5판 공식 검수 P3) */
+@media(max-width:420px){
+  :root .synk-workspace .gh-custom label{flex:1 1 100%}
+  :root .synk-workspace .wr-daily-filters{grid-template-columns:minmax(0,1fr)}
+}
+/* 높은 대비 모드에서는 그림자·테두리색이 사라진다 — 입력·단추 초점을 윤곽선으로 보인다(5판 공식 검수 P3) */
+@media(forced-colors:active){
+  :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,
+  :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}
+}
 /* 휴대폰: 날짜 칸이 16px가 되면 한 줄(‹ 시작 — 끝 ›)에 다 들어가지 않는다 — 시작·끝을 위아래로 쌓고 화살표는 양옆에 둔다 */
 @media(max-width:520px){
   :root .synk-workspace .marketing-context-bar .date-control{display:grid;grid-template-columns:32px minmax(0,1fr) 32px;grid-template-rows:auto auto;align-items:center;gap:2px 6px;min-height:0;padding:6px}

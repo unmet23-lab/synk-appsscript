@@ -120,3 +120,7 @@
 @media(prefers-reduced-motion:reduce){:root *{transition:none!important}}
 /* 휴대폰: iOS 입력 확대를 막는 16px(큰 글씨 모드는 앞 층 17px 그대로, 10-10 공식 검수 4판 P2) */
 @media(max-width:700px){:root:not([data-text-size=large]) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
+/* 로컬 연결 모드의 일회용 코드는 앞 층처럼 크게(22px) 둔다 — 위 16px 규칙보다 구체적으로(5판 공식 검수 P3) */
+@media(max-width:700px){:root:not([data-text-size=large]) .connection-result input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]){font-size:22px!important}}
+/* 높은 대비 모드: 입력·단추 초점을 윤곽선으로 */
+@media(forced-colors:active){:root :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}}
