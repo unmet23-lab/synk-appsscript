@@ -10,6 +10,7 @@ const sources={
   'chip.webp':account+'chip-blush-long.webp','laptop.webp':account+'laptop-felt.webp',
   'world.png':'desktop/assets/world.png','messenger.png':'desktop/assets/messenger.png',
   'world-cover.webp':'experiences/korean-rhythm/assets/signal-stage.webp',
+  'world-book.avif':'docs/Loom_자산/구움/공방_책.avif',
   'teacher-cover.png':'docs/디자인/웹_단락이미지/20260919/lab-presentation.png',
   'shift-cover.png':'docs/디자인/웹_단락이미지/20260919/shift-ai-workshop.png',
   'path-cover.png':'docs/디자인/웹_단락이미지/20260919/path-study-plan.png',

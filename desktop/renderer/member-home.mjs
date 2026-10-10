@@ -11,7 +11,7 @@ const canSave=library=>library?.status==='ready'&&!!library.owner&&library.owner
 const activeApp=id=>id==='partners'?'pulse':id;
 const arrow='<svg class="i" aria-hidden="true"><use href="#i-arrow-right"/></svg>';
 // 싱ㅋ 시그널 2 포스터(표시 전용): 누끼 물건은 제 색으로 세우고, 장면 그림은 이중톤, 흰 바탕 사진은 인화지로 붙인다.
-const CUTOUT_ART=new Set(['laptop.webp','care-note.webp','fortune-star.avif','studio-camera.webp']);
+const CUTOUT_ART=new Set(['world-book.avif','laptop.webp','care-note.webp','fortune-star.avif','studio-camera.webp']);
 const artMode=cover=>CUTOUT_ART.has(cover)?'cut':/-cover\.webp$/.test(cover)?'scene':'print';
 const posterArt=(id,className)=>{const cover=APPS[id]?.cover;if(!cover)return '';const mode=artMode(cover);return '<span class="'+className+' is-'+mode+'" aria-hidden="true"><img class="art-'+mode+'" src="/assets/launcher/'+esc(cover)+'" alt="" decoding="async"></span>';};
 const posterWord=(id,className)=>{const lines=String(APPS[id]?.word||APPS[id]?.short||'').split('\n'),len=Math.max(...lines.map(line=>line.replace(/\s/g,'').length),1);return '<span class="'+className+(lines.length>1?' two-line':'')+'" style="--len:'+len+'" aria-hidden="true">'+lines.map(esc).join('<br>')+'</span>';};

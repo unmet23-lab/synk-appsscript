@@ -68,6 +68,12 @@
       "sha256": "de50792266bbafb375e85be5b34799b6039246087c1146509a814643cc44d7be"
     },
     {
+      "name": "world-book.avif",
+      "source": "docs/Loom_자산/구움/공방_책.avif",
+      "bytes": 790910,
+      "sha256": "1b764c1a17ebe67d55dd6b66d56dfdfd0858575cc9e2db7a0910b661dab8be0e"
+    },
+    {
       "name": "teacher-cover.png",
       "source": "docs/디자인/웹_단락이미지/20260919/lab-presentation.png",
       "bytes": 1588616,

@@ -98,7 +98,7 @@ if(!process.versions.electron){
       check('explicit-logout-opens-choice',await until("document.getElementById('leave-dialog').open"));await decide('discard');
       check('explicit-logout-clears-draft-and-keeps-server-records',await until(calls('logout')+'===1&&'+"!document.querySelector('[data-note-form]')")&&!await guarded()&&await run("window.__continuityExitQA.record('exit-a').state.notes.length===2&&window.__continuityExitQA.record('exit-b').state.notes.length===0"));
       await account('exit-a',6);check('saved-account-note-restores-after-new-session',await until(field+"&&!"+field+".disabled&&document.querySelector('.continuity-notes').textContent.includes('저장 응답을 기다리는 메모')"));
-      check('local-launcher-images-load-before-exit',await until("['world-cover.webp','racing.jpg','runner.jpg','rhythm.jpg'].every(name=>[...document.images].some(img=>img.src.endsWith('/'+name)&&img.complete&&img.naturalWidth>0))"));
+      check('local-launcher-images-load-before-exit',await until("['world-book.avif','racing.jpg','runner.jpg','rhythm.jpg'].every(name=>[...document.images].some(img=>img.src.endsWith('/'+name)&&img.complete&&img.naturalWidth>0))"));
       check('no-console-errors-during-connected-session',errors.length===0,{errors});
       await draft('실제 창 닫기로 버릴 최종 초안');nativeChoice=1;stage='native-final-explicit-discard';win.close();await pause(160);
       check('native-explicit-discard-closes-window',win.isDestroyed()&&prompts.length===3);
