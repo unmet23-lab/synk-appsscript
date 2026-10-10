@@ -1,0 +1,63 @@
+{
+  "status": "PASS_FOR_REQUESTED_REAL_ACCOUNT_UI_FLOW",
+  "completedAt": "2026-10-10T10:48:43.647Z",
+  "scope": "Current installed Platform normal UI: login, logout, same-account login, account-note restoration",
+  "installedAsarSHA256": "a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53",
+  "evidence": "actual-ui-resume1.json",
+  "evidenceSHA256": "859ea6cf8bd614306756e07e8959292a6b9772ff4a0eb0e916214ef90b6be80d",
+  "installationEvidence": "current-preflight-resume1.json",
+  "cases": [
+    {
+      "id": "pc-existing-login-and-notes",
+      "status": "PASS"
+    },
+    {
+      "id": "pc-logout-and-same-account-login",
+      "status": "PASS"
+    },
+    {
+      "id": "pc-account-notes-restored-after-login",
+      "status": "PASS"
+    }
+  ],
+  "before": {
+    "total": 5,
+    "completed": 5,
+    "pending": 0,
+    "recovery": 1
+  },
+  "after": {
+    "total": 5,
+    "completed": 5,
+    "pending": 0,
+    "recovery": 1
+  },
+  "sameFiveItems": true,
+  "sameRecoveryRecord": true,
+  "logoutAccountRecordsHidden": true,
+  "finalSignedIn": true,
+  "passwordOrCodeEnteredByAgent": false,
+  "noteMutationActions": 0,
+  "noteDeletionActions": 0,
+  "recoveryDeletionActions": 0,
+  "normalProfileFilesRead": false,
+  "vaultRead": false,
+  "credentialsRead": false,
+  "accountIdentifierRecorded": false,
+  "memoContentRecordedInArtifact": false,
+  "uiObservationSource": "Official Windows Computer Use, normal installed Platform UI",
+  "limits": [
+    "Logout toast wording was not captured before expiration.",
+    "Server token revocation was not independently checked with a protected server request.",
+    "Normal tray quit/reopen, PC/web write roundtrip, teacher/student, physical phone, OS notification, and physical IME are outside this acceptance."
+  ],
+  "previousDeferralEvidence": "result-deferred-before-resume.json",
+  "followupRequestedTests": {
+    "normalQuitAndReopen": "NOT_RUN",
+    "pcWebNoteRoundtrip": "NOT_RUN",
+    "reason": "User physical Escape stopped Computer Use before normal quit or new QA-note write; user then requested commit and close.",
+    "normalQuitPerformed": false,
+    "newQANoteWritten": false,
+    "resumeFrom": "Recheck current installation and account/unsaved input, then use normal tray Fully quit."
+  }
+}

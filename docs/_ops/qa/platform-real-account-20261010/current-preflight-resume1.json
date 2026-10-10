@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-10T10:50:39.029Z",
+  "currentASARSHA256": "a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53",
+  "bytes": 24522863,
+  "metadataSourceHashNotUsedAsCurrentCodeProof": true,
+  "installedDesign": "Latest WORLD felt-book Platform UI",
+  "actualArchiveCompared": true,
+  "contractFiles": [
+    {
+      "file": "runtime.json",
+      "ok": true
+    },
+    {
+      "file": "package.json",
+      "ok": true
+    },
+    {
+      "file": "src/main.cjs",
+      "ok": true
+    },
+    {
+      "file": "src/auth-service.cjs",
+      "ok": true
+    },
+    {
+      "file": "renderer/launcher.mjs",
+      "ok": true
+    },
+    {
+      "file": "renderer/platform-continuity.mjs",
+      "ok": true
+    },
+    {
+      "file": "renderer/draft-recovery.mjs",
+      "ok": true
+    }
+  ],
+  "normalProfileFilesRead": false,
+  "vaultRead": false,
+  "credentialsRead": false,
+  "ok": true
+}
