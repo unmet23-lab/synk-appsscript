@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-10T02:05:21.640Z",
+  "summary": {
+    "world": {
+      "payloadFiles": 74,
+      "installedFiles": 75,
+      "extraInInstalled": [
+        "Uninstall SYNKWorldPreview.exe"
+      ],
+      "missingFromInstalled": [],
+      "differentBytes": [],
+      "asar": "0840f2e6f7f698b887b6ad0eb39b4bad11dc40db9d6854168e15590df770f170"
+    },
+    "messenger": {
+      "payloadFiles": 75,
+      "installedFiles": 76,
+      "extraInInstalled": [
+        "Uninstall SYNKMessengerPreview.exe"
+      ],
+      "missingFromInstalled": [],
+      "differentBytes": [],
+      "asar": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a"
+    }
+  }
+}

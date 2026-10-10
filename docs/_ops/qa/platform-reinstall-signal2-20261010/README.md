@@ -32,9 +32,19 @@
 - 절차는 10-10 `install-platform-v2.ps1`과 같다([install.ps1](install.ps1)): SYNK 앱 세 개가 꺼져 있는지 확인(끄지 않고, 켜져 있으면 거절) → 설치 파일·설치본 해시 확인 → 프로그램 폴더 전체를 `.tmp/platform-reinstall-signal2-20261010/installed-program-backup`(643MB)에 복사하고 파일마다 해시 대조 → NSIS `/S` → 설치된 payload 76개 바이트·해시, 폴더 파일 목록 정확히 76개 + 제거 프로그램, 연결 지점 없음.
 - 설치 프로그램 종료 코드 0, 11:01:01~11:01:43. 위 확인 89개 통과.
 - `install.ps1`은 다음 단계에서 멈췄다. 제거 키의 `InstallLocation`을 읽게 짰는데, 이 빌더는 그 칸을 쓰지 않는다(설치 위치는 앱 키에 있다). 영수증 [installed-platform.json](installed-platform.json)은 `installed:false`로 그대로 두었다. 설치를 다시 하지 않고 [postcheck.ps1](postcheck.ps1)로 남은 확인을 마쳤다: **7/7**([installed-postcheck.json](installed-postcheck.json)). 등록(이름 「SYNK Platform Preview 0.4.0」, 버전 0.4.0, 제거 명령 `/currentuser`, 앱 키 설치 위치), HKLM 안 씀, 시작 메뉴·바탕화면 바로가기가 새 실행 파일을 가리킴, 설치 뒤 자동 실행 없음, 설치된 app.asar = 새 묶음.
-- **설치 전에 Windows 설치 등록이 빠져 있었다.** 06:17 기록에는 SYNK 세 앱(Platform `c4ee183e…`, WORLD `26232ff5…`, Messenger `953c4764…`)이 HKCU 제거 목록에 있었다. 이번 설치 직전에는 셋 다 없었다(프로그램 폴더·바로가기는 그대로). 샌드박스 밖에서 읽어도 같았다. 이번 설치로 Platform 등록만 다시 생겼다. WORLD·Workspace는 지금도 「설치된 앱」 목록에 없다. 실행은 바로가기로 되지만 설정 앱에서 제거할 수 없다. 언제 왜 빠졌는지는 찾지 못했다.
+- **설치 전에 Windows 설치 등록이 빠져 있었다.** 06:17 기록에는 SYNK 세 앱(Platform `c4ee183e…`, WORLD `26232ff5…`, Messenger `953c4764…`)이 HKCU 제거 목록에 있었다. 이번 설치 직전에는 셋 다 없었다(프로그램 폴더·바로가기는 그대로). 샌드박스 밖에서 읽어도 같았다. 이번 설치로 Platform 등록이 다시 생겼고, WORLD·Workspace는 바로 아래처럼 이어서 다시 설치해 되살렸다. 언제 왜 빠졌는지는 찾지 못했다.
 - 되돌리기: 앱을 끈 뒤 백업 폴더를 프로그램 폴더로 되돌린다. 원래 v4 app.asar는 `%LOCALAPPDATA%\SYNK\platform-signal2-backup-20261010\app.asar`에도 있다.
 - 실제 계정 로그인·실행 화면은 보지 않았다(앱을 켜지 않음).
+
+## WORLD·Workspace 재설치 (2026-10-10 11:06~11:07)
+
+유호님 「웅 둘 다 재설치해줘」에 따라 같은 폴더의 WORLD·Workspace 설치 파일(10-10 새벽 파일 그대로)로 두 앱을 다시 설치했다. 목적은 빠진 Windows 설치 등록을 되살리는 것이다.
+
+- 설치 전 대조([children-before.json](children-before.json)): 두 설치 파일 모두 7-Zip CRC 통과. 설치된 폴더의 파일은 payload와 하나도 다르지 않았다(WORLD 74개, Workspace 75개 + 각 제거 프로그램). 그래서 바뀐 것은 등록과 바로가기뿐이다.
+- 절차는 Platform과 같다([install-children.ps1](install-children.ps1)): 세 앱 꺼짐 확인 → 프로그램 폴더 전체 백업(`.tmp/platform-reinstall-signal2-20261010/SYNKWorldPreview-backup`·`SYNKMessengerPreview-backup`, 각 391MB)·해시 대조 → NSIS `/S` → payload·파일 목록·등록·HKLM 안 씀·시작 메뉴 바로가기·자동 실행 없음 확인. 영수증 [WORLD](installed-world.json) **90/90**(11:06:14~11:06:59, 종료 0), [Workspace](installed-messenger.json) **91/91**(11:06:59~11:07:22, 종료 0).
+- 이제 SYNK 세 앱이 모두 「설치된 앱」 목록에 있다: 「SYNK Platform Preview 0.4.0」, 「SYNK WORLD Preview 0.4.0」, 「SYNK Workspace Preview 0.4.0」.
+- Platform의 자식 앱 확인값(runtime.json의 asar·실행 파일 SHA·버전)이 설치된 WORLD·Workspace와 맞는다. Platform 화면에서 두 앱이 「설치됨」으로 잡힌다.
+- 바로가기: Workspace는 새 이름 「SYNK Workspace Preview」 바로가기가 시작 메뉴와 바탕화면에 생겼다. 10-08에 만든 옛 이름 「SYNK Messenger Preview」 바로가기도 두 곳에 남아 있다. 둘 다 같은 실행 파일을 연다. 지우지 않았다.
 
 ## 주의
 

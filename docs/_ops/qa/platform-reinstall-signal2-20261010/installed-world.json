@@ -1,0 +1,417 @@
+{
+  "clientId": "world",
+  "startedAt": "2026-10-10T02:06:14.4938304Z",
+  "completedAt": "2026-10-10T02:06:59.6150940Z",
+  "installed": true,
+  "installer": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-signal2-20261010\\SYNK WORLD Preview-0.4.0-win-x64.exe",
+  "installerSHA256": "537578727fe799eecb0923b1b4b8dfa4778e188103a2113a2c9e8860b0b66ac4",
+  "installerExecuted": true,
+  "installerPID": 43384,
+  "exitCode": 0,
+  "error": null,
+  "checks": [
+    {
+      "name": "payload-manifest-matches-installer",
+      "ok": true
+    },
+    {
+      "name": "installer-pin",
+      "ok": true
+    },
+    {
+      "name": "free-space-at-least-2GB",
+      "ok": true
+    },
+    {
+      "name": "no-program-reparse-points",
+      "ok": true
+    },
+    {
+      "name": "backup-inside-ignored-tmp",
+      "ok": true
+    },
+    {
+      "name": "backup-does-not-exist",
+      "ok": true
+    },
+    {
+      "name": "full-program-backup",
+      "ok": true
+    },
+    {
+      "name": "post-backup-space-at-least-1.3GB",
+      "ok": true
+    },
+    {
+      "name": "nsis-exit0",
+      "ok": true
+    },
+    {
+      "name": "payload-LICENSE.electron.txt",
+      "ok": true
+    },
+    {
+      "name": "payload-LICENSES.chromium.html",
+      "ok": true
+    },
+    {
+      "name": "payload-SYNKWorldPreview.exe",
+      "ok": true
+    },
+    {
+      "name": "payload-chrome_100_percent.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-chrome_200_percent.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-d3dcompiler_47.dll",
+      "ok": true
+    },
+    {
+      "name": "payload-dxcompiler.dll",
+      "ok": true
+    },
+    {
+      "name": "payload-dxil.dll",
+      "ok": true
+    },
+    {
+      "name": "payload-ffmpeg.dll",
+      "ok": true
+    },
+    {
+      "name": "payload-icudtl.dat",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/af.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/am.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ar.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/bg.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/bn.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ca.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/cs.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/da.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/de.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/el.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/en-GB.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/en-US.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/es-419.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/es.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/et.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/fa.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/fi.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/fil.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/fr.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/gu.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/he.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/hi.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/hr.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/hu.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/id.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/it.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ja.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/kn.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ko.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/lt.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/lv.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ml.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/mr.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ms.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/nb.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/nl.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/pl.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/pt-BR.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/pt-PT.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ro.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ru.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/sk.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/sl.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/sr.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/sv.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/sw.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ta.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/te.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/th.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/tr.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/uk.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/ur.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/vi.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/zh-CN.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-locales/zh-TW.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-resources.pak",
+      "ok": true
+    },
+    {
+      "name": "payload-resources/app.asar",
+      "ok": true
+    },
+    {
+      "name": "payload-resources/elevate.exe",
+      "ok": true
+    },
+    {
+      "name": "payload-resources/synk-install.json",
+      "ok": true
+    },
+    {
+      "name": "payload-snapshot_blob.bin",
+      "ok": true
+    },
+    {
+      "name": "payload-v8_context_snapshot.bin",
+      "ok": true
+    },
+    {
+      "name": "payload-vk_swiftshader.dll",
+      "ok": true
+    },
+    {
+      "name": "payload-vk_swiftshader_icd.json",
+      "ok": true
+    },
+    {
+      "name": "payload-vulkan-1.dll",
+      "ok": true
+    },
+    {
+      "name": "entire-installed-file-set",
+      "ok": true
+    },
+    {
+      "name": "no-installed-reparse-points",
+      "ok": true
+    },
+    {
+      "name": "registry-uninstall-entry",
+      "ok": true
+    },
+    {
+      "name": "registry-app-install-location",
+      "ok": true
+    },
+    {
+      "name": "hklm-not-used",
+      "ok": true
+    },
+    {
+      "name": "start-menu-shortcut-targets-installed-exe",
+      "ok": true
+    },
+    {
+      "name": "app-not-auto-launched",
+      "ok": true
+    }
+  ],
+  "closureChecks": [
+    {
+      "checkedAt": "2026-10-10T02:06:14.9503296Z",
+      "closed": true,
+      "blocked": []
+    },
+    {
+      "checkedAt": "2026-10-10T02:06:36.1164578Z",
+      "closed": true,
+      "blocked": []
+    }
+  ],
+  "registryBefore": {
+    "uninstallKeyExists": false,
+    "displayName": null,
+    "displayVersion": null,
+    "uninstallString": null,
+    "appKeyExists": false,
+    "appInstallLocation": null
+  },
+  "registryAfter": {
+    "uninstallKeyExists": true,
+    "displayName": "SYNK WORLD Preview 0.4.0",
+    "displayVersion": "0.4.0",
+    "uninstallString": "\"C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview\\Uninstall SYNKWorldPreview.exe\" /currentuser",
+    "appKeyExists": true,
+    "appInstallLocation": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview"
+  },
+  "shortcuts": {
+    "before": {
+      "startMenu": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview\\SYNKWorldPreview.exe",
+      "desktop": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview\\SYNKWorldPreview.exe"
+    },
+    "startMenu": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview\\SYNKWorldPreview.exe",
+    "desktop": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview\\SYNKWorldPreview.exe"
+  },
+  "backup": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\SYNKWorldPreview-backup",
+  "backupComplete": true,
+  "explicitProcessTermination": false,
+  "automaticRetry": false,
+  "publicUpload": false,
+  "normalProfileRead": false,
+  "vaultRead": false
+}
