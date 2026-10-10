@@ -23,7 +23,18 @@
 
 - **설치 파일을 실행하지 않고 읽어서 19/19**([verification.json](verification.json)): 7-Zip CRC, 내장 payload 76개가 빌드 폴더와 바이트까지 같음, 이전 재설치 payload와 비교해 `resources/app.asar`만 다름, 앱 묶음 안에서는 위 여섯 파일만 다르고 현재 설치본과는 교사 그림 하나만 다름, 교사 그림에 제작 도구 표시 없음, runtime·package·metadata·실행 파일·자식 설치 파일 pin 그대로, NSIS GUID `c4ee183e-…`와 설치 폴더가 지금 등록된 Platform과 같음, 빌더 설정이 경로 말고는 이전과 같음.
 - 새 앱 묶음을 풀어 숨김 Electron(합성 계정, 바깥 요청 차단)으로 열었다: 17개 화면, 오류 0, 바깥 요청 0. 내 홈 포스터·회원 혜택 「마음」 포스터·앱 상세·설정 스위치가 새 디자인으로 뜬다.
-- 실제로 설치하지는 않았다. 지금 PC의 Platform은 이미 같은 화면이다(다른 것은 교사 그림의 표시 조각뿐).
+- 만든 직후에는 설치하지 않았고, 이어서 유호님 요청으로 11:01에 이 PC에 재설치했다(아래).
+
+## 이 PC 재설치 (2026-10-10 11:01)
+
+유호님 「그걸로 지금 재설치해줘」에 따라 위 Platform 설치 파일로 현재 PC의 Platform을 다시 설치했다. WORLD·Workspace는 건드리지 않았다.
+
+- 절차는 10-10 `install-platform-v2.ps1`과 같다([install.ps1](install.ps1)): SYNK 앱 세 개가 꺼져 있는지 확인(끄지 않고, 켜져 있으면 거절) → 설치 파일·설치본 해시 확인 → 프로그램 폴더 전체를 `.tmp/platform-reinstall-signal2-20261010/installed-program-backup`(643MB)에 복사하고 파일마다 해시 대조 → NSIS `/S` → 설치된 payload 76개 바이트·해시, 폴더 파일 목록 정확히 76개 + 제거 프로그램, 연결 지점 없음.
+- 설치 프로그램 종료 코드 0, 11:01:01~11:01:43. 위 확인 89개 통과.
+- `install.ps1`은 다음 단계에서 멈췄다. 제거 키의 `InstallLocation`을 읽게 짰는데, 이 빌더는 그 칸을 쓰지 않는다(설치 위치는 앱 키에 있다). 영수증 [installed-platform.json](installed-platform.json)은 `installed:false`로 그대로 두었다. 설치를 다시 하지 않고 [postcheck.ps1](postcheck.ps1)로 남은 확인을 마쳤다: **7/7**([installed-postcheck.json](installed-postcheck.json)). 등록(이름 「SYNK Platform Preview 0.4.0」, 버전 0.4.0, 제거 명령 `/currentuser`, 앱 키 설치 위치), HKLM 안 씀, 시작 메뉴·바탕화면 바로가기가 새 실행 파일을 가리킴, 설치 뒤 자동 실행 없음, 설치된 app.asar = 새 묶음.
+- **설치 전에 Windows 설치 등록이 빠져 있었다.** 06:17 기록에는 SYNK 세 앱(Platform `c4ee183e…`, WORLD `26232ff5…`, Messenger `953c4764…`)이 HKCU 제거 목록에 있었다. 이번 설치 직전에는 셋 다 없었다(프로그램 폴더·바로가기는 그대로). 샌드박스 밖에서 읽어도 같았다. 이번 설치로 Platform 등록만 다시 생겼다. WORLD·Workspace는 지금도 「설치된 앱」 목록에 없다. 실행은 바로가기로 되지만 설정 앱에서 제거할 수 없다. 언제 왜 빠졌는지는 찾지 못했다.
+- 되돌리기: 앱을 끈 뒤 백업 폴더를 프로그램 폴더로 되돌린다. 원래 v4 app.asar는 `%LOCALAPPDATA%\SYNK\platform-signal2-backup-20261010\app.asar`에도 있다.
+- 실제 계정 로그인·실행 화면은 보지 않았다(앱을 켜지 않음).
 
 ## 주의
 

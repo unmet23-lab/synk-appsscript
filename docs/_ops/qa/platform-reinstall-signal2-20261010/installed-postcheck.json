@@ -1,0 +1,69 @@
+{
+  "checkedAt": "2026-10-10T02:02:24.1299789Z",
+  "ok": true,
+  "checks": [
+    {
+      "name": "registry-uninstall-entry",
+      "ok": true,
+      "detail": {
+        "displayName": "SYNK Platform Preview 0.4.0",
+        "displayVersion": "0.4.0",
+        "uninstallString": "\"C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKPlatformPreview\\Uninstall SYNKPlatformPreview.exe\" /currentuser",
+        "publisher": "SYNK",
+        "quietUninstallString": "\"C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKPlatformPreview\\Uninstall SYNKPlatformPreview.exe\" /currentuser /S"
+      }
+    },
+    {
+      "name": "registry-app-install-location",
+      "ok": true,
+      "detail": {
+        "installLocation": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKPlatformPreview"
+      }
+    },
+    {
+      "name": "hklm-not-used",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "start-menu-shortcut-targets-installed-exe",
+      "ok": true,
+      "detail": {
+        "path": "C:\\Users\\q1212\\AppData\\Roaming\\Microsoft\\Windows\\Start Menu\\Programs\\SYNK Platform Preview.lnk",
+        "target": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKPlatformPreview\\SYNKPlatformPreview.exe"
+      }
+    },
+    {
+      "name": "desktop-shortcut-targets-installed-exe",
+      "ok": true,
+      "detail": {
+        "path": "C:\\Users\\q1212\\OneDrive\\Desktop\\SYNK Platform Preview.lnk",
+        "target": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKPlatformPreview\\SYNKPlatformPreview.exe"
+      }
+    },
+    {
+      "name": "app-not-auto-launched",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "installed-asar-is-new",
+      "ok": true,
+      "detail": {
+        "sha256": "f49278874812d31e6d40f7f055dc23ab7cafae3122244c84cc632d66328baa4e"
+      }
+    }
+  ],
+  "otherSynkProgramFolders": [
+    {
+      "folder": "SYNKWorldPreview",
+      "exists": true
+    },
+    {
+      "folder": "SYNKMessengerPreview",
+      "exists": true
+    }
+  ],
+  "installerReRun": false,
+  "registryModifiedByCheck": false
+}
