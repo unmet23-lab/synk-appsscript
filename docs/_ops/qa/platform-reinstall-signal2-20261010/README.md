@@ -44,7 +44,7 @@
 - 절차는 Platform과 같다([install-children.ps1](install-children.ps1)): 세 앱 꺼짐 확인 → 프로그램 폴더 전체 백업(`.tmp/platform-reinstall-signal2-20261010/SYNKWorldPreview-backup`·`SYNKMessengerPreview-backup`, 각 391MB)·해시 대조 → NSIS `/S` → payload·파일 목록·등록·HKLM 안 씀·시작 메뉴 바로가기·자동 실행 없음 확인. 영수증 [WORLD](installed-world.json) **90/90**(11:06:14~11:06:59, 종료 0), [Workspace](installed-messenger.json) **91/91**(11:06:59~11:07:22, 종료 0).
 - 이제 SYNK 세 앱이 모두 「설치된 앱」 목록에 있다: 「SYNK Platform Preview 0.4.0」, 「SYNK WORLD Preview 0.4.0」, 「SYNK Workspace Preview 0.4.0」.
 - Platform의 자식 앱 확인값(runtime.json의 asar·실행 파일 SHA·버전)이 설치된 WORLD·Workspace와 맞는다. Platform 화면에서 두 앱이 「설치됨」으로 잡힌다.
-- 바로가기: Workspace는 새 이름 「SYNK Workspace Preview」 바로가기가 시작 메뉴와 바탕화면에 생겼다. 10-08에 만든 옛 이름 「SYNK Messenger Preview」 바로가기도 두 곳에 남아 있다. 둘 다 같은 실행 파일을 연다. 지우지 않았다.
+- 바로가기: Workspace는 새 이름 「SYNK Workspace Preview」 바로가기가 시작 메뉴와 바탕화면에 생겼다. 10-08에 만든 옛 이름 「SYNK Messenger Preview」 바로가기도 두 곳에 남아 있다. 둘 다 같은 실행 파일을 연다. 유호님 「웅 옛 바로가기 지워줘」로 옛 바로가기 두 개를 휴지통으로 옮겼다(되살리려면 휴지통에서 복원). 새 바로가기 두 개는 그대로다.
 
 ## 주의
 
