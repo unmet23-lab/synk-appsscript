@@ -365,10 +365,13 @@ body.launcher .platform-continuity :is(.continuity-notes article,.continuity-und
 }
 @media (max-width:760px){
   :root{--rail:0px;--r-xl:22px;--r-lg:18px}
-  .sidebar{position:relative;inset:auto;width:auto;display:block;padding:14px 16px 10px}
+  /* 메뉴 캡슐은 스크롤해도 위에 붙어 있다(Fable W4): 사이드바를 40px까지만 밀려 올라가게 고정해 로고 줄(48px)은 흘려 보내고 캡슐만 8px 아래에 남긴다.
+     사이드바 바탕은 캡슐 위 틈(8px)만 바탕색으로 덮어 지나가는 글자가 비치지 않게 하고, 캡슐은 유리로 띄운다. 빈 자리는 누르기를 아래로 흘려 보낸다. 검색 줄은 함께 흘러가 캡슐과 겹치지 않는다. */
+  .sidebar{position:sticky;inset:auto;top:-40px;z-index:9;width:auto;display:block;padding:14px 16px 10px;background:linear-gradient(180deg,var(--bg) 48px,transparent 52px);pointer-events:none}
+  .sidebar>*{pointer-events:auto}
   .platform-brand{padding:0 0 12px}
   .sidebar>.sidebar-label,.side-apps,.sidebar-bottom{display:none}
-  .main-nav{flex-direction:row;gap:2px;padding:4px;border-radius:999px;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);overflow-x:auto;scrollbar-width:none}
+  .main-nav{flex-direction:row;gap:2px;padding:4px;border-radius:999px;background:var(--glass-strong);box-shadow:var(--glass-edge);-webkit-backdrop-filter:var(--blur);backdrop-filter:var(--blur);overflow-x:auto;scrollbar-width:none}
   .main-nav::-webkit-scrollbar{display:none}
   .main-nav a{flex:none;height:36px;padding:0 13px;border-radius:999px;font-size:.8125rem;gap:6px}
   .main-nav .nav-mark{display:none}
@@ -376,7 +379,7 @@ body.launcher .platform-continuity :is(.continuity-notes article,.continuity-und
   .filter-buttons::-webkit-scrollbar,.collections::-webkit-scrollbar{display:none}
   .filter-buttons .filter-chip,.collections .filter-chip{flex:none}
   .launcher-main{margin:0;border-radius:22px 22px 0 0;min-height:auto}
-  .topbar{position:sticky;top:8px;height:auto;margin:10px 10px 0;padding:8px 8px 8px 14px;gap:10px}
+  .topbar{position:relative;top:auto;height:auto;margin:10px 10px 0;padding:8px 8px 8px 14px;gap:10px}
   #search-form{max-width:none}
   .launcher main{padding:20px 16px 48px}
   .app-grid,.recent-grid,.news-grid{grid-template-columns:1fr}

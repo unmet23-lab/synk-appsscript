@@ -106,3 +106,11 @@ test('arrow characters use the Inter Tight arrow face instead of SUIT chevrons',
   assert.match(css, /--sans:'SYNK Arrow',SUIT,'Inter Tight',system-ui,sans-serif;/);
   assert.ok(fs.existsSync(new URL('../assets/InterTight-Medium.ttf', import.meta.url)));
 });
+
+test('phone menu stays reachable while scrolling and the search row scrolls with the page', () => {
+  const phone = css.slice(css.indexOf('@media (max-width:760px){'));
+  assert.match(phone, /\.sidebar\{position:sticky;inset:auto;top:-40px;z-index:9;[^}]*pointer-events:none\}/);
+  assert.match(phone, /\.sidebar>\*\{pointer-events:auto\}/);
+  assert.match(phone, /\.main-nav\{[^}]*background:var\(--glass-strong\);box-shadow:var\(--glass-edge\)/);
+  assert.match(phone, /\.topbar\{position:relative;top:auto;/);
+});
