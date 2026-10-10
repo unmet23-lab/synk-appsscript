@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "Your first Korean words in one song! 안녕 반가워요 고마워요 잘 가요 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle read Korean greetings block by block (반 가 워 요 → 반가워요) — first consonant coral, vowel blue, batchim yellow — and the kid bows, waves and puts his hands together for each word, under a white card reading “Your first Korean words!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-10 유호님 「지금은 초보자들 한글 하나도 모르는 사람들을 위한 것들을 만들어야하니까 이런거 잘 체크해서 준비해줘」 → 가사 검사(앞 네 편에서 배운 글자만 · 쓰인 대로 소리 나는 말만, greeting/check_lyrics.py) → Suno 넷 중 「C로 가자」(c285632b) → 콘티 v1 「웅 랜더해서 업로드까지 해」(뜻 알약 · 인사 새 자세 · 후렴 낱말마다 동작 · 끝 화면 「이건 뭐?」 잘 자요 · 어서 와요 · 파이팅, 혜리). 비공개로 올리고 재생목록 다섯째 — 공개 시각은 유호님이 정한다(AI 음악이 중심이라 공개 때 --합성표시).",
+ "version": "v1-yt"
+}

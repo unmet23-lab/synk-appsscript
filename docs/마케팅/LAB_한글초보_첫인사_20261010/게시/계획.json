@@ -1,0 +1,92 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-10T03:11:21.371Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Your first Korean words in one song! 안녕 반가워요 고마워요 잘 가요 #learnkorean",
+      "text": "Sing along with Mongle — read your first real Korean words with the Hangul letters you already know.\n\nRead one block at a time, then put the blocks together:\n반! 가! 워! 요! → 반가워요 (bangawoyo) — nice to meet you\n고! 마! 워! 요! → 고마워요 (gomawoyo) — thank you\n잘! 가! 요! → 잘 가요 (jal gayo) — bye, take care\n안녕 (annyeong) — hi / bye, to friends · 저는 몽글 — I'm Mongle · 다시 만나요 (dasi mannayo) — see you again\n\n\"이건 뭐?\" (What is this?) — read the word before the song does!\nEvery word uses only letters from the first four songs, and each one sounds exactly the way it is written.\nRomanization appears under every letter, and English captions (CC) have the lyrics.\nAt the end, try reading 잘 자요 · 어서 와요 · 파이팅 (good night · welcome · you can do it!).\n\nHangul for Beginners · 한글 초보단계 #5 — after the vowel (#1), consonant (#2), batchim (#3) and double-vowel (#4) songs.\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #koreangreetings",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle read Korean greetings block by block (반 가 워 요 → 반가워요) — first consonant coral, vowel blue, batchim yellow — and the kid bows, waves and puts his hands together for each word, under a white card reading “Your first Korean words!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/원고.json",
+          "bytes": 1665,
+          "sha256": "197bb802c0d6dc9479d7d95d41c8921da2719d4f6426118757c2f6defb542a8d",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/제목.txt",
+          "bytes": 94,
+          "sha256": "f10d0d70344ed4d93c5b55155c1da3424ae74240560f9a3f1f3dd80315ad780b",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 1071,
+          "sha256": "e9ea45a6becf8b6e6ed4a12f38d395dbab74fcf0824da4baec4e0df0970e5cad",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/video.mp4",
+          "bytes": 19018916,
+          "sha256": "ff37d4a7d794fae4c747cb8883b1078a43a453f722b1df8115656486d9b02199",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 3278,
+          "sha256": "826f55f57bb2dfb4a5f2693a4cffce09089fbe57e7d4fc806adc691faddc20a7",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "90c865bccc7bcac5a4186db6841d998d5ca122d5aac228f16e073938c4874c23",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": null,
+      "errors": []
+    }
+  ]
+}
