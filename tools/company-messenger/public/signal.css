@@ -228,3 +228,5 @@
   :root body .sidebar,:root body.integrated-module .sidebar{background:var(--sg-paper-2)!important}
 }
 @media(prefers-reduced-motion:reduce){:root body *{transition:none!important}}
+/* 휴대폰: iOS 입력 확대를 막는 16px(앞 층 messenger-design.css의 700px 이하 규칙과 같게, 10-10 공식 검수 P2) */
+@media(max-width:700px){:root body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}

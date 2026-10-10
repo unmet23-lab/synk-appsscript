@@ -206,7 +206,7 @@
 :root .synk-workspace .marin-welcome,:root .synk-workspace .marin-home.has-conversation .marin-welcome{display:flex;flex-direction:column;align-items:center;gap:0;min-height:0;margin:0 0 30px;padding:0;text-align:center}
 :root .synk-workspace .marin-welcome>.marin-mascot{width:64px;height:84px;margin:0 0 14px;filter:drop-shadow(0 10px 14px rgba(8,9,12,.14))}
 :root .synk-workspace .marin-welcome>div>span{display:inline-flex;align-items:center;gap:8px;margin:0 0 16px;padding:0;font:650 12px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-ink-3)}
-:root .synk-workspace .marin-welcome>div>span:before{content:'● Marin';font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase}
+:root .synk-workspace .marin-welcome>div>span:before{content:'● Marin';content:'● Marin' / '';font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase}
 :root .synk-workspace .marin-welcome h1,:root .synk-workspace .marin-home.has-conversation .marin-welcome h1{font-size:52px;line-height:1.08;font-weight:900;letter-spacing:-.055em;color:var(--sg-ink);word-break:keep-all}
 :root .synk-workspace .marin-welcome p{margin-top:14px;font-size:16px;line-height:1.6;color:var(--sg-ink-3);word-break:keep-all}
 :root .synk-workspace .marin-home.has-conversation .marin-welcome{margin-bottom:22px}
@@ -249,7 +249,7 @@
 :root .synk-workspace .growth-home-heading{margin:0 0 30px;align-items:flex-end}
 :root .synk-workspace .growth-home-heading h1{font-size:44px;line-height:1.12;font-weight:850;letter-spacing:-.05em;color:var(--sg-ink)}
 :root .synk-workspace .growth-home-heading p{margin-top:12px;font-size:15px;color:var(--sg-ink-3)}
-:root .synk-workspace .growth-home-heading>div:first-child:before{content:'● Marketing';display:flex;margin:0 0 16px;font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sg-ink-3)}
+:root .synk-workspace .growth-home-heading>div:first-child:before{content:'● Marketing';content:'● Marketing' / '';display:flex;margin:0 0 16px;font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sg-ink-3)}
 :root .synk-workspace .growth-stats{align-items:stretch;padding:0}
 :root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary{background:var(--sg-paper)!important;color:var(--sg-ink)}
 :root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary :is(.growth-stat-label,p,.growth-stat-explanation,.growth-stat-value small){color:var(--sg-ink-3)!important}
@@ -338,7 +338,7 @@
 :root .teaching-only-bar{display:flex;align-items:center;gap:14px;min-height:68px;padding:0 24px 0 30px;border-bottom:0;background:transparent}
 :root .teaching-only-bar>a:first-child img{width:44px;height:26px;object-fit:contain;filter:invert(1)}
 :root .teaching-only-bar>span{display:inline-flex;align-items:center;gap:7px;padding:6px 11px 5px;border:1px solid var(--sg-frame-line-2);border-radius:999px;font:700 11.5px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-frame-ink-2)}
-:root .teaching-only-bar>span:before{content:'TEACHING';font:500 10px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-3)}
+:root .teaching-only-bar>span:before{content:'TEACHING';content:'TEACHING' / '';font:500 10px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-3)}
 :root .teaching-company-entry{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);color:var(--sg-frame-ink-2);font-size:13px;font-weight:650;text-decoration:none}
 :root .teaching-company-entry:hover{color:var(--sg-frame-ink)}
 :root .teaching-only-shell>main{max-width:1360px;padding:0 24px 24px}
@@ -383,6 +383,7 @@
   background:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px;
   -webkit-mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%);mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%)}
 :root .auth-intro>.brand-logo{filter:invert(1)}
+:root .auth-form-side{width:100%;background:transparent}
 :root .auth-intro:after{content:none!important}
 @media(min-width:1000px){
   :root .auth-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,440px);align-items:center;gap:clamp(48px,7vw,120px);padding:56px clamp(48px,7vw,120px);min-height:100dvh}
@@ -418,20 +419,21 @@
 :root .auth-form-card .auth-description{margin:12px 0 26px;font-size:14.5px;line-height:1.65;color:var(--sg-frame-ink-3);word-break:keep-all}
 /* SYNK ID: 유리 알약 + 싱ㅋ 글자 표시, 아래 한 줄은 상태 등(준비 중 노랑 · 쓸 수 있음 초록), 그 뒤 OR 구분선 */
 :root .synk-login-entry{display:grid;gap:10px;margin:0}
-:root .synk-id-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:0 20px;border:0;border-radius:999px;background:rgba(255,255,255,.06)!important;background-image:none!important;color:var(--sg-frame-ink);font-size:14.5px;font-weight:750;letter-spacing:-.01em;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.12);transition:background-color .18s var(--sg-ease),box-shadow .18s var(--sg-ease)}
-:root .synk-id-button::before{content:'';flex:none;width:26px;height:15px;background:currentColor;-webkit-mask:url('/wordmark.svg') center/contain no-repeat;mask:url('/wordmark.svg') center/contain no-repeat}
-:root .synk-id-button:not(:disabled):hover{background:rgba(255,255,255,.1)!important;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.22)}
-:root .synk-id-button:disabled{opacity:1;color:rgba(250,250,249,.46);background:rgba(255,255,255,.03)!important;cursor:not-allowed}
-:root .synk-id-button:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px}
+:root .synk-login-entry .synk-id-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:0 20px;border:0;border-radius:999px;background:rgba(255,255,255,.06)!important;background-image:none!important;color:var(--sg-frame-ink);font-size:14.5px;font-weight:750;letter-spacing:-.01em;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.12);transition:background-color .18s var(--sg-ease),box-shadow .18s var(--sg-ease)}
+:root .synk-login-entry .synk-id-button::before{content:'';flex:none;width:26px;height:15px;background:currentColor;-webkit-mask:url('/wordmark.svg') center/contain no-repeat;mask:url('/wordmark.svg') center/contain no-repeat}
+:root .synk-login-entry .synk-id-button:not(:disabled):hover{background:rgba(255,255,255,.1)!important;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.22)}
+:root .synk-login-entry .synk-id-button:disabled{opacity:1;color:rgba(250,250,249,.46);background:rgba(255,255,255,.03)!important;cursor:not-allowed}
+:root .synk-login-entry .synk-id-button:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px}
 :root .synk-login-entry>.table-foot{display:flex;align-items:flex-start;gap:9px;margin:2px 0 0;padding:0 4px;font-size:12px;line-height:1.6;color:var(--sg-frame-ink-3);word-break:keep-all}
 :root .synk-login-entry>.table-foot::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--sg-butter);box-shadow:0 0 8px rgba(245,196,69,.55)}
-:root .synk-id-button:not(:disabled)+.table-foot::before{background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
-:root .synk-login-entry::after{content:'OR';display:block;margin:14px 0 20px;text-align:center;font:500 10.5px/1 var(--sg-mono);letter-spacing:.22em;color:rgba(250,250,249,.38);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) right center/calc(50% - 26px) 1px no-repeat}
+:root .synk-login-entry .synk-id-button:not(:disabled)+.table-foot::before{background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
+:root .synk-login-entry .text-button{color:var(--sg-lapis-light);font-weight:700;text-decoration:underline;text-underline-offset:3px}
+:root .synk-login-entry::after{content:'OR';content:'OR' / '';display:block;margin:14px 0 20px;text-align:center;font:500 10.5px/1 var(--sg-mono);letter-spacing:.22em;color:rgba(250,250,249,.38);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) right center/calc(50% - 26px) 1px no-repeat}
 /* 입력: 어두운 칸, 누르고 있을 때만 무지개 테 */
 :root .auth-form-card .form-stack{display:grid;gap:16px}
 :root .auth-form-card .field{display:grid;gap:8px;font-size:12.5px;font-weight:650;letter-spacing:-.005em;color:var(--sg-frame-ink-2)}
 :root .auth-form-card .field small{font-size:12px;font-weight:500;line-height:1.55;color:var(--sg-frame-ink-3)}
-:root .auth-form-card .field input{min-height:52px;padding:0 16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);color:var(--sg-frame-ink);font:600 15px/1.2 var(--sg-sans);letter-spacing:-.005em;caret-color:var(--sg-lapis-light);box-shadow:none;outline:0;transition:border-color .16s var(--sg-ease),background-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
+:root .auth-form-card .field input{min-height:52px;padding:0 16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);color:var(--sg-frame-ink);font:600 16px/1.2 var(--sg-sans);letter-spacing:-.005em;caret-color:var(--sg-lapis-light);box-shadow:none;outline:0;transition:border-color .16s var(--sg-ease),background-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
 :root .auth-form-card .field input::placeholder{color:rgba(250,250,249,.38);font-weight:500}
 :root .auth-form-card .field input:hover{border-color:rgba(255,255,255,.18);background-color:rgba(255,255,255,.055)}
 :root .auth-form-card .field input:focus{outline:0;border-color:transparent;background:linear-gradient(#111217,#111217) padding-box,var(--sg-iris) border-box;box-shadow:0 0 0 4px rgba(61,107,201,.26),0 12px 32px -14px rgba(224,92,151,.5)}
@@ -537,6 +539,7 @@
   :root #overlay .command-item:focus-visible{background:rgba(255,255,255,.09)!important;color:var(--sg-frame-ink);outline:0;box-shadow:inset 0 0 0 1.5px var(--sg-lapis-light)}
   :root #overlay .command-footer{border-top:1px solid rgba(255,255,255,.08);color:var(--sg-frame-ink-3);font-size:12px}
   :root #overlay .command-footer kbd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:7px;background:rgba(255,255,255,.08);color:var(--sg-frame-ink-2);font:500 10.5px/1 var(--sg-mono)}
+  :root #overlay .modal:has(.command-input) .command-empty{color:var(--sg-frame-ink-3)}
 }
 :root #overlay .platform-mark{border-radius:8px;font:600 10px/1 var(--sg-mono)}
 
@@ -602,6 +605,8 @@
   :root .workspace-messenger{border-radius:20px}
 }
 
+/* 휴대폰: 16px보다 작은 입력 칸은 iOS가 누를 때 화면을 확대한다. 앞 층처럼 700px 이하에서는 16px로 둔다(10-10 공식 검수 P2) */
+@media(max-width:700px){:root :is(.synk-workspace,#overlay) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
 @media(prefers-reduced-motion:reduce){
   :root .synk-workspace *,:root #overlay *{transition:none!important;animation:none!important}
 }

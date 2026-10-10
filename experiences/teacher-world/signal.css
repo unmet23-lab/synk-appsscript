@@ -45,7 +45,7 @@
 :root .breadcrumb{font:500 11px/1 var(--sg-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sg-ink-3)}
 :root .breadcrumb span{color:var(--sg-ink-4)}
 :root .demo-badge,:root .status,:root .personal-state{display:inline-flex;align-items:center;gap:7px;padding:0 12px;min-height:28px;border-radius:999px;background:var(--sg-surface-1)!important;background-image:none!important;color:var(--sg-ink-2);font-size:12px;font-weight:650}
-:root .demo-badge:before,:root .personal-state:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-green)}
+:root .demo-badge:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-green)}
 :root .text-button{color:var(--sg-ink);font-weight:650;border-radius:999px}
 
 /* 머리 */
