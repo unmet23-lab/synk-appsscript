@@ -85,7 +85,13 @@
         "publishAt": null,
         "notifySubscribers": false
       },
-      "approval": null,
+      "approval": {
+        "version": 2,
+        "contentHash": "90c865bccc7bcac5a4186db6841d998d5ca122d5aac228f16e073938c4874c23",
+        "publicationHash": "d46e4d3efadc761c991cc0cfc192bc125e9f49c861bebb159c2fa9cdaa0a389e",
+        "approvedAt": "2026-10-10T07:13:50.931Z",
+        "note": "유호님 10-10 「웅 랜더해서 업로드까지 해」(첫 인사 콘티 v1 추천대로)"
+      },
       "errors": []
     }
   ]

@@ -6,14 +6,31 @@
       "contentHash": "4bd0a4b2a479c9bf0f3b8741886fb729a7129ef46b7217143424a489d043ff6c",
       "publicationHash": "6eab6fe60cff8459d408f8aebd1e8db2b8e94272388802e7bd03e64785b5ef34",
       "startedAt": "2026-10-09T20:01:22.553Z",
-      "state": "partial",
+      "state": "scheduled",
       "id": "Stt1zyAorEs",
       "url": "https://www.youtube.com/watch?v=Stt1zyAorEs",
       "thumbnail": null,
-      "captions": [],
-      "playlist": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDaZM_Da7IDOVqwJHIipCOF7vzR8bupR4bwAO9mZ1kRj7KA"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": false,
+        "itemId": "UExZVDh5R2dFNDE0NC40NzZCMERDMjVEN0RFRThB",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
+      },
       "failedAt": "2026-10-09T20:01:56.343Z",
-      "error": "YouTube en 자막 업로드 실패 403: The request cannot be completed because you have exceeded your <a href=\"/youtube/v3/getting-started#quota\">quota</a>. (기존 YouTube 영상 Stt1zyAorEs; 새로 업로드하지 말고 기존 영상 확인 필요)"
+      "resumedAt": "2026-10-10T07:13:01.591Z",
+      "resumeNote": "API 한도가 풀린 뒤 자막·재생목록 이어서(10-10 「네 편 다 바꾸기」)",
+      "publishAt": "2026-10-11T23:00:00.000Z",
+      "scheduledAt": "2026-10-10T07:13:13.738Z",
+      "publicNote": "유호님 10-10 「혜리로 하자」·「네 편 다 바꾸기」 — 예약된 하나 끝 화면 판(yeapd52GTTI)과 같은 10/12 08:00에 혜리 판 공개, AI 음악 표시 켬(10-08 결정)",
+      "containsSyntheticMedia": true
     }
   }
 }
