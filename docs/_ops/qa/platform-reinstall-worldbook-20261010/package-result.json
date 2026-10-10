@@ -1,0 +1,71 @@
+{
+  "completedAt": "2026-10-10T02:27:56.273Z",
+  "ok": true,
+  "basis": ".tmp/platform-reinstall-signal2-20261010/platform (signal-2 reinstall, asar f49278874812, = current PC install)",
+  "source": "SYNK-appsscript 6974907b5 (WORLD felt book)",
+  "changedMembers": [
+    {
+      "path": "renderer/state.mjs",
+      "before": "97f74562e9f27238cbe882e03d9c8dc9760fad43299a0f9eb52e22d43ee00610",
+      "after": "8a2796f3a6592b82bc1ae304b1876fda436d1d9258d3dfe6d127285a8089c30b"
+    },
+    {
+      "path": "renderer/member-home.mjs",
+      "before": "194077d1cd60f57da1c77cb7192b5c0b33e33cad4f969b57328f72887a90a1af",
+      "after": "3d7fb34cce825fe528d555f023f95f81f0164b9798518a23e0ab84945682a136"
+    },
+    {
+      "path": "renderer/index.html",
+      "before": "90f4f16d218ea6ace0aaa69c92c4c8020d270b3af85850def389f9bea2b3f245",
+      "after": "eaa30918cebadbc2e3d6d6cdc1ab555d0a0490e9ed9995dc9a5bb9ce6dc9f3c6"
+    },
+    {
+      "path": "renderer/launcher.css",
+      "before": "0937bc4967d9c92a2474a7b2a274092927376d0ab1ae70467250ed16883a65f4",
+      "after": "c50d505ba6d160693442ffaedf87faa9fd16e5428729f9cd4b366a03b48cfae4"
+    },
+    {
+      "path": "assets/launcher/sources.json",
+      "before": "5d46096731f79e640b1694e567dfcac7eb182461a680d2c5760b5d58ddb6974f",
+      "after": "f344ac0846169f789b96e967c1776ec5a88596f87d52ea09f7a1469fd784fc70"
+    },
+    {
+      "path": "assets/launcher/world-book.avif",
+      "added": true,
+      "sha256": "1b764c1a17ebe67d55dd6b66d56dfdfd0858575cc9e2db7a0910b661dab8be0e",
+      "bytes": 790910
+    }
+  ],
+  "asar": {
+    "previous": "f49278874812d31e6d40f7f055dc23ab7cafae3122244c84cc632d66328baa4e",
+    "new": "a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53",
+    "memberCount": 107,
+    "added": [
+      "assets/launcher/world-book.avif"
+    ]
+  },
+  "executable": {
+    "sha256": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+    "sameAsPrevious": true
+  },
+  "installer": {
+    "path": ".tmp\\platform-reinstall-worldbook-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe",
+    "sha256": "2991c11edf2232d832a98a2c21a386729451dc2d6bef7506bce2144e51d7f0f9",
+    "bytes": 397290468,
+    "executed": false
+  },
+  "unchanged": [
+    "SYNKPlatformPreview.exe",
+    "resources/synk-install.json",
+    "resources/clients/world.exe",
+    "resources/clients/messenger.exe",
+    "runtime.json",
+    "package.json",
+    "auth"
+  ],
+  "version": "0.4.0",
+  "appId": "im.synk.platform.preview",
+  "publish": "never",
+  "publicUpload": false,
+  "installerExecuted": false
+}

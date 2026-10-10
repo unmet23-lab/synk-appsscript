@@ -2,7 +2,7 @@
 
 유호님 「재설치 파일 만들어줘」에 따라 현재 PC에 설치된 Platform(싱ㅋ 시그널 2 화면)과 같은 내용의 재설치 파일을 새로 만들었다. 10-10 새벽 재설치 파일([기록](../platform-reinstall-20261010/README.md))의 Platform 설치 파일에는 바꾸기 전 화면이 들어 있어서, 그걸로 다시 설치하면 새 화면이 사라지기 때문이다.
 
-**쓸 폴더: `desktop/artifacts/platform-reinstall-signal2-20261010/`** (git 밖, 이 PC 전용)
+**쓸 폴더: `desktop/artifacts/platform-reinstall-signal2-20261010/`** (git 밖, 이 PC 전용) → 같은 날 WORLD 펠트 책을 넣은 [다음 판](../platform-reinstall-worldbook-20261010/README.md)으로 바뀌었다.
 
 | 제품 | 설치 파일 | 바이트 | SHA-256 | 이전 재설치 파일과 |
 | --- | --- | ---: | --- | --- |

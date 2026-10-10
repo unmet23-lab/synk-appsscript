@@ -1,0 +1,8 @@
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • Specified application directory equals to project dir — superfluous or wrong configuration  appDirectory=C:\Users\q1212\Documents\SYNK-appsscript\.tmp\platform-reinstall-worldbook-20261010\platform\stage
+  • packageManager not detected by file, falling back to environment detection  resolvedPackageManager=npm detected=C:\Users\q1212\Documents\SYNK-appsscript
+  • building        target=nsis file=.tmp\platform-reinstall-worldbook-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe archs=x64 oneClick=false perMachine=false
+  • file signing skipped via signExecutable configuration  file=.tmp\platform-reinstall-worldbook-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.__uninstaller.exe
+  • file signing skipped via signExecutable configuration  file=.tmp\platform-reinstall-worldbook-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe
+  • building block map  blockMapFile=.tmp\platform-reinstall-worldbook-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe.blockmap
+{"ok":true,"installer":{"path":".tmp\\platform-reinstall-worldbook-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe","sha256":"2991c11edf2232d832a98a2c21a386729451dc2d6bef7506bce2144e51d7f0f9","bytes":397290468,"executed":false},"asar":"a17239235adb981031205ea7087d6676fa0ddda30628b684cdff3cc7bcefbc53"}

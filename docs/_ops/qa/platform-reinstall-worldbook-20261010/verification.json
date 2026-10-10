@@ -1,0 +1,144 @@
+{
+  "completedAt": "2026-10-10T02:28:42.059Z",
+  "ok": true,
+  "checksPassed": 26,
+  "checks": [
+    {
+      "name": "installer-hash-and-bytes",
+      "ok": true
+    },
+    {
+      "name": "installer-crc-exit0",
+      "ok": true
+    },
+    {
+      "name": "payload-extraction-exit0",
+      "ok": true
+    },
+    {
+      "name": "payload-file-set-equals-win-unpacked",
+      "ok": true,
+      "detail": {
+        "expected": 76,
+        "actual": 76
+      }
+    },
+    {
+      "name": "payload-all-bytes-equal-win-unpacked",
+      "ok": true
+    },
+    {
+      "name": "only-app-asar-differs-from-signal2-reinstall",
+      "ok": true,
+      "detail": {
+        "diff": [
+          "resources/app.asar"
+        ],
+        "missing": [],
+        "files": 76
+      }
+    },
+    {
+      "name": "payload-asar-is-new-build",
+      "ok": true
+    },
+    {
+      "name": "installed-is-signal2-build",
+      "ok": true
+    },
+    {
+      "name": "asar-changes-vs-current-install",
+      "ok": true,
+      "detail": [
+        "assets/launcher/sources.json",
+        "renderer/index.html",
+        "renderer/launcher.css",
+        "renderer/member-home.mjs",
+        "renderer/state.mjs"
+      ]
+    },
+    {
+      "name": "asar-added-only-world-book",
+      "ok": true,
+      "detail": [
+        "assets/launcher/world-book.avif"
+      ]
+    },
+    {
+      "name": "world-book-equals-approved-source",
+      "ok": true
+    },
+    {
+      "name": "no-generator-marks-in-new-or-changed-assets",
+      "ok": true
+    },
+    {
+      "name": "renderer-equals-commit-renderer/state.mjs",
+      "ok": true
+    },
+    {
+      "name": "renderer-equals-commit-renderer/member-home.mjs",
+      "ok": true
+    },
+    {
+      "name": "renderer-equals-commit-renderer/index.html",
+      "ok": true
+    },
+    {
+      "name": "renderer-equals-commit-renderer/launcher.css",
+      "ok": true
+    },
+    {
+      "name": "world-cover-is-felt-book",
+      "ok": true
+    },
+    {
+      "name": "runtime-json-unchanged",
+      "ok": true
+    },
+    {
+      "name": "package-json-unchanged",
+      "ok": true
+    },
+    {
+      "name": "synk-install-metadata-unchanged",
+      "ok": true
+    },
+    {
+      "name": "executable-unchanged",
+      "ok": true
+    },
+    {
+      "name": "world-child-installer-matches-pin",
+      "ok": true
+    },
+    {
+      "name": "messenger-child-installer-matches-pin",
+      "ok": true
+    },
+    {
+      "name": "nsis-guid-same-as-installed-registration",
+      "ok": true,
+      "detail": {
+        "guid": "c4ee183e-8850-55ce-9d7f-a3a1acb8c830"
+      }
+    },
+    {
+      "name": "builder-config-same-except-paths",
+      "ok": true
+    },
+    {
+      "name": "user-data-preserving-nsis-policy",
+      "ok": true
+    }
+  ],
+  "payloadFiles": 76,
+  "installer": {
+    "path": ".tmp\\platform-reinstall-worldbook-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe",
+    "sha256": "2991c11edf2232d832a98a2c21a386729451dc2d6bef7506bce2144e51d7f0f9",
+    "bytes": 397290468,
+    "executed": false
+  },
+  "installerExecuted": false,
+  "publicUpload": false
+}
