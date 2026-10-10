@@ -51,3 +51,7 @@
 - 이 PC 개인 재설치용이다. 서명 없는 Preview이고, 공개 다운로드로 쓰지 않는다(10-10 재설치 판정과 같음: Workspace 설치 파일에 진단 로그가 들어 있다).
 - WORLD·Workspace 설치 파일은 10-10 파일 그대로라 안의 교사 그림에는 아직 C2PA 표시가 있다. 이 PC 안에서만 쓰는 파일이라 그대로 두었다.
 - 예전 폴더 `desktop/artifacts/platform-reinstall-20261010/`의 Platform 설치 파일은 쓰지 않는다(바꾸기 전 화면).
+
+## 작업 폴더 정리 (2026-10-10 20:25)
+
+유호님 「재설치 작업 파일 정리해줘」에 따라 `.tmp/platform-reinstall-signal2-20261010`(3.8GB)와 `.tmp/platform-reinstall-worldbook-20261010`(2.3GB)를 지웠다. 빌드 재료·풀어 낸 payload·설치 전 프로그램 폴더 백업이 함께 지워졌으므로 **위의 백업 폴더로 되돌리기는 더 이상 할 수 없다.** 재설치 파일은 `desktop/artifacts/`의 두 폴더에 그대로 있다(하드 링크였던 원본을 지워도 남음, SHA 확인). C 드라이브 여유 17.3GB → 22.6GB.
