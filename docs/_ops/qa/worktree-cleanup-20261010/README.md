@@ -15,7 +15,7 @@
   - 보관 가지의 파일 해시가 워크트리 파일과 같다.
   - 보관 없이 지우는 곳은 origin에 없는 커밋이 모두 로컬 master에 있고, 바뀐 파일이 origin과 같다.
 
-## origin에 올린 보관 가지 (6)
+## origin에 올린 보관 가지 (7)
 
 | 워크트리 | 보관 가지 | 커밋 | 담긴 것 |
 | --- | --- | --- | --- |
@@ -25,8 +25,9 @@
 | `SYNK-worktrees/atlas-account-memory-20261002` | `backup/worktree-atlas-account-memory-20261002` | `7577b232a` | 새 파일 7(synk-account 빌드 결과 5, QA 그림 2) |
 | `SYNK-worktrees/atlas-review-20261002` | `backup/worktree-atlas-review-20261002` | `75861de41` | origin에 없는 커밋 7(그중 2개는 10-02 메인 미커밋 엔진 상태 사본), 새 파일 7 |
 | `~/.codex/worktrees/atlas-account-sync/SYNK-appsscript`(GPT) | `backup/worktree-codex-atlas-account-sync-20261002` | `3e12c4441` | GPT 기준 사본 커밋 1, 바뀐 파일·새 파일 40(패치 두 개 포함) |
+| `SYNK-worktrees/workspace-redesign-20261010` | `backup/worktree-workspace-redesign-20261010` | `17f2b6684` | 미추적 점검 사본 `company/qa/signal-care-browser.mjs` 1개. origin 커밋(`0f06e30e9`) 위에 담았다 |
 
-## 지운 워크트리 (14)
+## 지운 워크트리 (15)
 
 여유 공간은 37.20GB에서 41.07GB가 됐다. 가지(branch)는 지우지 않았다.
 
@@ -43,16 +44,19 @@
     - Claude 플랫폼 작업은 origin(`ad76e8cef` 이후)에 들어가 있다.
     - 남은 파일은 메인 작업본 사본과 옛 QA 결과였다.
     - 기준선 사본 `876df8632`는 올리지 않았다.
+- 메신저 세션이 다 쓴 뒤 지운 1곳(22:5x): `SYNK-worktrees/workspace-redesign-20261010`.
+  - 메신저 세션이 6판을 반영한 뒤 「지워도 된다」고 알려 왔다. 그 가지의 마지막 커밋 `cbbec056f`와 같은 내용이 6판 커밋에 들어 있다.
+  - 6판 커밋 두 개(로컬 `c3a5d0bae`·`4ec6941bf`)를 origin 위에 다시 쌓아 올렸다. origin에서는 `d054239f4`·`0f06e30e9`이고, 다섯 파일 모두 메신저 세션 판과 같다.
+  - 미추적 점검 사본만 위 보관 가지에 담았다.
+  - 기준선 사본 커밋 세 개(`ecdbe9f95`·`0364fb21f`·`171153435`)는 올리지 않았다. 그날 아침 공용 작업본의 미커밋 변경이 통째로 들어 있기 때문이다.
+  - `experiences/spaceship-coop/`은 sparse 체크아웃 때문에 둔 사본이라 담지 않았다.
+  - 여유 공간은 59.54GB에서 60.35GB가 됐다.
 
-## 남긴 워크트리 (4)
+## 남긴 워크트리 (3)
 
 - `.claude/worktrees/strange-wozniak-f57095`: 홈페이지 세션이 쓰는 중이다(21:43 기록).
 - `.claude/worktrees/focused-villani-09429b`: 광고 영상 세션이 쓰는 중이다(영상 처리 실행 중).
 - `.claude/worktrees/friendly-chaplygin-948277`: 앱이 새 세션용으로 준비해 둔 워크트리다. 앱이 관리한다.
-- `SYNK-worktrees/workspace-redesign-20261010`: 메신저 세션이 6판 반영에 쓰는 중이다.
-  - 다 쓰면 그 세션이 알려 주기로 했다.
-  - 지울 때 기준선 사본 커밋 세 개(`ecdbe9f95`·`0364fb21f`·`171153435`)는 올리지 않는다. 그날 아침 공용 작업본의 미커밋 변경이 통째로 들어 있기 때문이다.
-  - 미추적 점검 사본만 origin 커밋 위의 보관 커밋에 담아 올린다.
 
 ## 남은 일
 
