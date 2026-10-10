@@ -1,0 +1,29 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_한글초보_첫인사_20261010/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "90c865bccc7bcac5a4186db6841d998d5ca122d5aac228f16e073938c4874c23",
+      "publicationHash": "d46e4d3efadc761c991cc0cfc192bc125e9f49c861bebb159c2fa9cdaa0a389e",
+      "startedAt": "2026-10-10T07:13:52.091Z",
+      "state": "private",
+      "id": "V9ccOv2s9CU",
+      "url": "https://www.youtube.com/watch?v=V9ccOv2s9CU",
+      "thumbnail": null,
+      "captions": [
+        {
+          "language": "en",
+          "id": "AUieDaaCe9_KMwZ36oXiFXJamFFQ3wvThmOO7q72iTXxq7L4fA"
+        }
+      ],
+      "playlist": {
+        "id": "PLYT8yGgE4144",
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "created": false,
+        "itemId": "UExZVDh5R2dFNDE0NC5EMEEwRUY5M0RDRTU3NDJC",
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144"
+      },
+      "finishedAt": "2026-10-10T07:14:12.333Z"
+    }
+  }
+}
