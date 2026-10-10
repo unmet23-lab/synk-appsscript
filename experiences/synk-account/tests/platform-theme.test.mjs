@@ -100,3 +100,9 @@ test('Ctrl+K and / open the search, / is ignored while typing, Escape closes an 
   p.key('Escape');
   assert.equal(p.document.activeElement, p.search);
 });
+
+test('arrow characters use the Inter Tight arrow face instead of SUIT chevrons', () => {
+  assert.match(css, /@font-face\{font-family:'SYNK Arrow';src:url\('\.\/assets\/InterTight-Medium\.ttf'\) format\('truetype'\);[^}]*unicode-range:U\+2190-2193;size-adjust:130%\}/);
+  assert.match(css, /--sans:'SYNK Arrow',SUIT,'Inter Tight',system-ui,sans-serif;/);
+  assert.ok(fs.existsSync(new URL('../assets/InterTight-Medium.ttf', import.meta.url)));
+});
