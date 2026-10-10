@@ -365,7 +365,7 @@ body.launcher .platform-continuity :is(.continuity-notes article,.continuity-und
 }
 @media (max-width:760px){
   :root{--rail:0px;--r-xl:22px;--r-lg:18px}
-  /* 메뉴 캡슐은 스크롤해도 위에 붙어 있다(Fable W4): 사이드바를 40px까지만 밀려 올라가게 고정해 로고 줄(48px)은 흘려 보내고 캡슐만 8px 아래에 남긴다.
+  /* 메뉴 캡슐은 스크롤해도 위에 붙어 있다: 사이드바를 40px까지만 밀려 올라가게 고정해 로고 줄(48px)은 흘려 보내고 캡슐만 8px 아래에 남긴다.
      사이드바 바탕은 캡슐 위 틈(8px)만 바탕색으로 덮어 지나가는 글자가 비치지 않게 하고, 캡슐은 유리로 띄운다. 빈 자리는 누르기를 아래로 흘려 보낸다. 검색 줄은 함께 흘러가 캡슐과 겹치지 않는다. */
   .sidebar{position:sticky;inset:auto;top:-40px;z-index:9;width:auto;display:block;padding:14px 16px 10px;background:linear-gradient(180deg,var(--bg) 48px,transparent 52px);pointer-events:none}
   .sidebar>*{pointer-events:auto}
