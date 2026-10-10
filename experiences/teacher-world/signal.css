@@ -118,3 +118,5 @@
   :root .intro h1{font-size:30px}
 }
 @media(prefers-reduced-motion:reduce){:root *{transition:none!important}}
+/* 휴대폰: iOS 입력 확대를 막는 16px(큰 글씨 모드는 앞 층 17px 그대로, 10-10 공식 검수 4판 P2) */
+@media(max-width:700px){:root:not([data-text-size=large]) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea){font-size:16px!important}}
