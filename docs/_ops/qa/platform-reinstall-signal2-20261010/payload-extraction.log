@@ -1,0 +1,33 @@
+
+7-Zip (a) 24.09 (x86) : Copyright (c) 1999-2024 Igor Pavlov : 2024-11-29
+
+Scanning the drive for archives:
+1 file, 396534313 bytes (379 MiB)
+
+Extracting archive: C:\Users\q1212\Documents\SYNK-appsscript\.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe
+
+WARNINGS:
+There are data after the end of archive
+
+--
+Path = C:\Users\q1212\Documents\SYNK-appsscript\.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe
+Type = 7z
+WARNINGS:
+There are data after the end of archive
+Offset = 186873
+Physical Size = 395938804
+Tail Size = 408636
+Headers Size = 1550
+Method = LZMA2:20 LZMA:20 BCJ2
+Solid = -
+Blocks = 76
+
+Everything is Ok
+
+Archives with Warnings: 1
+
+Warnings: 1
+Folders: 3
+Files: 76
+Size:       673297333
+Compressed: 396534313

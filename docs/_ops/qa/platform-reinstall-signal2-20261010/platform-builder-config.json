@@ -1,0 +1,46 @@
+{
+  "appId": "im.synk.platform.preview",
+  "productName": "SYNK Platform Preview",
+  "executableName": "SYNKPlatformPreview",
+  "asar": true,
+  "npmRebuild": false,
+  "directories": {
+    "app": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\platform\\stage",
+    "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\platform\\dist",
+    "buildResources": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\platform\\stage\\assets"
+  },
+  "files": [
+    "package.json",
+    "runtime.json",
+    "src/**",
+    "renderer/**",
+    "assets/**"
+  ],
+  "extraResources": [],
+  "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+  "forceCodeSigning": false,
+  "win": {
+    "target": [
+      {
+        "target": "nsis",
+        "arch": [
+          "x64"
+        ]
+      }
+    ],
+    "signExecutable": false,
+    "icon": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\platform\\stage\\assets\\platform.ico"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowElevation": false,
+    "allowToChangeInstallationDirectory": false,
+    "runAfterFinish": false,
+    "deleteAppDataOnUninstall": false,
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true
+  },
+  "publish": null,
+  "electronVersion": "44.5.1"
+}

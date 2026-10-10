@@ -1,0 +1,41 @@
+{
+  "createdAt": "2026-10-10T01:54:58.910Z",
+  "status": "local-delivery-links-created",
+  "version": "0.4.0",
+  "platform": "win32",
+  "arch": "x64",
+  "purpose": "Platform reinstall carrying the signal-2 screens (same as the current PC install) and the teacher-cover image without C2PA. WORLD and Workspace installers are the unchanged 10-10 files.",
+  "supersedes": "desktop/artifacts/platform-reinstall-20261010 (its Platform installer has the pre-signal-2 screens)",
+  "installerExecuted": false,
+  "publicUpload": false,
+  "localPersonalUseOnly": true,
+  "files": [
+    {
+      "clientId": "platform",
+      "deliveryPath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-signal2-20261010\\SYNK Platform Preview-0.4.0-win-x64.exe",
+      "linkedFrom": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-reinstall-signal2-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe",
+      "bytes": 396534313,
+      "sha256": "8c5630161f451d46a99c1d0c5f715a931b9875ec3968c1ec887db94c73fc7634",
+      "linkType": "HardLink",
+      "changedFromPreviousReinstall": true
+    },
+    {
+      "clientId": "world",
+      "deliveryPath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-signal2-20261010\\SYNK WORLD Preview-0.4.0-win-x64.exe",
+      "linkedFrom": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-20261010\\SYNK WORLD Preview-0.4.0-win-x64.exe",
+      "bytes": 132343097,
+      "sha256": "537578727fe799eecb0923b1b4b8dfa4778e188103a2113a2c9e8860b0b66ac4",
+      "linkType": "HardLink",
+      "changedFromPreviousReinstall": false
+    },
+    {
+      "clientId": "messenger",
+      "deliveryPath": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-signal2-20261010\\SYNK Workspace Preview-0.4.0-win-x64.exe",
+      "linkedFrom": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\artifacts\\platform-reinstall-20261010\\SYNK Workspace Preview-0.4.0-win-x64.exe",
+      "bytes": 132289230,
+      "sha256": "b1028c0891ba7dfe69c0958c41eb3fc2b2b5569104682906b03da794f298f16b",
+      "linkType": "HardLink",
+      "changedFromPreviousReinstall": false
+    }
+  ]
+}

@@ -1,0 +1,77 @@
+{
+  "completedAt": "2026-10-10T01:52:42.022Z",
+  "ok": true,
+  "basis": ".tmp/platform-reinstall-20261010/attempt2/platform (Platform reinstall of 10-10 06:22, asar eaa006fec109)",
+  "changedMembers": [
+    {
+      "path": "renderer/launcher.css",
+      "from": "installed signal-2 app.asar",
+      "sha256": "0937bc4967d9c92a2474a7b2a274092927376d0ab1ae70467250ed16883a65f4",
+      "bytes": 66673
+    },
+    {
+      "path": "renderer/member-home.css",
+      "from": "installed signal-2 app.asar",
+      "sha256": "568220be026d4e7c5799969e3ed185af890086b0b938579f325f615dd73f4494",
+      "bytes": 19163
+    },
+    {
+      "path": "renderer/convenience.css",
+      "from": "installed signal-2 app.asar",
+      "sha256": "e828076305f9c8d8a657aaa98fb69fc34f9b74a7f7e8edc216e4e06bb9e63d43",
+      "bytes": 8753
+    },
+    {
+      "path": "renderer/member-home.mjs",
+      "from": "installed signal-2 app.asar",
+      "sha256": "194077d1cd60f57da1c77cb7192b5c0b33e33cad4f969b57328f72887a90a1af",
+      "bytes": 30005
+    },
+    {
+      "path": "renderer/index.html",
+      "from": "installed signal-2 app.asar",
+      "sha256": "90f4f16d218ea6ace0aaa69c92c4c8020d270b3af85850def389f9bea2b3f245",
+      "bytes": 23429
+    },
+    {
+      "path": "assets/launcher/teacher-cover.png",
+      "from": "desktop/assets/launcher (C2PA removed, appsscript e6f55504a)",
+      "sha256": "bd0a2570a1ffc8ff1149fb40f507e6a5ba51eb941e2c02206c110c03121ed75c",
+      "bytes": 1588616
+    }
+  ],
+  "asar": {
+    "previous": "eaa006fec10921cbb2681fd52f791fa1ac3ceb008097a951be684209160cf45e",
+    "installedSignal2": "c715de9ed040dc974127ef95ba6d629ed574a47a3c104b0b10a5182849f200a5",
+    "new": "f49278874812d31e6d40f7f055dc23ab7cafae3122244c84cc632d66328baa4e",
+    "memberCount": 106,
+    "differsFromInstalledOnly": [
+      "assets/launcher/teacher-cover.png"
+    ]
+  },
+  "executable": {
+    "sha256": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+    "sameAsPrevious": true
+  },
+  "installer": {
+    "path": ".tmp\\platform-reinstall-signal2-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe",
+    "sha256": "8c5630161f451d46a99c1d0c5f715a931b9875ec3968c1ec887db94c73fc7634",
+    "bytes": 396534313,
+    "executed": false
+  },
+  "unchanged": [
+    "SYNKPlatformPreview.exe",
+    "resources/synk-install.json",
+    "resources/clients/world.exe",
+    "resources/clients/messenger.exe",
+    "runtime.json (child release pins)",
+    "package.json",
+    "auth"
+  ],
+  "version": "0.4.0",
+  "appId": "im.synk.platform.preview",
+  "publish": "never",
+  "publicUpload": false,
+  "installerExecuted": false,
+  "host": "유호"
+}

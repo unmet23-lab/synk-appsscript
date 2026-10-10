@@ -1,0 +1,8 @@
+  • electron-builder  version=26.15.3 os=10.0.26200
+  • Specified application directory equals to project dir — superfluous or wrong configuration  appDirectory=C:\Users\q1212\Documents\SYNK-appsscript\.tmp\platform-reinstall-signal2-20261010\platform\stage
+  • packageManager not detected by file, falling back to environment detection  resolvedPackageManager=npm detected=C:\Users\q1212\Documents\SYNK-appsscript
+  • building        target=nsis file=.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe archs=x64 oneClick=false perMachine=false
+  • file signing skipped via signExecutable configuration  file=.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.__uninstaller.exe
+  • file signing skipped via signExecutable configuration  file=.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe
+  • building block map  blockMapFile=.tmp\platform-reinstall-signal2-20261010\platform\dist\SYNK Platform Preview-0.4.0-win-x64.exe.blockmap
+{"ok":true,"installer":{"path":".tmp\\platform-reinstall-signal2-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe","sha256":"8c5630161f451d46a99c1d0c5f715a931b9875ec3968c1ec887db94c73fc7634","bytes":396534313,"executed":false},"asar":"f49278874812d31e6d40f7f055dc23ab7cafae3122244c84cc632d66328baa4e"}

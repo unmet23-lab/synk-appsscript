@@ -1,0 +1,117 @@
+{
+  "completedAt": "2026-10-10T01:53:39.101Z",
+  "ok": true,
+  "checksPassed": 19,
+  "checks": [
+    {
+      "name": "installer-hash-and-bytes",
+      "ok": true
+    },
+    {
+      "name": "installer-crc-exit0",
+      "ok": true
+    },
+    {
+      "name": "payload-extraction-exit0",
+      "ok": true
+    },
+    {
+      "name": "payload-file-set-equals-win-unpacked",
+      "ok": true,
+      "detail": {
+        "expected": 76,
+        "actual": 76
+      }
+    },
+    {
+      "name": "payload-all-bytes-equal-win-unpacked",
+      "ok": true
+    },
+    {
+      "name": "only-app-asar-differs-from-previous-reinstall",
+      "ok": true,
+      "detail": {
+        "diff": [
+          "resources/app.asar"
+        ],
+        "missing": [],
+        "files": 76
+      }
+    },
+    {
+      "name": "payload-asar-is-new-build",
+      "ok": true
+    },
+    {
+      "name": "asar-changes-vs-previous-reinstall",
+      "ok": true,
+      "detail": [
+        "assets/launcher/teacher-cover.png",
+        "renderer/convenience.css",
+        "renderer/index.html",
+        "renderer/launcher.css",
+        "renderer/member-home.css",
+        "renderer/member-home.mjs"
+      ]
+    },
+    {
+      "name": "asar-changes-vs-current-install",
+      "ok": true,
+      "detail": [
+        "assets/launcher/teacher-cover.png"
+      ]
+    },
+    {
+      "name": "teacher-cover-has-no-generator-marks",
+      "ok": true
+    },
+    {
+      "name": "runtime-json-unchanged",
+      "ok": true
+    },
+    {
+      "name": "package-json-unchanged",
+      "ok": true
+    },
+    {
+      "name": "synk-install-metadata-unchanged",
+      "ok": true
+    },
+    {
+      "name": "executable-unchanged",
+      "ok": true
+    },
+    {
+      "name": "world-child-installer-matches-pin",
+      "ok": true
+    },
+    {
+      "name": "messenger-child-installer-matches-pin",
+      "ok": true
+    },
+    {
+      "name": "nsis-guid-and-folder-same-as-installed-registration",
+      "ok": true,
+      "detail": {
+        "guid": "c4ee183e-8850-55ce-9d7f-a3a1acb8c830"
+      }
+    },
+    {
+      "name": "builder-config-same-except-paths",
+      "ok": true
+    },
+    {
+      "name": "user-data-preserving-nsis-policy",
+      "ok": true
+    }
+  ],
+  "payloadFiles": 76,
+  "installer": {
+    "path": ".tmp\\platform-reinstall-signal2-20261010\\platform\\dist\\SYNK Platform Preview-0.4.0-win-x64.exe",
+    "sha256": "8c5630161f451d46a99c1d0c5f715a931b9875ec3968c1ec887db94c73fc7634",
+    "bytes": 396534313,
+    "executed": false
+  },
+  "installerExecuted": false,
+  "publicUpload": false
+}

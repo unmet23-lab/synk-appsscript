@@ -26,7 +26,7 @@
 ## 되돌리기와 주의
 
 - 되돌리려면 앱을 끈 뒤 백업 `app.asar`를 같은 자리에 다시 복사한다.
-- `desktop/artifacts/platform-reinstall-20261010/`의 Platform 재설치 파일은 **바꾸기 전(v4) 화면**을 담고 있다. 그 파일로 다시 설치하면 2차 화면이 사라진다. 새 재설치 파일이 필요하면 이 판으로 다시 묶는다.
+- `desktop/artifacts/platform-reinstall-20261010/`의 Platform 재설치 파일은 **바꾸기 전(v4) 화면**을 담고 있다. 그 파일로 다시 설치하면 2차 화면이 사라진다. 이 판의 재설치 파일은 `desktop/artifacts/platform-reinstall-signal2-20261010/`이다([기록](../platform-reinstall-signal2-20261010/README.md)).
 
 ## 웹 공개(synk.im)
 
