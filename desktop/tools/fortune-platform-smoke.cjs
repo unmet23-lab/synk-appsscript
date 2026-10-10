@@ -114,6 +114,8 @@ if (!process.versions.electron) {
         await run(native, "document.getElementById('search').value='';document.getElementById('search').dispatchEvent(new Event('input'))");
       }
       await run(native, 'window.__synkFixture.switchAccount(' + JSON.stringify(account(1, ['fortune'])) + ')'); await settle(native);
+      // 계정이 바뀌면 앞 계정의 상세 화면을 닫는다(계정 분리). 운세 상세를 새 계정에서 다시 연 뒤 미리보기 단추를 본다.
+      await run(native, "document.querySelector('.nav-links [data-view=benefits]').click();document.querySelector('#benefits-grid [data-benefit=fortune]').click()"); await settle(native);
       check('native-entitlement-and-capability-enable-preview', await run(native, "document.querySelector('[data-benefit-preview=fortune]')!==null&&JSON.stringify([...document.querySelectorAll('[data-app]')].map(n=>n.dataset.app))==='[\"fortune\"]'"));
       await run(native, "document.querySelector('[data-benefit-preview=fortune]').click()"); await settle(native);
       check('native-benefit-uses-existing-bridge', await run(native, "JSON.stringify(window.__synkFixture.calls())==='[\"product-preview:fortune\"]'"));
@@ -153,10 +155,10 @@ if (!process.versions.electron) {
         await run(web, "document.querySelector('.benefit-grid a[href=\"#benefits/fortune\"]').click()");
         await waitFor(web, "document.querySelector('.benefit-detail-hero.benefit-fortune')!==null", 'Web detail'); await settle(web);
         info = await webInspect(web);
-        check('web-fortune-detail-' + width, fits(info) && info.heading === '무료 운세' && info.previewLinks.length === 1 && info.previewLinks[0].target === '_blank' && info.previewLinks[0].rel.includes('noopener') && !info.libraryButtonCount,
+        check('web-fortune-detail-' + width, fits(info) && info.heading === '무료 운세' && info.previewLinks.length === 1 && info.previewLinks[0].target === '_blank' && info.previewLinks[0].rel.includes('noopener') && info.libraryButtonCount === 1 /* 10-07부터 상세에 「라이브러리에 담기」 단추 하나 */,
           { ...info, screenshot: await capture(web, 'platform-web-detail-' + width) });
         await run(web, "document.getElementById('platform-search').value='운세';document.getElementById('search-form').requestSubmit()");
-        await waitFor(web, "location.hash==='#discover'&&document.querySelectorAll('.benefit-grid .benefit-art').length===1", 'Web search'); await settle(web);
+        /* 검색은 주소에 검색어를 함께 남긴다(#discover?q=…). */await waitFor(web, "location.hash.startsWith('#discover')&&document.querySelectorAll('.benefit-grid .benefit-art').length===1", 'Web search'); await settle(web);
         info = await webInspect(web);
         check('web-search-' + width, fits(info) && info.benefitIds.join(',') === 'fortune',
           { ...info, screenshot: await capture(web, 'platform-web-search-' + width) });

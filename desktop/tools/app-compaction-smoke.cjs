@@ -5,7 +5,8 @@ const fs=require('node:fs'),path=require('node:path'),os=require('node:os');
 const root=path.resolve(__dirname,'..'),artifacts=path.join(root,'artifacts');
 const prefix='app-compaction-20261009',signal='SYNK_APP_COMPACTION ';
 const finalOnly=process.argv.includes('--final-reload-only');
-const EXPECTED_IDS=['world','messenger','teacher','path','pulse','care','fortune','rehearsal','family-album'];
+// 10-09 결정 「SYNK Workspace · 교사 통합」으로 교사 앱은 Workspace에 합쳐져 목록은 여덟 개다.
+const EXPECTED_IDS=['world','messenger','path','pulse','care','fortune','rehearsal','family-album'];
 const PULSE_FEATURES=['제작 의뢰','창작자 협업','작품과 권리'];
 const CORE_FEATURES={world:['한국어 놀이','싱크 타운','학습 이어가기'],messenger:['팀 대화','내 업무','제작·AI 실습'],pulse:PULSE_FEATURES};
 // Companion checks are executed by the parent agent, outside this renderer QA.
@@ -106,7 +107,7 @@ if(!process.versions.electron){
         await switchTo({configured:true,status:'signed-out',signedIn:false,sessionGeneration:generation++});
         await run("document.querySelector('[data-view=library]').click();window.scrollTo(0,0)");await settle();
         let info=await inspect();
-        check('catalogue-nine-apps-'+width,JSON.stringify(info.ids)===JSON.stringify(EXPECTED_IDS)&&info.count==='09'&&!info.partnerNode&&!info.partnersLabel&&layoutOkay(info),info);
+        check('catalogue-eight-apps-'+width,JSON.stringify(info.ids)===JSON.stringify(EXPECTED_IDS)&&info.count==='08'&&!info.partnerNode&&!info.partnersLabel&&layoutOkay(info),info);
         await capture('catalogue-'+width);
         for(const id of EXPECTED_IDS){
           await select(id);info=await inspect();
@@ -148,7 +149,7 @@ if(!process.versions.electron){
       if(finalOnly){
         await window.reload();await ready();
         let info=await inspect();
-        check('final-reload-nine-apps-1280',JSON.stringify(info.ids)===JSON.stringify(EXPECTED_IDS)&&info.count==='09'&&!info.partnerNode&&!info.partnersLabel&&layoutOkay(info),info);
+        check('final-reload-eight-apps-1280',JSON.stringify(info.ids)===JSON.stringify(EXPECTED_IDS)&&info.count==='08'&&!info.partnerNode&&!info.partnersLabel&&layoutOkay(info),info);
         await select('pulse');info=await inspect();
         check('final-reload-pulse-three-features-1280',JSON.stringify(info.features)===JSON.stringify(PULSE_FEATURES)&&info.action==='none'&&info.actionDisabled&&layoutOkay(info),info);
         await search('파트너');info=await inspect();

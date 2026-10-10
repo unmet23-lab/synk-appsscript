@@ -20,7 +20,7 @@
 
 - 바꾼 묶음을 풀어 숨김 Electron(합성 계정·외부 요청 차단)으로 열어 첫 화면이 새 디자인으로 뜨고 글꼴·그림이 모두 불러와지는 것을 봤다.
 - 데스크톱 시험 `node --test desktop/tests/*.test.cjs` **507/507**, 웹 계정 시험 `experiences/synk-account` **559/559**(바꾸기 전과 같은 수).
-- 숨김 Electron 화면 점검 도구 10개 통과(renderer-responsive · member-home · convenience · convenience-home · benefits · platform-library · platform-input · platform-note-management · connection · desktop-preferences). 다른 5개(app-compaction · development-catalog · experience · fortune-platform · continuity-exit)는 **바꾸기 전 원본에서도 같은 항목에서 실패**한다(앱 9→8개 통합·Ctrl+K 동작 변경 뒤의 옛 기대값). 2개(personal · world-play)는 점검용 작업본에 없는 폴더를 읽어 돌지 않았다.
+- 숨김 Electron 화면 점검 도구 10개 통과(renderer-responsive · member-home · convenience · convenience-home · benefits · platform-library · platform-input · platform-note-management · connection · desktop-preferences). 다른 5개(app-compaction · development-catalog · experience · fortune-platform · continuity-exit)는 **바꾸기 전 원본에서도 같은 항목에서 실패**한다(앱 9→8개 통합·Ctrl+K 동작 변경 뒤의 옛 기대값). 2개(personal · world-play)는 점검용 작업본에 없는 폴더를 읽어 돌지 않았다. → 10-10 저녁 유호님 「점검 도구 5개도 고쳐줘」로 다섯 개의 기대값을 지금 동작에 맞췄다: 앱 8개(교사는 Workspace로 통합), Ctrl+K는 빠른 검색 창, 계정이 바뀌면 앞 계정의 상세를 닫음, 웹 운세 상세의 「라이브러리에 담기」 단추, 웹 검색 주소의 검색어(`#discover?q=`), 게임 그림은 WORLD 콘텐츠 창에서만. 확인창·초안 보관을 고정 시간으로 기다려 흔들리던 곳은 조건 기다림으로 바꿨다(convenience-home 포함). 공용 작업본에서 16개 모두 통과(experience 4회·convenience-home 3회 연속). world-play는 WORLD 묶음 후보를 받아야 도는 출시 확인 도구라 그대로다.
 - 실제 계정으로 로그인한 화면, 설치본을 직접 켠 화면은 확인하지 않았다. 다음에 앱을 켜면 새 화면으로 열린다.
 
 ## 되돌리기와 주의

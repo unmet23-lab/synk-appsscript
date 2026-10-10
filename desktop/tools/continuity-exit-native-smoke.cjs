@@ -98,7 +98,9 @@ if(!process.versions.electron){
       check('explicit-logout-opens-choice',await until("document.getElementById('leave-dialog').open"));await decide('discard');
       check('explicit-logout-clears-draft-and-keeps-server-records',await until(calls('logout')+'===1&&'+"!document.querySelector('[data-note-form]')")&&!await guarded()&&await run("window.__continuityExitQA.record('exit-a').state.notes.length===2&&window.__continuityExitQA.record('exit-b').state.notes.length===0"));
       await account('exit-a',6);check('saved-account-note-restores-after-new-session',await until(field+"&&!"+field+".disabled&&document.querySelector('.continuity-notes').textContent.includes('저장 응답을 기다리는 메모')"));
-      check('local-launcher-images-load-before-exit',await until("['world-book.avif','racing.jpg','runner.jpg','rhythm.jpg'].every(name=>[...document.images].some(img=>img.src.endsWith('/'+name)&&img.complete&&img.naturalWidth>0))"));
+      /* 게임 그림(레이싱·바람길·리듬)은 WORLD 콘텐츠 창을 열 때만 불러온다. 지금 화면의 그림은 모두 열리고 WORLD 책이 그중에 있는지, 게임 그림은 앱 안에서 불러와지는지 따로 본다. */
+      check('local-launcher-images-load-before-exit',await until("(()=>{const imgs=[...document.images].filter(i=>i.getAttribute('src'));return imgs.length>0&&imgs.every(i=>i.complete&&i.naturalWidth>0)&&imgs.some(i=>i.src.endsWith('/world-book.avif'));})()"));
+      check('local-game-images-load',await run("Promise.all(['racing.jpg','runner.jpg','rhythm.jpg'].map(n=>new Promise(resolve=>{const i=new Image();i.onload=()=>resolve(i.naturalWidth>0);i.onerror=()=>resolve(false);i.src='/assets/launcher/'+n;}))).then(r=>r.every(Boolean))"));
       check('no-console-errors-during-connected-session',errors.length===0,{errors});
       await draft('실제 창 닫기로 버릴 최종 초안');nativeChoice=1;stage='native-final-explicit-discard';win.close();await pause(160);
       check('native-explicit-discard-closes-window',win.isDestroyed()&&prompts.length===3);
