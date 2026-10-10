@@ -1,0 +1,607 @@
+/* SYNK Workspace — 싱ㅋ 시그널 (2026-10-10 Claude)
+   플랫폼 시그널 2와 같은 집안이다: 어두운 틀 위에 떠 있는 본문 판, 유리 캡슐(주요 공간·검색·계정), 큰 한글 제목,
+   모노 라벨, 1px 선, 검은 알약 단추. 업무 내용은 오래 읽으므로 본문 판은 밝은 종이로 둔다.
+   이 파일은 맨 마지막에 읽혀 앞의 Slack 틀·펠트 층을 덮는다. 선택자 앞의 :root는 한 단계 더 구체적으로 만들기 위한 것이다.
+   스스로 움직이는 효과는 두지 않는다. 움직임은 손을 올리거나 누를 때의 짧은 전환뿐이다. */
+
+@font-face{font-family:'Signal Mono';src:url('/messenger/assets/DMMono-Medium.ttf') format('truetype');font-weight:400 700;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027,U+2190-21FF}
+@font-face{font-family:'Signal Latin';src:url('/messenger/assets/InterTight-Bold.ttf') format('truetype');font-weight:600 900;font-display:swap;unicode-range:U+0020-007E}
+
+:root{
+  /* 틀(밤) */
+  --sg-frame:#060709;--sg-frame-2:#0C0D10;
+  --sg-frame-ink:#FAFAF9;--sg-frame-ink-2:rgba(250,250,249,.72);--sg-frame-ink-3:rgba(250,250,249,.52);--sg-frame-ink-4:rgba(250,250,249,.22);
+  --sg-frame-line:rgba(255,255,255,.075);--sg-frame-line-2:rgba(255,255,255,.14);
+  --sg-glass:rgba(26,27,32,.58);--sg-glass-strong:rgba(18,19,23,.82);--sg-glass-hover:rgba(255,255,255,.07);
+  --sg-glass-edge:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075),0 12px 32px rgba(0,0,0,.36);
+  /* 틀 위 캡슐은 바깥 그림자를 두지 않는다(흰 본문 판에 번지지 않게) */
+  --sg-glass-flat:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.075);
+  --sg-blur:blur(22px) saturate(1.7);
+  /* 본문 판(종이) */
+  --sg-paper:#FFFFFF;--sg-paper-2:#F7F7F6;--sg-surface-1:#F5F5F4;--sg-surface-2:#EDEDEB;--sg-surface-3:#E2E2E0;
+  --sg-ink:#08090C;--sg-ink-2:rgba(8,9,12,.7);--sg-ink-3:rgba(8,9,12,.56);--sg-ink-4:rgba(8,9,12,.2);
+  --sg-line:rgba(8,9,12,.08);--sg-line-2:rgba(8,9,12,.15);
+  /* Workspace 사업 색: 검정 면 + 옅은 청금석 글자, 강조는 청금석 */
+  --sg-face:#17181C;--sg-on-face:#C5D6F5;
+  --sg-lapis:#3D6BC9;--sg-lapis-deep:#24448C;--sg-lapis-light:#C5D6F5;--sg-lapis-wash:#EEF3FC;
+  --sg-coral:#F96859;--sg-butter:#F5C445;--sg-green:#2E9E66;--sg-berry:#99295D;
+  --sg-iris:conic-gradient(from 210deg,#3D6BC9,#E05C97,#F96859,#F5C445,#7DB45A,#3D6BC9);
+  --sg-r-panel:22px;--sg-r-xl:28px;--sg-r-lg:20px;--sg-r-md:14px;--sg-r-sm:10px;
+  --sg-sans:SUIT,'Inter Tight',system-ui,sans-serif;--sg-latin:'Signal Latin','Inter Tight',SUIT,sans-serif;--sg-mono:'Signal Mono',SUIT,ui-monospace,monospace;
+  --sg-ease:cubic-bezier(.2,.75,.2,1);
+  --sg-gap:12px;
+  /* 앞 층의 토큰을 본문 판 값으로 다시 맞춘다 */
+  --ink:#08090C;--muted:rgba(8,9,12,.62);--faint:rgba(8,9,12,.5);--subtle:rgba(8,9,12,.5);--line:rgba(8,9,12,.09);--surface:#F5F5F4;
+  --blue:#3D6BC9;--blue-deep:#24448C;--blue-wash:#EEF3FC;--accent:#08090C;--accent-soft:#F0F0EE;--paper:#FFFFFF;
+  --font:SUIT,'Inter Tight',system-ui,sans-serif;--mono:'Signal Mono',SUIT,ui-monospace,monospace;--shadow:none;--ease:cubic-bezier(.2,.75,.2,1);
+  --finish-ink:#08090C;--finish-muted:rgba(8,9,12,.6);--finish-line:rgba(8,9,12,.09);
+  --felt-coral:none;--felt-blush:none;--felt-cream:none;--felt-lapis:none;
+}
+:root,:root body{background:var(--sg-frame);color:var(--sg-ink);font-family:var(--sg-sans);font-synthesis:none;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+:root .synk-workspace ::selection{background:#C5D6F5;color:#08090C}
+
+/* ── 틀 ───────────────────────────────────────────── */
+:root .synk-workspace,:root .synk-workspace[data-sidebar-open="false"],:root .synk-workspace[data-view="messenger"]{
+  grid-template-columns:96px 256px minmax(0,1fr);grid-template-rows:68px minmax(0,1fr);
+  background:var(--sg-frame);color:var(--sg-ink);font-family:var(--sg-sans);letter-spacing:-.012em}
+:root .synk-workspace[data-sidebar-open="false"],:root .synk-workspace[data-view="messenger"]{grid-template-columns:96px 0 minmax(0,1fr)}
+
+/* 위 막대: 로고 · 검색 캡슐 · 플랫폼과 계정 캡슐 */
+:root .workspace-appbar{background:transparent!important;background-image:none!important;color:var(--sg-frame-ink);padding:0 14px 0 0;gap:10px}
+:root .workspace-wordmark{width:auto;min-width:96px;display:flex;align-items:center;gap:10px;padding:0 0 0 30px;text-decoration:none}
+:root .workspace-wordmark img{width:44px;height:26px;filter:invert(1)}
+:root .workspace-wordmark:after{content:'WORKSPACE';font:500 10px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-2);padding:6px 9px 5px;border:1px solid var(--sg-frame-line-2);border-radius:999px;white-space:nowrap}
+:root .workspace-wordmark:hover:after{color:var(--sg-frame-ink);border-color:rgba(255,255,255,.3)}
+:root .workspace-wordmark:focus-visible{outline:2px solid var(--sg-frame-ink);outline-offset:4px;border-radius:12px}
+:root .workspace-appbar .workspace-sidebar-toggle,:root .synk-workspace[data-sidebar-open="false"] .workspace-appbar .workspace-sidebar-toggle{width:40px;height:40px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);color:var(--sg-frame-ink-2)}
+:root .workspace-appbar .workspace-sidebar-toggle:hover{background:rgba(44,46,54,.72);color:var(--sg-frame-ink)}
+:root .appbar-company{color:var(--sg-frame-ink-2);font-size:13px;font-weight:600}
+:root .workspace-global-search{width:min(520px,40vw);height:44px;padding:0 8px 0 18px;gap:11px;border:0;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);color:var(--sg-frame-ink-3);font-size:14px;font-weight:500;transition:background .18s var(--sg-ease),color .18s var(--sg-ease)}
+:root .workspace-global-search .icon{width:17px;height:17px;stroke-width:2}
+:root .workspace-global-search:hover{background:rgba(44,46,54,.72);color:var(--sg-frame-ink-2)}
+:root .workspace-global-search kbd{display:inline-flex;align-items:center;height:28px;padding:0 10px;border-radius:999px;background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);font:500 11px/1 var(--sg-mono);letter-spacing:.06em;color:var(--sg-frame-ink-3)}
+:root .workspace-platform-entry{min-height:44px;padding:0 18px;border-radius:999px;background:var(--sg-glass)!important;background-image:none!important;box-shadow:var(--sg-glass-flat);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);color:var(--sg-frame-ink-2);font-size:13px;font-weight:650;gap:8px;filter:none}
+:root .workspace-platform-entry:before{content:'';width:8px;height:8px;border-radius:50%;background:var(--sg-iris);box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+:root .workspace-platform-entry:hover{color:var(--sg-frame-ink);background:rgba(44,46,54,.72)!important;filter:none}
+:root .appbar-account{min-height:44px;padding:0 16px 0 7px;gap:10px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);color:var(--sg-frame-ink);font-size:13px;font-weight:650}
+:root .appbar-avatar{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:radial-gradient(circle,#17181C 0 60%,transparent 61%),var(--sg-iris);color:var(--sg-frame-ink);font:700 12.5px/1 var(--sg-sans);font-style:normal;letter-spacing:-.02em}
+:root .appbar-account .icon{width:17px;height:17px;color:var(--sg-frame-ink-3)}
+:root .appbar-account:hover{background:rgba(44,46,54,.72)}
+:root .appbar-account:focus-visible,:root .workspace-global-search:focus-visible,:root .workspace-platform-entry:focus-visible,:root .workspace-appbar .workspace-sidebar-toggle:focus-visible{outline:2px solid var(--sg-frame-ink);outline-offset:3px}
+
+/* 주요 공간: 떠 있는 유리 세로 캡슐(내용 높이만큼), 고른 곳은 흰 알약 */
+:root .workspace-rail{align-self:start;justify-self:center;display:flex;flex-direction:column;align-items:center;gap:4px;width:72px;margin:0;padding:6px;border-radius:30px;background:var(--sg-glass)!important;background-image:none!important;box-shadow:var(--sg-glass-flat);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur)}
+:root .workspace-rail .rail-item{width:60px;min-height:66px;margin:0;padding:9px 2px 8px;gap:6px;border-radius:24px;color:var(--sg-frame-ink-3);font-size:11px;font-weight:650;letter-spacing:-.01em;transition:background .18s var(--sg-ease),color .18s var(--sg-ease)}
+:root .workspace-rail .rail-item .icon{width:22px;height:22px;stroke-width:1.8}
+:root .workspace-rail .rail-item:hover{background:var(--sg-glass-hover);color:var(--sg-frame-ink)}
+:root .workspace-rail .rail-item.active,:root .workspace-rail .active{background:var(--sg-frame-ink)!important;background-image:none!important;color:#08090C;box-shadow:0 8px 22px rgba(0,0,0,.35);font-weight:750}
+:root .workspace-rail .workspace-felt-icon{display:none}
+:root .workspace-rail .rail-unread,:root .workspace-rail .messenger-unread{top:5px;right:5px;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--sg-coral);color:#1E0E0A;font:600 10.5px/20px var(--sg-mono);box-shadow:0 0 0 3px #15161A}
+:root .workspace-rail button:focus-visible{outline:2px solid var(--sg-frame-ink);outline-offset:2px}
+
+/* 본문 판: 틀 위에 떠 있는 둥근 종이. 세부 메뉴가 있으면 왼쪽 칸과 한 장으로 붙는다. */
+/* width:auto — 앞 층의 width:100%가 남으면 여백만큼 판이 밀려 오른쪽 틈이 사라지고 휴대폰에서 8px 넘친다(10-10 공식 검수 P2) */
+:root .synk-workspace>.main,:root .synk-workspace[data-view="messenger"]>.main{width:auto;margin:0 var(--sg-gap) var(--sg-gap) 0;border-radius:var(--sg-r-panel);background:var(--sg-paper);box-shadow:0 0 0 1px rgba(255,255,255,.05),0 30px 80px rgba(0,0,0,.35);scrollbar-color:rgba(8,9,12,.18) transparent;color:var(--sg-ink)}
+:root .synk-workspace[data-sidebar-open="true"]>.main{border-radius:0 var(--sg-r-panel) var(--sg-r-panel) 0;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+:root .synk-workspace>.sidebar,:root .synk-workspace[data-sidebar-open="false"]>.sidebar{background:var(--sg-paper-2)!important;background-image:none!important;border-right:1px solid var(--sg-line);margin:0 0 var(--sg-gap);border-radius:var(--sg-r-panel) 0 0 var(--sg-r-panel)}
+:root .synk-workspace[data-sidebar-open="false"]>.sidebar,:root .synk-workspace[data-view="messenger"]>.sidebar{background:transparent!important;border:0;margin:0}
+:root .synk-workspace .context-menu-scroll{padding:22px 14px 18px}
+:root .synk-workspace .nav-list{gap:3px}
+:root .synk-workspace .nav-item{min-height:42px;padding:9px 14px;gap:11px;border-radius:14px;background:transparent!important;background-image:none!important;color:var(--sg-ink-2);font-size:14px;font-weight:550;transition:background .16s var(--sg-ease),color .16s var(--sg-ease)}
+:root .synk-workspace .nav-item .icon{width:18px;height:18px;color:var(--sg-ink-3);stroke-width:1.8}
+:root .synk-workspace .nav-item:hover:not(.active):not(:disabled){background:rgba(8,9,12,.045)!important;color:var(--sg-ink)}
+:root .synk-workspace .nav-item.active{background:var(--sg-ink)!important;color:#fff;font-weight:700;padding-left:14px;padding-right:14px;box-shadow:0 8px 20px -10px rgba(8,9,12,.55)}
+:root .synk-workspace .nav-item.active .icon{color:#fff}
+:root .synk-workspace .context-section-label{display:flex;align-items:center;gap:10px;margin:22px 0 8px;padding:0 14px;font-size:11.5px;font-weight:700;color:var(--sg-ink-3);letter-spacing:0}
+:root .synk-workspace .context-section-label:after{content:'';flex:1;height:1px;background:var(--sg-line)}
+:root .synk-workspace .context-heading{background:none;border-bottom:1px solid var(--sg-line)}
+:root .synk-workspace .context-heading:after,:root .context-heading:after{content:none!important;display:none!important}
+
+/* 본문 머리와 페이지 몸 */
+:root .synk-workspace .topline,:root .synk-workspace[data-view="messenger"] .topline{background:rgba(255,255,255,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--sg-line);border-image:none;color:var(--sg-ink);padding:0 28px}
+:root .synk-workspace[data-view="messenger"] .topline{display:none}
+:root .synk-workspace .topline .workspace-felt-icon{display:none}
+:root .synk-workspace .page-body{padding:44px 52px 72px;max-width:1360px}
+:root .synk-workspace[data-view="messenger"] .page-body{padding:0;max-width:none}
+
+/* 페이지 머리: 모노 눈썹 · 큰 한글 제목 · 조용한 설명 */
+:root .synk-workspace .page-heading,:root .synk-workspace .cg-heading{position:relative;margin:0 0 34px;padding:0;gap:20px;align-items:flex-end}
+:root .synk-workspace .page-heading h1,:root .synk-workspace .cg-heading h1,:root .synk-workspace[data-growth-home="true"] .page-heading h1{font-family:var(--sg-sans);font-size:44px;line-height:1.12;font-weight:850;letter-spacing:-.05em;color:var(--sg-ink);word-break:keep-all}
+:root .synk-workspace .page-heading h1:before,:root .synk-workspace[data-view] .page-heading h1:before{content:none!important;display:none!important}
+:root .synk-workspace .page-heading p,:root .synk-workspace .cg-heading p{margin-top:12px;font-size:15px;line-height:1.65;color:var(--sg-ink-3);font-weight:450;max-width:62ch;word-break:keep-all}
+:root .synk-workspace .page-heading>div:first-child:before{content:attr(data-eyebrow);display:none}
+:root .synk-workspace[data-view] .page-heading>div:first-child:before,:root .synk-workspace[data-view] .cg-heading>div:first-child:before{display:flex;align-items:center;gap:10px;margin:0 0 16px;font:500 11px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-ink-3);text-transform:uppercase}
+/* 눈썹은 꾸밈이다. 「/ ''」로 화면 낭독기가 읽지 않게 하고, 그 문법을 모르는 브라우저는 앞 줄 값을 쓴다. */
+:root .synk-workspace[data-view="workroom"] .page-heading>div:first-child:before{content:'● Workroom';content:'● Workroom' / ''}
+:root .synk-workspace[data-view="overview"] .page-heading>div:first-child:before,:root .synk-workspace[data-view="analysis"] .page-heading>div:first-child:before,:root .synk-workspace[data-view="history"] .page-heading>div:first-child:before,:root .synk-workspace[data-view="content"] .page-heading>div:first-child:before,:root .synk-workspace[data-view="channels"] .page-heading>div:first-child:before,:root .synk-workspace[data-view="collection"] .page-heading>div:first-child:before{content:'● Marketing';content:'● Marketing' / ''}
+:root .synk-workspace[data-view="members"] .page-heading>div:first-child:before{content:'● Team · Crew';content:'● Team · Crew' / ''}
+:root .synk-workspace[data-view="settings"] .page-heading>div:first-child:before{content:'● Settings';content:'● Settings' / ''}
+:root .synk-workspace[data-view="handbook"] .cg-heading>div:first-child:before{content:'● Company Guide';content:'● Company Guide' / ''}
+:root .synk-workspace .heading-actions{gap:8px}
+
+/* ── 단추 ─────────────────────────────────────────── */
+:root .synk-workspace .btn,:root #overlay .btn{min-height:42px;padding:0 18px;border:1px solid var(--sg-line-2);border-radius:999px;background:var(--sg-paper);color:var(--sg-ink);font-size:14px;font-weight:650;letter-spacing:-.01em;box-shadow:none;filter:none;text-shadow:none;transition:background .16s var(--sg-ease),border-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease),transform .12s var(--sg-ease)}
+:root .synk-workspace .btn:hover,:root #overlay .btn:hover{background:var(--sg-surface-1);border-color:rgba(8,9,12,.24)}
+:root .synk-workspace .btn .icon,:root #overlay .btn .icon{width:16px;height:16px}
+:root .synk-workspace .btn.primary,:root #overlay .btn.primary{border:0;background:var(--sg-ink)!important;background-image:none!important;color:#fff;border-radius:999px;min-height:46px;padding:0 24px;font-weight:700;filter:none;box-shadow:0 10px 24px -12px rgba(8,9,12,.6)}
+:root .synk-workspace .btn.primary:hover,:root #overlay .btn.primary:hover{background:#1A1B20!important;filter:none;box-shadow:0 0 0 4px rgba(61,107,201,.18),0 12px 26px -12px rgba(8,9,12,.6)}
+:root .synk-workspace .btn.primary:active,:root #overlay .btn.primary:active{transform:translateY(1px);filter:none}
+:root .synk-workspace .btn.primary:disabled,:root #overlay .btn.primary:disabled{opacity:.38;color:#fff;box-shadow:none}
+:root .synk-workspace .btn.quiet,:root #overlay .btn.quiet{border-color:transparent;background:transparent}
+:root .synk-workspace .btn.quiet:hover,:root #overlay .btn.quiet:hover{background:rgba(8,9,12,.05)}
+:root .synk-workspace .btn.danger,:root #overlay .btn.danger{color:#B4382B;border-color:rgba(180,56,43,.28)}
+:root .synk-workspace .text-button,:root #overlay .text-button{color:var(--sg-ink);font-weight:650;text-underline-offset:4px;text-decoration-thickness:1px}
+:root .synk-workspace .text-button:hover,:root #overlay .text-button:hover{text-decoration:underline}
+:root .synk-workspace .icon-button,:root #overlay .icon-button{border-radius:999px}
+:root .synk-workspace .workspace-share{min-height:40px;padding:0 16px;border-radius:999px;font-size:13px}
+:root .synk-workspace :is(button,a,input,select,textarea,summary):focus-visible,:root #overlay :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--sg-lapis);outline-offset:2px}
+
+/* ── 입력 ─────────────────────────────────────────── */
+:root .synk-workspace .field,:root #overlay .field{font-size:13px;font-weight:650;color:var(--sg-ink-2)}
+:root .synk-workspace :is(.field,.form-stack,.field-row) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea),
+:root #overlay :is(.field,.form-stack,.field-row) :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]),select,textarea),
+:root .synk-workspace select.filter-select,:root .synk-workspace .wr-desk-start-form select{min-height:46px;border:1px solid var(--sg-line-2);border-radius:var(--sg-r-md);background-color:var(--sg-paper);color:var(--sg-ink);font-size:14px;font-weight:500;box-shadow:none;transition:border-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
+:root .synk-workspace :is(.field,.form-stack,.field-row) textarea,:root #overlay :is(.field,.form-stack,.field-row) textarea{padding:12px 14px;line-height:1.65}
+:root .synk-workspace :is(.field,.form-stack,.field-row) :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root #overlay :is(.field,.form-stack,.field-row) :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root .synk-workspace select.filter-select:focus,:root .synk-workspace .wr-desk-start-form select:focus{border-color:var(--sg-lapis);box-shadow:0 0 0 4px rgba(61,107,201,.16);outline:0}
+
+/* ── 고르기 막대(세그먼트): 옅은 판 위 검은 알약 ─────── */
+:root .synk-workspace :is(.segmented,.wr-phase,.marketing-report-switch,.growth-metric-primary,.analysis-switch,.history-switch),
+:root .synk-workspace .cg-tabs{display:inline-flex;gap:2px;padding:4px;border:1px solid var(--sg-line);border-radius:999px;background:var(--sg-surface-1)!important;background-image:none!important;box-shadow:none}
+:root .synk-workspace :is(.segmented,.wr-phase,.marketing-report-switch,.growth-metric-primary,.growth-metric-controls,.cg-tabs) button{min-height:36px;padding:0 16px;border:0;border-radius:999px;background:transparent!important;background-image:none!important;color:var(--sg-ink-3);font-size:13.5px;font-weight:650;box-shadow:none;transition:background .16s var(--sg-ease),color .16s var(--sg-ease)}
+:root .synk-workspace :is(.segmented,.wr-phase,.marketing-report-switch,.growth-metric-primary,.growth-metric-controls,.cg-tabs) button:hover{color:var(--sg-ink)}
+:root .synk-workspace :is(.segmented,.wr-phase,.marketing-report-switch,.growth-metric-primary,.growth-metric-controls,.cg-tabs) button:is(.active,[aria-pressed="true"],[aria-selected="true"],[aria-current="page"]){background:var(--sg-ink)!important;color:#fff;box-shadow:0 6px 16px -8px rgba(8,9,12,.6);font-weight:700}
+
+/* 성장 지표: 기본 셋은 알약 막대, 다른 지표는 접힌 글자 단추 */
+:root .synk-workspace .growth-metric-controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:0;border:0;background:none!important}
+:root .synk-workspace .growth-other-metrics>summary{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:0 14px;border:1px solid var(--sg-line-2);border-radius:999px;color:var(--sg-ink-2);font-size:13px;font-weight:650;cursor:pointer;list-style:none}
+:root .synk-workspace .growth-other-metrics>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .growth-other-metrics>summary:after{content:'+';font:500 14px/1 var(--sg-mono);color:var(--sg-ink-3)}
+:root .synk-workspace .growth-other-metrics[open]>summary:after{content:'−'}
+:root .synk-workspace .growth-other-metrics>div{display:inline-flex;flex-wrap:wrap;gap:2px;margin-top:8px;padding:4px;border:1px solid var(--sg-line);border-radius:999px;background:var(--sg-surface-1)}
+:root .synk-workspace .growth-other-metrics>div button{min-height:34px;padding:0 14px;border:0;border-radius:999px;background:transparent!important;color:var(--sg-ink-3);font-size:13px;font-weight:650}
+:root .synk-workspace .growth-other-metrics>div button[aria-pressed="true"]{background:var(--sg-ink)!important;color:#fff}
+
+/* ── 카드·상자: 흰 판 + 1px 선, 그림자 없음 ─────────── */
+:root .synk-workspace :is(.wr-tip,.wr-page,.channel-card,.chart-card,.metric-card,.note-box,.home-resume,.wr-intro,.wr-desk-start,.wr-desk-check,.wr-desk-empty,.cg-atglance>section,.settings-panel,.marin-destinations>button){border:1px solid var(--sg-line)!important;border-radius:var(--sg-r-lg)!important;background:var(--sg-paper)!important;background-image:none!important;box-shadow:none!important}
+:root .synk-workspace :is(.wr-tip,.wr-page,.channel-card,.chart-card,.metric-card,.cg-atglance>section,.marin-destinations>button):hover{border-color:var(--sg-line-2)!important}
+:root .synk-workspace .note-box{background:var(--sg-surface-1)!important;border-color:transparent!important}
+:root .synk-workspace .wr-tip .wr-example{background:var(--sg-surface-1);border-left:2px solid var(--sg-ink);border-radius:0 12px 12px 0}
+:root .synk-workspace .growth-reflection,:root .synk-workspace .cg-body blockquote{background:var(--sg-surface-1)!important;border-left:2px solid var(--sg-ink)!important;color:var(--sg-ink-2)}
+:root .synk-workspace .cg-toc{background:var(--sg-surface-1)!important;background-image:none!important;border-color:var(--sg-line)!important;border-radius:var(--sg-r-md)}
+:root .synk-workspace .wr-count{background:var(--sg-surface-2)!important;background-image:none!important;border-radius:999px;color:var(--sg-ink);min-width:30px;height:30px;padding:0 9px;display:inline-grid;place-items:center;font:600 12px/1 var(--sg-mono)}
+:root .synk-workspace .wr-review-list input{border:1.5px solid rgba(8,9,12,.46);border-radius:8px;background:var(--sg-paper)}
+:root .synk-workspace .wr-review-list input:checked{border:0;border-radius:8px;background:var(--sg-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4.5 4.5L19 7'/%3E%3C/svg%3E") center/16px no-repeat}
+:root .home-resume>h2:before{content:none!important;display:none!important}
+
+/* 상태 칩: 점 + 글자 */
+/* 점은 마크업의 <i class="dot">를 쓴다(따로 그리면 두 개가 된다). 상태별 색은 남긴다: 좋음 초록 · 확인 버터 · 오류 코랄 · 진행 청금석 */
+:root .synk-workspace .status-badge{display:inline-flex;align-items:center;gap:7px;min-height:26px;padding:0 11px;border-radius:999px;background:var(--sg-surface-1);color:var(--sg-ink-2);font-size:12px;font-weight:650;border:0}
+:root .synk-workspace .status-badge>.dot{flex:none;width:6px;height:6px;margin:0;border-radius:50%;background:currentColor;opacity:.9}
+:root .synk-workspace .status-badge.good{background:rgba(46,158,102,.1);color:#1D6B44}
+:root .synk-workspace .status-badge.warn{background:rgba(245,196,69,.2);color:#76560C}
+:root .synk-workspace .status-badge.error{background:rgba(249,104,89,.12);color:#A3392D}
+:root .synk-workspace .status-badge.running{background:var(--sg-lapis-wash);color:var(--sg-lapis-deep)}
+
+/* 표 */
+:root .synk-workspace .data-table th{font:500 10.5px/1.4 var(--sg-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--sg-ink-3);border-bottom:1px solid var(--sg-line)}
+:root .synk-workspace .data-table td{border-bottom:1px solid var(--sg-line);color:var(--sg-ink)}
+:root .synk-workspace .data-table tr:hover td{background:#FAFAF9}
+
+/* ── 겹창·알림·명령창 ────────────────────────────── */
+:root #overlay .modal,:root #overlay .modal-dialog,:root #overlay .modal-card,:root .modal{border:1px solid var(--sg-line)!important;border-radius:var(--sg-r-xl)!important;background:var(--sg-paper);box-shadow:0 40px 120px rgba(0,0,0,.45)!important;color:var(--sg-ink)}
+:root #overlay .modal h2,:root .modal h2{font-size:26px;font-weight:800;letter-spacing:-.04em}
+:root .toast{border-radius:999px;background:var(--sg-glass-strong);color:var(--sg-frame-ink);box-shadow:var(--sg-glass-edge);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);font-weight:600}
+:root .command-item{border-radius:12px}
+:root .command-item:hover,:root .command-item[aria-selected="true"]{background:var(--sg-surface-1)}
+
+/* ── 메신저가 들어가는 자리 ───────────────────────── */
+:root .messenger-module-slot{background:var(--sg-paper);border-radius:var(--sg-r-panel)}
+:root .workspace-messenger{border-radius:var(--sg-r-panel);background:var(--sg-paper);box-shadow:0 0 0 1px rgba(255,255,255,.05)}
+:root .workspace-messenger iframe{background:var(--sg-paper)}
+
+/* ── 홈: 가운데에 큰 인사와 마린에게 묻는 입력창 ───────── */
+:root .synk-workspace[data-view="home"] .page-body{max-width:none;min-height:100%;display:flex;flex-direction:column;justify-content:center;padding:56px 52px 72px}
+:root .synk-workspace .marin-home,:root .synk-workspace[data-view="home"] .marin-home{position:relative;width:100%;max-width:780px;min-height:0;margin:0 auto;padding:0;border:0;border-radius:0;background:none;overflow:visible;isolation:auto}
+:root .synk-workspace .marin-home:before{content:none!important;display:none!important}
+:root .synk-workspace .marin-welcome,:root .synk-workspace .marin-home.has-conversation .marin-welcome{display:flex;flex-direction:column;align-items:center;gap:0;min-height:0;margin:0 0 30px;padding:0;text-align:center}
+:root .synk-workspace .marin-welcome>.marin-mascot{width:64px;height:84px;margin:0 0 14px;filter:drop-shadow(0 10px 14px rgba(8,9,12,.14))}
+:root .synk-workspace .marin-welcome>div>span{display:inline-flex;align-items:center;gap:8px;margin:0 0 16px;padding:0;font:650 12px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-ink-3)}
+:root .synk-workspace .marin-welcome>div>span:before{content:'● Marin';font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase}
+:root .synk-workspace .marin-welcome h1,:root .synk-workspace .marin-home.has-conversation .marin-welcome h1{font-size:52px;line-height:1.08;font-weight:900;letter-spacing:-.055em;color:var(--sg-ink);word-break:keep-all}
+:root .synk-workspace .marin-welcome p{margin-top:14px;font-size:16px;line-height:1.6;color:var(--sg-ink-3);word-break:keep-all}
+:root .synk-workspace .marin-home.has-conversation .marin-welcome{margin-bottom:22px}
+:root .synk-workspace .marin-home.has-conversation .marin-welcome>.marin-mascot{width:44px;height:58px;margin-bottom:10px}
+:root .synk-workspace .marin-home.has-conversation .marin-welcome h1{font-size:30px}
+:root .synk-workspace .marin-home.has-conversation .marin-welcome p{display:none}
+:root .synk-workspace .marin-compose form{position:relative;min-height:116px;padding:18px 18px 16px 22px;border:1px solid var(--sg-line-2);border-radius:28px;background:var(--sg-paper);box-shadow:0 1px 0 rgba(8,9,12,.04),0 24px 60px -28px rgba(8,9,12,.28);align-items:flex-end;gap:12px;transition:border-color .18s var(--sg-ease),box-shadow .18s var(--sg-ease)}
+:root .synk-workspace .marin-compose form:focus-within{outline:0;border-color:transparent;box-shadow:0 0 0 1.5px transparent,0 24px 60px -24px rgba(61,107,201,.45)}
+:root .synk-workspace .marin-compose form:focus-within:before{content:'';position:absolute;inset:-1.5px;border-radius:29.5px;padding:1.5px;background:var(--sg-iris);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);pointer-events:none}
+:root .synk-workspace .marin-compose textarea{min-height:66px;font-size:17px;line-height:1.6;color:var(--sg-ink)}
+:root .synk-workspace .marin-compose textarea::placeholder{color:var(--sg-ink-3);opacity:1}
+:root .synk-workspace .marin-compose button[type="submit"]{display:grid;place-items:center;width:44px;height:44px;flex:none;border:0;border-radius:50%;background:var(--sg-ink)!important;background-image:none!important;color:#fff;box-shadow:0 8px 20px -10px rgba(8,9,12,.7);transition:transform .12s var(--sg-ease),opacity .16s}
+:root .synk-workspace .marin-compose button[type="submit"] .icon{width:19px;height:19px;stroke-width:2.2;transform:rotate(-90deg)}
+:root .synk-workspace .marin-compose button[type="submit"]:disabled{background:var(--sg-surface-2)!important;color:var(--sg-ink-4);box-shadow:none;opacity:1}
+:root .synk-workspace .marin-input-foot{display:flex;justify-content:center;gap:12px;margin-top:12px}
+:root .synk-workspace .marin-input-foot p{font-size:12.5px;color:var(--sg-ink-3)}
+:root .synk-workspace .home-prompt-suggestions{justify-content:center;gap:8px;margin-top:24px}
+:root .synk-workspace .home-prompt-suggestions button{min-height:38px;padding:0 14px 0 16px;gap:6px;border:1px solid var(--sg-line-2)!important;border-radius:999px;background:var(--sg-paper)!important;background-image:none!important;color:var(--sg-ink-2);font-size:13.5px;font-weight:600;box-shadow:none}
+:root .synk-workspace .home-prompt-suggestions button:hover{color:var(--sg-ink);border-color:rgba(8,9,12,.3)!important;background:var(--sg-surface-1)!important}
+:root .synk-workspace .home-prompt-suggestions .icon{width:14px;height:14px;color:var(--sg-ink-3)}
+:root .synk-workspace .marin-home.has-conversation .marin-conversation{max-height:min(46vh,420px);gap:14px;padding:6px 2px 18px;margin-bottom:12px}
+:root .synk-workspace .marin-message{max-width:86%;padding:14px 18px;border:0;border-radius:22px;background:var(--sg-surface-1);color:var(--sg-ink);font-size:15px;line-height:1.7}
+:root .synk-workspace .marin-message.user{align-self:flex-end;background:var(--sg-ink);color:#fff;border-bottom-right-radius:8px}
+:root .synk-workspace .marin-message.assistant{align-self:flex-start;border-bottom-left-radius:8px}
+:root .synk-workspace .marin-speaker{font:500 10.5px/1 var(--sg-mono);letter-spacing:.14em;opacity:.6}
+:root .synk-workspace .marin-response-actions button{border-radius:999px;border:1px solid var(--sg-line-2);background:var(--sg-paper);font-weight:650}
+
+/* ── 마케팅: 계기판처럼 이어 붙인 숫자판 ─────────────── */
+:root .synk-workspace .growth-stats{gap:0;border:1px solid var(--sg-line);border-radius:var(--sg-r-lg);overflow:hidden;background:var(--sg-paper)}
+:root .synk-workspace .growth-stat,:root .synk-workspace .growth-stat+.growth-stat{border:0!important;border-left:1px solid var(--sg-line)!important;border-radius:0!important;background:var(--sg-paper)!important;background-image:none!important;padding:22px 24px 24px}
+:root .synk-workspace .growth-stat:first-child{border-left:0!important}
+:root .synk-workspace .growth-stat.is-primary{background:var(--sg-face)!important;color:#fff}
+:root .synk-workspace .growth-stat.is-primary :is(.growth-stat-label,.growth-stat-value,.growth-stat-value small,p,.growth-stat-explanation){color:rgba(255,255,255,.7)!important}
+:root .synk-workspace .growth-stat.is-primary .growth-stat-value{color:var(--sg-on-face)!important}
+:root .synk-workspace .growth-stat-label{font-size:12.5px;font-weight:650;color:var(--sg-ink-3)}
+:root .synk-workspace .growth-stat-value,:root .synk-workspace .growth-stat.is-primary .growth-stat-value{font-family:var(--sg-sans);font-size:44px;font-weight:850;letter-spacing:-.045em;line-height:1.05;font-variant-numeric:tabular-nums}
+:root .synk-workspace .growth-chart-empty{background:var(--sg-surface-1);border-radius:var(--sg-r-md)}
+
+/* 마케팅 머리(내·팀·전체 현황) */
+:root .synk-workspace .growth-home-heading{margin:0 0 30px;align-items:flex-end}
+:root .synk-workspace .growth-home-heading h1{font-size:44px;line-height:1.12;font-weight:850;letter-spacing:-.05em;color:var(--sg-ink)}
+:root .synk-workspace .growth-home-heading p{margin-top:12px;font-size:15px;color:var(--sg-ink-3)}
+:root .synk-workspace .growth-home-heading>div:first-child:before{content:'● Marketing';display:flex;margin:0 0 16px;font:500 11px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sg-ink-3)}
+:root .synk-workspace .growth-stats{align-items:stretch;padding:0}
+:root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary{background:var(--sg-paper)!important;color:var(--sg-ink)}
+:root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary :is(.growth-stat-label,p,.growth-stat-explanation,.growth-stat-value small){color:var(--sg-ink-3)!important}
+:root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary .growth-stat-value{color:var(--sg-ink)!important}
+:root .synk-workspace .growth-stat-value.is-missing,:root .synk-workspace .growth-stat.is-primary~.growth-stat.is-primary .growth-stat-value.is-missing{color:var(--sg-ink-3)!important}
+:root .synk-workspace .growth-stat p,:root .synk-workspace .growth-stat-explanation{font-size:12.5px;line-height:1.6;color:var(--sg-ink-3)}
+:root .synk-workspace .growth-stat-value small{font-size:14px;font-weight:650;letter-spacing:0;margin-left:3px}
+
+/* 작업실: 새로 만들기 판, 펠트 스티커 대신 선 아이콘 */
+:root{--sg-check-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7'/%3E%3C/svg%3E");--sg-book-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z'/%3E%3Cpath d='M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5'/%3E%3C/svg%3E")}
+:root .synk-workspace .wr-kicker,:root .synk-workspace .wr-desk-start-copy .wr-kicker{display:inline-flex;align-items:center;gap:8px;margin-bottom:14px;padding:0;background:none;color:var(--sg-ink-3);font:700 12px/1 var(--sg-sans);letter-spacing:0}
+:root .synk-workspace .wr-kicker:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-lapis)}
+:root .synk-workspace .wr-desk-start{padding:32px 34px!important;gap:34px}
+:root .synk-workspace .wr-desk-start h2{font-size:30px;font-weight:850;letter-spacing:-.05em;line-height:1.2;color:var(--sg-ink)}
+:root .synk-workspace .wr-desk-start-copy p,:root .synk-workspace .wr-desk-start-note,:root .synk-workspace .wr-desk-series-note{color:var(--sg-ink-3)}
+:root .synk-workspace .wr-desk-main-action{width:100%}
+:root .synk-workspace :is(.wr-desk-check,.wr-desk-guide summary)>img[src*="/messenger/assets/"]{display:none}
+:root .synk-workspace .wr-desk-check{display:flex;align-items:center;gap:18px;padding:22px 26px!important}
+:root .synk-workspace .wr-desk-check:before,:root .synk-workspace .wr-desk-guide summary:before{content:'';flex:none;width:46px;height:46px;border-radius:50%;background:var(--sg-surface-1) var(--sg-check-icon) center/22px no-repeat}
+:root .synk-workspace .wr-desk-check h2{font-size:18px;font-weight:800;letter-spacing:-.035em}
+:root .synk-workspace .wr-desk-check .btn.quiet{margin-left:auto;border-color:var(--sg-line-2)}
+:root .synk-workspace .wr-desk-guide summary{display:flex;align-items:center;gap:16px}
+:root .synk-workspace .wr-desk-guide summary:before{background-image:var(--sg-book-icon)}
+:root .synk-workspace .wr-desk-guide summary span{font-size:16px;font-weight:750;letter-spacing:-.03em}
+:root .synk-workspace .wr-intro h2,:root .synk-workspace .wr-section-head h2{font-size:20px;font-weight:800;letter-spacing:-.04em;color:var(--sg-ink)}
+:root .synk-workspace .wr-tip h3{font-size:16px;font-weight:750;letter-spacing:-.03em;color:var(--sg-ink)}
+:root .synk-workspace .wr-tip p{color:var(--sg-ink-2)}
+
+/* 수업(교사 개요가 워크스페이스 문서 안에 그려진다) */
+:root .synk-workspace[data-view="teaching"] .page-body{padding:0;max-width:none}
+:root .teaching-workspace{color:var(--sg-ink);font-family:var(--sg-sans);background:var(--sg-paper);border-radius:var(--sg-r-panel);padding:44px 52px 56px;box-sizing:border-box}
+:root .teaching-workspace .teaching-heading{margin:0 0 30px;padding:0}
+:root .teaching-workspace .teaching-kicker{display:flex;align-items:center;gap:8px;margin:0 0 16px;font:700 12px/1.2 var(--sg-sans);letter-spacing:0;color:var(--sg-ink-3)}
+:root .teaching-workspace .teaching-kicker:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-lapis)}
+:root .teaching-workspace .teaching-heading h1{font-size:44px;line-height:1.12;font-weight:850;letter-spacing:-.05em;color:var(--sg-ink);word-break:keep-all}
+:root .teaching-workspace .teaching-heading h1+p{margin-top:12px;font-size:15px;color:var(--sg-ink-3)}
+:root .teaching-workspace .notice{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:0 13px;border-radius:999px;background:#FDF3D6;color:#6B4C0B;font-size:12.5px;font-weight:650;border:0}
+:root .teaching-workspace .notice:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-butter)}
+:root .teaching-workspace .teaching-setup{margin-top:18px;padding:28px 30px;border:1px solid var(--sg-line);border-radius:var(--sg-r-lg);background:var(--sg-paper)}
+:root .teaching-workspace .teaching-setup h2{font-size:22px;font-weight:800;letter-spacing:-.04em}
+:root .teaching-workspace .teaching-setup p{margin-top:8px;color:var(--sg-ink-3)}
+:root .teaching-workspace .teaching-connect{min-height:46px;padding:0 24px;border:0;border-radius:999px;background:var(--sg-ink)!important;background-image:none!important;color:#fff;font-weight:700}
+:root .teaching-workspace .teaching-footnote{margin-top:28px;padding-top:16px;border-top:1px solid var(--sg-line);font-size:12.5px;color:var(--sg-ink-3)}
+:root .teaching-workspace .plain{border-radius:999px;font-weight:650;color:var(--sg-ink-2)}
+:root .teaching-workspace .plain:hover{color:var(--sg-ink);text-decoration:underline;text-underline-offset:4px}
+:root .teacher-class-controls label{font-size:12.5px;font-weight:700;color:var(--sg-ink-3)}
+:root .teacher-class-controls select{min-height:46px;border:1px solid var(--sg-line-2)!important;border-radius:var(--sg-r-md)!important;font-size:14px!important;color:var(--sg-ink)}
+:root .teacher-class-controls select:focus{border-color:var(--sg-lapis)!important;box-shadow:0 0 0 4px rgba(61,107,201,.16);outline:0}
+:root .teacher-class-mount iframe{border-radius:var(--sg-r-lg);border:1px solid var(--sg-line)!important}
+
+
+/* 내 수업 · 담당 반 개요(교사 앱의 개요가 워크스페이스 문서 안에 그려진다) */
+:root .teacher-overview{color:var(--sg-ink);font-family:var(--sg-sans)}
+:root .overview-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:0;color:var(--sg-ink-3)}
+:root .overview-kicker:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--sg-lapis)}
+:root .overview-heading h2{font-size:30px;font-weight:850;letter-spacing:-.05em;line-height:1.2;color:var(--sg-ink)}
+:root .overview-heading p,:root .overview-class header p{font-size:13px;color:var(--sg-ink-3)}
+:root .overview-felt,:root .overview-work-list button{border:1px solid var(--sg-line-2)!important;border-radius:999px;background:var(--sg-paper)!important;background-image:none!important;color:var(--sg-ink);font:700 13px/1 var(--sg-sans);min-height:40px;padding:0 18px;transition:background .16s var(--sg-ease),border-color .16s var(--sg-ease)}
+:root .overview-felt:hover,:root .overview-work-list button:hover{background:var(--sg-surface-1)!important;border-color:rgba(8,9,12,.26)!important}
+:root .overview-work-list button{border-radius:16px;padding:14px 18px;font-weight:600;line-height:1.5;text-align:left}
+:root .overview-stats{gap:0;padding:0;border:1px solid var(--sg-line);border-radius:20px;overflow:hidden}
+:root .overview-stats>div{padding:18px 22px;border-left:1px solid var(--sg-line)}
+:root .overview-stats>div:first-child{border-left:0}
+:root .overview-stats strong{font-size:34px;font-weight:850;letter-spacing:-.045em;font-variant-numeric:tabular-nums;color:var(--sg-ink)}
+:root .overview-stats span{font-size:12.5px;color:var(--sg-ink-3)}
+:root .overview-class h3{font-size:20px;font-weight:800;letter-spacing:-.04em}
+:root .overview-students{gap:8px}
+:root .overview-student{border:1px solid var(--sg-line)!important;border-radius:16px;background:var(--sg-paper)!important;background-image:none!important;color:var(--sg-ink);padding:13px 12px 12px;transition:border-color .16s var(--sg-ease),background .16s var(--sg-ease)}
+:root .overview-student:hover{transform:none;border-color:var(--sg-line-2)!important;background:#FAFAF9!important}
+:root .overview-student.is-selected{background:var(--sg-ink)!important;border-color:transparent!important;color:#fff}
+:root .overview-student.is-selected :is(.overview-activity,.overview-last,.overview-guidance){color:rgba(255,255,255,.7)}
+:root .overview-avatar,:root .overview-care-count{border-radius:50%;background:var(--sg-surface-2)!important;background-image:none!important;color:var(--sg-ink);font-weight:750}
+:root .overview-student.is-selected .overview-avatar{background:rgba(255,255,255,.14)!important;color:#fff}
+:root .overview-care-count{background:var(--sg-coral)!important;color:#1E0E0A}
+:root .overview-activity{color:var(--sg-ink-2)}
+:root .overview-activity b{color:var(--sg-ink);font-weight:700}
+:root .overview-student.is-selected .overview-activity b{color:#fff}
+:root .overview-guidance{color:var(--sg-ink);font-weight:700}
+:root .overview-guidance.is-practice{color:#B4382B}
+:root .overview-last,:root .overview-source,:root .overview-operating{color:var(--sg-ink-3)}
+:root .overview-work-list{border-top-color:var(--sg-line)}
+
+
+/* 교사 전용 화면(회사 계정 없이 담당 수업만): 같은 어두운 틀 + 위 막대 + 떠 있는 판 */
+:root .teaching-only-shell{min-height:100dvh;background:var(--sg-frame);color:var(--sg-frame-ink)}
+:root .teaching-only-bar{display:flex;align-items:center;gap:14px;min-height:68px;padding:0 24px 0 30px;border-bottom:0;background:transparent}
+:root .teaching-only-bar>a:first-child img{width:44px;height:26px;object-fit:contain;filter:invert(1)}
+:root .teaching-only-bar>span{display:inline-flex;align-items:center;gap:7px;padding:6px 11px 5px;border:1px solid var(--sg-frame-line-2);border-radius:999px;font:700 11.5px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-frame-ink-2)}
+:root .teaching-only-bar>span:before{content:'TEACHING';font:500 10px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-3)}
+:root .teaching-company-entry{display:inline-flex;align-items:center;min-height:40px;padding:0 16px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);color:var(--sg-frame-ink-2);font-size:13px;font-weight:650;text-decoration:none}
+:root .teaching-company-entry:hover{color:var(--sg-frame-ink)}
+:root .teaching-only-shell>main{max-width:1360px;padding:0 24px 24px}
+@media(max-width:700px){:root .teaching-only-bar{padding:0 12px 0 16px;min-height:58px}:root .teaching-only-shell>main{padding:0 8px 16px}}
+
+/* ── 회사 안내 ───────────────────────────────────── */
+:root .synk-workspace .cg-settings-back{display:inline-flex;align-items:center;gap:6px;margin:0 0 18px;padding:0 12px 0 8px;min-height:32px;border:1px solid var(--sg-line);border-radius:999px;background:var(--sg-paper);color:var(--sg-ink-2);font-size:12.5px;font-weight:650}
+:root .synk-workspace .cg-settings-back:hover{border-color:var(--sg-line-2);color:var(--sg-ink)}
+:root .synk-workspace .cg-settings-back svg{width:15px;height:15px}
+:root .synk-workspace .cg-categories{display:inline-flex;flex-wrap:wrap;gap:2px;margin:0 0 26px;padding:4px;border:1px solid var(--sg-line);border-radius:999px;background:var(--sg-surface-1)}
+:root .synk-workspace .cg-categories button{min-height:36px;padding:0 16px;border:0!important;border-radius:999px;background:transparent!important;background-image:none!important;color:var(--sg-ink-3);font-size:13.5px;font-weight:650;box-shadow:none}
+:root .synk-workspace .cg-categories button:hover{color:var(--sg-ink)}
+:root .synk-workspace .cg-categories button[aria-pressed="true"]{background:var(--sg-ink)!important;color:#fff;box-shadow:0 6px 16px -8px rgba(8,9,12,.6)}
+:root .synk-workspace .cg-overview-link img{display:none}
+:root .synk-workspace .cg-atglance{counter-reset:cg}
+:root .synk-workspace .cg-atglance>section{counter-increment:cg}
+:root .synk-workspace .cg-overview-link{display:flex;align-items:center;gap:12px;width:100%}
+:root .synk-workspace .cg-atglance h2 .cg-overview-link:before{width:auto;height:auto;flex:none;background:none!important;transform:none;content:counter(cg,decimal-leading-zero);font:500 11px/1 var(--sg-mono);letter-spacing:.12em;color:var(--sg-ink-3);padding:6px 8px;border:1px solid var(--sg-line-2);border-radius:999px}
+:root .synk-workspace .cg-overview-link svg{margin-left:auto;width:18px;height:18px;color:var(--sg-ink-3);transition:transform .16s var(--sg-ease)}
+:root .synk-workspace .cg-atglance>section:hover .cg-overview-link svg{transform:translateX(3px);color:var(--sg-ink)}
+:root .synk-workspace .cg-atglance dl{display:grid;gap:14px;margin:22px 0 18px}
+:root .synk-workspace .cg-atglance dt{font-size:12px;font-weight:650;color:var(--sg-ink-3)}
+:root .synk-workspace .cg-atglance dd{margin-top:4px;font-size:16px;letter-spacing:-.02em}
+:root .synk-workspace .cg-atglance>section>p{padding-top:14px;border-top:1px solid var(--sg-line);font-size:12.5px;color:var(--sg-ink-3)}
+:root .synk-workspace .cg-overview-description{margin-top:18px;font-size:15px;line-height:1.7;color:var(--sg-ink-2)}
+:root .synk-workspace .cg-refresh{width:40px;height:40px;border:1px solid var(--sg-line-2);border-radius:50%;background:var(--sg-paper);color:var(--sg-ink-2)}
+:root .synk-workspace .cg-search{height:52px;max-width:720px;border:1px solid var(--sg-line-2);border-radius:999px;background:var(--sg-paper);padding:0 8px 0 20px}
+:root .synk-workspace .cg-search:focus-within{border-color:var(--sg-lapis);box-shadow:0 0 0 4px rgba(61,107,201,.16)}
+:root .synk-workspace .cg-search input{font-size:15px}
+:root .synk-workspace .cg-atglance{gap:14px}
+:root .synk-workspace .cg-atglance>section{padding:26px 28px 24px!important}
+:root .synk-workspace .cg-atglance h2 button{font-size:22px;font-weight:800;letter-spacing:-.04em;color:var(--sg-ink)}
+:root .synk-workspace .cg-atglance dd{color:var(--sg-ink);font-weight:650}
+
+/* ── 로그인 ──────────────────────────────────────── */
+/* 2판(10-10 유호님 「너무 투박하다」): 흰 카드를 걷었다. 어두운 틀 위 유리 판에 입력을 띄우고, 판 모서리 밖으로 뻗는 1px 안내선,
+   위에서 떨어지는 옅은 빛, 옅은 격자를 깔았다(Recent AuthKit 노출 11.9만 · Dark Mode Auth Screens 6.6만, Railway · Resend 로그인).
+   모두 멈춰 있는 그림이다. 무지개 테는 입력 칸을 누르고 있을 때만 켠다. */
+:root .auth-layout{position:relative;isolation:isolate;color-scheme:dark;color:var(--sg-frame-ink);
+  background:radial-gradient(18% 64% at 77% -8%,rgba(197,214,245,.2),transparent 74%),radial-gradient(40% 48% at 77% 52%,rgba(61,107,201,.26),transparent 72%),radial-gradient(22% 26% at 93% 86%,rgba(224,92,151,.1),transparent 70%),var(--sg-frame)}
+:root .auth-layout::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
+  background:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px;
+  -webkit-mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%);mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%)}
+:root .auth-intro>.brand-logo{filter:invert(1)}
+:root .auth-intro:after{content:none!important}
+@media(min-width:1000px){
+  :root .auth-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,440px);align-items:center;gap:clamp(48px,7vw,120px);padding:56px clamp(48px,7vw,120px);min-height:100dvh}
+  :root .auth-intro{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;max-width:720px}
+  :root .auth-intro>.brand-logo{width:72px;margin:0 0 56px}
+  :root .auth-intro .intro-body{display:block}
+  :root .auth-intro .eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 22px;font:500 11px/1 var(--sg-mono);letter-spacing:.18em;color:var(--sg-frame-ink-3)}
+  :root .auth-intro .eyebrow:after{content:'';width:56px;height:1px;background:var(--sg-frame-line-2)}
+  :root .auth-intro h1{font-size:clamp(52px,5.6vw,84px);line-height:1.04;font-weight:900;letter-spacing:-.06em;color:var(--sg-on-face);word-break:keep-all}
+  :root .auth-intro .lead{margin-top:26px;font-size:17px;line-height:1.7;color:var(--sg-frame-ink-2)}
+  :root .auth-features{display:flex;flex-wrap:wrap;gap:8px;margin-top:34px}
+  :root .auth-feature{display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:0 16px 0 10px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);color:var(--sg-frame-ink-2);font-size:13px;font-weight:600}
+  :root .auth-feature>span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--sg-frame-ink)}
+  :root .auth-feature .icon{width:14px;height:14px}
+  :root .auth-intro .auth-foot{display:block;margin-top:56px;font:600 12px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-frame-ink-3)}
+  /* 큰 제목은 위가 밝고 아래로 청금석이 짙어지는 금속빛 글자(AuthKit 제목 방식) */
+  @supports ((-webkit-background-clip:text) or (background-clip:text)){
+    :root .auth-intro h1{background:linear-gradient(176deg,#F4F7FD 6%,#C5D6F5 50%,#8BA3D6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  }
+  /* 유리 판 + 모서리 밖으로 뻗는 안내선 */
+  :root .auth-form-side{position:relative;max-width:440px;padding:36px 36px 28px;border-radius:26px;
+    background:radial-gradient(90% 36% at 50% 0%,rgba(197,214,245,.1),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015) 42%),rgba(12,13,17,.55);
+    -webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.08),0 60px 140px -30px rgba(0,0,0,.8)}
+  :root .auth-form-side::before,:root .auth-form-side::after{content:'';position:absolute;pointer-events:none}
+  :root .auth-form-side::before{inset:0 -40px;border-block:1px solid rgba(255,255,255,.08);-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
+  :root .auth-form-side::after{inset:-40px 0;border-inline:1px solid rgba(255,255,255,.08);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
+}
+:root .auth-form-card{background:transparent;color:var(--sg-frame-ink)}
+:root .auth-form-card>.eyebrow{display:inline-flex;align-items:center;gap:9px;margin:0 0 20px;padding:7px 12px 7px 10px;border-radius:999px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);font:500 10.5px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-2)}
+:root .auth-form-card>.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#6FD39B;box-shadow:0 0 0 3px rgba(111,211,155,.14),0 0 10px rgba(111,211,155,.65)}
+:root .auth-form-card h2{margin:0;font-size:34px;line-height:1.16;font-weight:850;letter-spacing:-.05em;color:var(--sg-frame-ink);word-break:keep-all}
+:root .auth-form-card .auth-description{margin:12px 0 26px;font-size:14.5px;line-height:1.65;color:var(--sg-frame-ink-3);word-break:keep-all}
+/* SYNK ID: 유리 알약 + 싱ㅋ 글자 표시, 아래 한 줄은 상태 등(준비 중 노랑 · 쓸 수 있음 초록), 그 뒤 OR 구분선 */
+:root .synk-login-entry{display:grid;gap:10px;margin:0}
+:root .synk-id-button{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;padding:0 20px;border:0;border-radius:999px;background:rgba(255,255,255,.06)!important;background-image:none!important;color:var(--sg-frame-ink);font-size:14.5px;font-weight:750;letter-spacing:-.01em;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.12);transition:background-color .18s var(--sg-ease),box-shadow .18s var(--sg-ease)}
+:root .synk-id-button::before{content:'';flex:none;width:26px;height:15px;background:currentColor;-webkit-mask:url('/wordmark.svg') center/contain no-repeat;mask:url('/wordmark.svg') center/contain no-repeat}
+:root .synk-id-button:not(:disabled):hover{background:rgba(255,255,255,.1)!important;filter:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.22)}
+:root .synk-id-button:disabled{opacity:1;color:rgba(250,250,249,.46);background:rgba(255,255,255,.03)!important;cursor:not-allowed}
+:root .synk-id-button:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px}
+:root .synk-login-entry>.table-foot{display:flex;align-items:flex-start;gap:9px;margin:2px 0 0;padding:0 4px;font-size:12px;line-height:1.6;color:var(--sg-frame-ink-3);word-break:keep-all}
+:root .synk-login-entry>.table-foot::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--sg-butter);box-shadow:0 0 8px rgba(245,196,69,.55)}
+:root .synk-id-button:not(:disabled)+.table-foot::before{background:#6FD39B;box-shadow:0 0 8px rgba(111,211,155,.6)}
+:root .synk-login-entry::after{content:'OR';display:block;margin:14px 0 20px;text-align:center;font:500 10.5px/1 var(--sg-mono);letter-spacing:.22em;color:rgba(250,250,249,.38);background:linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) left center/calc(50% - 26px) 1px no-repeat,linear-gradient(rgba(255,255,255,.1),rgba(255,255,255,.1)) right center/calc(50% - 26px) 1px no-repeat}
+/* 입력: 어두운 칸, 누르고 있을 때만 무지개 테 */
+:root .auth-form-card .form-stack{display:grid;gap:16px}
+:root .auth-form-card .field{display:grid;gap:8px;font-size:12.5px;font-weight:650;letter-spacing:-.005em;color:var(--sg-frame-ink-2)}
+:root .auth-form-card .field small{font-size:12px;font-weight:500;line-height:1.55;color:var(--sg-frame-ink-3)}
+:root .auth-form-card .field input{min-height:52px;padding:0 16px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(255,255,255,.04);color:var(--sg-frame-ink);font:600 15px/1.2 var(--sg-sans);letter-spacing:-.005em;caret-color:var(--sg-lapis-light);box-shadow:none;outline:0;transition:border-color .16s var(--sg-ease),background-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
+:root .auth-form-card .field input::placeholder{color:rgba(250,250,249,.38);font-weight:500}
+:root .auth-form-card .field input:hover{border-color:rgba(255,255,255,.18);background-color:rgba(255,255,255,.055)}
+:root .auth-form-card .field input:focus{outline:0;border-color:transparent;background:linear-gradient(#111217,#111217) padding-box,var(--sg-iris) border-box;box-shadow:0 0 0 4px rgba(61,107,201,.26),0 12px 32px -14px rgba(224,92,151,.5)}
+:root .auth-form-card .field input:-webkit-autofill{-webkit-text-fill-color:var(--sg-frame-ink);caret-color:var(--sg-lapis-light);box-shadow:0 0 0 60px #121318 inset;transition:background-color 99999s step-end}
+:root .auth-form-card .field input:-webkit-autofill:focus{box-shadow:0 0 0 60px #121318 inset,0 0 0 4px rgba(61,107,201,.3)}
+:root .auth-form-card .form-error{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border:0;border-radius:12px;background:rgba(249,104,89,.1);box-shadow:inset 0 0 0 1px rgba(249,104,89,.3);color:#FFB3AA;font-size:13px;font-weight:600;line-height:1.55}
+:root .auth-form-card .form-error::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--sg-coral);box-shadow:0 0 8px rgba(249,104,89,.7)}
+:root .auth-form-card .form-error:empty{display:none}
+/* 들어가기: 흰 알약 + 검은 동그라미 화살표. 손을 올리면 옅은 청금석으로, 화살표가 조금 나아간다 */
+:root .auth-form-card .auth-submit{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:56px;margin-top:6px;padding:0 8px 0 24px;border:0;border-radius:999px;background:var(--sg-frame-ink)!important;background-image:none!important;color:var(--sg-ink);font:800 15.5px/1 var(--sg-sans);letter-spacing:-.02em;text-shadow:none;filter:none;box-shadow:inset 0 -1px 0 rgba(8,9,12,.08),0 18px 44px -20px rgba(197,214,245,.6);transition:background-color .18s var(--sg-ease),box-shadow .18s var(--sg-ease),transform .12s var(--sg-ease)}
+:root .auth-form-card .auth-submit .icon{flex:none;width:40px;height:40px;margin:0;padding:11px;border-radius:50%;background:var(--sg-ink);color:#FAFAF9;transition:transform .18s var(--sg-ease)}
+:root .auth-form-card .auth-submit:hover{background:var(--sg-lapis-light)!important;filter:none;box-shadow:inset 0 -1px 0 rgba(8,9,12,.08),0 22px 54px -20px rgba(197,214,245,.8)}
+:root .auth-form-card .auth-submit:hover .icon{transform:translateX(3px)}
+:root .auth-form-card .auth-submit:active{transform:translateY(1px);filter:none}
+:root .auth-form-card .auth-submit:focus-visible{outline:2px solid var(--sg-lapis-light);outline-offset:3px}
+:root .auth-form-card .auth-submit:disabled{opacity:.55;cursor:progress;transform:none}
+:root .auth-form-card .auth-form-footer{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);color:var(--sg-frame-ink-3);font-size:12.5px;line-height:1.7;word-break:keep-all}
+:root .auth-form-card .auth-form-footer .text-button{margin-top:8px;padding:0;color:var(--sg-lapis-light);font-size:13px;font-weight:700;text-decoration:underline;text-decoration-color:rgba(197,214,245,.4);text-underline-offset:3px}
+@media(prefers-reduced-motion:reduce){:root .auth-form-card .auth-submit,:root .auth-form-card .auth-submit .icon{transition:none}:root .auth-form-card .auth-submit:hover .icon,:root .auth-form-card .auth-submit:active{transform:none}}
+/* 휴대폰·좁은 창: 판을 걷고 입력이 바로 어두운 바탕 위에 뜬다(Resend 방식), 빛은 위에서 */
+@media(max-width:999.98px){
+  :root .auth-layout{justify-content:flex-start;gap:30px;padding:48px 20px 40px;background:radial-gradient(70% 38% at 50% -4%,rgba(197,214,245,.14),transparent 72%),radial-gradient(80% 40% at 50% 26%,rgba(61,107,201,.16),transparent 72%),var(--sg-frame)}
+  :root .auth-layout::before{-webkit-mask-image:radial-gradient(90% 46% at 50% 18%,#000,transparent 78%);mask-image:radial-gradient(90% 46% at 50% 18%,#000,transparent 78%)}
+  :root .auth-intro{width:100%;max-width:420px;justify-content:flex-start;align-items:flex-start}
+  :root .auth-intro>.brand-logo{width:56px;margin:0}
+  :root .auth-form-side{width:100%;max-width:420px;padding:0;background:transparent}
+  :root .auth-form-card h2{font-size:30px}
+}
+
+/* 첫 로딩·연결 오류 화면: 바탕이 어두워졌으니 글자·로고를 밝게, 오류 상자는 흰 판으로(10-10 공식 검수 P2) */
+:root .initial-loading{color:var(--sg-frame-ink-3)}
+:root .initial-loading>.brand-logo{filter:invert(1)}
+:root .initial-loading>p{color:var(--sg-frame-ink-3);font-size:14px}
+:root .initial-loading .loading-line{background:rgba(255,255,255,.22)}
+:root .initial-loading .empty{max-width:440px;margin:0 auto;padding:32px 30px;border:0;border-radius:var(--sg-r-panel);background:var(--sg-paper);color:var(--sg-ink)}
+:root .initial-loading .empty h3{font-size:20px;font-weight:800;letter-spacing:-.03em;color:var(--sg-ink)}
+:root .initial-loading .empty p{font-size:14px;color:var(--sg-ink-3)}
+:root .initial-loading .empty .btn.primary{min-height:46px;padding:0 22px;border:0;border-radius:999px;background:var(--sg-ink)!important;background-image:none!important;color:#fff;filter:none;box-shadow:none}
+
+/* ── 남은 펠트 걷기: 앞 층에서 펠트 그림을 칠하던 규칙을 종류별로 바꾼다 ── */
+/* 장식 스티커(대체 글 없는 그림)는 업무 화면에서 숨긴다. 마린은 남긴다. */
+:root .synk-workspace :is(.page-body,#overlay) img[alt=""]:is([src*="/messenger/assets/sticker-"],[src*="laptop-felt"],[src*="thread-shift"]),
+:root #overlay img[alt=""]:is([src*="/messenger/assets/sticker-"],[src*="laptop-felt"]),
+:root .synk-workspace .maker-intro>img{display:none!important}
+:root .synk-workspace .wr-trend-library>summary::before{background-image:none!important;content:none!important}
+/* 단추 */
+:root .synk-workspace :is(.cd-button,.wp-cloud .btn,.cr-guide-card .btn){background-image:none!important;background-color:var(--sg-paper)!important;border:1px solid var(--sg-line-2)!important;border-radius:999px!important;color:var(--sg-ink)!important;filter:none!important;box-shadow:none!important;font-weight:650}
+:root .synk-workspace :is(.cd-primary,.client-desk>.cd-toolbar>.cd-button[data-client="new"],.device-notification-primary,.wp-cloud .btn.wp-sync-primary){background-image:none!important;background-color:var(--sg-ink)!important;border:0!important;border-radius:999px!important;color:#fff!important;filter:none!important;box-shadow:0 8px 18px -10px rgba(8,9,12,.6)!important;font-weight:700}
+:root .device-notification-primary{background-image:none!important;background-color:var(--sg-ink)!important;color:#fff!important;border-radius:999px!important;filter:none!important}
+/* 꼬리표 */
+:root .synk-workspace :is(.bq-tag,.cd-tag,.wp-sources b,.subtitle-cue header b,.wr-daily-summary>strong,.wp-task span){background-image:none!important;background-color:var(--sg-surface-2)!important;border:0!important;border-radius:999px!important;color:var(--sg-ink)!important;filter:none!important;box-shadow:none!important;font-weight:650}
+:root .synk-workspace .wp-task input:checked+span{background-image:none!important;background-color:var(--sg-ink)!important;color:#fff!important}
+:root .synk-workspace :is(.wr-daily-rank,.wr-daily-rank[data-unranked]){background-image:none!important;background-color:var(--sg-surface-2)!important;border-radius:999px!important;color:var(--sg-ink)!important;font-family:var(--sg-mono);filter:none!important}
+/* 눌린 탭·지역·출처 */
+:root .synk-workspace :is(.maker-tabs,.wr-daily-regions,.cr-source-tabs){gap:6px}
+:root .synk-workspace :is(.maker-tabs,.wr-daily-regions)>button,:root .synk-workspace .cr-source-tabs button{background-image:none!important;background-color:var(--sg-paper)!important;border:1px solid var(--sg-line-2)!important;border-radius:999px!important;color:var(--sg-ink-2)!important;filter:none!important;box-shadow:none!important;font-weight:650}
+:root .synk-workspace .cr-source-tabs button{border-radius:var(--sg-r-md)!important}
+:root .synk-workspace :is(.maker-tabs,.wr-daily-regions)>button[aria-pressed="true"],:root .synk-workspace .cr-source-tabs button[aria-pressed="true"]{background-color:var(--sg-ink)!important;border-color:transparent!important;color:#fff!important;box-shadow:0 8px 18px -10px rgba(8,9,12,.6)!important}
+:root .synk-workspace .cr-source-tabs button[aria-pressed="true"] *{color:inherit!important}
+/* 체크 상자 */
+:root .synk-workspace :is(.bq-editor input[type=checkbox],.pc-checks input[type=checkbox],.wp-practice input[type=checkbox],.wp-cloud input[type=checkbox]){appearance:none;-webkit-appearance:none;width:22px;height:22px;flex:none;border:1.5px solid rgba(8,9,12,.46)!important;border-radius:7px!important;background:var(--sg-paper)!important}
+:root .synk-workspace :is(.bq-editor,.pc-checks,.wp-practice,.wp-cloud) input[type=checkbox]:checked{border:0!important;background:var(--sg-ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12 4.5 4.5L19 7'/%3E%3C/svg%3E") center/14px no-repeat!important}
+/* 작업실 머리(제작 도구 등) */
+:root .synk-workspace .maker-intro{display:block;margin:0 0 30px;padding:0;background:none!important;border:0}
+:root .synk-workspace .maker-intro h1{margin-top:2px;font-size:44px;line-height:1.12;font-weight:850;letter-spacing:-.05em;color:var(--sg-ink)}
+:root .synk-workspace .maker-intro p{margin-top:12px;font-size:15px;color:var(--sg-ink-3)}
+/* 설정 목록: 펠트 스티커 대신 선 아이콘 동그라미 */
+:root .workspace-settings-list{display:grid;gap:4px}
+:root .workspace-settings-link{border-radius:18px!important;padding:12px 14px!important;gap:14px!important}
+:root .workspace-settings-link:hover{background:var(--sg-surface-1)!important}
+:root .workspace-settings-link>.workspace-felt-icon{width:44px!important;height:44px!important;border-radius:50%;background:var(--sg-surface-1) var(--sg-settings-icon,var(--sg-book-icon)) center/20px no-repeat!important;filter:none!important}
+:root .workspace-settings-link>.workspace-felt-icon img{display:none!important}
+:root .workspace-settings-link[data-tab="members"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='9' cy='8' r='3.5'/%3E%3Cpath d='M2.5 20a6.5 6.5 0 0 1 13 0'/%3E%3Cpath d='M16 4.6a3.5 3.5 0 0 1 0 6.8M21.5 20a6.5 6.5 0 0 0-4-6'/%3E%3C/svg%3E")}
+:root .workspace-settings-link[data-tab="settings"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h10M18 7h2M4 17h2M10 17h10'/%3E%3Ccircle cx='16' cy='7' r='2.2'/%3E%3Ccircle cx='8' cy='17' r='2.2'/%3E%3C/svg%3E")}
+:root .workspace-settings-link[data-action="synk-id-account"]{--sg-settings-icon:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5' width='18' height='14' rx='3'/%3E%3Ccircle cx='9' cy='11' r='2.2'/%3E%3Cpath d='M5.8 16a3.4 3.4 0 0 1 6.4 0M14.5 10h4M14.5 13.5h3'/%3E%3C/svg%3E")}
+:root .workspace-settings-link strong{font-size:15px;font-weight:750;letter-spacing:-.02em;color:var(--sg-ink)}
+:root .workspace-settings-link small{font-size:12.5px;color:var(--sg-ink-3)}
+:root .workspace-settings-footer{border-top:1px solid var(--sg-line);margin-top:8px;padding-top:12px}
+
+/* ── 겹창 바탕과 빠른 검색(어두운 유리 HUD) ─────────── */
+:root .modal-backdrop{background:rgba(6,7,9,.52)!important;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+:root .modal-head{border-bottom:1px solid var(--sg-line)}
+:root .modal-head p{color:var(--sg-ink-3)}
+:root .modal-close{width:40px;height:40px;border-radius:50%;border:1px solid var(--sg-line-2);background:var(--sg-paper);color:var(--sg-ink-2)}
+:root .modal-close:hover{background:var(--sg-surface-1);color:var(--sg-ink)}
+/* :has()를 모르는 브라우저에서는 어두운 판이 깔리지 않으니 글자색도 함께 바꾸지 않는다 */
+@supports selector(:has(*)){
+  :root #overlay .modal:has(.command-input){background:rgba(16,17,21,.86)!important;border:0!important;box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(255,255,255,.08),0 40px 120px rgba(0,0,0,.6)!important;-webkit-backdrop-filter:blur(26px) saturate(1.6);backdrop-filter:blur(26px) saturate(1.6);color:var(--sg-frame-ink)}
+  :root #overlay .modal:has(.command-input) .modal-head,:root #overlay .modal:has(.command-input) .modal-body{background:transparent!important;border-bottom-color:rgba(255,255,255,.08)}
+  :root #overlay .modal:has(.command-input) h2{color:var(--sg-frame-ink);font-size:22px}
+  :root #overlay .modal:has(.command-input) .modal-head p{color:var(--sg-frame-ink-3)}
+  :root #overlay .modal:has(.command-input) .modal-close{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.1);color:var(--sg-frame-ink-2)}
+  :root #overlay .command-input{display:flex;align-items:center;gap:12px;min-height:54px;padding:0 18px;border:0!important;border-radius:16px!important;background:rgba(255,255,255,.07)!important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);color:var(--sg-frame-ink-3)}
+  :root #overlay .command-input:focus-within{box-shadow:inset 0 0 0 1px rgba(197,214,245,.5),0 0 0 4px rgba(61,107,201,.22)}
+  :root #overlay .command-input input{background:transparent!important;border:0!important;color:var(--sg-frame-ink)!important;font-size:16px;outline:0!important;box-shadow:none!important}
+  :root #overlay .command-input input::placeholder{color:var(--sg-frame-ink-3)}
+  :root #overlay .command-label{font:500 10.5px/1 var(--sg-mono);letter-spacing:.16em;text-transform:uppercase;color:var(--sg-frame-ink-3);padding:16px 12px 8px}
+  :root #overlay .command-item{border-radius:14px;color:var(--sg-frame-ink-2);min-height:44px}
+  :root #overlay .command-item strong{color:var(--sg-frame-ink)}
+  :root #overlay .command-item small{color:var(--sg-frame-ink-3)}
+  :root #overlay .command-item .icon,:root #overlay .command-item svg{color:var(--sg-frame-ink-3)}
+  :root #overlay .command-item:hover,:root #overlay .command-item[aria-selected="true"],:root #overlay .command-item.active{background:rgba(255,255,255,.09)!important;color:var(--sg-frame-ink)}
+  :root #overlay .command-item:focus-visible{background:rgba(255,255,255,.09)!important;color:var(--sg-frame-ink);outline:0;box-shadow:inset 0 0 0 1.5px var(--sg-lapis-light)}
+  :root #overlay .command-footer{border-top:1px solid rgba(255,255,255,.08);color:var(--sg-frame-ink-3);font-size:12px}
+  :root #overlay .command-footer kbd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:7px;background:rgba(255,255,255,.08);color:var(--sg-frame-ink-2);font:500 10.5px/1 var(--sg-mono)}
+}
+:root #overlay .platform-mark{border-radius:8px;font:600 10px/1 var(--sg-mono)}
+
+/* ── 중간 폭 ─────────────────────────────────────── */
+@media(min-width:701px) and (max-width:1100px){
+  :root .synk-workspace,:root .synk-workspace[data-sidebar-open="false"]{grid-template-columns:88px 224px minmax(0,1fr)}
+  :root .synk-workspace[data-sidebar-open="false"],:root .synk-workspace[data-view="messenger"]{grid-template-columns:88px 0 minmax(0,1fr)}
+  :root .workspace-wordmark{min-width:88px;padding-left:24px}
+  :root .workspace-wordmark:after{display:none}
+  :root .workspace-rail{padding:0 10px 12px}
+  :root .synk-workspace .page-body{padding:36px 36px 64px}
+  :root .synk-workspace .page-heading h1,:root .synk-workspace .cg-heading h1{font-size:38px}
+  :root .synk-workspace .marin-welcome h1{font-size:44px}
+}
+
+/* ── 휴대폰: 아래 유리 알약 메뉴 ───────────────────── */
+@media(max-width:700px){
+  :root .synk-workspace,:root .synk-workspace[data-sidebar-open="false"],:root .synk-workspace[data-view="messenger"]{grid-template-columns:minmax(0,1fr);grid-template-rows:58px minmax(0,1fr) calc(78px + env(safe-area-inset-bottom))}
+  :root .workspace-appbar{padding:0 10px;gap:8px}
+  :root .workspace-wordmark{min-width:0;padding:0 2px 0 8px;gap:0}
+  :root .workspace-wordmark img{width:38px;height:23px}
+  :root .workspace-wordmark:after{display:none}
+  :root .workspace-global-search{height:40px;padding:0 12px 0 14px;font-size:13px}
+  :root .workspace-global-search kbd{display:none}
+  :root .workspace-platform-entry{min-height:40px;padding:0 13px;font-size:12px}
+  :root .workspace-platform-entry:before{display:none}
+  :root .appbar-account{min-height:40px;width:40px;padding:0;justify-content:center}
+  :root .appbar-account:before{display:none}
+  :root .appbar-account>span{display:none}
+  :root .appbar-account .icon{display:none}
+  :root .appbar-account{background:transparent;box-shadow:none}
+  :root .appbar-avatar{width:34px;height:34px}
+  :root .synk-workspace .cg-categories{display:flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+  :root .synk-workspace .cg-categories::-webkit-scrollbar{display:none}
+  :root .synk-workspace .cg-categories button{flex:none}
+  :root .workspace-appbar .workspace-sidebar-toggle,:root .synk-workspace[data-sidebar-open="false"] .workspace-appbar .workspace-sidebar-toggle{width:40px;height:40px}
+  :root .workspace-rail{grid-row:3;width:auto;align-self:stretch;justify-self:stretch;flex-direction:row;align-items:center;justify-content:space-between;gap:4px;margin:0 12px calc(12px + env(safe-area-inset-bottom));padding:6px;border-radius:999px;background:var(--sg-glass)!important;box-shadow:var(--sg-glass-edge);-webkit-backdrop-filter:var(--sg-blur);backdrop-filter:var(--sg-blur);border:0}
+  :root .workspace-rail .rail-item,:root .workspace-rail .rail-item+.rail-item,:root .workspace-rail .rail-item:first-child{flex:1;width:auto;max-width:none;min-height:54px;margin:0;padding:6px 2px;gap:3px;border-radius:999px;font-size:10.5px}
+  :root .workspace-rail .rail-item .icon{width:20px;height:20px}
+  :root .workspace-rail .rail-unread,:root .workspace-rail .messenger-unread{top:2px;right:calc(50% - 26px)}
+  :root .synk-workspace>.main,:root .synk-workspace[data-view="messenger"]>.main{margin:0 8px;border-radius:20px}
+  :root .synk-workspace[data-sidebar-open="true"]>.main{border-radius:20px}
+  :root .synk-workspace>.sidebar,:root .synk-workspace[data-view="messenger"]>.sidebar,:root .synk-workspace[data-sidebar-open="false"]>.sidebar{inset:58px auto calc(78px + env(safe-area-inset-bottom)) 8px;width:min(290px,84vw);margin:0;border-radius:20px;border:1px solid var(--sg-line);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  :root .synk-workspace[data-sidebar-open="true"]>.workspace-sidebar-scrim:not([hidden]){inset:0;background:rgba(3,4,6,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  :root .synk-workspace .page-body{padding:28px 20px 48px}
+  :root .synk-workspace .page-heading,:root .synk-workspace .cg-heading{margin-bottom:24px}
+  :root .synk-workspace .page-heading h1,:root .synk-workspace .cg-heading h1,:root .synk-workspace[data-growth-home="true"] .page-heading h1{font-size:32px}
+  :root .synk-workspace .page-heading p{font-size:14px}
+  :root .synk-workspace[data-view="home"] .page-body{justify-content:flex-start;padding:36px 18px 40px}
+  :root .teaching-workspace{padding:26px 12px 40px;border-radius:20px}
+  :root .teaching-workspace .teaching-heading{padding:0 4px}
+  :root .teacher-class-mount iframe{border:0!important;border-radius:14px}
+  :root .teaching-workspace .teaching-heading h1{font-size:30px}
+  :root .synk-workspace .marin-welcome>.marin-mascot{width:54px;height:70px}
+  :root .synk-workspace .marin-welcome h1{font-size:36px}
+  :root .synk-workspace .marin-welcome p{font-size:14.5px}
+  :root .synk-workspace .marin-compose form{min-height:112px;border-radius:24px;padding:14px 14px 14px 18px}
+  :root .synk-workspace .marin-compose textarea{font-size:16px;min-height:56px}
+  :root .synk-workspace .growth-stats{grid-template-columns:1fr 1fr}
+  :root .synk-workspace .growth-stat:nth-child(odd){border-left:0!important}
+  :root .synk-workspace .growth-stat:nth-child(n+3){border-top:1px solid var(--sg-line)!important}
+  :root .synk-workspace .growth-stat-value,:root .synk-workspace .growth-stat.is-primary .growth-stat-value{font-size:32px}
+  :root .workspace-messenger{border-radius:20px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  :root .synk-workspace *,:root #overlay *{transition:none!important;animation:none!important}
+}
