@@ -29,6 +29,27 @@
   --face:#3D6BC9;--on-face:#FFFFFF;--glow:#3D6BC9;
   color-scheme:dark;
 }
+/* 낮: 데스크톱 launcher.css와 같은 값. 위쪽 캡슐의 테마 단추(theme.js)가 data-theme을 night·day·system으로 고른다(기본 밤). */
+:root[data-theme=day]{
+  --bg:#ECECEA;--panel:#FFFFFF;--surface-1:#F5F5F4;--surface-2:#EDEDEB;--surface-3:#E2E2E0;
+  --line:rgba(8,9,12,.08);--line-2:rgba(8,9,12,.15);
+  --ink:#08090C;--ink-2:rgba(8,9,12,.7);--ink-3:rgba(8,9,12,.56);--ink-4:rgba(8,9,12,.2);--on-ink:#FFFFFF;
+  --glass:rgba(255,255,255,.74);--glass-strong:rgba(255,255,255,.9);
+  --glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 12px 30px rgba(8,9,12,.12);
+  --shadow:0 26px 64px rgba(8,9,12,.16);--shadow-sm:0 10px 26px rgba(8,9,12,.1);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:light){
+  :root[data-theme=system]{
+  --bg:#ECECEA;--panel:#FFFFFF;--surface-1:#F5F5F4;--surface-2:#EDEDEB;--surface-3:#E2E2E0;
+  --line:rgba(8,9,12,.08);--line-2:rgba(8,9,12,.15);
+  --ink:#08090C;--ink-2:rgba(8,9,12,.7);--ink-3:rgba(8,9,12,.56);--ink-4:rgba(8,9,12,.2);--on-ink:#FFFFFF;
+  --glass:rgba(255,255,255,.74);--glass-strong:rgba(255,255,255,.9);
+  --glass-edge:inset 0 1px 0 #FFFFFF,inset 0 0 0 1px rgba(8,9,12,.1),0 12px 30px rgba(8,9,12,.12);
+  --shadow:0 26px 64px rgba(8,9,12,.16);--shadow-sm:0 10px 26px rgba(8,9,12,.1);
+  color-scheme:light;
+  }
+}
 /* 사업 색: SNS 키트 계정 테마와 같은 값. --word는 포스터의 큰 한글(표시 전용). */
 .brand-world,.app-card.world,.detail-hero.world,.quick-card[data-shortcut=world],.benefit-rehearsal,.quick-card[data-shortcut=rehearsal],.quick-card[data-shortcut=teacher]{--face:#F96859;--on-face:#1E0E0A;--glow:#F96859;--word:'월드';--len:2}
 .brand-messenger,.app-card.messenger,.detail-hero.messenger,.quick-card[data-shortcut=messenger]{--face:#17181C;--on-face:#C5D6F5;--glow:#3D6BC9;--word:'워크\A스페이스';--len:4}
@@ -121,6 +142,22 @@ body.launcher{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);fo
 .account-entry{flex:none;display:flex;align-items:center;gap:8px;height:42px;padding:0 14px 0 6px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);font-size:.8125rem;font-weight:750;white-space:nowrap}
 .account-entry:hover{background:var(--surface-3)}
 .account-entry [data-account-label]{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+/* 화면 테마 단추: 밤(달)·낮(해)·기기 설정(모니터) 차례로 바뀐다. */
+.theme-toggle{flex:none;display:grid;place-items:center;width:42px;height:42px;border-radius:999px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink-2);transition:background .16s var(--ease),color .16s var(--ease)}
+.theme-toggle:hover{background:var(--surface-3);color:var(--ink)}
+.theme-toggle .i{display:none}
+:root:not([data-theme=day]):not([data-theme=system]) .theme-toggle .i-moon,:root[data-theme=day] .theme-toggle .i-sun,:root[data-theme=system] .theme-toggle .i-monitor{display:block}
+/* 넓은 창: 검색은 캡슐 안 아이콘 하나로 줄여 두고, 누르거나 Ctrl+K·/를 누르면 펼친다(theme.js). 글자가 남아 있으면 펼친 채로 둔다. */
+@media (min-width:761px){
+  #search-form{flex:0 0 42px;width:42px;max-width:none;padding:0;overflow:hidden;background:var(--surface-2);transition:flex-basis .22s var(--ease),width .22s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease)}
+  #search-form>.i{position:absolute;left:12px;top:12px;pointer-events:none;color:var(--ink-2)}
+  #search-form input{position:absolute;inset:0;padding:0 46px 0 40px;opacity:0;cursor:pointer}
+  #search-form button{position:absolute;top:5px;right:5px;opacity:0;pointer-events:none}
+  #search-form:hover{background:var(--surface-3)}
+  #search-form:is(:focus-within,:has(input:not(:placeholder-shown))){flex-basis:min(380px,34vw);width:min(380px,34vw);background:color-mix(in srgb,var(--bg) 55%,transparent)}
+  #search-form:is(:focus-within,:has(input:not(:placeholder-shown))) input{opacity:1;cursor:text}
+  #search-form:is(:focus-within,:has(input:not(:placeholder-shown))) button{opacity:1;pointer-events:auto}
+}
 
 /* ── 본문 공통 ── */
 .launcher main{flex:1;width:100%;max-width:1312px;margin:0 auto;padding:30px 36px 64px;outline:none}
