@@ -335,10 +335,29 @@ test('a game beside the account synchroniser folds with it and reads like a full
   assert.equal(s.log.length, full.events().length);
 });
 
-test('a device store with a ledger is never offered to a synchroniser', () => {
+test('a history folded without a server is never sent, even once sharing is turned on', async () => {
+  // A guest device: the kept entries can still be read; the folded history cannot be sent.
   const time = timeline(), game = createGame({ gameId: 'guest', map, storage: memory(), clock: time.clock, fold: { max: 30, keep: 20, ageMs: 0 } });
   for (const step of script(4, 40, T0)) play(game, step, time.set);
-  assert.throws(() => game.syncPort.events(), error => error.code === 'HISTORY_FOLDED');
+  assert.ok(game.syncPort.events().length > 0 && game.syncPort.events().length <= 30, 'kept entries are readable');
+  assert.equal(game.syncPort.partial(), true);
   assert.throws(() => game.syncPort.importEvents([]), error => error.code === 'HISTORY_FOLDED');
   assert.equal(game.syncPort.settle(['x']), false, 'only a synchronised store settles');
+  // An account played with sharing off folds the same way; when sharing is turned on later the
+  // host opens that store as a synchronised one, and the synchroniser refuses to send it.
+  const s = server(), storage = memory(), later = timeline();
+  const off = createGame({ gameId: 'sharing-off', map, storage, storageScope: 'account', accountKey: ACCOUNT, historyComplete: true, clock: later.clock, fold: { max: 30, keep: 20, ageMs: 0 } });
+  for (const step of script(5, 40, T0)) play(off, step, later.set);
+  assert.ok(stored(storage).ledger?.local, 'the summary says no server received these entries');
+  const on = device(s, later.clock, { storage });
+  assert.equal(on.game.syncPort.partial(), true);
+  assert.equal(storage.getItem(`${SYNC_KEY}.${ACCOUNT}`), null, 'none of it is even queued for sending');
+  const status = await on.sync.start();
+  assert.equal(status.phase, 'blocked');
+  assert.equal(status.code, 'HISTORY_FOLDED');
+  assert.equal(s.log.length, 0, 'nothing reached the server');
+  assert.equal(on.game.summary().counts.attempts, off.summary().counts.attempts, 'the device still reads its whole history');
+  // Folding more entries on top of such a summary keeps the mark.
+  const kept = off.events();
+  assert.equal(Ledger.fold(stored(storage).ledger, kept, { scope, log: kept }).local, true);
 });

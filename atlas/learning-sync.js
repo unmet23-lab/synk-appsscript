@@ -11,7 +11,7 @@ const canonical = value => JSON.stringify(value, function (_key, entry) {
 const sameEvent = (a, b) => canonical(a) === canonical(b);
 const failure = (code, message, extra = {}) => Object.assign(new Error(message), { code, ...extra });
 const errorCode = error => error?.code || error?.error?.code || error?.body?.error?.code || 'NETWORK_ERROR';
-const FATAL = new Set(['REVISION_CONFLICT', 'LEARNING_DISABLED', 'FEATURE_DISABLED', 'HISTORY_CAPACITY', 'EVENT_CONFLICT', 'INVALID_EVENTS', 'INVALID_RESPONSE', 'STORAGE_ERROR', 'UNAUTHORIZED', 'AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED', 'MEMORY_SESSION_ENDED']);
+const FATAL = new Set(['REVISION_CONFLICT', 'LEARNING_DISABLED', 'FEATURE_DISABLED', 'HISTORY_CAPACITY', 'HISTORY_FOLDED', 'EVENT_CONFLICT', 'INVALID_EVENTS', 'INVALID_RESPONSE', 'STORAGE_ERROR', 'UNAUTHORIZED', 'AUTH_REQUIRED', 'AUTH_SESSION_MISSING', 'SESSION_REVOKED', 'MEMORY_SESSION_ENDED']);
 
 function createLearningSync({ adapter, accountKey, revision, storage, transport, onStatus = () => {},
   batchSize = 100, maxAttempts = 3, maxPages = 200, timeoutMs = 15000,
@@ -57,6 +57,9 @@ function createLearningSync({ adapter, accountKey, revision, storage, transport,
     port.markComplete(whole());
   } catch (error) { block(error?.code ? error : failure('STORAGE_ERROR', 'Atlas sync: unreadable outbox; preserved without replacement')); }
   const collect = () => {
+    // A log that summarised entries while it was not synchronised cannot be sent whole; sending
+    // the rest would leave the server's history quietly incomplete.
+    if (typeof port.partial === 'function' && port.partial()) throw failure('HISTORY_FOLDED', 'Atlas sync: this log summarised entries no server received; it cannot be sent');
     const local = port.events(), localIds = new Set(local.map(event => event.id));
     if (state.pending.some(eventId => !localIds.has(eventId))) throw failure('STORAGE_ERROR', 'Atlas sync: queued history does not match its account log');
     // Entries the log folded away are on the server: they are no longer expected locally.
