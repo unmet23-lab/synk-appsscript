@@ -112,7 +112,7 @@ function 끼우기(자료) {
 /* ── 실행 ─────────────────────────────────────────────────────── */
 const DIR = 기억폴더();
 if (!fs.existsSync(DIR)) {
-  console.error(`기억 폴더가 없다: ${DIR}\n  다른 기계면 SYNK_MEMORY_DIR 로 지정하거나 node tools/기억데려오기.js 를 먼저 돌린다.`);
+  console.error(`기억 폴더가 없다: ${DIR}\n  공식 앱에서 기억을 확인하거나 기존 폴더를 SYNK_MEMORY_DIR로 지정한다.`);
   process.exit(1);
 }
 

@@ -1,24 +1,17 @@
 # SYNK — 저장소 안내
 
-GPT와 Claude가 함께 쓰는 저장소 안내다. `CLAUDE.md`는 이 파일을 가져오며 별도 지침을 두지 않는다.
+한국어로 대화한다. GPT와 Claude는 이 문서를 공동 입구로 쓰며 `CLAUDE.md`는 `@AGENTS.md`만 가져온다.
 
-작업 시작·재개 때 [AI 운영 원칙](docs/AI_운영원칙.md)을 읽고 이번 작업에 필요한 자료만 확인한다. 담당 원문은 [문서 지도](docs/문서_지도.md)에서 찾는다.
+작업 시작·재개 때 [AI 운영 원칙](docs/AI_운영원칙.md)을 읽는다. 역할·벤치마킹·이어받기·비용 기준은 그 문서 한 곳에서 관리하며, 이번 요청에 필요한 원문만 [문서 지도](docs/문서_지도.md)에서 찾는다.
 
-- **Atlas는 기존 8개 엔진의 총칭이다.** “아틀라스 엔진 발전” 요청은 현재 작업하는 GPT·Claude가 공식 하네스에서 [담당 엔진의 원문·코드](docs/엔진8종_상향설계_v3.md#engine-owner-sources)를 골라 개선하는 일이다. Atlas의 작업 지원은 원본 안내·공통 계약·연결 보조까지이며 별도 선택기·자체 하네스를 만들지 않는다. 상세는 [Atlas 정의와 발전 범위](docs/아틀라스_설계.md#atlas-engine-ownership)를 따른다.
+## 파일별 확인
 
-- Apps Script에는 `Code.js`·`엔진_synkbrief.js`만 올라가고 두 파일은 전역 이름공간을 공유한다(2026-10-02 학원 운영 시스템 삭제). `엔진_콘텐츠AI.js`는 Strata 문법 뱅크의 원천이라 저장소에만 둔다. 도구는 `tools/`, 관련 시험은 `node --test tests/<파일>`이다.
-- Apps Script 라이브 배포가 요청됐을 때만 `deploy`의 실행 정보를 사용한다. `clasp pull`로 작업본을 덮어쓰지 않는다.
-- 작업 분담·재개·검토·예약은 현재 공식 앱·CLI의 기능을 먼저 쓴다. 과거 `codex-build`·`codex-review` 절차는 일반 작업의 선행 조건이 아니다.
-- 공용 작업본에서 git이 `index.lock` 때문에 멈추면 몇 초 뒤 다시 한다. 10초 넘게 남으면 `node tools/git잠금.js`로 주인을 가리고, `--정리`는 주인 없는 잠금만 지운다.
-
-## 해당 파일을 다룰 때
-
-- `Code.js`·`엔진_synkbrief.js`·`appsscript.json`: 함수·전역 이름 충돌을 확인한다. 웹앱은 익명 공개라 `doGet`은 HtmlService를 돌려주지 않는다.
-- `tools/*굽기*`·`tools/밤일감.js`·`tools/lib/마스코트자산.js`: 자산 경로는 `tools/lib/마스코트자산.js`에서 확인한다. 밤 작업은 기존 `tools/밤일감.js`의 실행·로그·결과 위치를 확인하고 원본과 다른 작업을 보존한다.
-- `docs/**/*.html`·`docs/발표물/**`·`docs/홈페이지_시안/**`·`docs/SHIFT/배너/**`: 발표물의 `_src_*.html`이 원고이며 `tools/발표물빌드.js`가 출력을 만든다. 자립형 HTML의 폰트 삽입은 `tools/lib/브랜드폰트.js`를 사용한다. 마스코트 4K 원본과 파생 이미지를 구분하고 투명 영역·해상도·`img`·`svg` 표시 크기를 실제 배경에서 확인한다.
-- SNS 계정 콘텐츠(캐러셀·카드·표지·썸네일·링크드인 문서·영상 위 글자·영상 모션)와 `캐러셀/**`: 무엇을 왜 만들지는 `docs/마케팅/콘텐츠_제작방식_v2_20261002.md`(트리거·훅·맞춤 프로그램·씨앗 계정·72시간 판정)에서 정하고, 화면은 `docs/디자인/SNS키트/README.md`에서 출발해 `node tools/SNS키트굽기.js`(원고 md 캐러셀은 `node 캐러셀/굽기.js`)로 구워 검사한다. 영상은 `node tools/SNS키트_영상연결.js`로 키트를 넣는다. 옛 SNS 판은 2026-10-01 키트로 모두 바꿨다.
-- 학생·사용자가 보는 화면(`experiences/**`, 맞춤 도구, 앱 시안)의 단추·타일·배지·칩·아이템 아이콘: `docs/디자인/펠트부품/README.md`의 실제 펠트 부품과 마감 점검표를 따른다.
-- `docs/_ops/**`: `결정.md`에는 실제 확정과 근거, `트랙.md`에는 이어 할 일과 결과 위치를 적는다. 해당 항목만 갱신하며 과거 기록을 새 작업의 의무로 삼지 않는다.
+- Apps Script 배포 대상은 `Code.js`·`엔진_synkbrief.js`다. 전역 이름공간을 공유하므로 함수·전역 충돌을 확인한다. 익명 웹앱의 `doGet`은 HtmlService를 반환하지 않는다. `엔진_콘텐츠AI.js`는 Strata의 저장소 원천이다.
+- Apps Script 라이브 배포를 요청받았을 때만 `deploy`를 쓴다. `clasp pull`로 작업본을 덮어쓰지 않는다. 관련 시험은 `node --test tests/<파일>`로 실행한다.
+- Atlas 작업은 [8개 담당 엔진의 원문·코드](docs/엔진8종_상향설계_v3.md#engine-owner-sources)에서 시작한다. [Atlas 정의](docs/아틀라스_설계.md#atlas-engine-ownership)를 따르며 별도 LLM 하네스·선택기를 만들지 않는다.
+- 디자인·자산·생성기는 [DESIGN](DESIGN.md), SNS 제작은 [제작 방식](docs/마케팅/콘텐츠_제작방식_v2_20261002.md)과 [SNS 키트](docs/디자인/SNS키트/README.md)에서 찾는다. 자산 경로는 `tools/lib/마스코트자산.js`, 자립형 HTML 폰트는 `tools/lib/브랜드폰트.js`를 재사용한다. 발표물은 `_src_*.html`이 원고이고 `tools/발표물빌드.js`가 출력을 만든다.
+- `docs/_ops/결정.md`에는 확정과 근거, `docs/_ops/트랙.md`에는 결과 위치·남은 일을 해당 항목에만 짧게 남긴다.
+- `index.lock`이 생기면 잠시 뒤 재시도한다. 10초 넘게 남으면 `node tools/git잠금.js`로 확인하고 `--정리`는 주인 없는 잠금에만 쓴다.
 
 ## Code Review Rules
 

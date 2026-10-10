@@ -345,3 +345,26 @@ test('실측접기 — 점검 반환 뒤 파일이 바뀌면 검증 당시 지�
   assert.strictEqual(다른판.초록, false);
   assert.strictEqual(r.측정, true, '과거 관찰 자체를 현재 미측정으로 바꿔 쓰지 않는다');
 });
+
+test('수동 배포 실측 기록은 다른 상태를 보존하며 자체 감사기 없이 왕복한다', (t) => {
+  const f = 배포내용모의(t);
+  const previous = process.env.SYNK_ROT_STATE;
+  process.env.SYNK_ROT_STATE = path.join(f.root, 'manual-deploy-state.json');
+  t.after(() => { if (previous === undefined) delete process.env.SYNK_ROT_STATE; else process.env.SYNK_ROT_STATE = previous; });
+  fs.writeFileSync(process.env.SYNK_ROT_STATE, JSON.stringify({ existing: { keep: true } }));
+  const result = f.D.도장찍기([
+    { 이름: 'main', 실측: { 지문: 'observed', 초록: true } },
+    { 이름: 'unmeasured', 실측: {} },
+    { 이름: 'stale', 실측: { 지문: 'older', 초록: false, 라이브판: { 종류: '뒤처짐', sha: 'old-sha' } } },
+  ], { now: 1234, root: f.root });
+  assert.deepStrictEqual(result, { 찍음: 2, 전체: 3 });
+  const saved = JSON.parse(fs.readFileSync(process.env.SYNK_ROT_STATE, 'utf8'));
+  assert.deepStrictEqual(saved.existing, { keep: true });
+  assert.deepStrictEqual(f.D.라이브도장(f.root), {
+    at: 1234,
+    프로젝트들: { main: { 지문: 'observed', 초록: true }, stale: { 지문: 'older', 초록: false, 라이브판: { 종류: '뒤처짐', sha: 'old-sha' } } },
+  });
+  const before = fs.readFileSync(process.env.SYNK_ROT_STATE, 'utf8');
+  assert.strictEqual(f.D.도장찍기([{ 이름: 'unmeasured', 실측: {} }]).찍음, 0);
+  assert.strictEqual(fs.readFileSync(process.env.SYNK_ROT_STATE, 'utf8'), before);
+});

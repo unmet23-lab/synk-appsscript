@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 
 const 구독 = require('../tools/lib/제미나이구독호출.js');
-const 검수 = require('../tools/codex-review.js');
+
 
 test('Google AI Pro 구독 모델은 정책 픽과 정확히 대응하고 자동 하향하지 않는다', () => {
   assert.equal(구독.구독모델('gemini-3.1-pro-preview', 'high'), 'gemini-3.1-pro-high');
@@ -47,31 +47,4 @@ test('Antigravity는 구독 기본 몫만 허용하고 크레딧·API 키 제공
   } finally {
     fs.rmSync(d, { recursive: true, force: true });
   }
-});
-
-test('검수 기본은 로컬 구독·GitHub 무료 API이며 Vertex는 명시 경로만 쓴다', () => {
-  const 로컬 = 검수.제미나이호출명세(null, {});
-  assert.equal(로컬.통로, 'subscription');
-  assert.equal(로컬.픽.model, 'gemini-3.1-pro-preview');
-  assert.equal(path.basename(로컬.경로), '제미나이구독호출.js');
-
-  const 깃허브 = 검수.제미나이호출명세(null, { GITHUB_ACTIONS: 'true' });
-  assert.equal(깃허브.통로, 'free-api');
-  assert.equal(깃허브.픽.model, 'gemini-3.8-flash');
-  assert.deepEqual(깃허브.추가인자, ['--용도', '글']);
-
-  const 유료 = 검수.제미나이호출명세(null, { SYNK_GEMINI_ROUTE: 'vertex' });
-  assert.equal(유료.통로, 'vertex');
-  assert.ok(유료.추가인자.includes('--유료-api'));
-  assert.throws(() => 검수.제미나이통로({ SYNK_GEMINI_ROUTE: 'anything' }), /subscription\|free-api\|vertex/);
-  assert.throws(
-    () => 검수.제미나이호출명세({ model: 'gemini-3.1-pro-preview', thinking_level: 'high' }, { GITHUB_ACTIONS: 'true' }),
-    /조용히 내리지 않는다/,
-  );
-});
-
-test('구독 응답은 경로와 요청 모델이 모두 맞아야 같은 실행으로 인정한다', () => {
-  const 픽 = { model: 'gemini-3.1-pro-preview' };
-  assert.equal(검수.제미나이응답일치({ route: 'google-ai-pro-subscription', requestedModel: 픽.model }, 픽, 'subscription'), true);
-  assert.equal(검수.제미나이응답일치({ route: 'vertex-paid-api', requestedModel: 픽.model }, 픽, 'subscription'), false);
 });

@@ -4,12 +4,13 @@
  * 무엇을 지키나: 산문 폴백이 「판정: 정상 아님」을 `정상` 으로 읽던 구멍. 부정 판정을 통과로 읽으면
  *   다른 층이 초록일 때 «종합 통과»에 보태져 「판정불능은 통과가 아니다」가 깨진다.
  *
- * ⚠ 여기서 «못» 재는 것: 실제 제미나이 왕복(키가 있어야 돈다) · 종료코드 경로(main 은 API 를 부른다 —
- *   장부 실패 → 종료코드 1 은 코드로만 확인했다 · 손 실행 안 했다).
+ * 실제 제미나이 왕복은 하지 않는다. 아래 main 검사는 API와 파일 입출력을 메모리 대역으로 바꾼다.
  */
 const { test } = require('node:test');
 const assert = require('node:assert');
 const path = require('node:path');
+const fs = require('node:fs');
+const vm = require('node:vm');
 
 const 대조 = require(path.join(path.resolve(__dirname, '..'), 'tools', '몽골어대조.js'));
 
@@ -46,4 +47,38 @@ test('문법파싱 — JSON 이 1순위, 산문은 폴백, 부정 산문은 null
   assert.strictEqual(대조.문법파싱('판정: 정상 아님. 문법이 파손되어 있습니다.'), null);
   const 산문 = 대조.문법파싱('판정: 정상\n이유: 없음');
   assert.ok(산문 && 산문.판정 === '정상', '부정 없는 산문은 그대로 읽는다');
+});
+
+test('실제 CLI 판정은 뜻 검토를 대기시키며 정상·정상 아님을 자동 통과시키지 않는다', async () => {
+  const filename = path.resolve(__dirname, '../tools/몽골어대조.js');
+  const source = fs.readFileSync(filename, 'utf8');
+  for (const grammar of [JSON.stringify({ 판정: '정상', 이유: '' }), '판정: 정상 아님']) {
+    const logs = [], ledger = [];
+    const fakeProcess = { argv: ['node', filename, '안녕하세요', 'Сайн байна уу.'], env: {}, stdout: { isTTY: false }, exit(code) { throw new Error(`unexpected exit ${code}`); } };
+    const fakeFs = {
+      existsSync: () => true,
+      readFileSync: () => 'test-key',
+      mkdirSync() {},
+      appendFileSync(_file, row) { ledger.push(JSON.parse(row)); },
+    };
+    const mockedRequire = (id) => {
+      if (id === 'fs') return fakeFs;
+      if (id === './모델정책.js') return { 기본용도: () => '글', 제미나이설정: () => ({ model: 'test-model', thinking_level: 'high' }), 제미나이키경로: () => 'test-key-file' };
+      if (id === './lib/몽골어맞춤법.js') return { 맞춤법검사: async () => ({ 의심: [], 허용: [], 제안: {} }) };
+      if (id === './lib/제미나이호출.js') return { 제미나이: async (_key, _model, _prompt, options) => options.schema ? grammar : '안녕하세요', 재시도가능: () => false };
+      if (id === 'path' || id === 'crypto') return require(id);
+      throw new Error(`unexpected dependency ${id}`);
+    };
+    await vm.runInNewContext(source + '\nmain();', {
+      require: mockedRequire, module: { exports: {} }, __dirname: path.dirname(filename),
+      process: fakeProcess, console: { log: (...args) => logs.push(args.join(' ')), error: (...args) => logs.push(args.join(' ')) }, Buffer,
+    }, { filename });
+    assert.strictEqual(fakeProcess.exitCode, 2);
+    assert.strictEqual(ledger.length, 1);
+    assert.strictEqual(ledger[0].통과, false);
+    assert.strictEqual(ledger[0].층.뜻, null);
+    const outcome = require('../tools/몽골어출구.js').한판읽기(logs.join('\n'), fakeProcess.exitCode);
+    assert.strictEqual(outcome.갈래, '검수');
+    assert.strictEqual(ledger[0].사유, grammar.startsWith('{') ? '공식 앱 뜻 검토 대기' : '판정불능');
+  }
 });
