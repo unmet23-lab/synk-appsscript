@@ -140,9 +140,14 @@
     independent: j.independent,
   });
   const traceKeys = p => [`item:${p.itemKey}`, ...(p.measure ? [`family:${p.measure.familyKey}`] : [])];
+  // A folded ledger (learning-ledger.js) keeps, per trace key, which kinds happened in entries
+  // folded away: they all came before anything still in the log.
+  const BITS = Object.freeze({ attempt: 1, answer: 2, help: 4 });
+  const foldedBefore = (prior, traceKey, kind) => !!prior && Object.prototype.hasOwnProperty.call(prior.keys, traceKey)
+    && (prior.keys[traceKey] & BITS[kind]) !== 0;
   // `decisions` limits what is reported (for example one round); evidence from the whole
   // log still decides what came before. `met` always covers the whole log.
-  function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null } = {}) {
+  function summarize(events, { scope, asOf, recordedAsOf = asOf, decisions = null, prior = null } = {}) {
     const scopeId = key(scope), cutoff = time(asOf), recordedCutoff = time(recordedAsOf);
     if (!Array.isArray(events)) throw new TypeError('Trail: log must be an array');
     if (decisions !== null && (!Array.isArray(decisions) || !decisions.every(id))) throw new TypeError('Trail: invalid decision filter');
@@ -212,11 +217,12 @@
         return;
       }
       const at = atOf(event);
-      const prior = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
+      const earlier = kinds => traceKeys(p).some(traceKey => kinds.some(kind => {
+        if (foldedBefore(prior, traceKey, kind)) return true;
         const first = traces.get(traceKey)?.get(kind);
         return first && (first.index < index || first.at < at);
       }));
-      const audio = audioByPresentation.get(p.id) || 'pending', j = judge(event, p, prior, audio);
+      const audio = audioByPresentation.get(p.id) || 'pending', j = judge(event, p, earlier, audio);
       // A first attempt made after the answer was shown was met at the reveal, not here.
       meet(p, event.at, omitted || j.exclusionReason ? null : event.verdict);
       if (!reported(p.decisionId)) return;
@@ -232,10 +238,16 @@
    * exclusion covers it). If an entry ever arrives out of time order, earlier answers
    * could change, so `exact` turns false for good and callers read the whole log again.
    * met(itemKey, familyKey): was this item or family attempted or revealed already? */
-  function createIndex({ scope }) {
+  function createIndex({ scope, prior = null }) {
     const scopeId = key(scope);
     const presentations = new Map(), audio = new Map(), arms = new Map(), excluded = new Set();
     const helped = new Set(), seen = new Set(), rows = new Map(), covering = new Map();
+    // Folded entries came before everything here: seed what they did.
+    for (const [k, bits] of Object.entries(prior?.keys || {})) {
+      if (bits & BITS.attempt) { seen.add(`attempt|${k}`); seen.add(k); }
+      if (bits & BITS.answer) { helped.add(`answer|${k}`); seen.add(k); }
+      if (bits & BITS.help) helped.add(`help|${k}`);
+    }
     let lastAt = -Infinity, exact = true;
     const cover = (target, row) => { if (!covering.has(target)) covering.set(target, []); covering.get(target).push(row); };
     function add(event) {
@@ -337,5 +349,5 @@
     }
     return facts;
   }
-  return Object.freeze({ VERSION, TYPES, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
+  return Object.freeze({ VERSION, TYPES, BITS, traceKeys, validate, checkLink, link, vouch, summarize, createIndex, openHistory, remember, growth });
 });

@@ -4,8 +4,11 @@
 const POLICY = Object.freeze({ version: 'learning-priority-3', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
 const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown']);
 const { learningReason } = require('./vellum');
+const Ledger = require('./learning-ledger');
 const DAY = 86400000;
-function formatEvidence(rows, { now, complete, difficulty, responseFormat }) {
+// `base` holds the rows of entries folded into a ledger (Ledger.rows): they are read with the log's.
+function formatEvidence(rows, { now, complete, difficulty, responseFormat, base = null }) {
+  if (base) rows = [...base.rows, ...rows];
   const unique = new Map();
   for (const a of rows) if (complete && a.independent && !unique.has(a.measure.familyKey)) unique.set(a.measure.familyKey, a);
   const valid = [...unique.values()].filter(a => Date.parse(a.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
@@ -20,17 +23,21 @@ function formatEvidence(rows, { now, complete, difficulty, responseFormat }) {
   else if (n) { status = 'checking'; priority = incorrect ? .85 : .55; }
   else if (helped.length) { status = 'supported'; priority = .9; }
   return { difficulty, responseFormat, status, priority, n, correct, incorrect, lastAt,
-    assisted: helped.length, evidence: recent.map(a => a.eventId), unassessed: rows.filter(a => a.verdict === 'unassessed' || a.verdict === 'skipped').length };
+    assisted: helped.length, evidence: recent.map(a => a.eventId),
+    unassessed: rows.filter(a => a.verdict === 'unassessed' || a.verdict === 'skipped').length + (base?.unassessed || 0) };
 }
-function summarizeLearning({ summary, map, complete = true }) {
+function summarizeLearning({ summary, map, complete = true, prior = null }) {
   const now = Date.parse(summary.asOf);
   const skills = map.allNodes().filter(n => n.kind === 'skill').map(node => {
     const all = summary.attempts.filter(a => a.measure?.skillId === node.id);
     const levels = {};
     for (const difficulty of [1, 2, 3]) {
       const rows = all.filter(a => a.measure.difficulty === difficulty);
-      const formats = Object.fromEntries(RESPONSE_FORMATS.map(responseFormat => [responseFormat,
-        formatEvidence(rows.filter(a => (a.measure.responseFormat || 'unknown') === responseFormat), { now, complete, difficulty, responseFormat })]));
+      const formats = Object.fromEntries(RESPONSE_FORMATS.map(responseFormat => {
+        const cell = Ledger.cellOf(prior, `${node.id}|${difficulty}|${responseFormat}`);
+        return [responseFormat, formatEvidence(rows.filter(a => (a.measure.responseFormat || 'unknown') === responseFormat),
+          { now, complete, difficulty, responseFormat, base: cell ? Ledger.rows(cell) : null })];
+      }));
       const observed = Object.values(formats).filter(f => f.lastAt || f.assisted);
       const focus = observed.sort((a, b) => b.priority - a.priority)[0] || Object.values(formats).find(f => f.unassessed) || formats.unknown;
       // The compatibility fields describe ONE observed format, never a pooled
@@ -48,7 +55,7 @@ function summarizeLearning({ summary, map, complete = true }) {
 // Missed or due content (a word, a grammar point) lifts a candidate a little; the ability's
 // own state still decides first.
 const CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
-function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [] }) {
+function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
   if (!Array.isArray(candidates)) throw new TypeError('Core: candidates must be an array');
   const ids = new Set(), skills = new Map(profile.skills.map(s => [s.id, s]));
   const content = new Map((profile.concepts || []).map(c => [c.id, c.status]));
@@ -61,6 +68,16 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
       if (!key) continue;
       if (!history[kind].has(key)) history[kind].set(key, []);
       history[kind].get(key).push(index);
+    }
+  }
+  // Presentations folded into a ledger are history too (counted, never "just shown").
+  const weight = new Map();
+  for (const [i, [task, item, family, n]] of (prior?.presented || []).entries()) {
+    const ref = `folded:${i}`; weight.set(ref, n);
+    for (const [kind, key] of [['task', task], ['item', item], ['family', family]]) {
+      if (!key) continue;
+      if (!history[kind].has(key)) history[kind].set(key, []);
+      history[kind].get(key).push(ref);
     }
   }
   const ranked = [];
@@ -78,7 +95,8 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     const focus = states.sort((a, b) => b.priority - a.priority)[0];
     const previous = new Set([...(history.task.get(candidate.id) || []), ...(history.item.get(candidate.itemKey) || []),
       ...(history.family.get(candidate.familyKey || candidate.itemKey) || [])]);
-    const immediate = [...previous].some(index => index >= presentations.length - 4);
+    const immediate = [...previous].some(index => typeof index === 'number' && index >= presentations.length - 4);
+    const count = [...previous].reduce((n, index) => n + (weight.get(index) || 1), 0);
     // Explicit authored difficulty is a language-complexity bucket, never a TOPIK band.
     // Sparse evidence starts with simpler candidates, while supported needs can still be revisited.
     const readyForHarder = candidate.difficulty === 1 || candidate.skillIds.every(id => skills.get(id).levels[candidate.difficulty - 1].formats[responseFormat].status === 'recent-independent');
@@ -91,7 +109,7 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     const exhausted = !!candidate.familyKeys && candidate.familyKeys.every(key => history.family.has(key));
     const score = focus.priority + lift - (immediate ? .45 : 0) - (previous.size ? .10 : 0) - (!readyForHarder ? .25 * (candidate.difficulty - 1) : 0)
       - (exhausted ? .5 : 0);
-    ranked.push({ candidate, focus, score, count: previous.size });
+    ranked.push({ candidate, focus, score, count });
   }
   ranked.sort((a, b) => b.score - a.score || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
   if (!ranked.length) return { status: 'unavailable', selected: null, reason: '지금 조건에 맞는 연습이 없어요.', alternatives: [] };
@@ -104,8 +122,13 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
 // kept per response format. Only content with observations is listed: a word never met
 // is not a weakness, and nothing here is a mastery or TOPIK grade.
 const CONTENT = Object.freeze(['word', 'grammar_point']);
-function summarizeConcepts({ summary, map, complete = true }) {
+function summarizeConcepts({ summary, map, complete = true, prior = null }) {
   const now = Date.parse(summary.asOf), rows = new Map();
+  // Content met only in folded entries is still listed, from the ledger.
+  for (const key of Object.keys(prior?.content || {})) {
+    const id = key.slice(0, key.lastIndexOf('|')), node = map.getNode(id);
+    if (node && CONTENT.includes(node.kind) && !rows.has(id)) rows.set(id, { node, list: [] });
+  }
   for (const a of summary.attempts) {
     if (!a.measure) continue;
     for (const id of a.conceptIds) {
@@ -120,7 +143,8 @@ function summarizeConcepts({ summary, map, complete = true }) {
     const formats = {};
     for (const responseFormat of RESPONSE_FORMATS) {
       const own = list.filter(a => (a.measure.responseFormat || 'unknown') === responseFormat);
-      if (own.length) formats[responseFormat] = formatEvidence(own, { now, complete, difficulty: null, responseFormat });
+      const cell = Ledger.contentOf(prior, `${node.id}|${responseFormat}`);
+      if (own.length || cell) formats[responseFormat] = formatEvidence(own, { now, complete, difficulty: null, responseFormat, base: cell ? Ledger.rows(cell) : null });
     }
     const focus = Object.values(formats).sort((a, b) => b.priority - a.priority)[0];
     return { id: node.id, kind: node.kind, label: node.label_ko, status: focus.status, priority: focus.priority, formats };

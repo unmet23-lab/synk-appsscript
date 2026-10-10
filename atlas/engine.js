@@ -111,7 +111,9 @@
   // Check one event against a log without copying the log. False means an exact replay.
   function admit(events, event) { return admitWith(scan(events), event); }
   function admitWith(lookup, event) {
-    validate(event);
+    // An entry another session already admitted is frozen and was validated then; its links
+    // and ids are still checked against this log below.
+    if (!admitted.has(event)) validate(event);
     // Ids are unique in an admitted log, so "the event with this id, of this type" is one lookup.
     const find = (id, type) => { const found = lookup.byId(id); return found && (!type || found.type === type) ? found : undefined; };
     const previous = lookup.byId(event.id);
@@ -388,7 +390,17 @@
     const byId = new Map(), attemptStats = new Map(), completions = new Map();
     const lookup = { byId: id => byId.get(id), attempts: presentationId => attemptStats.get(presentationId) || { count: 0, latest: -Infinity },
       get events() { return log; } };
+    const index = entry => {
+      if (entry.type === 'practice.attempted') {
+        const stats = lookup.attempts(entry.presentationId);
+        attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, admitted.get(entry)?.at ?? ms(entry.at)) });
+      }
+      if (entry.type === 'experience.completed' && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+    };
     const store = event => {
+      // An admitted entry is immutable, so a new session (after folding, for example) can
+      // hold the same object instead of copying it again.
+      if (admitted.has(event)) { byId.set(event.id, event); index(event); log.push(event); frozen = null; return; }
       const entry = copy(event);
       // The entry is never handed out or changed again, so it is checked once and frozen.
       // Trail may load later (it is only needed for practice); until then entries stay unvouched.
@@ -396,12 +408,7 @@
       if (typeof t?.vouch === 'function') t.vouch(entry);
       else freeze(entry);
       admitted.set(entry, { key: scopeKey(entry.scope), at: ms(entry.at), recordedAt: ms(entry.recordedAt) });
-      byId.set(entry.id, entry);
-      if (entry.type === 'practice.attempted') {
-        const stats = lookup.attempts(entry.presentationId);
-        attemptStats.set(entry.presentationId, { count: stats.count + 1, latest: Math.max(stats.latest, ms(entry.at)) });
-      }
-      if (entry.type === 'experience.completed' && !completions.has(entry.decisionId)) completions.set(entry.decisionId, entry);
+      byId.set(entry.id, entry); index(entry);
       log.push(entry); frozen = null;
     };
     for (const event of events) {

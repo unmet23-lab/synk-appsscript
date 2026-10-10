@@ -9,19 +9,31 @@ const Trail = require('./trail');
 const Learning = require('./learning');
 const Temper = require('./temper');
 const { createLearningSync, sameEvent } = require('./learning-sync');
+const Ledger = require('./learning-ledger');
 const { createFlowPort, createLive } = require('./game-flow');
 const KEY = 'synk.atlas.learning.v1';
 const identifier = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
 const uid = () => `l${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+/* `fold`: the store keeps its recent entries in full and folds older, finished items into a
+ * ledger (learning-ledger.js), so a long history stays small and quick to open. On by default
+ * for a device store; a host turns it on for an account store. `{ max, keep, ageMs }` tunes
+ * it: fold once more than `max` entries are kept, down to `keep`, only items idle for `ageMs`.
+ * `{ remote: true }` is for a synchronised store: only entries the server holds and has sent
+ * back (syncPort.settle) fold, and items stay for 3 days by default. */
 function createGame({ gameId, map, storage = null, learnerKey = 'device', clock = () => new Date().toISOString(), historyComplete = true,
-  storageScope = 'device', accountKey = null } = {}) {
+  storageScope = 'device', accountKey = null, fold = null } = {}) {
   if (!identifier(gameId) || !identifier(learnerKey) || typeof map?.allNodes !== 'function') throw new TypeError('Atlas: game, local scope and Strata map required');
   if (!['device', 'account'].includes(storageScope) || storageScope === 'account' && (!identifier(accountKey) || learnerKey !== 'device')) throw new TypeError('Atlas: account identity and isolated host storage required');
   const scope = { domain: 'LAB', workspace: 'learning', subject: learnerKey };
   const key = `${KEY}.${learnerKey}`;
   // Core's moment-level challenge keeps one small memory per content beside this log (game-flow.js).
   let flowPort = null;
-  let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null;
+  let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
+  const folding = fold === false || (fold == null && storageScope !== 'device') ? null
+    : { max: 2000, keep: 1600, ageMs: fold?.remote ? 3 * 86400000 : 3600000, remote: false, ...(fold && typeof fold === 'object' ? fold : {}) };
+  // Entries of a synchronised store that the server has sent back (only these may fold).
+  const settled = new Set();
+  let settledVersion = 0;
   const UNCHANGED = Symbol('unchanged-history');
   let lastStoredRaw = Symbol('unread-history');
   let lastTime = 0;
@@ -43,7 +55,9 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     if (raw == null) return null;
     const value = JSON.parse(raw);
     if (!value || value.version !== 1 || !identifier(value.epoch) || !Array.isArray(value.events) || value.events.length > 20000
-      || Object.keys(value).some(k => !['version', 'epoch', 'events', 'owner'].includes(k))) throw new Error('Atlas: unreadable history');
+      || Object.keys(value).some(k => !['version', 'epoch', 'events', 'owner', 'ledger', 'settled'].includes(k))) throw new Error('Atlas: unreadable history');
+    if (value.ledger != null) Ledger.validate(value.ledger);
+    if (value.settled != null && (!Array.isArray(value.settled) || value.settled.length > 20000 || !value.settled.every(identifier))) throw new Error('Atlas: unreadable history');
     // An account store must have been created for this account. Merely passing
     // account options over the guest device key never adopts its old events.
     if (storageScope === 'account' ? value.owner !== accountKey : value.owner != null) throw new Error('Atlas: local history belongs to a different storage scope');
@@ -60,14 +74,30 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     }
     catch { readable = false; complete = false; warning = '기록을 읽지 못해 기본 연습으로 진행해요.'; notify('storage-error', 'STORAGE_ERROR'); return null; }
   }
-  const initial = readStored(); epoch = initial?.epoch || uid(); session = newSession(initial?.events || []);
+  const initial = readStored(); epoch = initial?.epoch || uid(); ledger = initial?.ledger || null; session = newSession(initial?.events || []);
+  // Keep the settled marks of entries in `known` (the kept log) only.
+  const settle = (ids, known) => {
+    const before = settled.size;
+    for (const id of ids) if (known.has(id)) settled.add(id);
+    for (const id of settled) if (!known.has(id)) settled.delete(id);
+    if (settled.size !== before) settledVersion += 1;
+  };
+  if (initial?.settled) settle(initial.settled, new Set(initial.events.map(e => e.id)));
   function refresh() {
     if (!readable || !storage) return;
     const stored = readStored();
     if (!stored || stored === UNCHANGED) return;
-    if (stored.epoch !== epoch) { epoch = stored.epoch; session = newSession(stored.events); active.clear(); return; }
-    const combined = session.events(), known = new Map(combined.map(e => [e.id, e]));
+    if (stored.epoch !== epoch) {
+      epoch = stored.epoch; ledger = stored.ledger || null; session = newSession(stored.events); active.clear();
+      settled.clear(); settledVersion += 1; settle(stored.settled || [], new Set(stored.events.map(e => e.id))); return;
+    }
+    // The later fold wins. Entries it folded are dropped from the other side; each side keeps
+    // its own entries (a synchronised log may keep a late entry from before the cutoff).
+    const theirs = stored.ledger || null, order = Ledger.compare(ledger, theirs), mine = log();
+    const storedIds = new Set(stored.events.map(e => e.id)), mineIds = new Set(mine.map(e => e.id));
+    const combined = mine.filter(e => order >= 0 || storedIds.has(e.id) || !Ledger.folded(theirs, e)), known = new Map(combined.map(e => [e.id, e]));
     for (const e of stored.events) {
+      if (order > 0 && !mineIds.has(e.id) && Ledger.folded(ledger, e)) continue;
       if (known.has(e.id)) { if (!sameEvent(known.get(e.id), e)) {
         readable = false; complete = false; warning = '기록 내용이 서로 달라 연결을 중단했어요. 기존 기록은 보존해요.';
         notify('storage-error', 'STORAGE_ERROR');
@@ -75,7 +105,11 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       } }
       else { known.set(e.id, e); combined.push(e); }
     }
+    if (order < 0) ledger = theirs;
+    settle([...settled, ...(stored.settled || [])], known);
     session = newSession(combined);
+    // A presentation folded in another tab has ended here too.
+    for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
   }
   // Byte-identical to JSON.stringify({ version, epoch, events, owner }). Log entries are
   // frozen, so each is serialised once, and since the log only grows within one session
@@ -87,16 +121,40 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: '' };
     for (; body.count < events.length; body.count += 1) body.text += (body.count ? ',' : '') + entryJson(events[body.count]);
     body.last = body.count ? events[body.count - 1] : null;
-    return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]`
+    if (ledgerJson?.ledger !== ledger) ledgerJson = { ledger, text: ledger ? `,"ledger":${JSON.stringify(ledger)}` : '' };
+    if (settledJson?.version !== settledVersion) settledJson = { version: settledVersion, text: settled.size ? `,"settled":${JSON.stringify([...settled])}` : '' };
+    return `{"version":1,"epoch":${JSON.stringify(epoch)},"events":[${body.text}]${ledgerJson.text}${settledJson.text}`
       + `${storageScope === 'account' ? `,"owner":${JSON.stringify(accountKey)}` : ''}}`;
   };
-  function persist(kind = 'append') {
+  let ledgerJson = null, settledJson = null, retryFold = null;
+  // Fold older, finished items once the kept log grows past the limit (see `fold`).
+  function compact() {
+    if (!folding) return;
+    const events = log(), now = Date.parse(monotonicClock());
+    if (events.length <= folding.max) return;
+    // Nothing could fold a moment ago: try again after a minute or once more entries settle.
+    if (retryFold && retryFold.settled === settledVersion && now < retryFold.at) return;
+    // An item idle for `ageMs` is finished; a late call on it ends like a reset presentation.
+    // A synchronised store keeps every item the server has not sent back yet.
+    // An unanswered item there stays 30 days: its answer may still come from another device.
+    const open = folding.remote ? events.filter(e => !settled.has(e.id)).map(e => e.id) : [];
+    const planned = Ledger.plan(events, { keep: folding.keep, olderThan: now - folding.ageMs, open,
+      unfinishedBefore: folding.remote ? now - 30 * 86400000 : now - folding.ageMs });
+    if (!planned) { retryFold = { settled: settledVersion, at: now + 60000 }; return; }
+    retryFold = null;
+    ledger = Ledger.fold(ledger, planned.folded, { scope, log: events });
+    session = newSession(planned.kept);
+    for (const e of planned.folded) { if (e.type === 'practice.presented') active.delete(e.id); settled.delete(e.id); }
+    settledVersion += 1;
+  }
+  function persist(kind = 'append', { quiet = false } = {}) {
     if (!storage || !readable) { complete = false; notify('storage-error', 'STORAGE_ERROR'); return false; }
     try {
+      compact();
       const events = log();
       if (events.length > 20000) throw Object.assign(new Error('Atlas: local history limit'), { code: 'HISTORY_CAPACITY' });
       const raw = snapshot(events);
-      storage.setItem(key, raw); lastStoredRaw = raw; writable = true; notify(kind); return true;
+      storage.setItem(key, raw); lastStoredRaw = raw; writable = true; if (!quiet) notify(kind); return true;
     } catch (error) { writable = false; complete = false; warning = '기록을 저장하지 못했어요. 이번 연습은 다음 접속에 이어지지 않을 수 있어요.'; notify('storage-error', error.code === 'HISTORY_CAPACITY' ? 'HISTORY_CAPACITY' : 'STORAGE_ERROR'); return false; }
   }
   // Initialize one shared epoch before a second game/tab opens it.
@@ -110,14 +168,14 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function view() {
     const events = log(), asOf = monotonicClock(), now = Date.parse(asOf);
     if (cached?.events === events && now - cached.now < VIEW_MS) return cached.summary;
-    cached = { events, now, summary: Trail.summarize(events, { scope, asOf }), profiles: new Map(), counts: null };
+    cached = { events, now, summary: Trail.summarize(events, { scope, asOf, prior: ledger }), profiles: new Map(), counts: null };
     return cached.summary;
   }
   function profileOf(observed) {
     const ok = complete && readable && writable, flag = String(ok);
     if (cached?.summary === observed && cached.profiles.has(flag)) return cached.profiles.get(flag);
-    const profile = { ...Learning.summarizeLearning({ summary: observed, map, complete: ok }),
-      concepts: Learning.summarizeConcepts({ summary: observed, map, complete: ok }) };
+    const profile = { ...Learning.summarizeLearning({ summary: observed, map, complete: ok, prior: ledger }),
+      concepts: Learning.summarizeConcepts({ summary: observed, map, complete: ok, prior: ledger }) };
     if (cached?.summary === observed) cached.profiles.set(flag, profile);
     return profile;
   }
@@ -126,7 +184,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   // Rows are grouped by skill, difficulty and response format, as summarizeLearning() does.
   function provenance() {
     const events = log();
-    if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope }), buckets: new Map() };
+    if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: new Map() };
     for (; met.done < events.length; met.done += 1) {
       const row = met.index.add(events[met.done]);
       if (!row?.measure) continue;
@@ -141,15 +199,17 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   function basisOf(measure) {
     const known = provenance();
     if (!known.index.exact) return profileOf(view()).skills.find(s => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
-    const rows = (known.buckets.get(`${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`) || []).filter(row => !row.omitted);
+    const key = `${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`, cell = Ledger.cellOf(ledger, key);
+    const rows = (known.buckets.get(key) || []).filter(row => !row.omitted);
     return Learning.formatEvidence(rows, { now: Date.parse(monotonicClock()), complete: complete && readable && writable,
-      difficulty: measure.difficulty, responseFormat: measure.responseFormat });
+      difficulty: measure.difficulty, responseFormat: measure.responseFormat, base: cell ? Ledger.rows(cell) : null });
   }
   function summary() {
     refresh(); const observed = view();
-    if (cached?.summary === observed && !cached.counts) cached.counts = Temper.measure(observed);
+    const measured = () => Temper.combine(ledger?.counts || null, Temper.measure(observed));
+    if (cached?.summary === observed && !cached.counts) cached.counts = measured();
     return { ...profileOf(observed), storage: { available: readable && writable, scope: storageScope, warning },
-      counts: cached?.summary === observed ? cached.counts : Temper.measure(observed) };
+      counts: cached?.summary === observed ? cached.counts : measured() };
   }
   function requireActive(pid) {
     refresh(); const item = active.get(pid); if (!item) throw new Error('Atlas: presentation ended or local record reset'); return item;
@@ -157,25 +217,43 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   const api = {
     syncPort: Object.freeze({
       scope: storageScope, accountKey,
-      events() { refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' }); return session.events(); },
+      // A synchronised store gives its kept entries: the ones it folded are on the server.
+      events() {
+        refresh(); if (!readable || !writable) throw Object.assign(new Error('Atlas: local history is not durable'), { code: 'STORAGE_ERROR' });
+        if (ledger && !folding?.remote) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
+        return session.events();
+      },
+      // The sync calls this after a complete pull with every entry id the server has sent:
+      // those entries may fold here. Saved quietly (it is not a new learning entry).
+      settle(ids) {
+        if (!folding?.remote || !Array.isArray(ids)) return false;
+        refresh(); if (!readable) return false;
+        const version = settledVersion;
+        settle([...settled, ...ids], new Set(log().map(e => e.id)));
+        return settledVersion === version || persist('settle', { quiet: true });
+      },
       subscribe(listener) { if (typeof listener !== 'function') throw new TypeError('Atlas: listener required');listeners.add(listener);return () => listeners.delete(listener); },
       markComplete(value) { complete = value === true; },
       importEvents(incoming) {
         refresh();
         if (!readable) throw Object.assign(new Error('Atlas: local history is unreadable'), { code: 'STORAGE_ERROR' });
+        if (ledger && !folding?.remote) throw Object.assign(new Error('Atlas: a folded history is kept on this device only'), { code: 'HISTORY_FOLDED' });
         if (!Array.isArray(incoming)) throw new TypeError('Atlas: imported events must be an array');
-        const combined = session.events(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event]));
+        const combined = log().slice(), previousLength = combined.length, known = new Map(combined.map(event => [event.id, event])), late = [], gone = [];
         for (const event of incoming) {
           if (known.has(event?.id)) {
             if (!sameEvent(known.get(event.id), event)) throw Object.assign(new Error('Atlas: conflicting imported event'), { code: 'EVENT_CONFLICT' });
-          } else { known.set(event?.id, event);combined.push(event); }
+          // Another device's entry for an item this store already folded stays on the server.
+          } else if (ledger && Ledger.stray(event, known)) { if (event.type === 'record.excluded') gone.push(event.targetId); continue; }
+          else { known.set(event?.id, event); combined.push(event); if (Ledger.folded(ledger, event)) late.push(event); }
         }
         // Identical durable history needs neither replay nor another disk write.
         // A previous storage failure must still retry persistence below.
-        if (combined.length === previousLength && writable && snapshot(combined) === lastStoredRaw) return { added: 0 };
+        if (combined.length === previousLength && !gone.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0 };
         // Construct before replacing: wrong scope, parent links, schema or IDs
         // reject the entire incoming batch without changing the local log.
         const imported = newSession(combined); session = imported;
+        if (late.length || gone.length) ledger = Ledger.demote(ledger, late, id => known.get(id), gone);
         if (!persist('import')) throw Object.assign(new Error('Atlas: imported history could not be saved'), { code: 'STORAGE_ERROR' });
         return { added: combined.length - previousLength };
       },
@@ -183,7 +261,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     summary,
     recommend(candidates, options = {}) {
       const profile = summary();
-      return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, ...options }), storage: profile.storage };
+      return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
     },
     present(item, context = {}) {
       refresh();
@@ -244,7 +322,7 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
     events() { refresh(); return session.events(); },
     reset() {
       if (storageScope === 'account') throw Object.assign(new Error('Atlas: account deletion requires the host consent/reset API; local reset cannot delete server records'), { code: 'ACCOUNT_RESET_REQUIRED' });
-      epoch = uid(); session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
+      epoch = uid(); ledger = null; settled.clear(); settledVersion += 1; session = newSession([]); active.clear(); readable = true; writable = !!storage; complete = historyComplete; warning = null; persist();
       flowPort.clear();
       return summary();
     },
