@@ -613,9 +613,11 @@
   :root .synk-workspace .wr-daily-filters{grid-template-columns:minmax(0,1fr)}
 }
 /* 높은 대비 모드에서는 그림자·테두리색이 사라진다 — 입력·단추 초점을 윤곽선으로 보인다(5판 공식 검수 P3) */
+/* 그래프 점(<g class="chart-point">)은 그래프 높이만 한 십자선·말풍선을 품고 있어 윤곽선이 세로로 긴 사각형이 된다 — 점 테두리만 Highlight로(6판 공식 검수 P3) */
 @media(forced-colors:active){
   :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,
-  :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}
+  :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) :is(button,a,summary,input,[tabindex]:not(.chart-point)):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}
+  :root :is(.synk-workspace,#overlay,.teaching-workspace,.teaching-only-shell,.auth-layout) .chart-point:focus-visible .chart-dot{stroke:Highlight}
 }
 /* 휴대폰: 날짜 칸이 16px가 되면 한 줄(‹ 시작 — 끝 ›)에 다 들어가지 않는다 — 시작·끝을 위아래로 쌓고 화살표는 양옆에 둔다 */
 @media(max-width:520px){
