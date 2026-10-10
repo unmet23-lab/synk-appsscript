@@ -1,0 +1,93 @@
+{
+ "date": "2026-10-10",
+ "product": "SYNK Platform Preview 0.4.0 (Windows x64, current PC)",
+ "method": "app.asar renderer swap (5 files), app not running, NSIS/registry untouched",
+ "installedPath": "%LOCALAPPDATA%/Programs/SYNKPlatformPreview/resources/app.asar",
+ "before": {
+  "sha256": "eaa006fec10921cbb2681fd52f791fa1ac3ceb008097a951be684209160cf45e"
+ },
+ "after": {
+  "sha256": "c715de9ed040dc974127ef95ba6d629ed574a47a3c104b0b10a5182849f200a5"
+ },
+ "backup": "%LOCALAPPDATA%/SYNK/platform-signal2-backup-20261010/app.asar",
+ "fileCount": {
+  "before": 73,
+  "after": 73
+ },
+ "changed": [
+  {
+   "rel": "renderer/launcher.css",
+   "from": "11b92284ba6f4610",
+   "to": "0937bc4967d9c92a",
+   "bytes": 66673
+  },
+  {
+   "rel": "renderer/member-home.css",
+   "from": "b770f43fc493cde5",
+   "to": "568220be026d4e7c",
+   "bytes": 19163
+  },
+  {
+   "rel": "renderer/convenience.css",
+   "from": "c2d96cf10a1ae5a3",
+   "to": "e828076305f9c8d8",
+   "bytes": 8753
+  },
+  {
+   "rel": "renderer/member-home.mjs",
+   "from": "d43e125ce9c68efc",
+   "to": "194077d1cd60f57d",
+   "bytes": 30005
+  },
+  {
+   "rel": "renderer/index.html",
+   "from": "8a330428b791281f",
+   "to": "90f4f16d218ea6ac",
+   "bytes": 23429
+  }
+ ],
+ "differingPaths": [
+  "renderer/convenience.css",
+  "renderer/index.html",
+  "renderer/launcher.css",
+  "renderer/member-home.css",
+  "renderer/member-home.mjs"
+ ],
+ "unexpected": [],
+ "verification": {
+  "desktopTests": "507/507",
+  "synkAccountTests": "559/559",
+  "nativeSmokesPass": [
+   "renderer-responsive",
+   "member-home",
+   "convenience",
+   "convenience-home",
+   "benefits",
+   "platform-library",
+   "platform-input",
+   "platform-note-management",
+   "connection",
+   "desktop-preferences"
+  ],
+  "preexistingFailuresSameAsBaseline": [
+   "app-compaction",
+   "development-catalog",
+   "experience",
+   "fortune-platform",
+   "continuity-exit"
+  ],
+  "environmentNotRun": [
+   "personal",
+   "world-play"
+  ],
+  "installedVsWorkingCopy": {
+   "same": 71,
+   "differ": [
+    "package.json"
+   ],
+   "installOnly": [
+    "runtime.json"
+   ]
+  }
+ }
+}

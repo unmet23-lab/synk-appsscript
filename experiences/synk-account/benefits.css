@@ -1,5 +1,6 @@
-/* SYNK FOR YOU (웹) — 싱ㅋ 시그널 (2026-10-06 Claude 리디자인)
-   서비스마다 사업 색 포스터 한 장: 플레저 청금석, 리허설 코랄, 가족 앨범 버터. 승인 펠트 그림은 이중톤. */
+/* SYNK FOR YOU (웹) — 싱ㅋ 시그널 2 (2026-10-10, 1차 2026-10-06)
+   서비스마다 사업 색 포스터 한 장: 플레저 청금석, 운세 팝, 리허설 코랄, 가족 앨범 버터.
+   펠트 물건은 제 색 그대로 세우고(누끼), 흰 바탕 사진(리허설)은 인화지처럼 붙인다. */
 
 .benefit-hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:16px;align-items:stretch;padding:4px 0 8px}
 .benefit-hero-copy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;padding:20px 4px}
@@ -10,16 +11,16 @@
 .benefit-hero-copy .sb-btn{margin-top:26px}
 .benefit-text-link{display:inline-flex;align-items:center;gap:8px;margin-top:24px;font-size:.9375rem;font-weight:750;text-decoration:underline;text-decoration-color:var(--ink-4);text-underline-offset:6px}
 .benefit-disclosure{margin-top:16px;font-size:.78125rem!important;color:var(--ink-3)!important}
-/* 세 서비스의 색을 한 판에 세 칸으로: 각 그림이 자기 칸 색과 곱해져 이중톤이 된다. */
-.benefit-hero-art{position:relative;min-height:400px;border-radius:var(--r-xl);overflow:hidden;isolation:isolate;background:linear-gradient(90deg,#3D6BC9 0 33.33%,#F96859 33.33% 66.66%,#F5C445 66.66%)}
-.benefit-hero-art::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
-.benefit-art-stage{position:absolute;inset:0;display:grid;grid-template-columns:repeat(3,1fr)}
-.benefit-art-stage img{width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.2) brightness(1.08) invert(1) brightness(1.3) brightness(.77) invert(1);mix-blend-mode:multiply;opacity:.92}
-.benefit-art-stage .hero-care{order:1}
-.benefit-art-stage .hero-rehearsal{order:2;object-position:62% 50%}
-.benefit-art-stage .hero-family{order:3}
-.benefit-hero-caption{position:absolute;z-index:2;left:18px;bottom:16px;padding:5px 10px;border-radius:999px;background:#FAFAF9;color:#08090C;font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em;transform:rotate(-2deg)}
-.benefit-home-strip{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding:14px 18px;border-radius:var(--r-lg);background:var(--surface-1);border:1px solid var(--line);font-size:.875rem;color:var(--ink-2)}
+/* 데스크톱과 같은 한 장: 청금석 한 면 + 펠트 메모 + 큰 「마음」(앱마다 색 하나 규칙). 나머지 두 그림은 꾸밈이라 숨긴다. */
+.benefit-hero-art{position:relative;min-height:400px;border-radius:var(--r-xl);overflow:hidden;isolation:isolate;background:var(--studio),#3D6BC9;color:#FFFFFF;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.benefit-hero-art::before{content:"마음" / "";position:absolute;z-index:3;left:20px;bottom:12px;font-size:clamp(4.5rem,9vw,9.5rem);font-weight:900;line-height:.82;letter-spacing:-.065em}
+.benefit-hero-art::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.28;mix-blend-mode:overlay;pointer-events:none}
+.benefit-art-stage{position:absolute;inset:0;z-index:2;display:block;padding:0}
+.benefit-art-stage img{position:absolute;inset:8% 7% 30% 34%;width:auto;height:auto;max-width:60%;max-height:62%;margin:auto;object-fit:contain;filter:var(--cut-shadow);transform:rotate(-3deg)}
+.benefit-art-stage .hero-rehearsal,.benefit-art-stage .hero-family{display:none}
+.benefit-hero-caption{position:absolute;z-index:3;right:18px;bottom:16px;padding:5px 10px;border-radius:999px;background:#FAFAF9;color:#08090C;font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em;transform:rotate(-2deg);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.benefit-home-strip{position:relative;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:18px;padding:16px 18px 14px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);font-size:.875rem;color:var(--ink-2);overflow:hidden}
+.benefit-home-strip::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--four)}
 .benefit-home-strip a{font-weight:750;color:var(--ink)}
 .benefit-count{font-family:var(--mono);font-size:.75rem;letter-spacing:.1em;color:var(--ink-3)}
 
@@ -27,17 +28,19 @@
 .benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
 .benefit-grid:has(>:nth-child(4)){grid-template-columns:repeat(2,minmax(0,1fr))}
 .benefit-grid:has(>:nth-child(4)) .benefit-card .benefit-art{aspect-ratio:16/9.4}
-.benefit-card{display:flex;flex-direction:column;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-1);border:1px solid var(--line);transition:transform .2s var(--ease),border-color .2s var(--ease)}
-.benefit-card:hover{transform:translateY(-3px);border-color:var(--line-2)}
-.benefit-card .benefit-art{display:block;aspect-ratio:4/3.4}
-.benefit-card .benefit-art img{-webkit-mask-image:linear-gradient(196deg,#000 34%,transparent 74%);mask-image:linear-gradient(196deg,#000 34%,transparent 74%)}
-.benefit-card .benefit-art::after{content:var(--word);position:absolute;z-index:2;left:16px;bottom:10px;font-size:clamp(3rem,5.2vw,5.25rem);font-weight:900;letter-spacing:calc(-.085em + var(--len,2) * .01em);line-height:.82}
-.benefit-index{position:absolute;z-index:3;left:14px;top:13px;padding:5px 9px;border-radius:999px;background:var(--face);font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em}
+.benefit-card{display:flex;flex-direction:column;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);transition:transform .2s var(--ease),box-shadow .2s var(--ease)}
+.benefit-card:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px var(--line-2),0 18px 40px color-mix(in srgb,var(--glow) 18%,transparent)}
+.benefit-card .benefit-art{display:block;aspect-ratio:4/3.4;container-type:inline-size}
+.benefit-card .benefit-art img{inset:9% 7% 36% auto;width:46%;height:auto;max-height:54%;margin:auto 0}
+.benefit-card.benefit-family-album .benefit-art img{width:38%}
+.benefit-card.benefit-rehearsal .benefit-art img{inset:18% 9% auto auto;width:36%;aspect-ratio:1;object-fit:cover;border-radius:14px;filter:none;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 18px 32px rgba(0,0,0,.28),0 3px 8px rgba(0,0,0,.16);transform:rotate(-4deg)}
+.benefit-card .benefit-art::after{content:var(--word);position:absolute;z-index:2;left:16px;bottom:12px;font-size:min(5.5rem,calc(54cqw / (var(--len) * .97)));font-weight:900;letter-spacing:calc(-.085em + var(--len,2) * .01em);line-height:.82}
+.benefit-index{position:absolute;z-index:3;left:14px;top:13px;padding:5px 9px;border-radius:999px;background:rgba(8,9,12,.16);font-family:var(--mono);font-size:.6875rem;letter-spacing:.14em}
 .benefit-status{display:inline-flex;align-items:center;height:26px;padding:0 11px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:.6875rem;font-weight:800;white-space:nowrap}
 .benefit-art .benefit-status{position:absolute;z-index:3;right:14px;top:12px;transform:rotate(-2deg);box-shadow:0 6px 16px rgba(0,0,0,.2)}
 .benefit-copy{display:flex;flex-direction:column;gap:6px;flex:1;padding:18px 18px 20px}
 .benefit-kicker{font-size:.75rem!important;font-weight:650;color:var(--ink-3)!important}
-.benefit-copy h2{font-size:1.25rem;font-weight:850;letter-spacing:-.035em}
+.benefit-copy h2{font-size:1.25rem;font-weight:900;letter-spacing:-.035em}
 .benefit-copy>p{font-size:.875rem;color:var(--ink-2)}
 .benefit-link{display:inline-flex;align-items:center;gap:6px;margin-top:auto;padding-top:10px;font-size:.84375rem;font-weight:750;color:var(--ink)}
 .benefit-link:hover{color:var(--glow)}
@@ -51,35 +54,36 @@
 .benefit-promise p:not(.sb-eyebrow){font-size:.9375rem;color:var(--ink-2)}
 
 /* 상세 */
-.benefit-detail-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;min-height:clamp(380px,48vh,480px);border-radius:var(--r-xl);background:var(--face);color:var(--on-face)}
-.benefit-detail-hero::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
-.benefit-detail-hero>div:first-child{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:26px;max-width:min(760px,72%)}
+.benefit-detail-hero{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:flex-end;min-height:clamp(380px,46vh,480px);border-radius:var(--r-xl);background:var(--studio),var(--face);color:var(--on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+.benefit-detail-hero::after{content:"";position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.28;mix-blend-mode:overlay;pointer-events:none}
+.benefit-detail-hero>div:first-child{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:26px;max-width:min(760px,62%)}
 .benefit-detail-hero .sb-eyebrow{color:inherit;opacity:.82}
 .benefit-detail-hero h1{font-size:.9375rem;font-weight:800;letter-spacing:.01em}
 .benefit-detail-hero h2{font-size:clamp(2.25rem,4.4vw,4rem);font-weight:900;letter-spacing:-.055em;line-height:.98}
 .benefit-detail-hero p:not(.sb-eyebrow){font-size:1rem;font-weight:600;max-width:46ch;opacity:.92}
-.benefit-detail-hero .benefit-art{position:absolute;inset:0 0 0 auto;width:56%;background:transparent;overflow:visible;isolation:auto}
+.benefit-detail-hero .benefit-art{position:absolute;inset:0 0 0 auto;width:46%;background:transparent;overflow:visible;isolation:auto}
 .benefit-detail-hero .benefit-art::before{display:none}
-.benefit-detail-hero .benefit-art img{-webkit-mask-image:linear-gradient(90deg,transparent,#000 45%);mask-image:linear-gradient(90deg,transparent,#000 45%)}
-.benefit-availability{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:16px 0;padding:18px 20px;border-radius:var(--r-lg);background:var(--surface-1);border:1px solid var(--line)}
+.benefit-detail-hero .benefit-art img{inset:10% 12% 14% 4%;width:auto;height:auto;max-width:84%;max-height:76%;margin:auto}
+.benefit-detail-hero.benefit-rehearsal .benefit-art img{width:min(70%,320px);aspect-ratio:1;object-fit:cover;border-radius:16px;filter:none;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 24px 44px rgba(0,0,0,.3),0 4px 10px rgba(0,0,0,.18);transform:rotate(-4deg)}
+.benefit-availability{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;margin:16px 0;padding:18px 20px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line)}
 .benefit-availability>div{display:flex;flex-direction:column;align-items:flex-start;gap:8px;flex:1;min-width:260px}
 .benefit-availability p{font-size:.875rem;color:var(--ink-2)}
 .benefit-local-note{flex-basis:100%;font-size:.78125rem!important;color:var(--ink-3)!important}
 .benefit-how{margin-top:36px}
-.benefit-how h2{margin:8px 0 14px;font-size:clamp(1.5rem,2.4vw,2rem);font-weight:850;letter-spacing:-.04em}
+.benefit-how h2{margin:8px 0 14px;font-size:clamp(1.625rem,2.4vw,2.125rem);font-weight:900;letter-spacing:-.045em}
 .benefit-how ol{list-style:none;padding:0;border-top:1px solid var(--line)}
 .benefit-how li{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:20px 4px;border-bottom:1px solid var(--line)}
-.benefit-step-number{font-family:var(--mono);font-size:1.75rem;line-height:1;color:var(--glow)}
-.benefit-how h3{font-size:1.125rem;font-weight:800;letter-spacing:-.025em}
+.benefit-step-number{font-family:var(--mono);font-size:1.75rem;line-height:1;color:color-mix(in srgb,var(--glow) 72%,var(--ink))}
+.benefit-how h3{font-size:1.125rem;font-weight:850;letter-spacing:-.025em}
 .benefit-how li p{margin-top:4px;font-size:.875rem;color:var(--ink-2)}
 .benefit-more{margin-top:12px}
 .benefit-related{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-.benefit-related a{display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border-radius:var(--r-lg);background:var(--surface-1);border:1px solid var(--line)}
-.benefit-related a:hover{border-color:var(--line-2)}
-.benefit-related img{width:64px;height:64px;border-radius:14px;object-fit:cover;filter:grayscale(1) contrast(1.15)}
+.benefit-related a{display:flex;align-items:center;gap:14px;padding:12px 16px 12px 12px;border-radius:var(--r-lg);background:var(--surface-1);box-shadow:inset 0 0 0 1px var(--line);transition:background .18s var(--ease)}
+.benefit-related a:hover{background:var(--surface-2)}
+.benefit-related img{width:64px;height:64px;flex:none;border-radius:14px;object-fit:contain;padding:6px;background:var(--face);filter:none}
 .benefit-related div{display:flex;flex-direction:column;gap:2px;flex:1}
-.benefit-related span:first-child{font-size:.6875rem;font-weight:700;color:var(--ink-3)}
-.benefit-related strong{font-size:1rem}
+.benefit-related span:first-child{font-family:var(--mono);font-size:.625rem;letter-spacing:.06em;color:var(--ink-3)}
+.benefit-related strong{font-size:1rem;font-weight:850}
 .benefit-related p{font-size:.8125rem;color:var(--ink-2)}
 .benefit-related>a>span{color:var(--ink-3)}
 
@@ -94,7 +98,6 @@
   .benefit-hero-art{min-height:260px}
   .benefit-detail-hero{min-height:460px}
   .benefit-detail-hero>div:first-child{max-width:100%;padding:20px}
-  .benefit-detail-hero .benefit-art{width:100%}
-  .benefit-detail-hero .benefit-art img{-webkit-mask-image:linear-gradient(180deg,#000 5%,transparent 66%);mask-image:linear-gradient(180deg,#000 5%,transparent 66%)}
+  .benefit-detail-hero .benefit-art{inset:0 0 auto auto;width:56%;height:46%}
   .benefit-how li{grid-template-columns:48px 1fr}
 }
