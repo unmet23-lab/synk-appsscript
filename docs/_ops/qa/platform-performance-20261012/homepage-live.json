@@ -1,0 +1,152 @@
+{
+  "commit": "4210347c185e038eefe68e444bba720b821ab5e2",
+  "checkedAt": "2026-10-11T19:13:37.592Z",
+  "passed": 18,
+  "total": 18,
+  "files": [
+    {
+      "path": "assets/v10/site.js",
+      "status": 200,
+      "bytes": 24966,
+      "expectedSha256": "1febc4668ad6b580f7ceb586c38298fddc31c9a1014488a3f5082684be310960",
+      "actualSha256": "1febc4668ad6b580f7ceb586c38298fddc31c9a1014488a3f5082684be310960",
+      "pass": true
+    },
+    {
+      "path": "atlas/index.html",
+      "status": 200,
+      "bytes": 27050,
+      "expectedSha256": "df8768717daaf93a8f0ac1549723db0a8e96be2716d34e913d5ad95567e3790b",
+      "actualSha256": "df8768717daaf93a8f0ac1549723db0a8e96be2716d34e913d5ad95567e3790b",
+      "pass": true
+    },
+    {
+      "path": "en/atlas/index.html",
+      "status": 200,
+      "bytes": 25692,
+      "expectedSha256": "44d6c7cfc1597534c7878bc550a2922da57c19f48da9714a5fb4e092705ec5ee",
+      "actualSha256": "44d6c7cfc1597534c7878bc550a2922da57c19f48da9714a5fb4e092705ec5ee",
+      "pass": true
+    },
+    {
+      "path": "en/founder/index.html",
+      "status": 200,
+      "bytes": 20413,
+      "expectedSha256": "33c539f64d8c2fad930ecb2747aa0b6610171ac21f049e4bdea22c88ab27c42e",
+      "actualSha256": "33c539f64d8c2fad930ecb2747aa0b6610171ac21f049e4bdea22c88ab27c42e",
+      "pass": true
+    },
+    {
+      "path": "en/index.html",
+      "status": 200,
+      "bytes": 31436,
+      "expectedSha256": "cd0786650ea74b9b51c02e07f8b5f10c6fd4b475ad0b22905993f778bbd98780",
+      "actualSha256": "cd0786650ea74b9b51c02e07f8b5f10c6fd4b475ad0b22905993f778bbd98780",
+      "pass": true
+    },
+    {
+      "path": "en/knowledge.json",
+      "status": 200,
+      "bytes": 306128,
+      "expectedSha256": "1709379c51abf888971a00a7a5bacfd0972dc84288f0c51f5642e04b87b348b2",
+      "actualSha256": "1709379c51abf888971a00a7a5bacfd0972dc84288f0c51f5642e04b87b348b2",
+      "pass": true
+    },
+    {
+      "path": "en/lab/index.html",
+      "status": 200,
+      "bytes": 36890,
+      "expectedSha256": "06c22a67f65b426d05882f481b36d15942d227e03e939d5d11bde10f0e112939",
+      "actualSha256": "06c22a67f65b426d05882f481b36d15942d227e03e939d5d11bde10f0e112939",
+      "pass": true
+    },
+    {
+      "path": "en/path/index.html",
+      "status": 200,
+      "bytes": 21083,
+      "expectedSha256": "f8431e469ef3b79f9577860671c1cd9a4b368f84d90fd1fe7acba9262fd7002a",
+      "actualSha256": "f8431e469ef3b79f9577860671c1cd9a4b368f84d90fd1fe7acba9262fd7002a",
+      "pass": true
+    },
+    {
+      "path": "en/pulse/index.html",
+      "status": 200,
+      "bytes": 28456,
+      "expectedSha256": "9342cc8c6e8cda7f4d14384c46502523fce16605e47734375537cb7455c4aef8",
+      "actualSha256": "9342cc8c6e8cda7f4d14384c46502523fce16605e47734375537cb7455c4aef8",
+      "pass": true
+    },
+    {
+      "path": "en/shift/index.html",
+      "status": 200,
+      "bytes": 25603,
+      "expectedSha256": "5c705123ac76ea68cc45b358e20381f286fdc8e1d2d2bb42a65d9d96e4a21778",
+      "actualSha256": "5c705123ac76ea68cc45b358e20381f286fdc8e1d2d2bb42a65d9d96e4a21778",
+      "pass": true
+    },
+    {
+      "path": "founder/index.html",
+      "status": 200,
+      "bytes": 21728,
+      "expectedSha256": "367cb48b2cabfaaac15abcb02d771aaaf423c611cea654143da0474d8ea1897c",
+      "actualSha256": "367cb48b2cabfaaac15abcb02d771aaaf423c611cea654143da0474d8ea1897c",
+      "pass": true
+    },
+    {
+      "path": "index.html",
+      "status": 200,
+      "bytes": 32791,
+      "expectedSha256": "69d7a673e8a4727b2451b80a6de3a7a789ab5e733f5be143acab3a2525e999d7",
+      "actualSha256": "69d7a673e8a4727b2451b80a6de3a7a789ab5e733f5be143acab3a2525e999d7",
+      "pass": true
+    },
+    {
+      "path": "knowledge.json",
+      "status": 200,
+      "bytes": 305478,
+      "expectedSha256": "d9f285c91081b922952d7449003bd6a00bcf2675dbc53b058a97d1a7a9a7a0f0",
+      "actualSha256": "d9f285c91081b922952d7449003bd6a00bcf2675dbc53b058a97d1a7a9a7a0f0",
+      "pass": true
+    },
+    {
+      "path": "lab/index.html",
+      "status": 200,
+      "bytes": 38627,
+      "expectedSha256": "3272219e56444bd5e9272addf013aa763587775f061d342afb8683ddc9db8d09",
+      "actualSha256": "3272219e56444bd5e9272addf013aa763587775f061d342afb8683ddc9db8d09",
+      "pass": true
+    },
+    {
+      "path": "llms.txt",
+      "status": 200,
+      "bytes": 11490,
+      "expectedSha256": "127387fa3a8f06b6f3b3e7554a8a51d25ca37f8d66a3bb42648b55a974c0817d",
+      "actualSha256": "127387fa3a8f06b6f3b3e7554a8a51d25ca37f8d66a3bb42648b55a974c0817d",
+      "pass": true
+    },
+    {
+      "path": "path/index.html",
+      "status": 200,
+      "bytes": 21877,
+      "expectedSha256": "f9418f5808992df5ec946b9495556c93b2268b2e9eab0d035ee0d7338ed12174",
+      "actualSha256": "f9418f5808992df5ec946b9495556c93b2268b2e9eab0d035ee0d7338ed12174",
+      "pass": true
+    },
+    {
+      "path": "pulse/index.html",
+      "status": 200,
+      "bytes": 29932,
+      "expectedSha256": "68d9fd30cd52d7aeccac8238fcc0c889b018f7b55fcea4656b8c6bafcb19c583",
+      "actualSha256": "68d9fd30cd52d7aeccac8238fcc0c889b018f7b55fcea4656b8c6bafcb19c583",
+      "pass": true
+    },
+    {
+      "path": "shift/index.html",
+      "status": 200,
+      "bytes": 27170,
+      "expectedSha256": "2e127934fbfb3fb2f4601b689293574ad7767c916597229afbfd5bd75fc16ec8",
+      "actualSha256": "2e127934fbfb3fb2f4601b689293574ad7767c916597229afbfd5bd75fc16ec8",
+      "pass": true
+    }
+  ]
+}

@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-10-11T18:46:08.160Z",
+  "ok": true,
+  "asarSha256": "8e84c4689ab133563895c13337816623d0811d6d1fdb326255bf877ed4d3d4bc",
+  "packageBytesUnchanged": true,
+  "code": 0,
+  "error": null,
+  "result": {
+    "ok": true,
+    "mode": "platform",
+    "packaged": true,
+    "arch": "x64",
+    "electron": "44.5.1",
+    "archive": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\delivered\\resources\\app.asar",
+    "visible": false,
+    "profileIsolated": true,
+    "installationRoot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\qa\\Programs",
+    "checks": [
+      {
+        "name": "actual packaged native architecture",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before app initialization",
+        "ok": true
+      },
+      {
+        "name": "window hidden",
+        "ok": true
+      },
+      {
+        "name": "Platform local renderer and native environment",
+        "ok": true
+      },
+      {
+        "name": "Platform empty configured account stays signed out",
+        "ok": true
+      },
+      {
+        "name": "world managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "world",
+          "name": "SYNK WORLD",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.2",
+          "latestVersion": "0.4.2",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.2",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 132344543,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "world embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "world real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.2",
+          "progress": 100,
+          "transferredBytes": 132344543,
+          "totalBytes": 132344543,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "messenger managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "messenger",
+          "name": "SYNK Workspace",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.0",
+          "latestVersion": "0.4.0",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.0",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 132289230,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "messenger embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "messenger real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.0",
+          "progress": 100,
+          "transferredBytes": 132289230,
+          "totalBytes": 132289230,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "visible installation help matches the OS",
+        "ok": true,
+        "detail": {
+          "text": "개발 미리보기 배포\n\n포함된 설치 파일을 이 기기에 복사하고 확인합니다. 설치 마법사는 직접 열 때 시작되며, 설치 완료 후 라이브러리에서 실행할 수 있어요.",
+          "width": 1081,
+          "height": 81.796875,
+          "visible": true
+        }
+      },
+      {
+        "name": "Platform boot requires no network",
+        "ok": true
+      },
+      {
+        "name": "no account provider request with empty vault",
+        "ok": true
+      },
+      {
+        "name": "no localhost development server requests",
+        "ok": true
+      },
+      {
+        "name": "QA window visibility matches requested mode",
+        "ok": true
+      }
+    ],
+    "errors": [],
+    "pageErrors": [],
+    "requests": [],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "openRequestsSuppressed": [],
+    "screenshots": [
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\qa\\platform\\platform-installation-help.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\qa\\platform\\platform-library.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "managedChildLaunched": false,
+    "unlimitedFrames": false,
+    "graphicsBackend": "default",
+    "runnerArch": null,
+    "translated": false
+  }
+}

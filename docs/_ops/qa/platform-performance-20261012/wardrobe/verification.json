@@ -1,0 +1,221 @@
+{
+  "date": "2026-10-12",
+  "scope": "Local Chromium IAB, synthetic rehearsal at 127.0.0.1:4352. No production account or appearance changes.",
+  "files": [
+    "experiences/synk-world-app/app-shell.mjs",
+    "experiences/synk-world-home/wardrobe-studio.mjs",
+    "experiences/synk-world-home/wardrobe-stage.mjs",
+    "experiences/synk-world-home/wardrobe-thumbnail-queue.mjs",
+    "experiences/synk-world-home/assets/wardrobe-thumbnails-v8/"
+  ],
+  "checks": [
+    {
+      "name": "home does not request wardrobe-studio, wardrobe-album or thumbnail queue until wardrobe opens",
+      "pass": true
+    },
+    {
+      "name": "14 catalog images load successfully at 256x256",
+      "pass": true
+    },
+    {
+      "name": "initial room builds no catalog garment and executes no thumbnail readback",
+      "pass": true,
+      "observed": {
+        "builtGarments": [],
+        "queue": {
+          "pending": 0,
+          "completed": 0,
+          "disposed": false
+        },
+        "frames": 3,
+        "canvasCount": 1
+      }
+    },
+    {
+      "name": "search linen shows exactly one result; selecting it builds only that garment and rotation updates target angle",
+      "pass": true,
+      "observed": {
+        "builtGarments": [
+          "mongle-linen-overshirt"
+        ],
+        "targetAngle": 1.5707963267948966,
+        "thumbnailCaptures": 0
+      }
+    },
+    {
+      "name": "offscreen personal comparison remains deferred; visible comparison creates one 320px PNG",
+      "pass": true
+    },
+    {
+      "name": "closing room releases canvas and thumbnail queue",
+      "pass": true,
+      "observed": {
+        "canvasCount": 0,
+        "disposed": true,
+        "queue": {
+          "pending": 0,
+          "completed": 1,
+          "disposed": true
+        }
+      }
+    },
+    {
+      "name": "console errors during interaction",
+      "pass": true,
+      "count": 0
+    }
+  ],
+  "tests": {
+    "pass": 29,
+    "fail": 0,
+    "files": [
+      "experiences/synk-world-app/qa/wardrobe-catalog-thumbnails.test.mjs",
+      "experiences/synk-world-app/qa/wardrobe-thumbnail-queue.test.mjs",
+      "experiences/synk-world-app/qa/wardrobe-lazy-open.test.mjs",
+      "experiences/synk-world-app/qa/wardrobe-client.test.mjs",
+      "experiences/synk-world-app/qa/wardrobe-consumer.test.mjs",
+      "experiences/synk-world-app/qa/native-account.test.mjs"
+    ],
+    "log": "unit.tap"
+  },
+  "profiles": {
+    "initial": {
+      "durationMs": 11072.059,
+      "topExclusiveMs": [
+        {
+          "name": "onFirstUse",
+          "ms": 3371.567
+        },
+        {
+          "name": "(idle)",
+          "ms": 2968.848
+        },
+        {
+          "name": "makeWardrobeTextile",
+          "ms": 1114.13
+        },
+        {
+          "name": "(program)",
+          "ms": 636.132
+        },
+        {
+          "name": "weaveHeight",
+          "ms": 615.128
+        },
+        {
+          "name": "make",
+          "ms": 579.602
+        },
+        {
+          "name": "capture",
+          "ms": 436.583
+        },
+        {
+          "name": "WebGLRenderer.setSize",
+          "ms": 168.564
+        },
+        {
+          "name": "(garbage collector)",
+          "ms": 133.646
+        },
+        {
+          "name": "renderItems",
+          "ms": 83.039
+        },
+        {
+          "name": "grain",
+          "ms": 78.707
+        },
+        {
+          "name": "reflectance",
+          "ms": 51.341
+        },
+        {
+          "name": "(anonymous)",
+          "ms": 41.078
+        },
+        {
+          "name": "fabric",
+          "ms": 32.403
+        },
+        {
+          "name": "createAvatarTextiles",
+          "ms": 31.111
+        }
+      ]
+    },
+    "static": {
+      "durationMs": 11668.315,
+      "topExclusiveMs": [
+        {
+          "name": "(idle)",
+          "ms": 8388.139
+        },
+        {
+          "name": "getProgramInfoLog",
+          "ms": 1803.131
+        },
+        {
+          "name": "getImageData",
+          "ms": 398.727
+        },
+        {
+          "name": "(program)",
+          "ms": 199.318
+        },
+        {
+          "name": "make",
+          "ms": 160.895
+        },
+        {
+          "name": "grain",
+          "ms": 88.49
+        },
+        {
+          "name": "getShaderInfoLog",
+          "ms": 66.98
+        },
+        {
+          "name": "renderItems",
+          "ms": 62.335
+        },
+        {
+          "name": "(garbage collector)",
+          "ms": 37.106
+        },
+        {
+          "name": "(anonymous)",
+          "ms": 31.54
+        },
+        {
+          "name": "stroke",
+          "ms": 27.072
+        },
+        {
+          "name": "getContext",
+          "ms": 23.806
+        },
+        {
+          "name": "getClientRects",
+          "ms": 23.322
+        },
+        {
+          "name": "WebGLRenderer.setSize",
+          "ms": 16.205
+        },
+        {
+          "name": "woodMap",
+          "ms": 15.925
+        }
+      ]
+    }
+  },
+  "limits": [
+    "These profiles compare the intermediate visible-only capture implementation against final static catalog images; they are not a full original-build wall-clock benchmark.",
+    "The fitting room still performs initial WebGL shader compilation once per renderer. This local trace includes about 1803ms sampled in getProgramInfoLog during that first compilation; physical-device load time varies.",
+    "The first time a new personal garment is actually worn, its material and geometry are still generated. Static catalog images avoid doing that for unseen garments merely to populate the list.",
+    "No physical Intel MacBook or sustained multi-device FPS claim was verified here."
+  ],
+  "artwork": "Catalog capture sources match the current public artwork after CRLF normalization. See catalog-thumbnail-source.json. The performance-only.patch excludes earlier costume art and save-workflow changes.",
+  "cleanup": "The independent QA tab was closed and Profiler disabled before the parent resumed its FPS measurements."
+}

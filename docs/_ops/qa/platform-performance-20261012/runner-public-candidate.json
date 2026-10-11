@@ -1,0 +1,79 @@
+{
+  "result": {
+    "type": "object",
+    "value": {
+      "canvas": [
+        {
+          "css": {
+            "bottom": 0,
+            "height": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "height": 640,
+          "width": 1148
+        },
+        {
+          "css": {
+            "bottom": 650.953125,
+            "height": 548.953125,
+            "left": 0,
+            "right": 1280,
+            "top": 102,
+            "width": 1280,
+            "x": 0,
+            "y": 102
+          },
+          "height": 494,
+          "width": 1152
+        }
+      ],
+      "dpr": 2,
+      "durationMs": 8014.0999999996275,
+      "end": {
+        "elapsed": 43.66400000000006,
+        "paused": false,
+        "world": {
+          "drawCalls": 35,
+          "events": 3,
+          "frames": 1315,
+          "height": 549,
+          "pixelRatio": 0.8999999999999999,
+          "qualityScale": 0.6,
+          "renderHeight": 494,
+          "renderWidth": 1152,
+          "renderer": "Three.js 180",
+          "shadowSize": 1024,
+          "triangles": 110142,
+          "width": 1280
+        }
+      },
+      "over50ms": 0,
+      "p50": 33.30000000000291,
+      "p95": 33.5,
+      "rafFps": 30.071998103344256,
+      "rafFrames": 241,
+      "start": {
+        "elapsed": 35.63270000000008,
+        "world": {
+          "drawCalls": 38,
+          "events": 5,
+          "frames": 1074,
+          "height": 549,
+          "pixelRatio": 0.8999999999999999,
+          "qualityScale": 0.6,
+          "renderHeight": 494,
+          "renderWidth": 1152,
+          "renderer": "Three.js 180",
+          "shadowSize": 1024,
+          "triangles": 111160,
+          "width": 1280
+        }
+      }
+    }
+  }
+}

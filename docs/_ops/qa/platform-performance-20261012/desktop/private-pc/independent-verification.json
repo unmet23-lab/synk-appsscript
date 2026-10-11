@@ -1,0 +1,170 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-11T18:59:55.219Z",
+  "privatePCCandidate": true,
+  "publicUploadAllowed": false,
+  "oldVersion": "0.4.0",
+  "newVersion": "0.4.3",
+  "installer": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\dist\\SYNK-Platform-PC-Local-0.4.3-win-x64.exe",
+    "sha256": "b1008666b95ee057ee581f51f88208e26d26a09567d3af082dd3546232a9ef4f",
+    "bytes": 397416883
+  },
+  "installedArchiveBefore": "7d0e3bfde740f5a0e35b99caa68ffa2574c15b578650b468832780e83836714b",
+  "installedArchiveAfter": "7d0e3bfde740f5a0e35b99caa68ffa2574c15b578650b468832780e83836714b",
+  "candidateArchive": "8e84c4689ab133563895c13337816623d0811d6d1fdb326255bf877ed4d3d4bc",
+  "members": 117,
+  "identicalMembers": 114,
+  "changedMembers": [
+    "package.json",
+    "src/client-lifecycle.cjs",
+    "src/installations.cjs"
+  ],
+  "packageVersionOnly": true,
+  "performanceFilesMatchReviewedManifest": true,
+  "runtimeBytesPreserved": true,
+  "sameRuntimeFileCount": 71,
+  "changedRuntimeFiles": [
+    "SYNKPlatformPreview.exe"
+  ],
+  "executableVersionAndAsarIntegrityResourcesOnly": true,
+  "executableVersionChangedBytes": [
+    {
+      "offset": 244460942,
+      "before": 0,
+      "after": 3
+    },
+    {
+      "offset": 244460950,
+      "before": 0,
+      "after": 3
+    },
+    {
+      "offset": 244461208,
+      "before": 48,
+      "after": 51
+    },
+    {
+      "offset": 244461528,
+      "before": 48,
+      "after": 51
+    }
+  ],
+  "executableAsarIntegrity": {
+    "old": "699adfb352f967ad62381ad9bda11c70dba880b8e6249c633bcb74cb92abe070",
+    "new": "724c181bf45071f06185fae093dea21a2923548f5f8ff6259ceeeb4eb34c035c",
+    "offset": 244403567,
+    "candidateVerifiedAgainstActualArchiveHeader": true,
+    "baselineMatchesCurrentArchive": false
+  },
+  "executableSections": [
+    {
+      "name": ".text",
+      "position": 1536,
+      "size": 191993344,
+      "equal": true
+    },
+    {
+      "name": ".rdata",
+      "position": 191994880,
+      "size": 45414400,
+      "equal": true
+    },
+    {
+      "name": ".data",
+      "position": 237409280,
+      "size": 1385472,
+      "equal": true
+    },
+    {
+      "name": ".pdata",
+      "position": 238794752,
+      "size": 5589504,
+      "equal": true
+    },
+    {
+      "name": ".eh_fram",
+      "position": 244384256,
+      "size": 512,
+      "equal": true
+    },
+    {
+      "name": ".fptable",
+      "position": 244384768,
+      "size": 512,
+      "equal": true
+    },
+    {
+      "name": ".rodata",
+      "position": 244385280,
+      "size": 4608,
+      "equal": true
+    },
+    {
+      "name": ".tls",
+      "position": 244389888,
+      "size": 2560,
+      "equal": true
+    },
+    {
+      "name": "CPADinfo",
+      "position": 244392448,
+      "size": 512,
+      "equal": true
+    },
+    {
+      "name": "LZMADEC",
+      "position": 244392960,
+      "size": 4608,
+      "equal": true
+    },
+    {
+      "name": "_RDATA",
+      "position": 244397568,
+      "size": 512,
+      "equal": true
+    },
+    {
+      "name": "malloc_h",
+      "position": 244398080,
+      "size": 2048,
+      "equal": true
+    },
+    {
+      "name": "prot",
+      "position": 244400128,
+      "size": 512,
+      "equal": true
+    },
+    {
+      "name": ".rsrc",
+      "position": 244400640,
+      "size": 99328,
+      "equal": false
+    },
+    {
+      "name": ".reloc",
+      "position": 244499968,
+      "size": 1226240,
+      "equal": true
+    }
+  ],
+  "children": [
+    {
+      "id": "world",
+      "version": "0.4.2",
+      "bytes": 132344543,
+      "sha256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f"
+    },
+    {
+      "id": "messenger",
+      "version": "0.4.0",
+      "bytes": 132289230,
+      "sha256": "b1028c0891ba7dfe69c0958c41eb3fc2b2b5569104682906b03da794f298f16b"
+    }
+  ],
+  "isolatedNativeChecks": "16/16",
+  "installerExecuted": false,
+  "installedStateTouched": false,
+  "userProfileRead": false
+}

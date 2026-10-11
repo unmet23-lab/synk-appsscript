@@ -1,0 +1,182 @@
+--- a/experiences/synk-world-app/app-shell.mjs
++++ b/experiences/synk-world-app/app-shell.mjs
+@@ -6,7 +6,6 @@
+ import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus} from './tutor-selection-sync.mjs';
+ import {createLifeExperience} from './life-ui.mjs';
+ import {createTownWorldHost} from './world-town-client.mjs';
+-import {createWardrobeStudio} from '../synk-world-home/wardrobe-studio.mjs';
+ import {WARDROBE_ITEMS} from '../synk-world-home/wardrobe-catalog.mjs';
+ import {createWorkbenchStorage,thumbnailKey,wardrobeThumbnailCache} from '../synk-world-home/wardrobe-workbench.mjs';
+ const $=s=>document.querySelector(s);
+@@ -199,14 +198,19 @@
+ async function town(){if(operating){if(!client.snapshot)return signIn();try{const entry=await client.request('town/entry');if(!entry.allowed){show('동네를 열 준비','<p class="panel-description">TOPIK 1급 이상 입장 확인과<br>타운 이용권이 필요해요.</p><p class="dialog-note">내 계정의 입장 권한을 확인한 뒤 다시 열어 주세요.</p><div class="world-actions"><button class="plain-button" data-world="profile">내 계정 확인</button></div>','world-town');return;}const state=await client.request('town/state'),binding=state.binding,sharing=binding?.sharing;show('우리 동네, 가까이 만나봐요',`<img class="town-preview" src="assets/town.webp" alt="싱크타운 광장"><p class="panel-description">내 차림 그대로 동네를 걸어보고,<br>몽글을 가까이서 만나봐요.</p><div class="world-notice"><strong>내 타운 기록 · SYNK ID에 보관</strong><span>개인 기록은 내 계정으로 이어져요.${binding?.kind==='academy'?' 학원에 보여 줄 활동은 아래에서 따로 골라요.':' 학원 활동 공유는 소속 반이 연결되면 선택할 수 있어요.'}</span></div>${binding?.classId?`<label class="world-notice"><span><input type="checkbox" data-town-sharing data-revision="${Number(sharing?.revision)||0}" ${sharing?.enabled?'checked':''} ${sharing?.blockedByLearningSharing?'disabled':''}> 타운 활동을 학원에 공유하기</span><span>${sharing?.blockedByLearningSharing?'학습 공유를 켠 뒤 타운 공유를 선택할 수 있어요.':'선택한 뒤 새로 한 타운 활동만 공유해요. 꺼도 내 개인 기록은 보관돼요.'}</span></label>`:''}<div class="world-actions"><button class="felt-button" data-world="town-preview">내 차림으로 동네 열기 <span aria-hidden="true">→</span></button></div>`,'world-town');}catch(error){home.toast(errorText(error));}return;}show('우리 동네, 가까이 만나봐요',`<img class="town-preview" src="assets/town.webp" alt="싱크타운 광장 콘셉트"><p class="panel-description">내 차림 그대로 동네를 걸어보고,<br>몽글을 가까이서 만나봐요.</p><div class="world-notice"><strong>타운 연결 미리보기</strong><span>시험 계정의 차림 연결을 확인하는 개발 체험이에요. 실제 타운의 TOPIK 1급+ 조건·이용권·입장 권한을 부여하지 않아요.</span></div><div class="world-actions"><button class="felt-button" data-world="town-preview">${client.snapshot?'내 차림으로 미리보기':'시험 계정으로 연결하기'} <span aria-hidden="true">→</span></button><button class="plain-button" data-action="hangul">한글부터 배우기</button></div>`,'world-town');}
+ function townPreview(){if(!client.snapshot)return signIn();townSession?.dispose();townSession=operating?createTownWorldHost(client):null;if(townSession)window.SYNKWorldTownHost=townSession;show(operating?'나의 싱크타운':'싱크타운 연결 미리보기',`<iframe class="game-frame" title="내 차림으로 걷는 싱크타운" src="${worldUrl('town/day.html')}?play=walk" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');}
+ function profile(){if(!client.snapshot)return signIn();show('내 세계와 기록',`<div class="profile-view"><img src="assets/mongle-smile.webp" alt=""><h3>반가워요!</h3><p>차림과 첫 놀이의 선물이<br>${operating?'내 SYNK ID':'이 테스트 계정'}에 보관돼요.</p></div><div class="world-notice"><strong>서버 저장 ${client.pending?'대기 중':'연결됨'}</strong><span>현재 차림 판본 ${client.snapshot.revision} · ${operating?'SYNK 계정 연결':'로컬 테스트 계정'}</span></div>${operating?`<section class="world-notice"><strong>내 학습 기록 연결</strong>${account.preferences()?`<label><input type="checkbox" data-world-learning data-revision="${account.preferences().revision}" ${account.preferences().enabled?'checked':''}> 학습 기록을 내 SYNK 계정으로 이어가기</label><span>직접 켠 뒤 새로 한 첫 놀이의 언어 응답을 계정에 저장해요. 학원에 보여 줄 학습과 타운 활동은 내 수업에서 따로 선택해요.</span>`:'<span>학습 연결 설정은 내 수업의 계정 화면에서 확인할 수 있어요.</span>'}<a class="felt-button" href="https://synk.im/account/client.html?product=world">내 수업 · 과제와 공유 설정 <span aria-hidden="true">→</span></a></section>`:''}<div id="world-classroom-entry"></div><div class="world-actions"><button class="felt-button" data-world="wardrobe">내 옷장 열기</button><button class="plain-button" data-world="logout">이 화면에서 로그아웃</button></div>`,'world-profile');if(home.isMaru){$('#panel-content').append(hanger);renderHomeHanger(client.snapshot);}if(operating){const generation=client.generation,owner=client.snapshot.accountId;enrollmentView=mountEnrollment({container:$('#world-classroom-entry'),request:account.enrollmentRequest,guard:()=>{account.assertActive();if(generation!==client.generation||client.snapshot?.accountId!==owner)throw Object.assign(Error('ACCOUNT_CHANGED'),{code:'ACCOUNT_CHANGED'});},onLinked:async()=>{townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;await account.restore();profile();}});}}
+-function wardrobe(){
++async function wardrobe(){
+  if(!client.snapshot)return signIn();
+- show('나를 닮은 차림.','','world-wardrobe');
++ show('나를 닮은 차림.','<p class="panel-description" role="status">옷장을 준비하고 있어요.</p>','world-wardrobe');
++ const ticket=gameLaunch,owner=client.snapshot.accountId,generation=client.generation;
++ let createWardrobeStudio;
++ try{({createWardrobeStudio}=await import('../synk-world-home/wardrobe-studio.mjs'));}
++ catch{if(ticket===gameLaunch&&screen==='world-wardrobe')show('옷장을 다시 열어 주세요.','<p class="panel-description">연결을 확인한 뒤 다시 시도해 주세요.</p><button class="felt-button" data-world="wardrobe">다시 열기</button>','world-wardrobe');return;}
++ if(ticket!==gameLaunch||screen!=='world-wardrobe'||!worldPanel.open||client.generation!==generation||client.snapshot?.accountId!==owner)return;
+  wardrobeStudio=createWardrobeStudio({snapshot:client.snapshot,reducedMotion:home.state.reduced,
+   onEquip:(slots,dyes)=>client.equip(slots,dyes),onSaveLooks:looks=>client.saveLooks(looks),
+   onRefresh:()=>client.refresh(),onRetry:()=>client.sendPending(),onDiscard:()=>client.discardPending(),onPlay:play,
+  });
+- $('#panel-content').append(wardrobeStudio.element);home.attachPanelResource(wardrobeStudio);
++ $('#panel-content').replaceChildren(wardrobeStudio.element);home.attachPanelResource(wardrobeStudio);
+  const openedStudio=wardrobeStudio;
+  openedStudio.update(client.snapshot,{busy:true,pending:client.pending,status:client.status});
+  // Read the current account when opening, before a new selection is confirmed.
+--- a/experiences/synk-world-home/wardrobe-studio.mjs
++++ b/experiences/synk-world-home/wardrobe-studio.mjs
+@@ -1,17 +1,18 @@
+ import {WARDROBE_ITEMS,wardrobeItem,outfitLabel,slotsForOutfit} from './wardrobe-catalog.mjs';
+ import {DraftHistory,normalizeEditState,normalizeWorkbenchState,createWorkbenchStorage,filterItems,randomSlots,FILTER_OPTIONS,thumbnailKey,wardrobeThumbnailCache} from './wardrobe-workbench.mjs';
+ import {createWardrobeAlbum} from './wardrobe-album.mjs';
++import {createWardrobeThumbnailQueue} from './wardrobe-thumbnail-queue.mjs';
+ 
+ const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const clone=value=>JSON.parse(JSON.stringify(value));
+ const equal=(a,b)=>JSON.stringify(normalizeEditState(a))===JSON.stringify(normalizeEditState(b));
+ const equalLooks=(a,b)=>JSON.stringify((a||[]).map(look=>({id:look.id,name:look.name,edit:normalizeEditState(look)})))===JSON.stringify((b||[]).map(look=>({id:look.id,name:look.name,edit:normalizeEditState(look)})));
+ const icon=name=>`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${{hanger:'M10 6a2 2 0 1 1 4 0c0 2-2 2-2 4l9 6v3H3v-3l9-6',camera:'M8 5h8l2 3h4v13H2V8h4l2-3Zm4 5a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z',book:'M4 3h16v18H4V3Zm4 0v18m4-13h4m-4 4h4',turn:'M5 8a8 8 0 1 1-1 8M5 3v5H1',check:'m5 12 4 4L19 6',close:'m6 6 12 12M6 18 18 6'}[name]||''}"/></svg>`;
+-const afterPaint=()=>new Promise(resolve=>setTimeout(resolve,0));
+ const button=(action,label,extra='')=>`<button type="button" class="atelier-soft" data-studio="${action}" ${extra}>${label}</button>`;
+ const slotLabel=slot=>slot==='body'?'옷':'목도리';
+ const shortDate=value=>new Date(value).toLocaleDateString('ko-KR',{month:'long',day:'numeric',timeZone:'Asia/Seoul'});
+ const GRAPHICS_REVISION='costume-workbench-v7';
++const catalogThumbnail=id=>new URL(`./assets/wardrobe-thumbnails-v8/${id}.png`,import.meta.url).href;
+ let nextStudioId=0;
+ function installStyle(){if(document.getElementById('wardrobe-studio-style'))return;const link=document.createElement('link');link.id='wardrobe-studio-style';link.rel='stylesheet';link.href=new URL('./wardrobe-studio.css',import.meta.url).href;document.head.append(link);}
+ 
+@@ -23,7 +24,7 @@
+   const inventoryDates=value=>Object.fromEntries((value?.inventory||[]).map(item=>[item.itemId,item.acquiredAt??null]));
+   let ws=store.reconcileInventory((snapshot?.inventory||[]).map(i=>i.itemId),{acquiredAt:inventoryDates(snapshot)});
+   let draft=normalizeEditState(ws.draft||confirmed),history=new DraftHistory(draft),selected=wardrobeItem(draft.slots.body)||wardrobeItem(draft.slots.neck)||WARDROBE_ITEMS[0];
+-  let engine=null,stageAbort=null,disposed=false,generation=0,localBusy=false,serverBusy=false,pending=null,serverStatus='ready',comparing=false,editingLook='',message=ws.draft&&!equal(draft,confirmed)?'이 기기에 남긴 시착 초안을 복원했어요. 입기로 확정할 수 있어요.':'',fault='',thumbQueue=Promise.resolve(),photo=null,lastPhotoSlots=null,albumRows=[],albumToken=0,undoLooks=null,undoPhoto=null,candidates=[],batchIds=new Set(),albumPage=12,saveTimer=0,gamepadFrame=0,gamepadLast=0;
++  let engine=null,stageAbort=null,disposed=false,generation=0,localBusy=false,serverBusy=false,pending=null,serverStatus='ready',comparing=false,editingLook='',message=ws.draft&&!equal(draft,confirmed)?'이 기기에 남긴 시착 초안을 복원했어요. 입기로 확정할 수 있어요.':'',fault='',photo=null,lastPhotoSlots=null,albumRows=[],albumToken=0,undoLooks=null,undoPhoto=null,candidates=[],batchIds=new Set(),albumPage=12,saveTimer=0,gamepadFrame=0,gamepadLast=0;
+   const thumbnails=new Map(),lookThumbs=new Map(),urls=new Map();
+   let serverCompletion=null,lookFormVersion=0,missingEditingLook=false;
+   const root=document.createElement('section');root.className='atelier';root.setAttribute('aria-label','몽글 코스튬 스튜디오');const uid=`atelier-${++nextStudioId}`;
+@@ -76,6 +77,11 @@
+     <footer class="atelier-footer"><div><strong class="atelier-outfit-state"></strong><p class="atelier-sync-note"></p></div><div class="atelier-footer-actions">${button('to-looks','조합 저장')}<button type="button" class="atelier-primary" data-studio="earn" hidden>놀이하고 목도리 받기</button><button type="button" class="atelier-primary" data-studio="apply">이 차림 입기 ${icon('check')}</button></div></footer>`;
+   const $=s=>root.querySelector(s),$$=s=>[...root.querySelectorAll(s)],owns=id=>preview||!id||(snap?.inventory||[]).some(i=>i.itemId===id),ownsEdit=edit=>Object.values(edit.slots).every(owns),busy=()=>localBusy||serverBusy||!!pending,looks=()=>snap?.looks||[];
+   const orderedLooks=()=>[...looks()];
++  const thumbnailTargets=new Map();
++  const thumbQueue=createWardrobeThumbnailQueue({canRun:()=>!disposed&&!document.hidden&&root.isConnected&&!!engine&&!fault});
++  const thumbnailObserver=new IntersectionObserver(entries=>{
++    for(const entry of entries){const target=thumbnailTargets.get(entry.target);if(!target)continue;target.visible=entry.isIntersecting;if(target.visible)queueThumbnail(target);else if(![...thumbnailTargets.values()].some(t=>t.key===target.key&&t.visible))thumbQueue.delete(target.key);}
++  });
+   const lookEditor=document.createElement('details');lookEditor.className='atelier-advanced atelier-look-editor';lookEditor.open=looks().length===0;
+   const editorSummary=document.createElement('summary');editorSummary.textContent='시착 차림 저장·이름 수정';lookEditor.append(editorSummary);
+   const editorNodes=[$('.atelier-pane-copy'),$('.atelier-name-label'),$('.atelier-name'),$('.atelier-look-actions'),$('.atelier-replace')];editorNodes[0].before(lookEditor);editorNodes.forEach(node=>lookEditor.append(node));
+@@ -151,7 +157,8 @@
+     $('.atelier-group-manager').innerHTML=ws.groups.map(g=>`<div class="atelier-group-row"><label>이름 <input data-group-name="${esc(g.id)}" value="${esc(g.name)}" maxlength="24" aria-label="${esc(g.name)} 모음 이름"></label><label>표시 <select data-group-icon="${esc(g.id)}">${['★','☀','✿','☁'].map(i=>`<option ${g.icon===i?'selected':''}>${i}</option>`).join('')}</select></label><button type="button" data-move-group="${esc(g.id)}" data-direction="-1" aria-label="${esc(g.name)} 모음 위로">↑</button><button type="button" data-move-group="${esc(g.id)}" data-direction="1" aria-label="${esc(g.name)} 모음 아래로">↓</button><button type="button" data-delete-group="${esc(g.id)}" aria-label="${esc(g.name)} 모음 삭제">삭제</button></div>`).join('');
+   }
+   function renderCandidates(){
+-    $('.atelier-candidates').innerHTML=candidates.length?'<h4>같은 구도로 비교</h4><div>'+candidates.map((edit,index)=>{const key=cacheKey(edit,false);let image=wardrobeThumbnailCache.get(key);if(!image&&engine&&!fault){try{image=engine.capture({width:320,height:400,slots:edit.slots,dyes:edit.dyes});wardrobeThumbnailCache.set(key,image);}catch{}}return `<article><img src="${image||'assets/mongle.webp'}" alt="${esc(outfitLabel(edit.slots))} 비교 후보 ${index+1}" width="320" height="400"><p>${esc(outfitLabel(edit.slots))}</p><button type="button" data-candidate="${index}">이 차림 시착</button><button type="button" data-remove-candidate="${index}" aria-label="후보 ${index+1} 빼기">빼기</button></article>`;}).join('')+'</div>':'';
++    $('.atelier-candidates').innerHTML=candidates.length?'<h4>같은 구도로 비교</h4><div>'+candidates.map((edit,index)=>{const image=wardrobeThumbnailCache.get(cacheKey(edit,false));return `<article><img data-thumb-candidate="${index}" src="${image||'assets/mongle.webp'}" alt="${esc(outfitLabel(edit.slots))} 비교 후보 ${index+1}" width="320" height="400"><p>${esc(outfitLabel(edit.slots))}</p><button type="button" data-candidate="${index}">이 차림 시착</button><button type="button" data-remove-candidate="${index}" aria-label="후보 ${index+1} 빼기">빼기</button></article>`;}).join('')+'</div>':'';
++    observeThumbnails();
+   }
+   function render(){renderChrome();renderItems();renderLooks();renderGroups();syncStage();renderCandidates();}
+   function showTab(value){remember();ws.tab=value;renderChrome();if(innerWidth<800){const panel=root.closest('.panel-dialog');if(panel)panel.scrollTop=0;}if(value==='looks')renderLooks();if(value==='photo')void refreshAlbum();remember();}
+@@ -234,16 +241,31 @@
+       for(const row of rows.slice(0,albumPage)){const record=await album.get(row.id);if(disposed||token!==albumToken)return;const image=$$('[data-album-image]').find(i=>i.dataset.albumImage===row.id);if(record&&image)image.src=photoUrl(record);}
+     }catch(error){if(!disposed)$('.atelier-album-status').textContent='앨범을 읽지 못했어요. 촬영 결과의 PNG는 따로 받을 수 있어요.';}
+   }
+-  function queueItemThumbnails(){
+-    if(!engine||fault)return;const token=generation,visible=$$('[data-thumb-item]').map(i=>i.dataset.thumbItem),priority=[...new Set([...visible,...WARDROBE_ITEMS.map(i=>i.id)])];
+-    thumbQueue=thumbQueue.then(async()=>{for(const id of priority){if(disposed||token!==generation||!engine||fault)return;const item=wardrobeItem(id);if(!item)continue;const edit=normalizeEditState({slots:{[item.slot]:item.id}}),key=cacheKey(edit);let image=wardrobeThumbnailCache.get(key);if(!image){try{image=engine.capture({width:256,height:256,slots:edit.slots,dyes:{},thumbnail:true});wardrobeThumbnailCache.set(key,image);}catch{return;}await afterPaint();}thumbnails.set(id,image);$$('[data-thumb-item]').filter(i=>i.dataset.thumbItem===id).forEach(i=>i.src=image);}});
+-  }
+-  function queueLooksThumbnails(){
+-    if(!engine||fault)return;const token=generation;
+-    thumbQueue=thumbQueue.then(async()=>{for(const look of orderedLooks()){if(disposed||token!==generation||!engine||fault)return;const edit=lookEdit(look),key=cacheKey(edit);let image=wardrobeThumbnailCache.get(key);if(!image){try{image=engine.capture({width:256,height:256,slots:edit.slots,dyes:edit.dyes,thumbnail:true});wardrobeThumbnailCache.set(key,image);}catch{return;}await afterPaint();}lookThumbs.set(look.id,{image,slots:edit.slots,dyes:edit.dyes});$$('[data-thumb-look]').filter(i=>i.dataset.thumbLook===look.id).forEach(i=>i.src=image);}});
+-  }
++  function queueThumbnail(target){
++    if(!engine||fault||wardrobeThumbnailCache.get(target.key))return;
++    const token=generation;
++    thumbQueue.set(target.key,()=>{
++      if(disposed||token!==generation||!engine||fault||![...thumbnailTargets.values()].some(t=>t.key===target.key&&t.visible&&t.node.isConnected))return;
++      let image=wardrobeThumbnailCache.get(target.key);
++      if(!image){try{image=engine.capture({width:target.thumbnail?256:320,height:target.thumbnail?256:400,slots:target.edit.slots,dyes:target.edit.dyes,thumbnail:target.thumbnail,restoreImmediately:false});wardrobeThumbnailCache.set(target.key,image);}catch{return;}}
++      for(const current of thumbnailTargets.values())if(current.key===target.key){current.node.src=image;if(current.node.dataset.thumbItem)thumbnails.set(current.node.dataset.thumbItem,image);if(current.node.dataset.thumbLook)lookThumbs.set(current.node.dataset.thumbLook,{image,...current.edit});}
++    });
++  }
++  function observeThumbnails(){
++    for(const [node,target]of thumbnailTargets)if(!root.contains(node)){thumbnailObserver.unobserve(node);thumbnailTargets.delete(node);if(![...thumbnailTargets.values()].some(t=>t.key===target.key&&t.visible))thumbQueue.delete(target.key);}
++    for(const node of $$('[data-thumb-item],[data-thumb-look],[data-thumb-candidate]')){
++      if(thumbnailTargets.has(node))continue;
++      const item=wardrobeItem(node.dataset.thumbItem),look=looks().find(l=>l.id===node.dataset.thumbLook),candidate=node.dataset.thumbCandidate;
++      const thumbnail=candidate===undefined,edit=item?normalizeEditState({slots:{[item.slot]:item.id}}):look?lookEdit(look):candidates[Number(candidate)];if(!edit)continue;
++      node.loading='lazy';node.decoding='async';
++      const target={node,edit,key:cacheKey(edit,thumbnail),thumbnail,visible:false};thumbnailTargets.set(node,target);thumbnailObserver.observe(node);
++    }
++    thumbQueue.resume();
++  }
++  function queueItemThumbnails(){observeThumbnails();}
++  function queueLooksThumbnails(){observeThumbnails();}
+   async function mountStage(){
+-    const token=++generation;stageAbort?.abort();stageAbort=new AbortController();engine?.dispose();engine=null;fault='';$('.atelier-scene').setAttribute('aria-busy','true');
++    const token=++generation;thumbQueue.clear();stageAbort?.abort();stageAbort=new AbortController();engine?.dispose();engine=null;fault='';$('.atelier-scene').setAttribute('aria-busy','true');
+     const fail=text=>{if(disposed||token!==generation)return;fault=text;$('.atelier-scene').setAttribute('aria-busy','false');let box=$('.atelier-stage-error');if(!box){box=document.createElement('div');box.className='atelier-stage-error';$('.atelier-scene-wrap').append(box);}box.innerHTML=`<p>${esc(text)}</p>${button('retry-stage','3D 다시 열기')}`;renderChrome();};
+     try{const {mountWardrobeStage}=await import('./wardrobe-stage.mjs');if(disposed||token!==generation)return;const stage=await mountWardrobeStage($('.atelier-scene'),{slots:draft.slots,reducedMotion:reducedMotion||ws.preferences.reducedMotion,signal:stageAbort.signal,onError:fail,onView:view=>{if(disposed)return;ws.view=view;$('[data-field="zoom"]').value=view.zoom;soonRemember();},onAngle:a=>{if(disposed)return;$$('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Math.abs(Number(b.dataset.angle)-a)<.02)));}});if(disposed||token!==generation){stage.dispose();return;}engine=stage;engine.setLight(ws.light);engine.setView?.(ws.view);engine.setPose?.(ws.pose);engine.setBackground?.(ws.background);engine.setDyes?.(draft.dyes);$('.atelier-stage-error')?.remove();$('.atelier-scene').setAttribute('aria-busy','false');root.dataset.stage='ready';render();remember();}
+     catch{fail('3D 화면을 불러오지 못했어요. 초안은 남아 있어요. 다시 열어 주세요.');}
+@@ -343,15 +365,23 @@
+     const loop=now=>{if(disposed||!ws.preferences.gamepad)return;const pad=navigator.getGamepads?.().find(Boolean);if(!pad)return;if(now-gamepadLast>220){const b=pad.buttons||[];let used=false;if(b[0]?.pressed){document.activeElement?.click();used=true;}else if(b[1]?.pressed){$('[data-studio="undo"]').click();used=true;}else if(b[2]?.pressed){$('[data-studio="redo"]').click();used=true;}else if(b[3]?.pressed){$('[data-studio="capture"]').click();used=true;}else{const direction=b[12]?.pressed?-1:b[13]?.pressed?1:b[14]?.pressed?-1:b[15]?.pressed?1:Math.abs(pad.axes?.[1]||0)>.6?Math.sign(pad.axes[1]):0;if(direction){const list=$$('button:not(:disabled),input,select,summary,a[href]').filter(el=>el.getClientRects().length),index=list.indexOf(document.activeElement);list[(index+direction+list.length)%list.length]?.focus();used=true;}}if(used)gamepadLast=now;}gamepadFrame=requestAnimationFrame(loop);};gamepadFrame=requestAnimationFrame(loop);
+   }
+   function viewChanged(event){if(!event.target.closest('.atelier-canvas'))return;soonRemember();if(candidates.length)renderCandidates();}
++  const pauseThumbnails=()=>thumbQueue.postpone(),resumeThumbnails=()=>{if(!document.hidden)thumbQueue.resume();};
++  const thumbnailError=event=>{const target=thumbnailTargets.get(event.target);if(!target||!event.target.src.includes('/wardrobe-thumbnails-v8/'))return;wardrobeThumbnailCache.delete(target.key);event.target.src='assets/mongle.webp';if(target.visible)queueThumbnail(target);};
++  root.addEventListener('error',thumbnailError,true);
++  for(const type of ['pointerdown','pointermove','wheel','keydown','input'])root.addEventListener(type,pauseThumbnails,{passive:true});
++  document.addEventListener('visibilitychange',resumeThumbnails);
+   root.addEventListener('click',clicked);root.addEventListener('input',input);root.addEventListener('change',changed);root.addEventListener('keydown',keydown);root.addEventListener('scroll',soonRemember,true);root.addEventListener('pointerup',viewChanged);window.addEventListener('gamepadconnected',pollGamepad);
+   $('.atelier-search input').value=ws.query;root.dataset.searchOpen=String(!!ws.query);
+   for(const field of ['sort','pose','background','fontScale'])$(`[data-field="${field}"]`).value=field==='fontScale'?ws.preferences.fontScale:ws[field];
+   for(const field of ['show-hidden','reducedMotion','highContrast','shortcutsEnabled','gamepad'])$(`[data-field="${field}"]`).checked=field==='show-hidden'?ws.showHidden:ws.preferences[field];
+   for(const input of $$('[data-shortcut]'))input.value=ws.preferences.shortcuts[input.dataset.shortcut];
+   function dispose(){
+-    if(disposed)return;remember();disposed=true;serverCompletion=null;generation++;albumToken++;clearTimeout(saveTimer);cancelAnimationFrame(gamepadFrame);stageAbort?.abort();engine?.dispose();engine=null;for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();
++    if(disposed)return;remember();disposed=true;serverCompletion=null;generation++;albumToken++;clearTimeout(saveTimer);cancelAnimationFrame(gamepadFrame);thumbQueue.dispose();thumbnailObserver.disconnect();thumbnailTargets.clear();root.removeEventListener('error',thumbnailError,true);for(const type of ['pointerdown','pointermove','wheel','keydown','input'])root.removeEventListener(type,pauseThumbnails);document.removeEventListener('visibilitychange',resumeThumbnails);stageAbort?.abort();engine?.dispose();engine=null;for(const url of urls.values())URL.revokeObjectURL(url);urls.clear();
+     root.removeEventListener('click',clicked);root.removeEventListener('input',input);root.removeEventListener('change',changed);root.removeEventListener('keydown',keydown);root.removeEventListener('scroll',soonRemember,true);root.removeEventListener('pointerup',viewChanged);window.removeEventListener('gamepadconnected',pollGamepad);album.close?.();root.remove();
+   }
++  // Single, undyed catalog items have the exact same authored view for every
++  // learner. Ship those pixels once; only personal combinations need GPU work.
++  for(const item of WARDROBE_ITEMS)wardrobeThumbnailCache.set(cacheKey({slots:{[item.slot]:item.id},dyes:{}}),catalogThumbnail(item.id));
+   render();queueMicrotask(()=>{if(!disposed){$('.atelier-items').scrollLeft=ws.scroll.itemsLeft;$('.atelier-items').scrollTop=ws.scroll.itemsTop;$('.atelier-looks').scrollTop=ws.scroll.looksTop;const panel=root.closest('.panel-dialog');if(panel)panel.scrollTop=ws.scroll.panelTop;void mountStage();if(ws.tab==='photo')void refreshAlbum();pollGamepad();}});
+-  return {element:root,update:adopt,dispose,metrics:()=>({tab:ws.tab,draft:{...draft.slots},dyes:clone(draft.dyes),confirmed:{...confirmed.slots},confirmedDyes:clone(confirmed.dyes),owned:ownsEdit(draft),pending:!!pending,disposed,stage:engine?.metrics(),thumbnailCount:thumbnails.size,lookCount:looks().length,photoReady:!!photo,photoStale:photo?.stale||false,history:{undo:history.canUndo,redo:history.canRedo},workbench:clone(ws),candidates:candidates.length,albumCount:albumRows.length,albumStatus:album.status,storage:store.status})};
++  return {element:root,update:adopt,dispose,metrics:()=>({tab:ws.tab,draft:{...draft.slots},dyes:clone(draft.dyes),confirmed:{...confirmed.slots},confirmedDyes:clone(confirmed.dyes),owned:ownsEdit(draft),pending:!!pending,disposed,stage:engine?.metrics(),thumbnailCount:thumbnails.size,thumbnailQueue:thumbQueue.metrics(),lookCount:looks().length,photoReady:!!photo,photoStale:photo?.stale||false,history:{undo:history.canUndo,redo:history.canRedo},workbench:clone(ws),candidates:candidates.length,albumCount:albumRows.length,albumStatus:album.status,storage:store.status})};
+ }
+--- a/experiences/synk-world-home/wardrobe-stage.mjs
++++ b/experiences/synk-world-home/wardrobe-stage.mjs
+@@ -127,7 +127,7 @@
+   function setDyes(value={}){const normalized=avatar.setDyes(value);schedule();return normalized;}
+   function getState(){return {slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),light,pose,background};}
+   setLight(light);
+-  function capture({width=1200,height=1500,slots:photoSlots,dyes:photoDyes,thumbnail=false}={}){
++  function capture({width=1200,height=1500,slots:photoSlots,dyes:photoDyes,thumbnail=false,restoreImmediately=true}={}){
+     if(disposed||lost||renderer.getContext().isContextLost())throw Error('STAGE_UNAVAILABLE');
+     width=Math.max(1,Math.min(2400,Math.round(Number(width)||1200)));height=Math.max(1,Math.min(2400,Math.round(Number(height)||1500)));
+     const dpr=renderer.getPixelRatio(),previous=getState(),previousAngle=angle,previousTargetAngle=targetAngle;
+@@ -136,7 +136,7 @@
+       if(thumbnail){angle=-.11;detail=false;zoom=0;setPose('neutral');setBackground('room');setLight('studio');}
+       fit(width,height);if(photoSlots)avatar.setEquipment(slotsForOutfit(photoSlots));if(photoDyes!==undefined)avatar.setDyes(photoDyes);avatar.group.rotation.y=thumbnail?angle:targetAngle;contactLight.render();
+       return canvas.toDataURL('image/png');
+-    }finally{angle=previousAngle;targetAngle=previousTargetAngle;detail=previous.view.detail;zoom=previous.view.zoom;avatar.setEquipment(previous.slots);avatar.setDyes(previous.dyes);avatar.group.rotation.y=angle;setPose(previous.pose);setBackground(previous.background);setLight(previous.light);renderer.setPixelRatio(dpr);renderer.setSize(size.width,size.height,false);fit();render();schedule();}
++    }finally{angle=previousAngle;targetAngle=previousTargetAngle;detail=previous.view.detail;zoom=previous.view.zoom;avatar.setEquipment(previous.slots);avatar.setDyes(previous.dyes);avatar.group.rotation.y=angle;setPose(previous.pose);setBackground(previous.background);setLight(previous.light);renderer.setPixelRatio(dpr);renderer.setSize(size.width,size.height,false);fit();if(restoreImmediately)render();schedule();}
+   }
+   function dispose(){
+     if(disposed)return;disposed=true;cancelAnimationFrame(frame);resizeObserver.disconnect();intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
+@@ -146,7 +146,7 @@
+   disposeReady=dispose;
+   return {
+     canvas,setAngle,setLight,setZoom,getView,setView,resetView,setDyes,getDyes:()=>avatar.getDyes(),getDyeDefaults:(slots=currentSlots)=>wardrobeDyeDefaults(slots),setPose,setBackground,getState,capture,dispose,
+-    setSlots(value){currentSlots=slotsForOutfit(value);avatar.setEquipment(currentSlots);schedule();},
++    setSlots(value){const next=slotsForOutfit(value);if(next.body===currentSlots.body&&next.neck===currentSlots.neck)return;currentSlots=next;avatar.setEquipment(currentSlots);schedule();},
+     setDetail(value){detail=Boolean(value);fit();notifyView();schedule();},
+     setActive(value){active=Boolean(value);if(!active){cancelAnimationFrame(frame);frame=0;}else schedule();},
+     metrics:()=>({stageRevision:3,avatar:avatar.metrics(),contactLight:contactLight.metrics(),shadowMapSize:key.shadow.mapSize.x,shadowTechnique:'VSM',slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),angle,targetAngle,detail,zoom,light,pose,background,disposed,lost,active,inView,paused:!active||!inView||document.hidden||lost,frames:frameCount,dpr:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,renderSubmissionMs:renderMs,drawingBuffer:{width:canvas.width,height:canvas.height}}),

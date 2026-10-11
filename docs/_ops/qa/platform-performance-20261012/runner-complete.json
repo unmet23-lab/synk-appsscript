@@ -1,0 +1,6 @@
+{
+  "result": {
+    "type": "string",
+    "value": "{\"elapsed\":90.02689999999924,\"info\":{\"world\":{\"renderer\":\"Three.js 180\",\"frames\":2749,\"drawCalls\":42,\"triangles\":113608,\"events\":8,\"width\":1,\"height\":1,\"pixelRatio\":0.8999999999999999,\"renderWidth\":0,\"renderHeight\":0,\"qualityScale\":0.6,\"shadowSize\":1024},\"voiceClips\":16,\"correct\":11,\"finished\":true,\"reason\":\"tour\"},\"title\":\"도착!\"}"
+  }
+}

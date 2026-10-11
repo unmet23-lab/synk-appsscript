@@ -1,0 +1,37 @@
+{
+  "version": "0.4.3",
+  "client": "platform",
+  "packages": [
+    {
+      "file": "SYNK-Platform-Preview-0.4.3-win-x64.exe",
+      "platform": "win32",
+      "arch": "x64",
+      "sha256": "7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3",
+      "bytes": 397415047,
+      "nativeChecks": 16
+    },
+    {
+      "file": "SYNK-Platform-Preview-0.4.3-mac-arm64.dmg",
+      "platform": "darwin",
+      "arch": "arm64",
+      "sha256": "e0796502af692e386aa28dacfae2492b1ca30e6241435213e4a73521cc32a28a",
+      "bytes": 457408094,
+      "nativeChecks": 16
+    },
+    {
+      "file": "SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+      "platform": "darwin",
+      "arch": "x64",
+      "sha256": "28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333",
+      "bytes": 475085655,
+      "nativeChecks": 16
+    }
+  ],
+  "buildSourceCommit": "86baf807b53070912284d1e1c123267f7ef82d06",
+  "macNativeCIRun": "https://github.com/unmet23-lab/synk-policy/actions/runs/38164405927",
+  "windowsSourceCommit": "499d38c",
+  "childInstallersUnchanged": true,
+  "macMinimumVersion": "13.0",
+  "macSignature": "ad-hoc",
+  "notarized": false
+}

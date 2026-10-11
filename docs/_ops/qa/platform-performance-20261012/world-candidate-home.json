@@ -1,0 +1,6 @@
+{
+  "result": {
+    "type": "string",
+    "value": "{\"lazy\":[],\"images\":[{\"src\":\"http://127.0.0.1:4353/world/brand-opening/assets/felt-world-scene-desktop-v9.webp\",\"loaded\":true},{\"src\":\"/world/brand-opening/assets/home/mongle-smile.webp?v=tutor-4e57536c0\",\"loaded\":true},{\"src\":\"/world/brand-opening/assets/home/mongle-smile.webp?v=tutor-4e57536c0\",\"loaded\":true},{\"src\":\"/world/brand-opening/assets/home/headphones.webp?v=tutor-4e57536c0\",\"loaded\":true},{\"src\":\"/world/brand-opening/assets/home/scarf.webp?v=tutor-4e57536c0\",\"loaded\":true}],\"overflow\":false}"
+  }
+}

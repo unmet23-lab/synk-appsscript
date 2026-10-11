@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "applicationVersion": "0.4.3",
+  "baselineApplicationVersion": "0.4.1",
+  "changes": [
+    "Stream physical executable and ASAR bytes in bounded chunks; verify SHA freshly for every inspection and launch.",
+    "Select the latest available installer while retaining exact hash-only launch pins for newer installed clients."
+  ],
+  "mac": {
+    "arm64": {
+      "packages": [
+        {
+          "client": "world",
+          "version": "0.4.1",
+          "arch": "arm64",
+          "appPath": "dist/arm64/world/mac-arm64/SYNKWorldPreview.app",
+          "executable": {
+            "path": "dist/arm64/world/mac-arm64/SYNKWorldPreview.app/Contents/MacOS/SYNKWorldPreview",
+            "sha256": "38037312a9120f59c15a03815b87f6e398c20afeebbb3046876b642452c6810c"
+          },
+          "asar": {
+            "path": "dist/arm64/world/mac-arm64/SYNKWorldPreview.app/Contents/Resources/app.asar",
+            "sha256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c",
+            "fileCount": 102
+          },
+          "installer": {
+            "path": "dist/arm64/deliverables/SYNK-WORLD-Preview-0.4.1-mac-arm64.dmg",
+            "sha256": "71f9fa1171ff76087bd172a057fb46df5baea0f0c3ff5ef546f5d245af2f49a4",
+            "bytes": 152884190
+          },
+          "metadata": {
+            "clientId": "world",
+            "mode": "development",
+            "appId": "im.synk.world.preview",
+            "version": "0.4.1",
+            "arch": "arm64",
+            "platform": "darwin",
+            "sourceHash": "26023cc3715fcdf199ab8df8630adab1d664252f49b0a578d634058bb2e01ebd"
+          },
+          "macRendererOverlay": null,
+          "signature": "ad-hoc",
+          "notarized": false,
+          "minimumSystemVersion": "13.0",
+          "dmgReadonlyMountVerified": true,
+          "allDmgAppBytesMatch": true,
+          "sourceFilesMatch": true
+        },
+        {
+          "client": "messenger",
+          "version": "0.4.1",
+          "arch": "arm64",
+          "appPath": "dist/arm64/messenger/mac-arm64/SYNKMessengerPreview.app",
+          "executable": {
+            "path": "dist/arm64/messenger/mac-arm64/SYNKMessengerPreview.app/Contents/MacOS/SYNKMessengerPreview",
+            "sha256": "5740c3f6836b179e5b6b239e47205bcf2d9eba3c1839f42d3eb841a302a1fd9e"
+          },
+          "asar": {
+            "path": "dist/arm64/messenger/mac-arm64/SYNKMessengerPreview.app/Contents/Resources/app.asar",
+            "sha256": "2003613e112717fef00c008929f8adb27f263fa574ee9fa0e29826e38e1ed01b",
+            "fileCount": 102
+          },
+          "installer": {
+            "path": "dist/arm64/deliverables/SYNK-Workspace-Preview-0.4.1-mac-arm64.dmg",
+            "sha256": "a4a30674bac32fb6f17d8c5d390d41ccfb30095ee51debd77784eba145093f49",
+            "bytes": 152735791
+          },
+          "metadata": {
+            "clientId": "messenger",
+            "mode": "development",
+            "appId": "im.synk.messenger.preview",
+            "version": "0.4.1",
+            "arch": "arm64",
+            "platform": "darwin",
+            "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179"
+          },
+          "macRendererOverlay": null,
+          "signature": "ad-hoc",
+          "notarized": false,
+          "minimumSystemVersion": "13.0",
+          "dmgReadonlyMountVerified": true,
+          "allDmgAppBytesMatch": true,
+          "sourceFilesMatch": true
+        }
+      ]
+    },
+    "x64": {
+      "packages": [
+        {
+          "client": "world",
+          "version": "0.4.1",
+          "arch": "x64",
+          "appPath": "dist/x64/world/mac/SYNKWorldPreview.app",
+          "executable": {
+            "path": "dist/x64/world/mac/SYNKWorldPreview.app/Contents/MacOS/SYNKWorldPreview",
+            "sha256": "fe0b8fbd345da2a29f67158dafe528b27478506159416ce781a19bbebb68dd37"
+          },
+          "asar": {
+            "path": "dist/x64/world/mac/SYNKWorldPreview.app/Contents/Resources/app.asar",
+            "sha256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c",
+            "fileCount": 102
+          },
+          "installer": {
+            "path": "dist/x64/deliverables/SYNK-WORLD-Preview-0.4.1-mac-x64.dmg",
+            "sha256": "d21e051858a80987e134ebd1c8dbf024511d430de2b71512f89a5a817bd06938",
+            "bytes": 158791048
+          },
+          "metadata": {
+            "clientId": "world",
+            "mode": "development",
+            "appId": "im.synk.world.preview",
+            "version": "0.4.1",
+            "arch": "x64",
+            "platform": "darwin",
+            "sourceHash": "26023cc3715fcdf199ab8df8630adab1d664252f49b0a578d634058bb2e01ebd"
+          },
+          "macRendererOverlay": null,
+          "signature": "ad-hoc",
+          "notarized": false,
+          "minimumSystemVersion": "13.0",
+          "dmgReadonlyMountVerified": true,
+          "allDmgAppBytesMatch": true,
+          "sourceFilesMatch": true
+        },
+        {
+          "client": "messenger",
+          "version": "0.4.1",
+          "arch": "x64",
+          "appPath": "dist/x64/messenger/mac/SYNKMessengerPreview.app",
+          "executable": {
+            "path": "dist/x64/messenger/mac/SYNKMessengerPreview.app/Contents/MacOS/SYNKMessengerPreview",
+            "sha256": "b3e62ed914964535d50aefa83a6e4c532b229efdae777a25cae9e16529c12463"
+          },
+          "asar": {
+            "path": "dist/x64/messenger/mac/SYNKMessengerPreview.app/Contents/Resources/app.asar",
+            "sha256": "2003613e112717fef00c008929f8adb27f263fa574ee9fa0e29826e38e1ed01b",
+            "fileCount": 102
+          },
+          "installer": {
+            "path": "dist/x64/deliverables/SYNK-Workspace-Preview-0.4.1-mac-x64.dmg",
+            "sha256": "fc442aa1ab2cb7f4587697d78d1d8607acd6a0857289f4bdd907527f1fd8df92",
+            "bytes": 158588373
+          },
+          "metadata": {
+            "clientId": "messenger",
+            "mode": "development",
+            "appId": "im.synk.messenger.preview",
+            "version": "0.4.1",
+            "arch": "x64",
+            "platform": "darwin",
+            "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179"
+          },
+          "macRendererOverlay": null,
+          "signature": "ad-hoc",
+          "notarized": false,
+          "minimumSystemVersion": "13.0",
+          "dmgReadonlyMountVerified": true,
+          "allDmgAppBytesMatch": true,
+          "sourceFilesMatch": true
+        }
+      ]
+    }
+  },
+  "windows": {
+    "baselineInstaller": {
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-win-x64.exe",
+      "sha256": "de75c259c61db4204aaa186558b55c1e516b54bf250231980c84301915bde002",
+      "bytes": 397413716
+    },
+    "additionalLegacyPins": [
+      {
+        "id": "world",
+        "mode": "development",
+        "platform": "win32",
+        "arch": "x64",
+        "version": "0.4.2",
+        "executableSHA256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+        "asarSHA256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f"
+      }
+    ]
+  },
+  "files": [
+    {
+      "file": "src/installations.cjs",
+      "baselineSHA256": "5bab184a03e4a8a71c42069793b0739667bcd0ec0ce8090929fa6b3861b97f19",
+      "afterSHA256": "ec36d04bf479558ec2fa8b21486723e97a1c14dc1535069fab38cba966fdc20d"
+    },
+    {
+      "file": "src/client-lifecycle.cjs",
+      "baselineSHA256": "035d5e97104f38462ded28b8a7023c21268b1ea15d732e61c5fdb49944275324",
+      "afterSHA256": "ed4a313a54a80190f1b6bf28f470b5210a7d57b06e906526ef8e135786572b81"
+    }
+  ]
+}

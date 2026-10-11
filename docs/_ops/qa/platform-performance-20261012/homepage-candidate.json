@@ -1,0 +1,76 @@
+{
+  "files": [
+    {
+      "path": "atlas/index.html",
+      "sha256": "df8768717daaf93a8f0ac1549723db0a8e96be2716d34e913d5ad95567e3790b"
+    },
+    {
+      "path": "en/atlas/index.html",
+      "sha256": "44d6c7cfc1597534c7878bc550a2922da57c19f48da9714a5fb4e092705ec5ee"
+    },
+    {
+      "path": "en/founder/index.html",
+      "sha256": "33c539f64d8c2fad930ecb2747aa0b6610171ac21f049e4bdea22c88ab27c42e"
+    },
+    {
+      "path": "en/index.html",
+      "sha256": "cd0786650ea74b9b51c02e07f8b5f10c6fd4b475ad0b22905993f778bbd98780"
+    },
+    {
+      "path": "en/knowledge.json",
+      "sha256": "1709379c51abf888971a00a7a5bacfd0972dc84288f0c51f5642e04b87b348b2"
+    },
+    {
+      "path": "en/lab/index.html",
+      "sha256": "06c22a67f65b426d05882f481b36d15942d227e03e939d5d11bde10f0e112939"
+    },
+    {
+      "path": "en/path/index.html",
+      "sha256": "f8431e469ef3b79f9577860671c1cd9a4b368f84d90fd1fe7acba9262fd7002a"
+    },
+    {
+      "path": "en/pulse/index.html",
+      "sha256": "9342cc8c6e8cda7f4d14384c46502523fce16605e47734375537cb7455c4aef8"
+    },
+    {
+      "path": "en/shift/index.html",
+      "sha256": "5c705123ac76ea68cc45b358e20381f286fdc8e1d2d2bb42a65d9d96e4a21778"
+    },
+    {
+      "path": "founder/index.html",
+      "sha256": "367cb48b2cabfaaac15abcb02d771aaaf423c611cea654143da0474d8ea1897c"
+    },
+    {
+      "path": "index.html",
+      "sha256": "69d7a673e8a4727b2451b80a6de3a7a789ab5e733f5be143acab3a2525e999d7"
+    },
+    {
+      "path": "knowledge.json",
+      "sha256": "d9f285c91081b922952d7449003bd6a00bcf2675dbc53b058a97d1a7a9a7a0f0"
+    },
+    {
+      "path": "lab/index.html",
+      "sha256": "3272219e56444bd5e9272addf013aa763587775f061d342afb8683ddc9db8d09"
+    },
+    {
+      "path": "llms.txt",
+      "sha256": "127387fa3a8f06b6f3b3e7554a8a51d25ca37f8d66a3bb42648b55a974c0817d"
+    },
+    {
+      "path": "path/index.html",
+      "sha256": "f9418f5808992df5ec946b9495556c93b2268b2e9eab0d035ee0d7338ed12174"
+    },
+    {
+      "path": "pulse/index.html",
+      "sha256": "68d9fd30cd52d7aeccac8238fcc0c889b018f7b55fcea4656b8c6bafcb19c583"
+    },
+    {
+      "path": "shift/index.html",
+      "sha256": "2e127934fbfb3fb2f4601b689293574ad7767c916597229afbfd5bd75fc16ec8"
+    },
+    {
+      "path": "assets/v10/site.js",
+      "sha256": "1febc4668ad6b580f7ceb586c38298fddc31c9a1014488a3f5082684be310960"
+    }
+  ]
+}

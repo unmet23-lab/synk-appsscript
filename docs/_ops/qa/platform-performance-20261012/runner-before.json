@@ -1,0 +1,69 @@
+{
+  "result": {
+    "type": "object",
+    "value": {
+      "canvas": [
+        {
+          "css": {
+            "bottom": 0,
+            "height": 0,
+            "left": 0,
+            "right": 0,
+            "top": 0,
+            "width": 0,
+            "x": 0,
+            "y": 0
+          },
+          "height": 640,
+          "width": 1148
+        },
+        {
+          "css": {
+            "bottom": 650.953125,
+            "height": 548.953125,
+            "left": 0,
+            "right": 1280,
+            "top": 102,
+            "width": 1280,
+            "x": 0,
+            "y": 102
+          },
+          "height": 1097,
+          "width": 2560
+        }
+      ],
+      "dpr": 2,
+      "durationMs": 8011.4000000003725,
+      "end": {
+        "elapsed": 8.197900000000029,
+        "paused": false,
+        "world": {
+          "drawCalls": 34,
+          "events": 3,
+          "frames": 2182,
+          "height": 548.953125,
+          "renderer": "Three.js 180",
+          "triangles": 108926,
+          "width": 1280
+        }
+      },
+      "over50ms": 2,
+      "p50": 16.69999999999709,
+      "p95": 16.89999999999418,
+      "rafFps": 58.541578250989616,
+      "rafFrames": 469,
+      "start": {
+        "elapsed": 0.24990000000000873,
+        "world": {
+          "drawCalls": 32,
+          "events": 2,
+          "frames": 1713,
+          "height": 548.953125,
+          "renderer": "Three.js 180",
+          "triangles": 108416,
+          "width": 1280
+        }
+      }
+    }
+  }
+}

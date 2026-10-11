@@ -1,0 +1,23 @@
+✔ pinned Platform overlay changes only two reviewed runtime files (1716.9281ms)
+✔ Platform artifact version can change while original builder defaults stay unchanged (0.5976ms)
+✔ Electron inspects physical ASAR bytes while preserving pins and path boundaries (22573.9672ms)
+✔ version comparison is numeric, rejects non-release versions and preserves large integers (1.3936ms)
+✔ package paths allow only fixed distribution coordinates or packaged application names (0.4331ms)
+✔ real local bytes prepare with progress; explicit open rechecks SHA and never means installed (396.2052ms)
+✔ cancelling preparation clears partial bytes and never opens an installer (449.2248ms)
+✔ unknown IDs, non-platform clients and absent channels never install or launch (247.0715ms)
+✔ missing or altered local installer reports an error without fake readiness (181.6972ms)
+✔ prepared installer tampering is rejected again at the explicit open boundary (620.3117ms)
+✔ OS open failure is visible and double clicks cannot open in parallel (690.6322ms)
+✔ older verified installation stays launchable while a newer approved release is offered (3.0129ms)
+✔ catalog loader ignores missing, unapproved and mismatched platform manifests (182.3233ms)
+✔ newer launch-only pins preserve available installers without offering a downgrade as an update (70.0089ms)
+✔ catalog generation verifies installer, executable and archive hashes before approving local packages (511.9755ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22937.5177

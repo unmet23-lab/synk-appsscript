@@ -1,0 +1,3 @@
+7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3  SYNK-Platform-Preview-0.4.3-win-x64.exe
+e0796502af692e386aa28dacfae2492b1ca30e6241435213e4a73521cc32a28a  SYNK-Platform-Preview-0.4.3-mac-arm64.dmg
+28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333  SYNK-Platform-Preview-0.4.3-mac-x64.dmg

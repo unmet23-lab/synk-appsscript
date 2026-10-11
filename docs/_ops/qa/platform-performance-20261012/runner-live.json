@@ -1,0 +1,139 @@
+{
+  "result": {
+    "type": "object",
+    "value": {
+      "after": {
+        "audio": {
+          "clips": 16,
+          "duration": 0,
+          "id": null,
+          "offset": 0,
+          "state": "suspended"
+        },
+        "best": 366,
+        "model": {
+          "answers": [
+            {
+              "correct": true,
+              "explanation": "왼쪽은 피하고 가운데 길로 가요.",
+              "id": "not-left",
+              "learning": "listen",
+              "skill": "부정 · 방향",
+              "steps": [
+                {
+                  "action": "lane",
+                  "executed": true,
+                  "inputMatched": true,
+                  "label": "가운데로",
+                  "status": "done",
+                  "target": 1
+                }
+              ],
+              "text": "왼쪽으로 가지 말고 가운데로 가세요.",
+              "texted": false
+            }
+          ],
+          "combo": 1,
+          "correct": 1,
+          "current": null,
+          "distance": 84.95519999999985,
+          "elapsed": 7.72320000000004,
+          "finished": false,
+          "hearts": 3,
+          "lane": 1,
+          "reason": "",
+          "shield": 0,
+          "slide": 0,
+          "x": 0,
+          "y": 0
+        },
+        "paused": true,
+        "ready": true,
+        "running": true,
+        "sound": true,
+        "version": 7,
+        "voiceClips": 16,
+        "world": {
+          "drawCalls": 33,
+          "events": 3,
+          "frames": 454,
+          "height": 549,
+          "pixelRatio": 1.5,
+          "qualityScale": 1,
+          "renderHeight": 823,
+          "renderWidth": 1920,
+          "renderer": "Three.js 180",
+          "shadowSize": 1024,
+          "triangles": 108840,
+          "width": 1280
+        }
+      },
+      "before": {
+        "audio": {
+          "clips": 16,
+          "duration": 0,
+          "id": null,
+          "offset": 0,
+          "state": "suspended"
+        },
+        "best": 366,
+        "model": {
+          "answers": [
+            {
+              "correct": true,
+              "explanation": "왼쪽은 피하고 가운데 길로 가요.",
+              "id": "not-left",
+              "learning": "listen",
+              "skill": "부정 · 방향",
+              "steps": [
+                {
+                  "action": "lane",
+                  "executed": true,
+                  "inputMatched": true,
+                  "label": "가운데로",
+                  "status": "done",
+                  "target": 1
+                }
+              ],
+              "text": "왼쪽으로 가지 말고 가운데로 가세요.",
+              "texted": false
+            }
+          ],
+          "combo": 1,
+          "correct": 1,
+          "current": null,
+          "distance": 84.95519999999985,
+          "elapsed": 7.72320000000004,
+          "finished": false,
+          "hearts": 3,
+          "lane": 1,
+          "reason": "",
+          "shield": 0,
+          "slide": 0,
+          "x": 0,
+          "y": 0
+        },
+        "paused": true,
+        "ready": true,
+        "running": true,
+        "sound": true,
+        "version": 7,
+        "voiceClips": 16,
+        "world": {
+          "drawCalls": 33,
+          "events": 3,
+          "frames": 454,
+          "height": 549,
+          "pixelRatio": 1.5,
+          "qualityScale": 1,
+          "renderHeight": 823,
+          "renderWidth": 1920,
+          "renderer": "Three.js 180",
+          "shadowSize": 1024,
+          "triangles": 108840,
+          "width": 1280
+        }
+      }
+    }
+  }
+}

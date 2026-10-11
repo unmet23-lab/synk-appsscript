@@ -1,0 +1,163 @@
+{
+  "ok": true,
+  "builtAt": "2026-10-11T18:39:31.283Z",
+  "version": "0.4.3",
+  "platform": "darwin",
+  "arch": "x64",
+  "electronVersion": "44.5.1",
+  "packages": [
+    {
+      "client": "world",
+      "version": "0.4.1",
+      "arch": "x64",
+      "appPath": "dist/x64/world/mac/SYNKWorldPreview.app",
+      "executable": {
+        "path": "dist/x64/world/mac/SYNKWorldPreview.app/Contents/MacOS/SYNKWorldPreview",
+        "sha256": "fe0b8fbd345da2a29f67158dafe528b27478506159416ce781a19bbebb68dd37"
+      },
+      "asar": {
+        "path": "dist/x64/world/mac/SYNKWorldPreview.app/Contents/Resources/app.asar",
+        "sha256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c",
+        "fileCount": 102
+      },
+      "installer": {
+        "path": "baseline/x64/SYNK-WORLD-Preview-0.4.1-mac-x64.dmg",
+        "sha256": "d21e051858a80987e134ebd1c8dbf024511d430de2b71512f89a5a817bd06938",
+        "bytes": 158791048
+      },
+      "metadata": {
+        "clientId": "world",
+        "mode": "development",
+        "appId": "im.synk.world.preview",
+        "version": "0.4.1",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "26023cc3715fcdf199ab8df8630adab1d664252f49b0a578d634058bb2e01ebd"
+      },
+      "macRendererOverlay": null,
+      "signature": "ad-hoc",
+      "notarized": false,
+      "minimumSystemVersion": "13.0",
+      "dmgReadonlyMountVerified": true,
+      "allDmgAppBytesMatch": true,
+      "sourceFilesMatch": true
+    },
+    {
+      "client": "messenger",
+      "version": "0.4.1",
+      "arch": "x64",
+      "appPath": "dist/x64/messenger/mac/SYNKMessengerPreview.app",
+      "executable": {
+        "path": "dist/x64/messenger/mac/SYNKMessengerPreview.app/Contents/MacOS/SYNKMessengerPreview",
+        "sha256": "b3e62ed914964535d50aefa83a6e4c532b229efdae777a25cae9e16529c12463"
+      },
+      "asar": {
+        "path": "dist/x64/messenger/mac/SYNKMessengerPreview.app/Contents/Resources/app.asar",
+        "sha256": "2003613e112717fef00c008929f8adb27f263fa574ee9fa0e29826e38e1ed01b",
+        "fileCount": 102
+      },
+      "installer": {
+        "path": "baseline/x64/SYNK-Workspace-Preview-0.4.1-mac-x64.dmg",
+        "sha256": "fc442aa1ab2cb7f4587697d78d1d8607acd6a0857289f4bdd907527f1fd8df92",
+        "bytes": 158588373
+      },
+      "metadata": {
+        "clientId": "messenger",
+        "mode": "development",
+        "appId": "im.synk.messenger.preview",
+        "version": "0.4.1",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179"
+      },
+      "macRendererOverlay": null,
+      "signature": "ad-hoc",
+      "notarized": false,
+      "minimumSystemVersion": "13.0",
+      "dmgReadonlyMountVerified": true,
+      "allDmgAppBytesMatch": true,
+      "sourceFilesMatch": true
+    },
+    {
+      "client": "platform",
+      "version": "0.4.3",
+      "arch": "x64",
+      "appPath": "dist/x64/platform/mac/SYNKPlatformPreview.app",
+      "executable": {
+        "path": "dist/x64/platform/mac/SYNKPlatformPreview.app/Contents/MacOS/SYNKPlatformPreview",
+        "sha256": "287d56a72deabdfae1a063ca63d145e4196b612172d6d88f3dfacd9a314e145f"
+      },
+      "asar": {
+        "path": "dist/x64/platform/mac/SYNKPlatformPreview.app/Contents/Resources/app.asar",
+        "sha256": "964f0a5cdd555f619883ca8b4969e8070433d39c33c53d6b3c6db6bc40b75dea",
+        "fileCount": 117
+      },
+      "installer": {
+        "path": "dist/x64/deliverables/SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+        "sha256": "28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333",
+        "bytes": 475085655
+      },
+      "metadata": {
+        "clientId": "platform",
+        "mode": "development",
+        "appId": "im.synk.platform.preview",
+        "version": "0.4.3",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "4c8a692196fab186438921b0e693f04efed5ddd4141d54a39947b94eeb13d2ad"
+      },
+      "macRendererOverlay": {
+        "sha256": "40d81a25e499e0f5cddc2606d98dbdb83c03b54abf814c2b0d546442bf8b13a3",
+        "scope": "Mac Platform installation instructions only",
+        "replacements": 6,
+        "files": [
+          {
+            "file": "renderer/state.mjs",
+            "before": "cd9c182238bebf4cf61f9a05ddc60943a26aa838c8a8a468a1e4e5a8322d343f",
+            "after": "886b24708bcce0004dde5c5ed24fe7c3054d1d57bdf3ce538a6f2d242fe399ed"
+          },
+          {
+            "file": "renderer/index.html",
+            "before": "aedeba79085ceac38572fd942ca70c6dff8344c36a4c6edce3c623cf3a9df2d5",
+            "after": "996d64b184bbee432126bc61099de3641c04e3904c3ceef597e7d70217730827"
+          },
+          {
+            "file": "renderer/launcher.mjs",
+            "before": "ab675647b8c28c0000b47f331d3145cf4f551cc1e91a99a2dfcffa1a9c915609",
+            "after": "47df0b011acdeb28ffc3d3f5ea916b99ef24fc6605eeca15c7298ef6956401e2"
+          }
+        ]
+      },
+      "sourceOverlay": {
+        "manifestSHA256": "5f05d7e1d75710de403923119282281ff49be02e2f116e2b0132387e2f22bc4f",
+        "files": [
+          {
+            "file": "src/installations.cjs",
+            "baselineSHA256": "5bab184a03e4a8a71c42069793b0739667bcd0ec0ce8090929fa6b3861b97f19",
+            "afterSHA256": "ec36d04bf479558ec2fa8b21486723e97a1c14dc1535069fab38cba966fdc20d"
+          },
+          {
+            "file": "src/client-lifecycle.cjs",
+            "baselineSHA256": "035d5e97104f38462ded28b8a7023c21268b1ea15d732e61c5fdb49944275324",
+            "afterSHA256": "ed4a313a54a80190f1b6bf28f470b5210a7d57b06e906526ef8e135786572b81"
+          }
+        ]
+      },
+      "signature": "ad-hoc",
+      "notarized": false,
+      "minimumSystemVersion": "13.0",
+      "dmgReadonlyMountVerified": true,
+      "allDmgAppBytesMatch": true,
+      "sourceFilesMatch": true
+    }
+  ],
+  "platformOnly": true,
+  "childInstallersUnchanged": true,
+  "developerIDSigned": false,
+  "adHocSigned": true,
+  "notarized": false,
+  "requiresInternet": true,
+  "requiresDevelopmentServer": false,
+  "installed": false,
+  "published": false
+}

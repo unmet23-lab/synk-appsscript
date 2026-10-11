@@ -1,0 +1,149 @@
+{
+  "generatedAt": "2026-10-11T18:35:31.881Z",
+  "method": "Actual wardrobe stage catalog capture via local rehearsal UI; 256x256 PNG, thumbnail:true, default dyes. No account appearance was saved.",
+  "publicArtCommit": "a017221d59b9afd1a6dbcf84bf7fd9f76954c429",
+  "sourceFiles": [
+    {
+      "path": "avatar-v3.mjs",
+      "sha256Lf": "2f46cbffbb813c4f582c974824cf90a28a241dc1427b4918425eec5c277c9877"
+    },
+    {
+      "path": "avatar-wardrobe.mjs",
+      "sha256Lf": "ce3b3436546fbf8f4d64b75c5e31b1bd4ce48e8cfc0d22a587c2e080626f5cf7"
+    },
+    {
+      "path": "avatar-textiles.mjs",
+      "sha256Lf": "b9714655b651a87c970a6999841eb1cd54078985025c6448f0fe86fad30b6aa4"
+    },
+    {
+      "path": "wardrobe-garments-v8.mjs",
+      "sha256Lf": "610fb940e0ac524a2dc2faa6ffd927324c9b1d3ab18817bfe679594758d281b8"
+    },
+    {
+      "path": "wardrobe-catalog.mjs",
+      "sha256Lf": "5c97ee90750be7599b0fb034c764eb9888de431df45c92457cffd61ea19a95fc"
+    },
+    {
+      "path": "wardrobe-workbench.mjs",
+      "sha256Lf": "5285b756ea516c1067c5c266dad113f076b05b52fbb0b83d1f1fa08d6f813812"
+    },
+    {
+      "path": "wardrobe-stage.mjs",
+      "sha256LfBeforePerformance": "479e6e34a6984ae8802782fea6ee1ce6cfe37b64a4103e9c42e39d095e305e3e"
+    }
+  ],
+  "images": [
+    {
+      "id": "mongle-apron-starter",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-apron-starter.png",
+      "bytes": 78581,
+      "sha256": "7c21d886e22c24862bdfd62e50b224ddbb481cfd34a157d4e9ee1efde9443500",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-bandana-meadow",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-bandana-meadow.png",
+      "bytes": 84306,
+      "sha256": "b3b88719e361d014c62ea1f1348860ec8964274766ddb02bfe9228846939cfc4",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-corduroy-overall",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-corduroy-overall.png",
+      "bytes": 81710,
+      "sha256": "4a2d6ed3fb1968cb3a364cc27f966caa85607a323e9276d457a7e291f397d327",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-denim-workshop",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-denim-workshop.png",
+      "bytes": 80282,
+      "sha256": "7058fd33958a589ba8068e7cfa1f6d4b2bf58419e12f213342a89b8a419a1cf2",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-hanbok-vest",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-hanbok-vest.png",
+      "bytes": 75100,
+      "sha256": "693f1318ab12d77cc3f6d73d01f8d1e1b7405f754c3b845a5fa44bcddbf4288e",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-knit-butter",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-knit-butter.png",
+      "bytes": 94088,
+      "sha256": "29fa9283fff06acd66507d9d87b735cd47878b6e51640c8882a39185a3fcd182",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-linen-overshirt",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-linen-overshirt.png",
+      "bytes": 79893,
+      "sha256": "b5875ffa183cb7480272fcee6ad4b2bd5e6e047f9d9535ae165c21175cee7fbe",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-quilted-vest",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-quilted-vest.png",
+      "bytes": 84173,
+      "sha256": "6772d4f9b647a819cd28b207e6f73bab5f47c0cb4f78d220e2d3c1079f078f2b",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-rain-cape",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-rain-cape.png",
+      "bytes": 79923,
+      "sha256": "9a92354128ef1c3760d44ad805c9930517e76a811cc0f88e3aa14df44f4b509a",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-scarf-first-steps",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-scarf-first-steps.png",
+      "bytes": 84222,
+      "sha256": "81a8681453d5100f529be998240644fc9ca69a57073549d6b3967f3cdc7ab1ab",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-scarf-lapis",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-scarf-lapis.png",
+      "bytes": 85099,
+      "sha256": "51e188ebabddd9525e540b6cbb209c803ce2d698694d103a06fef24004ec8b85",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-silk-neckerchief",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-silk-neckerchief.png",
+      "bytes": 85923,
+      "sha256": "ef4185ccf6671788a52be1fa9240f6e9ca4a54712f9ee477e7d10f174975be4d",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-velvet-capelet",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-velvet-capelet.png",
+      "bytes": 83644,
+      "sha256": "375fcdff1aa60584da2039af8bfff33c7f042a6adceafb50ab0b469e54aa19ec",
+      "width": 256,
+      "height": 256
+    },
+    {
+      "id": "mongle-wool-muffler",
+      "path": "assets/wardrobe-thumbnails-v8/mongle-wool-muffler.png",
+      "bytes": 85150,
+      "sha256": "e42e435ea5def2213ba745738a4270af780e3131cf9f487128f6e430ee4a4eaa",
+      "width": 256,
+      "height": 256
+    }
+  ]
+}

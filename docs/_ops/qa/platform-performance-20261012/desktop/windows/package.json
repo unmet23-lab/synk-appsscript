@@ -1,0 +1,98 @@
+{
+  "ok": true,
+  "builtAt": "2026-10-11T18:38:02.462Z",
+  "version": "0.4.3",
+  "platform": "win32",
+  "arch": "x64",
+  "electronVersion": "44.5.1",
+  "installer": {
+    "path": "dist/win32-x64/deliverables/SYNK-Platform-Preview-0.4.3-win-x64.exe",
+    "sha256": "7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3",
+    "bytes": 397415047
+  },
+  "asar": {
+    "path": "dist/win32-x64/delivered/resources/app.asar",
+    "sha256": "f0d912f1db50af31f0b8b8cb4d0ff0aeab4a328ee5f8296709aca0935ce74103",
+    "fileCount": 117
+  },
+  "executable": {
+    "path": "dist/win32-x64/delivered/SYNKPlatformPreview.exe",
+    "sha256": "9cb9602448ac78205fc53214cc55c10f98579de483f7617a47355fd72b817d7b"
+  },
+  "metadata": {
+    "clientId": "platform",
+    "mode": "development",
+    "appId": "im.synk.platform.preview",
+    "version": "0.4.3",
+    "arch": "x64",
+    "platform": "win32",
+    "sourceHash": "31d5adc99d6afd278ad14af5e4391f772707a88a198e5834dfdc53d480e6070a"
+  },
+  "sourceOverlay": {
+    "manifestSHA256": "5f05d7e1d75710de403923119282281ff49be02e2f116e2b0132387e2f22bc4f",
+    "files": [
+      {
+        "file": "src/installations.cjs",
+        "baselineSHA256": "5bab184a03e4a8a71c42069793b0739667bcd0ec0ce8090929fa6b3861b97f19",
+        "afterSHA256": "ec36d04bf479558ec2fa8b21486723e97a1c14dc1535069fab38cba966fdc20d"
+      },
+      {
+        "file": "src/client-lifecycle.cjs",
+        "baselineSHA256": "035d5e97104f38462ded28b8a7023c21268b1ea15d732e61c5fdb49944275324",
+        "afterSHA256": "ed4a313a54a80190f1b6bf28f470b5210a7d57b06e906526ef8e135786572b81"
+      }
+    ]
+  },
+  "childInstallersUnchanged": true,
+  "additionalLegacyPins": [
+    {
+      "id": "world",
+      "mode": "development",
+      "platform": "win32",
+      "arch": "x64",
+      "version": "0.4.2",
+      "executableSHA256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+      "asarSHA256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f"
+    }
+  ],
+  "children": [
+    {
+      "id": "world",
+      "release": {
+        "id": "world",
+        "mode": "development",
+        "platform": "win32",
+        "arch": "x64",
+        "version": "0.4.1",
+        "executableSHA256": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+        "asarSHA256": "1cce12377fb2ec81de0f57ac86063894e9ab220ae56d38deab37d84143769208",
+        "installer": {
+          "relativePath": "world.exe",
+          "sha256": "e0363ee835484b5f5a75be05a7a787df71983738cf98a140b9f5eaeb12283e86",
+          "bytes": 132342850
+        }
+      }
+    },
+    {
+      "id": "messenger",
+      "release": {
+        "id": "messenger",
+        "mode": "development",
+        "platform": "win32",
+        "arch": "x64",
+        "version": "0.4.0",
+        "executableSHA256": "f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481",
+        "asarSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+        "installer": {
+          "relativePath": "messenger.exe",
+          "sha256": "ec84d50e4c48b8834434a60f941fa703ad96d63c85922d3f82fcb06d758b2cff",
+          "bytes": 132289127
+        }
+      }
+    }
+  ],
+  "unsignedPreview": true,
+  "installerExecuted": false,
+  "installedStateTouched": false,
+  "published": false
+}

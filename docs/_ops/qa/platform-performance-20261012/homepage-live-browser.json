@@ -1,0 +1,29 @@
+{
+  "canvas": [
+    {
+      "height": 150,
+      "rendered": false,
+      "width": 300
+    }
+  ],
+  "downloads": [
+    {
+      "label": "Windows용 다운로드 ↓",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-win-x64.exe"
+    },
+    {
+      "label": "Mac용 · Apple Silicon ↓",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-mac-arm64.dmg"
+    },
+    {
+      "label": "Mac용 · Intel ↓",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-mac-x64.dmg"
+    }
+  ],
+  "overflow": false,
+  "script": [
+    "https://synk.im/assets/v10/site.js?v=1febc4668ad6"
+  ],
+  "url": "https://synk.im/#platform",
+  "errors": []
+}

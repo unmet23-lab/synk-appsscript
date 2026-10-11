@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-11T19:02:49.846Z",
+  "version": "0.4.3",
+  "privatePCCandidate": true,
+  "installerExecuted": true,
+  "installerExit": 0,
+  "installedArchive": "8e84c4689ab133563895c13337816623d0811d6d1fdb326255bf877ed4d3d4bc",
+  "installedExecutableMatchesCandidate": true,
+  "profileFileCount": 187,
+  "profileBytesUnchanged": true,
+  "childInstallersUnchanged": true,
+  "backupDirectory": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\installed-before-update",
+  "launchedRealProfile": false
+}

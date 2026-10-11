@@ -1,0 +1,312 @@
+{
+  "commit": "e54e7890f5dd7ae16c95f7b1cb5a378ee71cea0f",
+  "checkedAt": "2026-10-11T18:59:08.385Z",
+  "passed": 38,
+  "total": 38,
+  "files": [
+    {
+      "path": "try/runner/app.js",
+      "status": 200,
+      "bytes": 39948,
+      "expectedSha256": "9c184c283ee64ec1f191d26240e8800931e4374db780c9814c8973d65b03545e",
+      "actualSha256": "9c184c283ee64ec1f191d26240e8800931e4374db780c9814c8973d65b03545e",
+      "pass": true
+    },
+    {
+      "path": "try/runner/index.html",
+      "status": 200,
+      "bytes": 12643,
+      "expectedSha256": "2ce6a3674cabadff38f4e0e8ff3711d8f1816ba2ca385cb27d40921d144c15df",
+      "actualSha256": "2ce6a3674cabadff38f4e0e8ff3711d8f1816ba2ca385cb27d40921d144c15df",
+      "pass": true
+    },
+    {
+      "path": "try/runner/world.js",
+      "status": 200,
+      "bytes": 28666,
+      "expectedSha256": "cb617c9f5c02225e291af257032ecfdc4e88ef657103b1eaa6a48b9e21d8a05d",
+      "actualSha256": "cb617c9f5c02225e291af257032ecfdc4e88ef657103b1eaa6a48b9e21d8a05d",
+      "pass": true
+    },
+    {
+      "path": "world/app-shell.mjs",
+      "status": 200,
+      "bytes": 46128,
+      "expectedSha256": "85cdd57ff4ae2365b40ed62243255a7a3261caa386d344df8b65f784723cbb50",
+      "actualSha256": "85cdd57ff4ae2365b40ed62243255a7a3261caa386d344df8b65f784723cbb50",
+      "pass": true
+    },
+    {
+      "path": "world/app.mjs",
+      "status": 200,
+      "bytes": 21591,
+      "expectedSha256": "a8b1a48518e389264d041eb56c74c1c947434545e35340a599ad617c28fd5360",
+      "actualSha256": "a8b1a48518e389264d041eb56c74c1c947434545e35340a599ad617c28fd5360",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-apron-starter.png",
+      "status": 200,
+      "bytes": 78581,
+      "expectedSha256": "7c21d886e22c24862bdfd62e50b224ddbb481cfd34a157d4e9ee1efde9443500",
+      "actualSha256": "7c21d886e22c24862bdfd62e50b224ddbb481cfd34a157d4e9ee1efde9443500",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-bandana-meadow.png",
+      "status": 200,
+      "bytes": 84306,
+      "expectedSha256": "b3b88719e361d014c62ea1f1348860ec8964274766ddb02bfe9228846939cfc4",
+      "actualSha256": "b3b88719e361d014c62ea1f1348860ec8964274766ddb02bfe9228846939cfc4",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-corduroy-overall.png",
+      "status": 200,
+      "bytes": 81710,
+      "expectedSha256": "4a2d6ed3fb1968cb3a364cc27f966caa85607a323e9276d457a7e291f397d327",
+      "actualSha256": "4a2d6ed3fb1968cb3a364cc27f966caa85607a323e9276d457a7e291f397d327",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-denim-workshop.png",
+      "status": 200,
+      "bytes": 80282,
+      "expectedSha256": "7058fd33958a589ba8068e7cfa1f6d4b2bf58419e12f213342a89b8a419a1cf2",
+      "actualSha256": "7058fd33958a589ba8068e7cfa1f6d4b2bf58419e12f213342a89b8a419a1cf2",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-hanbok-vest.png",
+      "status": 200,
+      "bytes": 75100,
+      "expectedSha256": "693f1318ab12d77cc3f6d73d01f8d1e1b7405f754c3b845a5fa44bcddbf4288e",
+      "actualSha256": "693f1318ab12d77cc3f6d73d01f8d1e1b7405f754c3b845a5fa44bcddbf4288e",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-knit-butter.png",
+      "status": 200,
+      "bytes": 94088,
+      "expectedSha256": "29fa9283fff06acd66507d9d87b735cd47878b6e51640c8882a39185a3fcd182",
+      "actualSha256": "29fa9283fff06acd66507d9d87b735cd47878b6e51640c8882a39185a3fcd182",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-linen-overshirt.png",
+      "status": 200,
+      "bytes": 79893,
+      "expectedSha256": "b5875ffa183cb7480272fcee6ad4b2bd5e6e047f9d9535ae165c21175cee7fbe",
+      "actualSha256": "b5875ffa183cb7480272fcee6ad4b2bd5e6e047f9d9535ae165c21175cee7fbe",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-quilted-vest.png",
+      "status": 200,
+      "bytes": 84173,
+      "expectedSha256": "6772d4f9b647a819cd28b207e6f73bab5f47c0cb4f78d220e2d3c1079f078f2b",
+      "actualSha256": "6772d4f9b647a819cd28b207e6f73bab5f47c0cb4f78d220e2d3c1079f078f2b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-rain-cape.png",
+      "status": 200,
+      "bytes": 79923,
+      "expectedSha256": "9a92354128ef1c3760d44ad805c9930517e76a811cc0f88e3aa14df44f4b509a",
+      "actualSha256": "9a92354128ef1c3760d44ad805c9930517e76a811cc0f88e3aa14df44f4b509a",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-scarf-first-steps.png",
+      "status": 200,
+      "bytes": 84222,
+      "expectedSha256": "81a8681453d5100f529be998240644fc9ca69a57073549d6b3967f3cdc7ab1ab",
+      "actualSha256": "81a8681453d5100f529be998240644fc9ca69a57073549d6b3967f3cdc7ab1ab",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-scarf-lapis.png",
+      "status": 200,
+      "bytes": 85099,
+      "expectedSha256": "51e188ebabddd9525e540b6cbb209c803ce2d698694d103a06fef24004ec8b85",
+      "actualSha256": "51e188ebabddd9525e540b6cbb209c803ce2d698694d103a06fef24004ec8b85",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-silk-neckerchief.png",
+      "status": 200,
+      "bytes": 85923,
+      "expectedSha256": "ef4185ccf6671788a52be1fa9240f6e9ca4a54712f9ee477e7d10f174975be4d",
+      "actualSha256": "ef4185ccf6671788a52be1fa9240f6e9ca4a54712f9ee477e7d10f174975be4d",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-velvet-capelet.png",
+      "status": 200,
+      "bytes": 83644,
+      "expectedSha256": "375fcdff1aa60584da2039af8bfff33c7f042a6adceafb50ab0b469e54aa19ec",
+      "actualSha256": "375fcdff1aa60584da2039af8bfff33c7f042a6adceafb50ab0b469e54aa19ec",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-thumbnails-v8/mongle-wool-muffler.png",
+      "status": 200,
+      "bytes": 85150,
+      "expectedSha256": "e42e435ea5def2213ba745738a4270af780e3131cf9f487128f6e430ee4a4eaa",
+      "actualSha256": "e42e435ea5def2213ba745738a4270af780e3131cf9f487128f6e430ee4a4eaa",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/assets/home/button-coral-ui.webp",
+      "status": 200,
+      "bytes": 77752,
+      "expectedSha256": "3d19264b2e4679c9c8921c3f53d7a1f92e0dbab1d9040fe7dedc59e5d3663e24",
+      "actualSha256": "3d19264b2e4679c9c8921c3f53d7a1f92e0dbab1d9040fe7dedc59e5d3663e24",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/assets/home/button-white-ui.webp",
+      "status": 200,
+      "bytes": 42450,
+      "expectedSha256": "4d8715cf985361ebf8828253ff093c9cf489b1a934dde4c74ce5c8b2e1e6b6f0",
+      "actualSha256": "4d8715cf985361ebf8828253ff093c9cf489b1a934dde4c74ce5c8b2e1e6b6f0",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/assets/home/quality-blush-ui.webp",
+      "status": 200,
+      "bytes": 39592,
+      "expectedSha256": "c9472b1566a54405cc8f2f10c85e8df7c7327efe90b42936406b6c7388d006cc",
+      "actualSha256": "c9472b1566a54405cc8f2f10c85e8df7c7327efe90b42936406b6c7388d006cc",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/assets/home/quality-cream-ui.webp",
+      "status": 200,
+      "bytes": 32178,
+      "expectedSha256": "6aad70c4fbc1510de91e6ae1ac5faef5201ca53fc42ef0c6234d1d48f7ef4dce",
+      "actualSha256": "6aad70c4fbc1510de91e6ae1ac5faef5201ca53fc42ef0c6234d1d48f7ef4dce",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/game-tutor.css",
+      "status": 200,
+      "bytes": 7517,
+      "expectedSha256": "34ec056fa6788ba0a655c1f9b6dfc0f7a5aa83c7aba5f3a1a74ae3688ea44e3b",
+      "actualSha256": "34ec056fa6788ba0a655c1f9b6dfc0f7a5aa83c7aba5f3a1a74ae3688ea44e3b",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/home.css",
+      "status": 200,
+      "bytes": 23838,
+      "expectedSha256": "412be6b3220468c355b3723c232dd062a79447a71955947a42a1b1f4042c75a1",
+      "actualSha256": "412be6b3220468c355b3723c232dd062a79447a71955947a42a1b1f4042c75a1",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/home.mjs",
+      "status": 200,
+      "bytes": 21584,
+      "expectedSha256": "3485bf8cca69b605038b317ddb77004c802a190aef42567b0f3c54c2e2ced11d",
+      "actualSha256": "3485bf8cca69b605038b317ddb77004c802a190aef42567b0f3c54c2e2ced11d",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/tutor-onboarding.css",
+      "status": 200,
+      "bytes": 13448,
+      "expectedSha256": "e958d234587c597a28bac0f73a15eb06ace212f5e631f48f9c3e1933a4dc780b",
+      "actualSha256": "e958d234587c597a28bac0f73a15eb06ace212f5e631f48f9c3e1933a4dc780b",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/tutor-practice.css",
+      "status": 200,
+      "bytes": 8808,
+      "expectedSha256": "4f03344bfa76861131ad0b5a4eb9a90c8b1a1210b700022a0adadf14dd163dff",
+      "actualSha256": "4f03344bfa76861131ad0b5a4eb9a90c8b1a1210b700022a0adadf14dd163dff",
+      "pass": true
+    },
+    {
+      "path": "world/brand-opening/tutor-review.css",
+      "status": 200,
+      "bytes": 4881,
+      "expectedSha256": "eabba85ea52f9dc80d5e7bdb637fd876d916ae46e56fea3c36ae453eadedd059",
+      "actualSha256": "eabba85ea52f9dc80d5e7bdb637fd876d916ae46e56fea3c36ae453eadedd059",
+      "pass": true
+    },
+    {
+      "path": "world/desktop.html",
+      "status": 200,
+      "bytes": 10026,
+      "expectedSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "actualSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "pass": true
+    },
+    {
+      "path": "world/index.html",
+      "status": 200,
+      "bytes": 10026,
+      "expectedSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "actualSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "pass": true
+    },
+    {
+      "path": "world/korean-runner/app.mjs",
+      "status": 200,
+      "bytes": 41601,
+      "expectedSha256": "632b3f5476507ed95d4d89a16c6c5ba189569e15743114fe791c41920afb4bc2",
+      "actualSha256": "632b3f5476507ed95d4d89a16c6c5ba189569e15743114fe791c41920afb4bc2",
+      "pass": true
+    },
+    {
+      "path": "world/korean-runner/index.html",
+      "status": 200,
+      "bytes": 12817,
+      "expectedSha256": "3e1770278fbc0c11f57f3b2e55c08fefb10f2f2c71cdbbc1b32e9a1be4d81cc0",
+      "actualSha256": "3e1770278fbc0c11f57f3b2e55c08fefb10f2f2c71cdbbc1b32e9a1be4d81cc0",
+      "pass": true
+    },
+    {
+      "path": "world/korean-runner/world.mjs",
+      "status": 200,
+      "bytes": 29081,
+      "expectedSha256": "f6042b40555415340fd39ab02c7273de583c904948423c0437f9cf41c9f01f8a",
+      "actualSha256": "f6042b40555415340fd39ab02c7273de583c904948423c0437f9cf41c9f01f8a",
+      "pass": true
+    },
+    {
+      "path": "world/mobile.html",
+      "status": 200,
+      "bytes": 10026,
+      "expectedSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "actualSha256": "ac3ce15267541e241e2bfc58cad507eaa51cd0d12718b06f50a8cb6b394c72d1",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-stage.mjs",
+      "status": 200,
+      "bytes": 19711,
+      "expectedSha256": "41e16087eefb6f8666daecd58ea76e18803f23eeef8fe2c3ffd85a08a20398f5",
+      "actualSha256": "41e16087eefb6f8666daecd58ea76e18803f23eeef8fe2c3ffd85a08a20398f5",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-studio.mjs",
+      "status": 200,
+      "bytes": 65637,
+      "expectedSha256": "f8717db0e47400b0d7835e319d811b8842a48a6267a3007da34f4ddfd9a8e22a",
+      "actualSha256": "f8717db0e47400b0d7835e319d811b8842a48a6267a3007da34f4ddfd9a8e22a",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-thumbnail-queue.mjs",
+      "status": 200,
+      "bytes": 1749,
+      "expectedSha256": "2b669a438d7a501fa270a91d9b20529a738a01f3a1f1cb4dc06cf91bcceb7ee3",
+      "actualSha256": "2b669a438d7a501fa270a91d9b20529a738a01f3a1f1cb4dc06cf91bcceb7ee3",
+      "pass": true
+    }
+  ]
+}

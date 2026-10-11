@@ -1,0 +1,37 @@
+✔ native WORLD verifies its own app and account through IPC without browser credentials (4.7397ms)
+✔ native WORLD routes preserve mutation bodies, conflict status and reject unknown routes (0.6393ms)
+✔ native progress uses the existing account PlayHost; tutor choice remains device-local (52.0166ms)
+✔ native account switch invalidates old game and life ports before new account restore (5.3596ms)
+✔ native refresh of the same session retains ports; stale generations cannot replace it (1.4453ms)
+✔ native logout fences delayed WORLD results and old status snapshots; later sign-in reconnects (0.9329ms)
+✔ native account data and WORLD responses cannot substitute another account (0.4839ms)
+✔ a delayed authStatus cannot overwrite a newer native auth event (0.5525ms)
+✔ a delayed verified load cannot restore the previous native owner (0.4608ms)
+✔ native revoked progress closes ports without reading or clearing browser tokens (0.6292ms)
+✔ native town requests retain class binding and refuse revision rollback (0.2917ms)
+✔ native subscription is released on stop and cannot reopen a disposed WORLD (0.4149ms)
+✔ every selectable garment has a complete 256px catalog render matching the published provenance (6.8027ms)
+✔ visual items match authoritative IDs, slots and names; every server combination round-trips (1.3555ms)
+✔ a lost lookbook save resumes the same request after a client restart; it cannot be replaced by equip (5.419ms)
+✔ town accepts new clothes only if the same authenticated snapshot owns them (0.4053ms)
+✔ confirmed town appearance carries only owned dyed slots with normalized independent colors (2.5066ms)
+✔ host subscribers get new server dyes and an ended host clears them (0.541ms)
+✔ late wardrobe module does not reopen a dismissed panel (3.5754ms)
+✔ late wardrobe module cannot mount for a different owner or session (1.3425ms)
+✔ only the most recent wardrobe open mounts after shared module loading (0.8457ms)
+✔ a failed deferred module leaves a retryable wardrobe entrance (0.8468ms)
+✔ only one garment capture runs in one idle turn, with duplicate views coalesced (1.0876ms)
+✔ interaction cancels scheduled GPU work and keeps controls quiet for 250ms (0.183ms)
+✔ short idle slices leave a render turn free instead of forcing readback (0.7228ms)
+✔ offscreen cards are cancelled before their geometry is generated (0.1457ms)
+✔ hidden document stops capture and resumes only when visible again (0.1077ms)
+✔ closing or remounting a fitting room clears every pending capture (0.1134ms)
+✔ browsers without idle callbacks still yield between captures (0.0917ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 204.5657

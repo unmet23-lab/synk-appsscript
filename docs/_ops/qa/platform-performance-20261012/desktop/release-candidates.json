@@ -1,0 +1,61 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-11T19:07:28.811Z",
+  "version": "0.4.3",
+  "publicFiles": [
+    {
+      "platform": "win32",
+      "arch": "x64",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\policy\\.github\\desktop-preview\\dist\\win32-x64\\deliverables\\SYNK-Platform-Preview-0.4.3-win-x64.exe",
+      "sha256": "7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3",
+      "bytes": 397415047,
+      "nativeChecks": 16,
+      "newerWorld042RecognitionChecks": 16,
+      "archiveMembers": 117,
+      "changedArchiveMembers": [
+        "package.json",
+        "runtime.json",
+        "src/client-lifecycle.cjs",
+        "src/installations.cjs"
+      ],
+      "childInstallersUnchanged": true
+    },
+    {
+      "platform": "darwin",
+      "arch": "arm64",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\mac-arm64\\dist\\arm64\\deliverables\\SYNK-Platform-Preview-0.4.3-mac-arm64.dmg",
+      "sha256": "e0796502af692e386aa28dacfae2492b1ca30e6241435213e4a73521cc32a28a",
+      "bytes": 457408094,
+      "nativeChecks": 16,
+      "ciRun": 38164405927,
+      "ciSource": "86baf807b53070912284d1e1c123267f7ef82d06",
+      "artifactZipSHA256": "dc02333caef45fb83c8fdcdd6dcef2ccc9b3cca56d44bc21b939926432d99a5f",
+      "minimumSystemVersion": "13.0",
+      "childInstallersUnchanged": true,
+      "graphicsBackend": "default"
+    },
+    {
+      "platform": "darwin",
+      "arch": "x64",
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\mac-x64\\dist\\x64\\deliverables\\SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+      "sha256": "28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333",
+      "bytes": 475085655,
+      "nativeChecks": 16,
+      "ciRun": 38164405927,
+      "ciSource": "86baf807b53070912284d1e1c123267f7ef82d06",
+      "artifactZipSHA256": "57ed1d9e3035bb5c93aacd0d9166440f8a598919a8b1e3c9b6e7ceea5459641a",
+      "minimumSystemVersion": "13.0",
+      "childInstallersUnchanged": true,
+      "graphicsBackend": "CI-only SwiftShader"
+    }
+  ],
+  "sourceCommits": [
+    "86baf807b53070912284d1e1c123267f7ef82d06",
+    "499d38c"
+  ],
+  "privatePCCandidateMustNotBeUploaded": true,
+  "releaseUploaded": false,
+  "websitePublished": false,
+  "installedStateTouched": false,
+  "realProfileTouched": false
+}

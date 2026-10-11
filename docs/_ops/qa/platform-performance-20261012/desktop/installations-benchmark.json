@@ -1,0 +1,94 @@
+{
+  "date": "2026-10-11T18:26:23.975Z",
+  "node": "24.18.0",
+  "scope": "Read-only getClients on installed program binaries; no app execution or profile access. Same machine, warm filesystem cache. Three alternating measurements; timing is host-specific.",
+  "files": [
+    {
+      "name": "world/SYNKWorldPreview.exe",
+      "bytes": 245794816
+    },
+    {
+      "name": "world/app.asar",
+      "bytes": 23730452
+    },
+    {
+      "name": "messenger/SYNKMessengerPreview.exe",
+      "bytes": 245777920
+    },
+    {
+      "name": "messenger/app.asar",
+      "bytes": 23722383
+    }
+  ],
+  "totalBytes": 539025571,
+  "beforeSource": "git HEAD:desktop/src/installations.cjs",
+  "afterSourceSHA256": "4a8764e8c105177bf74945575ddca69a6c6ad28bbf470d0c9cc12c09c7ec4f80",
+  "results": [
+    {
+      "mode": "before",
+      "round": 1,
+      "durationMs": 316,
+      "maxEventLoopDelayMs": 71.1,
+      "peakExternalDeltaMiB": 480,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    },
+    {
+      "mode": "after",
+      "round": 1,
+      "durationMs": 301,
+      "maxEventLoopDelayMs": 21.9,
+      "peakExternalDeltaMiB": 35,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    },
+    {
+      "mode": "before",
+      "round": 2,
+      "durationMs": 259,
+      "maxEventLoopDelayMs": 63.4,
+      "peakExternalDeltaMiB": 499,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    },
+    {
+      "mode": "after",
+      "round": 2,
+      "durationMs": 319,
+      "maxEventLoopDelayMs": 14.9,
+      "peakExternalDeltaMiB": 33,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    },
+    {
+      "mode": "before",
+      "round": 3,
+      "durationMs": 256,
+      "maxEventLoopDelayMs": 64.1,
+      "peakExternalDeltaMiB": 486,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    },
+    {
+      "mode": "after",
+      "round": 3,
+      "durationMs": 310,
+      "maxEventLoopDelayMs": 15,
+      "peakExternalDeltaMiB": 41,
+      "installed": [
+        "world",
+        "messenger"
+      ]
+    }
+  ]
+}

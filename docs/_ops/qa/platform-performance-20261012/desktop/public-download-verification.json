@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-11T19:14:06.790Z",
+  "anonymousFullDownload": true,
+  "passed": 3,
+  "total": 3,
+  "files": [
+    {
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-win-x64.exe",
+      "platform": "win32",
+      "arch": "x64",
+      "status": 200,
+      "bytes": 397415047,
+      "sha256": "7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3",
+      "pass": true
+    },
+    {
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-mac-arm64.dmg",
+      "platform": "darwin",
+      "arch": "arm64",
+      "status": 200,
+      "bytes": 457408094,
+      "sha256": "e0796502af692e386aa28dacfae2492b1ca30e6241435213e4a73521cc32a28a",
+      "pass": true
+    },
+    {
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+      "platform": "darwin",
+      "arch": "x64",
+      "status": 200,
+      "bytes": 475085655,
+      "sha256": "28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333",
+      "pass": true
+    }
+  ]
+}

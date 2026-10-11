@@ -1,0 +1,43 @@
+{
+  "ok": true,
+  "privatePCCandidate": true,
+  "publicUploadAllowed": false,
+  "version": "0.4.3",
+  "installer": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-performance-20261012\\local-platform\\dist\\SYNK-Platform-PC-Local-0.4.3-win-x64.exe",
+    "sha256": "b1008666b95ee057ee581f51f88208e26d26a09567d3af082dd3546232a9ef4f",
+    "bytes": 397416883
+  },
+  "installedArchiveBefore": "7d0e3bfde740f5a0e35b99caa68ffa2574c15b578650b468832780e83836714b",
+  "sourceFiles": 117,
+  "changedMembers": [
+    "package.json",
+    "src/installations.cjs",
+    "src/client-lifecycle.cjs"
+  ],
+  "originalRuntimeBytesPreserved": true,
+  "originalChildInstallersPreserved": true,
+  "children": [
+    {
+      "id": "world",
+      "version": "0.4.2",
+      "installer": {
+        "relativePath": "world.exe",
+        "sha256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f",
+        "bytes": 132344543
+      }
+    },
+    {
+      "id": "messenger",
+      "version": "0.4.0",
+      "installer": {
+        "relativePath": "messenger.exe",
+        "sha256": "b1028c0891ba7dfe69c0958c41eb3fc2b2b5569104682906b03da794f298f16b",
+        "bytes": 132289230
+      }
+    }
+  ],
+  "installerExecuted": false,
+  "installedStateTouched": false,
+  "userProfileRead": false
+}
