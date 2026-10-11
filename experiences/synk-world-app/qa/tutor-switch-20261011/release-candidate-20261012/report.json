@@ -1,0 +1,1487 @@
+{
+  "scope": "served app at base URL; single isolated guest; no login or account persistence; external requests and server writes blocked; game excluded; fixed story roles excluded",
+  "base": "http://127.0.0.1:65025/world",
+  "checks": [
+    {
+      "tutor": "marin",
+      "name": "seed contains the real selected garden seat",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "seed records first wrong answers and pending help",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "unconfirmed welcome preview keeps Marin saved",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "cancelling draft preserves complete learning snapshot",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "cancel-draft: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다.",
+        "expected": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "cancel-draft: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "cancel-draft: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial home: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다.",
+        "expected": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial home: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial home: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial: life resumes pending second question with help",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial life resume: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "question",
+        "actual": "수칙. 상황을 읽고 알맞은 말을 하나 고른다. 필요하면 표현 도움을 연다.",
+        "expected": "수칙. 상황을 읽고 알맞은 말을 하나 고른다. 필요하면 표현 도움을 연다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial life resume: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial life hint: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "actual": "재확인. 어떤 도움을 받았는지 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 어떤 도움을 받았는지 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial life hint: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial: help dialog uses newly selected voice",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-life: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-life retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-life: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial: cafe resumes exact repair and help",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial cafe resumed: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial cafe resumed: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial cafe retry: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe: guided success uses exact new voice",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe success: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe returned: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "practiceSuccess",
+        "actual": "연습 확인. 새 상황에 맞는 말을 찾았다. …차근차근 해냈다.",
+        "expected": "연습 확인. 새 상황에 맞는 말을 찾았다. …차근차근 해냈다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe returned: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "initial-cafe: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "initial: all seeded first responses and non-default seat remain intact",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "settings displays current confirmed tutor",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "confirmed switch preserves complete learning snapshot",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "selection persists under guest owner only",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched home: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "왔군! 「안녕하세요.」, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게.",
+        "expected": "왔군! 「안녕하세요.」, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched home: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched home: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched: life resumes pending second question with help",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched life resume: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "question",
+        "actual": "이 몸처럼 상황부터 봐. 알맞은 말 하나를 골라. 헷갈리면 나한테 표현 도움을 열어.",
+        "expected": "이 몸처럼 상황부터 봐. 알맞은 말 하나를 골라. 헷갈리면 나한테 표현 도움을 열어."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched life resume: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched life hint: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "actual": "나도 헷갈렸ㅇ… 아니! 어떤 도움을 받았는지 다시 봐. 이 몸이 옆에서 봐 줄게.",
+        "expected": "나도 헷갈렸ㅇ… 아니! 어떤 도움을 받았는지 다시 봐. 이 몸이 옆에서 봐 줄게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched life hint: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched: help dialog uses newly selected voice",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-life: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "나도 처음에 틀렸ㅇ… 아니! 아래 설명을 보고 다시 골라. 이 몸이 기다릴게.",
+        "expected": "나도 처음에 틀렸ㅇ… 아니! 아래 설명을 보고 다시 골라. 이 몸이 기다릴게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-life retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-life: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched: cafe resumes exact repair and help",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched cafe resumed: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "나도 헷갈렸ㅇ… 아니! 품절된 음료와 주문할 수 있는 음료를 다시 봐. 이 몸이 옆에서 봐 줄게.",
+        "expected": "나도 헷갈렸ㅇ… 아니! 품절된 음료와 주문할 수 있는 음료를 다시 봐. 이 몸이 옆에서 봐 줄게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched cafe resumed: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched cafe retry: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "나도 헷갈렸ㅇ… 아니! 품절된 음료와 주문할 수 있는 음료를 다시 봐. 이 몸이 옆에서 봐 줄게.",
+        "expected": "나도 헷갈렸ㅇ… 아니! 품절된 음료와 주문할 수 있는 음료를 다시 봐. 이 몸이 옆에서 봐 줄게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "나도 처음에 틀렸ㅇ… 아니! 아래 설명을 보고 다시 골라. 이 몸이 기다릴게.",
+        "expected": "나도 처음에 틀렸ㅇ… 아니! 아래 설명을 보고 다시 골라. 이 몸이 기다릴게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe: guided success uses exact new voice",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe success: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe returned: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "practiceSuccess",
+        "actual": "역시 내… 아니, 네가 찾아낸 말이지. 이제 하던 자리로 가자.",
+        "expected": "역시 내… 아니, 네가 찾아낸 말이지. 이제 하던 자리로 가자."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe returned: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched-cafe: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switched: all seeded first responses and non-default seat remain intact",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "settings displays current confirmed tutor",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "confirmed switch preserves complete learning snapshot",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "selection persists under guest owner only",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched home: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "어? 왔구나! 「안녕하세요.」, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!",
+        "expected": "어? 왔구나! 「안녕하세요.」, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched home: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched home: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched: life resumes pending second question with help",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched life resume: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "question",
+        "actual": "어떤 말이 이 상황에 어울릴까? 하나씩 읽고 같이 골라 보자!",
+        "expected": "어떤 말이 이 상황에 어울릴까? 하나씩 읽고 같이 골라 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched life resume: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched life hint: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "actual": "나도… 헷갈려! 어떤 도움을 받았는지 같이 확인해 보자!",
+        "expected": "나도… 헷갈려! 어떤 도움을 받았는지 같이 확인해 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched life hint: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched: help dialog uses newly selected voice",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-life: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "나도… 어렵네! 아래 설명을 보고 같이 한 번 더 골라 보자!",
+        "expected": "나도… 어렵네! 아래 설명을 보고 같이 한 번 더 골라 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-life retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-life: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched: cafe resumes exact repair and help",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched cafe resumed: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "나도… 헷갈려! 품절된 음료와 주문할 수 있는 음료를 같이 확인해 보자!",
+        "expected": "나도… 헷갈려! 품절된 음료와 주문할 수 있는 음료를 같이 확인해 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched cafe resumed: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched cafe retry: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "나도… 헷갈려! 품절된 음료와 주문할 수 있는 음료를 같이 확인해 보자!",
+        "expected": "나도… 헷갈려! 품절된 음료와 주문할 수 있는 음료를 같이 확인해 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "나도… 어렵네! 아래 설명을 보고 같이 한 번 더 골라 보자!",
+        "expected": "나도… 어렵네! 아래 설명을 보고 같이 한 번 더 골라 보자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe: guided success uses exact new voice",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe success: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe returned: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "practiceSuccess",
+        "actual": "우와! 새로운 장면에서도 찾았어! 하던 자리로 같이 돌아가자!",
+        "expected": "우와! 새로운 장면에서도 찾았어! 하던 자리로 같이 돌아가자!"
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe returned: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "mongle",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched-cafe: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "switched: all seeded first responses and non-default seat remain intact",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "settings displays current confirmed tutor",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "confirmed switch preserves complete learning snapshot",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "selection persists under guest owner only",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched home: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "복귀 확인. 「안녕하세요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다.",
+        "expected": "복귀 확인. 「안녕하세요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched home: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched home: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched: life resumes pending second question with help",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched life resume: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "question",
+        "actual": "수칙. 상황을 읽고 알맞은 말을 하나 고른다. 필요하면 표현 도움을 연다.",
+        "expected": "수칙. 상황을 읽고 알맞은 말을 하나 고른다. 필요하면 표현 도움을 연다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched life resume: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched life hint: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "actual": "재확인. 어떤 도움을 받았는지 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 어떤 도움을 받았는지 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched life hint: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched: help dialog uses newly selected voice",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-life: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-life retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-life: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched: cafe resumes exact repair and help",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched cafe resumed: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched cafe resumed: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched cafe retry: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "actual": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe: wrong guided response uses exact new voice",
+      "pass": true,
+      "detail": {
+        "actual": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다.",
+        "expected": "재확인. 장소·수량·부탁을 다시 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe retry: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe: guided success uses exact new voice",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe success: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe returned: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "practiceSuccess",
+        "actual": "연습 확인. 새 상황에 맞는 말을 찾았다. …차근차근 해냈다.",
+        "expected": "연습 확인. 새 상황에 맞는 말을 찾았다. …차근차근 해냈다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe returned: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "switched-cafe: guided activity preserves first responses, help and physical checkpoint",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "switched: all seeded first responses and non-default seat remain intact",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "returning Marin resumes the selected garden table",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "garden-table return: mounted identity and exact authored tutor line match",
+      "pass": true,
+      "detail": {
+        "kind": "break",
+        "actual": "휴식 기록. 우리 자리까지 왔다. …컵은 천천히 내려놓아라.",
+        "expected": "휴식 기록. 우리 자리까지 왔다. …컵은 천천히 내려놓아라."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "garden-table return: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "reload restores Marin and exact saved learning snapshot",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "reload: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "복귀 확인. 「안녕하세요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다.",
+        "expected": "복귀 확인. 「안녕하세요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "reload: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "marin",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "reload: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "no stale tutor practice/help dialogs survive replacement",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "actual day completion is recorded",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "settings displays current confirmed tutor",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "switch after finishing keeps the entire day and progress intact",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "finished-day switch: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "difficult",
+        "actual": "오늘은 마무리까지 했군. …푹 쉬어. 더 하고 싶으면 이 몸도 같이 가 줄게.",
+        "expected": "오늘은 마무리까지 했군. …푹 쉬어. 더 하고 싶으면 이 몸도 같이 가 줄게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "finished-day switch: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "finished-day switch: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "new tutor recap uses factual completion wording",
+      "pass": true,
+      "detail": {
+        "actual": "오늘 기록을 다 확인했군. …이 몸도 네 끈기는 인정하지. 푹 쉬어!",
+        "expected": "오늘 기록을 다 확인했군. …이 몸도 네 끈기는 인정하지. 푹 쉬어!"
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "finished-day recap: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "next-day memory attributes actual guided practice to Marin",
+      "pass": true,
+      "detail": {
+        "memory": {
+          "id": "cafe-visit-soldout-menu",
+          "lessonId": "cafe-visit-soldout",
+          "expressionId": "cafe-soldout",
+          "title": "주스는 품절이에요.",
+          "kind": "guided",
+          "at": 1791731571381,
+          "guidedAt": 1791731571381,
+          "observedAt": 1791731571380,
+          "tutorId": "marin",
+          "when": "어제",
+          "tryAlone": true
+        },
+        "actual": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "next-day previous tutor: home identity and authored memory line match exactly",
+      "pass": true,
+      "detail": {
+        "recommendation": "recall",
+        "actual": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.",
+        "expected": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게."
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "next-day previous tutor: rendered body/face both belong to selected tutor",
+      "pass": true,
+      "detail": {
+        "character": "kkamong",
+        "face": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:65025/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "next-day previous tutor: profile and settings identity have no old tutor",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "memory read does not rewrite practice ownership or progress",
+      "pass": true
+    },
+    {
+      "name": "page errors zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "missing resources zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "external requests zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "server writes zero",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-initial-home-memory.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-initial-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-initial-life-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-initial-cafe-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-initial-cafe-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-switched-home-memory.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-switched-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-switched-life-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-switched-cafe-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-switched-cafe-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\mongle-switched-home-memory.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\mongle-switched-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\mongle-switched-life-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\mongle-switched-cafe-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\mongle-switched-cafe-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-switched-home-memory.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-switched-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-switched-life-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-switched-cafe-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-switched-cafe-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-garden-table-preserved.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\marin-reload.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-finished-day-switch.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-finished-day-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\release-candidate-20261012\\kkamong-next-day-remembers-marin.png"
+  ],
+  "states": [
+    {
+      "tutor": "marin",
+      "home": {
+        "kind": "difficult",
+        "id": "greetings-expressions-hello",
+        "title": "안녕하세요.",
+        "lessonTitle": "첫 인사 세 마디",
+        "lastAt": 1791731571380,
+        "command": "practice",
+        "label": "이 표현 같이 연습"
+      },
+      "lifeFirst": {
+        "greetings-expressions-hello": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380
+        }
+      },
+      "cafeFirst": {
+        "cafe-visit-soldout-menu": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380,
+          "input": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "cafeCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 0,
+        "questionIndex": 0,
+        "helped": true,
+        "cafe": {
+          "version": 1,
+          "step": 0,
+          "phase": "repair",
+          "choiceId": "b",
+          "seat": "window",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "seatCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 2,
+        "questionIndex": 2,
+        "helped": false,
+        "cafe": {
+          "version": 1,
+          "step": 2,
+          "phase": "break",
+          "choiceId": null,
+          "seat": "garden",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "home": {
+        "kind": "difficult",
+        "id": "greetings-expressions-hello",
+        "title": "안녕하세요.",
+        "lessonTitle": "첫 인사 세 마디",
+        "lastAt": 1791731571380,
+        "command": "practice",
+        "label": "이 표현 같이 연습"
+      },
+      "lifeFirst": {
+        "greetings-expressions-hello": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380
+        }
+      },
+      "cafeFirst": {
+        "cafe-visit-soldout-menu": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380,
+          "input": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "cafeCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 0,
+        "questionIndex": 0,
+        "helped": true,
+        "cafe": {
+          "version": 1,
+          "step": 0,
+          "phase": "repair",
+          "choiceId": "b",
+          "seat": "window",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "seatCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 2,
+        "questionIndex": 2,
+        "helped": false,
+        "cafe": {
+          "version": 1,
+          "step": 2,
+          "phase": "break",
+          "choiceId": null,
+          "seat": "garden",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "home": {
+        "kind": "difficult",
+        "id": "greetings-expressions-hello",
+        "title": "안녕하세요.",
+        "lessonTitle": "첫 인사 세 마디",
+        "lastAt": 1791731571380,
+        "command": "practice",
+        "label": "이 표현 같이 연습"
+      },
+      "lifeFirst": {
+        "greetings-expressions-hello": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380
+        }
+      },
+      "cafeFirst": {
+        "cafe-visit-soldout-menu": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380,
+          "input": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "cafeCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 0,
+        "questionIndex": 0,
+        "helped": true,
+        "cafe": {
+          "version": 1,
+          "step": 0,
+          "phase": "repair",
+          "choiceId": "b",
+          "seat": "window",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "seatCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 2,
+        "questionIndex": 2,
+        "helped": false,
+        "cafe": {
+          "version": 1,
+          "step": 2,
+          "phase": "break",
+          "choiceId": null,
+          "seat": "garden",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "home": {
+        "kind": "difficult",
+        "id": "greetings-expressions-hello",
+        "title": "안녕하세요.",
+        "lessonTitle": "첫 인사 세 마디",
+        "lastAt": 1791731571380,
+        "command": "practice",
+        "label": "이 표현 같이 연습"
+      },
+      "lifeFirst": {
+        "greetings-expressions-hello": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380
+        }
+      },
+      "cafeFirst": {
+        "cafe-visit-soldout-menu": {
+          "correct": false,
+          "helped": false,
+          "choiceId": "b",
+          "at": 1791731571380,
+          "input": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "cafeCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 0,
+        "questionIndex": 0,
+        "helped": true,
+        "cafe": {
+          "version": 1,
+          "step": 0,
+          "phase": "repair",
+          "choiceId": "b",
+          "seat": "window",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      },
+      "seatCheckpoint": {
+        "phase": "questions",
+        "sceneIndex": 2,
+        "questionIndex": 2,
+        "helped": false,
+        "cafe": {
+          "version": 1,
+          "step": 2,
+          "phase": "break",
+          "choiceId": null,
+          "seat": "garden",
+          "listen": {
+            "mode": "read",
+            "heard": false,
+            "textShown": false
+          }
+        }
+      }
+    },
+    {
+      "kind": "previous-tutor-memory",
+      "tutor": "kkamong",
+      "memory": {
+        "id": "cafe-visit-soldout-menu",
+        "lessonId": "cafe-visit-soldout",
+        "expressionId": "cafe-soldout",
+        "title": "주스는 품절이에요.",
+        "kind": "guided",
+        "at": 1791731571381,
+        "guidedAt": 1791731571381,
+        "observedAt": 1791731571380,
+        "tutorId": "marin",
+        "when": "어제",
+        "tryAlone": true
+      },
+      "line": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게."
+    }
+  ]
+}

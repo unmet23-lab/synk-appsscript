@@ -1,0 +1,29 @@
+{
+  "checkedAt": "2026-10-11T15:27:34.690Z",
+  "page": {
+    "commit": "b21305b7afae74cbe726d797a12578dc78816e83",
+    "error": {
+      "message": null
+    },
+    "status": "built",
+    "updated_at": "2026-10-11T15:19:04Z"
+  },
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 38150671817,
+      "headSha": "b21305b7afae74cbe726d797a12578dc78816e83",
+      "status": "completed",
+      "updatedAt": "2026-10-11T15:19:16Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38150671817"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 38150671836,
+      "headSha": "b21305b7afae74cbe726d797a12578dc78816e83",
+      "status": "completed",
+      "updatedAt": "2026-10-11T15:25:26Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38150671836"
+    }
+  ]
+}
