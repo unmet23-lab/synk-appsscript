@@ -1,0 +1,32 @@
+[
+  {
+    "file": "renderer/state.mjs",
+    "before": "'installer-opened':'설치 마법사를 열었어요'",
+    "after": "'installer-opened':'설치 파일을 열었어요'"
+  },
+  {
+    "file": "renderer/index.html",
+    "before": "포함된 설치 파일을 이 기기에 복사하고 확인합니다. 설치 마법사는 직접 열 때 시작되며, 설치 완료 후 라이브러리에서 실행할 수 있어요.",
+    "after": "포함된 설치 파일을 이 기기에 복사하고 확인합니다. Mac에서는 설치 파일을 열고 앱을 Applications 폴더로 옮겨 주세요. 설치 완료 후 라이브러리에서 실행할 수 있어요."
+  },
+  {
+    "file": "renderer/launcher.mjs",
+    "before": "INSTALLER_OPEN_FAILED:'설치 마법사를 열지 못했어요. 다시 준비해 주세요.'",
+    "after": "INSTALLER_OPEN_FAILED:'설치 파일을 열지 못했어요. 다시 준비해 주세요.'"
+  },
+  {
+    "file": "renderer/launcher.mjs",
+    "before": "notice='설치 마법사에서 설치를 마친 뒤 “설치 상태 확인”을 눌러 주세요.'",
+    "after": "notice=environment?.platform==='darwin'?'열린 창에서 앱을 Applications 폴더로 옮긴 뒤 “설치 상태 확인”을 눌러 주세요.':'설치 마법사에서 설치를 마친 뒤 “설치 상태 확인”을 눌러 주세요.'"
+  },
+  {
+    "file": "renderer/launcher.mjs",
+    "before": "notice='파일 확인이 끝났어요. “설치 시작”을 누르면 설치 마법사가 열립니다.'",
+    "after": "notice=environment?.platform==='darwin'?'“설치 시작”을 누르면 DMG가 열립니다. 앱을 Applications 폴더로 옮겨 주세요.':'파일 확인이 끝났어요. “설치 시작”을 누르면 설치 마법사가 열립니다.'"
+  },
+  {
+    "file": "renderer/launcher.mjs",
+    "before": "toast('설치 마법사에서 설치를 마친 뒤 상태를 새로고침해 주세요.')",
+    "after": "toast(environment?.platform==='darwin'?'앱을 Applications 폴더로 옮긴 뒤 설치 상태를 새로고침해 주세요.':'설치 마법사에서 설치를 마친 뒤 상태를 새로고침해 주세요.')"
+  }
+]

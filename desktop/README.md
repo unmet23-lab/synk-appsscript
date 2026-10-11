@@ -1,5 +1,13 @@
 # SYNK 데스크톱 클라이언트
 
+## 2026-10-12 공개 Mac 설치판 · Apple Silicon Preview 0.4.1
+
+[홈페이지](https://synk.im/#platform)에서 Windows x64와 **Apple Silicon(M 시리즈) Mac, macOS 13 이상** 설치판을 받는다. Mac Platform에는 WORLD·Workspace DMG가 함께 들어 있으며, 각각 Applications에 원래 앱 이름으로 복사한 뒤 Platform에서 설치 상태를 새로고침한다. WORLD는 인터넷에 연결하면 별도 개발 서버·Node.js 없이 실행한다.
+
+Mac은 아직 Developer ID 서명·Apple 공증을 받지 않은 Preview다. 홈페이지의 Mac 설치 안내에 첫 실행 알림 대응을 제공한다. Intel판은 빌드·서명 검사 뒤 3D 게임 실행 검증이 실패하여 공개하지 않았다. 실제 Intel Mac 실행 확인이 남아 있다.
+
+Apple Silicon 실제 DMG 복사·해시·서명38/38, WORLD 학습15/15, 연결 복구10/10, Platform16/16을 통과하고 세 공개 DMG를 익명으로 끝까지 내려받아 SHA를 대조했다. 실사용자 MacBook의 Gatekeeper 승인·운영 계정 왕복은 이 CI 검증에 포함하지 않는다. [공개 파일·홈페이지와 검증 범위](../docs/_ops/qa/platform-macos-preview-20261012/README.md).
+
 ## 2026-10-12 이 PC의 튜터 홈 · WORLD 0.4.2
 
 이 PC의 WORLD를 공개 튜터 홈에 연결한 0.4.2로 설치했다. 플랫폼 0.4.0의 WORLD 등록 목록과 포함 설치 파일도 갱신했으며 기존 플랫폼/PULSE 코드와 사용자 프로필을 보존했다. 홈페이지의 공개 설치 파일은 여전히 0.4.1이다. 실제 계정 저장·재로그인은 공개 웹에서 확인했고, PC 패키지는 격리 프로필의 실제 네이티브 화면을 확인했다. [설치·계정 검증](../experiences/synk-world-app/qa/account-desktop-20261012/README.md).

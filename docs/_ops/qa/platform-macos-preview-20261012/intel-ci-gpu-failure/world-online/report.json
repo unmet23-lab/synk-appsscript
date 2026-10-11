@@ -1,0 +1,673 @@
+{
+  "checkedAt": "2026-10-11T16:13:49.061Z",
+  "ok": false,
+  "asarSha256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c",
+  "packageBytesUnchanged": true,
+  "code": 1,
+  "error": null,
+  "result": {
+    "ok": false,
+    "mode": "world-online",
+    "packaged": true,
+    "arch": "x64",
+    "electron": "44.5.1",
+    "archive": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar",
+    "visible": false,
+    "profileIsolated": true,
+    "installationRoot": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications",
+    "checks": [
+      {
+        "name": "actual packaged native architecture",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before app initialization",
+        "ok": true
+      },
+      {
+        "name": "window hidden",
+        "ok": true
+      },
+      {
+        "name": "WORLD live HTTPS native environment",
+        "ok": true
+      },
+      {
+        "name": "WORLD cold profile configured signed out",
+        "ok": true
+      },
+      {
+        "name": "visible basic learning header link",
+        "ok": true,
+        "detail": {
+          "text": "기본 학습",
+          "width": 58.5625,
+          "height": 44,
+          "hidden": false,
+          "visibility": "visible"
+        }
+      },
+      {
+        "name": "learning hub denies native account IPC",
+        "ok": true
+      },
+      {
+        "name": "game denies native account IPC",
+        "ok": true
+      },
+      {
+        "name": "failure snapshot",
+        "ok": false,
+        "detail": {
+          "url": "https://synk.im/try/runner/",
+          "text": "계정에 이어 저장하려면 SYNK ID로 연결해 주세요. 현재는 이 브라우저의 체험 기록이에요. / Sign in to keep your progress across devices.\nSYNK ID로 이어 하기 · Sign in\n\nLAB · LISTEN & MOVE\n소리\nWIND RUN · AN ACTION GAME\n바람길\n\n들은 대로\n몸이 먼저 움직여요!\n\n바람\n울타리를 뛰어넘으세요!\n오늘의 달리기\n90초 바람길\n\n듣고 세부 정보 찾기는 아직 기록이 적어요. 짧게 확인해 봐요.\n\n바람길 달리기\n듣기 확인 3문제\n\n이 브라우저에서는 3D 화면을 띄울 수 없어요. 크롬·엣지·사파리 최신판으로 열어 주세요.\n\n보유 0코인\n공통 차고 →\n\n하는 방법\n1\n부탁 듣기\n바람이 짧게 부탁해요. 글은 보이지 않아요. 꼭 필요하면 ‘글로 보기’를 눌러요.\n2\n들은 대로 움직이기\n왼쪽·오른쪽으로 길을 바꾸고, 울타리는 뛰어넘고, 표지판 아래에서는 몸을 숙여요. ‘하지 말라’는 말과 두 동작의 순서도 잘 들어요.\n3\n끝까지 달리기\n해낸 부탁마다 등불이 켜져요. 세 번 연속이면 바람막이 한 번 지켜 줘요. 90초를 다 달리면 도착!\n\n휴대폰에서는 아래 펠트 단추를 누르거나 화면을 밀어서, 컴퓨터에서는 방향키(또는 A·D·W·S, 점프는 Space)로 움직여요. Esc를 누르면 잠깐 멈춰요.\n\nTOPIK I 듣기의 짧은 지시(방향·동작·하지 말라는 말·순서)를 알아듣는 힘을 몸으로 연습해요. 성공 수와 별은 TOPIK 급수와 상관없어요.\n\n달리기의 동작은 장면을 보고도 할 수 있어서 듣기 실력 기록으로 쓰지 않아요. ‘듣기 확인’에서 끝까지 듣고 혼자 고른 답만 듣기 기록이 돼요.\n\n학습 기록은 이 브라우저에만 저장되고, 같은 주소에서 연 다른 SYNK 게임과 같이 써요. 이 브라우저의 모든 게임 학습 기록 지우기",
+          "runner": {
+            "version": 7,
+            "ready": true,
+            "running": false,
+            "paused": false,
+            "best": 0,
+            "sound": true,
+            "voiceClips": 16,
+            "audio": {
+              "state": "running",
+              "clips": 16,
+              "id": null,
+              "offset": 0,
+              "duration": 0
+            },
+            "world": null,
+            "model": null
+          }
+        }
+      }
+    ],
+    "errors": [
+      "Error: TIMEOUT_runner-start\n    at waitFor (eval at <anonymous> (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:2:119), <anonymous>:14:169)\n    at async eval (eval at <anonymous> (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:2:119), <anonymous>:64:9)"
+    ],
+    "pageErrors": [
+      {
+        "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+        "source": "https://synk.im/try/runner/vendor/three.module.js",
+        "line": 15886
+      },
+      {
+        "message": "THREE.WebGLRenderer: A WebGL context could not be created. Reason:  Could not create a WebGL context, VENDOR = 0xffff, DEVICE = 0xffff, GL_VENDOR = Disabled, GL_RENDERER = Disabled, Sandboxed = yes, Optimus = no, AMD switchable = no, Reset notification strategy = 0x0000, ErrorMessage = BindToCurrentSequence failed: .",
+        "source": "https://synk.im/try/runner/vendor/three.module.js",
+        "line": 15886
+      },
+      {
+        "message": "THREE.WebGLRenderer: Error creating WebGL context.",
+        "source": "https://synk.im/try/runner/vendor/three.module.js",
+        "line": 15227
+      }
+    ],
+    "requests": [
+      {
+        "url": "https://synk.im/account/client.html?product=world",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/world-classroom.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/atlas-learning.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/dist/client.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/slab-coral-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/beginner-cards.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/rabbit.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/brand/mongle-smile.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/app.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/beginner-assets/beginner/bread.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/sparkle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/slab-cream-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/entry-check/assets/scenes/library-m.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/kit/felt/wide-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/assets/cafe.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/wide-black.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/disc-lapis.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/lab.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/atlas-learning.js?v=43f511c88e01",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/app.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/brand/mongle-cheer.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/collection.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/brand/logo-lab.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/core.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/instructions.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/controls.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/audio.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/learning.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/listening-check-ui.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/report.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/hero.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/lab.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tex-coral.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tag-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/chip-blush-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/slab-coral-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-coral.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/DMMono-Medium.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/DMMono-Medium.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/voice-timing.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/listening-check.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tex-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-check.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/sparkle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-blush-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-butter-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-lapis-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/world.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/middle.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/no-jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/left-jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/middle-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump-right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/slide-left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump-stay.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right-middle.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/wide-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/vendor/three.module.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/course-motion.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/scenery.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/vendor/three.core.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      }
+    ],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "openRequestsSuppressed": [],
+    "screenshots": [
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/world-first-start.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/learning-hub.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/failure.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "managedChildLaunched": false
+  },
+  "stderr": "Debugger listening on ws://127.0.0.1:49210/e4e53d73-f359-4f22-8114-42947cbd6f15\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\n[52129:1011/161254.035213:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52129:1011/161254.036830:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52129:1011/161254.036881:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52129:1011/161254.036891:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52129:1011/161255.121263:ERROR:components/viz/service/main/viz_main_impl.cc:190] Exiting GPU process due to errors during initialization\n2026-10-11 16:12:57.364 SYNK WORLD Preview Helper[52135:93373] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 16:12:57.365 SYNK WORLD Preview Helper[52135:93374] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 16:12:57.370 SYNK WORLD Preview Helper[52135:93373] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 16:12:57.410 SYNK WORLD Preview Helper[52135:93367] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 16:12:57.414 SYNK WORLD Preview Helper[52135:93367] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 16:12:57.417 SYNK WORLD Preview Helper[52135:93367] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n[52274:1011/161257.913110:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52274:1011/161257.914834:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52274:1011/161257.914875:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52274:1011/161257.914885:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52274:1011/161258.083339:ERROR:components/viz/service/main/viz_main_impl.cc:190] Exiting GPU process due to errors during initialization\n[52308:1011/161258.602478:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52308:1011/161258.603284:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52308:1011/161258.603313:ERROR:ui/gl/gl_display.cc:665] Initialization of all (1) EGL display types failed.\n[52308:1011/161258.603322:ERROR:ui/gl/init/gl_initializer_mac.cc:127] GLDisplayEGL::Initialize failed.\n[52308:1011/161258.703210:ERROR:components/viz/service/main/viz_main_impl.cc:190] Exiting GPU process due to errors during initialization\nError occurred in handler for 'synk:auth-status': Error: UNTRUSTED_SENDER\n    at assertSender (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/security.cjs:37:181)\n    at /Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:166:136\n    at Session.<anonymous> (node:electron/js2c/browser_init:1:118964)\n    at Session.emit (node:events:514:28)\nError occurred in handler for 'synk:environment': Error: UNTRUSTED_SENDER\n    at assertSender (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/security.cjs:37:181)\n    at /Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:166:136\n    at Session.<anonymous> (node:electron/js2c/browser_init:1:118964)\n    at Session.emit (node:events:514:28)\nDebugger ending on ws://127.0.0.1:49210/e4e53d73-f359-4f22-8114-42947cbd6f15\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n",
+  "stdout": "y/runner/assets/voice/not-right.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/jump-right.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/slide-left.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/not-left.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/right-slide.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/jump-stay.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/right-middle.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/not-slide.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/kit/felt/wide-cream.webp\",\"resourceType\":\"image\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/vendor/three.module.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/course-motion.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/scenery.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/vendor/three.core.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false}],\"localhostDevelopmentRequests\":[],\"providerRequests\":[],\"openRequestsSuppressed\":[],\"screenshots\":[\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/world-first-start.png\",\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/learning-hub.png\",\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/failure.png\"],\"realAuthenticationPerformed\":false,\"realProfileTouched\":false,\"managedChildLaunched\":false}\n"
+}

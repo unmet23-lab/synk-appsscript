@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-11T16:27:08.155Z",
+  "ok": true,
+  "results": [
+    {
+      "name": "SYNK-WORLD-Preview-0.4.1-mac-arm64.dmg",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-WORLD-Preview-0.4.1-mac-arm64.dmg",
+      "status": 200,
+      "anonymous": true,
+      "fullGet": true,
+      "bytes": 152884190,
+      "sha256": "71f9fa1171ff76087bd172a057fb46df5baea0f0c3ff5ef546f5d245af2f49a4",
+      "expectedBytes": 152884190,
+      "expectedSha256": "71f9fa1171ff76087bd172a057fb46df5baea0f0c3ff5ef546f5d245af2f49a4",
+      "ok": true,
+      "elapsedMs": 31040
+    },
+    {
+      "name": "SYNK-Workspace-Preview-0.4.1-mac-arm64.dmg",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Workspace-Preview-0.4.1-mac-arm64.dmg",
+      "status": 200,
+      "anonymous": true,
+      "fullGet": true,
+      "bytes": 152735791,
+      "sha256": "a4a30674bac32fb6f17d8c5d390d41ccfb30095ee51debd77784eba145093f49",
+      "expectedBytes": 152735791,
+      "expectedSha256": "a4a30674bac32fb6f17d8c5d390d41ccfb30095ee51debd77784eba145093f49",
+      "ok": true,
+      "elapsedMs": 22879
+    },
+    {
+      "name": "SYNK-Platform-Preview-0.4.1-mac-arm64.dmg",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-arm64.dmg",
+      "status": 200,
+      "anonymous": true,
+      "fullGet": true,
+      "bytes": 457407866,
+      "sha256": "9a3d6931b951507d0862ae7cec4e4fae9976651769b520a20e0dfc844d1fb9af",
+      "expectedBytes": 457407866,
+      "expectedSha256": "9a3d6931b951507d0862ae7cec4e4fae9976651769b520a20e0dfc844d1fb9af",
+      "ok": true,
+      "elapsedMs": 75361
+    }
+  ]
+}

@@ -1,0 +1,702 @@
+{
+  "checkedAt": "2026-10-11T17:12:52.937Z",
+  "ok": false,
+  "asarSha256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c",
+  "packageBytesUnchanged": true,
+  "code": 1,
+  "error": null,
+  "result": {
+    "ok": false,
+    "mode": "world-online",
+    "packaged": true,
+    "arch": "x64",
+    "electron": "44.5.1",
+    "archive": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar",
+    "visible": true,
+    "profileIsolated": true,
+    "installationRoot": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications",
+    "checks": [
+      {
+        "name": "actual packaged native architecture",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before app initialization",
+        "ok": true
+      },
+      {
+        "name": "window hidden",
+        "ok": true
+      },
+      {
+        "name": "WORLD live HTTPS native environment",
+        "ok": true
+      },
+      {
+        "name": "WORLD cold profile configured signed out",
+        "ok": true
+      },
+      {
+        "name": "visible basic learning header link",
+        "ok": true,
+        "detail": {
+          "text": "기본 학습",
+          "width": 59.125,
+          "height": 44,
+          "hidden": false,
+          "visibility": "visible"
+        }
+      },
+      {
+        "name": "learning hub denies native account IPC",
+        "ok": true
+      },
+      {
+        "name": "game denies native account IPC",
+        "ok": true
+      },
+      {
+        "name": "failure snapshot",
+        "ok": false,
+        "detail": {
+          "url": "https://synk.im/try/runner/",
+          "text": "계정에 이어 저장하려면 SYNK ID로 연결해 주세요. 현재는 이 브라우저의 체험 기록이에요. / Sign in to keep your progress across devices.\nSYNK ID로 이어 하기 · Sign in\n\n바람이 말해요. 잘 듣고 움직여요.\n\n바람길\n시간\n90\n성공\n0\n연속\n0\n보호\nⅡ\n바람\n글로 보기\n\n잘 들어 보세요\n\n왼쪽\n점프\n숙이기\n오른쪽",
+          "runner": {
+            "version": 7,
+            "ready": true,
+            "running": true,
+            "paused": false,
+            "best": 0,
+            "sound": true,
+            "voiceClips": 16,
+            "audio": {
+              "state": "running",
+              "clips": 16,
+              "id": "jump",
+              "offset": 2.2719999999999985,
+              "duration": 2.2225208333333333
+            },
+            "world": {
+              "renderer": "Three.js 180",
+              "frames": 4,
+              "drawCalls": 36,
+              "triangles": 110026,
+              "events": 5,
+              "width": 1024,
+              "height": 481.953125
+            },
+            "model": {
+              "distance": 1.9508250000000003,
+              "elapsed": 0.15000000000000002,
+              "lane": 1,
+              "x": 0,
+              "y": 0,
+              "slide": 0,
+              "hearts": 3,
+              "shield": 0,
+              "combo": 0,
+              "correct": 0,
+              "answers": [],
+              "finished": false,
+              "reason": "",
+              "current": {
+                "id": "jump",
+                "text": "낮은 울타리를 뛰어넘으세요.",
+                "steps": [
+                  {
+                    "action": "jump",
+                    "remaining": 63.049175,
+                    "resolved": false,
+                    "status": null
+                  }
+                ]
+              }
+            }
+          },
+          "frameProbe": {
+            "start": 4723.5,
+            "count": 29,
+            "now": 57299.5,
+            "visibility": "visible",
+            "focus": true
+          }
+        }
+      }
+    ],
+    "errors": [
+      "Error: TIMEOUT_runner-start\n    at waitFor (eval at <anonymous> (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:2:119), <anonymous>:14:169)\n    at async eval (eval at <anonymous> (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:2:119), <anonymous>:64:9)"
+    ],
+    "pageErrors": [],
+    "requests": [
+      {
+        "url": "https://synk.im/account/client.html?product=world",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/world-classroom.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/atlas-learning.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/dist/client.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/account/assets/slab-coral-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/beginner-cards.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/rabbit.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/brand/mongle-smile.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/app.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/beginner-assets/beginner/bread.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/sparkle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/slab-cream-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/entry-check/assets/scenes/library-m.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/kit/felt/wide-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/assets/cafe.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/wide-black.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/disc-lapis.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/lab.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/atlas-learning.js?v=43f511c88e01",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/app.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/brand/mongle-cheer.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/collection.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/brand/logo-lab.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/core.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/instructions.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/controls.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/audio.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/learning.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/listening-check-ui.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/report.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/hero.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/lab.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tex-coral.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tag-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/chip-blush-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/slab-coral-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/DMMono-Medium.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/fonts/DMMono-Medium.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-coral.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/listening-check.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/voice-timing.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/tex-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/badge-check.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/sparkle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-blush-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-butter-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/cushion-lapis-strip.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/world.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/middle.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/no-jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/left-jump.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/middle-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump-right.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/slide-left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-left.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/jump-stay.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/right-middle.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/assets/voice/not-slide.mp3",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/kit/felt/wide-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/vendor/three.module.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/course-motion.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/scenery.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      },
+      {
+        "url": "https://synk.im/try/runner/vendor/three.core.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false
+      }
+    ],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "openRequestsSuppressed": [],
+    "screenshots": [
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/world-first-start.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/learning-hub.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/failure.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "managedChildLaunched": false,
+    "unlimitedFrames": true,
+    "graphicsBackend": "default",
+    "runnerArch": "ARM64",
+    "translated": true
+  },
+  "stderr": "Debugger listening on ws://127.0.0.1:49195/6b03948d-886d-4c0b-ac65-90fd78e4b791\nFor help, see: https://nodejs.org/learn/getting-started/debugging\nDebugger attached.\n2026-10-11 17:11:39.252 SYNK WORLD Preview Helper[10097:33182] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 17:11:39.252 SYNK WORLD Preview Helper[10097:33180] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 17:11:39.272 SYNK WORLD Preview Helper[10097:33180] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 17:11:39.491 SYNK WORLD Preview Helper[10097:33177] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 17:11:39.494 SYNK WORLD Preview Helper[10097:33177] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\n2026-10-11 17:11:39.497 SYNK WORLD Preview Helper[10097:33177] XPC error for connection com.apple.backupd.sandbox.xpc: Connection invalid\nError occurred in handler for 'synk:auth-status': Error: UNTRUSTED_SENDER\n    at assertSender (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/security.cjs:37:181)\n    at /Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:166:136\n    at Session.<anonymous> (node:electron/js2c/browser_init:1:118964)\n    at Session.emit (node:events:514:28)\nError occurred in handler for 'synk:environment': Error: UNTRUSTED_SENDER\n    at assertSender (/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/security.cjs:37:181)\n    at /Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKWorldPreview.app/Contents/Resources/app.asar/src/main.cjs:166:136\n    at Session.<anonymous> (node:electron/js2c/browser_init:1:118964)\n    at Session.emit (node:events:514:28)\nDebugger ending on ws://127.0.0.1:49195/6b03948d-886d-4c0b-ac65-90fd78e4b791\nFor help, see: https://nodejs.org/learn/getting-started/debugging\n",
+  "stdout": "{\"url\":\"https://synk.im/try/runner/assets/voice/jump-right.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/slide-left.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/not-left.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/right-slide.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/jump-stay.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/right-middle.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/assets/voice/not-slide.mp3\",\"resourceType\":\"xhr\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/kit/felt/wide-cream.webp\",\"resourceType\":\"image\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/vendor/three.module.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/course-motion.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/scenery.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false},{\"url\":\"https://synk.im/try/runner/vendor/three.core.js\",\"resourceType\":\"script\",\"method\":\"GET\",\"blocked\":false}],\"localhostDevelopmentRequests\":[],\"providerRequests\":[],\"openRequestsSuppressed\":[],\"screenshots\":[\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/world-first-start.png\",\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/learning-hub.png\",\"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/world-online/failure.png\"],\"realAuthenticationPerformed\":false,\"realProfileTouched\":false,\"managedChildLaunched\":false,\"unlimitedFrames\":true,\"graphicsBackend\":\"default\",\"runnerArch\":\"ARM64\",\"translated\":true}\n"
+}

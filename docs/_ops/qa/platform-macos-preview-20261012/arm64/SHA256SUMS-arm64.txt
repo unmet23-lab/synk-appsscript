@@ -1,0 +1,3 @@
+71f9fa1171ff76087bd172a057fb46df5baea0f0c3ff5ef546f5d245af2f49a4  SYNK-WORLD-Preview-0.4.1-mac-arm64.dmg
+a4a30674bac32fb6f17d8c5d390d41ccfb30095ee51debd77784eba145093f49  SYNK-Workspace-Preview-0.4.1-mac-arm64.dmg
+9a3d6931b951507d0862ae7cec4e4fae9976651769b520a20e0dfc844d1fb9af  SYNK-Platform-Preview-0.4.1-mac-arm64.dmg

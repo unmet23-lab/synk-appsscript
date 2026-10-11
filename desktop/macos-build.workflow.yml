@@ -1,32 +1,96 @@
-# Copy to .github/workflows/synk-desktop-macos.yml only when CI setup is authorized.
-# This template has not been pushed or executed. It publishes no release.
-name: SYNK macOS preview packages
-on: workflow_dispatch
+# Reference copy of the public frozen-source Preview workflow.
+# It runs in unmet23-lab/synk-policy; copying this file alone is insufficient.
+# See docs/_ops/qa/platform-macos-preview-20261012/README.md.
+name: SYNK macOS Preview
+
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        options: [both, arm64, x64]
+        default: both
+  push:
+    branches: [codex/macos-preview-20261012, codex/macos-intel-preview-20261012]
+    paths:
+      - '.github/desktop-preview/**'
+      - '.github/workflows/desktop-macos-preview.yml'
+
 permissions:
   contents: read
+
 jobs:
   package:
-    runs-on: macos-latest
+    name: macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 40
     strategy:
+      fail-fast: false
       matrix:
-        arch: [x64, arm64]
+        include: ${{ fromJSON((inputs.architecture == 'x64' || github.ref_name == 'codex/macos-intel-preview-20261012') && '[{"arch":"x64","runner":"macos-15"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15"}]') }}
     defaults:
       run:
-        working-directory: desktop
+        working-directory: .github/desktop-preview
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
         with:
           node-version: '24'
+          architecture: ${{ matrix.arch }}
           cache: npm
-          cache-dependency-path: desktop/package-lock.json
-      - run: npm ci
-      - run: npm test
-      - run: node tools/package.cjs --mode=development --platform=darwin --arch=${{ matrix.arch }}
+          cache-dependency-path: .github/desktop-preview/package-lock.json
+      - name: Install pinned build tools
+        run: npm ci --no-audit --no-fund
+        env:
+          npm_config_arch: ${{ matrix.arch }}
+      - name: Verify graphics before packaging (x64 uses preinstalled Rosetta)
+        run: node qa/probe-gpu.cjs
+        env:
+          SYNK_QA_EXPECTED_ARCH: ${{ matrix.arch }}
+      - name: Validate frozen public source
+        run: node build.cjs --validate-only
+      - name: Build native Preview DMGs
+        id: build
+        run: |
+          node build.cjs --arch=${{ matrix.arch }}
+          test -s dist/${{ matrix.arch }}/deliverables/mac-package-${{ matrix.arch }}.json
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-      - uses: actions/upload-artifact@v4
+      - name: Install DMGs in an isolated folder and run native QA
+        run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }}
+        env:
+          SYNK_QA_VISIBLE: '1'
+      - name: Save verified installers
+        uses: actions/upload-artifact@v7
         with:
           name: synk-macos-preview-${{ matrix.arch }}
-          path: desktop/dist/preview/darwin/${{ matrix.arch }}/
+          path: .github/desktop-preview/dist/${{ matrix.arch }}/deliverables/
+          include-hidden-files: true
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Preserve failed QA candidate for diagnosis
+        if: failure() && steps.build.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-macos-candidate-${{ matrix.arch }}
+          path: .github/desktop-preview/dist/${{ matrix.arch }}/deliverables/
+          compression-level: 0
           retention-days: 7
+      - name: Save validation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-macos-qa-${{ matrix.arch }}
+          path: |
+            .github/desktop-preview/qa/gpu-preflight.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/mac-native-qa.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/*/report.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/*/*.png
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/*-process.log
+            .github/desktop-preview/dist/${{ matrix.arch }}/logs/
+          include-hidden-files: true
+          if-no-files-found: ignore
+          retention-days: 14

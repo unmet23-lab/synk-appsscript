@@ -1,0 +1,160 @@
+{
+  "checkedAt": "2026-10-11T17:18:39.457Z",
+  "commit": "0e5f32178527ce0c59c2cef7d55c7ddf3d1d6107",
+  "ok": true,
+  "results": [
+    {
+      "file": "en/founder/index.html",
+      "url": "https://synk.im/en/founder/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 20413,
+      "sha256": "e5833868551aeb100f72951a6cc335db2b6bb2f239930b1c9963fe5d999e26d5",
+      "expectedSha256": "e5833868551aeb100f72951a6cc335db2b6bb2f239930b1c9963fe5d999e26d5",
+      "ok": true
+    },
+    {
+      "file": "atlas/index.html",
+      "url": "https://synk.im/atlas/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 27050,
+      "sha256": "cbc1ca99224343d6f3c20b73a89afd6575e0c9b59450c3234d377ddcad574ed8",
+      "expectedSha256": "cbc1ca99224343d6f3c20b73a89afd6575e0c9b59450c3234d377ddcad574ed8",
+      "ok": true
+    },
+    {
+      "file": "en/index.html",
+      "url": "https://synk.im/en/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 31241,
+      "sha256": "6e6416fa4b0d7182b834d3bad3470a5410024eaa73470759a673838f387fa113",
+      "expectedSha256": "6e6416fa4b0d7182b834d3bad3470a5410024eaa73470759a673838f387fa113",
+      "ok": true
+    },
+    {
+      "file": "en/atlas/index.html",
+      "url": "https://synk.im/en/atlas/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 25692,
+      "sha256": "6e814f59f84fdf4185e386e5c9c23e6fc3bd84b2773fe6fece32d7c7a06464f0",
+      "expectedSha256": "6e814f59f84fdf4185e386e5c9c23e6fc3bd84b2773fe6fece32d7c7a06464f0",
+      "ok": true
+    },
+    {
+      "file": "en/knowledge.json",
+      "url": "https://synk.im/en/knowledge.json?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 306138,
+      "sha256": "1735df9e72f65cdf9972ae257e2d13afed53fd713860a00cd21c2e68df21ac7f",
+      "expectedSha256": "1735df9e72f65cdf9972ae257e2d13afed53fd713860a00cd21c2e68df21ac7f",
+      "ok": true
+    },
+    {
+      "file": "en/pulse/index.html",
+      "url": "https://synk.im/en/pulse/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 28456,
+      "sha256": "2f22c55cc4ffca6300098ca3e0ccf0823b48ae1f1dfbaca1517d9d37afaee07d",
+      "expectedSha256": "2f22c55cc4ffca6300098ca3e0ccf0823b48ae1f1dfbaca1517d9d37afaee07d",
+      "ok": true
+    },
+    {
+      "file": "en/lab/index.html",
+      "url": "https://synk.im/en/lab/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 36890,
+      "sha256": "dc5684f40fd147b1da24883e9ae540c01202a615c36fdc03379a4bbde99592d1",
+      "expectedSha256": "dc5684f40fd147b1da24883e9ae540c01202a615c36fdc03379a4bbde99592d1",
+      "ok": true
+    },
+    {
+      "file": "en/path/index.html",
+      "url": "https://synk.im/en/path/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 21083,
+      "sha256": "f426e97bf40629e9d57df7ae994422eb7a8e1b9d19da3e5ffb63b55ea395b799",
+      "expectedSha256": "f426e97bf40629e9d57df7ae994422eb7a8e1b9d19da3e5ffb63b55ea395b799",
+      "ok": true
+    },
+    {
+      "file": "en/shift/index.html",
+      "url": "https://synk.im/en/shift/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 25603,
+      "sha256": "02b8bde5788555bacf317aedbf8925810acff114f48afeaaef36556efc5ef5ed",
+      "expectedSha256": "02b8bde5788555bacf317aedbf8925810acff114f48afeaaef36556efc5ef5ed",
+      "ok": true
+    },
+    {
+      "file": "founder/index.html",
+      "url": "https://synk.im/founder/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 21728,
+      "sha256": "65d64cd4acf019e1b648d2c3771e61041f953791bde28ef3ec781a854d2612e9",
+      "expectedSha256": "65d64cd4acf019e1b648d2c3771e61041f953791bde28ef3ec781a854d2612e9",
+      "ok": true
+    },
+    {
+      "file": "index.html",
+      "url": "https://synk.im/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 32569,
+      "sha256": "9d6e5837fbea6af5079d66ffc637ac61d5f23ce62aff15067ff9a4abb143415c",
+      "expectedSha256": "9d6e5837fbea6af5079d66ffc637ac61d5f23ce62aff15067ff9a4abb143415c",
+      "ok": true
+    },
+    {
+      "file": "knowledge.json",
+      "url": "https://synk.im/knowledge.json?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 305446,
+      "sha256": "5a7b9db446dfcbe6b006caf6494acf8a7cbeb31c97f77bfa3bb6d83ba27ba0a3",
+      "expectedSha256": "5a7b9db446dfcbe6b006caf6494acf8a7cbeb31c97f77bfa3bb6d83ba27ba0a3",
+      "ok": true
+    },
+    {
+      "file": "lab/index.html",
+      "url": "https://synk.im/lab/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 38627,
+      "sha256": "bf74f55e781bbb0834ac0af94fe09fa2fa1f366474e7fc766f5e303d4a1e84b1",
+      "expectedSha256": "bf74f55e781bbb0834ac0af94fe09fa2fa1f366474e7fc766f5e303d4a1e84b1",
+      "ok": true
+    },
+    {
+      "file": "llms.txt",
+      "url": "https://synk.im/llms.txt?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 11329,
+      "sha256": "c07f523fcaa8399ed591cc50cd2fc4e48863ac26a9838a5ccef6302a4e8f91ed",
+      "expectedSha256": "c07f523fcaa8399ed591cc50cd2fc4e48863ac26a9838a5ccef6302a4e8f91ed",
+      "ok": true
+    },
+    {
+      "file": "path/index.html",
+      "url": "https://synk.im/path/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 21877,
+      "sha256": "ef9ecead018e1bc6ffdac3300b04e6ed914cd6c530049ed9975a3cfbd2dbce14",
+      "expectedSha256": "ef9ecead018e1bc6ffdac3300b04e6ed914cd6c530049ed9975a3cfbd2dbce14",
+      "ok": true
+    },
+    {
+      "file": "pulse/index.html",
+      "url": "https://synk.im/pulse/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 29932,
+      "sha256": "13ddfaa32f2b285e31f83f02069cd2103aacd1348203e9d40ea8be74bd0bb90a",
+      "expectedSha256": "13ddfaa32f2b285e31f83f02069cd2103aacd1348203e9d40ea8be74bd0bb90a",
+      "ok": true
+    },
+    {
+      "file": "shift/index.html",
+      "url": "https://synk.im/shift/index.html?mac-preview=0e5f3217",
+      "status": 200,
+      "bytes": 27170,
+      "sha256": "13748c41d465c2b44bdf3ef3343ffa2fff046ecdf41f3c0eff97459fe78d4d9a",
+      "expectedSha256": "13748c41d465c2b44bdf3ef3343ffa2fff046ecdf41f3c0eff97459fe78d4d9a",
+      "ok": true
+    }
+  ]
+}
