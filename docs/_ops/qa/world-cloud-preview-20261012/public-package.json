@@ -1,0 +1,90 @@
+{
+  "ok": true,
+  "completedAt": "2026-10-11T15:25:57.693Z",
+  "version": "0.4.1",
+  "sourceInstaller": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-download-20261011\\SYNK-Platform-Preview-0.4.0-win-x64.exe",
+    "sha256": "2eac837a7f0aecc63ed4796c8ee3bcc67b96ef26ecc57055b1b4577276ee0323"
+  },
+  "installer": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\SYNK-Platform-Preview-0.4.1-win-x64.exe",
+    "sha256": "de75c259c61db4204aaa186558b55c1e516b54bf250231980c84301915bde002",
+    "bytes": 397413716
+  },
+  "world": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\SYNK-WORLD-Preview-0.4.1-win-x64.exe",
+    "sha256": "e0363ee835484b5f5a75be05a7a787df71983738cf98a140b9f5eaeb12283e86",
+    "bytes": 132342850
+  },
+  "platform": {
+    "ok": true,
+    "client": "platform",
+    "version": "0.4.1",
+    "completedAt": "2026-10-11T15:25:53.315Z",
+    "installer": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\SYNK-Platform-Preview-0.4.1-win-x64.exe",
+      "sha256": "de75c259c61db4204aaa186558b55c1e516b54bf250231980c84301915bde002",
+      "bytes": 397413716
+    },
+    "asar": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\payload\\resources\\app.asar",
+      "sha256": "5318a13f1b6804f0af2416873f5432d58dfc73389d95ef3124bb6c9f7ef83fbb",
+      "files": 117
+    },
+    "executable": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\payload\\SYNKPlatformPreview.exe",
+      "sha256": "7c40e102451ef3a963f20f9bab2eeac5e2b8c22ac18cc632d27674a202a862b7",
+      "before": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+      "after": "7c40e102451ef3a963f20f9bab2eeac5e2b8c22ac18cc632d27674a202a862b7",
+      "fileVersion": "0.4.1.0",
+      "productVersion": "0.4.1.0",
+      "nonVersionResourceCount": 54,
+      "unchangedCodeDataSections": 14
+    },
+    "sourceHash": "2a5df5374d984c5afd6b060eb2a117c53b864c975140e9a7e53e460c54b5a070",
+    "unsignedPreview": true,
+    "installerExecuted": false,
+    "publicUpload": false,
+    "installedStateTouched": false
+  },
+  "worldPackage": {
+    "ok": true,
+    "client": "world",
+    "version": "0.4.1",
+    "completedAt": "2026-10-11T15:23:03.086Z",
+    "installer": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\SYNK-WORLD-Preview-0.4.1-win-x64.exe",
+      "sha256": "e0363ee835484b5f5a75be05a7a787df71983738cf98a140b9f5eaeb12283e86",
+      "bytes": 132342850
+    },
+    "asar": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\world\\payload\\resources\\app.asar",
+      "sha256": "1cce12377fb2ec81de0f57ac86063894e9ab220ae56d38deab37d84143769208",
+      "files": 102
+    },
+    "executable": {
+      "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\world\\payload\\SYNKWorldPreview.exe",
+      "sha256": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+      "before": "64eb5f2bfcb0da4e714c065c9c7715b49e27554be1c553f45736a7a546ac1d78",
+      "after": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+      "fileVersion": "0.4.1.0",
+      "productVersion": "0.4.1.0",
+      "nonVersionResourceCount": 54,
+      "unchangedCodeDataSections": 14
+    },
+    "sourceHash": "26023cc3715fcdf199ab8df8630adab1d664252f49b0a578d634058bb2e01ebd",
+    "unsignedPreview": true,
+    "installerExecuted": false,
+    "publicUpload": false,
+    "installedStateTouched": false
+  },
+  "worldEntry": "https://synk.im/account/client.html?product=world",
+  "workspaceUnchanged": true,
+  "platformUIUnchanged": true,
+  "originalInputsPreserved": true,
+  "installerExecuted": false,
+  "publicUpload": false,
+  "unsignedPreview": true,
+  "requiresInternet": true,
+  "requiresDevelopmentServer": false
+}

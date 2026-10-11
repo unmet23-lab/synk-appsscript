@@ -1,0 +1,14 @@
+[
+  {
+    "name": "SYNK-Platform-Preview-0.4.1-win-x64.exe",
+    "fileVersion": "0.4.1",
+    "productVersion": "0.4.1",
+    "authenticodeStatus": "NotSigned"
+  },
+  {
+    "name": "SYNK-WORLD-Preview-0.4.1-win-x64.exe",
+    "fileVersion": "0.4.1",
+    "productVersion": "0.4.1",
+    "authenticodeStatus": "NotSigned"
+  }
+]

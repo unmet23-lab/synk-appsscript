@@ -1,0 +1,47 @@
+{
+  "ok": true,
+  "client": "platform",
+  "version": "0.4.1",
+  "preparedAt": "2026-10-11T15:23:56.322Z",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\payload",
+  "stage": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\stage",
+  "executable": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\payload\\SYNKPlatformPreview.exe",
+    "sha256": "7c40e102451ef3a963f20f9bab2eeac5e2b8c22ac18cc632d27674a202a862b7",
+    "before": "64da348884eb4a3eb644385b3d6dfa35f7b33000e151fb5d33c27d98fcfe81ca",
+    "after": "7c40e102451ef3a963f20f9bab2eeac5e2b8c22ac18cc632d27674a202a862b7",
+    "fileVersion": "0.4.1.0",
+    "productVersion": "0.4.1.0",
+    "nonVersionResourceCount": 54,
+    "unchangedCodeDataSections": 14
+  },
+  "asar": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-world-cloud-20261012\\package\\platform\\payload\\resources\\app.asar",
+    "sha256": "5318a13f1b6804f0af2416873f5432d58dfc73389d95ef3124bb6c9f7ef83fbb",
+    "files": 117
+  },
+  "metadata": {
+    "clientId": "platform",
+    "mode": "development",
+    "appId": "im.synk.platform.preview",
+    "version": "0.4.1",
+    "arch": "x64",
+    "platform": "win32",
+    "sourceHash": "2a5df5374d984c5afd6b060eb2a117c53b864c975140e9a7e53e460c54b5a070"
+  },
+  "entry": "synk-desktop://platform/index.html",
+  "changedMembers": [
+    {
+      "path": "package.json",
+      "before": "c8304b03d109606a6e7bb32510af7b33f497fd164c5550d0a4d494080efe27f8",
+      "after": "77fa41a804d28d94b095b82998021bb880ebf5831f732e8eb851ff5b87c0a312"
+    },
+    {
+      "path": "runtime.json",
+      "before": "ead673e63a5bbbe959fe122923986e4d0c924d5ddb5ce9e27c609120ae51e0df",
+      "after": "9b9afe13c306bb0041ac4ac356e6200f62c465b4bff96e7b34e4182dc628d1f1"
+    }
+  ],
+  "sourceHash": "2a5df5374d984c5afd6b060eb2a117c53b864c975140e9a7e53e460c54b5a070",
+  "installedStateTouched": false
+}

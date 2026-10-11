@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "path": "src/catalog.cjs",
+      "sha256": "1d41fb6e99db6e33d422e31fd12f3e18a3731d468442d1ae2154dc09ec0ffbee"
+    },
+    {
+      "path": "src/security.cjs",
+      "sha256": "c98b722e17a6b191b7626f10de89e933bc3faf4f65772c1fb5edee7edff2a306"
+    },
+    {
+      "path": "src/connection-content.cjs",
+      "sha256": "a5a41bd7e0084a653f1deacd1e0576b7ccb0d2adf9719d4a58e04fd3f06951ac"
+    }
+  ]
+}
