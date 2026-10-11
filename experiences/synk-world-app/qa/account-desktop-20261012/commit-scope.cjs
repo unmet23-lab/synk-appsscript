@@ -17,5 +17,6 @@ for(const d of docs){const blob=git(['hash-object','-w','--stdin'],{input:d.head
 git(['diff','--cached','--check'],{env});const tree=git(['write-tree'],{env}).trim();
 const changed=git(['diff','--name-only','-z',base,tree]).split('\0').filter(Boolean);assert.ok(changed.every(p=>files.includes(p)||docs.some(d=>d.path===p)));assert.equal(git(['diff','--name-only','--diff-filter=D',base,tree]).trim(),'');
 const message=path.join(work,'source-message.txt');fs.writeFileSync(message,'Connect WORLD tutor home to native account and verify real account persistence\n\nPreserve native credential boundaries, support the WORLD route under the existing CSP, and restore the home when the account changes. Record the live life-record allowlist fix, actual login/save/re-login verification and WORLD 0.4.2 installation with a scoped Platform release catalog update.\n');
-const commit=git(['commit-tree',tree,'-p',base,'-F',message]).trim();git(['update-ref','HEAD',commit,base]);git(['reset','-q','HEAD','--',...changed]);
-const report={at:new Date().toISOString(),base,commit,files:changed,privateIndex:true,unrelatedWorkingChangesPreserved:true,pushed:false};fs.writeFileSync(path.join(work,'source-commit.json'),JSON.stringify(report,null,2));console.log(JSON.stringify({commit,files:changed.length,pushed:false}));
+const commit=git(['commit-tree',tree,'-p',base,'-F',message]).trim();git(['update-ref','HEAD',commit,base]);
+const report={at:new Date().toISOString(),base,commit,files:changed,privateIndex:true,unrelatedWorkingChangesPreserved:true,pushed:false};fs.writeFileSync(path.join(work,'source-commit.json'),JSON.stringify(report,null,2));
+git(['reset','-q','HEAD','--',...changed]);console.log(JSON.stringify({commit,files:changed.length,pushed:false}));

@@ -5,8 +5,8 @@ const copy=(from,to)=>fs.copyFileSync(from,path.join(out,to));
 for(const name of ['publication.json','public-http.json','bundle-manifest.json','bundle-verification.json','bundle-tests.log'])copy(path.join(web,name),name);
 for(const name of ['candidate.json','package.json','final-payload.json','installed.json','source-overlay.json'])copy(path.join(pc,name),'desktop-'+name);
 copy(path.join(pc,'launcher/report.json'),'launcher-update.json');
-copy(path.join(pc,'online-qa-r2/report.json'),'native-online.json');copy(path.join(pc,'offline-qa/report.json'),'native-offline.json');
-for(const name of ['marin-home.png','kkamong-home.png','mongle-home.png','kkamong-choice-success.png'])copy(path.join(pc,'online-qa-r2',name),name);
+copy(path.join(pc,'online-qa-r3/report.json'),'native-online.json');copy(path.join(pc,'offline-qa/report.json'),'native-offline.json');
+for(const name of ['marin-home.png','kkamong-home.png','mongle-home.png','kkamong-choice-success.png'])copy(path.join(pc,'online-qa-r3',name),name);
 const observation={at:new Date().toISOString(),method:'Actual Chrome UI with existing real SYNK ID session; no synthetic account, no injected learning records',accountIdentifiersRecorded:false,credentialsRecorded:false,checks:[
  {name:'SYNK ID login returns to WORLD with connected account',pass:true},
  {name:'Select Kkamong through the actual tutor introduction and confirmation UI',pass:true},
