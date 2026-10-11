@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-12",
+  "url": "https://synk.im/world/",
+  "fromTutor": "mongle",
+  "toTutor": "kkamong",
+  "trigger": "Return to existing WORLD tab after selection saved in installed PC WORLD 0.4.2",
+  "before": {
+    "timeOrigin": 1791744837388.7,
+    "navigationCount": 1
+  },
+  "after": {
+    "timeOrigin": 1791744837388.7,
+    "navigationCount": 1
+  },
+  "navigationEvents": [],
+  "eventsTruncated": false,
+  "learningPreserved": {
+    "completed": "1/22",
+    "todayExpressions": 3,
+    "nextLesson": "이름표를 찾아서"
+  },
+  "toolNote": "Disabled browser automation focus emulation for real hidden-to-visible tab transition; did not reload, inject selection, change storage or call account APIs"
+}
