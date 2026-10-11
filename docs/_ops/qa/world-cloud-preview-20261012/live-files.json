@@ -1,0 +1,179 @@
+{
+  "checkedAt": "2026-10-11T15:31:59.660Z",
+  "commit": "7e86605a5f045f97b16262517e26d6e2411ab6f3",
+  "passed": 19,
+  "total": 19,
+  "files": [
+    {
+      "file": "account/client.html",
+      "status": 200,
+      "bytes": 2097,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "13238547aa960708d68b8de5202b392cf2253169e62b1312de758126b79f30bf",
+      "expectedSha256": "13238547aa960708d68b8de5202b392cf2253169e62b1312de758126b79f30bf",
+      "matches": true
+    },
+    {
+      "file": "atlas/index.html",
+      "status": 200,
+      "bytes": 27050,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "68a280d2828616cede1ffd1458eaa8f99683bd5bac5fbd37f8c1a8f3731f4067",
+      "expectedSha256": "68a280d2828616cede1ffd1458eaa8f99683bd5bac5fbd37f8c1a8f3731f4067",
+      "matches": true
+    },
+    {
+      "file": "en/atlas/index.html",
+      "status": 200,
+      "bytes": 25692,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "c4cf2e2404f65df6d793bd59ff544175a6e849cd2e248734632b3cfd8972bb26",
+      "expectedSha256": "c4cf2e2404f65df6d793bd59ff544175a6e849cd2e248734632b3cfd8972bb26",
+      "matches": true
+    },
+    {
+      "file": "en/founder/index.html",
+      "status": 200,
+      "bytes": 20413,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "82feca326a71318c866affdb82abbb59511eb911997ff505c27b01684286e14d",
+      "expectedSha256": "82feca326a71318c866affdb82abbb59511eb911997ff505c27b01684286e14d",
+      "matches": true
+    },
+    {
+      "file": "en/index.html",
+      "status": 200,
+      "bytes": 30090,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "347c73d2098ebc70925d0fe022e4f336aa1eb99dac73d1727f51f40199989f57",
+      "expectedSha256": "347c73d2098ebc70925d0fe022e4f336aa1eb99dac73d1727f51f40199989f57",
+      "matches": true
+    },
+    {
+      "file": "en/knowledge.json",
+      "status": 200,
+      "bytes": 305734,
+      "contentType": "application/json; charset=utf-8",
+      "sha256": "16c595b4f2391dc9ce9297ff307dbd78e601c14699d906982ecc6a42241f47ff",
+      "expectedSha256": "16c595b4f2391dc9ce9297ff307dbd78e601c14699d906982ecc6a42241f47ff",
+      "matches": true
+    },
+    {
+      "file": "en/lab/index.html",
+      "status": 200,
+      "bytes": 36890,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "c68a38b37ae1ae4654fff0bd972b032624f546159748a1f6e55b2e13ea948c4d",
+      "expectedSha256": "c68a38b37ae1ae4654fff0bd972b032624f546159748a1f6e55b2e13ea948c4d",
+      "matches": true
+    },
+    {
+      "file": "en/path/index.html",
+      "status": 200,
+      "bytes": 21083,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "0b97f94f7da4adb5d8195982d6fcc62e49fce60def922ce9bfda60df38126032",
+      "expectedSha256": "0b97f94f7da4adb5d8195982d6fcc62e49fce60def922ce9bfda60df38126032",
+      "matches": true
+    },
+    {
+      "file": "en/pulse/index.html",
+      "status": 200,
+      "bytes": 28456,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "4c5ac73bcf761a23c6b32ba224ed186e365ee7ee5e2677f749aee7997c80229d",
+      "expectedSha256": "4c5ac73bcf761a23c6b32ba224ed186e365ee7ee5e2677f749aee7997c80229d",
+      "matches": true
+    },
+    {
+      "file": "en/shift/index.html",
+      "status": 200,
+      "bytes": 25603,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "686d227f5512d784559ea2cdd855dc5167ff14e6ed6a02969a7d07181c2d1355",
+      "expectedSha256": "686d227f5512d784559ea2cdd855dc5167ff14e6ed6a02969a7d07181c2d1355",
+      "matches": true
+    },
+    {
+      "file": "founder/index.html",
+      "status": 200,
+      "bytes": 21728,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "5ad3dab8cc765c88e40e900242be7f188d16c924eb1a16c7e7bfb20ad22d08a9",
+      "expectedSha256": "5ad3dab8cc765c88e40e900242be7f188d16c924eb1a16c7e7bfb20ad22d08a9",
+      "matches": true
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "bytes": 31307,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "b6bcfe5f821c6be750d76a9e47e28cb6817b09c88758825a137c4bfe9813878f",
+      "expectedSha256": "b6bcfe5f821c6be750d76a9e47e28cb6817b09c88758825a137c4bfe9813878f",
+      "matches": true
+    },
+    {
+      "file": "knowledge.json",
+      "status": 200,
+      "bytes": 304924,
+      "contentType": "application/json; charset=utf-8",
+      "sha256": "0d3762a67fad84d1e009d64e047c7918d3643d905736440044fb69a1569d891f",
+      "expectedSha256": "0d3762a67fad84d1e009d64e047c7918d3643d905736440044fb69a1569d891f",
+      "matches": true
+    },
+    {
+      "file": "lab/index.html",
+      "status": 200,
+      "bytes": 38627,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "a77e83735d83e88ce06a1dc96e3cd67aba53dabd80a215729ca1168a88f5b97f",
+      "expectedSha256": "a77e83735d83e88ce06a1dc96e3cd67aba53dabd80a215729ca1168a88f5b97f",
+      "matches": true
+    },
+    {
+      "file": "llms.txt",
+      "status": 200,
+      "bytes": 11177,
+      "contentType": "text/plain; charset=utf-8",
+      "sha256": "938f2d8e7f1ce406174e6daf3b2252483fe070417cb39575dc4ab815e3e1b17a",
+      "expectedSha256": "938f2d8e7f1ce406174e6daf3b2252483fe070417cb39575dc4ab815e3e1b17a",
+      "matches": true
+    },
+    {
+      "file": "path/index.html",
+      "status": 200,
+      "bytes": 21877,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "c1393f6ace324aac00d9d88c73a7dfd6dfffd93bec39946e72e941265e5939ab",
+      "expectedSha256": "c1393f6ace324aac00d9d88c73a7dfd6dfffd93bec39946e72e941265e5939ab",
+      "matches": true
+    },
+    {
+      "file": "pulse/index.html",
+      "status": 200,
+      "bytes": 29932,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "a985646452d9aa5768fe0b7c19c06901861103ed7d7674724b09732fe7fcebc1",
+      "expectedSha256": "a985646452d9aa5768fe0b7c19c06901861103ed7d7674724b09732fe7fcebc1",
+      "matches": true
+    },
+    {
+      "file": "shift/index.html",
+      "status": 200,
+      "bytes": 27170,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "835c5d3334e27cb000c871d526df73c176d78c9418ae4caf74cd05435d124d8e",
+      "expectedSha256": "835c5d3334e27cb000c871d526df73c176d78c9418ae4caf74cd05435d124d8e",
+      "matches": true
+    },
+    {
+      "file": "try/story-classroom/index.html",
+      "status": 200,
+      "bytes": 13391,
+      "contentType": "text/html; charset=utf-8",
+      "sha256": "31f7108b47fdf6639eeb41850074c5c7d944b99dd3379e1da3c3fda228785735",
+      "expectedSha256": "31f7108b47fdf6639eeb41850074c5c7d944b99dd3379e1da3c3fda228785735",
+      "matches": true
+    }
+  ]
+}

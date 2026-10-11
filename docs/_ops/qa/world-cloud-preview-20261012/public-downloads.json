@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-11T15:33:10.747Z",
+  "ok": true,
+  "anonymous": true,
+  "completeDownloads": true,
+  "files": [
+    {
+      "name": "SYNK-Platform-Preview-0.4.1-win-x64.exe",
+      "status": 200,
+      "bytes": 397413716,
+      "sha256": "de75c259c61db4204aaa186558b55c1e516b54bf250231980c84301915bde002",
+      "matches": true,
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-win-x64.exe"
+    },
+    {
+      "name": "SYNK-WORLD-Preview-0.4.1-win-x64.exe",
+      "status": 200,
+      "bytes": 132342850,
+      "sha256": "e0363ee835484b5f5a75be05a7a787df71983738cf98a140b9f5eaeb12283e86",
+      "matches": true,
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-WORLD-Preview-0.4.1-win-x64.exe"
+    }
+  ]
+}
