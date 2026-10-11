@@ -1,0 +1,179 @@
+1
+00:00:00,100 --> 00:00:01,880
+Ready? 애, 에!
+Ready? ae, e! (two new letters)
+
+2
+00:00:01,880 --> 00:00:03,230
+모양만 달라!
+moyangman dalla! (only the shape is different!)
+
+3
+00:00:03,230 --> 00:00:04,130
+애, 에!
+ae, e!
+
+4
+00:00:04,130 --> 00:00:05,910
+모양만 달라!
+moyangman dalla! (only the shape is different!)
+
+5
+00:00:05,910 --> 00:00:10,120
+둘 다 에!
+dul da e! (both say "e"!)
+
+6
+00:00:10,120 --> 00:00:12,500
+아 애! 어 에!
+a ae! eo e! (add one stick — the sound becomes "e")
+
+7
+00:00:12,500 --> 00:00:14,930
+가 개! 거 게!
+ga gae! geo ge!
+
+8
+00:00:14,930 --> 00:00:17,330
+나 내! 너 네!
+na nae! neo ne!
+
+9
+00:00:17,330 --> 00:00:18,840
+사 새! 서 세!
+sa sae! seo se!
+
+10
+00:00:18,840 --> 00:00:21,510
+모양만 달라,
+moyangman dalla, (only the shape is different,)
+
+11
+00:00:21,510 --> 00:00:23,020
+둘 다 에!
+dul da e! (both say "e"!)
+
+12
+00:00:23,020 --> 00:00:26,450
+이건 뭐?
+igeon mwo? (what is this? read it before the song does!)
+
+13
+00:00:26,450 --> 00:00:27,830
+개!
+gae! (dog)
+
+14
+00:00:27,830 --> 00:00:31,250
+이건 뭐?
+igeon mwo? (read it first!)
+
+15
+00:00:31,250 --> 00:00:34,100
+게!
+ge! (crab) — the same sound as 개!
+
+16
+00:00:34,100 --> 00:00:36,700
+개 게 내 네 새 세 애 에!
+gae ge nae ne sae se ae e! (dog, crab, my, yes, bird, three — all "e")
+
+17
+00:00:36,700 --> 00:00:38,920
+모양만 달라, 둘 다 에!
+moyangman dalla, dul da e! (only the shape is different — both say "e"!)
+
+18
+00:00:38,920 --> 00:00:41,500
+개 게 내 네 새 세 애 에!
+gae ge nae ne sae se ae e! (dog, crab, my, yes, bird, three — all "e")
+
+19
+00:00:41,500 --> 00:00:43,720
+모양만 달라, 둘 다 에!
+moyangman dalla, dul da e! (only the shape is different — both say "e"!)
+
+20
+00:00:43,720 --> 00:00:46,110
+안! 녕! 하! 세! 요!
+an! nyeong! ha! se! yo!
+
+21
+00:00:46,110 --> 00:00:48,520
+안녕하세요, 안녕하세요!
+annyeonghaseyo! (hello — polite)
+
+22
+00:00:48,520 --> 00:00:50,920
+노! 래! 해! 요!
+no! rae! hae! yo!
+
+23
+00:00:50,920 --> 00:00:51,820
+노래해요?
+noraehaeyo? (shall we sing?)
+
+24
+00:00:51,820 --> 00:00:53,320
+네! 네! 네! 네!
+ne! ne! ne! ne! (yes! — 네 says "e" too)
+
+25
+00:00:53,320 --> 00:00:55,910
+개 게 내 네 새 세 애 에!
+gae ge nae ne sae se ae e! (dog, crab, my, yes, bird, three — all "e")
+
+26
+00:00:55,910 --> 00:00:58,110
+모양만 달라, 둘 다 에!
+moyangman dalla, dul da e! (only the shape is different — both say "e"!)
+
+27
+00:00:58,110 --> 00:01:00,710
+개 게 내 네 새 세 애 에!
+gae ge nae ne sae se ae e! (dog, crab, my, yes, bird, three — all "e")
+
+28
+00:01:00,710 --> 00:01:02,930
+모양만 달라, 둘 다 에!
+moyangman dalla, dul da e! (only the shape is different — both say "e"!)
+
+29
+00:01:02,930 --> 00:01:06,150
+애, 에, 둘 다 에! 안녕!
+ae, e, dul da e! annyeong! (both say "e" — bye!)
+
+30
+00:01:06,150 --> 00:01:07,300
+이건 뭐?
+igeon mwo? (can you read these?)
+
+31
+00:01:07,350 --> 00:01:08,350
+배
+Try reading it first!
+
+32
+00:01:08,350 --> 00:01:09,300
+배!
+bae! (boat)
+
+33
+00:01:09,350 --> 00:01:10,350
+카페
+Try reading it first!
+
+34
+00:01:10,350 --> 00:01:11,300
+카페!
+kape! (café)
+
+35
+00:01:11,350 --> 00:01:12,350
+메뉴
+Try reading it first!
+
+36
+00:01:12,350 --> 00:01:14,400
+메뉴!
+menyu! (menu)

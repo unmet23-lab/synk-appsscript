@@ -1,0 +1,98 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-11T10:24:56.817Z",
+  "sourceRoot": "docs/마케팅/LAB_한글초보_애에_20261011/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "ㅐ vs ㅔ in one song — two shapes, one sound! 애 에 개 게 #learnkorean",
+      "text": "Sing along with Mongle — ㅐ and ㅔ look different, but they sound the same: “e”.\n\nAdd one stick and the sound changes:\n아 → 애 · 어 → 에\n가 → 개 · 거 → 게 · 나 → 내 · 너 → 네 · 사 → 새 · 서 → 세\n\n모양만 달라, 둘 다 에! (moyangman dalla, dul da e!) — only the shape is different, both say “e”!\n\"이건 뭐?\" (What is this?) — 개 (dog) and 게 (crab) sound exactly the same; the spelling tells them apart.\nThen say hello politely — 안녕하세요 (annyeonghaseyo) — and answer 네! (ne — yes!).\n\nRomanization appears under every letter: ㅐ is written “ae” and ㅔ “e” — different spelling, same sound, just like in Hangul.\nEnglish captions (CC) have the lyrics.\nAt the end, try reading 배 · 카페 · 메뉴 (boat · café · menu).\n\nHangul for Beginners · 한글 초보단계 #6 — after the vowel (#1), consonant (#2), batchim (#3), double-vowel (#4) and first-words (#5) songs.\nSYNK LAB · learn Korean the fun way, with Mongle.\n#learnkorean #hangul #koreanvowels",
+      "alt": [
+        "A felt kid and the coral felt mascot Mongle learn ㅐ and ㅔ: a blue stick slides in next to 아 to make 애 and next to 어 to make 에, the kid cups his ears for the “e” sound every time, a bracket joins 애 and 에 into one speaker icon, and a felt puppy (개) and crab (게) show two words that sound the same — under a white card reading “Two shapes, one sound!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": null,
+      "document": null,
+      "subtitles": [
+        "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/subtitles-en.srt"
+      ],
+      "playlist": {
+        "title": "Hangul for Beginners · 한글 초보단계",
+        "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+        "visibility": "private",
+        "language": "en"
+      },
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/원고.json",
+          "bytes": 1437,
+          "sha256": "841189e98122182720e1cc2bb6177b8e9432effc7d08d3a21061bc770054582e",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/제목.txt",
+          "bytes": 79,
+          "sha256": "7a15a6c7508fdd27ea350654fb182d59af652301ba6141746858355c2def1eb6",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 1050,
+          "sha256": "fefead9d85872727e0e5603d60ac6a9682dea4c510b7267099ec5484dd7158dc",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/video.mp4",
+          "bytes": 18051514,
+          "sha256": "f9877482a4ad0c20f335924a0bfa6c2a9680332c4bef7ba1c9f4703a9633d751",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "subtitle",
+          "path": "docs/마케팅/LAB_한글초보_애에_20261011/게시/01-lab-youtube/subtitles-en.srt",
+          "bytes": 3281,
+          "sha256": "2bcda6001a0f45dc67fe455d8b832497f319f8330033fe7b07f026e2766c9a66",
+          "mime": "application/x-subrip"
+        }
+      ],
+      "contentHash": "9ab96c02b500d25086a9d15d3d840f6efe50c36c5eb17723af4fdc2d0b854a40",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "9ab96c02b500d25086a9d15d3d840f6efe50c36c5eb17723af4fdc2d0b854a40",
+        "publicationHash": "33769544feba4c2ec066a5785968a7f7a29d5845f309cb089261d67d20eed6f7",
+        "approvedAt": "2026-10-11T10:25:00.162Z",
+        "note": "유호님 10-11 「좋아 비공개로 올리고 재생목록 여섯째에 넣어줘」"
+      },
+      "errors": []
+    }
+  ]
+}
