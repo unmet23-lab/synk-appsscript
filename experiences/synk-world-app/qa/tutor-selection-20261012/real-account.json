@@ -4,7 +4,38 @@
     "web": {"signedIn": true, "tutor": "kkamong", "completed": "1/22", "nextLesson": "이름표를 찾아서", "todayExpressions": 3},
     "pc": {"signedIn": true, "tutor": "kkamong", "completed": "1/22", "nextLesson": "이름표를 찾아서", "todayExpressions": 3}
   },
-  "webToPC": "pending",
-  "pcToWeb": "pending",
-  "finalTutor": "pending"
+  "webToPC": {
+    "status": "passed",
+    "selectedTutor": "mongle",
+    "flow": "Selected Mongle in the signed-in web app; refocused PC WORLD and observed Mongle restored automatically without reloading",
+    "evidence": ["real-web-mongle.png", "real-pc-mongle.png"]
+  },
+  "pcToWeb": {
+    "status": "passed",
+    "initialReloadCheck": {
+      "status": "passed_after_reload",
+      "selectedTutor": "marin",
+      "flow": "Selected Marin in PC WORLD; reloaded the signed-in web app and observed Marin restored",
+      "evidence": ["real-pc-marin.png", "real-web-marin.png"]
+    },
+    "automaticRestoreOnRefocus": "passed",
+    "automaticRestores": [
+      {"selectedTutor": "mongle", "evidence": ["real-web-auto-mongle.png"]},
+      {
+        "selectedTutor": "kkamong",
+        "flow": "Changed from Mongle to Kkamong in PC WORLD and saved; returned to the existing signed-in web tab and observed Kkamong dialogue and image automatically without reload or navigation",
+        "evidence": ["real-pc-final-kkamong.png", "real-web-auto-kkamong.png", "real-web-no-reload.json"],
+        "timeOriginUnchanged": true,
+        "navigationCountBefore": 1,
+        "navigationCountAfter": 1,
+        "navigationAndLoadEvents": 0
+      }
+    ]
+  },
+  "finalTutor": {
+    "pc": {"tutor": "kkamong", "saveStatus": "confirmed", "evidence": "real-pc-final-kkamong.png"},
+    "web": {"tutor": "kkamong", "restoreStatus": "confirmed", "automaticRestoreOnRefocus": "passed", "evidence": "real-web-auto-kkamong.png"}
+  },
+  "learningPreserved": {"completed": "1/22", "todayExpressions": 3, "nextLesson": "이름표를 찾아서"},
+  "finalCheckNote": "Temporarily disabled browser automation focus emulation to observe a real hidden-to-visible tab transition, then restored it and closed the temporary tab while keeping WORLD open; no application code change, reload, selection injection, storage mutation or direct account API call was used for this final check"
 }
