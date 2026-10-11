@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-11T15:36:41.147Z",
+  "tutorRelease": "b21305b7afae74cbe726d797a12578dc78816e83",
+  "currentHead": "7e86605a5f045f97b16262517e26d6e2411ab6f3",
+  "ancestorPreserved": true,
+  "changedAfterTutor": [
+    "account/client.html",
+    "atlas/index.html",
+    "en/atlas/index.html",
+    "en/founder/index.html",
+    "en/index.html",
+    "en/knowledge.json",
+    "en/lab/index.html",
+    "en/path/index.html",
+    "en/pulse/index.html",
+    "en/shift/index.html",
+    "founder/index.html",
+    "index.html",
+    "knowledge.json",
+    "lab/index.html",
+    "llms.txt",
+    "path/index.html",
+    "pulse/index.html",
+    "shift/index.html",
+    "try/story-classroom/index.html"
+  ],
+  "worldFilesChanged": 0
+}
