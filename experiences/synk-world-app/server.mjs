@@ -86,7 +86,7 @@ const server=http.createServer(async(req,res)=>{
   else if(allowedGames.has(first)){base=path.resolve(root,'..',first);pathname=pathname.slice(first.length+1);}
   else if(pathname.startsWith('/synk-world-home/')){pathname=pathname.slice('/synk-world-home'.length);base=home;}
   else if(pathname==='/enrollment.mjs'){base=path.resolve(root,'../synk-account/src');}
-  else if(['/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/cafe-activity.mjs','/cafe-ui.mjs'].includes(pathname))base=root;
+  else if(['/world-bootstrap.js','/app-shell.mjs','/app-shell.css','/world-client.mjs','/world-town-client.mjs','/world-account.bundle.mjs','/life-ui.mjs','/life-ui.css','/life-content.mjs','/life-progress.mjs','/cafe-activity.mjs','/cafe-ui.mjs'].includes(pathname))base=root;
   else if(['/engine/loom-motion.js','/engine/loom-life.js'].includes(pathname)){base=path.resolve(root,'../../tools/lib');pathname='/'+path.basename(pathname);}
   else if(pathname.startsWith('/town/')){
    pathname=pathname.slice(5);base=town;

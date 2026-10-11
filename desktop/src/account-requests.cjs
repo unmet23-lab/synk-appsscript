@@ -1,7 +1,9 @@
 'use strict';
 const {classroomRequestSpec}=require('./classroom-requests.cjs');
+const {worldRequestSpec}=require('./world-requests.cjs');
 const {PERSONAL_OPERATIONS,personalRequestSpec}=require('./personal-requests.cjs');
 function requestSpec(operation,params={},appVersion='0.1.0',product,clientKey){
+  if(operation==='worldRequest')return worldRequestSpec(params,product,clientKey);
   if(['platformLoad','platformSave','platformDelete'].includes(operation)){
     if(product!=='platform'||clientKey!=='platform')throw Object.assign(new Error('플랫폼 계정 연결을 확인해 주세요.'),{code:'INVALID_REQUEST'});
     return personalRequestSpec(operation.replace('platform','personal'),params,product,'platform-library');

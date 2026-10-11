@@ -3,9 +3,9 @@ export function renderWorldDocument(source, config) {
   const base = config.basePath;
   if (!/^\/(?:[a-zA-Z0-9_-]+\/)*$/.test(base)) throw new TypeError('Invalid WORLD base path');
   const bootstrap = JSON.stringify(config).replaceAll('<', '\\u003c');
-  const cover = '<div id="synk-opening-cover" aria-hidden="true" style="position:fixed;inset:0;background:#000;z-index:2147483646"></div><script>window.__synkOpeningSafetyTimer=setTimeout(function(){document.getElementById("synk-opening-cover")?.remove()},5000)</script>';
+  const cover = '<div id="synk-opening-cover" aria-hidden="true" style="position:fixed;inset:0;background:#000;z-index:2147483646"></div>';
   return source
-    .replace('<head>', `<head><script>window.__SYNK_WORLD_CONNECTED__=true;window.__SYNK_WORLD_CONFIG__=${bootstrap};</script>`)
+    .replace('<head>', `<head><script type="application/json" id="synk-world-config">${bootstrap}</script><script src="${base}world-bootstrap.js"></script>`)
     .replace(/<script type="module" src="home\.mjs"><\/script>/, '')
     .replace(/((?:src|href)=")assets\//g, `$1${base}brand-opening/assets/`)
     .replace('href="home.css"', `href="${base}brand-opening/home.css"`)

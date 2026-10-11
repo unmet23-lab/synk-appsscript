@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-11T16:00:55.343Z",
+  "project": "qiwxeddwwnzkwalpsuty",
+  "head": "a5dcbe5a9f1c85ee89402396b37001b34ae79db3",
+  "before": {
+    "slug": "synk-play",
+    "version": 9,
+    "status": "ACTIVE",
+    "verify_jwt": true,
+    "updated_at": 1791538555375
+  },
+  "bodySHA256": "0b3e3ca927d9060fed44f4b3486e261223a86fc65a8e7760df64735c69735d25",
+  "files": [
+    {
+      "name": "index.ts",
+      "bytes": 620,
+      "sha256": "465dc2157dfa8e8518c8724d6c28939333fa6c101dc01cd82643306759560a0b",
+      "exactFrozenCandidate": true
+    },
+    {
+      "name": "synk-play-runtime.mjs",
+      "bytes": 473189,
+      "sha256": "a8971259f9c077c5a246bea8e585b928d83e0a6d98165025e3015138a7797bd0",
+      "exactFrozenCandidate": true
+    }
+  ],
+  "accountRowsRead": 0,
+  "authSettingsRead": 0
+}

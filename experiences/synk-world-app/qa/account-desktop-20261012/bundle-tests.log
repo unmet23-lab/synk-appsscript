@@ -1,0 +1,38 @@
+✔ account mode validates only public settings and a safe static base path (1.3423ms)
+✔ operating WORLD restores verified SYNK ID and never calls synthetic session or cookie routes (4.0721ms)
+✔ same-tab account replacement immediately masks old state and prevents an old account command (1.0332ms)
+✔ logout beats delayed decoded WORLD replies and uses only captured credentials for server revocation (5.2061ms)
+✔ an API cannot substitute another account under an existing WORLD session (0.4732ms)
+✔ offline retains account-scoped outfit outbox and replays the same request against actual API (0.7248ms)
+✔ PKCE sign-in navigates to registered existing world-browser with no access token in URL (4.2306ms)
+✔ Town commands pin actual academy class and reject sharing/membership metadata moving backward (0.7629ms)
+✔ Town iframe host exposes methods, never credentials, and rejects a command after logout (1.1085ms)
+✔ enrollment only calls fixed preview/claim route and never treats a token as automatic enrollment (0.6001ms)
+✔ account logout and verified re-login clear the old rehearsal marker without replaying synthetic login (0.4476ms)
+✔ embedded games require verified ID and keep official progress/outbox and consent isolation (11.5638ms)
+✔ a slower old game launch cannot install or dispose its newer replacement (3.7602ms)
+✔ learning consent changes revoke old game ports before any further game writes (1.8625ms)
+✔ revoked game transport invalidates the account instead of falling back to a guest wallet (0.5693ms)
+✔ initial progress conflict returns a recovery handle without installing a game or learning host (3.0043ms)
+✔ a running game can explicitly keep local progress after CAS conflict without changing wallet (3.4521ms)
+✔ import conflict permits the account state only and an ended recovery handle cannot resolve (1.2343ms)
+✔ native WORLD verifies its own app and account through IPC without browser credentials (8.2109ms)
+✔ native WORLD routes preserve mutation bodies, conflict status and reject unknown routes (1.4099ms)
+✔ native progress uses the existing account PlayHost; tutor choice remains device-local (17.4359ms)
+✔ native account switch invalidates old game and life ports before new account restore (6.5833ms)
+✔ native refresh of the same session retains ports; stale generations cannot replace it (1.768ms)
+✔ native logout fences delayed WORLD results and old status snapshots; later sign-in reconnects (1.987ms)
+✔ native account data and WORLD responses cannot substitute another account (0.8928ms)
+✔ a delayed authStatus cannot overwrite a newer native auth event (0.6861ms)
+✔ a delayed verified load cannot restore the previous native owner (0.617ms)
+✔ native revoked progress closes ports without reading or clearing browser tokens (0.6895ms)
+✔ native town requests retain class binding and refuse revision rollback (0.37ms)
+✔ native subscription is released on stop and cannot reopen a disposed WORLD (0.5911ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 210.3405

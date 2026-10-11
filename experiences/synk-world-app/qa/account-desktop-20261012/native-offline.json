@@ -1,0 +1,1134 @@
+{
+  "checkedAt": "2026-10-11T16:15:19.965Z",
+  "ok": true,
+  "candidate": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload",
+  "asarSha256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f",
+  "packageBytesUnchanged": true,
+  "code": 0,
+  "error": null,
+  "result": {
+    "ok": true,
+    "mode": "offline",
+    "offlineSimulation": "initial HTTPS requests canceled; real retry after unblocking",
+    "packaged": true,
+    "archive": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload\\resources\\app.asar",
+    "visible": false,
+    "profileIsolated": true,
+    "checks": [
+      {
+        "name": "actual packaged ASAR",
+        "ok": true
+      },
+      {
+        "name": "isolated profile before main startup",
+        "ok": true
+      },
+      {
+        "name": "empty profile hidden window",
+        "ok": true
+      },
+      {
+        "name": "offline guide explains internet connection",
+        "ok": true
+      },
+      {
+        "name": "offline retry points to public tutor home",
+        "ok": true
+      },
+      {
+        "name": "offline guide rejects account IPC",
+        "ok": true
+      },
+      {
+        "name": "public tutor home uses real native environment",
+        "ok": true
+      },
+      {
+        "name": "native configured signed-out state and production account mode",
+        "ok": true
+      },
+      {
+        "name": "unsafe launcher rejected",
+        "ok": true
+      },
+      {
+        "name": "marin native choice uses approved success face and base",
+        "ok": true
+      },
+      {
+        "name": "marin real native home chooses only the guest scope",
+        "ok": true
+      },
+      {
+        "name": "marin home portrait loads and gives its own line",
+        "ok": true
+      },
+      {
+        "name": "marin actual game entry keeps the native login gate",
+        "ok": true
+      },
+      {
+        "name": "kkamong native choice uses approved success face and base",
+        "ok": true
+      },
+      {
+        "name": "kkamong real native home chooses only the guest scope",
+        "ok": true
+      },
+      {
+        "name": "kkamong home portrait loads and gives its own line",
+        "ok": true
+      },
+      {
+        "name": "kkamong actual game entry keeps the native login gate",
+        "ok": true
+      },
+      {
+        "name": "mongle native choice uses approved success face and base",
+        "ok": true
+      },
+      {
+        "name": "mongle real native home chooses only the guest scope",
+        "ok": true
+      },
+      {
+        "name": "mongle home portrait loads and gives its own line",
+        "ok": true
+      },
+      {
+        "name": "mongle actual game entry keeps the native login gate",
+        "ok": true
+      },
+      {
+        "name": "legacy learning hub cannot use native account IPC",
+        "ok": true
+      },
+      {
+        "name": "legacy account return retains configured native IPC",
+        "ok": true
+      },
+      {
+        "name": "return to tutor home preserves the guest choice",
+        "ok": true
+      },
+      {
+        "name": "no external opens or blocked API requests",
+        "ok": true
+      },
+      {
+        "name": "no script CSP or runtime errors",
+        "ok": true,
+        "detail": []
+      },
+      {
+        "name": "no startup auth request with empty vault",
+        "ok": true
+      },
+      {
+        "name": "no dev-server requests",
+        "ok": true
+      },
+      {
+        "name": "window remained hidden",
+        "ok": true
+      }
+    ],
+    "errors": [],
+    "pageErrors": [],
+    "requests": [
+      {
+        "url": "https://synk.im/world/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": true,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/world-bootstrap.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/SUIT.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/app-shell.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/opening.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/app-shell.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-mobile-v9.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/mongle-smile.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/headphones.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/scarf.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-onboarding.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/game-tutor.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-practice.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-review.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/life-tutor.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/world-client.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/enrollment.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/world-account.bundle.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/life-content.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/life-progress.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/life-ui.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/world-town-client.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/wardrobe-studio.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/wardrobe-catalog.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/wardrobe-workbench.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/cafe-activity.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/cafe-ui.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/wardrobe-album.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/button-white.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/quality-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/button-coral.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/quality-blush.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/InterTight.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/DMMono.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/InterTight.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/DMMono.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/life-ui.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/game-tutor-support.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-practice-core.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-choice.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/korean-runner/controls.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-onboarding.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/game-tutor.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/life-tutor.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home-tutor.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/life-tutor-lines.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home-tutor-lines.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home-tutor-days.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/home-tutor-recap.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/game-tutor-lines.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/game-tutor-contract.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-practice.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-review.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-profiles.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-practice-lines.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/opening.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "resourceType": "media",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/cafe-voice/manifest.json",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/cafe-voice/manifest.json",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/opening.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "resourceType": "media",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/cafe-voice/manifest.json",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/tutor-profiles.mjs",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-face-mask.svg",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/mongle-smile.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/home/headphones.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/assets/mongle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-face-mask.svg",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/cafe-voice/manifest.json",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "ping",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/beginner-cards.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/rabbit.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/brand/mongle-smile.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/art/felt-rocket-v2.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/atlas-learning.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/app.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/assets/objects/book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/beginner-assets/beginner/bread.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/sparkle.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/slab-cream-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/entry-check/assets/scenes/library-m.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/word-magic/kit/felt/wide-cream.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/order-rush/assets/cafe.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/wide-black.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/spaceship-coop/assets/felt/disc-lapis.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/try/learning-hub/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/client.html",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/scrapbook.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/style.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/world-classroom.css",
+        "resourceType": "stylesheet",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/sticker-book.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/dist/client.js",
+        "resourceType": "script",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/thread-shift.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/InterTight-700.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/SUIT-Variable.woff2",
+        "resourceType": "font",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/account/assets/slab-coral-long.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/",
+        "resourceType": "mainFrame",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-desktop-v9.webp",
+        "resourceType": "image",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/world-menu-desktop-omni11-v9-web.mp4",
+        "resourceType": "media",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      },
+      {
+        "url": "https://synk.im/world/brand-opening/assets/cafe-voice/manifest.json",
+        "resourceType": "xhr",
+        "method": "GET",
+        "blocked": false,
+        "unsafe": false
+      }
+    ],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "externalOpensSuppressed": [],
+    "screenshots": [
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\offline-internet-guide.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\marin-choice-success.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\marin-home.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\kkamong-choice-success.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\kkamong-home.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\mongle-choice-success.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\mongle-home.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\real-game-login-gate.png",
+      "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\offline-qa\\legacy-account-return.png"
+    ],
+    "scope": "Installed binary candidate with a new isolated profile, production static assets and native guest flow; no real account login or authenticated learning proof.",
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "installerExecuted": false,
+    "physicalOtherPC": false
+  },
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\tools\\world-tutor-native-smoke.cjs"
+}

@@ -1,0 +1,42 @@
+{
+  "at": "2026-10-11T16:13:23.147Z",
+  "ok": true,
+  "files": [
+    {
+      "path": "world/index.html",
+      "status": 200,
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "match": true
+    },
+    {
+      "path": "world/mobile.html",
+      "status": 200,
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "match": true
+    },
+    {
+      "path": "world/desktop.html",
+      "status": 200,
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "match": true
+    },
+    {
+      "path": "world/world-bootstrap.js",
+      "status": 200,
+      "sha256": "046c9935e01001ab6295666a986702c3454723e729420151ae7c3f12fdbe0ca9",
+      "match": true
+    },
+    {
+      "path": "world/app-shell.mjs",
+      "status": 200,
+      "sha256": "880b9f13d2a26928c3c98d49ba0e8b87d3d3a4407950948658f2f6757f74ec04",
+      "match": true
+    },
+    {
+      "path": "world/world-account.bundle.mjs",
+      "status": 200,
+      "sha256": "d646cf1883baee21a8bc6cfc91496cd16bbe8dd14e68ed510d855225ffe0bd54",
+      "match": true
+    }
+  ]
+}

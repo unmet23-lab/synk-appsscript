@@ -1,0 +1,37 @@
+✔ game account postflight is accepted by the existing read-only SQL gate (0.7705ms)
+▶ postflight accepts the actual migration and rejects eight isolated schema regressions
+  ✔ baseline migration passes all thirteen conditions (20.7986ms)
+  ✔ table grant (10.7089ms)
+  ✔ function public grant (8.5383ms)
+  ✔ disabled RLS (8.296ms)
+  ✔ disabled deletion trigger (7.3588ms)
+  ✔ missing CHECK (7.7328ms)
+  ✔ nullable receipt fingerprint (7.5828ms)
+  ✔ missing account cascade (8.1871ms)
+  ✔ changed deletion function (7.5438ms)
+✔ postflight accepts the actual migration and rejects eight isolated schema regressions (1778.613ms)
+✔ the generated Edge CJS-to-ESM wrapper imports and keeps the feature disabled by default (1762.6208ms)
+✔ actual JSONB serializer persists account wallet and records as objects (75.8418ms)
+✔ server date wins, repeated receipt cannot mint coins and id reuse with different args fails (27.4659ms)
+✔ concurrent purchases cannot overdraw, and failed purchase retry never later spends (61.8322ms)
+✔ per-key CAS rejects stale progress atomically while allowing unrelated keys (36.9895ms)
+✔ explicit legacy import happens only once into an empty account and never merges balances (20.7859ms)
+✔ unknown storage keys, secret-bearing records and raw wallet replacement are rejected (2.2434ms)
+✔ revoked sessions and disabled/deletion-pending accounts cannot read or spend (22.0627ms)
+✔ account deletion removes both records and command receipts with private table permissions (11.1706ms)
+✔ racing rewards use canonical courses, server time and the same wallet command receipts (38.39ms)
+✔ concurrent racing completions persist both rounds but pay first-clear and mission only once (36.8451ms)
+✔ source adaptive personalized completion stores the five actual questions atomically (56.1734ms)
+✔ source vocabulary review descriptor preserves correction rewards without a first-clear reward (37.7116ms)
+✔ source vocabulary review rejects invalid word selections without changing stored state (102.6256ms)
+✔ bundled adaptive personalized completion stores the five actual questions atomically (24.7566ms)
+✔ bundled vocabulary review descriptor preserves correction rewards without a first-clear reward (30.2319ms)
+✔ bundled vocabulary review rejects invalid word selections without changing stored state (69.0433ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2635.8369

@@ -1,0 +1,49 @@
+{
+  "createdAt": "2026-10-11T16:09:09.922Z",
+  "parent": "7e86605a5f045f97b16262517e26d6e2411ab6f3",
+  "commit": "1ce4365dfe83b11813f17c36802ea2463532951b",
+  "tree": "12dbf137a269df463b92f8161ce97b2be2bd40f0",
+  "changedFiles": 6,
+  "deleted": 0,
+  "sharedCheckoutWrites": 0,
+  "forcePush": false,
+  "changes": [
+    {
+      "path": "world/index.html",
+      "beforeSHA256": "e0cf365db404a9245d90bf4c491e3e044db1b8083c143a479333e7c891fa046b",
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "bytes": 10025
+    },
+    {
+      "path": "world/mobile.html",
+      "beforeSHA256": "e0cf365db404a9245d90bf4c491e3e044db1b8083c143a479333e7c891fa046b",
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "bytes": 10025
+    },
+    {
+      "path": "world/desktop.html",
+      "beforeSHA256": "e0cf365db404a9245d90bf4c491e3e044db1b8083c143a479333e7c891fa046b",
+      "sha256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "bytes": 10025
+    },
+    {
+      "path": "world/world-bootstrap.js",
+      "beforeSHA256": null,
+      "sha256": "046c9935e01001ab6295666a986702c3454723e729420151ae7c3f12fdbe0ca9",
+      "bytes": 348
+    },
+    {
+      "path": "world/app-shell.mjs",
+      "beforeSHA256": "32f048b94c278c2c6508b94377a7dcbaa72686347247b5d08cd4bb9447c24df9",
+      "sha256": "880b9f13d2a26928c3c98d49ba0e8b87d3d3a4407950948658f2f6757f74ec04",
+      "bytes": 42172
+    },
+    {
+      "path": "world/world-account.bundle.mjs",
+      "beforeSHA256": "d3d3b8b8449240281eb7db0ecd1f61df38f27557cea8521d1befed6fcfe7816f",
+      "sha256": "d646cf1883baee21a8bc6cfc91496cd16bbe8dd14e68ed510d855225ffe0bd54",
+      "bytes": 626962
+    }
+  ],
+  "publishedAt": "2026-10-11T16:09:14.213Z"
+}

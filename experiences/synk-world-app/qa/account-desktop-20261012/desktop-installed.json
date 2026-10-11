@@ -1,0 +1,307 @@
+{
+  "at": "2026-10-11T16:14:45.607Z",
+  "ok": true,
+  "installedVersion": "0.4.2",
+  "installed": "C:\\Users\\q1212\\AppData\\Local\\Programs\\SYNKWorldPreview",
+  "files": [
+    {
+      "path": "LICENSE.electron.txt",
+      "match": true
+    },
+    {
+      "path": "LICENSES.chromium.html",
+      "match": true
+    },
+    {
+      "path": "SYNKWorldPreview.exe",
+      "match": true
+    },
+    {
+      "path": "chrome_100_percent.pak",
+      "match": true
+    },
+    {
+      "path": "chrome_200_percent.pak",
+      "match": true
+    },
+    {
+      "path": "d3dcompiler_47.dll",
+      "match": true
+    },
+    {
+      "path": "dxcompiler.dll",
+      "match": true
+    },
+    {
+      "path": "dxil.dll",
+      "match": true
+    },
+    {
+      "path": "ffmpeg.dll",
+      "match": true
+    },
+    {
+      "path": "icudtl.dat",
+      "match": true
+    },
+    {
+      "path": "locales/af.pak",
+      "match": true
+    },
+    {
+      "path": "locales/am.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ar.pak",
+      "match": true
+    },
+    {
+      "path": "locales/bg.pak",
+      "match": true
+    },
+    {
+      "path": "locales/bn.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ca.pak",
+      "match": true
+    },
+    {
+      "path": "locales/cs.pak",
+      "match": true
+    },
+    {
+      "path": "locales/da.pak",
+      "match": true
+    },
+    {
+      "path": "locales/de.pak",
+      "match": true
+    },
+    {
+      "path": "locales/el.pak",
+      "match": true
+    },
+    {
+      "path": "locales/en-GB.pak",
+      "match": true
+    },
+    {
+      "path": "locales/en-US.pak",
+      "match": true
+    },
+    {
+      "path": "locales/es-419.pak",
+      "match": true
+    },
+    {
+      "path": "locales/es.pak",
+      "match": true
+    },
+    {
+      "path": "locales/et.pak",
+      "match": true
+    },
+    {
+      "path": "locales/fa.pak",
+      "match": true
+    },
+    {
+      "path": "locales/fi.pak",
+      "match": true
+    },
+    {
+      "path": "locales/fil.pak",
+      "match": true
+    },
+    {
+      "path": "locales/fr.pak",
+      "match": true
+    },
+    {
+      "path": "locales/gu.pak",
+      "match": true
+    },
+    {
+      "path": "locales/he.pak",
+      "match": true
+    },
+    {
+      "path": "locales/hi.pak",
+      "match": true
+    },
+    {
+      "path": "locales/hr.pak",
+      "match": true
+    },
+    {
+      "path": "locales/hu.pak",
+      "match": true
+    },
+    {
+      "path": "locales/id.pak",
+      "match": true
+    },
+    {
+      "path": "locales/it.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ja.pak",
+      "match": true
+    },
+    {
+      "path": "locales/kn.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ko.pak",
+      "match": true
+    },
+    {
+      "path": "locales/lt.pak",
+      "match": true
+    },
+    {
+      "path": "locales/lv.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ml.pak",
+      "match": true
+    },
+    {
+      "path": "locales/mr.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ms.pak",
+      "match": true
+    },
+    {
+      "path": "locales/nb.pak",
+      "match": true
+    },
+    {
+      "path": "locales/nl.pak",
+      "match": true
+    },
+    {
+      "path": "locales/pl.pak",
+      "match": true
+    },
+    {
+      "path": "locales/pt-BR.pak",
+      "match": true
+    },
+    {
+      "path": "locales/pt-PT.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ro.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ru.pak",
+      "match": true
+    },
+    {
+      "path": "locales/sk.pak",
+      "match": true
+    },
+    {
+      "path": "locales/sl.pak",
+      "match": true
+    },
+    {
+      "path": "locales/sr.pak",
+      "match": true
+    },
+    {
+      "path": "locales/sv.pak",
+      "match": true
+    },
+    {
+      "path": "locales/sw.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ta.pak",
+      "match": true
+    },
+    {
+      "path": "locales/te.pak",
+      "match": true
+    },
+    {
+      "path": "locales/th.pak",
+      "match": true
+    },
+    {
+      "path": "locales/tr.pak",
+      "match": true
+    },
+    {
+      "path": "locales/uk.pak",
+      "match": true
+    },
+    {
+      "path": "locales/ur.pak",
+      "match": true
+    },
+    {
+      "path": "locales/vi.pak",
+      "match": true
+    },
+    {
+      "path": "locales/zh-CN.pak",
+      "match": true
+    },
+    {
+      "path": "locales/zh-TW.pak",
+      "match": true
+    },
+    {
+      "path": "resources.pak",
+      "match": true
+    },
+    {
+      "path": "resources/app.asar",
+      "match": true
+    },
+    {
+      "path": "resources/elevate.exe",
+      "match": true
+    },
+    {
+      "path": "resources/synk-install.json",
+      "match": true
+    },
+    {
+      "path": "snapshot_blob.bin",
+      "match": true
+    },
+    {
+      "path": "v8_context_snapshot.bin",
+      "match": true
+    },
+    {
+      "path": "vk_swiftshader.dll",
+      "match": true
+    },
+    {
+      "path": "vk_swiftshader_icd.json",
+      "match": true
+    },
+    {
+      "path": "vulkan-1.dll",
+      "match": true
+    }
+  ],
+  "profileUnchanged": true,
+  "platformUnchanged": true,
+  "installerSHA256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f"
+}

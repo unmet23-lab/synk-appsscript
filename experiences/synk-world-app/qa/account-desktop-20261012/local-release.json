@@ -1,0 +1,14 @@
+{
+  "id": "world",
+  "mode": "development",
+  "platform": "win32",
+  "arch": "x64",
+  "version": "0.4.2",
+  "executableSHA256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+  "asarSHA256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f",
+  "installer": {
+    "relativePath": "preview/win32/x64/world/SYNK WORLD Preview-0.4.2-win-x64.exe",
+    "sha256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f",
+    "bytes": 132344543
+  }
+}

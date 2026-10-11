@@ -1,0 +1,24 @@
+{
+  "files": [
+    {
+      "path": "src/catalog.cjs",
+      "sha256": "efbbd5886e3355847391f776ddae4d242ec91720aa4fdb75f9b779fd88966843"
+    },
+    {
+      "path": "src/security.cjs",
+      "sha256": "9d928724f5f8b9addd6a6c94a56b174cffca5498337b057a023232c3651adb12"
+    },
+    {
+      "path": "src/world-requests.cjs",
+      "sha256": "ffb6ce2160be290b7bb48ef4821b6e3d177179e6a47e036e483bf55e465d6933"
+    },
+    {
+      "path": "src/account-requests.cjs",
+      "sha256": "6b542c80abb04facbc6cc76e56dc7147a2c6c03d33f324c2f9b7bf497f0537ae"
+    },
+    {
+      "path": "src/auth-service.cjs",
+      "sha256": "fd76864c94c9d7aad5bba6dad7ce7cf50c830b01d1dbbc07adb3880ec9229134"
+    }
+  ]
+}

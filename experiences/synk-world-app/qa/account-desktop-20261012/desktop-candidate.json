@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "version": "0.4.2",
+  "preparedAt": "2026-10-11T16:00:21.042Z",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload",
+  "stage": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\stage",
+  "entry": "https://synk.im/world/",
+  "executable": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload\\SYNKWorldPreview.exe",
+    "sha256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+    "before": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+    "after": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+    "fileVersion": "0.4.2.0",
+    "nonVersionResourcesUnchanged": 54,
+    "codeDataSectionsUnchanged": 14
+  },
+  "asar": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload\\resources\\app.asar",
+    "sha256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f",
+    "files": 103
+  },
+  "sourceHash": "6f55c22c747e9b9582a4036b6b5853eb77b2a5cb0d11aed0135d5eb5d3267cd0",
+  "changedMembers": [
+    "package.json",
+    "runtime.json",
+    "src/account-requests.cjs",
+    "src/auth-service.cjs",
+    "src/catalog.cjs",
+    "src/security.cjs",
+    "src/world-requests.cjs"
+  ],
+  "authConfigurationPreserved": true,
+  "sessionScopePreserved": true,
+  "priorInputsPreserved": true,
+  "platformUntouched": true,
+  "userProfilesTouched": false,
+  "installerExecuted": false
+}

@@ -1,0 +1,241 @@
+{
+  "createdAt": "2026-10-11T15:59:57.999Z",
+  "sourceCommit": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+  "publicCommit": "7e86605a5f045f97b16262517e26d6e2411ab6f3",
+  "esbuildVersion": "0.28.2",
+  "inputs": [
+    {
+      "path": "atlas/ask.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd",
+      "bytes": 12003
+    },
+    {
+      "path": "atlas/education.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "204e3d3f499aa5467ccf6dac88626f36800a9f50ade0de88c866faa5dd36ca98",
+      "bytes": 4818
+    },
+    {
+      "path": "atlas/engine.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "80e6c7048b52cab4efa8e752367e7985147228b5afec30f289f5b901dc9abc29",
+      "bytes": 35540
+    },
+    {
+      "path": "atlas/flow.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "d8b0dc765d00afd713b18b73c3898300a783c39712adbaf84924251bd76f6e32",
+      "bytes": 31875
+    },
+    {
+      "path": "atlas/game-browser.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "e370dcec9b1cfe6679c9289f31035a9a6ffde2c7bf38bb2a7ba9554fad88516d",
+      "bytes": 2167
+    },
+    {
+      "path": "atlas/game-flow.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "2e22198956ef801a3db6ba012609823fba09935423e046cab54e305ff6a22dca",
+      "bytes": 13757
+    },
+    {
+      "path": "atlas/game-learning.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "2ef932958c8ac65f936d5a95b59f0aa589640bd978a0bb9c92b2e0d48acd58f6",
+      "bytes": 37317
+    },
+    {
+      "path": "atlas/learning-ledger.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "52cd87f2588c392bfe4dd9a13b8dceb00ffbc2b8fc540efa00d6c921bca6ee2f",
+      "bytes": 14472
+    },
+    {
+      "path": "atlas/learning-sync.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "eba554f51374816fddd27e37ceb79e14f80a0e0450decd9e15b16a720412cf09",
+      "bytes": 15426
+    },
+    {
+      "path": "atlas/learning.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "2d6df3f4e74ba0534cf0d130da7cc412bfa68c686bb0232c23c7bd30562f4858",
+      "bytes": 11714
+    },
+    {
+      "path": "atlas/memory-sync.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "c3af481180851e852ea16bb39bbacdca504e4f008f1bb46860ae59c3cdb39bfd",
+      "bytes": 9453
+    },
+    {
+      "path": "atlas/temper-flow.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "467f03b4ac70ee34460574898c6f09e1e8bc79fe41ced4a1030c59fd463d096b",
+      "bytes": 11976
+    },
+    {
+      "path": "atlas/temper.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "4acecdcf612eba10d6815cbfe6483a2280958cb780600375bc4f965028af2bd8",
+      "bytes": 10597
+    },
+    {
+      "path": "atlas/trail.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "6e2124aa37ab3d09e47e1ca8cc35a1240d3ee77930daffb3ca910d6bfb799ffc",
+      "bytes": 30475
+    },
+    {
+      "path": "atlas/vellum-flow.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "49f0a98e405f1fa75a16e8c2e8ea1678ab1c4958f24bb209c7fc239c5bad76f6",
+      "bytes": 6438
+    },
+    {
+      "path": "atlas/vellum.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "8843fa1b034418f280e82bf356ce617587a744c6c9b81a84408d3e459ec740a6",
+      "bytes": 3778
+    },
+    {
+      "path": "experiences/korean-racing/beginner-catalog.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "475824940cc6644a3495d55c06145efca5e40c0d36d0315076c2c3094da463c8",
+      "bytes": 4331
+    },
+    {
+      "path": "experiences/korean-racing/garage-core.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "4b978e3ee01d9f689c384fc1d9ddba271a5c8268f241af0ae37966a68256f52e",
+      "bytes": 18066
+    },
+    {
+      "path": "experiences/korean-racing/play-catalog.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "c8cb4bbf6fb2bdd0136c6327c64ad91bd87e097528bb9f27efc55bd3576168ae",
+      "bytes": 26817
+    },
+    {
+      "path": "experiences/play-common/account-host.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "d604f0fb5ecee5c80844ae3aa1eb12c11990fa1ab81819b0205db374b64c2b86",
+      "bytes": 12794
+    },
+    {
+      "path": "experiences/play-common/play-data.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "0fa9956df184c8499b8d7675bf95d34b88604337f18847c07f6c361e0d54d9f9",
+      "bytes": 4148
+    },
+    {
+      "path": "experiences/synk-account/src/core.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "77e621f6d4418d7320d343af778f65e707e38a27132fe327ea2f2e5406e2a748",
+      "bytes": 11570
+    },
+    {
+      "path": "experiences/synk-account/src/desktop-account.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "124ec92c0090803373513d84e5cd07e8f42abd37bc0c06a2fbe8655653301f03",
+      "bytes": 4262
+    },
+    {
+      "path": "experiences/synk-account/src/generated/account-client.cjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "00ff815ead84ef74c24bf1101c1c48bf7723914377e5fad6e6be27705088c922",
+      "bytes": 10288
+    },
+    {
+      "path": "experiences/synk-account/src/generated/world-learning-host.cjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "8bcfb74531e65fdc960794546c1c79dd459ec57bee93fddb79c0bab1c478f977",
+      "bytes": 15127
+    },
+    {
+      "path": "experiences/synk-account/src/platform-entry.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "40c97bc8010d1175c9dc3734c5f2beab205a554ef5b7c4a51fef66d5bdfbefb4",
+      "bytes": 6112
+    },
+    {
+      "path": "experiences/synk-world-app/life-progress-port.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "c918154fb94908f754ff0836fd9c374f5a7cb49541cadd17e2c001726083b572",
+      "bytes": 6067
+    },
+    {
+      "path": "experiences/synk-world-app/operating-mode.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "44383450f6f757a28ce49e93dda5ca4bd7925dc3df4b820c56aad35863f96402",
+      "bytes": 1275
+    },
+    {
+      "path": "experiences/synk-world-app/world-account.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "33dc7ae09f8eec7187daad15418b6b46fe67ba4b42842263cf21685e39fecf0e",
+      "bytes": 15283
+    },
+    {
+      "path": "experiences/synk-world-app/world-game-host.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "e33b3b153ea0be6b44d34e0dafeae5f30ff87a43569c2acd68370eed8629f036",
+      "bytes": 3434
+    },
+    {
+      "path": "strata/index.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "dd649e0946b87ff9ad5e39545a52b76a1d9a87e5abcc17e1a60bf36482e56584",
+      "bytes": 9027
+    },
+    {
+      "path": "strata/maps/topik-i.json",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "4a329f7fe279a0998a5c4d717d9cb93bc0334a5f312352e69150b635786f4b68",
+      "bytes": 78839
+    },
+    {
+      "path": "strata/topik-i.js",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "312ae152f4e29d98fff136b3bbb013993ad1bbde4f2f11c94e1732391d266c96",
+      "bytes": 883
+    },
+    {
+      "path": "strata/topik-i.words.json",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "3ff79fba027771bc8ccf12434a2c630f550df730eb79fe2f8b716bcb9f7b3347",
+      "bytes": 97549
+    },
+    {
+      "path": "tools/build-world-account.mjs",
+      "source": "69f96bd64fcf135d04f643a1f51f4b5d70d062c5",
+      "sha256": "5fb415978359dcf0a60447adab484417a7ab9a41844350feb21ff51cc8819da1",
+      "bytes": 961
+    }
+  ],
+  "overlay": {
+    "path": "experiences/synk-world-app/world-account.mjs",
+    "baseSha256": "33dc7ae09f8eec7187daad15418b6b46fe67ba4b42842263cf21685e39fecf0e",
+    "sha256": "c7b4aed5cfbd8f3117b9ffee944df64dd6c4fc6f1674fd126fd40fe8bb398bbb",
+    "bytes": 19079
+  },
+  "baseline": {
+    "sha256": "9b43b972c949d44cc249d68a9943c96ac15c8fd861045b4f9897f1dec309e676",
+    "bytes": 620265,
+    "matchesPublic": true,
+    "matchesPublicNormalized": true,
+    "matchesTracked": true
+  },
+  "public": {
+    "sha256": "9b43b972c949d44cc249d68a9943c96ac15c8fd861045b4f9897f1dec309e676",
+    "bytes": 620265
+  },
+  "candidate": {
+    "sha256": "d646cf1883baee21a8bc6cfc91496cd16bbe8dd14e68ed510d855225ffe0bd54",
+    "bytes": 626962,
+    "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\tutor-account-desktop-20261012\\world-account.bundle.mjs"
+  },
+  "onlyFrozenHeadPlusOwnAdapter": true
+}

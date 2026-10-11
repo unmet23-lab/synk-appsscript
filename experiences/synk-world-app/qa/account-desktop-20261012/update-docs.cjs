@@ -1,0 +1,14 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
+const work=path.resolve('.tmp/tutor-account-desktop-20261012'),edits=[];
+const world='\n## 2026-10-12 실제 계정 저장 · PC WORLD 0.4.2\n\n실제 SYNK ID로 까몽 선택·첫 인사 완료·로그아웃/재로그인 복원을 확인했다. 운영 생활 기록 허용 키를 보완하고, PC WORLD 0.4.2와 플랫폼의 실행 등록을 이 PC에 반영했다. 튜터 선택은 기기 안 계정별 저장이고 생활 진도는 계정 서버에 저장된다. [검증 결과와 남은 범위](qa/account-desktop-20261012/README.md).\n';
+const desktop='\n## 2026-10-12 이 PC의 튜터 홈 · WORLD 0.4.2\n\n이 PC의 WORLD를 공개 튜터 홈에 연결한 0.4.2로 설치했다. 플랫폼 0.4.0의 WORLD 등록 목록과 포함 설치 파일도 갱신했으며 기존 플랫폼/PULSE 코드와 사용자 프로필을 보존했다. 홈페이지의 공개 설치 파일은 여전히 0.4.1이다. 실제 계정 저장·재로그인은 공개 웹에서 확인했고, PC 패키지는 격리 프로필의 실제 네이티브 화면을 확인했다. [설치·계정 검증](../experiences/synk-world-app/qa/account-desktop-20261012/README.md).\n';
+const add=(file,transform)=>{const current=fs.readFileSync(file,'utf8'),head=execFileSync('git',['show','HEAD:'+file],{encoding:'utf8',maxBuffer:8e6});fs.writeFileSync(file,transform(current));edits.push({path:file,headContent:transform(head)});};
+const prepend=section=>text=>text.replace(/^(#[^\r\n]+)\r?\n/,`$1\n${section}`);
+add('experiences/synk-world-app/README.md',prepend(world));add('desktop/README.md',prepend(desktop));
+const old='남은 범위는 실물 휴대폰·실제 계정 재로그인/서버 저장·PC 설치본이며, 다른 작업의 미커밋 변경은 유지한다.';
+const next='10-12 후속으로 실제 계정 로그인·첫 인사 저장·재로그인 복원과 이 PC WORLD 0.4.2 설치를 확인했다. 운영 생활 기록 허용 키와 PC 계정 연결·플랫폼 실행 등록을 보완했다. [계정·설치 결과](../../experiences/synk-world-app/qa/account-desktop-20261012/README.md). 남은 범위는 실물 휴대폰·다른 PC와 PC 앱의 실제 계정 왕복이며, 튜터 선택은 기기 안 계정별 저장이다.';
+add('docs/_ops/트랙.md',text=>{if(!text.includes(old))throw Error('Track section moved');return text.replace(old,next);});
+const decision='| 2026-10-12 | 반영 | [튜터 실제 계정·이 PC] 생활 진도 허용 키 누락을 운영 synk-play v10에 한 줄로 보완하고 실제 로그인·첫 인사 완료·재로그인 복원을 확인했다. 이 PC WORLD 0.4.2와 플랫폼의 WORLD 해시 등록을 적용했다. 튜터 선택은 기기 안 계정별, 생활 진도는 계정 서버 저장이다. | 사용자 「실제 계정으로 로그인했을 때 튜터 선택이랑 학습 기록이 저장되는지도 확인하고, PC 설치본에도 반영」. [검증과 범위](../../experiences/synk-world-app/qa/account-desktop-20261012/README.md). |\n';
+add('docs/_ops/결정.md',text=>{const index=text.indexOf('| 2026-');if(index<0)throw Error('Decision rows missing');return text.slice(0,index)+decision+text.slice(index);});
+fs.writeFileSync(path.join(work,'own-docs.json'),JSON.stringify(edits,null,2));console.log(JSON.stringify({updated:edits.map(e=>e.path),unrelatedWorkingCopyEditsPreserved:true}));
