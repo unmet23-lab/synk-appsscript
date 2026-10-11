@@ -124,3 +124,9 @@
 @media(max-width:700px){:root:not([data-text-size=large]) .connection-result input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]){font-size:22px!important}}
 /* 높은 대비 모드: 입력·단추 초점을 윤곽선으로 */
 @media(forced-colors:active){:root :is(input:not([type=checkbox]):not([type=radio]),select,textarea):focus,:root :is(button,a,summary,input,[tabindex]):focus-visible{outline:2px solid Highlight!important;outline-offset:2px}}
+/* 로그인 없이 주소로 직접 연 화면(app.mjs가 data-ready="workspace-entry"로 둔다): 비어 있는 반 선택·메뉴는 숨기고 안내만 둔다 */
+:root[data-ready="workspace-entry"] :is(.sidebar nav,.sidebar label.field-label,#class-select){display:none}
+:root[data-ready="workspace-entry"] #loading{margin-top:28px}
+:root[data-ready="workspace-entry"] #loading p{margin:0}
+:root[data-ready="workspace-entry"] #loading p+p{margin-top:18px}
+@media(max-width:820px){:root[data-ready="workspace-entry"] .topbar{display:none}}

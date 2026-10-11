@@ -57,6 +57,13 @@ function clearSession(message='교사 연결을 종료했어요.'){
   for(const dialog of document.querySelectorAll('dialog[open]'))dialog.close();
   $('world-link-result').hidden=true;$('teacher-key').value='';$('teacher-session').hidden=false;$('teacher-session-error').textContent=message;document.documentElement.dataset.ready='auth';
 }
+// workspace.synk.im 주소로 직접 열면 이 서버의 /api/workspace는 회사 업무 자료라 로그인 없이는 401이다.
+// 수업은 「내 수업」 탭의 SYNK ID 연결 안에서만 열리므로, 오류 대신 그 탭으로 가는 길을 안내한다.
+function showWorkspaceEntry(){
+  for(const id of ['summary','view-students','view-assignments','view-review','world-connections','teacher-session','teacher-logout','personalization-button','mode-note','mode-badge','refresh'])$(id).hidden=true;
+  $('loading').hidden=false;$('loading').innerHTML='<p>내 수업은 SYNK Workspace의 「내 수업」 탭에서 열려요.</p><p><a class="felt-button primary" id="open-workspace" href="/?tab=teaching" target="_top">내 수업 열기</a></p>';
+  document.documentElement.dataset.ready='workspace-entry';
+}
 function setMode(){
   if(accountRequested){$('mode-badge').textContent='SYNK ID · 수업 연결';$('mode-note').textContent='서버가 확인한 담당 반의 공유된 학습 기록과 과제입니다. 학생의 공유 상태와 교사 권한을 요청할 때마다 확인해요.';for(const id of ['personalization-button','world-connections','teacher-logout','teacher-session'])$(id).hidden=true;return;}
   $('mode-badge').textContent=linked?'WORLD 연결 · 로컬 MVP':'예시 데이터 · 로컬 MVP';
@@ -125,7 +132,7 @@ async function start(){
   }catch(error){$('loading').textContent=error.message;document.documentElement.dataset.ready='error';}return;}
   const initial=new URL(location.href),key=new URLSearchParams(initial.hash.slice(1)).get('teacher-key');
   if(key){initial.hash='';history.replaceState(null,'',initial.pathname+initial.search);}
-  try{const response=await fetch('/api/health',{cache:'no-store'}),health=await response.json();if(!response.ok)throw Error('교사 연결 상태를 확인하지 못했어요.');linked=health.mode==='local-linked';setMode();
+  try{const response=await fetch('/api/health',{cache:'no-store'}),health=await response.json();if(!response.ok)throw Error('교사 연결 상태를 확인하지 못했어요.');if(health.app==='synk-company'){showWorkspaceEntry();return;}linked=health.mode==='local-linked';setMode();
     if(linked){teacherToken=tokenStorage.get();if(key){await openSession(key);return;}if(!teacherToken){clearSession('');return;}}
     await load();
   }catch(error){if(linked)clearSession(error.message);else{$('loading').textContent=error.message;document.documentElement.dataset.ready='error';}}
