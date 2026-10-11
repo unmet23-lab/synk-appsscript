@@ -1,0 +1,840 @@
+{
+  "commit": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+  "checkedAt": "2026-10-11T19:49:43.017Z",
+  "passed": 104,
+  "total": 104,
+  "files": [
+    {
+      "path": "world/app-shell.mjs",
+      "status": 200,
+      "bytes": 46161,
+      "expectedSha256": "452ff44e7de472888c357cdd4fc637a5d9b12489fae518f15464b2c3c7bcba92",
+      "actualSha256": "452ff44e7de472888c357cdd4fc637a5d9b12489fae518f15464b2c3c7bcba92",
+      "pass": true
+    },
+    {
+      "path": "world/app.mjs",
+      "status": 200,
+      "bytes": 21596,
+      "expectedSha256": "85cf9afbf4897d54ce7e01c4f0647e658a517bcbf3807a9692d0e77c758724d8",
+      "actualSha256": "85cf9afbf4897d54ce7e01c4f0647e658a517bcbf3807a9692d0e77c758724d8",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/corduroy-detail-colour.png",
+      "status": 200,
+      "bytes": 207839,
+      "expectedSha256": "edc9f2cf28ccaa319ed4430a8ead2b4b63c394bf09cfe0d8cf7bced24de0590f",
+      "actualSha256": "edc9f2cf28ccaa319ed4430a8ead2b4b63c394bf09cfe0d8cf7bced24de0590f",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/corduroy-detail-direction.png",
+      "status": 200,
+      "bytes": 24687,
+      "expectedSha256": "2f7db83f3fdc5c7d51466504ec570e08d53e2fd9b90b7c42825394bdb349dcf6",
+      "actualSha256": "2f7db83f3fdc5c7d51466504ec570e08d53e2fd9b90b7c42825394bdb349dcf6",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/corduroy-detail-normal.png",
+      "status": 200,
+      "bytes": 1099568,
+      "expectedSha256": "3b06a5d361bc5841e0b7f7899e0941057bd0e6019cf8bb587ff0318f1305272c",
+      "actualSha256": "3b06a5d361bc5841e0b7f7899e0941057bd0e6019cf8bb587ff0318f1305272c",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/corduroy-detail-properties.png",
+      "status": 200,
+      "bytes": 435123,
+      "expectedSha256": "a3a2bac4e48c1659dc7da3239e1c3c4658af7266550ab58e942e3abcbae029df",
+      "actualSha256": "a3a2bac4e48c1659dc7da3239e1c3c4658af7266550ab58e942e3abcbae029df",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/cotton-detail-colour.png",
+      "status": 200,
+      "bytes": 321207,
+      "expectedSha256": "ed068893e395214d9ae6eb42cdd1dbbde1b13ff06f86047729841e849b7c844c",
+      "actualSha256": "ed068893e395214d9ae6eb42cdd1dbbde1b13ff06f86047729841e849b7c844c",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/cotton-detail-direction.png",
+      "status": 200,
+      "bytes": 24687,
+      "expectedSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "actualSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/cotton-detail-normal.png",
+      "status": 200,
+      "bytes": 840300,
+      "expectedSha256": "2b2f3d880a46d49841d0e567072ce9cc08b8bb00307d7ec85ffe5a94a69de345",
+      "actualSha256": "2b2f3d880a46d49841d0e567072ce9cc08b8bb00307d7ec85ffe5a94a69de345",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/cotton-detail-properties.png",
+      "status": 200,
+      "bytes": 508545,
+      "expectedSha256": "62b2b3194d61c80531db14fd3d6c419c9fb9b8eba9b109f637c132033cf60c18",
+      "actualSha256": "62b2b3194d61c80531db14fd3d6c419c9fb9b8eba9b109f637c132033cf60c18",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/denim-detail-colour.png",
+      "status": 200,
+      "bytes": 409493,
+      "expectedSha256": "3f387ad57fd9601b3d55e8f561353dedc1c1ac9bba2798a4a47a7ab48dbf7ba9",
+      "actualSha256": "3f387ad57fd9601b3d55e8f561353dedc1c1ac9bba2798a4a47a7ab48dbf7ba9",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/denim-detail-direction.png",
+      "status": 200,
+      "bytes": 24691,
+      "expectedSha256": "214ce099a9b8e9dc13476cbc2724bb05304966938b6679efd8243d5ffbe12131",
+      "actualSha256": "214ce099a9b8e9dc13476cbc2724bb05304966938b6679efd8243d5ffbe12131",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/denim-detail-normal.png",
+      "status": 200,
+      "bytes": 1554654,
+      "expectedSha256": "14c8d5829a52dfe213cd32b02a0c6d0fc6de32078f0ceaa61ec330d3b2485a40",
+      "actualSha256": "14c8d5829a52dfe213cd32b02a0c6d0fc6de32078f0ceaa61ec330d3b2485a40",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/denim-detail-properties.png",
+      "status": 200,
+      "bytes": 753257,
+      "expectedSha256": "21944e581f3a692a4c6ce3349902709ddd56323f97e23a830bdc027abb8a5e86",
+      "actualSha256": "21944e581f3a692a4c6ce3349902709ddd56323f97e23a830bdc027abb8a5e86",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/knit-detail-colour.png",
+      "status": 200,
+      "bytes": 481903,
+      "expectedSha256": "cc34e9b05fc33fd0a3a12df14b8882a25a41ce2a96a4099735ddc1af8e6ec7d5",
+      "actualSha256": "cc34e9b05fc33fd0a3a12df14b8882a25a41ce2a96a4099735ddc1af8e6ec7d5",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/knit-detail-normal.png",
+      "status": 200,
+      "bytes": 1730890,
+      "expectedSha256": "3ef4def1c88147e460e1259e73d8783687a6111ea84b3edac19c65279c3c649e",
+      "actualSha256": "3ef4def1c88147e460e1259e73d8783687a6111ea84b3edac19c65279c3c649e",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/knit-detail-properties.png",
+      "status": 200,
+      "bytes": 653004,
+      "expectedSha256": "c3897eccf7a7b14793417e22f6e756d109d10495d279606ab2fcf6abe73dc127",
+      "actualSha256": "c3897eccf7a7b14793417e22f6e756d109d10495d279606ab2fcf6abe73dc127",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/linen-detail-colour.png",
+      "status": 200,
+      "bytes": 364268,
+      "expectedSha256": "67cda0fa2bc283027cb0b4b55bda42dbc27c797171ca8ea3f535309c331061a8",
+      "actualSha256": "67cda0fa2bc283027cb0b4b55bda42dbc27c797171ca8ea3f535309c331061a8",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/linen-detail-direction.png",
+      "status": 200,
+      "bytes": 26239,
+      "expectedSha256": "7341cf4b7cf82249aa244d3db8102d98b476d4bac664141bc1db8c946696b974",
+      "actualSha256": "7341cf4b7cf82249aa244d3db8102d98b476d4bac664141bc1db8c946696b974",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/linen-detail-normal.png",
+      "status": 200,
+      "bytes": 1690361,
+      "expectedSha256": "c33dd40ddaac2676752f31c5682f0c2696a21ffddca1f91545c3f318811a95ff",
+      "actualSha256": "c33dd40ddaac2676752f31c5682f0c2696a21ffddca1f91545c3f318811a95ff",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/linen-detail-properties.png",
+      "status": 200,
+      "bytes": 638344,
+      "expectedSha256": "42eb761033849669c5628f787f6a37aeef5bec4884bca636a4d9c97ed90760b5",
+      "actualSha256": "42eb761033849669c5628f787f6a37aeef5bec4884bca636a4d9c97ed90760b5",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/quilted-detail-colour.png",
+      "status": 200,
+      "bytes": 219020,
+      "expectedSha256": "42b8a072ab93045c74059f3fe8ccadec1139a32d0eee78669edcc6eea2a9b5ec",
+      "actualSha256": "42b8a072ab93045c74059f3fe8ccadec1139a32d0eee78669edcc6eea2a9b5ec",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/quilted-detail-normal.png",
+      "status": 200,
+      "bytes": 914439,
+      "expectedSha256": "2d483bd5d2c95d7f28697d28ddd715ca944ef94e76966e0360e48133f0a6ba98",
+      "actualSha256": "2d483bd5d2c95d7f28697d28ddd715ca944ef94e76966e0360e48133f0a6ba98",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/quilted-detail-properties.png",
+      "status": 200,
+      "bytes": 531504,
+      "expectedSha256": "b5da2cfffdfd0f07e1a2b110897e4ccf44eb85602951032cc52f434428dde5f8",
+      "actualSha256": "b5da2cfffdfd0f07e1a2b110897e4ccf44eb85602951032cc52f434428dde5f8",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/silk-detail-colour.png",
+      "status": 200,
+      "bytes": 179216,
+      "expectedSha256": "e7425ec9942b09c30df304022e410e7a1a0e5cb9f0aa90e6b594327618da0237",
+      "actualSha256": "e7425ec9942b09c30df304022e410e7a1a0e5cb9f0aa90e6b594327618da0237",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/silk-detail-direction.png",
+      "status": 200,
+      "bytes": 24687,
+      "expectedSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "actualSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/silk-detail-normal.png",
+      "status": 200,
+      "bytes": 426462,
+      "expectedSha256": "495fbf06dc99b594978ebae605ad8819ab5f418993ff220ebd5ea6b7a8477695",
+      "actualSha256": "495fbf06dc99b594978ebae605ad8819ab5f418993ff220ebd5ea6b7a8477695",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/silk-detail-properties.png",
+      "status": 200,
+      "bytes": 332917,
+      "expectedSha256": "32ae4583a688653a7953df786aaf87721f59b2054a53591eb96c48bd925782dd",
+      "actualSha256": "32ae4583a688653a7953df786aaf87721f59b2054a53591eb96c48bd925782dd",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/velvet-detail-colour.png",
+      "status": 200,
+      "bytes": 49721,
+      "expectedSha256": "e2d2be85c19ff530eac4e85522c50aa1d801b0ea4c354600a447a28be26a779e",
+      "actualSha256": "e2d2be85c19ff530eac4e85522c50aa1d801b0ea4c354600a447a28be26a779e",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/velvet-detail-direction.png",
+      "status": 200,
+      "bytes": 25977,
+      "expectedSha256": "ae4bc2cef14c31aa3a61b9b8d16138fb37ded4c8d7c9372a3388a7885e707882",
+      "actualSha256": "ae4bc2cef14c31aa3a61b9b8d16138fb37ded4c8d7c9372a3388a7885e707882",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/velvet-detail-normal.png",
+      "status": 200,
+      "bytes": 737107,
+      "expectedSha256": "7e460a968ae77448c4c93473f736e4e02ac9e0736cae036babf5c280f7f899ca",
+      "actualSha256": "7e460a968ae77448c4c93473f736e4e02ac9e0736cae036babf5c280f7f899ca",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/velvet-detail-properties.png",
+      "status": 200,
+      "bytes": 467325,
+      "expectedSha256": "0f3726fc23ee7de8ce5163630afad5e86db20874947fb1d87c4aecc251c42025",
+      "actualSha256": "0f3726fc23ee7de8ce5163630afad5e86db20874947fb1d87c4aecc251c42025",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wax-detail-colour.png",
+      "status": 200,
+      "bytes": 227702,
+      "expectedSha256": "3ea19f22470622cff53bc4064927a19648174f756b7baac29620d0ff278c9e52",
+      "actualSha256": "3ea19f22470622cff53bc4064927a19648174f756b7baac29620d0ff278c9e52",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wax-detail-direction.png",
+      "status": 200,
+      "bytes": 24687,
+      "expectedSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "actualSha256": "d1e299073082c58813bd675ae21b5b66986b88269c046dbf3b5626dfafbcdb28",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wax-detail-normal.png",
+      "status": 200,
+      "bytes": 410287,
+      "expectedSha256": "1742b3727946c85ee17d37691cde056a0f5b8367bc4c87a3e7e5789ef181bb86",
+      "actualSha256": "1742b3727946c85ee17d37691cde056a0f5b8367bc4c87a3e7e5789ef181bb86",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wax-detail-properties.png",
+      "status": 200,
+      "bytes": 338508,
+      "expectedSha256": "6bc4ec57db7205e3ad7db345360c2b42c16bde0f18963f854ef59333bef8b233",
+      "actualSha256": "6bc4ec57db7205e3ad7db345360c2b42c16bde0f18963f854ef59333bef8b233",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wool-felt-detail-colour.png",
+      "status": 200,
+      "bytes": 333036,
+      "expectedSha256": "4215e2670f057b88d191f5d0834fdea5a3d9949bafe49ecbc2f769eb3ada3279",
+      "actualSha256": "4215e2670f057b88d191f5d0834fdea5a3d9949bafe49ecbc2f769eb3ada3279",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wool-felt-detail-normal.png",
+      "status": 200,
+      "bytes": 1626599,
+      "expectedSha256": "ecaa644851f26d6b4e79f5f3b49234a4d7602ba19caea384b4371638e1382e2f",
+      "actualSha256": "ecaa644851f26d6b4e79f5f3b49234a4d7602ba19caea384b4371638e1382e2f",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/1024/wool-felt-detail-properties.png",
+      "status": 200,
+      "bytes": 274356,
+      "expectedSha256": "0f02c35b791f21c0f2a99a6350de757b8c24f41a036acf3642cae128eb5c0f8a",
+      "actualSha256": "0f02c35b791f21c0f2a99a6350de757b8c24f41a036acf3642cae128eb5c0f8a",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/corduroy-detail-colour.png",
+      "status": 200,
+      "bytes": 66131,
+      "expectedSha256": "e0025e82490a2d5eeca447a001b517176278810d95eee65d5240b897d6d49d5f",
+      "actualSha256": "e0025e82490a2d5eeca447a001b517176278810d95eee65d5240b897d6d49d5f",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/corduroy-detail-direction.png",
+      "status": 200,
+      "bytes": 7120,
+      "expectedSha256": "dd5340b157be5552e3fcc24eaa7a2b7d97b6e13de674c49f761cb88c37416cfb",
+      "actualSha256": "dd5340b157be5552e3fcc24eaa7a2b7d97b6e13de674c49f761cb88c37416cfb",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/corduroy-detail-normal.png",
+      "status": 200,
+      "bytes": 322584,
+      "expectedSha256": "d94d632af448c2112cbb56be9164a7a0513c1887e4d8236e585ee4f84844c2f2",
+      "actualSha256": "d94d632af448c2112cbb56be9164a7a0513c1887e4d8236e585ee4f84844c2f2",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/corduroy-detail-properties.png",
+      "status": 200,
+      "bytes": 125067,
+      "expectedSha256": "7f45e38365e604cfd1aab3a3f874b01e6fd178760875a716c2bc5d10fe9579cd",
+      "actualSha256": "7f45e38365e604cfd1aab3a3f874b01e6fd178760875a716c2bc5d10fe9579cd",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/cotton-detail-colour.png",
+      "status": 200,
+      "bytes": 84357,
+      "expectedSha256": "b67fe6e1c631767bde1f74fa2b0cc674b2ca30df4795bb5e9378a37111119460",
+      "actualSha256": "b67fe6e1c631767bde1f74fa2b0cc674b2ca30df4795bb5e9378a37111119460",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/cotton-detail-direction.png",
+      "status": 200,
+      "bytes": 7120,
+      "expectedSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "actualSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/cotton-detail-normal.png",
+      "status": 200,
+      "bytes": 322722,
+      "expectedSha256": "24c33f0ddde2bc25b578d6025d5dc65893ce303a70dc47b9cac0ff8a1b093b74",
+      "actualSha256": "24c33f0ddde2bc25b578d6025d5dc65893ce303a70dc47b9cac0ff8a1b093b74",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/cotton-detail-properties.png",
+      "status": 200,
+      "bytes": 150485,
+      "expectedSha256": "e2cd1f1b825b651b364bec9889e0759c80dd253e4efd4e4be95c320538582ed1",
+      "actualSha256": "e2cd1f1b825b651b364bec9889e0759c80dd253e4efd4e4be95c320538582ed1",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/denim-detail-colour.png",
+      "status": 200,
+      "bytes": 125275,
+      "expectedSha256": "e658b722bd8a9532df9c49a7ec13145caefb7ff64d9f975534a6c609677fb845",
+      "actualSha256": "e658b722bd8a9532df9c49a7ec13145caefb7ff64d9f975534a6c609677fb845",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/denim-detail-direction.png",
+      "status": 200,
+      "bytes": 7123,
+      "expectedSha256": "480c86349766ea9e8946dc5d49802f2defe1d66e16af5e2d0d58581bdad483b5",
+      "actualSha256": "480c86349766ea9e8946dc5d49802f2defe1d66e16af5e2d0d58581bdad483b5",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/denim-detail-normal.png",
+      "status": 200,
+      "bytes": 488523,
+      "expectedSha256": "f9e0deb3b1d7bd6ebd88b64a333fe113498721104fb71a8871fdb53f0e3cb480",
+      "actualSha256": "f9e0deb3b1d7bd6ebd88b64a333fe113498721104fb71a8871fdb53f0e3cb480",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/denim-detail-properties.png",
+      "status": 200,
+      "bytes": 223500,
+      "expectedSha256": "31212d1988d4e6d7fd666df8536b1b9a0ea6a6f53495460f16eb05abd9e3b88c",
+      "actualSha256": "31212d1988d4e6d7fd666df8536b1b9a0ea6a6f53495460f16eb05abd9e3b88c",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/knit-detail-colour.png",
+      "status": 200,
+      "bytes": 131834,
+      "expectedSha256": "e1fd8892fee1329fe0cb1ac4d4516470e7f717e7a8699c40594900b7126366f3",
+      "actualSha256": "e1fd8892fee1329fe0cb1ac4d4516470e7f717e7a8699c40594900b7126366f3",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/knit-detail-normal.png",
+      "status": 200,
+      "bytes": 526764,
+      "expectedSha256": "67c8873add344c3ecfde0ae9c9678059b271a93fd75c37ca8f88123766a934e8",
+      "actualSha256": "67c8873add344c3ecfde0ae9c9678059b271a93fd75c37ca8f88123766a934e8",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/knit-detail-properties.png",
+      "status": 200,
+      "bytes": 229641,
+      "expectedSha256": "ce09a09afdb72fd166f0bbadb12dac01600050566f32b73a8ff99d378940173b",
+      "actualSha256": "ce09a09afdb72fd166f0bbadb12dac01600050566f32b73a8ff99d378940173b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/linen-detail-colour.png",
+      "status": 200,
+      "bytes": 110818,
+      "expectedSha256": "99a8efc198d09fda5b87255e5d16853a1fa3818d1df0aa6f04750444893d8984",
+      "actualSha256": "99a8efc198d09fda5b87255e5d16853a1fa3818d1df0aa6f04750444893d8984",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/linen-detail-direction.png",
+      "status": 200,
+      "bytes": 8063,
+      "expectedSha256": "810802c24b13de67c0caadb60d0b1b9e02b52c92ca4dc40003ff8ab513ab6954",
+      "actualSha256": "810802c24b13de67c0caadb60d0b1b9e02b52c92ca4dc40003ff8ab513ab6954",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/linen-detail-normal.png",
+      "status": 200,
+      "bytes": 493162,
+      "expectedSha256": "3fcda92e1f29f78a4d838dbf8c071558d1e59436342c0a0e10e409ee484b6e0d",
+      "actualSha256": "3fcda92e1f29f78a4d838dbf8c071558d1e59436342c0a0e10e409ee484b6e0d",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/linen-detail-properties.png",
+      "status": 200,
+      "bytes": 205295,
+      "expectedSha256": "f0a1b849932a7720f07d10883ebd0bb5bda2581e4b2ae4a433694a5b7a1cc57b",
+      "actualSha256": "f0a1b849932a7720f07d10883ebd0bb5bda2581e4b2ae4a433694a5b7a1cc57b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/quilted-detail-colour.png",
+      "status": 200,
+      "bytes": 97384,
+      "expectedSha256": "9b4fb97a0b8a20d29fcd59cd8907b4aa09d918d2a0efb16c20df8ac2b358f21b",
+      "actualSha256": "9b4fb97a0b8a20d29fcd59cd8907b4aa09d918d2a0efb16c20df8ac2b358f21b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/quilted-detail-normal.png",
+      "status": 200,
+      "bytes": 328538,
+      "expectedSha256": "5604741043e3938872d8640742bd90e1b0f4c4dd1d6ccfb03771ef8f338f89b5",
+      "actualSha256": "5604741043e3938872d8640742bd90e1b0f4c4dd1d6ccfb03771ef8f338f89b5",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/quilted-detail-properties.png",
+      "status": 200,
+      "bytes": 158575,
+      "expectedSha256": "3f205e3398e25ee35e2a59e8b3c662865e84d4419ae0e7d0b2181a0bc1eea29b",
+      "actualSha256": "3f205e3398e25ee35e2a59e8b3c662865e84d4419ae0e7d0b2181a0bc1eea29b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/silk-detail-colour.png",
+      "status": 200,
+      "bytes": 63789,
+      "expectedSha256": "eecf7e76ff347cc6d76288558de64cc29aee54c139ba16d8269f082b01fa035c",
+      "actualSha256": "eecf7e76ff347cc6d76288558de64cc29aee54c139ba16d8269f082b01fa035c",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/silk-detail-direction.png",
+      "status": 200,
+      "bytes": 7120,
+      "expectedSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "actualSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/silk-detail-normal.png",
+      "status": 200,
+      "bytes": 158634,
+      "expectedSha256": "76c26dfb1b43a83b831fab8af42bf824e3b91af8ffdd902a18d88af2d6945fd4",
+      "actualSha256": "76c26dfb1b43a83b831fab8af42bf824e3b91af8ffdd902a18d88af2d6945fd4",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/silk-detail-properties.png",
+      "status": 200,
+      "bytes": 92664,
+      "expectedSha256": "d80a3ad0f57c2e76ef711aa416114a2209ffc4ade43d4ab21a7d445c7eb6800a",
+      "actualSha256": "d80a3ad0f57c2e76ef711aa416114a2209ffc4ade43d4ab21a7d445c7eb6800a",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/velvet-detail-colour.png",
+      "status": 200,
+      "bytes": 13018,
+      "expectedSha256": "1cc3f2f85e455e8e664e024e5e51a80e3d7169b1c7fc510fdc27cf8e7a038bde",
+      "actualSha256": "1cc3f2f85e455e8e664e024e5e51a80e3d7169b1c7fc510fdc27cf8e7a038bde",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/velvet-detail-direction.png",
+      "status": 200,
+      "bytes": 7842,
+      "expectedSha256": "2767f9ee950ca8ada53f544c11dc25ac8cde1da043034ad1f34c7e9a81e73661",
+      "actualSha256": "2767f9ee950ca8ada53f544c11dc25ac8cde1da043034ad1f34c7e9a81e73661",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/velvet-detail-normal.png",
+      "status": 200,
+      "bytes": 256212,
+      "expectedSha256": "51f65cba8c8ddf6b7e348d2cf2ae02af60f91be949c0bb70ce892fcc0980467e",
+      "actualSha256": "51f65cba8c8ddf6b7e348d2cf2ae02af60f91be949c0bb70ce892fcc0980467e",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/velvet-detail-properties.png",
+      "status": 200,
+      "bytes": 114316,
+      "expectedSha256": "a3949f89d384c97616a86a9903bcb1b98596787054d0f9c33db1670df5c40fef",
+      "actualSha256": "a3949f89d384c97616a86a9903bcb1b98596787054d0f9c33db1670df5c40fef",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wax-detail-colour.png",
+      "status": 200,
+      "bytes": 95651,
+      "expectedSha256": "7c36304381193ea0c7d8d1c67199796030652b3fe5733476d8d231a98625adf3",
+      "actualSha256": "7c36304381193ea0c7d8d1c67199796030652b3fe5733476d8d231a98625adf3",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wax-detail-direction.png",
+      "status": 200,
+      "bytes": 7120,
+      "expectedSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "actualSha256": "9e740885928f0a529374de8073b8df6c5e56314b01ebe21208bb5dcd1170a437",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wax-detail-normal.png",
+      "status": 200,
+      "bytes": 156703,
+      "expectedSha256": "e3d392a93e6beefe49dd51e5d2a28593355cd994e433ff37d34afed8c1960058",
+      "actualSha256": "e3d392a93e6beefe49dd51e5d2a28593355cd994e433ff37d34afed8c1960058",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wax-detail-properties.png",
+      "status": 200,
+      "bytes": 82705,
+      "expectedSha256": "c65334464decfe66f62642aebabf96c29cf00971cbbab330f51ebd329664a271",
+      "actualSha256": "c65334464decfe66f62642aebabf96c29cf00971cbbab330f51ebd329664a271",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wool-felt-detail-colour.png",
+      "status": 200,
+      "bytes": 97788,
+      "expectedSha256": "d8750d44203d68c5a27de15facb45aa1e079dd98157793adbb23091e7851ad15",
+      "actualSha256": "d8750d44203d68c5a27de15facb45aa1e079dd98157793adbb23091e7851ad15",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wool-felt-detail-normal.png",
+      "status": 200,
+      "bytes": 381749,
+      "expectedSha256": "985bfda80447b18fe7b3481b6cfecd513d40aa1a26cc3f27c739978e4cc0729f",
+      "actualSha256": "985bfda80447b18fe7b3481b6cfecd513d40aa1a26cc3f27c739978e4cc0729f",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/512/wool-felt-detail-properties.png",
+      "status": 200,
+      "bytes": 86498,
+      "expectedSha256": "b0c52b697638be9c42d19662231d45ca3de5500ad7cda79def2d3ddc543193c1",
+      "actualSha256": "b0c52b697638be9c42d19662231d45ca3de5500ad7cda79def2d3ddc543193c1",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/cotton-colour.png",
+      "status": 200,
+      "bytes": 114012,
+      "expectedSha256": "1887d7ef29eb4239fb63c74423b3f665043ba7b33aeea7fce198c6d8ed956911",
+      "actualSha256": "1887d7ef29eb4239fb63c74423b3f665043ba7b33aeea7fce198c6d8ed956911",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/cotton-normal.png",
+      "status": 200,
+      "bytes": 357530,
+      "expectedSha256": "ca60d4cadcf04e0795a0f4a6c62ab634e9ec658b6ba7bc81f237ee488ec5cebc",
+      "actualSha256": "ca60d4cadcf04e0795a0f4a6c62ab634e9ec658b6ba7bc81f237ee488ec5cebc",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/cotton-properties.png",
+      "status": 200,
+      "bytes": 115645,
+      "expectedSha256": "78ee334d872fa547d6dbd401f64d7117311758aeac6e9eaf18d0b8893b49a908",
+      "actualSha256": "78ee334d872fa547d6dbd401f64d7117311758aeac6e9eaf18d0b8893b49a908",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/knit-colour.png",
+      "status": 200,
+      "bytes": 166734,
+      "expectedSha256": "53818483b01bd6cd4a4b73736ff0d67f2933bb0cb137faf5cb36dba3ae6bffc3",
+      "actualSha256": "53818483b01bd6cd4a4b73736ff0d67f2933bb0cb137faf5cb36dba3ae6bffc3",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/knit-normal.png",
+      "status": 200,
+      "bytes": 145825,
+      "expectedSha256": "f80a4a247db38e77957af5d4011fc2fd70953cc4aee1f64fa35805542aa93079",
+      "actualSha256": "f80a4a247db38e77957af5d4011fc2fd70953cc4aee1f64fa35805542aa93079",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/knit-properties.png",
+      "status": 200,
+      "bytes": 132752,
+      "expectedSha256": "ba7158ab9e13a09f10277bcae08a1663d651fe405c6bb3fffaa51efa9462d13b",
+      "actualSha256": "ba7158ab9e13a09f10277bcae08a1663d651fe405c6bb3fffaa51efa9462d13b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/manifest.json",
+      "status": 200,
+      "bytes": 13931,
+      "expectedSha256": "18e44ead8fcc1b59d8dac6b9d47eaca2c3902aa1fa59fd5e989216d59b10e36b",
+      "actualSha256": "18e44ead8fcc1b59d8dac6b9d47eaca2c3902aa1fa59fd5e989216d59b10e36b",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/wool-colour.png",
+      "status": 200,
+      "bytes": 213344,
+      "expectedSha256": "f352cfbf4202b4927d6d25d6dc3f2c25481c5853a62549db2b4dc45703d6f427",
+      "actualSha256": "f352cfbf4202b4927d6d25d6dc3f2c25481c5853a62549db2b4dc45703d6f427",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/wool-normal.png",
+      "status": 200,
+      "bytes": 558560,
+      "expectedSha256": "2b835c75fcfd987d7809dad7e6886891fcb27214b845c38365d87366d0d3dd43",
+      "actualSha256": "2b835c75fcfd987d7809dad7e6886891fcb27214b845c38365d87366d0d3dd43",
+      "pass": true
+    },
+    {
+      "path": "world/assets/avatar-textiles-v1/wool-properties.png",
+      "status": 200,
+      "bytes": 27710,
+      "expectedSha256": "1d310d3a303ab24424e0ff140be1e420047230db1215d7b844e9197c2ff1a94d",
+      "actualSha256": "1d310d3a303ab24424e0ff140be1e420047230db1215d7b844e9197c2ff1a94d",
+      "pass": true
+    },
+    {
+      "path": "world/assets/wardrobe-environment-v1.bin.gz",
+      "status": 200,
+      "bytes": 199761,
+      "expectedSha256": "97212225fc8729d9e0dee99dad41c9009a1bdbe1ab0d53093248f254bb7aef57",
+      "actualSha256": "97212225fc8729d9e0dee99dad41c9009a1bdbe1ab0d53093248f254bb7aef57",
+      "pass": true
+    },
+    {
+      "path": "world/avatar-textiles.mjs",
+      "status": 200,
+      "bytes": 19789,
+      "expectedSha256": "5e1795ed9dc9641f1e26e8389d020832e9d272b9c8b8af1050fccf7096bd7925",
+      "actualSha256": "5e1795ed9dc9641f1e26e8389d020832e9d272b9c8b8af1050fccf7096bd7925",
+      "pass": true
+    },
+    {
+      "path": "world/avatar-v3.mjs",
+      "status": 200,
+      "bytes": 16886,
+      "expectedSha256": "2867d50d81832d15a771e5589dd907daabd975028d0e46530ff032a40f9c90cd",
+      "actualSha256": "2867d50d81832d15a771e5589dd907daabd975028d0e46530ff032a40f9c90cd",
+      "pass": true
+    },
+    {
+      "path": "world/avatar-wardrobe.mjs",
+      "status": 200,
+      "bytes": 23526,
+      "expectedSha256": "f796bc7139eb25220e96d215eda78475d19471d30fec3bbacab670614540108d",
+      "actualSha256": "f796bc7139eb25220e96d215eda78475d19471d30fec3bbacab670614540108d",
+      "pass": true
+    },
+    {
+      "path": "world/contact-light-v6.mjs",
+      "status": 200,
+      "bytes": 15851,
+      "expectedSha256": "34b880e683b7c3498baebf19fd80360eeedca67b6b652cc32691d31562393fb1",
+      "actualSha256": "34b880e683b7c3498baebf19fd80360eeedca67b6b652cc32691d31562393fb1",
+      "pass": true
+    },
+    {
+      "path": "world/desktop.html",
+      "status": 200,
+      "bytes": 10031,
+      "expectedSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "actualSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "pass": true
+    },
+    {
+      "path": "world/index.html",
+      "status": 200,
+      "bytes": 10031,
+      "expectedSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "actualSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "pass": true
+    },
+    {
+      "path": "world/mobile.html",
+      "status": 200,
+      "bytes": 10031,
+      "expectedSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "actualSha256": "19760c3bcdbe115ee482598e6f185a6bcb2c1e40d05d382417d5ac114dc0dee3",
+      "pass": true
+    },
+    {
+      "path": "world/scene-v3.mjs",
+      "status": 200,
+      "bytes": 30656,
+      "expectedSha256": "8643abefb6b6a63761a037bc8eeeaeb12ed8774d4a6610fda6dbb19826ba3f05",
+      "actualSha256": "8643abefb6b6a63761a037bc8eeeaeb12ed8774d4a6610fda6dbb19826ba3f05",
+      "pass": true
+    },
+    {
+      "path": "world/shader-preparation.mjs",
+      "status": 200,
+      "bytes": 3754,
+      "expectedSha256": "fac55f86d36e6370388f88a7e6ff6df7f5e7f8018ca8dbffa184a2a20184eed8",
+      "actualSha256": "fac55f86d36e6370388f88a7e6ff6df7f5e7f8018ca8dbffa184a2a20184eed8",
+      "pass": true
+    },
+    {
+      "path": "world/town/day-app.mjs",
+      "status": 200,
+      "bytes": 41689,
+      "expectedSha256": "a972504b90fd9d6934c4d232d6a32101b295528f93c8f5c7f3d5bdbfaa6bba1b",
+      "actualSha256": "a972504b90fd9d6934c4d232d6a32101b295528f93c8f5c7f3d5bdbfaa6bba1b",
+      "pass": true
+    },
+    {
+      "path": "world/town/day-residents.mjs",
+      "status": 200,
+      "bytes": 37663,
+      "expectedSha256": "90bcefabde31657783bf96a7e7dbefd8a9f516a7ea00f30d059081ff06c65d90",
+      "actualSha256": "90bcefabde31657783bf96a7e7dbefd8a9f516a7ea00f30d059081ff06c65d90",
+      "pass": true
+    },
+    {
+      "path": "world/town/day-scene.mjs",
+      "status": 200,
+      "bytes": 70215,
+      "expectedSha256": "c2c7f284d156f5787ae4670f3c36829f9aff91258997928884c3522c33218a21",
+      "actualSha256": "c2c7f284d156f5787ae4670f3c36829f9aff91258997928884c3522c33218a21",
+      "pass": true
+    },
+    {
+      "path": "world/town/day.html",
+      "status": 200,
+      "bytes": 10136,
+      "expectedSha256": "fef8028b67468cc51f09cdf48ff9270e03715faf470c0f46b1b2a35de9bd6af5",
+      "actualSha256": "fef8028b67468cc51f09cdf48ff9270e03715faf470c0f46b1b2a35de9bd6af5",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-environment.mjs",
+      "status": 200,
+      "bytes": 3297,
+      "expectedSha256": "55cf1315ee8e8dd73a5402d2d56bdf6c2934736e2105ae7e66b2daf091ddcf04",
+      "actualSha256": "55cf1315ee8e8dd73a5402d2d56bdf6c2934736e2105ae7e66b2daf091ddcf04",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-stage.mjs",
+      "status": 200,
+      "bytes": 20540,
+      "expectedSha256": "6984c976fe8a4a638bfe7c16696f87683a0afa21e991ee5e0847e4979f5069b5",
+      "actualSha256": "6984c976fe8a4a638bfe7c16696f87683a0afa21e991ee5e0847e4979f5069b5",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-studio.css",
+      "status": 200,
+      "bytes": 32506,
+      "expectedSha256": "dce9312d3c57f624eb071db6e478b5d2de99b5f51de8ce33a07baa79a0ac1d55",
+      "actualSha256": "dce9312d3c57f624eb071db6e478b5d2de99b5f51de8ce33a07baa79a0ac1d55",
+      "pass": true
+    },
+    {
+      "path": "world/wardrobe-studio.mjs",
+      "status": 200,
+      "bytes": 65716,
+      "expectedSha256": "c659f44183fe62bf22cfde9b593b73dfbd0ef18e4a0731196cfe9a66934f6e46",
+      "actualSha256": "c659f44183fe62bf22cfde9b593b73dfbd0ef18e4a0731196cfe9a66934f6e46",
+      "pass": true
+    }
+  ]
+}

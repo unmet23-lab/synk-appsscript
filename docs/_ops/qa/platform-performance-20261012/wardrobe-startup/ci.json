@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-11T19:58:39.001Z",
+  "worldUnchangedInSuccessor": true,
+  "runs": [
+    {
+      "id": 38169434345,
+      "conclusion": "success",
+      "createdAt": "2026-10-11T19:46:30Z",
+      "headSha": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:48:13Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169434345"
+    },
+    {
+      "id": 38169434490,
+      "conclusion": "cancelled",
+      "createdAt": "2026-10-11T19:46:31Z",
+      "headSha": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:49:04Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169434490"
+    },
+    {
+      "id": 38169586579,
+      "conclusion": "success",
+      "createdAt": "2026-10-11T19:48:47Z",
+      "headSha": "1e4190072bab19bffdba83c3aa20708adac8ae27",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:50:31Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169586579"
+    },
+    {
+      "id": 38169586507,
+      "conclusion": "success",
+      "createdAt": "2026-10-11T19:48:47Z",
+      "headSha": "1e4190072bab19bffdba83c3aa20708adac8ae27",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:58:05Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169586507"
+    }
+  ]
+}

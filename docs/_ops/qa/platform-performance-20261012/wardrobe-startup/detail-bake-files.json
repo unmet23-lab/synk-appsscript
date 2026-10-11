@@ -1,0 +1,298 @@
+[
+  {
+    "path": "512/cotton-detail-colour.png",
+    "bytes": 84357
+  },
+  {
+    "path": "512/cotton-detail-normal.png",
+    "bytes": 322722
+  },
+  {
+    "path": "512/cotton-detail-properties.png",
+    "bytes": 150485
+  },
+  {
+    "path": "512/cotton-detail-direction.png",
+    "bytes": 7120
+  },
+  {
+    "path": "512/knit-detail-colour.png",
+    "bytes": 131834
+  },
+  {
+    "path": "512/knit-detail-normal.png",
+    "bytes": 526764
+  },
+  {
+    "path": "512/knit-detail-properties.png",
+    "bytes": 229641
+  },
+  {
+    "path": "512/denim-detail-colour.png",
+    "bytes": 125275
+  },
+  {
+    "path": "512/denim-detail-normal.png",
+    "bytes": 488523
+  },
+  {
+    "path": "512/denim-detail-properties.png",
+    "bytes": 223500
+  },
+  {
+    "path": "512/denim-detail-direction.png",
+    "bytes": 7123
+  },
+  {
+    "path": "512/wax-detail-colour.png",
+    "bytes": 95651
+  },
+  {
+    "path": "512/wax-detail-normal.png",
+    "bytes": 156703
+  },
+  {
+    "path": "512/wax-detail-properties.png",
+    "bytes": 82705
+  },
+  {
+    "path": "512/wax-detail-direction.png",
+    "bytes": 7120
+  },
+  {
+    "path": "512/silk-detail-colour.png",
+    "bytes": 63789
+  },
+  {
+    "path": "512/silk-detail-normal.png",
+    "bytes": 158634
+  },
+  {
+    "path": "512/silk-detail-properties.png",
+    "bytes": 92664
+  },
+  {
+    "path": "512/silk-detail-direction.png",
+    "bytes": 7120
+  },
+  {
+    "path": "512/linen-detail-colour.png",
+    "bytes": 110818
+  },
+  {
+    "path": "512/linen-detail-normal.png",
+    "bytes": 493162
+  },
+  {
+    "path": "512/linen-detail-properties.png",
+    "bytes": 205295
+  },
+  {
+    "path": "512/linen-detail-direction.png",
+    "bytes": 8063
+  },
+  {
+    "path": "512/corduroy-detail-colour.png",
+    "bytes": 66131
+  },
+  {
+    "path": "512/corduroy-detail-normal.png",
+    "bytes": 322584
+  },
+  {
+    "path": "512/corduroy-detail-properties.png",
+    "bytes": 125067
+  },
+  {
+    "path": "512/corduroy-detail-direction.png",
+    "bytes": 7120
+  },
+  {
+    "path": "512/quilted-detail-colour.png",
+    "bytes": 97384
+  },
+  {
+    "path": "512/quilted-detail-normal.png",
+    "bytes": 328538
+  },
+  {
+    "path": "512/quilted-detail-properties.png",
+    "bytes": 158575
+  },
+  {
+    "path": "512/velvet-detail-colour.png",
+    "bytes": 13018
+  },
+  {
+    "path": "512/velvet-detail-normal.png",
+    "bytes": 256212
+  },
+  {
+    "path": "512/velvet-detail-properties.png",
+    "bytes": 114316
+  },
+  {
+    "path": "512/velvet-detail-direction.png",
+    "bytes": 7842
+  },
+  {
+    "path": "512/wool-felt-detail-colour.png",
+    "bytes": 97788
+  },
+  {
+    "path": "512/wool-felt-detail-normal.png",
+    "bytes": 381749
+  },
+  {
+    "path": "512/wool-felt-detail-properties.png",
+    "bytes": 86498
+  },
+  {
+    "path": "1024/cotton-detail-colour.png",
+    "bytes": 321207
+  },
+  {
+    "path": "1024/cotton-detail-normal.png",
+    "bytes": 840300
+  },
+  {
+    "path": "1024/cotton-detail-properties.png",
+    "bytes": 508545
+  },
+  {
+    "path": "1024/cotton-detail-direction.png",
+    "bytes": 24687
+  },
+  {
+    "path": "1024/knit-detail-colour.png",
+    "bytes": 481903
+  },
+  {
+    "path": "1024/knit-detail-normal.png",
+    "bytes": 1730890
+  },
+  {
+    "path": "1024/knit-detail-properties.png",
+    "bytes": 653004
+  },
+  {
+    "path": "1024/denim-detail-colour.png",
+    "bytes": 409493
+  },
+  {
+    "path": "1024/denim-detail-normal.png",
+    "bytes": 1554654
+  },
+  {
+    "path": "1024/denim-detail-properties.png",
+    "bytes": 753257
+  },
+  {
+    "path": "1024/denim-detail-direction.png",
+    "bytes": 24691
+  },
+  {
+    "path": "1024/wax-detail-colour.png",
+    "bytes": 227702
+  },
+  {
+    "path": "1024/wax-detail-normal.png",
+    "bytes": 410287
+  },
+  {
+    "path": "1024/wax-detail-properties.png",
+    "bytes": 338508
+  },
+  {
+    "path": "1024/wax-detail-direction.png",
+    "bytes": 24687
+  },
+  {
+    "path": "1024/silk-detail-colour.png",
+    "bytes": 179216
+  },
+  {
+    "path": "1024/silk-detail-normal.png",
+    "bytes": 426462
+  },
+  {
+    "path": "1024/silk-detail-properties.png",
+    "bytes": 332917
+  },
+  {
+    "path": "1024/silk-detail-direction.png",
+    "bytes": 24687
+  },
+  {
+    "path": "1024/linen-detail-colour.png",
+    "bytes": 364268
+  },
+  {
+    "path": "1024/linen-detail-normal.png",
+    "bytes": 1690361
+  },
+  {
+    "path": "1024/linen-detail-properties.png",
+    "bytes": 638344
+  },
+  {
+    "path": "1024/linen-detail-direction.png",
+    "bytes": 26239
+  },
+  {
+    "path": "1024/corduroy-detail-colour.png",
+    "bytes": 207839
+  },
+  {
+    "path": "1024/corduroy-detail-normal.png",
+    "bytes": 1099568
+  },
+  {
+    "path": "1024/corduroy-detail-properties.png",
+    "bytes": 435123
+  },
+  {
+    "path": "1024/corduroy-detail-direction.png",
+    "bytes": 24687
+  },
+  {
+    "path": "1024/quilted-detail-colour.png",
+    "bytes": 219020
+  },
+  {
+    "path": "1024/quilted-detail-normal.png",
+    "bytes": 914439
+  },
+  {
+    "path": "1024/quilted-detail-properties.png",
+    "bytes": 531504
+  },
+  {
+    "path": "1024/velvet-detail-colour.png",
+    "bytes": 49721
+  },
+  {
+    "path": "1024/velvet-detail-normal.png",
+    "bytes": 737107
+  },
+  {
+    "path": "1024/velvet-detail-properties.png",
+    "bytes": 467325
+  },
+  {
+    "path": "1024/velvet-detail-direction.png",
+    "bytes": 25977
+  },
+  {
+    "path": "1024/wool-felt-detail-colour.png",
+    "bytes": 333036
+  },
+  {
+    "path": "1024/wool-felt-detail-normal.png",
+    "bytes": 1626599
+  },
+  {
+    "path": "1024/wool-felt-detail-properties.png",
+    "bytes": 274356
+  }
+]

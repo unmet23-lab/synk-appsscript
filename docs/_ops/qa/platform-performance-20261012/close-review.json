@@ -1,0 +1,50 @@
+{
+  "checkedAt": "2026-10-11T21:33:10.867Z",
+  "status": "PASS_FOR_SCOPED_CLOSE_REVIEW",
+  "tests": {
+    "homepage": 30,
+    "desktop": 34,
+    "runner": 17,
+    "wardrobe": 81,
+    "total": 162,
+    "failed": 0
+  },
+  "worldPublic": 104,
+  "sourcePublicCoreFiles": 9,
+  "textileAssetMatches": 83,
+  "newIssues": [],
+  "performanceMeasurements": "Prior single Windows GPU measurements retained; no new benchmark claimed",
+  "existingCodeCommits": {
+    "appSource": [
+      "e9c76003b",
+      "d13ad992a"
+    ],
+    "homepage": [
+      "7a125e2",
+      "db6486e",
+      "4db374d",
+      "40f620b"
+    ],
+    "publicWardrobe": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+    "publicDownloadMenu": "908098c0be3045e473a22f40a11f463c48c5aa5c"
+  },
+  "accountAcceptance": "../platform-real-account-20261010/actual-ui-resume2.json",
+  "signingStatus": "DEFERRED_UNTIL_BUSINESS_REGISTRATION_AND_USER_RESUMPTION",
+  "additionalDeployment": false,
+  "additionalInstallation": false,
+  "limitations": [
+    "Current source wardrobe runtime overlaps unrelated uncommitted v8 art; retain worktree and commit replay patch, not an incomplete runtime merge.",
+    "Actual Windows save/quit/reopen passed separately; cross-PC/web/mobile/Mac real hardware outside scope."
+  ],
+  "supplementalSourcePatch": {
+    "path": "wardrobe-startup/startup-qa.patch",
+    "files": [
+      "experiences/synk-world-home/qa/startup-assets.mjs",
+      "experiences/synk-world-app/qa/avatar-textiles-startup.test.mjs",
+      "experiences/synk-world-app/qa/shader-preparation.test.mjs",
+      "experiences/synk-world-app/qa/wardrobe-stage-startup.test.mjs"
+    ],
+    "sha256": "9dbfa537d6b11e34d58c29153bcd4e02908ff83975d7452ac89ba95c2bf8b5dc",
+    "requiresV8AndStartupRuntime": true
+  }
+}

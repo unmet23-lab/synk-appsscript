@@ -1,0 +1,106 @@
+{
+  "status": "PASS_FOR_CURRENT_WINDOWS_ACCOUNT_SAVE_NORMAL_QUIT_REOPEN",
+  "completedAt": "2026-10-11T21:23:20.212Z",
+  "scope": "Installed Windows Platform 0.4.3 with existing real-account session; one synthetic account note save, normal full quit, same installed app reopen, login and notes restoration",
+  "installation": {
+    "version": "0.4.3",
+    "asarBytes": 24720875,
+    "asarSHA256Before": "a5cb55fe334d317a7d17848eb44a1defb72e141e5c0e3bb6a3ff1796c2bc4161",
+    "asarSHA256After": "a5cb55fe334d317a7d17848eb44a1defb72e141e5c0e3bb6a3ff1796c2bc4161",
+    "exeSHA256": "4bb55c88ac98b1696be2da6d80505753067d172073f068e4b4d306fdd9018951",
+    "runtimeFilesChanged": false,
+    "installedExitContractMatchesWorkspace": [
+      "src/platform-tray.cjs",
+      "src/draft-exit.cjs",
+      "src/desktop-preferences.cjs"
+    ]
+  },
+  "before": {
+    "total": 5,
+    "pending": 0,
+    "completed": 5,
+    "recovery": 1,
+    "unsavedInput": false,
+    "savedStatus": true
+  },
+  "afterSave": {
+    "checkedAt": "2026-10-11T21:19:14.888Z",
+    "saved": true,
+    "pending": 1,
+    "completed": 5,
+    "qaMemoVisible": true,
+    "unsavedWarning": false,
+    "recoveryEntries": 1,
+    "existingFivePresent": true
+  },
+  "normalQuit": {
+    "normalCloseUsed": true,
+    "closeToTrayTemporarilyDisabled": true,
+    "trayMenuUsed": false,
+    "forceKillUsed": false,
+    "platformWindows": 0,
+    "platformProcessCount": 0,
+    "processCheckAt": "2026-10-11T21:20:33.7583747Z"
+  },
+  "processRestart": {
+    "beforeMainPid": 5592,
+    "afterMainPid": 10136,
+    "newProcessStartedAt": "2026-10-12T06:20:42+09:00",
+    "afterWindowId": 3213990
+  },
+  "loginAfterRestart": {
+    "checkedAt": "2026-10-11T21:20:58.871Z",
+    "signedIn": true,
+    "signInPerformed": false,
+    "credentialsEntered": false
+  },
+  "afterReconnect": {
+    "checkedAt": "2026-10-11T21:21:47.258Z",
+    "pending": 1,
+    "completed": 5,
+    "qaMemoRestored": true,
+    "sameRecoveryRecord": true,
+    "saved": true,
+    "unsavedWarning": false,
+    "existingFiveNamesPreserved": true,
+    "existingCompletedCountPreserved": true
+  },
+  "final": {
+    "checkedAt": "2026-10-11T21:22:31.068Z",
+    "pending": 0,
+    "completed": 6,
+    "saved": true,
+    "qaMemoStillPresent": true,
+    "existingFivePreserved": true,
+    "sameRecoveryRecord": true,
+    "unsavedWarning": false,
+    "trayRestored": true
+  },
+  "actions": {
+    "syntheticNoteCreates": 1,
+    "syntheticNoteCompleted": 1,
+    "existingNoteEdits": 0,
+    "noteDeletions": 0,
+    "recoveryEdits": 0,
+    "recoveryDeletions": 0,
+    "loginActions": 0,
+    "logoutActions": 0,
+    "passwordOrCodeEntered": false,
+    "normalProfileFilesRead": false,
+    "vaultRead": false,
+    "accountIdentifierRecorded": false,
+    "originalNoteNamesOrBodiesRecorded": false,
+    "temporaryPreference": "closeToTray true -> false -> normal close and reopen -> true",
+    "finalSignedIn": true
+  },
+  "observationSource": "Official Windows computer-use app UI and read-only process/file hash checks",
+  "limits": [
+    "Current Windows PC only; no second physical PC, Mac, mobile, IME or OS notification acceptance.",
+    "Existing authenticated session restored; new login and logout were not repeated in this run.",
+    "After restart the user-facing Account library connect button was clicked to load account notes. Automatic library connection is not claimed.",
+    "Tray menu was not available to the tool. The documented closeToTray=false normal close path was used; process count reached zero before relaunch.",
+    "PC/web write roundtrip was not performed.",
+    "Completed synthetic test note remains in the account; existing five notes and recovery record were retained.",
+    "Existing entry names and completed states were compared in memory; hidden bodies and recovery contents were not opened."
+  ]
+}

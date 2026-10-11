@@ -1,0 +1,158 @@
+{
+  "checkedAt": "2026-10-11T21:36:26.545Z",
+  "scope": "Mapped startup-only delta; no source runtime or actual Git index was modified.",
+  "sourceHead": "d13ad992a27ab6d796956325969b6d3496fffbcd",
+  "publicRepository": "https://github.com/unmet23-lab/synk-policy",
+  "publicParent": "4210347c185e038eefe68e444bba720b821ab5e2",
+  "publicCommit": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+  "normalization": [
+    "CRLF to LF",
+    "Remove import/style cache version query ?v= from quoted paths"
+  ],
+  "patch": "startup-only.patch",
+  "patchSha256": "ed535b3202a0cbc020509cb833c287f1d2e0373dc5d61bfc98e698b23350a529",
+  "patchBytes": 37936,
+  "files": [
+    {
+      "sourcePath": "experiences/synk-world-home/avatar-textiles.mjs",
+      "publicPath": "world/avatar-textiles.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "b9714655b651a87c970a6999841eb1cd54078985025c6448f0fe86fad30b6aa4",
+      "releasedNormalizedSha256": "5e1795ed9dc9641f1e26e8389d020832e9d272b9c8b8af1050fccf7096bd7925",
+      "sourceNormalizedSha256": "5e1795ed9dc9641f1e26e8389d020832e9d272b9c8b8af1050fccf7096bd7925",
+      "appliedNormalizedSha256": "5e1795ed9dc9641f1e26e8389d020832e9d272b9c8b8af1050fccf7096bd7925",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/avatar-v3.mjs",
+      "publicPath": "world/avatar-v3.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "2f46cbffbb813c4f582c974824cf90a28a241dc1427b4918425eec5c277c9877",
+      "releasedNormalizedSha256": "b67374756b70632ece71d923cb8832de61716d04e51e809fae2499d7527bf45d",
+      "sourceNormalizedSha256": "b67374756b70632ece71d923cb8832de61716d04e51e809fae2499d7527bf45d",
+      "appliedNormalizedSha256": "b67374756b70632ece71d923cb8832de61716d04e51e809fae2499d7527bf45d",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/avatar-wardrobe.mjs",
+      "publicPath": "world/avatar-wardrobe.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "ce3b3436546fbf8f4d64b75c5e31b1bd4ce48e8cfc0d22a587c2e080626f5cf7",
+      "releasedNormalizedSha256": "d4469bda3542f8ebe400b6f0a28c32b13d318a99408f6d579e52b4b4353e2d12",
+      "sourceNormalizedSha256": "d4469bda3542f8ebe400b6f0a28c32b13d318a99408f6d579e52b4b4353e2d12",
+      "appliedNormalizedSha256": "d4469bda3542f8ebe400b6f0a28c32b13d318a99408f6d579e52b4b4353e2d12",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/contact-light-v6.mjs",
+      "publicPath": "world/contact-light-v6.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "ef372774e8d709b2d473a46066b0b28c78dce02bf137327cf5877afd1b399e9c",
+      "releasedNormalizedSha256": "e71391ba36436562d215c99b520474caf62e862136886f7809d66b00db9712c2",
+      "sourceNormalizedSha256": "e71391ba36436562d215c99b520474caf62e862136886f7809d66b00db9712c2",
+      "appliedNormalizedSha256": "e71391ba36436562d215c99b520474caf62e862136886f7809d66b00db9712c2",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/shader-preparation.mjs",
+      "publicPath": "world/shader-preparation.mjs",
+      "newFile": true,
+      "parentNormalizedSha256": null,
+      "releasedNormalizedSha256": "fac55f86d36e6370388f88a7e6ff6df7f5e7f8018ca8dbffa184a2a20184eed8",
+      "sourceNormalizedSha256": "fac55f86d36e6370388f88a7e6ff6df7f5e7f8018ca8dbffa184a2a20184eed8",
+      "appliedNormalizedSha256": "fac55f86d36e6370388f88a7e6ff6df7f5e7f8018ca8dbffa184a2a20184eed8",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/wardrobe-environment.mjs",
+      "publicPath": "world/wardrobe-environment.mjs",
+      "newFile": true,
+      "parentNormalizedSha256": null,
+      "releasedNormalizedSha256": "441636bbe7d557789464197b531a28fa4c0b13e465c64649156bfcd962e96102",
+      "sourceNormalizedSha256": "441636bbe7d557789464197b531a28fa4c0b13e465c64649156bfcd962e96102",
+      "appliedNormalizedSha256": "441636bbe7d557789464197b531a28fa4c0b13e465c64649156bfcd962e96102",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/wardrobe-stage.mjs",
+      "publicPath": "world/wardrobe-stage.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "41e16087eefb6f8666daecd58ea76e18803f23eeef8fe2c3ffd85a08a20398f5",
+      "releasedNormalizedSha256": "a80bb1448d8415c0d0fbfd5849bbfd7147946f2d1c243b0949e67a4d77d650df",
+      "sourceNormalizedSha256": "a80bb1448d8415c0d0fbfd5849bbfd7147946f2d1c243b0949e67a4d77d650df",
+      "appliedNormalizedSha256": "a80bb1448d8415c0d0fbfd5849bbfd7147946f2d1c243b0949e67a4d77d650df",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/wardrobe-studio.mjs",
+      "publicPath": "world/wardrobe-studio.mjs",
+      "newFile": false,
+      "parentNormalizedSha256": "503f0fac7f773c7c8d926cd8c115fcc1bdb7b250725e94f7da5af8bcda644d89",
+      "releasedNormalizedSha256": "3f7dbe1de0c24b7d35617457c873ea90836c1ca356bb011acec5e699668512cb",
+      "sourceNormalizedSha256": "3f7dbe1de0c24b7d35617457c873ea90836c1ca356bb011acec5e699668512cb",
+      "appliedNormalizedSha256": "3f7dbe1de0c24b7d35617457c873ea90836c1ca356bb011acec5e699668512cb",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    },
+    {
+      "sourcePath": "experiences/synk-world-home/wardrobe-studio.css",
+      "publicPath": "world/wardrobe-studio.css",
+      "newFile": false,
+      "parentNormalizedSha256": "b8802b574c37dfa4645a383295a86348bdaaa47759698f0dd878b041a5cf0e23",
+      "releasedNormalizedSha256": "dce9312d3c57f624eb071db6e478b5d2de99b5f51de8ce33a07baa79a0ac1d55",
+      "sourceNormalizedSha256": "dce9312d3c57f624eb071db6e478b5d2de99b5f51de8ce33a07baa79a0ac1d55",
+      "appliedNormalizedSha256": "dce9312d3c57f624eb071db6e478b5d2de99b5f51de8ce33a07baa79a0ac1d55",
+      "appliedMatchesReleased": true,
+      "appliedMatchesCurrentSource": true
+    }
+  ],
+  "isolatedApply": {
+    "path": ".tmp/platform-close-20261012/.startup-zero-check-5DOCef",
+    "ownRepositoryBoundary": true,
+    "checkPassed": true,
+    "applyPassed": true,
+    "filesMatched": 9
+  },
+  "headStandaloneSupported": false,
+  "requiresV8Prerequisites": true,
+  "prerequisiteReason": "The current source HEAD has older wardrobe artwork and catalog; the optimization depends on already-published v8 fabric profiles, garment builders, fourteen-item catalog and associated stage/studio behavior. This delta is validated only against the mapped normalized public parent, not as a standalone change atop source HEAD.",
+  "binaryAssets": {
+    "includedInPatch": false,
+    "restoreFromCommit": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+    "textileManifest": {
+      "sourcePath": "experiences/synk-world-home/assets/avatar-textiles-v1/manifest.json",
+      "publicPath": "world/assets/avatar-textiles-v1/manifest.json",
+      "sha256": "18e44ead8fcc1b59d8dac6b9d47eaca2c3902aa1fa59fd5e989216d59b10e36b",
+      "publicSha256": "18e44ead8fcc1b59d8dac6b9d47eaca2c3902aa1fa59fd5e989216d59b10e36b",
+      "files": 83,
+      "filesMatched": 83
+    },
+    "environment": {
+      "sourcePath": "experiences/synk-world-home/assets/wardrobe-environment-v1.bin.gz",
+      "publicPath": "world/assets/wardrobe-environment-v1.bin.gz",
+      "sha256": "97212225fc8729d9e0dee99dad41c9009a1bdbe1ab0d53093248f254bb7aef57",
+      "bytes": 199761,
+      "matchedPublic": true
+    }
+  },
+  "generator": {
+    "includedInPatch": false,
+    "sourcePath": "experiences/synk-world-home/qa/startup-assets.mjs",
+    "reason": "Authoring helper is outside the requested nine-file public runtime delta."
+  },
+  "limitations": [
+    "This is a recovery/integration patch, not a fresh source release.",
+    "No new browser timing, pixels, physical device or live-account checks were performed here."
+  ],
+  "patchContextLines": 0,
+  "applyArguments": [
+    "--unidiff-zero"
+  ]
+}

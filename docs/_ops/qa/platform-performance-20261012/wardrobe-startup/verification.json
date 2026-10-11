@@ -1,0 +1,129 @@
+{
+  "publishedCommit": "6e5b82eeec933e4794de698b28a2511b40f6e275",
+  "baseline": "4210347c185e038eefe68e444bba720b821ab5e2",
+  "environment": {
+    "dpr": 2,
+    "errors": [],
+    "parallelCompile": true,
+    "renderer": "ANGLE (Intel, Intel(R) Arc(TM) B390 GPU (0x0000B082) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+    "viewport": [
+      1280,
+      720
+    ]
+  },
+  "defaultLook": {
+    "before": {
+      "readyMs": 1669,
+      "maxLongTaskMs": 862,
+      "longTaskTotalMs": 1497,
+      "longTasks": 3
+    },
+    "after": {
+      "readyMs": 869,
+      "maxLongTaskMs": 97,
+      "longTaskTotalMs": 188,
+      "longTasks": 2
+    }
+  },
+  "linenLook": {
+    "before": {
+      "readyMs": 2601,
+      "maxLongTaskMs": 851,
+      "longTaskTotalMs": 2309,
+      "longTasks": 3
+    },
+    "after": {
+      "readyMs": 1330,
+      "maxLongTaskMs": 156,
+      "longTaskTotalMs": 309,
+      "longTasks": 3
+    }
+  },
+  "pixelComparison": [
+    {
+      "before": "canvas-before.png",
+      "after": "canvas-final.png",
+      "pixelMeanError": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "before": "worn-canvas-before.png",
+      "after": "worn-canvas-after.png",
+      "pixelMeanError": [
+        0,
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "tests": {
+    "passed": 81,
+    "failed": 0
+  },
+  "browserChecks": {
+    "closeDuringShaders": {
+      "before": {
+        "polls": 9536,
+        "ready": null
+      },
+      "closeWallMs": 303,
+      "after": {
+        "polls": 9600,
+        "canvas": 0,
+        "errors": []
+      }
+    },
+    "noParallelExtension": {
+      "revision": 4,
+      "errors": [],
+      "frames": 2,
+      "ready": "ready"
+    },
+    "contextLossRetry": {
+      "canvas": 1,
+      "lost": false,
+      "errors": []
+    },
+    "capture": {
+      "photoReady": true,
+      "albumCount": 1,
+      "errors": []
+    }
+  },
+  "limitations": [
+    "Single Windows GPU/context comparison, not cross-device or statistically sampled",
+    "Browser/driver shader cache was not purged between runs",
+    "No guarantee of zero long tasks; final max 97ms default / 156ms linen",
+    "Offline procedural fallback and drivers without parallel compilation may still block longer"
+  ],
+  "publicVerification": {
+    "filesMatched": 104,
+    "filesChecked": 104,
+    "latestVerifiedHead": "1e4190072bab19bffdba83c3aa20708adac8ae27",
+    "pages": {
+      "id": 38169586579,
+      "conclusion": "success",
+      "createdAt": "2026-10-11T19:48:47Z",
+      "headSha": "1e4190072bab19bffdba83c3aa20708adac8ae27",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:50:31Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169586579"
+    },
+    "siteCheck": {
+      "id": 38169586507,
+      "conclusion": "success",
+      "createdAt": "2026-10-11T19:48:47Z",
+      "headSha": "1e4190072bab19bffdba83c3aa20708adac8ae27",
+      "status": "completed",
+      "updatedAt": "2026-10-11T19:58:05Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38169586507"
+    },
+    "worldUnchangedInSuccessor": true
+  }
+}

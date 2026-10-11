@@ -1,0 +1,439 @@
+diff --git a/experiences/synk-world-home/avatar-textiles.mjs b/experiences/synk-world-home/avatar-textiles.mjs
+index 78d6fbc..c9fa39e 100644
+--- a/experiences/synk-world-home/avatar-textiles.mjs
++++ b/experiences/synk-world-home/avatar-textiles.mjs
+@@ -172,3 +172,51 @@ function makeWardrobeTextile(kind,size=512){
+-export function createAvatarTextiles({anisotropy=4,detailSize=512}={}){
+-  const textures=[],sets={};
+-  for(const kind of ['wool','knit','cotton']){sets[kind]=make(kind);for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
++const baseKinds=['wool','knit','cotton'],sourceImages=new Map();
++function loadTextileImage(kind,role,detailSize){
++  return new Promise((resolve,reject)=>{
++    const image=new Image();image.decoding='async';let settled=false;
++    const finish=error=>{if(settled)return;settled=true;clearTimeout(timer);image.onload=image.onerror=null;error?reject(error):resolve(image);};
++    const timer=setTimeout(()=>finish(Error('base-textile-timeout')),5000);
++    image.onload=async()=>{
++      const expected=detailSize||size;
++      if(image.naturalWidth!==expected||image.naturalHeight!==expected){finish(Error('base-textile-size'));return;}
++      try{await image.decode?.();finish();}catch{finish(Error('base-textile-decode'));}
++    };
++    image.onerror=()=>finish(Error('base-textile-unavailable'));
++    image.src=new URL(`./assets/avatar-textiles-v1/${detailSize?detailSize+'/':''}${kind}-${role}.png`,import.meta.url).href;
++  });
++}
++function loadTextileImages(kind,detailSize){
++  const key=detailSize?`${detailSize}/${kind}`:kind;
++  if(!sourceImages.has(key)){
++    // Decoded images are shared; live Three textures still belong to each avatar.
++    const roles=['colour','normal','properties'];if(detailSize&&wardrobeFabricProfile(kind).anisotropy>0)roles.push('direction');
++    const pending=Promise.all(roles.map(role=>loadTextileImage(kind,role,detailSize)));
++    sourceImages.set(key,pending);pending.catch(()=>{if(sourceImages.get(key)===pending)sourceImages.delete(key);});
++  }
++  const pending=sourceImages.get(key);sourceImages.delete(key);sourceImages.set(key,pending);
++  // Two slots need at most three detailed fabrics. Keep one spare, instead of
++  // retaining every decoded 1024px cloth after many fitting-room visits.
++  const detailKeys=[...sourceImages.keys()].filter(value=>value.includes('/'));
++  while(detailKeys.length>4)sourceImages.delete(detailKeys.shift());
++  return pending;
++}
++function awaitBaseImages(pending,signal){
++  if(!signal)return pending;
++  if(signal.aborted)return Promise.reject(new DOMException('Avatar closed','AbortError'));
++  return new Promise((resolve,reject)=>{
++    const abort=()=>{signal.removeEventListener('abort',abort);reject(new DOMException('Avatar closed','AbortError'));};
++    signal.addEventListener('abort',abort,{once:true});
++    pending.then(value=>{signal.removeEventListener('abort',abort);resolve(value);},error=>{signal.removeEventListener('abort',abort);reject(error);});
++  });
++}
++function mapsFromImages(kind,[albedo,normal,packed,directional]){
++  if(kind.endsWith('-detail')){
++    const properties=wardTexture(packed,`${kind}-AO-R-roughness-G`);
++    return {map:wardTexture(albedo,`${kind}-yarn-colour`,true),normalMap:wardTexture(normal,`${kind}-yarn-normal`),roughnessMap:properties,aoMap:properties,...(directional?{anisotropyMap:wardTexture(directional,`${kind}-fibre-direction-RG-strength-B`)}:{})};
++  }
++  const properties=map(packed,`${kind}-occlusion-R-roughness-G`);
++  return {map:map(albedo,`${kind}-low-contrast-colour`,true),normalMap:map(normal,`${kind}-micro-normal`),roughnessMap:properties,aoMap:properties};
++}
++function assembleTextiles({anisotropy=4,detailSize=512}={},sets={}){
++  const textures=[],baseSources={},detailSources={};
++  for(const kind of baseKinds){baseSources[kind]=sets[kind]?'baked':'procedural';sets[kind]??=make(kind);for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
++  for(const [kind,set]of Object.entries(sets))if(!baseKinds.includes(kind)){detailSources[kind]='baked';for(const texture of new Set(Object.values(set))){texture.anisotropy=anisotropy;textures.push(texture);}}
+@@ -177 +225 @@ export function createAvatarTextiles({anisotropy=4,detailSize=512}={}){
+-    if(!sets[kind]){sets[kind]=kind.endsWith('-detail')?makeWardrobeTextile(kind,detailSize):make(kind);for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
++    if(!sets[kind]){sets[kind]=kind.endsWith('-detail')?makeWardrobeTextile(kind,detailSize):make(kind);if(kind.endsWith('-detail'))detailSources[kind]='procedural';for(const texture of new Set(Object.values(sets[kind]))){texture.anisotropy=anisotropy;textures.push(texture);}}
+@@ -182 +230,14 @@ export function createAvatarTextiles({anisotropy=4,detailSize=512}={}){
+-  return {fabric,textures};
++  return {fabric,textures,baseSources,detailSources};
++}
++
++// Retain the deterministic builder for authoring, rebaking and offline fallback.
++export function createAvatarTextiles(options={}){return assembleTextiles(options);}
++/** Load the exact authored base maps without Canvas2D fibre generation. */
++export async function loadAvatarTextiles(options={}){
++  if(options.signal?.aborted)throw new DOMException('Avatar closed','AbortError');
++  const detailKinds=[...new Set((options.detailKinds||[]).map(wardrobeKind).filter(kind=>Object.hasOwn(wardrobeProfiles,kind)))],detailSize=options.detailSize>=1024?1024:512;
++  const pending=Promise.all([...baseKinds,...detailKinds].map(async kind=>{try{return [kind,await loadTextileImages(kind,detailKinds.includes(kind)?detailSize:undefined)];}catch{return [kind,null];}}));
++  const sources=await awaitBaseImages(pending,options.signal);
++  if(options.signal?.aborted)throw new DOMException('Avatar closed','AbortError');
++  const sets={};for(const [kind,images]of sources)if(images)sets[kind]=mapsFromImages(kind,images);
++  return assembleTextiles(options,sets);
+diff --git a/experiences/synk-world-home/avatar-v3.mjs b/experiences/synk-world-home/avatar-v3.mjs
+index cb03ac9..f16c3f6 100644
+--- a/experiences/synk-world-home/avatar-v3.mjs
++++ b/experiences/synk-world-home/avatar-v3.mjs
+@@ -2,2 +2,2 @@ import * as THREE from './scene-assets/three.module.js';
+-import {createAvatarTextiles} from './avatar-textiles.mjs';
+-import {createAvatarWardrobe} from './avatar-wardrobe.mjs';
++import {loadAvatarTextiles} from './avatar-textiles.mjs';
++import {createAvatarWardrobe,wardrobeFabricKinds} from './avatar-wardrobe.mjs';
+@@ -15,3 +15,4 @@ const seeded=seed=>()=>((seed=(1664525*seed+1013904223)>>>0)/4294967296);
+-function boundedTexture(loader,url,timeoutMs=12000){
+- return new Promise((resolve,reject)=>{let settled=false;const timeout=setTimeout(()=>{settled=true;reject(Error('texture-timeout'));},timeoutMs);
+-  Promise.resolve().then(()=>loader.loadAsync(url)).then(texture=>{if(settled){texture.dispose();return;}settled=true;clearTimeout(timeout);resolve(texture);},error=>{if(settled)return;settled=true;clearTimeout(timeout);reject(error);});
++function boundedTexture(loader,url,timeoutMs=12000,signal){
++ return new Promise((resolve,reject)=>{let settled=false;const finish=()=>{settled=true;clearTimeout(timeout);signal?.removeEventListener('abort',abort);},abort=()=>{if(settled)return;finish();reject(new DOMException('Avatar closed','AbortError'));},timeout=setTimeout(()=>{finish();reject(Error('texture-timeout'));},timeoutMs);
++  if(signal?.aborted){abort();return;}signal?.addEventListener('abort',abort,{once:true});
++  Promise.resolve().then(()=>loader.loadAsync(url)).then(texture=>{if(settled){texture.dispose();return;}finish();resolve(texture);},error=>{if(settled)return;finish();reject(error);});
+@@ -55,2 +56,2 @@ function shortNap(mobile){
+-export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4,wardrobeDetail=false}={}){
+- const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=createAvatarTextiles({anisotropy,detailSize:mobile?512:1024}),textures=textile.textures;
++export async function createMongleAvatar({mobile=false,textureLoader=new THREE.TextureLoader(),anisotropy=4,wardrobeDetail=false,initialSlots={},signal}={}){
++ const group=new THREE.Group();group.name=AVATAR_VERSION;const textile=await loadAvatarTextiles({anisotropy,detailSize:mobile?512:1024,detailKinds:wardrobeFabricKinds(initialSlots),signal}),textures=textile.textures;
+@@ -59 +60 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
+-  const felt=await boundedTexture(textureLoader,new URL('./assets/felt-coral.webp',import.meta.url).href);
++  const felt=await boundedTexture(textureLoader,new URL('./assets/felt-coral.webp',import.meta.url).href,12000,signal);
+@@ -62,0 +64 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
++ if(signal?.aborted){textures.forEach(texture=>texture.dispose());bodyMaterial.dispose();throw new DOMException('Avatar closed','AbortError');}
+@@ -127 +129 @@ export async function createMongleAvatar({mobile=false,textureLoader=new THREE.T
+- return{group,setOutfit,setEquipment:setOutfit,setDyes:value=>wardrobe.setDyes(value),getDyes:()=>wardrobe.getDyes(),setPose,getPose:()=>pose,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,wardrobeRevision:6,dyeRevision:1,pose,equipment:{...equipment},dyes:wardrobe.getDyes(),wardrobe:wardrobe.metrics(),outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
++ return{group,setOutfit,setEquipment:setOutfit,setDyes:value=>wardrobe.setDyes(value),getDyes:()=>wardrobe.getDyes(),setPose,getPose:()=>pose,update,getOutfit:()=>outfit,metrics:()=>({avatarVersion:AVATAR_VERSION,materialRevision:4,wardrobeRevision:6,dyeRevision:1,textileBaseSources:{...textile.baseSources},textileDetailSources:{...textile.detailSources},pose,equipment:{...equipment},dyes:wardrobe.getDyes(),wardrobe:wardrobe.metrics(),outfit,bodyBounds,assetFailures:[...assetFailures],productionAsset:false}),dispose};
+diff --git a/experiences/synk-world-home/avatar-wardrobe.mjs b/experiences/synk-world-home/avatar-wardrobe.mjs
+index 0c16a56..3e4d22b 100644
+--- a/experiences/synk-world-home/avatar-wardrobe.mjs
++++ b/experiences/synk-world-home/avatar-wardrobe.mjs
+@@ -11,0 +12,12 @@ const at=(a,y,lift=.035)=>{const r=radius(y)+lift;return[Math.sin(a)*r,y,Math.co
++// Fabric dependencies of the authored patterns below and in v8. Only equipped
++// slots are prepared; browsing the catalog must not preload the other garments.
++const garmentFabricKinds={
++  apron:['cotton-detail'],knit:['knit-detail'],denim:['denim-detail'],cape:['wax-detail','cotton-detail'],hanbok:['silk-detail','cotton-detail'],
++  scarf:['knit-detail'],'lapis-scarf':['knit-detail'],bandana:['cotton-detail'],linen:['linen-detail'],corduroy:['corduroy-detail'],
++  quilted:['quilted-detail','cotton-detail'],velvet:['velvet-detail'],silk:['silk-detail'],'wool-felt':['wool-felt-detail'],
++};
++export function wardrobeFabricKinds(slots={}){
++  const kinds=new Set();for(const slot of ['body','neck']){const item=wardrobeItem(slots?.[slot]);if(item?.slot===slot)for(const kind of garmentFabricKinds[item.key]||[])kinds.add(kind);}
++  return [...kinds];
++}
++
+diff --git a/experiences/synk-world-home/contact-light-v6.mjs b/experiences/synk-world-home/contact-light-v6.mjs
+index 83558d7..38fe4eb 100644
+--- a/experiences/synk-world-home/contact-light-v6.mjs
++++ b/experiences/synk-world-home/contact-light-v6.mjs
+@@ -3,0 +4 @@ import { OutputPass } from './scene-assets/rendering/OutputPass.js';
++import { waitForShaderPrograms, yieldForShaderPreparation, runShaderPreparationTasks } from './shader-preparation.mjs';
+@@ -15,0 +17 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
++  const preparations = new Set();
+@@ -17,0 +20 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
++    for (const preparation of preparations) preparation.abort();
+@@ -89,0 +93,81 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
++  /** Queue the same shader variants as render(), without drawing a frame. */
++  async function prepare({ signal } = {}) {
++    if (disposed) throw new Error('CONTACT_DISPOSED');
++    if (signal?.aborted) throw signal.reason instanceof Error ? signal.reason : new DOMException('Contact preparation cancelled', 'AbortError');
++    if (renderer.getContext().isContextLost()) throw new Error('CONTACT_CONTEXT_LOST');
++    const preparation = new AbortController(), abort = () => preparation.abort(signal?.reason);
++    preparations.add(preparation); signal?.addEventListener('abort', abort, { once: true });
++    const previousTarget = renderer.getRenderTarget();
++    const proxies = [], normals = [], textures = new Set();
++    const quadGeometry = new THREE.BufferGeometry();
++    quadGeometry.setAttribute('position', new THREE.Float32BufferAttribute([-1, 3, 0, -1, -1, 0, 3, -1, 0], 3));
++    quadGeometry.setAttribute('uv', new THREE.Float32BufferAttribute([0, 2, 0, 0, 2, 0], 2));
++    const quad = new THREE.Mesh(quadGeometry, null), quadCamera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
++    function checkActive() {
++      if (preparation.signal.aborted) throw preparation.signal.reason instanceof Error ? preparation.signal.reason : new DOMException('Contact preparation cancelled', 'AbortError');
++      if (disposed) throw new Error('CONTACT_DISPOSED');
++      if (renderer.getContext().isContextLost()) throw new Error('CONTACT_CONTEXT_LOST');
++    }
++    function addTexture(texture) {
++      if (texture?.isTexture && !texture.isRenderTargetTexture && !texture.isDepthTexture) textures.add(texture);
++    }
++    function compile(object, view, target, targetScene = null) {
++      checkActive();
++      const restoreTarget = renderer.getRenderTarget(), restoreFace = renderer.getActiveCubeFace(), restoreLevel = renderer.getActiveMipmapLevel();
++      try { renderer.setRenderTarget(target); renderer.compile(object, view, targetScene); }
++      finally { renderer.setRenderTarget(restoreTarget, restoreFace, restoreLevel); }
++    }
++    try {
++      const enabled = wantsAO();
++      if (enabled) { allocate(); resizeTargets(); }
++      // compile() visits invisible descendants and ignores overrideMaterial.
++      // A shallow visible-only proxy retains instancing/skinning/geometry flags
++      // while sharing the original materials and their compiled programs.
++      scene.traverseVisible(object => {
++        if (!(object.isMesh || object.isPoints || object.isLine || object.isSprite) || !object.layers.test(camera.layers)) return;
++        const proxy = object.clone(false); proxy.material = scene.overrideMaterial || object.material; proxies.push(proxy);
++        for (const material of Array.isArray(proxy.material) ? proxy.material : [proxy.material]) {
++          for (const value of Object.values(material || {})) addTexture(value);
++          for (const uniform of Object.values(material?.uniforms || {})) {
++            for (const value of Array.isArray(uniform.value) ? uniform.value : [uniform.value]) addTexture(value);
++          }
++        }
++        if (enabled && object.isMesh && !object.customDepthMaterial) {
++          const normal = object.clone(false); normal.material = ao.normalMaterial; normals.push(normal);
++        }
++      });
++      addTexture(scene.environment); addTexture(scene.background);
++      if (enabled) addTexture(ao.noiseTexture);
++      // Upload only the visible look, one texture per task. Render-target/depth
++      // textures belong to their passes and must not be uploaded as image data.
++      for (const texture of textures) {
++        checkActive(); renderer.initTexture(texture);
++        await yieldForShaderPreparation({ signal: preparation.signal });
++      }
++      checkActive();
++      const tasks = proxies.map(proxy => () => compile(proxy, camera, enabled ? beauty : previousTarget, scene));
++      if (enabled) {
++        tasks.push(...normals.map(normal => () => compile(normal, camera, ao.normalRenderTarget, scene)));
++        for (const [material, target] of [[ao.ssaoMaterial, ao.ssaoRenderTarget], [ao.blurMaterial, ao.blurRenderTarget], [ao.copyMaterial, beauty]]) {
++          tasks.push(() => { quad.material = material; compile(quad, quadCamera, target); });
++        }
++        // Match OutputPass.render() before its first draw. Its subsequent
++        // needsUpdate reuses this identical program cache key.
++        const defines = {};
++        if (THREE.ColorManagement.getTransfer(renderer.outputColorSpace) === THREE.SRGBTransfer) defines.SRGB_TRANSFER = '';
++        const toneMaps = [[THREE.LinearToneMapping, 'LINEAR_TONE_MAPPING'], [THREE.ReinhardToneMapping, 'REINHARD_TONE_MAPPING'], [THREE.CineonToneMapping, 'CINEON_TONE_MAPPING'], [THREE.ACESFilmicToneMapping, 'ACES_FILMIC_TONE_MAPPING'], [THREE.AgXToneMapping, 'AGX_TONE_MAPPING'], [THREE.NeutralToneMapping, 'NEUTRAL_TONE_MAPPING'], [THREE.CustomToneMapping, 'CUSTOM_TONE_MAPPING']];
++        const tone = toneMaps.find(([value]) => value === renderer.toneMapping);
++        if (tone) defines[tone[1]] = '';
++        output.material.defines = defines; output.material.needsUpdate = true;
++        tasks.push(() => { quad.material = output.material; compile(quad, quadCamera, null); });
++      }
++      await runShaderPreparationTasks(tasks, { signal: preparation.signal });
++      checkActive();
++      return await waitForShaderPrograms(renderer, { signal: preparation.signal });
++    } finally {
++      signal?.removeEventListener('abort', abort); preparations.delete(preparation);
++      // Abort/context loss may already have disposed the owning renderer.
++      // Every compile restores its target synchronously before yielding.
++      quadGeometry.dispose();
++    }
++  }
+@@ -134 +218 @@ export function createContactLight({ renderer, scene, camera, quality = 'balance
+-  return { setSize, setQuality, render, dispose, metrics };
++  return { setSize, setQuality, prepare, render, dispose, metrics };
+diff --git a/experiences/synk-world-home/shader-preparation.mjs b/experiences/synk-world-home/shader-preparation.mjs
+new file mode 100644
+index 0000000..4e5eeb9
+--- /dev/null
++++ b/experiences/synk-world-home/shader-preparation.mjs
+@@ -0,0 +1,80 @@
++function abortError(signal) {
++  return signal?.reason instanceof Error ? signal.reason : new DOMException('Shader preparation cancelled', 'AbortError');
++}
++
++/** Yield to input/paint without leaving a timer behind when the owner closes. */
++export function yieldForShaderPreparation({ signal, delayMs = 0 } = {}) {
++  return new Promise((resolve, reject) => {
++    if (signal?.aborted) { reject(abortError(signal)); return; }
++    let timer;
++    const abort = () => { clearTimeout(timer); signal?.removeEventListener('abort', abort); reject(abortError(signal)); };
++    signal?.addEventListener('abort', abort, { once: true });
++    timer = setTimeout(() => { signal?.removeEventListener('abort', abort); resolve(); }, Math.max(0, delayMs));
++  });
++}
++
++/** Split preparation work into short tasks without retaining GL state at a yield. */
++export async function runShaderPreparationTasks(tasks, { signal, budgetMs = 8, now = () => performance.now() } = {}) {
++  let started = now();
++  for (let i = 0; i < tasks.length; i++) {
++    if (signal?.aborted) throw abortError(signal);
++    tasks[i]();
++    if (i + 1 < tasks.length && now() - started >= budgetMs) {
++      await yieldForShaderPreparation({ signal });
++      started = now();
++    }
++  }
++  if (signal?.aborted) throw abortError(signal);
++}
++
++/**
++ * Wait for programs already queued by renderer.compile(). Three r180's
++ * compileAsync() polls mutable material properties and cannot be cancelled.
++ * Snapshot the program handles instead, and stop all polling before disposal.
++ */
++export async function waitForShaderPrograms(renderer, { signal, timeoutMs = 20000, pollMs = 16 } = {}) {
++  if (signal?.aborted) throw abortError(signal);
++  const gl = renderer.getContext();
++  if (gl.isContextLost()) throw new Error('SHADER_CONTEXT_LOST');
++  const extension = renderer.extensions.get('KHR_parallel_shader_compile');
++  const programs = [...new Set(renderer.info.programs || [])].filter(program => program.program).map(wrapper => ({ wrapper, handle: wrapper.program }));
++  const count = programs.length;
++  if (!extension) {
++    await yieldForShaderPreparation({ signal });
++    if (gl.isContextLost()) throw new Error('SHADER_CONTEXT_LOST');
++    return { parallel: false, programs: count };
++  }
++  return new Promise((resolve, reject) => {
++    let timer, deadline, settled = false;
++    const cleanup = () => {
++      clearTimeout(timer); clearTimeout(deadline);
++      signal?.removeEventListener('abort', abort);
++      renderer.domElement?.removeEventListener('webglcontextlost', contextLost);
++    };
++    const finish = (error) => {
++      if (settled) return;
++      settled = true; cleanup();
++      if (error) reject(error); else resolve({ parallel: true, programs: count });
++    };
++    const abort = () => finish(abortError(signal));
++    const contextLost = () => finish(new Error('SHADER_CONTEXT_LOST'));
++    const check = () => {
++      if (settled) return;
++      if (signal?.aborted) { abort(); return; }
++      if (gl.isContextLost()) { contextLost(); return; }
++      try {
++        for (let i = programs.length - 1; i >= 0; i--) {
++          const { wrapper, handle } = programs[i];
++          if (wrapper.program !== handle) { finish(new Error('SHADER_PROGRAM_DISPOSED')); return; }
++          if (gl.getProgramParameter(handle, extension.COMPLETION_STATUS_KHR)) programs.splice(i, 1);
++        }
++        if (!programs.length) finish();
++        else timer = setTimeout(check, Math.max(1, pollMs));
++      } catch (error) { finish(error); }
++    };
++    signal?.addEventListener('abort', abort, { once: true });
++    renderer.domElement?.addEventListener('webglcontextlost', contextLost, { once: true });
++    deadline = setTimeout(() => finish(new Error('SHADER_PREPARATION_TIMEOUT')), Math.max(1, timeoutMs));
++    check();
++  });
++}
+diff --git a/experiences/synk-world-home/wardrobe-environment.mjs b/experiences/synk-world-home/wardrobe-environment.mjs
+new file mode 100644
+index 0000000..2144351
+--- /dev/null
++++ b/experiences/synk-world-home/wardrobe-environment.mjs
+@@ -0,0 +1,54 @@
++import * as THREE from './scene-assets/three.module.js';
++
++async function loadBakedBytes({signal,timeoutMs}){
++  signal?.throwIfAborted();
++  const request=new AbortController(),abort=()=>request.abort(signal.reason);
++  const timeout=new Error('WARDROBE_ENVIRONMENT_TIMEOUT');
++  const timer=setTimeout(()=>request.abort(timeout),Number.isFinite(timeoutMs)?Math.max(1,timeoutMs):5000);
++  let rejectCancelled;
++  const cancelled=new Promise((_,reject)=>{rejectCancelled=()=>reject(request.signal.reason);});
++  request.signal.addEventListener('abort',rejectCancelled,{once:true});
++  signal?.addEventListener('abort',abort,{once:true});
++  try{
++    const loading=(async()=>{
++      const response=await fetch(new URL('./assets/wardrobe-environment-v1.bin.gz',import.meta.url),{signal:request.signal});
++      if(!response.ok)throw Error('WARDROBE_ENVIRONMENT_ASSET');
++      request.signal.throwIfAborted();
++      // Abort both fetch and the decoding pipe, including a body that stops
++      // sending bytes after its response headers have already arrived.
++      return await new Response(response.body.pipeThrough(new DecompressionStream('gzip'),{signal:request.signal})).arrayBuffer();
++    })();
++    const bytes=await Promise.race([loading,cancelled]);
++    request.signal.throwIfAborted();return bytes;
++  }finally{
++    clearTimeout(timer);signal?.removeEventListener('abort',abort);request.signal.removeEventListener('abort',rejectCancelled);
++  }
++}
++
++// The fixed fitting-room PMREM, baked from the original two white panels and
++// #dfe7e7 background. Half-float values preserve the original linear lighting.
++// Each stage owns its GPU texture; the small compressed asset is HTTP-cacheable.
++export async function loadWardrobeEnvironment(renderer,{signal,timeoutMs=5000}={}){
++  try{
++    const bytes=await loadBakedBytes({signal,timeoutMs});
++    signal?.throwIfAborted();
++    if(bytes.byteLength!==768*1024*8)throw Error('WARDROBE_ENVIRONMENT_SIZE');
++    const texture=new THREE.DataTexture(new Uint16Array(bytes),768,1024,THREE.RGBAFormat,THREE.HalfFloatType);
++    texture.name='Wardrobe baked PMREM';texture.mapping=THREE.CubeUVReflectionMapping;
++    texture.colorSpace=THREE.LinearSRGBColorSpace;texture.minFilter=texture.magFilter=THREE.LinearFilter;
++    texture.generateMipmaps=false;texture.flipY=false;texture.needsUpdate=true;
++    return {texture,source:'baked',dispose:()=>texture.dispose()};
++  }catch(error){
++    signal?.throwIfAborted();
++    // Missing/offline assets retain the original appearance and supported path.
++    if(renderer.getContext().isContextLost())throw Error('WARDROBE_CONTEXT_LOST');
++    const scene=new THREE.Scene();scene.background=new THREE.Color('#dfe7e7');
++    const material=new THREE.MeshBasicMaterial({color:'#ffffff'});
++    for(const [w,h,position]of [[5,4,[-3,3,4]],[4,3,[3,2,-3]]]){
++      const panel=new THREE.Mesh(new THREE.PlaneGeometry(w,h),material);panel.position.set(...position);panel.lookAt(0,1,0);scene.add(panel);
++    }
++    const generator=new THREE.PMREMGenerator(renderer);
++    try{const target=generator.fromScene(scene,.08);return {texture:target.texture,source:'procedural-fallback',dispose:()=>target.dispose()};}
++    finally{generator.dispose();scene.traverse(object=>object.geometry?.dispose());material.dispose();}
++  }
++}
+diff --git a/experiences/synk-world-home/wardrobe-stage.mjs b/experiences/synk-world-home/wardrobe-stage.mjs
+index 0184b21..1d33ed9 100644
+--- a/experiences/synk-world-home/wardrobe-stage.mjs
++++ b/experiences/synk-world-home/wardrobe-stage.mjs
+@@ -4,0 +5 @@ import {createContactLight} from './contact-light-v6.mjs';
++import {loadWardrobeEnvironment} from './wardrobe-environment.mjs';
+@@ -24,0 +26,2 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
++  signal?.throwIfAborted();
++  const startupAt=performance.now(),preparation=new AbortController();
+@@ -79,3 +81,0 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  const envScene=new THREE.Scene();envScene.background=new THREE.Color('#dfe7e7');const envWhite=new THREE.MeshBasicMaterial({color:'#ffffff'});
+-  mesh(envScene,new THREE.PlaneGeometry(5,4),envWhite,[-3,3,4]).lookAt(0,1,0);mesh(envScene,new THREE.PlaneGeometry(4,3),envWhite,[3,2,-3]).lookAt(0,1,0);
+-  const pmrem=new THREE.PMREMGenerator(renderer),environment=pmrem.fromScene(envScene,.08);scene.environment=environment.texture;scene.environmentIntensity=.42;pmrem.dispose();envScene.traverse(o=>o.geometry?.dispose());envWhite.dispose();
+@@ -83 +83 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  let cancelled=Boolean(signal?.aborted),disposeReady=null,backdropDisposed=false;
++  let cancelled=Boolean(signal?.aborted),disposeReady=null,backdropDisposed=false,environment=null;
+@@ -85 +85 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-    if(backdropDisposed)return;backdropDisposed=true;contactLight.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());oakTexture.dispose();contactTexture.dispose();environment.dispose();key.shadow.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
++    if(backdropDisposed)return;backdropDisposed=true;canvas.removeEventListener('webglcontextlost',preparationLost);contactLight.dispose();const geometries=new Set(),materials=new Set();scene.traverse(o=>{if(o.geometry)geometries.add(o.geometry);for(const m of Array.isArray(o.material)?o.material:o.material?[o.material]:[])materials.add(m);});geometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());oakTexture.dispose();contactTexture.dispose();environment?.dispose();key.shadow.dispose();renderer.dispose();renderer.forceContextLoss();canvas.remove();
+@@ -87 +87,3 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  const abort=()=>{cancelled=true;if(disposeReady)disposeReady();else releaseBackdrop();};
++  const abort=()=>{cancelled=true;preparation.abort();if(disposeReady)disposeReady();else releaseBackdrop();};
++  function preparationLost(event){event.preventDefault();preparation.abort(new Error('WARDROBE_CONTEXT_LOST'));}
++  canvas.addEventListener('webglcontextlost',preparationLost);
+@@ -91 +93,5 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  try{avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true});}
++  try{
++    environment=await loadWardrobeEnvironment(renderer,{signal:preparation.signal});
++    preparation.signal.throwIfAborted();scene.environment=environment.texture;scene.environmentIntensity=.42;
++    avatar=await createMongleAvatar({mobile,anisotropy:Math.min(8,renderer.capabilities.getMaxAnisotropy()),wardrobeDetail:true,initialSlots:slots,signal:preparation.signal});
++  }
+@@ -95 +101 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  let disposed=false,lost=false,active=true,inView=true,frame=0,frameCount=0,lastFrame=0;
++  let disposed=false,lost=false,active=true,inView=true,frame=0,frameCount=0,lastFrame=0,preparing=true,startupSized=false,startupMs=0;
+@@ -101,2 +107,2 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  function render(){if(disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
+-  function schedule(){if(!frame&&!disposed&&!lost&&active&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
++  function render(){if(preparing||disposed||lost||!active||!inView||document.hidden)return;avatar.group.rotation.y=angle;const before=performance.now();contactLight.render();renderMs=performance.now()-before;frameCount++;}
++  function schedule(){if(!preparing&&!frame&&!disposed&&!lost&&active&&inView&&!document.hidden)frame=requestAnimationFrame(tick);}
+@@ -104 +110 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-  function resize(){if(disposed)return;const phone=matchMedia('(max-width:799px)').matches,shadowSize=phone?512:1024,rect=host.getBoundingClientRect();size={width:Math.max(1,Math.round(rect.width)),height:Math.max(1,Math.round(rect.height))};renderer.setPixelRatio(Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.sqrt(1200000/(size.width*size.height))));renderer.setSize(size.width,size.height,false);if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);key.shadow.map?.dispose();key.shadow.mapPass?.dispose();key.shadow.map=null;key.shadow.mapPass=null;key.shadow.needsUpdate=true;}contactLight.setQuality('balanced',{mobile:phone});fit();schedule();}
++  function resize(){if(disposed||preparing&&startupSized)return;startupSized=true;const phone=matchMedia('(max-width:799px)').matches,shadowSize=phone?512:1024,rect=host.getBoundingClientRect();size={width:Math.max(1,Math.round(rect.width)),height:Math.max(1,Math.round(rect.height))};renderer.setPixelRatio(Math.min(devicePixelRatio||1,phone?1.5:1.75,Math.sqrt(1200000/(size.width*size.height))));renderer.setSize(size.width,size.height,false);if(key.shadow.mapSize.x!==shadowSize){key.shadow.mapSize.set(shadowSize,shadowSize);key.shadow.map?.dispose();key.shadow.mapPass?.dispose();key.shadow.map=null;key.shadow.mapPass=null;key.shadow.needsUpdate=true;}contactLight.setQuality('balanced',{mobile:phone});fit();schedule();}
+@@ -142 +148 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-    if(disposed)return;disposed=true;cancelAnimationFrame(frame);resizeObserver.disconnect();intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
++    if(disposed)return;disposed=true;preparation.abort();cancelAnimationFrame(frame);resizeObserver.disconnect();intersection.disconnect();document.removeEventListener('visibilitychange',visibility);
+@@ -146,0 +153,6 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
++  try{
++    await contactLight.prepare({signal:preparation.signal});
++    preparation.signal.throwIfAborted();if(lost)throw Error('WARDROBE_SHADER_FAILED');
++    canvas.removeEventListener('webglcontextlost',preparationLost);
++    preparing=false;resize();render();if(lost)throw Error('WARDROBE_SHADER_FAILED');startupMs=performance.now()-startupAt;
++  }catch(error){dispose();throw error;}
+@@ -152 +164 @@ export async function mountWardrobeStage(host,{slots={},dyes={},reducedMotion=fa
+-    metrics:()=>({stageRevision:3,avatar:avatar.metrics(),contactLight:contactLight.metrics(),shadowMapSize:key.shadow.mapSize.x,shadowTechnique:'VSM',slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),angle,targetAngle,detail,zoom,light,pose,background,disposed,lost,active,inView,paused:!active||!inView||document.hidden||lost,frames:frameCount,dpr:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,renderSubmissionMs:renderMs,drawingBuffer:{width:canvas.width,height:canvas.height}}),
++    metrics:()=>({stageRevision:4,startupMs,environmentSource:environment.source,avatar:avatar.metrics(),contactLight:contactLight.metrics(),shadowMapSize:key.shadow.mapSize.x,shadowTechnique:'VSM',slots:{...currentSlots},dyes:avatar.getDyes(),view:getView(),angle,targetAngle,detail,zoom,light,pose,background,disposed,lost,active,inView,paused:!active||!inView||document.hidden||lost,frames:frameCount,dpr:renderer.getPixelRatio(),drawCalls:renderer.info.render.calls,triangles:renderer.info.render.triangles,textures:renderer.info.memory.textures,geometries:renderer.info.memory.geometries,renderSubmissionMs:renderMs,drawingBuffer:{width:canvas.width,height:canvas.height}}),
+diff --git a/experiences/synk-world-home/wardrobe-studio.css b/experiences/synk-world-home/wardrobe-studio.css
+index fcb7bb8..2c25e66 100644
+--- a/experiences/synk-world-home/wardrobe-studio.css
++++ b/experiences/synk-world-home/wardrobe-studio.css
+@@ -104,0 +105,3 @@
++
++/* Cover the canvas until the first-use shader passes are ready. */
++.atelier-scene[aria-busy=true]::after{content:'옷감과 빛을 준비하고 있어요';position:absolute;inset:0;display:grid;place-items:center;background:#eef2f1;color:#66716f;font-size:12px;pointer-events:none;z-index:1}
+diff --git a/experiences/synk-world-home/wardrobe-studio.mjs b/experiences/synk-world-home/wardrobe-studio.mjs
+index e80c0d0..40c7a49 100644
+--- a/experiences/synk-world-home/wardrobe-studio.mjs
++++ b/experiences/synk-world-home/wardrobe-studio.mjs
+@@ -271 +271 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
+-    const token=++generation;thumbQueue.clear();stageAbort?.abort();stageAbort=new AbortController();engine?.dispose();engine=null;fault='';$('.atelier-scene').setAttribute('aria-busy','true');
++    const token=++generation;thumbQueue.clear();stageAbort?.abort();stageAbort=new AbortController();engine?.dispose();engine=null;fault='';root.dataset.stage='loading';$('.atelier-scene').setAttribute('aria-busy','true');
+@@ -273 +273 @@ export function createWardrobeStudio({snapshot,onEquip=async()=>{},onSaveLooks=a
+-    try{const {mountWardrobeStage}=await import('./wardrobe-stage.mjs');if(disposed||token!==generation)return;const stage=await mountWardrobeStage($('.atelier-scene'),{slots:draft.slots,reducedMotion:reducedMotion||ws.preferences.reducedMotion,signal:stageAbort.signal,onError:fail,onView:view=>{if(disposed)return;ws.view=view;$('[data-field="zoom"]').value=view.zoom;soonRemember();},onAngle:a=>{if(disposed)return;$$('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Math.abs(Number(b.dataset.angle)-a)<.02)));}});if(disposed||token!==generation){stage.dispose();return;}engine=stage;engine.setLight(ws.light);engine.setView?.(ws.view);engine.setPose?.(ws.pose);engine.setBackground?.(ws.background);engine.setDyes?.(draft.dyes);$('.atelier-stage-error')?.remove();$('.atelier-scene').setAttribute('aria-busy','false');root.dataset.stage='ready';render();remember();}
++    try{const {mountWardrobeStage}=await import('./wardrobe-stage.mjs');if(disposed||token!==generation)return;const stage=await mountWardrobeStage($('.atelier-scene'),{slots:draft.slots,reducedMotion:reducedMotion||ws.preferences.reducedMotion,signal:stageAbort.signal,onError:fail,onView:view=>{if(disposed||token!==generation)return;ws.view=view;$('[data-field="zoom"]').value=view.zoom;soonRemember();},onAngle:a=>{if(disposed||token!==generation)return;$$('[data-angle]').forEach(b=>b.setAttribute('aria-pressed',String(Math.abs(Number(b.dataset.angle)-a)<.02)));}});if(disposed||token!==generation){stage.dispose();return;}engine=stage;engine.setLight(ws.light);engine.setView?.(ws.view);engine.setPose?.(ws.pose);engine.setBackground?.(ws.background);engine.setDyes?.(draft.dyes);$('.atelier-stage-error')?.remove();$('.atelier-scene').setAttribute('aria-busy','false');root.dataset.stage='ready';render();remember();}

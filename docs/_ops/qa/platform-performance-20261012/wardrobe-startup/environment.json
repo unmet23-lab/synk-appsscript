@@ -1,0 +1,11 @@
+{
+  "dpr": 2,
+  "errors": [],
+  "parallelCompile": true,
+  "renderer": "ANGLE (Intel, Intel(R) Arc(TM) B390 GPU (0x0000B082) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36",
+  "viewport": [
+    1280,
+    720
+  ]
+}

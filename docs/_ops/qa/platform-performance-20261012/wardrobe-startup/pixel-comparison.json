@@ -1,0 +1,22 @@
+[
+  {
+    "before": "canvas-before.png",
+    "after": "canvas-final.png",
+    "pixelMeanError": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  {
+    "before": "worn-canvas-before.png",
+    "after": "worn-canvas-after.png",
+    "pixelMeanError": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+]

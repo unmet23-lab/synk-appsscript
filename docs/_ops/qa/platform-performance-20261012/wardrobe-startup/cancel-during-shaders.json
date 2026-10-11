@@ -1,0 +1,12 @@
+{
+  "before": {
+    "polls": 9536,
+    "ready": null
+  },
+  "closeWallMs": 303,
+  "after": {
+    "polls": 9600,
+    "canvas": 0,
+    "errors": []
+  }
+}

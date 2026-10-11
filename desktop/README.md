@@ -1,5 +1,25 @@
 # SYNK 데스크톱 클라이언트
 
+## 2026-10-12 최종 배포·검수 상태
+
+현재 홈페이지는 **Windows·Mac 두 버튼**을 함께 보여 주며 Mac은 Apple Silicon·Intel을 선택한다. 공개 Platform 설치판은 세 아키텍처 모두 **0.4.3**, 포함된 WORLD·Workspace 설치판은 **0.4.1**이다. WORLD는 인터넷 연결로 실행하며 별도 개발 서버를 요구하지 않는다. 아래 날짜별 0.4.0·0.4.1 설명은 당시 출시 이력이다.
+
+현재 PC의 별도 구성은 Platform0.4.3과 기존 WORLD0.4.2를 보존한다. 공개 설치파일과 PC 전용 구성을 혼동하지 않는다. 관련 최종 회귀시험162/162, 공개 다운로드 응답·파일 대조, 이 PC 실계정 저장→정상 종료→재실행 복원을 통과했다. [성능·마감 검수](../docs/_ops/qa/platform-performance-20261012/README.md), [실계정 인수](../docs/_ops/qa/platform-real-account-20261010/README.md). 다른 물리 기기의 인수와 정식 서명·공증은 완료로 표시하지 않는다.
+
+## 2026-10-12 정식 서명·공증 — 사업자 등록 후로 보류
+
+**사용자 최종 결정: 사업자 등록 후 재개한다.** 지금은 인증서 구매·유료 가입·서명·공증·관련 배포를 진행하지 않는다. 사업자 등록 후 사용자가 재개를 요청하면 Windows 서명 서비스의 사업체 가입 자격과 당시 요금, Apple 가입 유형부터 다시 확인한다. 현재 홈페이지의 Windows·Mac Preview 다운로드는 유지한다. 아래는 보류 전 사전 확인 기록이다.
+
+사용자가 실물 PC 추가 검증은 보류하고 Windows 코드 서명·Mac Developer ID 서명과 Apple 공증을 먼저 요청했다. 현재 **사업자 등록 전이며 Apple Developer 유료 멤버십과 Windows 코드 서명 인증서가 모두 없다**고 확인했다. 현재 PC의 사용자/컴퓨터 인증서 저장소에는 코드 서명 인증서가 없고, 공개 배포 저장소에도 서명용 Actions secret이 없다. 비밀값은 출력하지 않았다. 이 항목은 준비 상태이며 실제 서명·공증 완료 기록이 아니다.
+
+Mac은 개인 Apple Developer Program 가입이 가능하고 연 US$99이며, 현지 결제액은 가입 화면에서 확인한다. 홈페이지 DMG에는 Developer ID Application 인증서가 필요하다. Enterprise 가입은 필요하지 않다. 조직 가입은 별도의 법적 실체·D-U-N-S 등이 필요하므로 현재 SYNK를 법인으로 신청하지 않는다. [Apple 가입 기준·요금](https://developer.apple.com/kr/programs/enroll/), [Developer ID 인증서](https://developer.apple.com/help/account/certificates/create-developer-id-certificates/).
+
+Windows의 Microsoft Artifact Signing은 한국 조직을 지원하지만 개인은 미국·캐나다만 지원하므로 현재 한국 개인에게 권하지 않는다. SSL.com IV Code Signing은 사업체 없이 개인 실명으로 신청할 수 있고 공식 신원검증 안내가 한국을 명시한다. 2026-10-12 확인 정가는 인증서 연 US$129 + eSigner Tier1 연 US$180(연240회, 초과회당 US$1)로 합계 US$309다. 월납은 인증서와 별도로 월 US$20/20회이며 신규 eSigner 첫30일 무료는 인증서 요금 면제를 뜻하지 않는다. 한 빌드가 여러 파일을 서명하므로240회는240번의 앱 출시가 아니다. 세금·환율·최종 주문액과 사용량을 확인한 뒤 선택해야 한다. Certum 개인 Standard Cloud는 €209부터지만 한국 발급·1년 최종액을 확정하지 못해 즉시 구매 대상으로 추천하지 않았다. 신규 가입·결제·인증서 발급·클라우드 리소스 생성은 아직 하지 않았다. [Microsoft 가입 요건](https://learn.microsoft.com/en-us/azure/artifact-signing/quickstart), [SSL.com 개인 상품](https://www.ssl.com/products/software-integrity/code-signing/iv/), [서명 요금](https://www.ssl.com/guide/esigner-pricing-for-code-signing/), [한국 신원검증 안내](https://www.ssl.com/guide/identity-validation-for-ssl-com-certificates-a-complete-guide/).
+
+현재 공개 Platform0.4.3 빌더는 WORLD·Workspace0.4.1의 미서명/ad-hoc 설치파일을 해시로 고정해 포함한다. 전체 정식 서명은 WORLD·Workspace부터 서명(맥은 공증·staple 포함)한 최종 파일의 해시를 새 카탈로그에 기록하고, 이를 포함한 Platform을 마지막에 서명해야 한다. 기존 공개 파일·프로필·승인 해시는 보존하고 새 배포 버전으로 추가한다. 정식 모드는 자격증명 누락 시 실패해야 하며 Preview로 조용히 전환하면 안 된다. 현재 빌더에 서명 완료 플래그나 가짜 인증서를 추가하지 않았다.
+
+Mac의 고정 electron-builder26.15.3은 `mac.identity`·`hardenedRuntime`·`notarize` 설정을 쓴다. 기본 JIT entitlement부터 사용하고 Intel Vulkan loader도 서명 대상에 포함한다. 최종 앱과 DMG의 서명·공증 ticket·Gatekeeper 평가·읽기 전용 DMG 및 자식 해시 검사를 통과한 뒤 공개한다. Windows는 실행파일·설치파일의 게시자/체인·SHA256/RFC3161 타임스탬프 검증을 통과해야 한다. 서명만으로 신규 파일의 SmartScreen 경고가 즉시 없어짐을 보장하지 않는다. [v26 Mac](https://www.electron.build/v26/docs/mac/), [SignTool](https://learn.microsoft.com/en-us/windows/win32/seccrypto/signtool), [SmartScreen](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/smartscreen-reputation).
+
 ## 2026-10-12 공개 Mac 설치판 · Apple Silicon·Intel Preview 0.4.1
 
 [홈페이지](https://synk.im/#platform)에서 Windows x64와 **Apple Silicon·Intel Mac, macOS 13 이상** 설치판을 받는다. Mac Platform에는 WORLD·Workspace DMG가 함께 들어 있으며 각각 Applications에 원래 앱 이름으로 복사한 뒤 Platform에서 설치 상태를 새로고침한다. WORLD는 인터넷에 연결하면 별도 개발 서버·Node.js 없이 실행한다.
@@ -11,6 +31,22 @@ Mac은 Developer ID 서명·Apple 공증 전 Preview다. **M 시리즈는 Apple 
 ## 2026-10-12 이 PC의 튜터 홈 · WORLD 0.4.2
 
 이 PC의 WORLD를 공개 튜터 홈에 연결한 0.4.2로 설치했다. 플랫폼 0.4.0의 WORLD 등록 목록과 포함 설치 파일도 갱신했으며 기존 플랫폼/PULSE 코드와 사용자 프로필을 보존했다. 홈페이지의 공개 설치 파일은 여전히 0.4.1이다. 실제 계정 저장·재로그인은 공개 웹에서 확인했고, PC 패키지는 격리 프로필의 실제 네이티브 화면을 확인했다. [설치·계정 검증](../experiences/synk-world-app/qa/account-desktop-20261012/README.md).
+
+## 2026-10-12 WORLD 공개 연결 · Windows Preview 0.4.1
+
+[홈페이지 다운로드](https://synk.im/#platform)를 새 Platform·WORLD **0.4.1**로 갱신했다. WORLD는 공개 HTTPS 서비스에 연결하므로 다른 PC에서 Node.js나 별도 개발 서버 없이 실행한다. 인터넷은 필요하다. 첫 화면의 **기본 학습**에서 비회원 학습을 열거나 SYNK ID로 연결한다.
+
+새 Platform에는 WORLD 설치 파일이 포함된다. 기존 사용자는 새 Platform 설치 후 라이브러리에서 WORLD를 업데이트한다. [WORLD만 설치](https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-WORLD-Preview-0.4.1-win-x64.exe)도 가능하다. 미서명 Windows x64 Preview이며 자동 업데이트는 제공하지 않는다. Mac 설치판은 위 Apple Silicon 항목을 따른다.
+
+실제 패키지의 빈 격리 프로필에서 공개 학습→게임 조작→계정 복귀18/18, 연결 실패·재시도10/10을 확인했다. 공개19파일과 두 설치 파일 전체 다운로드 SHA가 일치한다. 다른 물리 PC·NSIS 설치 실행·실제 사용자 로그인은 별도 인수로 남긴다. [증거와 재현](../docs/_ops/qa/world-cloud-preview-20261012/README.md).
+
+소스의 공개 WORLD 패키징은 `node tools/package.cjs --client=world --mode=development --platform=win32 --arch=x64 --world-cloud-preview=true --auth-config=<공개설정파일>`을 사용한다. 플래그 없는 개발 실행은 기존 localhost를 유지한다. 아래0.4.0 내용은 당시 이력이다.
+
+## 2026-10-11 홈페이지 Windows 다운로드
+
+사용자 요청으로 [SYNK 플랫폼 소개](https://synk.im/#platform)에서 **Windows x64 Preview 0.4.0** 설치 파일을 직접 받도록 연결했다. [공개 미리보기 릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.0-20261011)는 독립 PULSE 연결을 확인한 `platform-pulse-app-20261011` 기반이며, Workspace 진단 로그 358바이트만 제외하고 플랫폼의 자식 설치 파일 해시·크기를 갱신했다. 공개 파일 SHA-256은 `2eac837a7f0aecc63ed4796c8ee3bcc67b96ef26ecc57055b1b4577276ee0323`이다. 기존 PC 설치본·프로필·노트는 변경하지 않았다.
+
+미서명 개발판이며 자동 업데이트·macOS 설치판은 제공하지 않는다. 포함된 WORLD는 별도 `127.0.0.1:4280` 개발 서버가 필요하다. 정식 출시와 독립 WORLD 설치 완료를 뜻하지 않는다. [홈페이지·파일 검증](../../SYNK-website/qa/platform-download-20261011/README.md).
 
 ## 2026-10-09 현재 앱 구성 — 9개 앱과 핵심 기능
 
