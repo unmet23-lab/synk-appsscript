@@ -6,7 +6,7 @@
       "contentHash": "9ab96c02b500d25086a9d15d3d840f6efe50c36c5eb17723af4fdc2d0b854a40",
       "publicationHash": "33769544feba4c2ec066a5785968a7f7a29d5845f309cb089261d67d20eed6f7",
       "startedAt": "2026-10-11T10:25:05.162Z",
-      "state": "private",
+      "state": "scheduled",
       "id": "4PmAR9VNHS8",
       "url": "https://www.youtube.com/watch?v=4PmAR9VNHS8",
       "thumbnail": null,
@@ -21,9 +21,14 @@
         "title": "Hangul for Beginners · 한글 초보단계",
         "created": false,
         "itemId": "UExZVDh5R2dFNDE0NC45ODRDNTg0QjA4NkFBNkQy",
-        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144"
+        "url": "https://www.youtube.com/playlist?list=PLYT8yGgE4144",
+        "visibility": "public"
       },
-      "finishedAt": "2026-10-11T10:25:14.506Z"
+      "finishedAt": "2026-10-11T10:25:14.506Z",
+      "publishAt": "2026-10-11T12:00:00.000Z",
+      "scheduledAt": "2026-10-11T10:30:10.704Z",
+      "publicNote": "유호님 10-11 「오늘 예약 없으면 오늘 21:00에 예약해줘, 아니면 내일 20:00로 예약해줘」 — 채널 공개 예약을 읽어 오늘(10-11) 남은 예약 없음 확인(받침은 08:00에 이미 공개), 10/14 08:00 예약을 오늘 21:00로 바꿈 · AI 음악 표시 켬",
+      "containsSyntheticMedia": true
     }
   }
 }
