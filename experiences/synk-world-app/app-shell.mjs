@@ -3,6 +3,7 @@ import {mountEnrollment} from './enrollment.mjs';
 import {createWorldAccount,loadWorldConfig,createLifeProgressPort} from './world-account.bundle.mjs';
 import {PACKS,LESSONS} from './life-content.mjs';
 import {createLifeProgress} from './life-progress.mjs';
+import {restoreTutorSelection,commitTutorSelection,tutorSelectionStatus} from './tutor-selection-sync.mjs';
 import {createLifeExperience} from './life-ui.mjs';
 import {createTownWorldHost} from './world-town-client.mjs';
 import {createWardrobeStudio} from '../synk-world-home/wardrobe-studio.mjs';
@@ -15,6 +16,7 @@ const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
 const {firstSupport}=await import(worldUrl('brand-opening/game-tutor-support.mjs'));
 const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
 let client,townSession,enrollmentView,lifeUI=null,lifeProgress=null,lifePort=null,lifeOwner=null,lifeGeneration=-1,lifeEpoch=0,lifeReady=null,lifeRecoveryShown=false;
+let tutorReady=false,tutorRefresh=null;
 // Loading and session restoration run behind the company splash. A failed
 // optional opening must never disable the existing account or guest entrance.
 function startOpening(replay=false){return import(worldUrl('brand-opening/opening.mjs')).then(({mountBrandOpening})=>{
@@ -91,6 +93,9 @@ function lifeSaveStatus(port){
  return {...status,message:status.phase==='synced'?'생활 진도가 이 로컬 확인 계정에 저장됐어요.':status.phase==='saving'?'생활 진도를 로컬 확인 계정에 저장하고 있어요.':status.message};
 }
 function refreshLife(){
+ home.refreshTutorStatus?.();
+ const recovery=document.querySelector('#tutor-save-recovery');
+ if(recovery){const status=tutorStatus();recovery.hidden=!status.blocked;}
  if(!lifeProgress||!lifeUI)return;
  try{lifeUI.refresh();const node=document.querySelector('.life-save-status');if(node){const status=lifeProgress.status();node.textContent=status.message;node.dataset.savePhase=status.phase;}}catch{}
 }
@@ -98,11 +103,40 @@ function showLifeRecovery(){
  if(!lifePort)return;
  lifeRecoveryShown=true;
  const status=lifePort.status(),rejected=!!status.rejected;
- show(rejected?'생활 진도의 저장을 확인해 주세요':'이어서 할 생활 진도를 골라 주세요',`<p class="panel-description">${escape(status.message)}</p><div class="world-actions"><button class="felt-button" data-world="life-resolve" data-choice="local">이 기기의 진도로 ${rejected?'다시 저장':'이어가기'}</button><button class="plain-button" data-world="life-resolve" data-choice="remote">계정에 저장된 진도 사용</button><button class="quiet-button" data-world="home">나중에 확인하기</button></div><p class="dialog-note">저장 전 원본은 이 기기에 보관해요. 사용할 기록은 직접 고를 수 있어요.</p>`,'life-recovery');
+ show(rejected?'튜터와 학습 기록의 저장을 확인해 주세요':'이어서 사용할 기록을 골라 주세요',`<p class="panel-description">${escape(status.message)}</p><p class="dialog-note">튜터 선택과 학습 진도는 함께 저장돼요. 전송 대기 중인 놀이 기록도 선택한 쪽으로 이어집니다. 저장 전 원본은 이 기기에 보관해요.</p><div class="world-actions"><button class="felt-button" data-world="life-resolve" data-choice="local">이 기기의 기록으로 ${rejected?'다시 저장':'이어가기'}</button><button class="plain-button" data-world="life-resolve" data-choice="remote">계정에 저장된 기록 사용</button><button class="quiet-button" data-world="home">나중에 확인하기</button></div>`,'life-recovery');
+}
+function tutorStatus(owner=client.snapshot?.accountId||'guest'){
+ return tutorSelectionStatus({owner,progress:owner===lifeOwner?lifeProgress:null,ready:tutorReady&&owner===lifeOwner});
+}
+function restoreTutor(){
+ try{restoreTutorSelection({progress:lifeProgress,owner:lifeOwner,storage:localStorage,apply:(id,owner)=>home.applyTutorChoice?.(id,owner)});}catch{/* Preserve unreadable/conflicting records and expose recovery. */}
+ home.refreshTutorStatus?.();
+}
+async function prepareTutor(){
+ const owner=client.snapshot?.accountId||'guest',generation=client.generation;
+ if(!lifeReady)initializeLife();await lifeReady;
+ if(owner!==(client.snapshot?.accountId||'guest')||generation!==client.generation)return false;
+ if(tutorStatus(owner).blocked){showLifeRecovery();return false;}
+ return true;
+}
+async function selectTutor(tutor,owner){
+ const generation=client.generation;
+ const guard=()=>{if(owner!==(client.snapshot?.accountId||'guest')||generation!==client.generation)throw Object.assign(Error('계정 연결이 바뀌었어요. 다시 골라 주세요.'),{code:'ACCOUNT_CHANGED'});};
+ guard();await lifeReady;guard();
+ if(owner!=='guest'&&!lifePort){await initializeLife();guard();}
+ try{return await commitTutorSelection({progress:lifeProgress,owner,tutor,storage:localStorage,guard});}
+ catch(error){if(error.code==='REVISION_CONFLICT')showLifeRecovery();throw error;}
+ finally{refreshLife();}
+}
+async function refreshTutorAccount(){
+ if(tutorRefresh||!client.snapshot||!tutorReady||tutorStatus().blocked)return;
+ const epoch=lifeEpoch,port=lifePort;
+ tutorRefresh=(async()=>{try{if(!port){if(!home.openPanel())await initializeLife();return;}await lifeProgress.flush();if(epoch===lifeEpoch&&lifePort===port&&!home.openPanel())await initializeLife();}catch{/* Keep the durable queue and current screen. */}})();
+ try{await tutorRefresh;}finally{tutorRefresh=null;}
 }
 function initializeLife(){
  const owner=client.snapshot?.accountId||'guest',generation=client.generation,epoch=++lifeEpoch;
- lifeOwner=owner;lifeGeneration=generation;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();lifeUI=null;lifeProgress=null;lifePort=null;lifeRecoveryShown=false;
+ lifeOwner=owner;lifeGeneration=generation;tutorReady=false;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();lifeUI=null;lifeProgress=null;lifePort=null;lifeRecoveryShown=false;
  const guard=()=>{if(epoch!==lifeEpoch||(client.snapshot?.accountId||'guest')!==owner||generation!==client.generation)throw Object.assign(Error('생활 한국어 계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
  home.updateLearning?.({owner,completed:0,total:LESSONS.length,packs:PACKS,nextLesson:null,resume:false,dueCount:0,status:{phase:'loading'}});
  lifeReady=(async()=>{
@@ -120,6 +154,7 @@ function initializeLife(){
   if(notice){const status=lifeProgress.status;lifeProgress=Object.freeze({...lifeProgress,status:()=>({...status(),message:notice})});}
   lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav})});
   window.__synkLife=lifeUI;
+  tutorReady=true;restoreTutor();
   refreshLife();
  })().catch(error=>{if(epoch===lifeEpoch)home.toast(error.message||'생활 진도를 확인하지 못했어요.');});
  return lifeReady;
@@ -142,7 +177,7 @@ async function resolveLife(button){
   const guard=port.guard;
   lifeProgress=createLifeProgress({owner:lifeOwner,mode:'account',storage:port.storage,now:()=>Date.now(),guard,save:port.flush,getSaveStatus:()=>lifeSaveStatus(port),onChange:refreshLife});
   lifeUI=createLifeExperience({home,getProgress:()=>lifeProgress,asset:path=>worldUrl('brand-opening/assets/'+path),show:(title,html,options)=>show(title,html,options.type,{eyebrow:options.eyebrow,nav:options.nav})});
-  window.__synkLife=lifeUI;lifeUI.next();
+  window.__synkLife=lifeUI;tutorReady=true;restoreTutor();close();refreshLife();
  }catch(error){if(epoch===lifeEpoch&&home.openPanel()==='life-recovery'){home.toast(error.message||'아직 진도를 저장하지 못했어요.');document.querySelectorAll('[data-world="life-resolve"]').forEach(node=>node.disabled=false);}}
 }
 function welcome(){show('몽글과, 나의 작은 세계',`<div class="welcome-art"><img src="assets/mongle-smile.webp" alt="반갑게 웃는 몽글"><span>HELLO, MY WORLD</span></div><p class="welcome-lead">놀고, 꾸미고, 조금씩 배워요.</p><p class="panel-description">마음에 드는 차림을 입고<br>나만의 속도로 시작해요.</p><div class="world-actions"><button class="felt-button" data-world="sign-in">내 계정으로 시작 <span aria-hidden="true">→</span></button><button class="plain-button" data-world="guest">먼저 둘러보기</button></div><p class="dialog-note">${operating?'SYNK ID로 로그인하면 첫 놀이와 차림, 동네의 내 기록을 같은 계정으로 이어가요.':'이번 개발판에서는 테스트 계정으로 저장과 이어하기를 확인할 수 있어요. 실제 SYNK 계정은 변경되지 않아요.'}</p>`,'world-welcome');}
@@ -242,7 +277,7 @@ const learningSongs={'vowel-dance':{title:'모음 댄스',description:'모음 �
 function songs(){show('노래로 만나는 한글',`<div class="play-list">${Object.entries(learningSongs).map(([id,s])=>`<button data-world-song="${id}"><img src="${worldUrl('brand-opening/assets/home/headphones.webp')}" alt=""><span><strong>${s.title}</strong><small>${s.description}</small></span></button>`).join('')}</div>`,'world-songs');}
 function playSong(id){const song=learningSongs[id];if(!song)return;show(song.title,`<video class="song-video" controls playsinline preload="metadata" aria-label="${song.title}" src="${worldUrl('assets/videos/'+id+'.mp4')}"></video><p class="dialog-note">노래 속 글자를 보면서 따라 불러요.</p>`,'world-song');$('#panel-content video').play().catch(()=>{});}
 const commands={
- 'life-resolve':resolveLife,
+ 'life-resolve':resolveLife,'life-recovery':showLifeRecovery,
  'resolve-play':async button=>{const recovery=gameRecovery;if(!recovery||recovery.busy)return;recovery.busy=true;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=true);try{await recovery.session.resolve(button.dataset.choice);if(gameRecovery===recovery&&screen==='world-game-conflict'&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict'))await launchGame(recovery.id);}catch(error){if(gameRecovery===recovery&&worldPanel.open&&(!home.isMaru||home.openPanel()==='world-game-conflict')){home.toast(errorText(error));recovery.busy=false;document.querySelectorAll('[data-world="resolve-play"]').forEach(b=>b.disabled=false);}}},
  'sign-in':signIn,'account-login':()=>client.signIn(),'guest':()=>{try{localStorage.setItem('synk-world-v1-welcomed','1');}catch{}close();},'login-a':()=>login('player-a'),'login-b':()=>login('player-b'),profile,wardrobe,pending,play,finish,home:close,town,songs,'town-preview':townPreview,
  pause:()=>{saveDraft();close();home.toast('홈에서 쉬었다가 이어서 할 수 있어요.');},
@@ -273,13 +308,17 @@ document.addEventListener('click',event=>{
 },true);
 document.addEventListener('change',event=>{const control=event.target;if(control.matches?.('[data-world-learning]')){control.disabled=true;const enabled=control.checked;void account.setLearning(enabled,Number(control.dataset.revision)).then(()=>{if(screen==='world-profile')profile();}).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});return;}if(!control.matches?.('[data-town-sharing]'))return;control.disabled=true;const enabled=control.checked,revision=Number(control.dataset.revision);void client.request('town/sharing',{method:'POST',body:{enabled,revision}}).then(()=>town()).catch(error=>{control.checked=!enabled;home.toast(errorText(error));}).finally(()=>{control.disabled=false;});});
 window.addEventListener('pagehide',()=>{lifeEpoch++;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();townSession?.dispose();delete window.SYNKWorldTownHost;account?.stop();});
-window.addEventListener('online',()=>{if(client.snapshot)client.refresh().catch(()=>{});});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.snapshot&&!client.busy)client.refresh().catch(()=>{});});
+window.addEventListener('online',()=>{if(client.snapshot)client.refresh().then(refreshTutorAccount).catch(()=>{});});
+// Switching between side-by-side web and desktop windows need not hide either
+// document. Refocus must also restore the latest selected companion.
+window.addEventListener('focus',()=>{if(!document.hidden&&client.snapshot&&!client.busy)void refreshTutorAccount();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&client.snapshot&&!client.busy)client.refresh().then(refreshTutorAccount).catch(()=>{});});
 // A queued close event from sign-in must not clear a newly opened fitting room.
 const worldPanel=$('#world-panel')||$('#panel');
 worldPanel.addEventListener('close',()=>{if(!worldPanel.open){gameLaunch++;gameRecovery=null;screen='';hangerSignature='';renderHomeHanger(client.snapshot);enrollmentView?.dispose();enrollmentView=null;townSession?.dispose();townSession=null;delete window.SYNKWorldTownHost;}});
 window.__synkWorld={client,screen:()=>screen,wardrobe:()=>wardrobeStudio?.metrics(),life:()=>lifeUI?.metrics()};
-home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),replayOpening:()=>{close();return startOpening(true);}});
+home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,prepareTutor,selectTutor,tutorStatus,learn:()=>openLife('next'),packs:()=>openLife('packs'),stories:()=>openLife('stories'),review:()=>openLife('review'),cafe:()=>openLife('cafe'),replayOpening:()=>{close();return startOpening(true);}});
+if(home.isMaru){const recovery=document.createElement('button');recovery.id='tutor-save-recovery';recovery.className='quiet-button';recovery.dataset.world='life-recovery';recovery.textContent='튜터와 학습 기록 저장 확인';recovery.hidden=true;document.querySelector('#life-progress-caption')?.after(recovery);}
 try{const restored=await client.restore();await openingReady;if(!home.isMaru&&!restored&&!localStorage.getItem('synk-world-v1-welcomed'))welcome();}catch{await openingReady;if(!home.isMaru)welcome();else home.toast('계정 연결을 확인하지 못했어요. 내 공간에서 다시 연결할 수 있어요.');}
 renderStatus();
 if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페 연결을 확인한 뒤 다시 열어 주세요.'));

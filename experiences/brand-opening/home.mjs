@@ -94,7 +94,11 @@ function callHost(command,...args){
  return true;
 }
 function openGame(id){
- if(games[id])tutorUI.ensure(()=>launchGame(id));
+ if(games[id])void openTutor({then:()=>launchGame(id)});
+}
+async function openTutor({then=null,force=false}={}){
+ try{if(host?.prepareTutor&&await host.prepareTutor()===false)return;tutorUI.open({then,force});}
+ catch(error){toast(error.message||'튜터 연결을 다시 확인해 주세요.');}
 }
 function launchGame(id){
  const game=games[id];if(!game)return;
@@ -107,7 +111,7 @@ function launchGame(id){
 }
 async function callLearning(command){
  if(command==='initialize')return callLearningReady(command);
- tutorUI.ensure(()=>callLearningReady(command));
+ return openTutor({then:()=>callLearningReady(command)});
 }
 async function callLearningReady(command){
  if(host){callHost(command==='learn'?'learn':command);return;}
@@ -177,7 +181,8 @@ export const home={
  setEquipment(slots={},dyes={}){equipment={slots:{...slots},dyes:{...dyes}};},
  connectHost(callbacks){host=callbacks||null;document.documentElement.dataset.connected=String(Boolean(host));},
  updateAccount,updateLearning,
- startTutorial:()=>tutorUI.open(),chooseTutor:()=>tutorUI.open({force:true}),ensureTutor:then=>tutorUI.ensure(then),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics()
+ startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
+ applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
 };
 home.mountGameTutor=(game,{frame=null,practiceEnabled=true}={})=>{
  const companion=createGameTutor({tutorId:tutorUI.choice()?.id,game,container:content,frame,reduced:()=>home.state.reduced,owner:tutorUI.metrics().owner,onExit:closePanel,practiceEnabled});
@@ -186,7 +191,7 @@ home.mountGameTutor=(game,{frame=null,practiceEnabled=true}={})=>{
  return {...companion,dispose(){companion.dispose();if(window.__synkGameTutor===companion)delete window.__synkGameTutor;}};
 };
 home.mountLifeTutor=options=>createLifeTutor({...options,tutorId:tutorUI.choice()?.id,container:content,reduced:()=>home.state.reduced});
-tutorUI=createTutorOnboarding({home,asset,onChoice:tutor=>{
+tutorUI=createTutorOnboarding({home,asset,commitChoice:(id,owner)=>host?.selectTutor?host.selectTutor(id,owner):null,getChoiceStatus:owner=>host?.tutorStatus?.(owner),onChoice:tutor=>{
  const profile=$('.profile-portrait img'),caption=$('.place-heading>p:last-child');
  profile.src=asset(tutor?`assets/tutors/${tutor.images.기본}`:'assets/home/mongle-smile.webp');
  caption.textContent=tutor?`${tutor.name}과 오늘의 한국어`:'세 친구와 오늘의 한국어';

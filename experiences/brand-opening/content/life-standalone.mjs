@@ -746,6 +746,7 @@ function validate(raw, owner) {
     if (run.pendingHelp !== void 0 && (!object(run.pendingHelp) || Object.entries(run.pendingHelp).some(([id, value2]) => !run.ids.includes(id) || value2 !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
   if (value.daily !== void 0) validateDaily(value.daily);
+  if (value.tutor !== void 0 && (!object(value.tutor) || value.tutor.version !== 1 || !TUTORS.has(value.tutor.selected) || Object.keys(value.tutor).some((key) => !["version", "selected"].includes(key)))) throw fail("LIFE_PROGRESS_UNREADABLE");
   return value;
 }
 function createLifeProgress({ storage = globalThis.localStorage, owner = "guest", now = Date.now, uuid = () => crypto.randomUUID(), onChange = () => {
@@ -808,13 +809,15 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     if (value.phase === "unreadable") throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
     if (value.phase === "stopped") throw fail("ACCOUNT_CHANGED", "\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694.");
   }
-  function commit(next) {
+  function commit(next, { preserveDaily = false } = {}) {
     check2();
     if (readError) throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8\uC744 \uB36E\uC5B4\uC4F0\uC9C0 \uC54A\uC558\uC5B4\uC694.");
     next.revision = state.revision + 1;
-    fitDailyRecord(next);
+    if (!preserveDaily) fitDailyRecord(next);
+    const raw = JSON.stringify(next);
+    if (preserveDaily && (raw.length > 5e5 || new TextEncoder().encode(raw).length > 512 * 1024)) throw fail("PLAY_DATA_TOO_LARGE", "\uD29C\uD130 \uC120\uD0DD\uC744 \uC800\uC7A5\uD560 \uACF5\uAC04\uC774 \uBD80\uC871\uD574\uC694. \uAE30\uC874 \uD559\uC2B5 \uAE30\uB85D\uC740 \uBCF4\uC874\uD588\uC5B4\uC694.");
     try {
-      storage.setItem(key, JSON.stringify(next));
+      storage.setItem(key, raw);
       writeError = null;
       state = next;
     } catch (error) {
@@ -986,6 +989,20 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     commit(next);
     return { dayKey, closedAt, duplicate: false, empty: false, status: status() };
   }
+  function selectedTutor() {
+    check2();
+    if (readError) throw readError;
+    return state.tutor?.selected ?? null;
+  }
+  function selectTutor(tutor) {
+    checkDailyWrite();
+    if (!TUTORS.has(tutor)) throw TypeError("Invalid selected tutor");
+    if (state.tutor?.selected === tutor) return { tutor, duplicate: true, status: status() };
+    const next = clone2(state);
+    next.tutor = { version: 1, selected: tutor };
+    commit(next, { preserveDaily: true });
+    return { tutor, duplicate: false, status: status() };
+  }
   function summary(packs = [], flat = []) {
     check2();
     catalog(packs, flat);
@@ -1050,6 +1067,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     answerReview,
     recordGuidedPractice,
     markDayComplete,
+    selectedTutor,
+    selectTutor,
     flush,
     exportSnapshot() {
       check2();

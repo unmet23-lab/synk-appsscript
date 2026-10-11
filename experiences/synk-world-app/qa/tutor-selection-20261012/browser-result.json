@@ -1,0 +1,253 @@
+{
+  "scope": "synthetic local PGlite accounts player-a/player-b; two independent headless Edge contexts; no real account or native access",
+  "base": "http://127.0.0.1:4316",
+  "checks": [
+    {
+      "name": "marin home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "marin",
+        "line": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "name": "marin home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "marin life uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "line": "재확인. 어떤 도움을 받았는지 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "name": "marin life expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "marin cafe uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "line": "재확인. 품절된 음료와 주문할 수 있는 음료를 살핀다. …다시 골라도 된다."
+      }
+    },
+    {
+      "name": "marin cafe expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "marin actual first-sentence game mounts chosen companion",
+      "pass": true
+    },
+    {
+      "name": "marin game face uses chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "first wrong response and helped second question exist before cross-device selection",
+      "pass": true
+    },
+    {
+      "name": "new isolated browser with stale local Mongle home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "marin",
+        "line": "복귀 확인. 「주스는 품절이에요.」, 다시 살필 표현이다. …오늘은 이것부터 함께한다."
+      }
+    },
+    {
+      "name": "new isolated browser with stale local Mongle home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "older local tutor cannot overwrite saved account tutor",
+      "pass": true
+    },
+    {
+      "name": "learning records restore in another independent browser",
+      "pass": true
+    },
+    {
+      "name": "changing selection preserves original responses, help, review schedule and daily attribution",
+      "pass": true
+    },
+    {
+      "name": "kkamong home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "kkamong",
+        "line": "왔군! 「주스는 품절이에요.」, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게."
+      }
+    },
+    {
+      "name": "kkamong home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "kkamong life uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "line": "나도 헷갈렸ㅇ… 아니! 어떤 도움을 받았는지 다시 봐. 이 몸이 옆에서 봐 줄게."
+      }
+    },
+    {
+      "name": "kkamong life expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "kkamong cafe uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "line": "나도 헷갈렸ㅇ… 아니! 품절된 음료와 주문할 수 있는 음료를 다시 봐. 이 몸이 옆에서 봐 줄게."
+      }
+    },
+    {
+      "name": "kkamong cafe expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "kkamong actual first-sentence game mounts chosen companion",
+      "pass": true
+    },
+    {
+      "name": "kkamong game face uses chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "first browser after second browser changed tutor home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "kkamong",
+        "line": "왔군! 「주스는 품절이에요.」, 다시 볼 말이지. 이 몸이 같이 봐 주지. …나도 한 번 더 볼게."
+      }
+    },
+    {
+      "name": "first browser after second browser changed tutor home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "first browser reads server choice over its older local Marin",
+      "pass": true
+    },
+    {
+      "name": "account without local choice cache home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "mongle",
+        "line": "어? 왔구나! 「주스는 품절이에요.」, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!"
+      }
+    },
+    {
+      "name": "account without local choice cache home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "selection restored solely from account record after local choice removal",
+      "pass": true
+    },
+    {
+      "name": "mongle home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "mongle",
+        "line": "어? 왔구나! 「주스는 품절이에요.」, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!"
+      }
+    },
+    {
+      "name": "mongle home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "mongle life uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "hint",
+        "line": "나도… 헷갈려! 어떤 도움을 받았는지 같이 확인해 보자!"
+      }
+    },
+    {
+      "name": "mongle life expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "mongle cafe uses chosen tutor and authored line",
+      "pass": true,
+      "detail": {
+        "kind": "retry",
+        "line": "나도… 헷갈려! 품절된 음료와 주문할 수 있는 음료를 같이 확인해 보자!"
+      }
+    },
+    {
+      "name": "mongle cafe expression belongs to chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "mongle actual first-sentence game mounts chosen companion",
+      "pass": true
+    },
+    {
+      "name": "mongle game face uses chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "logout restores guest-specific Mongle without account learning",
+      "pass": true
+    },
+    {
+      "name": "relogin home restored tutor and canonical voice",
+      "pass": true,
+      "detail": {
+        "tutor": "mongle",
+        "line": "어? 왔구나! 「주스는 품절이에요.」, 다시 만나 볼까? 나도… 헷갈릴 때 있어! 같이 해 보자!"
+      }
+    },
+    {
+      "name": "relogin home expression uses current tutor image",
+      "pass": true
+    },
+    {
+      "name": "relogin restores remembered account learning",
+      "pass": true
+    },
+    {
+      "name": "a different account has no selected tutor or the first account learning",
+      "pass": true
+    },
+    {
+      "name": "zero page errors",
+      "pass": true
+    },
+    {
+      "name": "zero missing non-API resources",
+      "pass": true
+    },
+    {
+      "name": "zero external requests",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "images": [
+    "marin-home.png",
+    "marin-life.png",
+    "marin-cafe.png",
+    "marin-game.png",
+    "kkamong-home.png",
+    "kkamong-life.png",
+    "kkamong-cafe.png",
+    "kkamong-game.png",
+    "mongle-home.png",
+    "mongle-life.png",
+    "mongle-cafe.png",
+    "mongle-game.png",
+    "guest-isolation.png",
+    "relogin-home.png"
+  ]
+}

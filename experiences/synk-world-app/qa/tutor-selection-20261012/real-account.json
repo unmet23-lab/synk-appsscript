@@ -1,0 +1,10 @@
+{
+  "scope": "Actual signed-in web WORLD and installed PC WORLD Preview 0.4.2 using ordinary UI; no account IDs, credentials or private profile files collected",
+  "baseline": {
+    "web": {"signedIn": true, "tutor": "kkamong", "completed": "1/22", "nextLesson": "이름표를 찾아서", "todayExpressions": 3},
+    "pc": {"signedIn": true, "tutor": "kkamong", "completed": "1/22", "nextLesson": "이름표를 찾아서", "todayExpressions": 3}
+  },
+  "webToPC": "pending",
+  "pcToWeb": "pending",
+  "finalTutor": "pending"
+}

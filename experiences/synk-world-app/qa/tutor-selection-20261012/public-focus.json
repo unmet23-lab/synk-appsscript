@@ -1,0 +1,43 @@
+{
+  "createdAt": "2026-10-11T17:36:55.361Z",
+  "baseline": "3929ca8e49e61ac8f40c4d6af66f89f34db88183",
+  "previousRelease": "3929ca8e49e61ac8f40c4d6af66f89f34db88183",
+  "revision": "tutor-account-focus-20261012",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\tutor-selection-sync-20261012\\focus\\public",
+  "source": "experiences/synk-world-app/app-shell.mjs",
+  "sourceSHA256": "f8f22d36dba9c60b0e7cb4260df06d903ecf0fafb0a5dbaa6744db943ab5aaab",
+  "sourceDelta": "Three focus lines only",
+  "changes": [
+    {
+      "path": "world/app-shell.mjs",
+      "beforeSHA256": "2e650cd13fee4f709952b56da2271160ddcf83df122034f7ea3eb3d7f1435d46",
+      "sha256": "c9a1dae81099bfb84186403f414809f766f3018f00cc15f39c4a56ee24d1a5f8",
+      "bytes": 45453
+    },
+    {
+      "path": "world/desktop.html",
+      "beforeSHA256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "bytes": 10029
+    },
+    {
+      "path": "world/index.html",
+      "beforeSHA256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "bytes": 10029
+    },
+    {
+      "path": "world/mobile.html",
+      "beforeSHA256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "bytes": 10029
+    }
+  ],
+  "deleted": 0,
+  "sharedCheckoutWrites": 0,
+  "commit": "5c79e12c0cdcffdd4ed25c9faafc87c0ab1fc530",
+  "tree": "c920b9b2e833297af7ada35c6b5241f965cf3459",
+  "publishedAt": "2026-10-11T17:37:08.546Z",
+  "publishedHead": "5c79e12c0cdcffdd4ed25c9faafc87c0ab1fc530",
+  "forcePush": false
+}

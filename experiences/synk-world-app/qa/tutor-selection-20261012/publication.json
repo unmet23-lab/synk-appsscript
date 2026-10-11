@@ -1,0 +1,98 @@
+{
+  "createdAt": "2026-10-11T17:31:31.482Z",
+  "baseline": "0e5f32178527ce0c59c2cef7d55c7ddf3d1d6107",
+  "sourceCommit": "69a596ab36e36fd37e74d3bc8be653dbe708cdc8",
+  "revision": "tutor-account-20261012",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\tutor-selection-sync-20261012\\public",
+  "changes": [
+    {
+      "path": "world/app-shell.mjs",
+      "source": "experiences/synk-world-app/app-shell.mjs",
+      "sourceSHA256": "ae0152d0e7c620d99c0d9e39905db3a50b0724e582a98f75749e8306511fd0b3",
+      "beforeSHA256": "bb20c2962f14226fddfc9a897ba02ce5daf4d07b33455e9a233923525ace9332",
+      "sha256": "2e650cd13fee4f709952b56da2271160ddcf83df122034f7ea3eb3d7f1435d46",
+      "bytes": 45185
+    },
+    {
+      "path": "world/life-progress.mjs",
+      "source": "experiences/synk-world-app/life-progress.mjs",
+      "sourceSHA256": "6317aedbf71045491a8bdfec7ac56a4e89307b6385a769b30c372ba06df79f42",
+      "beforeSHA256": "13ae6867fae2a3758e83166e838ef09b76fef429e61e434c1df3339291bc446c",
+      "sha256": "b20683d13e8c82817e2ee90d2ab15de1b9c9d721ace91cc67d60c16977399292",
+      "bytes": 25487
+    },
+    {
+      "path": "world/tutor-selection-sync.mjs",
+      "source": "experiences/synk-world-app/tutor-selection-sync.mjs",
+      "sourceSHA256": "f3ebfb26bfb77f627ffa447b217f67dd43287fa249d88ec109867aa7551c23e6",
+      "beforeSHA256": null,
+      "sha256": "760b7f9929ae17a0ea4b294e4c7e3d2d9e3740b626f7f4004504233dcc8932b7",
+      "bytes": 3228
+    },
+    {
+      "path": "world/brand-opening/home.mjs",
+      "source": "experiences/brand-opening/home.mjs",
+      "sourceSHA256": "788bc5e785ab8738efe26dc25f6e1a1d394524f424c8679eb6d95c6dd0acf7fd",
+      "beforeSHA256": "9a4758d397261880eb4d8350de963278ac0495f1b5c58bdbca8b6cb9489b752a",
+      "sha256": "01d3dd19d423c2ae530d92224319f596aa95c044f797e481a2cb38936d76ade4",
+      "bytes": 21572
+    },
+    {
+      "path": "world/brand-opening/tutor-onboarding.mjs",
+      "source": "experiences/brand-opening/tutor-onboarding.mjs",
+      "sourceSHA256": "f0c3cd92d949d996b08959f961723c9470c58b038dc4a5b1d18b1f6ffaca3da2",
+      "beforeSHA256": "07f8322bafdc983976979fc7f0fc48f4702c99f58bbff8803fb4698303ce4a31",
+      "sha256": "3ca9bb117990c1911d40c9d7886f033b3129fa03dae4c8224fc64e277c9fbdb6",
+      "bytes": 15312
+    },
+    {
+      "path": "world/index.html",
+      "beforeSHA256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "sha256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "bytes": 10023,
+      "entryChange": "app-shell version only"
+    },
+    {
+      "path": "world/mobile.html",
+      "beforeSHA256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "sha256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "bytes": 10023,
+      "entryChange": "app-shell version only"
+    },
+    {
+      "path": "world/desktop.html",
+      "beforeSHA256": "45e342d06b77ef80b4f872589a5db386b7d009016d46ababef9f51488f26ee5e",
+      "sha256": "81382d7875a12b9e2395aed9f7a6ed50afe6e192f276265467afebdefecd49d2",
+      "bytes": 10023,
+      "entryChange": "app-shell version only"
+    }
+  ],
+  "checks": [
+    {
+      "path": "world/app-shell.mjs",
+      "normalizedSourceHeadMatchesPublic": true
+    },
+    {
+      "path": "world/life-progress.mjs",
+      "normalizedSourceHeadMatchesPublic": true
+    },
+    {
+      "path": "world/brand-opening/home.mjs",
+      "normalizedSourceHeadMatchesPublic": true
+    },
+    {
+      "path": "world/brand-opening/tutor-onboarding.mjs",
+      "normalizedSourceHeadMatchesPublic": true
+    }
+  ],
+  "secretScan": "passed",
+  "syntaxChecks": 5,
+  "deleted": 0,
+  "sharedCheckoutWrites": 0,
+  "bundleChanged": false,
+  "commit": "3929ca8e49e61ac8f40c4d6af66f89f34db88183",
+  "tree": "80f948028a8cfe0edb1527e10146ffcf4108fadc",
+  "publishedAt": "2026-10-11T17:32:54.907Z",
+  "publishedHead": "3929ca8e49e61ac8f40c4d6af66f89f34db88183",
+  "forcePush": false
+}
