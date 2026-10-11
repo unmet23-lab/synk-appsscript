@@ -9,7 +9,7 @@ test('three clients have independent app IDs, executables, profiles, installers 
   for(const mode of ['development','release']) {
     const identities=Object.keys(CLIENTS).map(id=>identity(id,mode));
     for(const key of ['appId','executableName','productName','sessionScope'])assert.equal(new Set(identities.map(c=>c[key])).size,3);
-    for(const platform of ['win32','darwin'])for(const arch of ['x64','arm64'])for(const id of Object.keys(CLIENTS)) {const config=configFor(id,{mode,platform,arch});assert.equal(config.appId,identity(id,mode).appId);assert.equal(config.nsis.runAfterFinish,false);assert.equal(config.publish,null);assert.equal(config.mac.hardenedRuntime,true);}
+    for(const platform of ['win32','darwin'])for(const arch of ['x64','arm64'])for(const id of Object.keys(CLIENTS)) {const config=configFor(id,{mode,platform,arch});assert.equal(config.appId,identity(id,mode).appId);assert.equal(config.nsis.runAfterFinish,false);assert.equal(config.publish,null);assert.equal(config.mac.hardenedRuntime,mode==='release');assert.equal(config.mac.minimumSystemVersion,'13.0');if(mode==='development'){assert.equal(config.mac.identity,'-');assert.equal(config.mac.notarize,false);}else{assert.equal(config.forceCodeSigning,true);assert.equal(config.mac.identity,undefined);assert.equal(config.mac.notarize,undefined);}}
   }
   assert.notEqual(identity('world','development').sessionScope,identity('world','release').sessionScope);
 });

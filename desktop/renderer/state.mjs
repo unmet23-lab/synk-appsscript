@@ -62,7 +62,7 @@ export function primaryAction(client,{native=true,busy=false,teacherPreviewAvail
   if(installer.canPrepare)return {label:installer.status==='error'?'다시 준비':'설치 준비',action:'prepare',disabled:false};
   return {label:'배포 준비 중',action:'none',disabled:true};
 }
-export function installerLabel(installer={}){return ({idle:'설치 파일 준비 가능',preparing:'설치 파일 복사·확인 중',opening:'설치 프로그램 여는 중',ready:'설치 파일 준비 완료','installer-opened':'설치 마법사를 열었어요',cancelled:'준비 취소됨',error:'설치 준비를 완료하지 못했어요',unavailable:'배포 준비 중'})[installer.status]||'배포 준비 중';}
+export function installerLabel(installer={}){return ({idle:'설치 파일 준비 가능',preparing:'설치 파일 복사·확인 중',opening:'설치 프로그램 여는 중',ready:'설치 파일 준비 완료','installer-opened':'설치 파일을 열었어요',cancelled:'준비 취소됨',error:'설치 준비를 완료하지 못했어요',unavailable:'배포 준비 중'})[installer.status]||'배포 준비 중';}
 export function progressValue(installer={}){if(Number.isFinite(installer.progress))return Math.max(0,Math.min(installer.status==='preparing'?99:100,installer.progress));const total=Number(installer.totalBytes),done=Number(installer.transferredBytes);return total>0&&Number.isFinite(done)?Math.max(0,Math.min(installer.status==='preparing'?99:100,done/total*100)):0;}
 export function parsePreferences(raw){
   try{

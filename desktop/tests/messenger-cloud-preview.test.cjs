@@ -27,10 +27,10 @@ test('CLI opt-in is explicit, rejects missing or wrong client/mode and arbitrary
   for(const id of ['world','platform','messenger'])assert.equal(previewEntry(id,{mode:'development'}),DEV_URLS[id]);
 });
 
-test('Preview identity and unsigned development stay separate from mandatory signed release',()=>{
+test('Preview identity and ad-hoc Mac development stay separate from mandatory publisher-signed release',()=>{
   for(const platform of ['win32','darwin']){
     const preview=configFor('messenger',{mode:'development',platform,messengerCloudPreview:true});
-    assert.equal(preview.appId,'im.synk.messenger.preview');assert.equal(preview.executableName,'SYNKMessengerPreview');assert.equal(preview.forceCodeSigning,false);assert.equal(preview.win.signExecutable,false);assert.equal(preview.mac.identity,null);assert.equal(preview.publish,null);assert.equal(preview.nsis.runAfterFinish,false);assert.equal(preview.nsis.deleteAppDataOnUninstall,false);
+    assert.equal(preview.appId,'im.synk.messenger.preview');assert.equal(preview.executableName,'SYNKMessengerPreview');assert.equal(preview.forceCodeSigning,false);assert.equal(preview.win.signExecutable,false);assert.equal(preview.mac.identity,'-');assert.equal(preview.mac.hardenedRuntime,false);assert.equal(preview.publish,null);assert.equal(preview.nsis.runAfterFinish,false);assert.equal(preview.nsis.deleteAppDataOnUninstall,false);
     const release=configFor('messenger',{mode:'release',platform});assert.equal(release.forceCodeSigning,true);assert.equal(release.win.signExecutable,true);assert.equal(release.appId,'im.synk.messenger');
   }
   assert.equal(identity('messenger','development').sessionScope,'im.synk.messenger.preview');

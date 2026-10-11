@@ -33,7 +33,7 @@ function configFor(id,{mode='development',platform='win32',arch='x64'}={}) {
     forceCodeSigning:mode==='release',
     win:{target:[{target:'nsis',arch:[arch]}],signExecutable:mode==='release',icon:path.join(root,'assets',id+'.ico')},
     nsis:{oneClick:false,perMachine:false,allowElevation:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},
-    mac:{target:[{target:'dmg',arch:[arch]},{target:'zip',arch:[arch]}],category:id==='world'?'public.app-category.education':'public.app-category.productivity',hardenedRuntime:true,gatekeeperAssess:false,icon:path.join(root,'assets',id+'.icns'),...(mode==='development'?{identity:null}:{})},
+    mac:{target:[{target:'dmg',arch:[arch]},{target:'zip',arch:[arch]}],category:id==='world'?'public.app-category.education':'public.app-category.productivity',minimumSystemVersion:'13.0',hardenedRuntime:mode==='release',gatekeeperAssess:false,icon:path.join(root,'assets',id+'.icns'),...(mode==='development'?{identity:'-',notarize:false,preAutoEntitlements:false}:{})},
     publish:null,
   };
 }
