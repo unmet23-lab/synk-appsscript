@@ -1,0 +1,119 @@
+{
+  "base": "https://synk.im/world",
+  "scope": "Public canonical entry with no query bypass; fresh isolated guest; real opening skip and home/tutor choice UI; no login or account writes; no synthetic state or clock",
+  "checks": [
+    {
+      "name": "canonical app entry responds successfully without query parameters",
+      "pass": true
+    },
+    {
+      "name": "fresh guest sees the actual opening and cover has cleared",
+      "pass": true
+    },
+    {
+      "name": "opening logo is decoded from the deployed app",
+      "pass": true,
+      "detail": {
+        "loaded": true,
+        "url": "https://synk.im/world/brand-opening/assets/synk-paper.webp"
+      }
+    },
+    {
+      "name": "new context has no account session or saved tutor",
+      "pass": true
+    },
+    {
+      "name": "opening can be skipped through its actual button",
+      "pass": true
+    },
+    {
+      "name": "first visit automatically offers all three AI tutors",
+      "pass": true,
+      "detail": [
+        "marin",
+        "kkamong",
+        "mongle"
+      ]
+    },
+    {
+      "name": "all three initial tutor portraits decode from deployed assets",
+      "pass": true,
+      "detail": [
+        {
+          "loaded": true,
+          "url": "https://synk.im/world/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d"
+        },
+        {
+          "loaded": true,
+          "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4"
+        },
+        {
+          "loaded": true,
+          "url": "https://synk.im/world/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963"
+        }
+      ]
+    },
+    {
+      "name": "onboarding identifies the characters as AI tutors",
+      "pass": true
+    },
+    {
+      "name": "closing the choice exposes the guest home with a choose action",
+      "pass": true
+    },
+    {
+      "name": "home background asset has decoded",
+      "pass": true,
+      "detail": {
+        "loaded": true,
+        "url": "https://synk.im/world/brand-opening/assets/felt-world-scene-mobile-v9.webp"
+      }
+    },
+    {
+      "name": "home reopens a fully rendered Kkamong tutor preview",
+      "pass": true,
+      "detail": {
+        "loaded": true,
+        "url": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589"
+      }
+    },
+    {
+      "name": "Kkamong preview gives the authored first-person introduction",
+      "pass": true
+    },
+    {
+      "name": "preview cancellation leaves the guest unselected and unauthenticated",
+      "pass": true
+    },
+    {
+      "name": "errors zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "missing zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "external zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "blockedWrites zero",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\public-opening-20261012-r2\\opening.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\public-opening-20261012-r2\\automatic-tutor-choice.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\public-opening-20261012-r2\\home-before-choice.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\tutor-switch-20261011\\public-opening-20261012-r2\\kkamong-choice-from-home.png"
+  ]
+}

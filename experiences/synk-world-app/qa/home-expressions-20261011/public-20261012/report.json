@@ -1,0 +1,1442 @@
+{
+  "url": "https://synk.im/world",
+  "scope": "Delivered runtime at https://synk.im/world; isolated guest with no account entry or server writes; natural UI flows and separately labeled explicit sprite QA",
+  "checks": [
+    {
+      "tutor": "kkamong",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 2,
+            "changed": 0
+          },
+          {
+            "max": 2,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "leaving during blink restores base on home return",
+      "pass": true,
+      "detail": {
+        "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "closed eyes do not remain one second after returning",
+      "pass": true,
+      "detail": {
+        "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 1,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "real mistake becomes remembered home recommendation",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-remembered: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-remembered: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-retry: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "민망",
+          "box": {
+            "x": 36,
+            "y": 153.03125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-retry: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-success: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 139.734375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-success: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home celebrates real guided success",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 43.41883087158203,
+            "y": 386.4200744628906,
+            "width": 65.16233825683594,
+            "height": 72.78488159179688
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 44.9207878112793,
+            "y": 387.74237060546875,
+            "width": 62.15842056274414,
+            "height": 70.1402587890625
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 44.6820068359375,
+            "y": 387.5311584472656,
+            "width": 62.635986328125,
+            "height": 70.56268310546875
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success-settled: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success-settled: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "guided practice leaves lesson/checkpoint grading intact",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home success returns to base",
+      "pass": true,
+      "detail": {
+        "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-before-finish: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "ready",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-before-finish: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 34.933204650878906,
+            "y": 246.32435607910156,
+            "width": 64.13359069824219,
+            "height": 71.88255310058594
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 34.269317626953125,
+            "y": 245.7423858642578,
+            "width": 65.46136474609375,
+            "height": 73.04649353027344
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.654296875,
+            "y": 246.95980834960938,
+            "width": 62.69140625,
+            "height": 70.61163330078125
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.65023422241211,
+            "y": 246.95620727539062,
+            "width": 62.699527740478516,
+            "height": 70.61883544921875
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.97472381591797,
+            "y": 247.2432403564453,
+            "width": 62.05055236816406,
+            "height": 70.04478454589844
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-finished: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-finished: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "recap disposal removes its tutor and preserves one home companion",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-after-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-after-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home continues idle after dialog round trip",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "recap interruption also restores open eyes",
+      "pass": true,
+      "detail": {
+        "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "reload retains tutor and completed day",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "page errors zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "missing local resources zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "external requests zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "server writes zero",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "frames": [
+    {
+      "tutor": "kkamong",
+      "label": "390-home-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 43.41883087158203,
+            "y": 386.4200744628906,
+            "width": 65.16233825683594,
+            "height": 72.78488159179688
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 199.96200000002506,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 44.9207878112793,
+            "y": 387.74237060546875,
+            "width": 62.15842056274414,
+            "height": 70.1402587890625
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 391.56200000002485,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 44.6820068359375,
+            "y": 387.5311584472656,
+            "width": 62.635986328125,
+            "height": 70.56268310546875
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 558.1920000000249,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        },
+        {
+          "ms": 1100,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "label": "390-recap-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 34.933204650878906,
+            "y": 246.32435607910156,
+            "width": 64.13359069824219,
+            "height": 71.88255310058594
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 116.57099999986897,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 34.269317626953125,
+            "y": 245.7423858642578,
+            "width": 65.46136474609375,
+            "height": 73.04649353027344
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 283.1389999998688,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.654296875,
+            "y": 246.95980834960938,
+            "width": 62.69140625,
+            "height": 70.61163330078125
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 433.13899999986916,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.65023422241211,
+            "y": 246.95620727539062,
+            "width": 62.699527740478516,
+            "height": 70.61883544921875
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 549.7709999998692,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 1100,
+          "face": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "https://synk.im/world/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.97472381591797,
+            "y": 247.2432403564453,
+            "width": 62.05055236816406,
+            "height": 70.04478454589844
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 666.3389999998692,
+              "state": "running"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-natural-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-natural-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-return-during-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-return-during-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-으쓱.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-으쓱-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-놀람.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-놀람-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-민망.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-explicit-민망-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-remembered.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-remembered-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-practice-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-practice-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-practice-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-settled.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-home-success-settled-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-before-finish.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-before-finish-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-finished.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-recap-finished-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-after-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\public-20261012\\kkamong\\390-after-recap-portrait.png"
+  ],
+  "failure": "locator.evaluate: EncodingError: The source image cannot be decoded.\n    at shot (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\verify-home-expressions.cjs:29:99)\n    at compareEyes (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\verify-home-expressions.cjs:34:21)\n    at async learning (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\verify-home-expressions.cjs:89:116)\n    at async baseline (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\verify-home-expressions.cjs:59:2)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\verify-home-expressions.cjs:98:302"
+}
