@@ -12,12 +12,12 @@ const ASSETS=Object.freeze({
 });
 const CSP="default-src 'none'; script-src 'none'; style-src 'unsafe-inline'; img-src 'self'; font-src 'self'; connect-src 'none'; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'";
 const escape=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-function createConnectionContent({appRoot,clientId,mode,entry,messengerCloudPreview=false,productName,readFile=fs.readFile,realpath=fs.realpath}){
-  const teachingEntry=clientId==='messenger'&&messengerCloudPreview===true&&mode==='development'&&
+function createConnectionContent({appRoot,clientId,mode,entry,messengerCloudPreview=false,worldCloudPreview=false,productName,readFile=fs.readFile,realpath=fs.realpath}){
+  const teachingEntry=clientId==='messenger'&&messengerCloudPreview===true&&worldCloudPreview===false&&mode==='development'&&
     entry===messengerViewEntry(MESSENGER_CLOUD_PREVIEW_ENTRY,'messenger',['--view=teaching']);
-  if(!['world','messenger','platform'].includes(clientId)||!teachingEntry&&!safeEntry(entry,mode,{clientId,messengerCloudPreview}))throw Error('Invalid connection entry');
+  if(!['world','messenger','platform'].includes(clientId)||!teachingEntry&&!safeEntry(entry,mode,{clientId,messengerCloudPreview,worldCloudPreview}))throw Error('Invalid connection entry');
   const label=escape(productName||({world:'SYNK WORLD',messenger:'SYNK Workspace',platform:'SYNK Platform'}[clientId]));
-  const guidance=mode==='development'&&!messengerCloudPreview?'이 기기의 앱 서비스가 켜져 있는지 확인한 뒤 다시 연결해 주세요.':'인터넷 연결을 확인하거나 잠시 뒤 다시 연결해 주세요.';
+  const guidance=mode==='development'&&!messengerCloudPreview&&!worldCloudPreview?'이 기기의 앱 서비스가 켜져 있는지 확인한 뒤 다시 연결해 주세요.':'인터넷 연결을 확인하거나 잠시 뒤 다시 연결해 주세요.';
   const html=`<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>${label} · 연결 확인</title><style>
 @font-face{font-family:SUIT;src:url('/assets/SUIT.woff2') format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Inter Tight';src:url('/assets/InterTight.woff2') format('woff2');font-weight:100 900;font-display:swap}

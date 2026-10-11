@@ -1,7 +1,8 @@
 'use strict';
 const path=require('node:path');
-const {PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY}=require('./catalog.cjs');
+const {PLATFORM_ENTRY,MESSENGER_CLOUD_PREVIEW_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY}=require('./catalog.cjs');
 const {PUBLIC_APP_URLS}=require('./public-apps.cjs');
+const WORLD_PUBLIC_PLAY=Object.freeze(['learning-hub','korean-racing','korean-runner','korean-rhythm','order-rush','entry-check','story-classroom','blank-slice']);
 const importMapHash=require('node:crypto').createHash('sha256').update(JSON.stringify({imports:{three:'./vendor/three.module.js'}})).digest('base64');
 function contentSecurityPolicy(resourceType) {
   return "default-src 'self'; script-src 'self' 'sha256-"+importMapHash+"'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; media-src 'self' data: blob: https:; frame-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors "+(resourceType==='subFrame'?"'self'":"'none'");
@@ -11,7 +12,8 @@ function isNativeEntry(value){try{const u=new URL(value);return u.protocol==='sy
 function allowedUrl(value,entry,allowedOrigins=[]) {
   try {const u=new URL(value),base=new URL(entry);return !u.username&&!u.password&&(u.origin===base.origin||allowedOrigins.includes(u.origin))&&['http:','https:'].includes(u.protocol);}catch{return false;}
 }
-function safeEntry(value,mode,{clientId,messengerCloudPreview=false}={}) {
+function safeEntry(value,mode,{clientId,messengerCloudPreview=false,worldCloudPreview=false}={}) {
+  if(worldCloudPreview!==false)return worldCloudPreview===true&&messengerCloudPreview===false&&clientId==='world'&&mode==='development'&&value===WORLD_CLOUD_PREVIEW_ENTRY;
   if(messengerCloudPreview!==false)return messengerCloudPreview===true&&clientId==='messenger'&&mode==='development'&&value===MESSENGER_CLOUD_PREVIEW_ENTRY;
   try {const u=new URL(value);if(u.username||u.password||u.hash)return false;
     if(value===PLATFORM_ENTRY)return ['development','release'].includes(mode);
@@ -24,7 +26,11 @@ function trustedEntry(value,entry,clientId) {
   if(!allowedUrl(value,entry))return false;
   const u=new URL(value),base=new URL(entry),id=clientId||(base.searchParams.get('product')==='world'?'world':base.pathname==='/synk-account/platform.html'?'platform':'messenger');
   if(id==='platform'&&u.pathname==='/synk-account/client.html')return u.searchParams.getAll('product').length===1&&u.searchParams.get('product')==='platform'&&[...u.searchParams.keys()].every(k=>k==='product');
-  if(id==='world')return u.pathname===base.pathname&&u.searchParams.getAll('product').length===1&&u.searchParams.get('product')==='world'&&[...u.searchParams.keys()].every(k=>k==='product');
+  if(id==='world'){
+    if(u.pathname!==base.pathname||u.searchParams.getAll('product').length!==1||u.searchParams.get('product')!=='world')return false;
+    if(entry===WORLD_CLOUD_PREVIEW_ENTRY){const play=u.searchParams.getAll('play');return [...u.searchParams.keys()].every(k=>k==='product'||k==='play')&&(play.length===0||play.length===1&&WORLD_PUBLIC_PLAY.includes(play[0]));}
+    return [...u.searchParams.keys()].every(k=>k==='product');
+  }
   return u.pathname===base.pathname&&(id==='messenger'||u.search===base.search);
 }
 function assertSender(event,window,entry,clientId) {
@@ -36,14 +42,18 @@ function allowedNavigation(value,entry,clientId) {
   const u=new URL(value),base=new URL(entry);
   if(clientId==='messenger')return u.pathname===base.pathname;
   if(clientId==='platform')return trustedEntry(value,entry,clientId);
-  if(clientId==='world')return trustedEntry(value,entry,clientId)||['/learning-hub/','/korean-racing/','/korean-rhythm/','/order-rush/','/korean-runner/'].some(p=>u.pathname===p||u.pathname===p+'index.html');
+  if(clientId==='world'){
+    const paths=entry===WORLD_CLOUD_PREVIEW_ENTRY?['learning-hub','racing','runner','rhythm','order-rush','entry-check','story-classroom','blank-slice','talk-rally','word-magic','spaceship-coop'].map(slug=>'/try/'+slug+'/'):['/learning-hub/','/korean-racing/','/korean-rhythm/','/order-rush/','/korean-runner/'];
+    const publicPages=entry===WORLD_CLOUD_PREVIEW_ENTRY&&['/try/order-rush/beginner.html','/try/learning-hub/collection.html'].includes(u.pathname);
+    return trustedEntry(value,entry,clientId)||publicPages||paths.some(p=>u.pathname===p||u.pathname===p+'index.html');
+  }
   return false;
 }
 function externalDestination(value,entry,clientId,mode) {
   try {const u=new URL(value),base=new URL(entry);if(u.username||u.password)return null;
     if(clientId==='platform'&&Object.values(PUBLIC_APP_URLS).includes(value))return value;
     if(clientId==='world'&&value==='https://synk.im/world/')return value;
-    const paths=clientId==='platform'?['/learning-hub/']:clientId==='world'?['/synk-account/platform.html','/synk-account/index.html']:[];
+    const paths=clientId==='platform'?['/learning-hub/']:clientId==='world'?(entry===WORLD_CLOUD_PREVIEW_ENTRY?['/account/platform.html','/account/index.html']:['/synk-account/platform.html','/synk-account/index.html']):[];
     if(u.origin===base.origin&&paths.includes(u.pathname))return new URL(u.pathname,base.origin).href;
     if(clientId==='platform'&&mode==='development'&&u.origin==='http://127.0.0.1:4191'&&u.pathname==='/')return 'http://127.0.0.1:4191/?tab=messenger';
   }catch{}return null;
