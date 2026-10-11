@@ -1,6 +1,6 @@
 {
   "name": "synk-desktop-shell",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "private": true,
   "description": "Separate SYNK Platform, WORLD and Workspace desktop clients",
   "author": "SYNK",
