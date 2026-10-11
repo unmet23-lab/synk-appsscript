@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "checkedAt": "2026-10-11T17:08:00.302Z",
+  "scope": "Installed Windows WORLD normal UI with real existing account; no credential reads or synthetic account injection",
+  "observations": [
+    {
+      "stage": "existing-session",
+      "observedAt": "2026-10-11T16:42:12.069Z",
+      "app": "SYNKWorldPreview.exe",
+      "entry": "https://synk.im/world/",
+      "accountConnected": true,
+      "completedLessons": "1/22",
+      "nextLesson": "이름표를 찾아서",
+      "tutorSelectedThroughUI": "kkamong",
+      "completedLesson": "첫 인사 세 마디",
+      "completedLessonLabel": "완료 · 다시 하기",
+      "saveStatus": "생활 한국어 진도가 SYNK 계정에 저장됐어요."
+    },
+    {
+      "stage": "sign-out",
+      "observedAt": "2026-10-11T16:43:51.638Z",
+      "clicked": "이 화면에서 로그아웃",
+      "result": "내 계정으로 시작 로그인 안내"
+    },
+    {
+      "stage": "guest-after-sign-out",
+      "observedAt": "2026-10-11T16:44:21.156Z",
+      "accountConnected": false,
+      "completedLessons": "0/22",
+      "tutor": "unselected",
+      "nextLesson": "첫 인사 세 마디"
+    },
+    {
+      "stage": "relogin-restored",
+      "observedAt": "2026-10-11T16:45:54.946Z",
+      "method": "Installed WORLD SYNK ID login button and normal external-browser SSO callback",
+      "accountConnected": true,
+      "tutor": "kkamong",
+      "completedLessons": "1/22",
+      "dailyExpressions": 3,
+      "nextLesson": "이름표를 찾아서",
+      "dialogNote": "Login dialog remained open; closing it exposed the restored home."
+    },
+    {
+      "stage": "relogin-learning-loaded",
+      "observedAt": "2026-10-11T16:46:29.385Z",
+      "tutor": "kkamong",
+      "firstPackProgress": "1/3",
+      "saveStatus": "생활 한국어 진도가 SYNK 계정에 저장됐어요.",
+      "localFallbackWarning": false
+    },
+    {
+      "stage": "restart-restored",
+      "observedAt": "2026-10-11T17:04:27.489Z",
+      "method": "Normal installed app launch after complete exit",
+      "accountConnected": true,
+      "tutor": "kkamong",
+      "completedLessons": "1/22",
+      "dailyExpressions": 3,
+      "nextLesson": "이름표를 찾아서"
+    },
+    {
+      "stage": "postfix-sign-out",
+      "observedAt": "2026-10-11T17:06:04.101Z",
+      "accountConnected": false,
+      "completedLessons": "0/22",
+      "tutor": "unselected"
+    },
+    {
+      "stage": "postfix-relogin-restored",
+      "observedAt": "2026-10-11T17:08:00.302Z",
+      "method": "Installed WORLD login button, external Edge SSO and native callback; app activated only, no dialog close clicked",
+      "loginDialogClosedAutomatically": true,
+      "accountConnected": true,
+      "tutor": "kkamong",
+      "completedLessons": "1/22",
+      "dailyExpressions": 3,
+      "nextLesson": "이름표를 찾아서"
+    }
+  ],
+  "outcome": "PASS: actual-account learning load, sign-out isolation, tutor retention after relogin and full app restart; native login dialog closes after verified restoration",
+  "publicFixCommit": "24c360f2259142dd4a67d34fb031c6605e2125ed"
+}

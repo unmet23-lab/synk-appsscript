@@ -1,0 +1,48 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
+const repo='C:/Users/q1212/Documents/synk-policy';
+const work=path.resolve('.tmp/world-native-relogin-20261012');
+const report=path.dirname(fileURLToPath(import.meta.url));
+const git=(args,options={})=>execFileSync('git',['-C',repo,...args],{encoding:'utf8',windowsHide:true,maxBuffer:5e6,...options});
+const remote=()=>execFileSync('gh',['api','repos/unmet23-lab/synk-policy/branches/main','--jq','.commit.sha'],{encoding:'utf8',windowsHide:true}).trim();
+const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
+fs.mkdirSync(work,{recursive:true});
+const planFile=path.join(work,'candidate.json');
+if(!process.argv.includes('--publish')){
+ const baseline=remote();
+ const before=git(['show',baseline+':world/app-shell.mjs']);
+ const source=fs.readFileSync('experiences/synk-world-app/app-shell.mjs','utf8');
+ const old="const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>client?.invalidate(),onConnect:()=>client?.restore().catch(()=>home.toast('계정 연결을 다시 확인해 주세요.'))}):null;";
+ const replacement=source.slice(source.indexOf('async function restoreConnectedHome(){'),source.indexOf('\nclient=new WorldClient')).trimEnd().replaceAll('\r\n','\n');
+ assert.ok(replacement.startsWith('async function restoreConnectedHome(){'));
+ assert.ok(replacement.endsWith('onConnect:restoreConnectedHome}):null;'));
+ assert.equal(before.split(old).length,2);
+ const after=before.replace(old,replacement),payload=path.join(work,'app-shell.mjs');
+ fs.writeFileSync(payload,after);
+ execFileSync(process.execPath,['--check',payload],{windowsHide:true});
+ const plan={createdAt:new Date().toISOString(),baseline,payload,path:'world/app-shell.mjs',beforeSHA256:sha(before),sha256:sha(after),bytes:Buffer.byteLength(after),changes:1,deleted:0};
+ fs.writeFileSync(planFile,JSON.stringify(plan,null,2)+'\n');
+ console.log(JSON.stringify(plan));
+}else{
+ const plan=JSON.parse(fs.readFileSync(planFile));
+ assert.equal(remote(),plan.baseline,'Public branch advanced; prepare again');
+ const bytes=fs.readFileSync(plan.payload);assert.equal(sha(bytes),plan.sha256);
+ const env={...process.env,GIT_INDEX_FILE:path.join(work,'publish.index')};
+ git(['read-tree',plan.baseline],{env});
+ const blob=git(['hash-object','-w','--no-filters',plan.payload]).trim();
+ git(['update-index','--add','--cacheinfo',`100644,${blob},${plan.path}`],{env});
+ const tree=git(['write-tree'],{env}).trim();
+ assert.deepEqual(git(['diff','--name-only','-z',plan.baseline,tree]).split('\0').filter(Boolean),[plan.path]);
+ const message=path.join(work,'message.txt');
+ fs.writeFileSync(message,'Close WORLD sign-in dialog after native account restoration\n\nReturn to the tutor home after verified native sign-in. Preserve any screen opened during sign-in and ignore stale account completions.\n');
+ const commit=git(['commit-tree',tree,'-p',plan.baseline,'-F',message]).trim();
+ assert.equal(remote(),plan.baseline);
+ git(['push','origin',commit+':refs/heads/main']);
+ const receipt={...plan,commit,tree,publishedAt:new Date().toISOString(),sharedCheckoutWrites:0,forcePush:false};
+ fs.writeFileSync(path.join(report,'login-dialog-publication.json'),JSON.stringify(receipt,null,2)+'\n');
+ console.log(JSON.stringify(receipt));
+}
