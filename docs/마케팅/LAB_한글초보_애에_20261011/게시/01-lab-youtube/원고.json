@@ -1,0 +1,21 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "ㅐ vs ㅔ in one song — two shapes, one sound! 애 에 개 게 #learnkorean",
+ "caption": "게시문안.txt를 쓴다",
+ "alt": [
+  "A felt kid and the coral felt mascot Mongle learn ㅐ and ㅔ: a blue stick slides in next to 아 to make 애 and next to 어 to make 에, the kid cups his ears for the “e” sound every time, a bracket joins 애 and 에 into one speaker icon, and a felt puppy (개) and crab (게) show two words that sound the same — under a white card reading “Two shapes, one sound!”"
+ ],
+ "playlist": {
+  "title": "Hangul for Beginners · 한글 초보단계",
+  "description": "Start Korean from zero: learn Hangul (the Korean alphabet) with short songs and dances from SYNK LAB and Mongle. One new video at a time.\n\n한글 초보단계 — 노래와 동작으로 한글을 처음부터.",
+  "visibility": "private",
+  "language": "en"
+ },
+ "_비고": "10-11 유호님 「C로 하자, 콘티는 추천대로」(Suno 06f07faa, 떠올리기 쉼 둘 · 「에」 새 자세 · 강아지 · 꽃게 그림 · 끝 화면 배 · 카페 · 메뉴, 혜리) → 영상 v1 → 「좋아 비공개로 올리고 재생목록 여섯째에 넣어줘」. 공개 시각은 유호님이 정한다(AI 음악이 중심이라 공개 때 --합성표시).",
+ "version": "v1-yt"
+}
