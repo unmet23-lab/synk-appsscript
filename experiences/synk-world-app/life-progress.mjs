@@ -95,6 +95,7 @@ function validate(raw,owner){
   if(run.pendingHelp!==undefined&&(!object(run.pendingHelp)||Object.entries(run.pendingHelp).some(([id,value])=>!run.ids.includes(id)||value!==true)))throw fail('LIFE_PROGRESS_UNREADABLE');
  }
  if(value.daily!==undefined)validateDaily(value.daily);
+ if(value.tutor!==undefined&&(!object(value.tutor)||value.tutor.version!==1||!TUTORS.has(value.tutor.selected)||Object.keys(value.tutor).some(key=>!['version','selected'].includes(key))))throw fail('LIFE_PROGRESS_UNREADABLE');
  return value;
 }
 
@@ -122,11 +123,13 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   if(value.phase==='unreadable')throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 먼저 확인해 주세요.');
   if(value.phase==='stopped')throw fail('ACCOUNT_CHANGED','이 계정의 생활 한국어 연결이 끝났어요.');
  }
- function commit(next){
+ function commit(next,{preserveDaily=false}={}){
   check();if(readError)throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 확인하지 못했어요. 원본을 덮어쓰지 않았어요.');
   next.revision=state.revision+1;
-  fitDailyRecord(next);
-  try{storage.setItem(key,JSON.stringify(next));writeError=null;state=next;}
+  if(!preserveDaily)fitDailyRecord(next);
+  const raw=JSON.stringify(next);
+  if(preserveDaily&&(raw.length>500000||new TextEncoder().encode(raw).length>512*1024))throw fail('PLAY_DATA_TOO_LARGE','튜터 선택을 저장할 공간이 부족해요. 기존 학습 기록은 보존했어요.');
+  try{storage.setItem(key,raw);writeError=null;state=next;}
   catch(error){
    // A conflict must retain the host's two alternatives. Device/quota failures
    // keep this view's draft available for an explicit retry/export.
@@ -238,6 +241,14 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const next=clone(state),closedAt=Math.max(at,latest);next.daily.days[dayKey].closedAt=closedAt;commit(next);
   return {dayKey,closedAt,duplicate:false,empty:false,status:status()};
  }
+ function selectedTutor(){check();if(readError)throw readError;return state.tutor?.selected??null;}
+ function selectTutor(tutor){
+  checkDailyWrite();if(!TUTORS.has(tutor))throw TypeError('Invalid selected tutor');
+  if(state.tutor?.selected===tutor)return {tutor,duplicate:true,status:status()};
+  // Selecting a companion must not trim or reattribute any learning evidence.
+  const next=clone(state);next.tutor={version:1,selected:tutor};commit(next,{preserveDaily:true});
+  return {tutor,duplicate:false,status:status()};
+ }
  function summary(packs=[],flat=[]){
   check();catalog(packs,flat);const ordered=packs.flatMap(pack=>(pack.lessons||[]).map(value=>typeof value==='string'?lessons.get(value):lessons.get(value.id)).filter(Boolean));
   if(!ordered.length)ordered.push(...flat);
@@ -258,7 +269,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,flush,
+ const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,selectedTutor,selectTutor,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

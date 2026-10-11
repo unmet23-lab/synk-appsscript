@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-10-11T17:55:03.927Z",
+  "commit": "5c79e12c0cdcffdd4ed25c9faafc87c0ab1fc530",
+  "previousRelease": "3929ca8e49e61ac8f40c4d6af66f89f34db88183",
+  "allMatch": true,
+  "files": [
+    {
+      "path": "world/app-shell.mjs",
+      "url": "https://synk.im/world/app-shell.mjs?verify=5c79e12c0cdc&t=1791741303434",
+      "status": 200,
+      "bytes": 45453,
+      "sha256": "c9a1dae81099bfb84186403f414809f766f3018f00cc15f39c4a56ee24d1a5f8",
+      "expectedBytes": 45453,
+      "expectedSHA256": "c9a1dae81099bfb84186403f414809f766f3018f00cc15f39c4a56ee24d1a5f8",
+      "matches": true
+    },
+    {
+      "path": "world/life-progress.mjs",
+      "url": "https://synk.im/world/life-progress.mjs?verify=5c79e12c0cdc&t=1791741303527",
+      "status": 200,
+      "bytes": 25487,
+      "sha256": "b20683d13e8c82817e2ee90d2ab15de1b9c9d721ace91cc67d60c16977399292",
+      "expectedBytes": 25487,
+      "expectedSHA256": "b20683d13e8c82817e2ee90d2ab15de1b9c9d721ace91cc67d60c16977399292",
+      "matches": true
+    },
+    {
+      "path": "world/tutor-selection-sync.mjs",
+      "url": "https://synk.im/world/tutor-selection-sync.mjs?verify=5c79e12c0cdc&t=1791741303529",
+      "status": 200,
+      "bytes": 3228,
+      "sha256": "760b7f9929ae17a0ea4b294e4c7e3d2d9e3740b626f7f4004504233dcc8932b7",
+      "expectedBytes": 3228,
+      "expectedSHA256": "760b7f9929ae17a0ea4b294e4c7e3d2d9e3740b626f7f4004504233dcc8932b7",
+      "matches": true
+    },
+    {
+      "path": "world/brand-opening/home.mjs",
+      "url": "https://synk.im/world/brand-opening/home.mjs?verify=5c79e12c0cdc&t=1791741303531",
+      "status": 200,
+      "bytes": 21572,
+      "sha256": "01d3dd19d423c2ae530d92224319f596aa95c044f797e481a2cb38936d76ade4",
+      "expectedBytes": 21572,
+      "expectedSHA256": "01d3dd19d423c2ae530d92224319f596aa95c044f797e481a2cb38936d76ade4",
+      "matches": true
+    },
+    {
+      "path": "world/brand-opening/tutor-onboarding.mjs",
+      "url": "https://synk.im/world/brand-opening/tutor-onboarding.mjs?verify=5c79e12c0cdc&t=1791741303532",
+      "status": 200,
+      "bytes": 15312,
+      "sha256": "3ca9bb117990c1911d40c9d7886f033b3129fa03dae4c8224fc64e277c9fbdb6",
+      "expectedBytes": 15312,
+      "expectedSHA256": "3ca9bb117990c1911d40c9d7886f033b3129fa03dae4c8224fc64e277c9fbdb6",
+      "matches": true
+    },
+    {
+      "path": "world/index.html",
+      "url": "https://synk.im/world/index.html?verify=5c79e12c0cdc&t=1791741303534",
+      "status": 200,
+      "bytes": 10029,
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "expectedBytes": 10029,
+      "expectedSHA256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "matches": true
+    },
+    {
+      "path": "world/mobile.html",
+      "url": "https://synk.im/world/mobile.html?verify=5c79e12c0cdc&t=1791741303535",
+      "status": 200,
+      "bytes": 10029,
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "expectedBytes": 10029,
+      "expectedSHA256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "matches": true
+    },
+    {
+      "path": "world/desktop.html",
+      "url": "https://synk.im/world/desktop.html?verify=5c79e12c0cdc&t=1791741303536",
+      "status": 200,
+      "bytes": 10029,
+      "sha256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "expectedBytes": 10029,
+      "expectedSHA256": "c57a832bf07056401f8cfabd2ca89f07f3f0a4dbb6ee61ede4392ef41290881b",
+      "matches": true
+    }
+  ]
+}

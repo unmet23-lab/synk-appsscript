@@ -86,7 +86,7 @@ copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
 const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
-for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
