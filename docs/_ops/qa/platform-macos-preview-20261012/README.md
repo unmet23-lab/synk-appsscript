@@ -2,7 +2,7 @@
 
 Windows·WORLD 독립 실행에 이어 MacBook 설치판을 추가했다. **공개 대상은 Apple Silicon(M 시리즈), macOS 13 이상**이다. Intel판은 빌드·서명 검사에 통과했지만 3D 게임 실행 검증에 실패하여 배포하지 않는다.
 
-[Pages 배포 성공](https://github.com/unmet23-lab/synk-policy/actions/runs/38159005935) · 공개17파일 SHA17/17 · 실제 한영/390px 브라우저 확인 완료.
+[Pages 배포 성공](https://github.com/unmet23-lab/synk-policy/actions/runs/38159005935) · [전체 사이트 점검 성공](https://github.com/unmet23-lab/synk-policy/actions/runs/38159005987) · 공개17파일 SHA17/17 · 실제 한영/390px 브라우저 확인 완료.
 
 공개 원천 커밋: `0e5f32178527ce0c59c2cef7d55c7ddf3d1d6107` · 홈페이지 원문 `bca9d729ec551d1f06b64eebb859fec809119f8d`.
 
