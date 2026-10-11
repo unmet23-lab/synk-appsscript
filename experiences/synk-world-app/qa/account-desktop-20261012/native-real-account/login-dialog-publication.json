@@ -1,0 +1,16 @@
+{
+  "createdAt": "2026-10-11T16:48:52.992Z",
+  "baseline": "1ce4365dfe83b11813f17c36802ea2463532951b",
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-native-relogin-20261012\\app-shell.mjs",
+  "path": "world/app-shell.mjs",
+  "beforeSHA256": "880b9f13d2a26928c3c98d49ba0e8b87d3d3a4407950948658f2f6757f74ec04",
+  "sha256": "bb20c2962f14226fddfc9a897ba02ce5daf4d07b33455e9a233923525ace9332",
+  "bytes": 42591,
+  "changes": 1,
+  "deleted": 0,
+  "commit": "24c360f2259142dd4a67d34fb031c6605e2125ed",
+  "tree": "804278c27938233c5639e30c998df3d7dfe03d98",
+  "publishedAt": "2026-10-11T16:49:04.374Z",
+  "sharedCheckoutWrites": 0,
+  "forcePush": false
+}

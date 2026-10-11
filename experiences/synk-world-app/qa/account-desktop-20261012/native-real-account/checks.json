@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-12",
+  "command": "node --test experiences/synk-world-app/qa/native-account.test.mjs experiences/synk-world-app/qa/document.test.mjs",
+  "passed": 18,
+  "failed": 0,
+  "scope": "Native account ownership, delayed responses, logout/relogin fencing, life progress and connected document entry. Modal closure is separately checked in the installed PC UI.",
+  "installedExeSHA256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+  "installedAsarSHA256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f",
+  "installedPayloadMatchesPrevious042Verification": true
+}
