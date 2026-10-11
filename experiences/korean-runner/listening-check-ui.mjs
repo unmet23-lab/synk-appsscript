@@ -6,7 +6,7 @@ import { createListeningCheck, createListeningCheckRound, listeningCheckFeedback
 import { InstructionAudio } from './audio.mjs';
 import { fitText } from './kit/lab.mjs';
 
-export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
+export function mountListeningCheck({ coach, beforeOpen, onClose = () => {}, onFeedback = () => {}, onListen = () => {} }) {
   const $ = (id) => document.getElementById(id), dialog = $('listening-check-dialog');
   let check = null, context, bank, gain, round = null, index = 0, epoch = 0, pending = false, rightCount = 0, stopped = false, recheckSource = null;
   const status = (text) => { $('check-status').textContent = text; };
@@ -56,6 +56,7 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
       if (!await bank.resume() || !await bank.prepare([item])) throw Error();
       if (mine !== epoch || !dialog.open) return;
       status(check.current.answered ? '해설을 보며 다시 듣고 있어요. 처음 답은 다시 채점하지 않아요.' : '지시를 듣고 있어요…'); if (!bank.play({ ...item, checkToken: token })) throw Error();
+      onListen();
     } catch {
       if (mine !== epoch || !dialog.open) return; pending = false;
       if (check.current?.answered) { reviewReady('복습 음성을 불러오지 못했어요. 처음 고른 답과 기록은 그대로예요. 해설을 읽거나 다시 듣기를 눌러 주세요.'); return; }
@@ -84,6 +85,8 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
           catch { /* old bundle or unavailable history: keep the original answer */ }
         }
         const right = choice === item.correct; if (right) rightCount += 1;
+        const feedback = listeningCheckFeedback(item, choice);
+        onFeedback(right,{item,choice,feedback});
         choicesDisabled(true); $('check-replay').disabled = false; phase('answered');
         for (const b of $('check-choices').children) {
           const i = Number(b.dataset.choice);
@@ -92,7 +95,6 @@ export function mountListeningCheck({ coach, beforeOpen, onClose = () => {} }) {
         const fb = $('check-feedback'); fb.textContent = '';
         const quote = document.createElement('q'); quote.textContent = item.text;
         fb.append(`${right ? '맞았어요.' : '다시 확인해요.'} `, quote);
-        const feedback = listeningCheckFeedback(item, choice);
         const selection = document.createElement('span'); selection.className = 'selection'; selection.textContent = `고른 행동: ${feedback.selectedLabel} · 맞는 행동: ${feedback.correctLabel}`; fb.append(selection);
         const explanation = document.createElement('span'); explanation.className = 'explanation'; explanation.textContent = feedback.explanation; fb.append(explanation);
         if (feedback.correction) { const correction = document.createElement('span'); correction.className = 'correction'; correction.textContent = feedback.correction; fb.append(correction); }

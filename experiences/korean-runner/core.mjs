@@ -122,7 +122,7 @@ export class RunnerModel{
       else if(obstacleHit(e.type,this.x,e.lane,this.y,this.slide>0)){
         if(this.invincible>0)continue;
         if(this.shield){this.shield=0;this.invincible=1.1;this.emit('shield');}
-        else{this.hearts--;this.invincible=1.35;this.emit('hit',{mission:e.mission||null});if(this.hearts<=0){this.finish('collision');break;}}
+        else{this.hearts--;this.invincible=1.35;this.emit('hit',{mission:e.mission||null,obstacle:e.type});if(this.hearts<=0){this.finish('collision');break;}}
       }else if(Math.abs(this.x-LANES[e.lane])<1.5||(e.type!=='tram'&&this.lane===e.lane)){this.near++;this.score+=25;this.emit('near');}
     }
     if(this.distance+180>this.generated)this.generate();

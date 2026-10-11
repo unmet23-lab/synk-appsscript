@@ -6,6 +6,10 @@ import { readProgress, planSession, answer, meet, finishSession, view, retryItem
 import { createCoach, isHosted, progressKey, createRecorder } from './learning.mjs';
 import * as audio from './audio.mjs';
 import { SONGS, songById, cueAt, EXTRA_CONSONANTS, tileLetters, lettersIn } from './songs.mjs';
+import {hangulSupport} from '../brand-opening/game-tutor-support.mjs';
+
+let gameTutor=null;
+const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
 
 const $ = id => document.getElementById(id);
 function el(tag, attrs = {}, ...kids) {
@@ -43,7 +47,7 @@ const HUB = !hosted && location.pathname.startsWith('/hangul-stage/') ? '../lear
 if (new URLSearchParams(location.search).get('qa') === 'silent') audio.setSilent(true);
 audio.initAudio();
 
-function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0); }
+function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0); if(id==='home')tutorEvent('lobby');else if(id==='session')tutorEvent('playing');else if(id==='finish')tutorEvent('finish'); }
 
 // ── 입구 ──────────────────────────────────────────────
 function tile(l, { onTap = true } = {}) {
@@ -337,7 +341,8 @@ function settle(item, { correct, assisted, replays = 0, perLetter = null, confus
     if (again) { S.retried.add(letter); S.retries += 1; S.total += 1; S.steps.splice(Math.min(S.index + 3, S.steps.length), 0, { kind: 'item', item: again }); bar(); }
   }
 }
-function feedback(correct, text) {
+function feedback(correct, text, support=[]) {
+  tutorEvent(correct?'success':'retry',{answer:true,support});
   if (correct) audio.effect('earn');
   dock(el('p', { class: `say${correct ? ' good' : ''}`, role: 'status' }, text), cta('다음', { onClick: nextStep }));
   setTimeout(() => $('dock').querySelector('.felt-cta')?.focus({ preventScroll: true }), 30);
@@ -387,7 +392,7 @@ async function demo(steps) {
 // 셋 다 소리를 듣고 고르는 같은 문항이고 정오를 똑같이 센다. 모양만 다르다.
 const LISTEN_PROMPT = { pair: '헷갈리는 두 소리예요. 들은 쪽을 골라요', teach: '몽글이 헷갈려요. 들은 것을 골라 알려 줘요' };
 function renderListen(item) {
-  const state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, answered: false };
+  const state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, heard:false, answered: false };
   S.open = [state.pid];
   // 여러 목소리로 듣고 고르기(HVPT, 10-09): 그 음절을 가진 목소리가 여럿이면 문항마다 한 목소리(문항 번호로 정해짐)로 묻고 답한다.
   const talker = audio.talkerFor(item.target.text, item.id || item.target.text);
@@ -396,6 +401,7 @@ function renderListen(item) {
     if (state.plays > 0) { state.replays += 1; rec.replay(state.pid); }
     state.plays += 1;
     const ok = await play(speak, item.target.text, false, { ...opts, talker });
+    if(ok)state.heard=true;
     if (state.plays === 1) rec.delivered(state.pid, ok);
   };
   speak.addEventListener('click', () => hear());
@@ -419,7 +425,7 @@ function renderListen(item) {
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, confused: correct ? [] : [[item.target.letter, o.letter]] });
     if (correct && item.type === 'teach') audio.effect('joy');
-    feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : '이 소리예요');
+    feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : '이 소리예요',correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}));
     if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }
     // 여러 목소리 음절은 맞혀도 정답 소리를 같은 목소리로 한 번 더(HVPT — 고르자마자 정답 소리를 들려준다)
     else if (audio.talkerCount(item.target.text) > 1) { await audio.wait(250); await audio.say(item.target.text, { talker }); }
@@ -430,14 +436,14 @@ function renderListen(item) {
 
 // 보고 고르기: 글자를 보고, 보기를 눌러 소리를 들은 뒤 맞는 소리를 고른다.
 function renderSee(item) {
-  const state = { pid: rec.present(item), assisted: false, picked: null, answered: false };
+  const state = { pid: rec.present(item), assisted: false, picked: null, heardOptions:new Set(), answered: false };
   S.open = [state.pid];
   const options = item.options.map((o, i) => el('button', { class: 'opt sound', type: 'button', 'aria-label': `${i + 1}번 소리` }, icon('speaker'), el('span', { class: 'num' }, String(i + 1))));
   const confirm = cta('확인', { disc: 'check', disabled: true, onClick: () => submit() });
   options.forEach((b, i) => b.addEventListener('click', async () => {
     if (state.answered) return;
     state.picked = i; options.forEach((x, j) => x.classList.toggle('picked', j === i)); confirm.disabled = false;
-    await play(null, item.options[i].text);
+    if(await play(null, item.options[i].text))state.heardOptions.add(i);
   }));
   $('stage').replaceChildren(prompt('글자를 보고 맞는 소리를 골라요'), el('div', { class: `shown paper${item.word ? ' word' : ''}`, 'aria-label': item.target.text }, item.target.text),
     el('div', { class: 'options' }, options));
@@ -451,7 +457,7 @@ function renderSee(item) {
     if (!correct) options[state.picked].classList.add('wrong');
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, confused: correct ? [] : [[item.target.letter, o.letter]], listening: false });
-    feedback(correct, correct ? '맞아요' : `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`);
+    feedback(correct, correct ? '맞아요' : `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heardOptions.has(state.picked)}));
     if (!correct) { await audio.say(o.text); await audio.wait(250); }
     await audio.say(item.target.text);
   }
@@ -462,13 +468,14 @@ function renderSee(item) {
 
 // 음절 만들기: 들린 음절을 자음 조각과 모음 조각으로, 받침이 있으면 받침 조각까지 골라 만든다.
 function renderBuild(item) {
-  const t = item.target, withFinal = !!item.pieces.finals, state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, c: null, v: null, f: null, answered: false };
+  const t = item.target, withFinal = !!item.pieces.finals, state = { pid: rec.present(item), assisted: false, replays: 0, plays: 0, heard:false, c: null, v: null, f: null, answered: false };
   S.open = [state.pid];
   const speak = el('button', { class: 'speak', type: 'button', 'aria-label': '소리 듣기' });
   const hear = async (opts = {}) => {
     if (state.plays > 0) { state.replays += 1; rec.replay(state.pid); }
     state.plays += 1;
     const ok = await play(speak, t.text, false, opts);
+    if(ok)state.heard=true;
     if (state.plays === 1) rec.delivered(state.pid, ok);
   };
   speak.addEventListener('click', () => hear());
@@ -502,7 +509,7 @@ function renderBuild(item) {
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, perLetter: { [t.consonant]: cOk, [t.vowel]: vOk, ...(withFinal ? { [t.final]: fOk } : {}) },
       confused: [...(cOk ? [] : [[t.consonant, state.c]]), ...(vOk ? [] : [[t.vowel, state.v]]), ...(fOk ? [] : [[t.final, state.f]])] });
-    feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`);
+    feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`,correct?[]:hangulSupport({id:item.id,target:t.text,selected:made,options:[made,t.text],heard:state.heard}));
     if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
   }
   const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };
@@ -531,7 +538,7 @@ function renderMatch(item) {
     state.sel[kind] = { letter, button };
     // 소리가 끝까지 난 뒤에 짝을 본다: 듣기 전에 고른 답은 소리 문항의 근거가 되지 않는다.
     if (kind === 'sound') {
-      state.playing = audio.say(pack.byId.get(letter).voice).then(ok => { if (!p.heard) { p.heard = true; rec.delivered(p.pid, ok); } });
+      state.playing = audio.say(pack.byId.get(letter).voice).then(ok => { if(ok)p.delivered=true; if (!p.heard) { p.heard = true; rec.delivered(p.pid, ok); } });
     }
     await state.playing;
     if (state.sel[kind]?.button !== button) return;
@@ -543,11 +550,13 @@ function renderMatch(item) {
       const q = pairs.get(card.letter); q.matched = true; state.left -= 1;
       sound.button.classList.add('matched'); card.button.classList.add('matched'); sound.button.disabled = card.button.disabled = true;
       audio.effect('earn');
+      tutorEvent('success',{answer:true});
       const firstTry = !q.missed;
       rec.answer(q.pid, firstTry); S.open = S.open.filter(x => x !== q.pid);
       progress = answer(progress, { focus: [card.letter], correct: firstTry, assisted: state.assisted, at: now(), sessionId: S.sessionId, counts: false }); save();
       if (!state.left) finishMatch();
     } else {
+      tutorEvent('retry',{answer:true,support:hangulSupport({id:item.id+'-'+sound.letter,target:glyph(sound.letter),selected:glyph(card.letter),options:item.cards.map(c=>c.text),glyph:pack.byId.get(sound.letter).voice,heard:pairs.get(sound.letter).delivered===true})});
       pairs.get(sound.letter).missed = true; pairs.get(card.letter).missed = true;
       progress = answer(progress, { focus: [], confused: [[sound.letter, card.letter]], correct: false, at: now(), sessionId: S.sessionId, counts: false }); save();
       for (const b of [sound.button, card.button]) { b.classList.add('nope'); setTimeout(() => b.classList.remove('nope'), 650); }
@@ -767,8 +776,13 @@ $('song-stage').addEventListener('click', e => {
   setTimeout(() => tile.classList.remove('hit'), 450);
 });
 
-// 화면 점검(?qa=silent)에서만: 지금 단계와 진도를 읽게 한다(qa/flow.cjs). 노래는 소리 없이 시각만 옮겨 그린다. 보통 화면에는 없다.
+// ?qa=silent is silent; ?qa=inspect reads the same step with actual MP3 playback.
+// These existing QA controls never replace a learner response or grading.
 if (audio.voiceStatus() === 'silent'||new URLSearchParams(location.search).get('qa')==='inspect') window.__hangulQA = Object.freeze({ step: () => (S ? S.steps[S.index] : null), progress: () => progress, key: KEY,
   songAt: t => { const r = renderSongAt(t); return r && { kind: r.cue?.kind || null, step: r.step, text: r.cue?.text || '', done: !!r.done }; }, song: () => SP?.song.id || null, songMode: () => SP?.mode || null, songTime: () => (SP ? SP.audio.currentTime : null), songSeek: t => { if (SP) SP.audio.currentTime = t; } });
 
 renderHome(); show('home');
+
+if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
+ gameTutor=connectGameTutor('hangul',{onHelp:()=>audio.pauseForTutor(),onHelpClose:()=>audio.resumeFromTutor(),onPracticeComplete:()=>{if(!$('home').hidden&&!$('start').disabled)startSession();}});tutorEvent(S?'playing':'lobby');
+}).catch(()=>{});

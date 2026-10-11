@@ -1,0 +1,5846 @@
+{
+  "url": "http://127.0.0.1:4314",
+  "scope": "local isolated guest; no account entry; natural UI flows and separately labeled explicit sprite QA",
+  "checks": [
+    {
+      "tutor": "kkamong",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 165,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 83,
+            "changed": 53
+          },
+          {
+            "max": 72,
+            "changed": 51
+          }
+        ],
+        "bodyMax": 165,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "leaving during blink restores base on home return",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "closed eyes do not remain one second after returning",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 49,
+            "changed": 44
+          },
+          {
+            "max": 52,
+            "changed": 52
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 61,
+            "changed": 49
+          },
+          {
+            "max": 56,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 42,
+            "changed": 46
+          },
+          {
+            "max": 48,
+            "changed": 52
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "real mistake becomes remembered home recommendation",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-remembered: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 165,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-remembered: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-retry: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "민망",
+          "box": {
+            "x": 36,
+            "y": 153.03125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-retry: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-success: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 49,
+            "changed": 44
+          },
+          {
+            "max": 52,
+            "changed": 52
+          }
+        ],
+        "bodyMax": 171,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 139.734375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-practice-success: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home celebrates real guided success",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 43.41865158081055,
+            "y": 386.4198913574219,
+            "width": 65.16268920898438,
+            "height": 72.78518676757812
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 44.8185920715332,
+            "y": 387.65191650390625,
+            "width": 62.36281967163086,
+            "height": 70.3211669921875
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 44.82265853881836,
+            "y": 387.655517578125,
+            "width": 62.354679107666016,
+            "height": 70.31396484375
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success-settled: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 49,
+            "changed": 44
+          },
+          {
+            "max": 52,
+            "changed": 52
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-home-success-settled: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "guided practice leaves lesson/checkpoint grading intact",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home success returns to base",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-before-finish: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "ready",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-before-finish: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 34.81113052368164,
+            "y": 246.2171173095703,
+            "width": 64.37774658203125,
+            "height": 72.09703063964844
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 34.24456787109375,
+            "y": 245.7207489013672,
+            "width": 65.5108642578125,
+            "height": 73.08973693847656
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.818416595458984,
+            "y": 247.10488891601562,
+            "width": 62.363162994384766,
+            "height": 70.32147216796875
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.44072723388672,
+            "y": 246.771240234375,
+            "width": 63.11854553222656,
+            "height": 70.98876953125
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 35.947364807128906,
+            "y": 247.21900939941406,
+            "width": 62.10527038574219,
+            "height": 70.09321594238281
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-finished: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-recap-finished: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "recap disposal removes its tutor and preserves one home companion",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-after-recap: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-after-recap: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "home continues idle after dialog round trip",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "recap interruption also restores open eyes",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "reload retains tutor and completed day",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-return-visit: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 165,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-return-visit: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320x568-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 169,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 35,
+            "y": 139.90625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320x568-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320x568-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 30,
+            "y": 109.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320x568-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 60.515625
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "320: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 21,
+        "right": 299,
+        "y": 127.90625,
+        "bottom": 337.09375,
+        "viewportWidth": 320,
+        "viewportHeight": 568
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844x390-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 167,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 448,
+            "y": 98.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844x390-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844x390-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 62,
+            "y": 103.4375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844x390-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 54.6875
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "844: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 434,
+        "right": 774,
+        "y": 86.8125,
+        "bottom": 296,
+        "viewportWidth": 844,
+        "viewportHeight": 390
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390x844-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 165,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390x844-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390x844-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390x844-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 198.515625
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 31,
+        "right": 359,
+        "y": 375.8125,
+        "bottom": 585,
+        "viewportWidth": 390,
+        "viewportHeight": 844
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "desktop uses real fine pointer",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "1440-desktop-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 91,
+            "changed": 51
+          },
+          {
+            "max": 65,
+            "changed": 55
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "1440-desktop-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "desktop natural blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "1440-desktop-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 83,
+            "changed": 53
+          },
+          {
+            "max": 72,
+            "changed": 51
+          }
+        ],
+        "bodyMax": 166,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "1440-desktop-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "kkamong",
+      "name": "desktop blink returns to base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 98,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-natural-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 51,
+            "changed": 245
+          },
+          {
+            "max": 41,
+            "changed": 261
+          }
+        ],
+        "bodyMax": 98,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=f441766a8e75",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-natural-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "leaving during blink restores base on home return",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "closed eyes do not remain one second after returning",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-explicit-놀람: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 148,
+            "changed": 269
+          },
+          {
+            "max": 141,
+            "changed": 271
+          }
+        ],
+        "bodyMax": 98,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=8ad2c636a63e",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-explicit-놀람: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "390-explicit-민망: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 142,
+            "changed": 257
+          },
+          {
+            "max": 113,
+            "changed": 262
+          }
+        ],
+        "bodyMax": 98,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=7d1f58987d03",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-explicit-민망: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "real mistake becomes remembered home recommendation",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-remembered: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-remembered: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "390-practice-retry: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "집중",
+          "box": {
+            "x": 36,
+            "y": 153.03125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-practice-retry: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-practice-success: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 169,
+            "changed": 277
+          },
+          {
+            "max": 172,
+            "changed": 283
+          }
+        ],
+        "bodyMax": 100,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 139.734375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-practice-success: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "home celebrates real guided success",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-home-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-home-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.01458)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.13497)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.12971)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.06781)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.02824)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.00144)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "marin",
+      "name": "390-home-success-settled: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 169,
+            "changed": 277
+          },
+          {
+            "max": 172,
+            "changed": 283
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-home-success-settled: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "guided practice leaves lesson/checkpoint grading intact",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "home success returns to base",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-before-finish: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 36,
+            "y": 247.359375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "ready",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-before-finish: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.08921)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.14794)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.13548)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.0868)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "brightness(1.05049)",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-finished: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-recap-finished: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "recap disposal removes its tutor and preserves one home companion",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-after-recap: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-after-recap: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "home continues idle after dialog round trip",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "recap interruption also restores open eyes",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "reload retains tutor and completed day",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390-return-visit: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 169,
+            "changed": 277
+          },
+          {
+            "max": 172,
+            "changed": 283
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390-return-visit: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "320x568-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 169,
+            "changed": 277
+          },
+          {
+            "max": 172,
+            "changed": 283
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 35,
+            "y": 139.90625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "320x568-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "320x568-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 30,
+            "y": 105.4375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "320x568-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "320: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 56.6875
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "320: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 21,
+        "right": 299,
+        "y": 127.90625,
+        "bottom": 337.09375,
+        "viewportWidth": 320,
+        "viewportHeight": 568
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "844x390-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 448,
+            "y": 98.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "844x390-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "844x390-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 62,
+            "y": 103.4375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "844x390-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "844: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 54.6875
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "844: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 434,
+        "right": 774,
+        "y": 86.8125,
+        "bottom": 296,
+        "viewportWidth": 844,
+        "viewportHeight": 390
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390x844-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390x844-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "390x844-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390x844-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "390: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 198.515625
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "390: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 31,
+        "right": 359,
+        "y": 375.8125,
+        "bottom": 585,
+        "viewportWidth": 390,
+        "viewportHeight": 844
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "desktop uses real fine pointer",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "1440-desktop-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 139,
+            "changed": 261
+          },
+          {
+            "max": 146,
+            "changed": 269
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "1440-desktop-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "desktop natural blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "marin",
+      "name": "1440-desktop-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 51,
+            "changed": 245
+          },
+          {
+            "max": 41,
+            "changed": 261
+          }
+        ],
+        "bodyMax": 99,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=f441766a8e75",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "marin",
+      "name": "1440-desktop-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "marin",
+      "name": "desktop blink returns to base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 127,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-natural-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 82,
+            "changed": 96
+          },
+          {
+            "max": 102,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 127,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6822f01385dc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-natural-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "leaving during blink restores base on home return",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "closed eyes do not remain one second after returning",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-으쓱: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 114,
+            "changed": 99
+          },
+          {
+            "max": 103,
+            "changed": 105
+          }
+        ],
+        "bodyMax": 127,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9C%BC%EC%93%B1.webp?v=1f1bd68f1eaa",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-으쓱: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-놀람: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 162,
+            "changed": 99
+          },
+          {
+            "max": 120,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 127,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=d2aaa0e02b6f",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-놀람: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-민망: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 140,
+            "changed": 96
+          },
+          {
+            "max": 102,
+            "changed": 103
+          }
+        ],
+        "bodyMax": 127,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-explicit-민망: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "real mistake becomes remembered home recommendation",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-remembered: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-remembered: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-practice-retry: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "민망",
+          "box": {
+            "x": 36,
+            "y": 153.03125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-practice-retry: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-practice-success: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 109,
+            "changed": 98
+          },
+          {
+            "max": 85,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 133,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 139.734375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-practice-success: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "home celebrates real guided success",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-home-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-home-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 383.4079895019531,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 385.1298522949219,
+            "width": 62,
+            "height": 70.00003051757812
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.25811767578125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-home-success-settled: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 109,
+            "changed": 98
+          },
+          {
+            "max": 85,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-home-success-settled: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "guided practice leaves lesson/checkpoint grading intact",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "home success returns to base",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-before-finish: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "ready",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-before-finish: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-success: face remains intended across transition",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-success: body layer has no filter/transform changes",
+      "pass": true,
+      "detail": [
+        {
+          "ms": 0,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 80,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 243.18223571777344,
+            "width": 62,
+            "height": 70.00001525878906
+          }
+        },
+        {
+          "ms": 180,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 243.3175048828125,
+            "width": 62,
+            "height": 70
+          }
+        },
+        {
+          "ms": 350,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 244.8897247314453,
+            "width": 62,
+            "height": 70.00001525878906
+          }
+        },
+        {
+          "ms": 700,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 245.91661071777344,
+            "width": 62,
+            "height": 70.00001525878906
+          }
+        },
+        {
+          "ms": 1100,
+          "body": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "face": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "box": {
+            "x": 36,
+            "y": 247.10118103027344,
+            "width": 62,
+            "height": 70.00001525878906
+          }
+        }
+      ]
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-finished: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-recap-finished: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "recap disposal removes its tutor and preserves one home companion",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-after-recap: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-after-recap: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "home continues idle after dialog round trip",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "recap interruption also restores open eyes",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 387.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+        "size": "contain",
+        "position": "50% 50%",
+        "repeat": "no-repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "reload retains tutor and completed day",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-return-visit: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 109,
+            "changed": 98
+          },
+          {
+            "max": 85,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390-return-visit: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "320x568-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 109,
+            "changed": 98
+          },
+          {
+            "max": 85,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 35,
+            "y": 139.90625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "320x568-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "320x568-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 30,
+            "y": 109.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "320x568-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "320: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 60.515625
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "320: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 21,
+        "right": 299,
+        "y": 127.90625,
+        "bottom": 337.09375,
+        "viewportWidth": 320,
+        "viewportHeight": 568
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "844x390-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 129,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 448,
+            "y": 98.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "844x390-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "844x390-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 62,
+            "y": 103.4375,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "844x390-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "844: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 54.6875
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "844: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 434,
+        "right": 774,
+        "y": 86.8125,
+        "bottom": 296,
+        "viewportWidth": 844,
+        "viewportHeight": 390
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390x844-home: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 128,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390x844-home: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "390x844-recap: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390x844-recap: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "390: recap starts with heading visible",
+      "pass": true,
+      "detail": {
+        "scrollTop": 0,
+        "overflow": 0,
+        "headingTop": 198.515625
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "390: home stays within viewport without horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "x": 31,
+        "right": 359,
+        "y": 375.8125,
+        "bottom": 585,
+        "viewportWidth": 390,
+        "viewportHeight": 844
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "desktop uses real fine pointer",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "1440-desktop-welcome: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 143,
+            "changed": 96
+          },
+          {
+            "max": 107,
+            "changed": 102
+          }
+        ],
+        "bodyMax": 125,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "1440-desktop-welcome: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "desktop natural blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "1440-desktop-blink: rendered eyes match same unmasked sprite",
+      "pass": false,
+      "detail": {
+        "eyes": [
+          {
+            "max": 82,
+            "changed": 96
+          },
+          {
+            "max": 102,
+            "changed": 101
+          }
+        ],
+        "bodyMax": 125,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6822f01385dc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 563.1875,
+            "y": 543.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "mongle",
+      "name": "1440-desktop-blink: torso brightness remains base",
+      "pass": false
+    },
+    {
+      "tutor": "mongle",
+      "name": "desktop blink returns to base",
+      "pass": true
+    },
+    {
+      "tutor": "mongle",
+      "name": "page errors zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "mongle",
+      "name": "missing local resources zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "mongle",
+      "name": "external requests zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "mongle",
+      "name": "server writes zero",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "frames": [
+    {
+      "tutor": "kkamong",
+      "label": "390-home-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 43.41865158081055,
+            "y": 386.4198913574219,
+            "width": 65.16268920898438,
+            "height": 72.78518676757812
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 199.9999999920492,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 44.8185920715332,
+            "y": 387.65191650390625,
+            "width": 62.36281967163086,
+            "height": 70.3211669921875
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 383.2379999920494,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 44.82265853881836,
+            "y": 387.655517578125,
+            "width": 62.354679107666016,
+            "height": 70.31396484375
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 599.8379999920492,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      ]
+    },
+    {
+      "tutor": "kkamong",
+      "label": "390-recap-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 34.81113052368164,
+            "y": 246.2171173095703,
+            "width": 64.37774658203125,
+            "height": 72.09703063964844
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 133.3919999904234,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 34.24456787109375,
+            "y": 245.7207489013672,
+            "width": 65.5108642578125,
+            "height": 73.08973693847656
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 250.02399999042348,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.818416595458984,
+            "y": 247.10488891601562,
+            "width": 62.363162994384766,
+            "height": 70.32147216796875
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 383.223999990423,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.44072723388672,
+            "y": 246.771240234375,
+            "width": 63.11854553222656,
+            "height": 70.98876953125
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 499.92399999042283,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "으쓱",
+          "box": {
+            "x": 35.947364807128906,
+            "y": 247.21900939941406,
+            "width": 62.10527038574219,
+            "height": 70.09321594238281
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 649.7919999904234,
+              "state": "running"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tutor": "marin",
+      "label": "390-home-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.01458)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 16.667999993296377,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.13497)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 199.90199999329627,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.12971)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 383.1979999932964,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.06781)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 583.0979999932962,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.02824)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 749.8319999932966,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.00144)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 949.7979999932963,
+              "state": "running"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tutor": "marin",
+      "label": "390-recap-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.08921)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 116.69299999190753,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.14794)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 233.39299999190777,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.13548)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 366.66099999190794,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.0868)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 516.5929999919076,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+          "faceComplete": true,
+          "emotion": "눈웃음",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "brightness(1.05049)",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/marin-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 649.8609999919074,
+              "state": "running"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tutor": "mongle",
+      "label": "390-home-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 383.4079895019531,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 149.9109999909849,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 385.1298522949219,
+            "width": 62,
+            "height": 70.00003051757812
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 333.17499999098476,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.25811767578125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 516.5449999909848,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 45,
+            "y": 387.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": []
+        }
+      ]
+    },
+    {
+      "tutor": "mongle",
+      "label": "390-recap-success",
+      "sequence": [
+        {
+          "ms": 0,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 247.265625,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 0,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 80,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 243.18223571777344,
+            "width": 62,
+            "height": 70.00001525878906
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 133.31099999316498,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 180,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 243.3175048828125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 258.31099999316496,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 350,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 244.8897247314453,
+            "width": 62,
+            "height": 70.00001525878906
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 358.176999993165,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 700,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 245.91661071777344,
+            "width": 62,
+            "height": 70.00001525878906
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 458.17699999316505,
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "ms": 1100,
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+          "faceComplete": true,
+          "emotion": "기쁨",
+          "box": {
+            "x": 36,
+            "y": 247.10118103027344,
+            "width": 62,
+            "height": 70.00001525878906
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "url(\"http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-face-mask.svg\")",
+          "size": "contain",
+          "position": "50% 50%",
+          "repeat": "no-repeat",
+          "reaction": "success",
+          "animations": [
+            {
+              "time": 558.0769999931649,
+              "state": "running"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-natural-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-natural-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-return-during-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-return-during-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-으쓱.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-으쓱-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-놀람.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-놀람-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-민망.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-explicit-민망-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-remembered.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-remembered-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-practice-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-practice-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-practice-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-settled.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-home-success-settled-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-before-finish.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-before-finish-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-finished.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-recap-finished-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-after-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-after-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-return-visit.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390-return-visit-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\320x568-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\320x568-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\320x568-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\320x568-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\844x390-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\844x390-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\844x390-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\844x390-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390x844-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390x844-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390x844-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\390x844-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\1440-desktop-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\1440-desktop-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\1440-desktop-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\kkamong\\1440-desktop-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-natural-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-natural-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-return-during-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-return-during-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-explicit-놀람.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-explicit-놀람-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-explicit-민망.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-explicit-민망-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-remembered.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-remembered-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-practice-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-practice-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-practice-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-settled.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-home-success-settled-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-before-finish.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-before-finish-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-finished.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-recap-finished-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-after-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-after-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-return-visit.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390-return-visit-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\320x568-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\320x568-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\320x568-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\320x568-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\844x390-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\844x390-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\844x390-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\844x390-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390x844-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390x844-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390x844-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\390x844-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\1440-desktop-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\1440-desktop-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\1440-desktop-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\marin\\1440-desktop-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-natural-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-natural-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-return-during-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-return-during-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-으쓱.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-으쓱-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-놀람.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-놀람-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-민망.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-explicit-민망-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-remembered.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-remembered-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-practice-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-practice-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-practice-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-practice-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-settled.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-home-success-settled-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-before-finish.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-before-finish-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-0ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-0ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-80ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-80ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-180ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-180ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-350ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-350ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-700ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-700ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-1100ms.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-success-1100ms-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-finished.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-recap-finished-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-after-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-after-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-return-visit.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390-return-visit-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\320x568-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\320x568-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\320x568-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\320x568-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\844x390-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\844x390-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\844x390-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\844x390-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390x844-home.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390x844-home-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390x844-recap.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\390x844-recap-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\1440-desktop-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\1440-desktop-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\1440-desktop-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\final\\mongle\\1440-desktop-blink-portrait.png"
+  ]
+}

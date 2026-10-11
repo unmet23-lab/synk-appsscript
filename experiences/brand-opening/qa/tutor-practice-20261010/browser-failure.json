@@ -1,0 +1,180 @@
+{
+  "at": "2026-10-10T12:21:04.583Z",
+  "message": "page.waitForFunction: Timeout 30000ms exceeded.",
+  "checks": [
+    {
+      "name": "marin/runner: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 366,
+          "height": 605.1875
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "↑점프",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "↓숙이기",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "→오른쪽",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "marin/runner: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "↑점프",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "↓숙이기",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "→오른쪽",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "marin/runner: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "rehearsing again pauses the actual runner clock",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "finishing repeated practice continues the same runner round",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: early O needs the actual line timing",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: real MP3 ends before input opens",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": []
+}

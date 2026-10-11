@@ -1,0 +1,191 @@
+{
+  "at": "2026-10-10T14:44:25.349Z",
+  "error": "AssertionError [ERR_ASSERTION]: first sentence hint uses the server-verified answer",
+  "checks": [
+    {
+      "name": "runner action failures are not labelled sentence wrong",
+      "pass": true
+    },
+    {
+      "name": "Marine hints retain the report voice",
+      "pass": true
+    },
+    {
+      "name": "390px Marine: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "390px Marine: controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "w": 318,
+          "h": 48
+        },
+        {
+          "w": 124.6875,
+          "h": 44
+        },
+        {
+          "w": 318,
+          "h": 60
+        },
+        {
+          "w": 128.6875,
+          "h": 44
+        },
+        {
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "a missed action opens only that one rehearsal step",
+      "pass": true
+    },
+    {
+      "name": "focused control rehearsal pauses the real game",
+      "pass": true
+    },
+    {
+      "name": "focused success marks only a guided rehearsal",
+      "pass": true
+    },
+    {
+      "name": "control rehearsal keeps the original answer",
+      "pass": true
+    },
+    {
+      "name": "recent difficulties restore after a fresh page load",
+      "pass": true
+    },
+    {
+      "name": "actual narration completes before the rhythm answer",
+      "pass": true,
+      "detail": {
+        "delivered": "completed",
+        "paused": false,
+        "time": 16.588036666666667
+      }
+    },
+    {
+      "name": "a correct O/X answer with a missed beat gets timing help",
+      "pass": true
+    },
+    {
+      "name": "the original sentence remains correct",
+      "pass": true
+    },
+    {
+      "name": "a beat-only mistake rehearses timing without a new sentence",
+      "pass": true
+    },
+    {
+      "name": "timing rehearsal resumes the original track position",
+      "pass": true
+    },
+    {
+      "name": "actual narration completes before the rhythm answer",
+      "pass": true,
+      "detail": {
+        "delivered": "completed",
+        "paused": false,
+        "time": 54.07896
+      }
+    },
+    {
+      "name": "an actual wrong O/X answer gets a sentence hint",
+      "pass": true
+    },
+    {
+      "name": "Kkamong has its own embarrassed boastful hint",
+      "pass": true
+    },
+    {
+      "name": "review choices wait for the actual recording",
+      "pass": true
+    },
+    {
+      "name": "a guided wrong answer keeps the same exercise available",
+      "pass": true
+    },
+    {
+      "name": "the actual reviewed answer succeeds",
+      "pass": true
+    },
+    {
+      "name": "guided sentence practice keeps the original score and verdict",
+      "pass": true
+    },
+    {
+      "name": "guided review releases the iframe and resumes the same track",
+      "pass": true
+    },
+    {
+      "name": "actual narration completes before the rhythm answer",
+      "pass": true,
+      "detail": {
+        "delivered": "completed",
+        "paused": false,
+        "time": 91.72558
+      }
+    },
+    {
+      "name": "wrong sentence and missed beat retain both difficulties",
+      "pass": true
+    },
+    {
+      "name": "actual narration completes before the rhythm answer",
+      "pass": true,
+      "detail": {
+        "delivered": "completed",
+        "paused": false,
+        "time": 125.34158666666667
+      }
+    },
+    {
+      "name": "no response is kept apart from a wrong sentence",
+      "pass": true
+    },
+    {
+      "name": "an actual heard Hangul mismatch gets sound/letter help",
+      "pass": true
+    },
+    {
+      "name": "Mongle uses curiosity and togetherness in its hint",
+      "pass": true
+    },
+    {
+      "name": "review choices wait for the actual recording",
+      "pass": true
+    },
+    {
+      "name": "a guided wrong answer keeps the same exercise available",
+      "pass": true
+    },
+    {
+      "name": "the actual reviewed answer succeeds",
+      "pass": true
+    },
+    {
+      "name": "Hangul guided practice does not turn its original wrong answer into correct",
+      "pass": true
+    },
+    {
+      "name": "Hangul returns to its original item",
+      "pass": true
+    },
+    {
+      "name": "closing during review stops the actual recording",
+      "pass": true
+    },
+    {
+      "name": "first sentence hint uses the server-verified answer",
+      "pass": false
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": []
+}

@@ -1,0 +1,192 @@
+{
+  "at": "2026-10-11T12:03:51.101Z",
+  "sources": [
+    {
+      "path": "experiences/brand-opening/home.html",
+      "sha256": "a9e1463e56f22c27fcb56a9ca848d8721999bb27ce5296ec48059d07028ab09b"
+    },
+    {
+      "path": "experiences/brand-opening/home.mjs",
+      "sha256": "6e57d12782a1ddbc20bcc83e7a7a5c6b75203f86b18a2e919d3f22417700a321"
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "3573b1a7daeeea45f995e15e072259b32bd555e803bc5377228f9c83d80fc289"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor.mjs",
+      "sha256": "da41db5394c6997eb4e25b89f870c59b34887cf4a329b362c8c950080cdede71"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor-lines.mjs",
+      "sha256": "b4e12ab2c7f975093cebd7005ef59746f828785b2c782738a38d94e56c66b457"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor-days.mjs",
+      "sha256": "78e11ccd94448ab8ae2e4bb1a63b0c18f4bb2a9b1856a4beaed87fbc4bf62079"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor-recap.mjs",
+      "sha256": "20c9b4f54421c146354d787aa605a9b9e75e181d5170e471eadf9c66ac6c4c85"
+    },
+    {
+      "path": "experiences/brand-opening/life-tutor.mjs",
+      "sha256": "52b0c195f2f35069be1a5384387ef384bb7dc4fc8f8b49bc97e0d0316b99b24f"
+    },
+    {
+      "path": "experiences/brand-opening/content/life-standalone.mjs",
+      "sha256": "5db330894d53dbfc71bf5a555d6eb9f04489e8eafea85439978926b468ffeaa5"
+    },
+    {
+      "path": "experiences/synk-world-app/life-ui.mjs",
+      "sha256": "63b3c5190304bfbb643ec2c780c6613e608c9787ae8366fb99e89a861d77b4d1"
+    },
+    {
+      "path": "experiences/synk-world-app/life-progress.mjs",
+      "sha256": "397382798dd09f1abd2447346d905b50b221ea4af43ecbe389c71b5ed594d6fc"
+    },
+    {
+      "path": "experiences/synk-world-app/app-shell.mjs",
+      "sha256": "3f8c017e6d1f273af703d0577df783aac6ddf5956a82952786836f6aec8f1727"
+    },
+    {
+      "path": "tools/build-world-app-public.mjs",
+      "sha256": "508ed2e0d17b17e9a314c53988fa436615a4cfb1a1aa9bdd2ef6a68f035d5428"
+    }
+  ],
+  "frozen": [
+    {
+      "source": "experiences/brand-opening/home.html",
+      "payload": "desktop.html",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": false
+    },
+    {
+      "source": "experiences/brand-opening/home.mjs",
+      "payload": "brand-opening/home.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/home.css",
+      "payload": "brand-opening/home.css",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor.mjs",
+      "payload": "brand-opening/home-tutor.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor-lines.mjs",
+      "payload": "brand-opening/home-tutor-lines.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor-days.mjs",
+      "payload": "brand-opening/home-tutor-days.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor-recap.mjs",
+      "payload": "brand-opening/home-tutor-recap.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/life-tutor.mjs",
+      "payload": "brand-opening/life-tutor.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/brand-opening/content/life-standalone.mjs",
+      "payload": "brand-opening/content/life-standalone.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/synk-world-app/life-ui.mjs",
+      "payload": "life-ui.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/synk-world-app/life-progress.mjs",
+      "payload": "life-progress.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": true
+    },
+    {
+      "source": "experiences/synk-world-app/app-shell.mjs",
+      "payload": "app-shell.mjs",
+      "sourceMatchesBuild": true,
+      "payloadMatchesBuild": true,
+      "byteEqual": false
+    }
+  ],
+  "checks": {
+    "source-r3": {
+      "count": 88,
+      "ok": true
+    },
+    "account-r3": {
+      "count": 30,
+      "ok": true
+    },
+    "regression": {
+      "count": 127,
+      "ok": true
+    },
+    "homeRegression": {
+      "count": 64,
+      "ok": true
+    },
+    "lifecycleRegression": {
+      "count": 22,
+      "ok": true
+    },
+    "homeAccountRegression": {
+      "count": 16,
+      "ok": true
+    },
+    "lifeAccountRegression": {
+      "count": 10,
+      "ok": true
+    }
+  },
+  "unit": {
+    "count": 92,
+    "ok": true,
+    "report": "unit.tap"
+  },
+  "payload": ".tmp/world-app-daily-tutor-20261011-r3/world",
+  "manifestOk": true,
+  "files": 1817,
+  "totalBytes": 185838617,
+  "oldPayloadUnchanged": true,
+  "scope": {
+    "published": false,
+    "realOAuth": false,
+    "syntheticAccount": true,
+    "localJSONBTest": true,
+    "remoteDatabaseWritten": false,
+    "physicalPhone": false
+  },
+  "note": "Standalone home.html uses current source. Public builder rewrites app-shell imports; compare sourceSha256, not only emitted bytes."
+}

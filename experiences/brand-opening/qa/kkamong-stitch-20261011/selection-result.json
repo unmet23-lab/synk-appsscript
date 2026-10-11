@@ -1,0 +1,444 @@
+{
+  "ok": true,
+  "at": "2026-10-11T12:18:03.488Z",
+  "checks": [
+    {
+      "name": "all tutor image URLs retain exact current content hashes and safe file paths",
+      "pass": true,
+      "detail": [
+        {
+          "tutor": "marin",
+          "emotion": "기본",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "기쁨",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "놀람",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "눈웃음",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "잔잔감음",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "졸림",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "민망",
+          "valid": true
+        },
+        {
+          "tutor": "marin",
+          "emotion": "집중",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "기본",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "기쁨",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "놀람",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "눈웃음",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "잔잔감음",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "졸림",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "윙크",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "으쓱",
+          "valid": true
+        },
+        {
+          "tutor": "kkamong",
+          "emotion": "민망",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "기본",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "기쁨",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "놀람",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "눈웃음",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "잔잔감음",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "윙크",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "으쓱",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "졸림",
+          "valid": true
+        },
+        {
+          "tutor": "mongle",
+          "emotion": "민망",
+          "valid": true
+        }
+      ]
+    },
+    {
+      "name": "390: selection uses canonical introduction",
+      "pass": true
+    },
+    {
+      "name": "390: introduction visibly loads the new stitched proud face",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 16,
+          "y": 296.21875,
+          "width": 140,
+          "height": 140
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "390: portrait keeps the base underneath the face overlay",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 16,
+          "y": 296.21875,
+          "width": 140,
+          "height": 140
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "390: success visibly loads the new stitched smile and canonical praise",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 16,
+          "y": 291.78125,
+          "width": 140,
+          "height": 140
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "390: body source and placement within its portrait remain fixed through both reactions",
+      "pass": true
+    },
+    {
+      "name": "390: expression returns to the actual base face after its reaction",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "bodyBounds": {
+          "x": 16,
+          "y": 291.78125,
+          "width": 140,
+          "height": 140
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "390: 으쓱 served bytes and cache query match the generated asset",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "390: 기쁨 served bytes and cache query match the generated asset",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "390: first-meeting preview does not save a tutor choice",
+      "pass": true
+    },
+    {
+      "name": "648: selection uses canonical introduction",
+      "pass": true
+    },
+    {
+      "name": "648: introduction visibly loads the new stitched proud face",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 100,
+          "y": 307.78125,
+          "width": 160,
+          "height": 160
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "648: portrait keeps the base underneath the face overlay",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 100,
+          "y": 307.78125,
+          "width": 160,
+          "height": 160
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "648: success visibly loads the new stitched smile and canonical praise",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "bodyBounds": {
+          "x": 100,
+          "y": 307.78125,
+          "width": 160,
+          "height": 160
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "648: body source and placement within its portrait remain fixed through both reactions",
+      "pass": true
+    },
+    {
+      "name": "648: expression returns to the actual base face after its reaction",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "bodyBounds": {
+          "x": 100,
+          "y": 307.78125,
+          "width": 160,
+          "height": 160
+        },
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(39% 15% at 50% 40%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "complete": true
+      }
+    },
+    {
+      "name": "648: 으쓱 served bytes and cache query match the generated asset",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "648: 기쁨 served bytes and cache query match the generated asset",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "648: first-meeting preview does not save a tutor choice",
+      "pass": true
+    },
+    {
+      "name": "no missing assets, JavaScript errors or external services",
+      "pass": true,
+      "detail": {
+        "errors": [],
+        "missing": [],
+        "external": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "seen": [
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=e617965194ad",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=e617965194ad",
+      "status": 200
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+      "status": 200
+    }
+  ]
+}

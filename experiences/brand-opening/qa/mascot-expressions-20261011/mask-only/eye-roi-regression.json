@@ -1,0 +1,116 @@
+{
+  "oldClippedLensStillDetected": true,
+  "currentEyePixelsExact": true,
+  "results": [
+    {
+      "label": "old-surprise",
+      "portraitSize": [
+        160,
+        161
+      ],
+      "eyeEllipse": {
+        "centers": [
+          0.334,
+          0.666
+        ],
+        "y": 0.47,
+        "radiusX": 0.13,
+        "radiusY": 0.19
+      },
+      "inside": {
+        "max": 210,
+        "portraitPoint": [
+          110.13,
+          50.01
+        ],
+        "spritePoint": [
+          330.39,
+          148.52
+        ],
+        "actualRGB": [
+          30,
+          38,
+          70
+        ],
+        "referenceRGB": [
+          240,
+          206,
+          114
+        ],
+        "comparePoint": [
+          238,
+          45
+        ]
+      },
+      "outside": {
+        "max": 96,
+        "portraitPoint": [
+          42.32,
+          50.01
+        ],
+        "spritePoint": [
+          126.96,
+          148.52
+        ],
+        "actualRGB": [
+          38,
+          48,
+          84
+        ],
+        "referenceRGB": [
+          134,
+          118,
+          94
+        ],
+        "comparePoint": [
+          31,
+          45
+        ]
+      }
+    },
+    {
+      "label": "svg-success",
+      "portraitSize": [
+        160,
+        161
+      ],
+      "eyeEllipse": {
+        "centers": [
+          0.334,
+          0.666
+        ],
+        "y": 0.47,
+        "radiusX": 0.13,
+        "radiusY": 0.19
+      },
+      "inside": {
+        "max": 0
+      },
+      "outside": {
+        "max": 12,
+        "portraitPoint": [
+          85.23,
+          47.11
+        ],
+        "spritePoint": [
+          255.7,
+          139.83
+        ],
+        "actualRGB": [
+          30,
+          34,
+          69
+        ],
+        "referenceRGB": [
+          42,
+          37,
+          75
+        ],
+        "comparePoint": [
+          162,
+          39
+        ]
+      }
+    }
+  ]
+}

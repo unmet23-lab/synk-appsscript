@@ -1,0 +1,2598 @@
+{
+  "ok": false,
+  "at": "2026-10-11T13:41:42.755Z",
+  "base": "http://127.0.0.1:4314",
+  "scope": "One guest context, real settings choice sequence marin→kkamong→mongle→marin; all three game guides/practices each time; actual feedback sampled across Hangul, Runner, Rhythm and returned Marine Hangul. Runner/rhythm existing QA drivers send actions through real game judgment; Hangul uses actual option clicks. No synthetic tutor events.",
+  "checks": [
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "actual settings choice saved only for this guest",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": []
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul practice next: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": []
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul actual wrong answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "marin",
+        "face": "집중",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "line": "확인. 소리부터 끝까지 듣는다. …네 속도로."
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul actual wrong answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul actual right answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "marin",
+        "face": "눈웃음",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "line": "임무 완수. …좋다."
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul actual right answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: no reaction audio interrupts active game listening",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: real game difficulties are retained only by current tutor",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: exact selected tutor hints",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "hangul: reaction returns to approved base face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner practice jump: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner practice slide: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "runner: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm practice beat: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm practice beat-x: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "rhythm: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 0,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "actual settings choice saved only for this guest",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul practice next: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "hangul: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner practice jump: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner practice slide: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner resolved mission: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "kkamong",
+        "face": "으쓱",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "line": "훗. 내가 가르쳤지."
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner resolved mission: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner success is an actual completed mission",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner missed mission: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "kkamong",
+        "face": "민망",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "line": "내 비법. 끝 길에서 가운데로 한 칸 옮겨 봐. …천천히 해도 돼."
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner missed mission: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner retry is an actual missed mission",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: no reaction audio interrupts active game listening",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: real game difficulties are retained only by current tutor",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: exact selected tutor hints",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "runner: reaction returns to approved base face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm practice beat: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm practice beat-x: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "rhythm: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 1,
+      "tutor": "kkamong",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "actual settings choice saved only for this guest",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul practice next: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "hangul: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner practice jump: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner practice slide: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner practice listen: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "runner: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 1
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: demonstrated tutor is the newly selected character",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm practice left: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm practice right: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm practice beat: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm practice beat-x: exact tutor directions",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: successful rehearsal uses new face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm actual O/X wrong answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "mongle",
+        "face": "민망",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=885fcbc10fd5",
+        "line": "어? 나도… 헷갈리네! 오늘과 내일을 다시 확인해 봐. 같이 다시 찾아보자!"
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm actual O/X wrong answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm wrong answer is judged by actual game",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm actual O/X right answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "mongle",
+        "face": "기쁨",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=a5c12e3c32bc",
+        "line": "오! 해냈다! 우리 같이 해냈어!"
+      }
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm actual O/X right answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm right answer is judged by actual game",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: no reaction audio interrupts active game listening",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: real game difficulties are retained only by current tutor",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: exact selected tutor hints",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "rhythm: reaction returns to approved base face",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 2,
+      "tutor": "mongle",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "actual settings choice saved only for this guest",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 0
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul actual wrong answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "marin",
+        "face": "집중",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=a0132ee5efcf",
+        "line": "확인. 소리부터 끝까지 듣는다. …네 속도로."
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul actual wrong answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul actual right answer: exact new character face and base image",
+      "pass": true,
+      "detail": {
+        "id": "marin",
+        "face": "눈웃음",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=2765850ef5d1",
+        "line": "임무 완수. …좋다."
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul actual right answer: exact authored new tutor wording",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: no reaction audio interrupts active game listening",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: real game difficulties are retained only by current tutor",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: exact selected tutor hints",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "hangul: reaction returns to approved base face",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "runner: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 0
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "runner: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "runner: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "runner: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "rhythm: practice remains isolated by tutor and game",
+      "pass": true,
+      "detail": {
+        "practice": 0
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "rhythm: three authored operation directions use selected tutor",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "rhythm: one live game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "rhythm: actual game frame receives new tutor identity",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 1,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "closing game removes companion and game message listener",
+      "pass": true
+    },
+    {
+      "round": 3,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 4,
+      "tutor": "marin",
+      "name": "disposed earlier game has no later face/text/audio activity",
+      "pass": true,
+      "detail": {
+        "listeners": 0,
+        "old": [
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          },
+          {
+            "mutations": 0,
+            "connected": false,
+            "audioPlaying": false
+          }
+        ]
+      }
+    },
+    {
+      "round": 4,
+      "tutor": "marin",
+      "name": "reaction audio belongs to its selected mascot only",
+      "pass": false,
+      "detail": [
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-mollae.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-bee.wav",
+          "tutor": "kkamong",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-bee.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-bee.wav",
+          "tutor": "kkamong",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-nyamnyam.wav",
+          "tutor": "kkamong",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-bee.wav",
+          "tutor": "kkamong",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/mu.wav",
+          "tutor": "mongle",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/myang.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/mu.wav",
+          "tutor": "mongle",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/mu.wav",
+          "tutor": "mongle",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/ppuu.wav",
+          "tutor": "mongle",
+          "phase": "paused"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        },
+        {
+          "src": "http://127.0.0.1:4314/brand-opening/assets/tutors/marine-gidong.wav",
+          "tutor": "marin",
+          "phase": "lobby"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "screens": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\0-marin-hangul-guide.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\0-marin-hangul-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\0-marin-hangul-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\0-marin-hangul-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\1-kkamong-runner-guide.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\1-kkamong-runner-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\1-kkamong-runner-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\1-kkamong-runner-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\2-mongle-rhythm-guide.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\2-mongle-rhythm-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\2-mongle-rhythm-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\2-mongle-rhythm-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\3-marin-hangul-guide.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\3-marin-hangul-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\3-marin-hangul-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\games\\3-marin-hangul-hint.png"
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: reaction audio belongs to its selected mascot only\n    at check (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\verify-games.cjs:6:197)\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\tutor-switch-20261011\\verify-games.cjs:92:67"
+}

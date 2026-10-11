@@ -1,0 +1,14 @@
+{
+  "ok": false,
+  "at": "2026-10-11T10:32:53.269Z",
+  "base": "http://127.0.0.1:4314",
+  "passed": 0,
+  "checks": [],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source\\failure.png"
+  ],
+  "failure": "locator.click: Timeout 15000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-life-pack=greeting]')\u001b[22m\n\n    at lifeFlow (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:34:126)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:78:74"
+}

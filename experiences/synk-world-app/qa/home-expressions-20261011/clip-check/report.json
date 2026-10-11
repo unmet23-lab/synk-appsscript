@@ -1,0 +1,359 @@
+{
+  "url": "http://127.0.0.1:4314",
+  "scope": "local isolated guest; no account entry; natural UI flows and separately labeled explicit sprite QA",
+  "checks": [
+    {
+      "tutor": "kkamong",
+      "name": "selected tutor is guest-owned and greets on home",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 1,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-welcome: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 2,
+            "changed": 0
+          },
+          {
+            "max": 2,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=b92506f6a01e",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "잔잔감음",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-natural-blink: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "leaving during blink restores base on home return",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "closed eyes do not remain one second after returning",
+      "pass": true,
+      "detail": {
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "faceComplete": true,
+        "emotion": "기본",
+        "box": {
+          "x": 45,
+          "y": 436.8125,
+          "width": 62,
+          "height": 70
+        },
+        "bodyStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "faceStyle": {
+          "filter": "none",
+          "transform": "none"
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+        "size": "auto",
+        "position": "0% 0%",
+        "repeat": "repeat",
+        "animations": []
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-으쓱: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 0,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-놀람: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: rendered eyes match same unmasked sprite",
+      "pass": true,
+      "detail": {
+        "eyes": [
+          {
+            "max": 1,
+            "changed": 0
+          },
+          {
+            "max": 0,
+            "changed": 0
+          }
+        ],
+        "bodyMax": 0,
+        "state": {
+          "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+          "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+          "faceComplete": true,
+          "emotion": "기본",
+          "box": {
+            "x": 45,
+            "y": 436.8125,
+            "width": 62,
+            "height": 70
+          },
+          "bodyStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "faceStyle": {
+            "filter": "none",
+            "transform": "none"
+          },
+          "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)",
+          "size": "auto",
+          "position": "0% 0%",
+          "repeat": "repeat",
+          "animations": []
+        }
+      }
+    },
+    {
+      "tutor": "kkamong",
+      "name": "390-explicit-민망: torso brightness remains base",
+      "pass": true
+    },
+    {
+      "tutor": "kkamong",
+      "name": "page errors zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "missing local resources zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "external requests zero",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "tutor": "kkamong",
+      "name": "server writes zero",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "frames": [],
+  "captures": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-welcome.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-welcome-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-natural-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-natural-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-return-during-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-return-during-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-으쓱.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-으쓱-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-놀람.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-놀람-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-민망.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\home-expressions-20261011\\clip-check\\kkamong\\390-explicit-민망-portrait.png"
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-11",
+  "tool": "Built-in ImageGen",
+  "reference": "../정본_4K/까몽_본체.png",
+  "transparent_background": true,
+  "modelVersionSelected": false,
+  "outputDimensions": [
+    1254,
+    1254
+  ],
+  "prompts": [
+    {
+      "expression": "민망",
+      "source": "까몽_스티치민망_생성원본.png",
+      "prompt": "Use case: precise-object-edit. Edit the attached approved Kkamong plush mascot into ONE gently embarrassed / 'oops, let's try together' expression. Preserve the identical body pose, silhouette, fur color, lighting, ear shape, arms, tail with coral patch, composition and transparent background. Change ONLY the two eyes, leaving their centers and spacing identical. Replace BOTH open glass bead eyes completely with two simple CLOSED downcast eyelids made of dense fine muted moss-green embroidery thread. Each eye is a shallow U-shaped drooping curve, tiny and modest, symmetrical, conveying shy embarrassment and patient care. Distinct from an upturned happy arch. Embroidery sewn into the dark fur, visible fine thread fibers. NO open pupil, NO eyeball, NO white sclera or bright highlight, NO partly open slit, NO winking, NO plastic/rubber green line, NO eyebrows, NO nose, NO mouth, NO tears, NO blush. Existing fur should naturally fill the areas where the old bead eyes were. One full-body centered mascot with generous transparent margins, same scale and placement as source. This is a production sprite, not a concept sheet. Do not add other features or text."
+    },
+    {
+      "expression": "놀람",
+      "source": "까몽_차분한놀람_생성원본.png",
+      "prompt": "Use case: precise-object-edit. Make ONE subtle surprised Kkamong plush expression from the attached approved full-body mascot. Preserve identical body, fur, silhouette, ears, arms, tail, coral patch, composition, scale, lighting and transparent background. Edit ONLY eyes. Keep the original two round eye positions and outer diameters identical. The surprised eyes have two perfectly regular circular deep black pupils, slightly smaller than reference but still occupying 70 percent of eye diameter, surrounded by soft subdued moss-green irises of even thickness. Soften the eye material to dark satin felt / softly polished black bead, NO stark white specular marks. One tiny soft muted gray catchlight maximum, no shiny sparkle; absolutely NO white eyeballs, NO irregular polygonal shapes inside the pupil, NO crossed eyes, NO uneven pupil sizes, NO enlarged protruding eyeballs. Both eyes look directly forward with quiet curious surprise, friendly and cute, no alarm or glaring. No added eyelids, brows, mouth, nose or new facial features. A clean full body transparent production sprite. Keep eye rims small and fur integrated, do not enlarge the face."
+    }
+  ]
+}

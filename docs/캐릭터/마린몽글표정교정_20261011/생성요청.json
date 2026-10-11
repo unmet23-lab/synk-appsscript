@@ -1,0 +1,19 @@
+{
+  "date": "2026-10-11",
+  "tool": "Built-in ImageGen",
+  "reference": "../정본_4K/마린_본체.png",
+  "transparent_background": true,
+  "modelVersionSelected": false,
+  "prompts": [
+    {
+      "expression": "집중",
+      "source": "마린_집중_생성원본.png",
+      "prompt": "Use case: precise-object-edit. Edit this approved Marine needle-felt mascot's eyes into focused attention. Preserve exact entire body, helmet, wool texture, lighting, camera angle, beige uniform, pocket flower, composition, silhouette and transparent background. Edit ONLY the interior light of the two existing oval yellow felt lenses. The oval lens outlines, centers, size, navy rims and perspective MUST remain unchanged. There are NO eyelids on this helmet. Both lenses stay fully oval, fully uncovered. The yellow felt light becomes a calm muted honey-gold across the entire oval, with a gently brighter horizontal center glow fading softly upward and downward WITHIN each fully visible oval lens. This is concentrated light, never a sharp horizontal slit and never navy wool covering the lens. Preserve fine original felt fibers. No black pupils, no eyebrows, no mouth, no eyelashes, no extra face anatomy, no new decorations, no halo outside lenses, no star or flower shaped lens. One full-body transparent sprite, same position and scale as source."
+    },
+    {
+      "expression": "졸림",
+      "source": "마린_졸림_생성원본.png",
+      "prompt": "Use case: precise-object-edit. Edit this approved Marine needle-felt mascot into a sleepy low-power expression. Keep entire body, helmet, wool texture, navy seams, lighting, camera, beige uniform, pocket flower, position, silhouette and transparent background identical. Change ONLY the illumination INSIDE the existing two yellow oval felt lenses. Keep both lenses' original outlines, positions, size and fully uncovered oval shapes. This helmet has NO eyelids. Both entire oval lenses become evenly dim muted warm amber felt, approximately 40 percent of the original perceived brightness, with a very soft remaining golden light in the lower center gently fading across the whole oval. The golden oval remains recognizable; no sharp split or cutoff. No blue fur sliding across the lens, no half-closed eyes, no slits, no pupils, no brows, no mouth, no plastic, no glare. Fine matte felt fibers, soft quiet sleepy mood. The navy rims stay precisely as in reference. One centered full-body production sprite, not a sheet."
+    }
+  ]
+}

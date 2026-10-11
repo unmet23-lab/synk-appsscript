@@ -1,0 +1,543 @@
+[
+  {
+    "character": "마린",
+    "cut": "본체",
+    "source": "docs/캐릭터/정본_4K/마린_본체.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 0,
+    "alphaChanged": 0,
+    "visibleRgbChanged": 0,
+    "bodyRgbaChanged": 0,
+    "bbox": null
+  },
+  {
+    "character": "마린",
+    "cut": "눈감음",
+    "source": "docs/캐릭터/정본_4K/마린_눈감음.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2107761,
+    "alphaChanged": 204,
+    "visibleRgbChanged": 2107026,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1226,
+      3044,
+      2662
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "눈웃음",
+    "source": "docs/캐릭터/정본_4K/마린_눈웃음.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2127156,
+    "alphaChanged": 7601,
+    "visibleRgbChanged": 2126343,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1050,
+      1214,
+      3044,
+      2665
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "놀람",
+    "source": "docs/캐릭터/정본_4K/마린_놀람.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2134759,
+    "alphaChanged": 203,
+    "visibleRgbChanged": 2134067,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1049,
+      1230,
+      3044,
+      2662
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "집중",
+    "source": "docs/캐릭터/정본_4K/마린_집중.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2096416,
+    "alphaChanged": 272,
+    "visibleRgbChanged": 2095684,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1050,
+      1230,
+      3044,
+      2645
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "몰래기쁨",
+    "source": "docs/캐릭터/정본_4K/마린_몰래기쁨.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2146901,
+    "alphaChanged": 358,
+    "visibleRgbChanged": 2146169,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1050,
+      1226,
+      3044,
+      2658
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "민망",
+    "source": "docs/캐릭터/정본_4K/마린_민망.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2106976,
+    "alphaChanged": 239,
+    "visibleRgbChanged": 2106270,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1230,
+      3044,
+      2662
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "졸림",
+    "source": "docs/캐릭터/정본_4K/마린_졸림.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2117677,
+    "alphaChanged": 159,
+    "visibleRgbChanged": 2116919,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1049,
+      1217,
+      3044,
+      2664
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "감탄",
+    "source": "docs/캐릭터/정본_4K/마린_감탄.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2134906,
+    "alphaChanged": 468,
+    "visibleRgbChanged": 2134191,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1226,
+      3044,
+      2657
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "응원",
+    "source": "docs/캐릭터/정본_4K/마린_응원.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2097310,
+    "alphaChanged": 2207,
+    "visibleRgbChanged": 2096592,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1230,
+      3044,
+      2644
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "감동",
+    "source": "docs/캐릭터/정본_4K/마린_감동.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2108734,
+    "alphaChanged": 2935,
+    "visibleRgbChanged": 2108003,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1231,
+      3044,
+      2662
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "뾰로통",
+    "source": "docs/캐릭터/정본_4K/마린_뾰로통.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2111939,
+    "alphaChanged": 58,
+    "visibleRgbChanged": 2111212,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1050,
+      1226,
+      3044,
+      2656
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "궁금함",
+    "source": "docs/캐릭터/정본_4K/마린_궁금함.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2126681,
+    "alphaChanged": 58,
+    "visibleRgbChanged": 2125934,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1048,
+      1226,
+      3044,
+      2656
+    ]
+  },
+  {
+    "character": "마린",
+    "cut": "안도",
+    "source": "docs/캐릭터/정본_4K/마린_안도.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 2111002,
+    "alphaChanged": 58,
+    "visibleRgbChanged": 2110278,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1050,
+      1214,
+      3044,
+      2657
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "본체",
+    "source": "docs/캐릭터/정본_4K/몽글_본체.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 0,
+    "alphaChanged": 0,
+    "visibleRgbChanged": 0,
+    "bodyRgbaChanged": 0,
+    "bbox": null
+  },
+  {
+    "character": "몽글",
+    "cut": "눈감음",
+    "source": "docs/캐릭터/정본_4K/몽글_눈감음.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1189212,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1189212,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1176,
+      1039,
+      2931,
+      1832
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "눈웃음",
+    "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1189572,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1189572,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1175,
+      1039,
+      2932,
+      1835
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "놀람",
+    "source": "docs/캐릭터/정본_4K/몽글_놀람.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1188506,
+    "alphaChanged": 5396,
+    "visibleRgbChanged": 1188506,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1173,
+      1039,
+      2932,
+      1832
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "윙크",
+    "source": "docs/캐릭터/정본_4K/몽글_윙크.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1183369,
+    "alphaChanged": 1928,
+    "visibleRgbChanged": 1183348,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1178,
+      1039,
+      2932,
+      1832
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "으쓱",
+    "source": "docs/캐릭터/정본_4K/몽글_으쓱.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1187891,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1187891,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1179,
+      1039,
+      2932,
+      1833
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "졸림",
+    "source": "docs/캐릭터/정본_4K/몽글_졸림.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1190015,
+    "alphaChanged": 1836,
+    "visibleRgbChanged": 1190014,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1175,
+      1038,
+      2932,
+      1833
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "민망",
+    "source": "docs/캐릭터/정본_4K/몽글_민망.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1185751,
+    "alphaChanged": 1888,
+    "visibleRgbChanged": 1185736,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1181,
+      1039,
+      2932,
+      1834
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "집중",
+    "source": "docs/캐릭터/정본_4K/몽글_집중.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1186554,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1186554,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1177,
+      1039,
+      2932,
+      1833
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "응원",
+    "source": "docs/캐릭터/정본_4K/몽글_응원.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1186930,
+    "alphaChanged": 2057,
+    "visibleRgbChanged": 1186930,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1173,
+      1039,
+      2932,
+      1834
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "감동",
+    "source": "docs/캐릭터/정본_4K/몽글_감동.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1188615,
+    "alphaChanged": 2043,
+    "visibleRgbChanged": 1188555,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1182,
+      1039,
+      2930,
+      1835
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "뾰로통",
+    "source": "docs/캐릭터/정본_4K/몽글_뾰로통.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1185681,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1185681,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1175,
+      1039,
+      2932,
+      1834
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "궁금함",
+    "source": "docs/캐릭터/정본_4K/몽글_궁금함.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1183168,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1183168,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1176,
+      1039,
+      2931,
+      1833
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "안도",
+    "source": "docs/캐릭터/정본_4K/몽글_안도.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1186938,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1186938,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1172,
+      1039,
+      2932,
+      1832
+    ]
+  },
+  {
+    "character": "몽글",
+    "cut": "별눈",
+    "source": "docs/캐릭터/정본_4K/몽글_별눈.png",
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "rgbaChanged": 1197864,
+    "alphaChanged": 1782,
+    "visibleRgbChanged": 1197864,
+    "bodyRgbaChanged": 0,
+    "bbox": [
+      1173,
+      1039,
+      2931,
+      1832
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+{
+  "at": "2026-10-10T12:33:05.863Z",
+  "error": "Error: locator.click: Error: strict mode violation: locator('[data-view=\"me\"]') resolved to 2 elements:\n    1) <button data-view=\"me\" data-state=\"welcome\" class=\"profile-control\" aria-label=\"나의 공간 열기 · 계정 연결하기\">…</button> aka getByRole('button', { name: '나의 공간 열기 · 계정 연결하기' })\n    2) <button data-view=\"me\">…</button> aka getByRole('button', { name: '나', exact: true })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-view=\"me\"]')\u001b[22m\n",
+  "checks": [
+    {
+      "name": "Hangul pauses the actual MP3 while the tutor demonstrates",
+      "pass": true
+    },
+    {
+      "name": "Hangul keeps the same item after repeated practice",
+      "pass": true
+    },
+    {
+      "name": "Hangul resumes the current clip without leaving its controls locked",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

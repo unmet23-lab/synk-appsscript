@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-10T12:38:21.085Z",
+  "base": "http://127.0.0.1:4314",
+  "pass": 15,
+  "fail": 0,
+  "checks": [
+    {
+      "name": "Hangul pauses the actual MP3 while the tutor demonstrates",
+      "pass": true
+    },
+    {
+      "name": "Hangul keeps the same item after repeated practice",
+      "pass": true
+    },
+    {
+      "name": "Hangul resumes the current clip without leaving its controls locked",
+      "pass": true
+    },
+    {
+      "name": "sentence practice uses the selected account tutor",
+      "pass": true
+    },
+    {
+      "name": "sentence practice does not submit a real answer",
+      "pass": true
+    },
+    {
+      "name": "sentence practice leads to the same real question",
+      "pass": true
+    },
+    {
+      "name": "picking a real sentence answer does not invent a success",
+      "pass": true
+    },
+    {
+      "name": "picking a real sentence answer does not invent a success",
+      "pass": true
+    },
+    {
+      "name": "picking a real sentence answer does not invent a success",
+      "pass": true
+    },
+    {
+      "name": "sentence feedback still follows the server-verified result",
+      "pass": true
+    },
+    {
+      "name": "logout restores the original guest tutor",
+      "pass": true
+    },
+    {
+      "name": "account practice cannot skip a guest game practice",
+      "pass": true
+    },
+    {
+      "name": "blocked storage still allows a successfully practised game to start",
+      "pass": true
+    },
+    {
+      "name": "blocked storage does not repeat practice during the same page visit",
+      "pass": true
+    },
+    {
+      "name": "no lifecycle browser exceptions",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": []
+}

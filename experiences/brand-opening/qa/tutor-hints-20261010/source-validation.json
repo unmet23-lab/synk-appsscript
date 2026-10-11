@@ -1,0 +1,75 @@
+{
+  "browserChecks": 62,
+  "nodeChecks": 129,
+  "fail": 0,
+  "source": [
+    {
+      "path": "experiences/brand-opening/game-tutor-support.mjs",
+      "sha256": "e6431333c1bca89956241acf71b028341774ee68454c6f93bb4e85e7621b3c82"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-review.mjs",
+      "sha256": "dcc80e0992bd7fbceb096a97fc954d03dc282679edb69a633c87574f4d09e6e3"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-review.css",
+      "sha256": "d1f696b80cae35dea46c065c898cb320c0c51a04927c57c11a21c6c6dec115ca"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor.mjs",
+      "sha256": "dfa71b03657c97b9afe2450abd2759c6233a1c9bd40128f13c9ae7b2a49a0539"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor-contract.mjs",
+      "sha256": "54d60f27c43bf95700e9ffae4f58db1bf5e95c06fd0c0599e51c3a375a586e8f"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor-channel.mjs",
+      "sha256": "8b965a80cc0eff757562f46d3d6fd76222965a702dfaac53f4693cc948e065f0"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice-core.mjs",
+      "sha256": "dc019ebc70d092c7c9efd13b2c4c7f54d7db7f1c3567e01e7565cd000398694f"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice.mjs",
+      "sha256": "160f089cd616042cf28d239bc79f5b2ae43655d4356fe0a4968152c2c4b70d58"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice-lines.mjs",
+      "sha256": "89deff8bd0f40c201722ed033f3b8edba0260bf5e8595cad1a98327bf84635d9"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice.css",
+      "sha256": "346691303e2f85f67b853b964eaa8a5efe62e95b1b49be989e085a3efee58d53"
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "8b25933cbf8d2807de780a191b37c12f6fd84389144828f10882ecf97c6b1151"
+    },
+    {
+      "path": "experiences/korean-runner/app.mjs",
+      "sha256": "db9be3cb3bcdabfb36fc4b42eec6d1a9fab47425f0ecedcd61493ff57d3802a2"
+    },
+    {
+      "path": "experiences/korean-runner/core.mjs",
+      "sha256": "708e3308da8497661f03178cfa99ecd7afe023160cd8bcb99d09819cb7e55071"
+    },
+    {
+      "path": "experiences/korean-runner/listening-check-ui.mjs",
+      "sha256": "3d9c385c1fead5956ce18dd901f989e141a07234bbb2ab8ef3a404379b91d92e"
+    },
+    {
+      "path": "experiences/korean-rhythm/app.mjs",
+      "sha256": "e44855bac812b1ca8ea4cb5c4a633b11694bdf22bf762abffa73f05097dfe7ca"
+    },
+    {
+      "path": "experiences/hangul-stage/app.mjs",
+      "sha256": "00a82ab011946c72d1d416c6fe3e03819ef91079717cfc18f5244475bd26df20"
+    },
+    {
+      "path": "experiences/synk-world-app/app-shell.mjs",
+      "sha256": "de420dda993d5b506d243f99a70dbae03d1797333a35b2d68d655f5c9bbc8262"
+    }
+  ]
+}

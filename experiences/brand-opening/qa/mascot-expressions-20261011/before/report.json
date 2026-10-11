@@ -1,0 +1,850 @@
+{
+  "ok": false,
+  "audit": true,
+  "selectionOnly": true,
+  "tutors": [
+    "mongle"
+  ],
+  "at": "2026-10-11T12:53:08.597Z",
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "mongle 기본: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 기쁨: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 놀람: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 눈웃음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 잔잔감음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 윙크: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 으쓱: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 졸림: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 민망: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "648-intro: actual face is 눈웃음",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-intro: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-intro: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.04489942528735632,
+            "pixelsOver2": 1,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 6,
+            "meanChannelDiff": 0.11781609195402298,
+            "pixelsOver2": 11,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 1,
+          "meanChannelDiff": 0.0016666666666666668
+        }
+      }
+    },
+    {
+      "name": "648-intro: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 1,
+        "meanChannelDiff": 0.0016666666666666668
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132"
+      }
+    },
+    {
+      "name": "mongle-눈웃음.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+      }
+    },
+    {
+      "name": "648: introduction keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-success: actual face is 기쁨",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.04489942528735632,
+            "pixelsOver2": 1,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 6,
+            "meanChannelDiff": 0.11781609195402298,
+            "pixelsOver2": 11,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-success: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132"
+      }
+    },
+    {
+      "name": "mongle-기쁨.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+        "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+      }
+    },
+    {
+      "name": "648: success keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.033045977011494254,
+            "pixelsOver2": 2,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.08512931034482758,
+            "pixelsOver2": 6,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-retry: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe"
+      }
+    },
+    {
+      "name": "mongle-민망.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+        "sha256": "68359f6565fef05c8b6279ed0795e6d14d795bb050d993f617827de21f69fdfa"
+      }
+    },
+    {
+      "name": "648: retry keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-rest: actual face is 기본",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963"
+      }
+    },
+    {
+      "name": "mongle-기본.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "sha256": "1d75c8fc59639ecf658c23cac632339f8eb5656f298758faf7b513867e84ce34"
+      }
+    },
+    {
+      "name": "648-touch-surprise: actual face is 놀람",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=127ec7d0ca5c",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=127ec7d0ca5c",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 4,
+            "meanChannelDiff": 0.08297413793103449,
+            "pixelsOver2": 12,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 7,
+            "meanChannelDiff": 0.14583333333333334,
+            "pixelsOver2": 17,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-surprise: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=127ec7d0ca5c"
+      }
+    },
+    {
+      "name": "mongle-놀람.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=127ec7d0ca5c",
+        "sha256": "127ec7d0ca5c10fe47e39c18f8c13bbae5c4f43ca15f7bf70307dee2b38ef5d3"
+      }
+    },
+    {
+      "name": "648-touch-proud: actual face is 눈웃음",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-proud: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.04489942528735632,
+            "pixelsOver2": 1,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 6,
+            "meanChannelDiff": 0.11781609195402298,
+            "pixelsOver2": 11,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-proud: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "648-touch-shy: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-shy: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.033045977011494254,
+            "pixelsOver2": 2,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.08512931034482758,
+            "pixelsOver2": 6,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-shy: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "648: greeting returns to base",
+      "pass": true
+    },
+    {
+      "name": "648: natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "name": "648-idle-blink: actual face is 잔잔감음",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=78167b162955",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-idle-blink: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=78167b162955",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-idle-blink: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-idle-blink: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.04777298850574713,
+            "pixelsOver2": 2,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 5,
+            "meanChannelDiff": 0.09985632183908046,
+            "pixelsOver2": 11,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 32
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-idle-blink: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=78167b162955"
+      }
+    },
+    {
+      "name": "mongle-잔잔감음.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=78167b162955",
+        "sha256": "78167b162955cfbca025e10aec86ca9e65cc65f1b19f3bcaa1bee01570fdabc5"
+      }
+    },
+    {
+      "name": "648: idle blink returns to base",
+      "pass": true
+    },
+    {
+      "name": "648: preview does not save tutor selection",
+      "pass": true
+    },
+    {
+      "name": "no browser errors, missing assets, external calls or server writes",
+      "pass": true,
+      "detail": {
+        "errors": [],
+        "missing": [],
+        "external": [],
+        "blockedWrites": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-rest.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-rest-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-surprise.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-surprise-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-surprise-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-proud.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-proud-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-proud-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-shy.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-shy-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-touch-shy-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-idle-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-idle-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-idle-blink-eyes-compare.png"
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+      "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+      "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%AF%BC%EB%A7%9D.webp?v=68359f6565fe",
+      "sha256": "68359f6565fef05c8b6279ed0795e6d14d795bb050d993f617827de21f69fdfa"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+      "sha256": "1d75c8fc59639ecf658c23cac632339f8eb5656f298758faf7b513867e84ce34"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%86%80%EB%9E%8C.webp?v=127ec7d0ca5c",
+      "sha256": "127ec7d0ca5c10fe47e39c18f8c13bbae5c4f43ca15f7bf70307dee2b38ef5d3"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=78167b162955",
+      "sha256": "78167b162955cfbca025e10aec86ca9e65cc65f1b19f3bcaa1bee01570fdabc5"
+    }
+  ]
+}

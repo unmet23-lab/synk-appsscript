@@ -1,0 +1,930 @@
+{
+  "date": "2026-10-11",
+  "scope": "Only WORLD tutor expression sources; unused canonical emotions are unchanged",
+  "method": "Original body and alpha retained; former approved eye/flower/stitch contours reused; new ImageGen focus/sleep light restricted to original yellow Marine lens pixels",
+  "files": [
+    {
+      "character": "마린",
+      "expression": "눈감음",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_눈감음.png",
+      "sourceSha256": "b6bc276a84ef2ad1fc5179fc5d5d93fb8e0d1a4654c4c789a6709db26112a70b",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_눈감음_4K.png",
+      "sha256": "b2da74742c2367c0538dac1b33f57eb3bd16a70cb4cd99636b3171a9f63d108b",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_눈감음_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": null,
+          "sourceFeaturePixels": 0,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": null,
+          "sourceFeaturePixels": 0,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 549837,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 15264,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "눈웃음",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_눈웃음.png",
+      "sourceSha256": "8eb7e8f57160da5e76fd266821b46307b9024f757b1a1e28b86c2006c0dfa2cb",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_눈웃음_4K.png",
+      "sha256": "8422b46c5b95e626780ab7b7ed0ba8e8905d87711e1c7ed654aef316c9a43141",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_눈웃음_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 1227,
+            "top": 1688,
+            "width": 651,
+            "height": 760
+          },
+          "sourceFeaturePixels": 334266,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 2234,
+            "top": 1662,
+            "width": 640,
+            "height": 778
+          },
+          "sourceFeaturePixels": 309762,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 781357,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 22027,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "놀람",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_놀람.png",
+      "sourceSha256": "64aa38e85f8a03fa82ec1fa095e74e2add1d0773d3b7678962a2dc1ff4cddd2d",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_놀람_4K.png",
+      "sha256": "9d0ac8412f0a70d45dafe01fd2ab3621242e1d253d082598d7314abb53c53e4d",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_놀람_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 1216,
+            "top": 1538,
+            "width": 663,
+            "height": 845
+          },
+          "sourceFeaturePixels": 430888,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 2246,
+            "top": 1539,
+            "width": 633,
+            "height": 840
+          },
+          "sourceFeaturePixels": 405963,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 947813,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 26217,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "집중",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_집중_생성원본.png",
+      "sourceSha256": "c0696841ebd1095d68f03cb1b483d3f234484abf7a517723ef62e6b43683ccf2",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_집중_4K.png",
+      "sha256": "2d4cdb76b565acecae1d6f99df5ebde29f86b924bb80af20d75cffdccffb80cb",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_집중_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 398,
+            "top": 538,
+            "width": 159,
+            "height": 181
+          },
+          "sourceFeaturePixels": 22020,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "original yellow feature; 6px inward feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 702,
+            "top": 533,
+            "width": 157,
+            "height": 183
+          },
+          "sourceFeaturePixels": 21943,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "original yellow feature; 6px inward feather"
+        }
+      ],
+      "changedPixels": 470901,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 13428,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "몰래기쁨",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_몰래기쁨.png",
+      "sourceSha256": "e897de0dfaee8d9a10ae8de47d80dca8b9eaf966b6401accdad03e1a5271c2b6",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_몰래기쁨_4K.png",
+      "sha256": "0ac01b472a150f69948f65808616e84cd9185828c0b0868ffb090e22964bcfda",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_몰래기쁨_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 1277,
+            "top": 1766,
+            "width": 542,
+            "height": 602
+          },
+          "sourceFeaturePixels": 249838,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 2293,
+            "top": 1750,
+            "width": 535,
+            "height": 607
+          },
+          "sourceFeaturePixels": 246936,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 587634,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 16512,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "민망",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_민망.png",
+      "sourceSha256": "7ca8ccb2bb7f3b2f3578965f8c345fc7f092c5115bb1e9f98da71938cb44ca95",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_민망_4K.png",
+      "sha256": "b374da8fd5b250beecf076a2ef3c2d8e357ad937ed6a2a90f958b312ebf07899",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_민망_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 1295,
+            "top": 1764,
+            "width": 522,
+            "height": 589
+          },
+          "sourceFeaturePixels": 236190,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 2377,
+            "top": 1829,
+            "width": 351,
+            "height": 408
+          },
+          "sourceFeaturePixels": 107661,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 554455,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 15457,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "마린",
+      "expression": "졸림",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_졸림_생성원본.png",
+      "sourceSha256": "e26a709e3d11f7b340cbbb3a9b097b96f113f1eabad80c842dc27e4206dc9385",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_마린_본체.png",
+      "baseSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_졸림_4K.png",
+      "sha256": "ceb565d1d2af126a210bd40ee8dd0afe95c4840e5003eb6bc55d50b1a12eb467",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\마린_졸림_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1301,
+            "top": 1759,
+            "width": 517,
+            "height": 588
+          },
+          "baseFeaturePixels": 235330,
+          "sourceBounds": {
+            "left": 401,
+            "top": 540,
+            "width": 153,
+            "height": 177
+          },
+          "sourceFeaturePixels": 20673,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "original yellow feature; 6px inward feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2291,
+            "top": 1741,
+            "width": 518,
+            "height": 598
+          },
+          "baseFeaturePixels": 235598,
+          "sourceBounds": {
+            "left": 703,
+            "top": 537,
+            "width": 153,
+            "height": 178
+          },
+          "sourceFeaturePixels": 20580,
+          "baseBeadContourFilled": false,
+          "sourceBeadContourFilled": false,
+          "mask": "original yellow feature; 6px inward feather"
+        }
+      ],
+      "changedPixels": 470892,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 13510,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 237,
+          "top": 165,
+          "width": 550,
+          "height": 739
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "눈감음",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_눈감음.png",
+      "sourceSha256": "0749de8eaeaaca9ea224547fd19ca22cc642a9b9bddaf20d3d218213d869ac86",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_눈감음_4K.png",
+      "sha256": "1858ac847e0be96b75595295bc725ddceafa71f5dceaee84896870d4cd397755",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_눈감음_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1461,
+            "top": 1398,
+            "width": 294,
+            "height": 213
+          },
+          "sourceFeaturePixels": 11740,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2375,
+            "top": 1377,
+            "width": 485,
+            "height": 260
+          },
+          "sourceFeaturePixels": 43763,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 287537,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 6625,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "눈웃음",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_눈웃음.png",
+      "sourceSha256": "04d75b8053667dc94fb708d04f73c36aa7a20ecb407c5364ed47d988488955f3",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_눈웃음_4K.png",
+      "sha256": "53919f367af68776de35759e1cbb74a15f5ceb05f6b262f62d9ca74bb9eac168",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_눈웃음_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1323,
+            "top": 1250,
+            "width": 492,
+            "height": 383
+          },
+          "sourceFeaturePixels": 46166,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2284,
+            "top": 1229,
+            "width": 568,
+            "height": 438
+          },
+          "sourceFeaturePixels": 74126,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 330999,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 7649,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "놀람",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_놀람.png",
+      "sourceSha256": "067b8ea022027472ae722ba312db652e6bd14c8bdeae2990605c90bef6254cc0",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_놀람_4K.png",
+      "sha256": "53f782956ff1c685b2fc6621418bfb3348307d7ad88df4fc3899625a5f191746",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_놀람_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1286,
+            "top": 1210,
+            "width": 431,
+            "height": 460
+          },
+          "sourceFeaturePixels": 155356,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": true,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2341,
+            "top": 1182,
+            "width": 515,
+            "height": 511
+          },
+          "sourceFeaturePixels": 197522,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": true,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 416884,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 9362,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "윙크",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_윙크.png",
+      "sourceSha256": "e86ab0bbdf9182f0c8803dc76ae64b1999fc54fa69d01b52dee03780eb9eb87a",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_윙크_4K.png",
+      "sha256": "df74d98f75b3653dd9633f2cd26f6c5210c7e7a39301fa9c72cc2382a20c68da",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_윙크_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1329,
+            "top": 1373,
+            "width": 426,
+            "height": 222
+          },
+          "sourceFeaturePixels": 22770,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2391,
+            "top": 1257,
+            "width": 398,
+            "height": 392
+          },
+          "sourceFeaturePixels": 119972,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": true,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 275715,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 6315,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "으쓱",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_으쓱.png",
+      "sourceSha256": "bd2e815a84d5ed72280ed9d88130213d68c9df02d2fdef49cba2452e694c5c92",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_으쓱_4K.png",
+      "sha256": "5fcf9954c1482164862237dda4c040e2ebf121ab3d1bfa7fd4d2b9bab1fd7e35",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_으쓱_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1403,
+            "top": 1323,
+            "width": 364,
+            "height": 324
+          },
+          "sourceFeaturePixels": 19109,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2351,
+            "top": 1285,
+            "width": 479,
+            "height": 380
+          },
+          "sourceFeaturePixels": 55901,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 316875,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 7318,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "졸림",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_졸림.png",
+      "sourceSha256": "af5b715e67282e7a96209a868c54153287164b1ae7f967f79ed7017fd8253ba4",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_졸림_4K.png",
+      "sha256": "386e3e652cebf76357b23932e71d94ecab1da90a7cf6494c3210318cf300c379",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_졸림_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1283,
+            "top": 1446,
+            "width": 507,
+            "height": 147
+          },
+          "sourceFeaturePixels": 27494,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2328,
+            "top": 1422,
+            "width": 534,
+            "height": 198
+          },
+          "sourceFeaturePixels": 63037,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": true,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 307152,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 7117,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    },
+    {
+      "character": "몽글",
+      "expression": "민망",
+      "source": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_민망.png",
+      "sourceSha256": "ff2ec1fe5e25eb4fd28b09e8295f7a3eb7f07a826894811bde68b422b5650084",
+      "base": "docs\\캐릭터\\마린몽글표정교정_20261011\\이전_몽글_본체.png",
+      "baseSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "output": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_민망_4K.png",
+      "sha256": "9040bda4e7b4ed68695dd68bb0b253b402246217717d9b039474a4053a6805de",
+      "mask": "docs\\캐릭터\\마린몽글표정교정_20261011\\몽글_민망_마스크.png",
+      "eyes": [
+        {
+          "baseBounds": {
+            "left": 1360,
+            "top": 1278,
+            "width": 329,
+            "height": 345
+          },
+          "baseFeaturePixels": 88044,
+          "sourceBounds": {
+            "left": 1360,
+            "top": 1280,
+            "width": 328,
+            "height": 340
+          },
+          "sourceFeaturePixels": 86879,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": true,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        },
+        {
+          "baseBounds": {
+            "left": 2394,
+            "top": 1249,
+            "width": 395,
+            "height": 402
+          },
+          "baseFeaturePixels": 124402,
+          "sourceBounds": {
+            "left": 2358,
+            "top": 1260,
+            "width": 443,
+            "height": 288
+          },
+          "sourceFeaturePixels": 50365,
+          "baseBeadContourFilled": true,
+          "sourceBeadContourFilled": false,
+          "mask": "union of original eye and expression contour; 10px edge + 12px feather"
+        }
+      ],
+      "changedPixels": 272206,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "changedPixels": 6269,
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "crop": {
+          "left": 96,
+          "top": 80,
+          "width": 832,
+          "height": 807
+        },
+        "resizeBoundaryPixels": 5
+      }
+    }
+  ],
+  "applied": true,
+  "protected": {
+    "canonicalAnd1024Files": 72,
+    "unchanged": true,
+    "indexEntries": 36,
+    "indexEntriesUnchanged": true,
+    "originalBodiesUnchanged": true,
+    "kkamongUnchanged": true
+  }
+}

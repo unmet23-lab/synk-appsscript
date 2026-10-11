@@ -47,9 +47,27 @@ export const voiceReady = () => silent || voiceState === 'ready' || !!clips;
 export const voiceStatus = () => (silent ? 'silent' : clips ? 'files' : voiceState);
 
 let current = null;
+let currentFinish = null, tutorPaused = false;
+let tutorWaiters = [];
+// The untimed Hangul item stays in place while the selected tutor demonstrates.
+export function pauseForTutor() {
+  if (tutorPaused) return;
+  tutorPaused = true; current?.pause();
+  try { globalThis.speechSynthesis?.pause(); } catch { /* 기기 음성 없음 */ }
+}
+export function resumeFromTutor() {
+  if (!tutorPaused) return;
+  tutorPaused = false;
+  try { globalThis.speechSynthesis?.resume(); } catch { /* 기기 음성 없음 */ }
+  const pausedClip = current;
+  if (pausedClip) pausedClip.play().catch(() => { if (current === pausedClip) stop(); });
+  const waiting = tutorWaiters; tutorWaiters = [];
+  for (const fn of waiting) fn();
+}
 export function stop() {
   try { globalThis.speechSynthesis?.cancel(); } catch { /* 없음 */ }
   if (current) { current.pause(); current = null; }
+  const finish = currentFinish; currentFinish = null; finish?.(false);
 }
 /** 이 소리를 가진 목소리 번호들: 0은 기본 글자 소리, 1부터는 talkers의 목소리(순수 함수 — 시험용으로도 쓴다). */
 export function voicesFor(text, mainClips, talkerList) {
@@ -67,14 +85,18 @@ export const talkerFor = (text, key) => pickTalker(text, key, clips, talkers);
 export const talkerCount = text => voicesFor(text, clips, talkers).length;
 /** 글자·음절·낱말 하나를 말한다. 끝까지 났으면 true, 못 냈으면 false로 끝난다. slow는 천천히 다시 듣기, talker는 여러 목소리 가운데 번호(0 기본). */
 export function say(text, { slow = false, talker = 0 } = {}) {
+  if (tutorPaused) return new Promise(resolve => tutorWaiters.push(() => resolve(say(text, { slow, talker }))));
   stop();
   if (silent) return wait(150).then(() => false);
   const file = (talker > 0 ? talkers?.[talker - 1]?.clips?.[text] : null) || clips?.[text];
   if (file) {
     return new Promise(resolve => {
       const a = new Audio(`assets/voice/${file}`); a.playbackRate = slow ? 0.75 : 1; current = a;
-      a.onended = () => resolve(true); a.onerror = () => resolve(false);
-      a.play().catch(() => resolve(false));
+      let done = false;
+      const finish = ok => { if (done) return; done = true; if (current === a) current = null; if (currentFinish === finish) currentFinish = null; resolve(ok); };
+      currentFinish = finish;
+      a.onended = () => finish(true); a.onerror = () => finish(false);
+      a.play().catch(() => finish(false));
     });
   }
   const synth = globalThis.speechSynthesis;
@@ -83,10 +105,13 @@ export function say(text, { slow = false, talker = 0 } = {}) {
     const u = new SpeechSynthesisUtterance(text);
     u.voice = voice; u.lang = voice.lang; u.rate = slow ? 0.55 : 0.8; u.pitch = 1;
     let done = false;
-    const finish = ok => { if (!done) { done = true; resolve(ok); } };
+    const finish = ok => { if (!done) { done = true; if (currentFinish === finish) currentFinish = null; resolve(ok); } };
+    currentFinish = finish;
     u.onend = () => finish(true); u.onerror = () => finish(false);
     // 끝 알림을 주지 않는 음성도 있어 글자 수에 맞춘 넉넉한 시간 뒤에는 끝난 것으로 본다.
-    setTimeout(() => finish(true), 1600 + text.length * 700 * (slow ? 1.6 : 1));
+    const duration = 1600 + text.length * 700 * (slow ? 1.6 : 1);
+    const fallback = () => { if (done) return; if (tutorPaused) tutorWaiters.push(() => setTimeout(fallback, duration)); else finish(true); };
+    setTimeout(fallback, duration);
     synth.speak(u);
   }, 60)); // 막 멈춘 직후에 말하면 첫 소리를 삼키는 브라우저가 있다
 }
@@ -105,7 +130,7 @@ export const wait = ms => new Promise(r => setTimeout(r, ms));
 
 const cache = new Map();
 export function effect(name) {
-  if (!effectsOn || !EFFECTS[name]) return;
+  if (tutorPaused || !effectsOn || !EFFECTS[name]) return;
   try {
     let a = cache.get(name);
     if (!a) { a = new Audio(EFFECTS[name]); a.volume = 0.55; cache.set(name, a); }

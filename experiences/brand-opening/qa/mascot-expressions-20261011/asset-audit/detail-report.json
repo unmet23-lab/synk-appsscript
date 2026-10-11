@@ -1,0 +1,1874 @@
+[
+  {
+    "file": "marin-기본.webp",
+    "source": "docs/캐릭터/정본_4K/마린_본체.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    }
+  },
+  {
+    "file": "marin-기쁨.webp",
+    "source": "docs/캐릭터/정본_4K/마린_몰래기쁨.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 108000,
+      "percentage": 100,
+      "maxChannelDelta": 163,
+      "meanAbsChannelDelta": 15.825,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2146901,
+      "percentage": 12.797,
+      "maxChannelDelta": 220,
+      "meanAbsChannelDelta": 1.985,
+      "alphaPixels": 358,
+      "alphaBounds": [
+        1138,
+        1569,
+        2905,
+        2562
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 87,
+      "meanAbsChannelDelta": 13.934,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57685,
+      "percentage": 25.037,
+      "maxChannelDelta": 195,
+      "meanAbsChannelDelta": 3.178,
+      "alphaPixels": 31,
+      "alphaBounds": [
+        98,
+        147,
+        378,
+        274
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 94,
+      "meanAbsChannelDelta": 13.486,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 91564,
+      "percentage": 39.741,
+      "maxChannelDelta": 186,
+      "meanAbsChannelDelta": 3.391,
+      "alphaPixels": 31,
+      "alphaBounds": [
+        98,
+        147,
+        378,
+        274
+      ]
+    }
+  },
+  {
+    "file": "marin-놀람.webp",
+    "source": "docs/캐릭터/정본_4K/마린_놀람.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 108000,
+      "percentage": 100,
+      "maxChannelDelta": 175,
+      "meanAbsChannelDelta": 15.684,
+      "alphaPixels": 6,
+      "alphaBounds": [
+        2055,
+        1800,
+        2059,
+        1801
+      ]
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2134759,
+      "percentage": 12.724,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 3.476,
+      "alphaPixels": 203,
+      "alphaBounds": [
+        1129,
+        1406,
+        2901,
+        2607
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 98,
+      "meanAbsChannelDelta": 14.388,
+      "alphaPixels": 2,
+      "alphaBounds": [
+        240,
+        185,
+        241,
+        185
+      ]
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57637,
+      "percentage": 25.016,
+      "maxChannelDelta": 250,
+      "meanAbsChannelDelta": 6.197,
+      "alphaPixels": 27,
+      "alphaBounds": [
+        112,
+        121,
+        377,
+        316
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 105,
+      "meanAbsChannelDelta": 14.201,
+      "alphaPixels": 2,
+      "alphaBounds": [
+        240,
+        185,
+        241,
+        185
+      ]
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 92782,
+      "percentage": 40.27,
+      "maxChannelDelta": 254,
+      "meanAbsChannelDelta": 6.411,
+      "alphaPixels": 27,
+      "alphaBounds": [
+        112,
+        121,
+        377,
+        316
+      ]
+    }
+  },
+  {
+    "file": "marin-눈웃음.webp",
+    "source": "docs/캐릭터/정본_4K/마린_눈웃음.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 108000,
+      "percentage": 100,
+      "maxChannelDelta": 196,
+      "meanAbsChannelDelta": 8.999,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2127156,
+      "percentage": 12.679,
+      "maxChannelDelta": 253,
+      "meanAbsChannelDelta": 3.311,
+      "alphaPixels": 7601,
+      "alphaBounds": [
+        1100,
+        1522,
+        2975,
+        2489
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 94,
+      "meanAbsChannelDelta": 6.877,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57541,
+      "percentage": 24.974,
+      "maxChannelDelta": 243,
+      "meanAbsChannelDelta": 5.77,
+      "alphaPixels": 457,
+      "alphaBounds": [
+        92,
+        139,
+        387,
+        295
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 94,
+      "meanAbsChannelDelta": 6.478,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 91007,
+      "percentage": 39.5,
+      "maxChannelDelta": 246,
+      "meanAbsChannelDelta": 6.01,
+      "alphaPixels": 457,
+      "alphaBounds": [
+        92,
+        139,
+        387,
+        295
+      ]
+    }
+  },
+  {
+    "file": "marin-잔잔감음.webp",
+    "source": "docs/캐릭터/정본_4K/마린_눈감음.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 107994,
+      "percentage": 99.994,
+      "maxChannelDelta": 184,
+      "meanAbsChannelDelta": 8.868,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2107761,
+      "percentage": 12.563,
+      "maxChannelDelta": 254,
+      "meanAbsChannelDelta": 3.734,
+      "alphaPixels": 204,
+      "alphaBounds": [
+        1167,
+        1574,
+        2901,
+        2334
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 74,
+      "meanAbsChannelDelta": 6.202,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57067,
+      "percentage": 24.769,
+      "maxChannelDelta": 247,
+      "meanAbsChannelDelta": 6.407,
+      "alphaPixels": 30,
+      "alphaBounds": [
+        96,
+        148,
+        377,
+        272
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2773,
+      "percentage": 99.964,
+      "maxChannelDelta": 70,
+      "meanAbsChannelDelta": 5.982,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 105792,
+      "percentage": 45.917,
+      "maxChannelDelta": 251,
+      "meanAbsChannelDelta": 6.707,
+      "alphaPixels": 30,
+      "alphaBounds": [
+        96,
+        148,
+        377,
+        272
+      ]
+    }
+  },
+  {
+    "file": "marin-졸림.webp",
+    "source": "docs/캐릭터/정본_4K/마린_졸림.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 107998,
+      "percentage": 99.998,
+      "maxChannelDelta": 166,
+      "meanAbsChannelDelta": 9.66,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2117677,
+      "percentage": 12.622,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.751,
+      "alphaPixels": 159,
+      "alphaBounds": [
+        1274,
+        1574,
+        2901,
+        2632
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 83,
+      "meanAbsChannelDelta": 7.138,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57268,
+      "percentage": 24.856,
+      "maxChannelDelta": 247,
+      "meanAbsChannelDelta": 4.472,
+      "alphaPixels": 21,
+      "alphaBounds": [
+        112,
+        148,
+        377,
+        274
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 78,
+      "meanAbsChannelDelta": 6.663,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 104816,
+      "percentage": 45.493,
+      "maxChannelDelta": 254,
+      "meanAbsChannelDelta": 4.742,
+      "alphaPixels": 21,
+      "alphaBounds": [
+        112,
+        148,
+        377,
+        274
+      ]
+    }
+  },
+  {
+    "file": "marin-민망.webp",
+    "source": "docs/캐릭터/정본_4K/마린_민망.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 107997,
+      "percentage": 99.997,
+      "maxChannelDelta": 200,
+      "meanAbsChannelDelta": 10.83,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2106976,
+      "percentage": 12.559,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.217,
+      "alphaPixels": 239,
+      "alphaBounds": [
+        1274,
+        2007,
+        2901,
+        2342
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 81,
+      "meanAbsChannelDelta": 8.344,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 57001,
+      "percentage": 24.74,
+      "maxChannelDelta": 248,
+      "meanAbsChannelDelta": 3.438,
+      "alphaPixels": 26,
+      "alphaBounds": [
+        112,
+        219,
+        377,
+        273
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 65,
+      "meanAbsChannelDelta": 8.105,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 105917,
+      "percentage": 45.971,
+      "maxChannelDelta": 246,
+      "meanAbsChannelDelta": 3.744,
+      "alphaPixels": 26,
+      "alphaBounds": [
+        112,
+        219,
+        377,
+        273
+      ]
+    }
+  },
+  {
+    "file": "marin-집중.webp",
+    "source": "docs/캐릭터/정본_4K/마린_집중.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 237,
+      "top": 165,
+      "width": 550,
+      "height": 739
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1800,
+        "width": 240,
+        "height": 450
+      },
+      "pixels": 107997,
+      "percentage": 99.997,
+      "maxChannelDelta": 167,
+      "meanAbsChannelDelta": 9.186,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 2096416,
+      "percentage": 12.496,
+      "maxChannelDelta": 253,
+      "meanAbsChannelDelta": 2.809,
+      "alphaPixels": 272,
+      "alphaBounds": [
+        1273,
+        1632,
+        2901,
+        2561
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 73,
+      "meanAbsChannelDelta": 6.55,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 56724,
+      "percentage": 24.62,
+      "maxChannelDelta": 247,
+      "meanAbsChannelDelta": 4.588,
+      "alphaPixels": 35,
+      "alphaBounds": [
+        112,
+        157,
+        377,
+        308
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 216,
+        "top": 185,
+        "width": 38,
+        "height": 73
+      },
+      "pixels": 2774,
+      "percentage": 100,
+      "maxChannelDelta": 60,
+      "meanAbsChannelDelta": 6.239,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 103356,
+      "percentage": 44.859,
+      "maxChannelDelta": 254,
+      "meanAbsChannelDelta": 4.854,
+      "alphaPixels": 35,
+      "alphaBounds": [
+        112,
+        157,
+        377,
+        308
+      ]
+    }
+  },
+  {
+    "file": "mongle-기본.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_본체.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 0,
+      "percentage": 0,
+      "maxChannelDelta": 0,
+      "meanAbsChannelDelta": 0,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    }
+  },
+  {
+    "file": "mongle-기쁨.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125998,
+      "percentage": 99.998,
+      "maxChannelDelta": 168,
+      "meanAbsChannelDelta": 16.892,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1189572,
+      "percentage": 7.09,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.827,
+      "alphaPixels": 1782,
+      "alphaBounds": [
+        1437,
+        1351,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 111,
+      "meanAbsChannelDelta": 11.675,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25328,
+      "percentage": 10.993,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.419,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 93,
+      "meanAbsChannelDelta": 11.781,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 103186,
+      "percentage": 44.786,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.945,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-놀람.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_놀람.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125989,
+      "percentage": 99.991,
+      "maxChannelDelta": 157,
+      "meanAbsChannelDelta": 16.974,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1188506,
+      "percentage": 7.084,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.512,
+      "alphaPixels": 5396,
+      "alphaBounds": [
+        1389,
+        1308,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 80,
+      "meanAbsChannelDelta": 11.058,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25330,
+      "percentage": 10.994,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.951,
+      "alphaPixels": 194,
+      "alphaBounds": [
+        143,
+        148,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2578,
+      "percentage": 99.922,
+      "maxChannelDelta": 70,
+      "meanAbsChannelDelta": 11.063,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 101657,
+      "percentage": 44.122,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.463,
+      "alphaPixels": 194,
+      "alphaBounds": [
+        143,
+        148,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-눈웃음.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125998,
+      "percentage": 99.998,
+      "maxChannelDelta": 168,
+      "meanAbsChannelDelta": 16.892,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1189572,
+      "percentage": 7.09,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.827,
+      "alphaPixels": 1782,
+      "alphaBounds": [
+        1437,
+        1351,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 111,
+      "meanAbsChannelDelta": 11.675,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25328,
+      "percentage": 10.993,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.419,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 93,
+      "meanAbsChannelDelta": 11.781,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 103186,
+      "percentage": 44.786,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.945,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-잔잔감음.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_눈감음.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125996,
+      "percentage": 99.997,
+      "maxChannelDelta": 166,
+      "meanAbsChannelDelta": 16.613,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1189212,
+      "percentage": 7.088,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.725,
+      "alphaPixels": 1782,
+      "alphaBounds": [
+        1437,
+        1351,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 105,
+      "meanAbsChannelDelta": 11.649,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25284,
+      "percentage": 10.974,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.262,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2578,
+      "percentage": 99.922,
+      "maxChannelDelta": 107,
+      "meanAbsChannelDelta": 11.613,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 107420,
+      "percentage": 46.623,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.824,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-윙크.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_윙크.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125989,
+      "percentage": 99.991,
+      "maxChannelDelta": 154,
+      "meanAbsChannelDelta": 15.346,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1183369,
+      "percentage": 7.053,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.279,
+      "alphaPixels": 1928,
+      "alphaBounds": [
+        1437,
+        1351,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2579,
+      "percentage": 99.961,
+      "maxChannelDelta": 77,
+      "meanAbsChannelDelta": 7.47,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25116,
+      "percentage": 10.901,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.369,
+      "alphaPixels": 90,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 69,
+      "meanAbsChannelDelta": 7.639,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 101653,
+      "percentage": 44.12,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.904,
+      "alphaPixels": 90,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-으쓱.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_으쓱.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125998,
+      "percentage": 99.998,
+      "maxChannelDelta": 169,
+      "meanAbsChannelDelta": 17.069,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1187891,
+      "percentage": 7.08,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.846,
+      "alphaPixels": 1782,
+      "alphaBounds": [
+        1437,
+        1351,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2579,
+      "percentage": 99.961,
+      "maxChannelDelta": 88,
+      "meanAbsChannelDelta": 9.638,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25273,
+      "percentage": 10.969,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.292,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2578,
+      "percentage": 99.922,
+      "maxChannelDelta": 73,
+      "meanAbsChannelDelta": 9.66,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 99144,
+      "percentage": 43.031,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.795,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-졸림.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_졸림.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125994,
+      "percentage": 99.995,
+      "maxChannelDelta": 190,
+      "meanAbsChannelDelta": 17.481,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1190015,
+      "percentage": 7.093,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.852,
+      "alphaPixels": 1836,
+      "alphaBounds": [
+        1437,
+        1040,
+        2818,
+        1427
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2579,
+      "percentage": 99.961,
+      "maxChannelDelta": 118,
+      "meanAbsChannelDelta": 10.857,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25305,
+      "percentage": 10.983,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.35,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 96,
+      "meanAbsChannelDelta": 11.021,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 103277,
+      "percentage": 44.825,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 2.879,
+      "alphaPixels": 86,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        167
+      ]
+    }
+  },
+  {
+    "file": "mongle-민망.webp",
+    "source": "docs/캐릭터/정본_4K/몽글_민망.png",
+    "sourceShaMatches": true,
+    "outputShaMatches": true,
+    "crop": {
+      "left": 96,
+      "top": 80,
+      "width": 832,
+      "height": 807
+    },
+    "canonicalForeheadBridge": {
+      "roi": {
+        "left": 1900,
+        "top": 1230,
+        "width": 300,
+        "height": 420
+      },
+      "pixels": 125999,
+      "percentage": 99.999,
+      "maxChannelDelta": 177,
+      "meanAbsChannelDelta": 16.786,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "canonicalWhole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 4096,
+        "height": 4096
+      },
+      "pixels": 1185751,
+      "percentage": 7.068,
+      "maxChannelDelta": 254,
+      "meanAbsChannelDelta": 1.232,
+      "alphaPixels": 1888,
+      "alphaBounds": [
+        1435,
+        1051,
+        2818,
+        1717
+      ]
+    },
+    "lossless480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 76,
+      "meanAbsChannelDelta": 8.617,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "lossless480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 25206,
+      "percentage": 10.94,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.309,
+      "alphaPixels": 93,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        210
+      ]
+    },
+    "actualWebp480Bridge": {
+      "roi": {
+        "left": 219,
+        "top": 138,
+        "width": 43,
+        "height": 60
+      },
+      "pixels": 2580,
+      "percentage": 100,
+      "maxChannelDelta": 67,
+      "meanAbsChannelDelta": 8.719,
+      "alphaPixels": 0,
+      "alphaBounds": null
+    },
+    "actualWebp480Whole": {
+      "roi": {
+        "left": 0,
+        "top": 0,
+        "width": 480,
+        "height": 480
+      },
+      "pixels": 102620,
+      "percentage": 44.54,
+      "maxChannelDelta": 255,
+      "meanAbsChannelDelta": 1.845,
+      "alphaPixels": 93,
+      "alphaBounds": [
+        150,
+        154,
+        351,
+        210
+      ]
+    }
+  }
+]

@@ -1,0 +1,932 @@
+{
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "first Start opens first meeting with no default tutor",
+      "pass": true
+    },
+    {
+      "name": "first meeting explains future AI tutor role",
+      "pass": true
+    },
+    {
+      "name": "three distinct approved tutors are offered",
+      "pass": true
+    },
+    {
+      "name": "마린: approved self-introduction",
+      "pass": true
+    },
+    {
+      "name": "마린: preview does not persist choice",
+      "pass": true
+    },
+    {
+      "name": "마린: success approved words",
+      "pass": true
+    },
+    {
+      "name": "마린: success keeps base body",
+      "pass": true
+    },
+    {
+      "name": "마린: retry approved words",
+      "pass": true
+    },
+    {
+      "name": "마린: retry keeps base body",
+      "pass": true
+    },
+    {
+      "name": "까몽: approved self-introduction",
+      "pass": true
+    },
+    {
+      "name": "까몽: preview does not persist choice",
+      "pass": true
+    },
+    {
+      "name": "까몽: success approved words",
+      "pass": true
+    },
+    {
+      "name": "까몽: success keeps base body",
+      "pass": true
+    },
+    {
+      "name": "까몽: retry approved words",
+      "pass": true
+    },
+    {
+      "name": "까몽: retry keeps base body",
+      "pass": true
+    },
+    {
+      "name": "몽글: approved self-introduction",
+      "pass": true
+    },
+    {
+      "name": "몽글: preview does not persist choice",
+      "pass": true
+    },
+    {
+      "name": "몽글: success approved words",
+      "pass": true
+    },
+    {
+      "name": "몽글: success keeps base body",
+      "pass": true
+    },
+    {
+      "name": "몽글: retry approved words",
+      "pass": true
+    },
+    {
+      "name": "몽글: retry keeps base body",
+      "pass": true
+    },
+    {
+      "name": "reduced motion suppresses movement while words stay available",
+      "pass": true
+    },
+    {
+      "name": "rotation keeps the current preview and its readable words",
+      "pass": true
+    },
+    {
+      "name": "reaction sound uses an existing local short recording",
+      "pass": true
+    },
+    {
+      "name": "second step introduces real learning/play/review entrances",
+      "pass": true
+    },
+    {
+      "name": "second step is still an uncommitted preview",
+      "pass": true
+    },
+    {
+      "name": "finish stores only a completed tutor choice",
+      "pass": true
+    },
+    {
+      "name": "home displays chosen tutor",
+      "pass": true
+    },
+    {
+      "name": "first Start completion restores keyboard focus to a home action",
+      "pass": true
+    },
+    {
+      "name": "closing the screen stops its audio",
+      "pass": true
+    },
+    {
+      "name": "reload restores selection and skips first meeting",
+      "pass": true
+    },
+    {
+      "name": "cancelled change preserves chosen Marine",
+      "pass": true
+    },
+    {
+      "name": "completed first meeting resumes the real learning flow",
+      "pass": true
+    },
+    {
+      "name": "signed-in account does not inherit guest choice",
+      "pass": true
+    },
+    {
+      "name": "account choice is stored in an isolated device scope",
+      "pass": true
+    },
+    {
+      "name": "logout restores guest tutor instead of leaking account preference",
+      "pass": true
+    },
+    {
+      "name": "first-sentence Start uses the same tutor entrance",
+      "pass": true
+    },
+    {
+      "name": "first-sentence continuation preserves existing account requirement",
+      "pass": true
+    },
+    {
+      "name": "phone320: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 320,
+        "scroll": true,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 90.65625,
+            "h": 136.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 90.671875,
+            "h": 136.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 90.65625,
+            "h": 136.890625
+          },
+          {
+            "text": "",
+            "w": 140,
+            "h": 140
+          },
+          {
+            "text": "자기소개",
+            "w": 92,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 92,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 92,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 288,
+            "h": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone320: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 90.65625,
+          "h": 136.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 90.671875,
+          "h": 136.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 90.65625,
+          "h": 136.890625
+        },
+        {
+          "text": "",
+          "w": 140,
+          "h": 140
+        },
+        {
+          "text": "자기소개",
+          "w": 92,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 92,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 92,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 288,
+          "h": 64
+        }
+      ]
+    },
+    {
+      "name": "phone320: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "phone322: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 322,
+        "scroll": true,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 91.328125,
+            "h": 136.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 91.328125,
+            "h": 136.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 91.34375,
+            "h": 136.890625
+          },
+          {
+            "text": "",
+            "w": 140,
+            "h": 140
+          },
+          {
+            "text": "자기소개",
+            "w": 92.65625,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 92.671875,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 92.65625,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 290,
+            "h": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone322: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 91.328125,
+          "h": 136.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 91.328125,
+          "h": 136.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 91.34375,
+          "h": 136.890625
+        },
+        {
+          "text": "",
+          "w": 140,
+          "h": 140
+        },
+        {
+          "text": "자기소개",
+          "w": 92.65625,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 92.671875,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 92.65625,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 290,
+          "h": 64
+        }
+      ]
+    },
+    {
+      "name": "phone322: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "phone430: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 430,
+        "scroll": false,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 122,
+            "h": 136.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 122,
+            "h": 136.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 122,
+            "h": 136.890625
+          },
+          {
+            "text": "",
+            "w": 140,
+            "h": 140
+          },
+          {
+            "text": "자기소개",
+            "w": 123.328125,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 123.328125,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 123.34375,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 382,
+            "h": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone430: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 122,
+          "h": 136.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 122,
+          "h": 136.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 122,
+          "h": 136.890625
+        },
+        {
+          "text": "",
+          "w": 140,
+          "h": 140
+        },
+        {
+          "text": "자기소개",
+          "w": 123.328125,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 123.328125,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 123.34375,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 382,
+          "h": 64
+        }
+      ]
+    },
+    {
+      "name": "phone430: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "landscape740: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 740,
+        "scroll": true,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 86.390625,
+            "h": 113.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 86.390625,
+            "h": 113.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 86.40625,
+            "h": 113.890625
+          },
+          {
+            "text": "",
+            "w": 104,
+            "h": 108
+          },
+          {
+            "text": "자기소개",
+            "w": 131.59375,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 131.609375,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 131.609375,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 275.1875,
+            "h": 52
+          }
+        ]
+      }
+    },
+    {
+      "name": "landscape740: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 86.390625,
+          "h": 113.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 86.390625,
+          "h": 113.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 86.40625,
+          "h": 113.890625
+        },
+        {
+          "text": "",
+          "w": 104,
+          "h": 108
+        },
+        {
+          "text": "자기소개",
+          "w": 131.59375,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 131.609375,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 131.609375,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 275.1875,
+          "h": 52
+        }
+      ]
+    },
+    {
+      "name": "landscape740: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "landscape844: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 844,
+        "scroll": false,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 100.265625,
+            "h": 113.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 100.265625,
+            "h": 113.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 100.265625,
+            "h": 113.890625
+          },
+          {
+            "text": "",
+            "w": 104,
+            "h": 108
+          },
+          {
+            "text": "자기소개",
+            "w": 152.390625,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 152.40625,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 152.40625,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 316.796875,
+            "h": 52
+          }
+        ]
+      }
+    },
+    {
+      "name": "landscape844: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 100.265625,
+          "h": 113.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 100.265625,
+          "h": 113.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 100.265625,
+          "h": 113.890625
+        },
+        {
+          "text": "",
+          "w": 104,
+          "h": 108
+        },
+        {
+          "text": "자기소개",
+          "w": 152.390625,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 152.40625,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 152.40625,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 316.796875,
+          "h": 52
+        }
+      ]
+    },
+    {
+      "name": "landscape844: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "desktop: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "width": 720,
+        "scroll": false,
+        "buttons": [
+          {
+            "text": "",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "반응 소리 꺼짐",
+            "w": 101.71875,
+            "h": 44
+          },
+          {
+            "text": "마린임무선택",
+            "w": 208,
+            "h": 136.890625
+          },
+          {
+            "text": "까몽허세만나기",
+            "w": 208,
+            "h": 136.890625
+          },
+          {
+            "text": "몽글호기심만나기",
+            "w": 208,
+            "h": 136.890625
+          },
+          {
+            "text": "",
+            "w": 192,
+            "h": 184
+          },
+          {
+            "text": "자기소개",
+            "w": 209.328125,
+            "h": 49
+          },
+          {
+            "text": "잘했을 때",
+            "w": 209.328125,
+            "h": 49
+          },
+          {
+            "text": "어려울 때",
+            "w": 209.328125,
+            "h": 49
+          },
+          {
+            "text": "마린과 함께하기→",
+            "w": 640,
+            "h": 64
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: touch controls remain at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "반응 소리 꺼짐",
+          "w": 101.71875,
+          "h": 44
+        },
+        {
+          "text": "마린임무선택",
+          "w": 208,
+          "h": 136.890625
+        },
+        {
+          "text": "까몽허세만나기",
+          "w": 208,
+          "h": 136.890625
+        },
+        {
+          "text": "몽글호기심만나기",
+          "w": 208,
+          "h": 136.890625
+        },
+        {
+          "text": "",
+          "w": 192,
+          "h": 184
+        },
+        {
+          "text": "자기소개",
+          "w": 209.328125,
+          "h": 49
+        },
+        {
+          "text": "잘했을 때",
+          "w": 209.328125,
+          "h": 49
+        },
+        {
+          "text": "어려울 때",
+          "w": 209.328125,
+          "h": 49
+        },
+        {
+          "text": "마린과 함께하기→",
+          "w": 640,
+          "h": 64
+        }
+      ]
+    },
+    {
+      "name": "desktop: tutorial completion continues requested learning",
+      "pass": true
+    },
+    {
+      "name": "direct standalone game Start also requires first meeting",
+      "pass": true
+    },
+    {
+      "name": "standalone completion opens the originally requested game",
+      "pass": true
+    },
+    {
+      "name": "game return restores chosen companion",
+      "pass": true
+    },
+    {
+      "name": "no JavaScript errors",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no missing assets",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no external or paid calls",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "screenshots": [
+    "desktop-marin.png",
+    "desktop-welcome.png",
+    "landscape740-marin.png",
+    "landscape740-welcome.png",
+    "landscape844-marin.png",
+    "landscape844-welcome.png",
+    "phone320-marin.png",
+    "phone320-welcome.png",
+    "phone322-marin.png",
+    "phone322-welcome.png",
+    "phone390-first-meeting.png",
+    "phone390-kkamong.png",
+    "phone390-marin.png",
+    "phone390-mongle.png",
+    "phone390-welcome.png",
+    "phone430-marin.png",
+    "phone430-welcome.png"
+  ]
+}

@@ -1,0 +1,177 @@
+{
+  "checkedAt": "2026-10-11T12:02:45.751Z",
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "home starts with one tutor timer",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 2300,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at Object.update (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:36:9)",
+            "    at refresh (http://127.0.0.1:4314/brand-opening/home-tutor.mjs:60:13)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "initial reaction settles into one idle timer",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 5863.937648588304,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at idle (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:22:9)",
+            "    at http://127.0.0.1:4314/brand-opening/life-tutor.mjs:36:157"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "opening settings cancels every home tutor timer",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "manual reduced motion keeps idle timers stopped",
+      "passed": true,
+      "detail": []
+    },
+    {
+      "name": "turning motion back on starts one idle timer",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 6420.099306835178,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at idle (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:22:9)",
+            "    at Object.setActive (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:84:131)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "repeated home activation never accumulates timers",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 6095.310524625042,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at idle (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:22:9)",
+            "    at Object.setActive (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:84:131)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same visit: due expression has no review session before guided practice",
+      "passed": true
+    },
+    {
+      "name": "same visit: guide reserves its due transfer with persisted assistance",
+      "passed": true
+    },
+    {
+      "name": "same visit: preparing a guide preserves first answers and review appointments",
+      "passed": true
+    },
+    {
+      "name": "same visit: guided completion persists without altering the prepared answers or review session",
+      "passed": true
+    },
+    {
+      "name": "same visit: returning after guided success has at most one home timer",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 2300,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at Object.update (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:36:9)",
+            "    at refresh (http://127.0.0.1:4314/brand-opening/home-tutor.mjs:60:13)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "same visit: same transfer stays assisted and cannot extend the review interval",
+      "passed": true,
+      "detail": {
+        "answer": {
+          "correct": true,
+          "helped": true,
+          "at": 1791720163873
+        },
+        "streak": 0,
+        "intervalDays": 0
+      }
+    },
+    {
+      "name": "same visit: original lesson error remains intact",
+      "passed": true
+    },
+    {
+      "name": "after reload: due expression has no review session before guided practice",
+      "passed": true
+    },
+    {
+      "name": "after reload: guide reserves its due transfer with persisted assistance",
+      "passed": true
+    },
+    {
+      "name": "after reload: preparing a guide preserves first answers and review appointments",
+      "passed": true
+    },
+    {
+      "name": "after reload: guided completion persists without altering the prepared answers or review session",
+      "passed": true
+    },
+    {
+      "name": "after reload: returning after guided success has at most one home timer",
+      "passed": true,
+      "detail": [
+        {
+          "delay": 2300,
+          "source": [
+            "    at window.setTimeout (<anonymous>:7:67)",
+            "    at Object.update (http://127.0.0.1:4314/brand-opening/life-tutor.mjs:36:9)",
+            "    at refresh (http://127.0.0.1:4314/brand-opening/home-tutor.mjs:60:13)"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "after reload: reload preserves guided success and the entire prepared review",
+      "passed": true
+    },
+    {
+      "name": "after reload: same transfer stays assisted and cannot extend the review interval",
+      "passed": true,
+      "detail": {
+        "answer": {
+          "correct": true,
+          "helped": true,
+          "at": 1791720165122
+        },
+        "streak": 0,
+        "intervalDays": 0
+      }
+    },
+    {
+      "name": "after reload: original lesson error remains intact",
+      "passed": true
+    },
+    {
+      "name": "no browser JavaScript errors",
+      "passed": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "failure": null
+}

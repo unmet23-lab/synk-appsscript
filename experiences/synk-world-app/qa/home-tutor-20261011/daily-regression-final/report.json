@@ -1,0 +1,405 @@
+{
+  "ok": true,
+  "at": "2026-10-11T12:02:25.558Z",
+  "checks": [
+    {
+      "name": "marin: first home invites a tutor without inventing history",
+      "passed": true
+    },
+    {
+      "name": "marin: chosen tutor greets from real next lesson",
+      "passed": true
+    },
+    {
+      "name": "marin: first mistake becomes a specific home recommendation",
+      "passed": true
+    },
+    {
+      "name": "marin: reload restores selected tutor and confusion",
+      "passed": true
+    },
+    {
+      "name": "marin: home practice opens actual transfer and keeps world panel closed",
+      "passed": true
+    },
+    {
+      "name": "marin: cancel preserves checkpoint and first response",
+      "passed": true
+    },
+    {
+      "name": "marin: wrong practice uses chosen tutor face",
+      "passed": true
+    },
+    {
+      "name": "marin: home celebrates and moves past this session practice",
+      "passed": true
+    },
+    {
+      "name": "marin: practice records guided success without grading or rescheduling learning",
+      "passed": true
+    },
+    {
+      "name": "marin: reload retains guided success and suppresses the same home recommendation",
+      "passed": true
+    },
+    {
+      "name": "marin: pending scheduled review marks help without changing first answer or schedule",
+      "passed": true
+    },
+    {
+      "name": "marin: returning scheduled answer is assisted",
+      "passed": true
+    },
+    {
+      "name": "marin: recent cafe difficulty guides today practice",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe repair, first error and pickup stage retained alongside guided record",
+      "passed": true
+    },
+    {
+      "name": "marin: resume returns to cafe repair",
+      "passed": true
+    },
+    {
+      "name": "marin: home fits 320x568",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: tutor avoids top and nav 320",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 21,
+          "y": 127.90625,
+          "right": 299,
+          "bottom": 337.09375
+        },
+        "topBottom": 64,
+        "navTop": 483,
+        "overlap": false
+      }
+    },
+    {
+      "name": "marin: home fits 740x320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: tutor avoids top and nav 740",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 391.796875,
+          "y": 75,
+          "right": 718,
+          "bottom": 231
+        },
+        "topBottom": 67,
+        "navTop": 236,
+        "overlap": false
+      }
+    },
+    {
+      "name": "marin: home fits 390x844",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: tutor avoids top and nav 390",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 31,
+          "y": 375.8125,
+          "right": 359,
+          "bottom": 585
+        },
+        "topBottom": 71,
+        "navTop": 755,
+        "overlap": false
+      }
+    },
+    {
+      "name": "kkamong: first home invites a tutor without inventing history",
+      "passed": true
+    },
+    {
+      "name": "kkamong: chosen tutor greets from real next lesson",
+      "passed": true
+    },
+    {
+      "name": "kkamong: first mistake becomes a specific home recommendation",
+      "passed": true
+    },
+    {
+      "name": "kkamong: reload restores selected tutor and confusion",
+      "passed": true
+    },
+    {
+      "name": "kkamong: home practice opens actual transfer and keeps world panel closed",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cancel preserves checkpoint and first response",
+      "passed": true
+    },
+    {
+      "name": "kkamong: wrong practice uses chosen tutor face",
+      "passed": true
+    },
+    {
+      "name": "kkamong: home celebrates and moves past this session practice",
+      "passed": true
+    },
+    {
+      "name": "kkamong: practice records guided success without grading or rescheduling learning",
+      "passed": true
+    },
+    {
+      "name": "kkamong: reload retains guided success and suppresses the same home recommendation",
+      "passed": true
+    },
+    {
+      "name": "kkamong: pending scheduled review marks help without changing first answer or schedule",
+      "passed": true
+    },
+    {
+      "name": "kkamong: returning scheduled answer is assisted",
+      "passed": true
+    },
+    {
+      "name": "kkamong: recent cafe difficulty guides today practice",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe repair, first error and pickup stage retained alongside guided record",
+      "passed": true
+    },
+    {
+      "name": "kkamong: resume returns to cafe repair",
+      "passed": true
+    },
+    {
+      "name": "kkamong: home fits 320x568",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: tutor avoids top and nav 320",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 21,
+          "y": 127.90625,
+          "right": 299,
+          "bottom": 337.09375
+        },
+        "topBottom": 64,
+        "navTop": 483,
+        "overlap": false
+      }
+    },
+    {
+      "name": "kkamong: home fits 740x320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: tutor avoids top and nav 740",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 391.796875,
+          "y": 75,
+          "right": 718,
+          "bottom": 231
+        },
+        "topBottom": 67,
+        "navTop": 236,
+        "overlap": false
+      }
+    },
+    {
+      "name": "kkamong: home fits 390x844",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: tutor avoids top and nav 390",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 31,
+          "y": 375.8125,
+          "right": 359,
+          "bottom": 585
+        },
+        "topBottom": 71,
+        "navTop": 755,
+        "overlap": false
+      }
+    },
+    {
+      "name": "mongle: first home invites a tutor without inventing history",
+      "passed": true
+    },
+    {
+      "name": "mongle: chosen tutor greets from real next lesson",
+      "passed": true
+    },
+    {
+      "name": "mongle: first mistake becomes a specific home recommendation",
+      "passed": true
+    },
+    {
+      "name": "mongle: reload restores selected tutor and confusion",
+      "passed": true
+    },
+    {
+      "name": "mongle: home practice opens actual transfer and keeps world panel closed",
+      "passed": true
+    },
+    {
+      "name": "mongle: cancel preserves checkpoint and first response",
+      "passed": true
+    },
+    {
+      "name": "mongle: wrong practice uses chosen tutor face",
+      "passed": true
+    },
+    {
+      "name": "mongle: home celebrates and moves past this session practice",
+      "passed": true
+    },
+    {
+      "name": "mongle: practice records guided success without grading or rescheduling learning",
+      "passed": true
+    },
+    {
+      "name": "mongle: reload retains guided success and suppresses the same home recommendation",
+      "passed": true
+    },
+    {
+      "name": "mongle: pending scheduled review marks help without changing first answer or schedule",
+      "passed": true
+    },
+    {
+      "name": "mongle: returning scheduled answer is assisted",
+      "passed": true
+    },
+    {
+      "name": "mongle: recent cafe difficulty guides today practice",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe repair, first error and pickup stage retained alongside guided record",
+      "passed": true
+    },
+    {
+      "name": "mongle: resume returns to cafe repair",
+      "passed": true
+    },
+    {
+      "name": "mongle: home fits 320x568",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: tutor avoids top and nav 320",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 21,
+          "y": 127.90625,
+          "right": 299,
+          "bottom": 337.09375
+        },
+        "topBottom": 64,
+        "navTop": 483,
+        "overlap": false
+      }
+    },
+    {
+      "name": "mongle: home fits 740x320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: tutor avoids top and nav 740",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 391.796875,
+          "y": 75,
+          "right": 718,
+          "bottom": 231
+        },
+        "topBottom": 67,
+        "navTop": 236,
+        "overlap": false
+      }
+    },
+    {
+      "name": "mongle: home fits 390x844",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: tutor avoids top and nav 390",
+      "passed": true,
+      "detail": {
+        "a": {
+          "x": 31,
+          "y": 375.8125,
+          "right": 359,
+          "bottom": 585
+        },
+        "topBottom": 71,
+        "navTop": 755,
+        "overlap": false
+      }
+    },
+    {
+      "name": "no page errors, missing assets or external calls",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "assets": [],
+        "external": []
+      }
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "external": []
+}

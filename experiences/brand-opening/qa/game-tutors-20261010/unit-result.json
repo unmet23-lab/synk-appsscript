@@ -1,0 +1,8 @@
+{
+  "at": "2026-10-10T11:34:41.559Z",
+  "passed": 95,
+  "failed": 0,
+  "syntaxModules": 11,
+  "command": "node --test experiences/brand-opening/qa/game-tutor.test.mjs experiences/brand-opening/qa/tutor-choice.test.mjs experiences/synk-world-app/qa/document.test.mjs experiences/korean-runner/core.test.mjs experiences/korean-runner/controls.test.mjs experiences/korean-runner/audio.test.mjs experiences/korean-runner/listening-check.test.mjs experiences/korean-rhythm/core.test.mjs experiences/korean-rhythm/audio.test.mjs experiences/hangul-stage/core.test.mjs experiences/hangul-stage/audio.test.mjs",
+  "evidence": "Successful command output recorded in the calling task. Tests cover dialogue/protocol/selection, rendering contract, the existing action/timing/listening and Hangul/audio rules."
+}

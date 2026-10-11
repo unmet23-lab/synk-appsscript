@@ -1,0 +1,358 @@
+{
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "marin/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "runner success comes from a resolved real mission",
+      "pass": true
+    },
+    {
+      "name": "runner pauses enabled reaction audio during active listening play",
+      "pass": true
+    },
+    {
+      "name": "runner retry comes from the next actual missed mission",
+      "pass": true
+    },
+    {
+      "name": "390px runner controls stay in the frame",
+      "pass": true,
+      "detail": {
+        "bottom": 700,
+        "width": 390,
+        "height": 700
+      }
+    },
+    {
+      "name": "help pauses the real clock while directions are open",
+      "pass": true,
+      "detail": {
+        "before": 15.251999999976233,
+        "after": 15.251999999976233
+      }
+    },
+    {
+      "name": "help returns to the same game and real resume button",
+      "pass": true
+    },
+    {
+      "name": "separate listening check keeps reaction audio quiet during its actual recording",
+      "pass": true
+    },
+    {
+      "name": "separate listening check responds to its actual wrong answer",
+      "pass": true
+    },
+    {
+      "name": "separate listening check responds to its actual correct answer",
+      "pass": true
+    },
+    {
+      "name": "runner: reaction swaps only the face, retaining the approved body",
+      "pass": true
+    },
+    {
+      "name": "runner: reduced motion retains expression and dialogue",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "marin: closing removes companion and reaction resources",
+      "pass": true
+    },
+    {
+      "name": "marin: enabled mascot sound is used outside active play",
+      "pass": true
+    },
+    {
+      "name": "marin: no mascot sound starts during active play",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "rhythm retry uses an actual wrong O/X answer",
+      "pass": true
+    },
+    {
+      "name": "rhythm success uses an actual right O/X answer",
+      "pass": true
+    },
+    {
+      "name": "rhythm pauses enabled reaction audio during active listening play",
+      "pass": true
+    },
+    {
+      "name": "help pauses the real clock while directions are open",
+      "pass": true,
+      "detail": {
+        "before": 60.82896,
+        "after": 60.82896
+      }
+    },
+    {
+      "name": "help returns to the same game and real resume button",
+      "pass": true
+    },
+    {
+      "name": "rhythm finish stays with chosen Kkamong",
+      "pass": true
+    },
+    {
+      "name": "rhythm: reaction swaps only the face, retaining the approved body",
+      "pass": true
+    },
+    {
+      "name": "rhythm: reduced motion retains expression and dialogue",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "kkamong: closing removes companion and reaction resources",
+      "pass": true
+    },
+    {
+      "name": "kkamong: enabled mascot sound is used outside active play",
+      "pass": true
+    },
+    {
+      "name": "kkamong: no mascot sound starts during active play",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "Hangul wrong selection changes face without changing body",
+      "pass": true
+    },
+    {
+      "name": "Hangul pauses enabled reaction audio during active listening play",
+      "pass": true
+    },
+    {
+      "name": "Hangul directions preserve the current untimed exercise",
+      "pass": true
+    },
+    {
+      "name": "hangul: reaction swaps only the face, retaining the approved body",
+      "pass": true
+    },
+    {
+      "name": "hangul: reduced motion retains expression and dialogue",
+      "pass": true
+    },
+    {
+      "name": "mongle: closing removes companion and reaction resources",
+      "pass": true
+    },
+    {
+      "name": "mongle: enabled mascot sound is used outside active play",
+      "pass": true
+    },
+    {
+      "name": "mongle: no mascot sound starts during active play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "320x668: running controls fit with companion",
+      "pass": true,
+      "detail": {
+        "bottom": 534,
+        "height": 534,
+        "width": 284,
+        "overflow": 0
+      }
+    },
+    {
+      "name": "marin/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "740x320: running controls fit with companion",
+      "pass": true,
+      "detail": {
+        "bottom": 268,
+        "height": 268,
+        "width": 740,
+        "overflow": 0
+      }
+    },
+    {
+      "name": "marin/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "844x390: running controls fit with companion",
+      "pass": true,
+      "detail": {
+        "bottom": 338,
+        "height": 338,
+        "width": 844,
+        "overflow": 0
+      }
+    },
+    {
+      "name": "marin/runner: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "1440x900: running controls fit with companion",
+      "pass": true,
+      "detail": {
+        "bottom": 756,
+        "height": 756,
+        "width": 1440,
+        "overflow": 0
+      }
+    },
+    {
+      "name": "first sentence uses the isolated signed-in tutor, not the guest",
+      "pass": true
+    },
+    {
+      "name": "first sentence acknowledges selection without inventing correctness",
+      "pass": true
+    },
+    {
+      "name": "first sentence acknowledges selection without inventing correctness",
+      "pass": true
+    },
+    {
+      "name": "first sentence acknowledges selection without inventing correctness",
+      "pass": true
+    },
+    {
+      "name": "first sentence retry follows the server-verified wrong answer",
+      "pass": true
+    },
+    {
+      "name": "first sentence praise follows the server-verified correct answer",
+      "pass": true
+    },
+    {
+      "name": "logout restores the guest choice after game completion",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: actual character directions before play",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: chosen companion reaches the real frame",
+      "pass": true
+    },
+    {
+      "name": "normal motion uses the selected dragon reaction animation",
+      "pass": true
+    },
+    {
+      "name": "closing during a reaction releases its companion",
+      "pass": true
+    },
+    {
+      "name": "no browser exceptions",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no missing runtime assets",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no external or paid AI requests",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "passed": 77,
+  "at": "2026-10-10T11:33:11.754Z"
+}

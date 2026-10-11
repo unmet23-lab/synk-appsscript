@@ -1,0 +1,90 @@
+{
+  "at": "2026-10-10T14:44:29.582Z",
+  "base": "http://127.0.0.1:4314",
+  "pass": 19,
+  "fail": 0,
+  "checks": [
+    {
+      "name": "a real jump input at the late marker becomes a timing hint",
+      "pass": true
+    },
+    {
+      "name": "runner timing still is not a language diagnosis",
+      "pass": true
+    },
+    {
+      "name": "the focused jump rehearsal includes its marker timing",
+      "pass": true
+    },
+    {
+      "name": "jump rehearsal does not replace the original timing miss",
+      "pass": true
+    },
+    {
+      "name": "the real chart has a held note for the control check",
+      "pass": true
+    },
+    {
+      "name": "early release of an actual held note gets control help",
+      "pass": true
+    },
+    {
+      "name": "a quick press cannot pass the held-note rehearsal",
+      "pass": true
+    },
+    {
+      "name": "holding through the required duration finishes only the focus exercise",
+      "pass": true
+    },
+    {
+      "name": "320x568: support fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "320x568: support controls remain touch sized",
+      "pass": true
+    },
+    {
+      "name": "740x320: support fits without horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "740x320: support controls remain touch sized",
+      "pass": true
+    },
+    {
+      "name": "untimed runner listening choice can produce an actual sentence hint",
+      "pass": true
+    },
+    {
+      "name": "failed review audio cannot unlock an answer or a success",
+      "pass": true
+    },
+    {
+      "name": "a guided listening review cannot regrade the original check",
+      "pass": true
+    },
+    {
+      "name": "a review from the lobby does not start a new runner round",
+      "pass": true
+    },
+    {
+      "name": "no extra browser exceptions",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no failed assets apart from the deliberate blocked audio",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no external requests",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": []
+}

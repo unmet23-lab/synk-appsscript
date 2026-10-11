@@ -10,6 +10,69 @@ const safeId=value=>typeof value==='string'&&/^[a-z0-9][a-z0-9_-]{0,119}$/i.test
 const object=value=>value!==null&&typeof value==='object'&&!Array.isArray(value)&&[Object.prototype,null].includes(Object.getPrototypeOf(value));
 const time=value=>Number.isSafeInteger(value)&&value>=0;
 const empty=owner=>({version:LIFE_PROGRESS_VERSION,owner,revision:0,activeLessonId:null,activeReview:null,lessons:{},reviews:{}});
+const TUTORS=new Set(['marin','kkamong','mongle']),OUTCOMES=new Set(['independent','assisted','retry']);
+const dailyId=value=>safeId(value)&&!['constructor','prototype'].includes(value);
+const DAILY_MAX_TIME=253402268399999;
+const dailyTime=value=>time(value)&&value<=DAILY_MAX_TIME;
+// The learning day stays the same across browser/device time zones.
+export function lifeDayKey(at){if(!dailyTime(at))throw TypeError('Invalid learning time');return new Date(at+9*3600000).toISOString().slice(0,10);}
+const dailyLatest=item=>Math.max(item.observedAt??0,item.guidedAt??0);
+function trimDaily(daily){
+ const keys=Object.keys(daily.days).sort();for(const key of keys.slice(0,-30))delete daily.days[key];
+ for(const day of Object.values(daily.days)){
+  const ids=Object.keys(day.items).sort((a,b)=>dailyLatest(day.items[b])-dailyLatest(day.items[a])||(a<b?-1:a>b?1:0));
+  for(const id of ids.slice(100))delete day.items[id];
+ }
+}
+function fitDailyRecord(value){
+ if(!value.daily)return;
+ // Preserve the original answer/checkpoint payload and stay below both the
+ // reader's 500k character limit and the account port's 512 KiB value limit.
+ const bytes=()=>new TextEncoder().encode(JSON.stringify(value)).length;
+ while(bytes()>480000){
+  const oldest=Object.keys(value.daily.days).sort()[0];if(!oldest)break;
+  delete value.daily.days[oldest];
+ }
+}
+function validateDaily(daily){
+ const invalid=()=>{throw fail('LIFE_PROGRESS_UNREADABLE');};
+ if(!object(daily)||daily.version!==1||!object(daily.days)||Object.keys(daily).some(key=>!['version','days'].includes(key))||Object.keys(daily.days).length>30)invalid();
+ for(const [key,day]of Object.entries(daily.days)){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(key)||!object(day)||Object.keys(day).some(key=>!['items','closedAt'].includes(key))||!object(day.items)||!Object.keys(day.items).length||Object.keys(day.items).length>100)invalid();
+  const sameDay=at=>dailyTime(at)&&lifeDayKey(at)===key;
+  if(day.closedAt!==undefined&&!sameDay(day.closedAt))invalid();
+  for(const [id,item]of Object.entries(day.items)){
+   if(!dailyId(id)||!object(item)||Object.keys(item).some(key=>!['lessonId','observedAt','outcome','guidedAt','tutorId'].includes(key))||!dailyId(item.lessonId))invalid();
+   if(item.observedAt===undefined?item.outcome!==undefined:item.outcome===undefined||!sameDay(item.observedAt)||!OUTCOMES.has(item.outcome))invalid();
+   if(item.guidedAt===undefined?item.tutorId!==undefined:!sameDay(item.guidedAt)||!TUTORS.has(item.tutorId))invalid();
+   if(item.observedAt===undefined&&item.guidedAt===undefined)invalid();
+  }
+ }
+}
+function dailyObservation(next,{questionId,lessonId,at,correct,helped},migrating=false){
+ if(!dailyTime(at)||!dailyId(questionId)||!dailyId(lessonId))return;
+ const dayKey=lifeDayKey(at),daily=next.daily??={version:1,days:{}},day=daily.days[dayKey]??={items:{}},old=day.items[questionId];
+ if(migrating&&old?.observedAt>=at)return;
+ const observedAt=migrating?at:dailyEventTime(day,old,at);
+ day.items[questionId]={...old,lessonId,observedAt,outcome:correct?(helped?'assisted':'independent'):'retry'};trimDaily(daily);
+}
+function dailyEventTime(day,item,at){
+ const end=Date.parse(lifeDayKey(at)+'T23:59:59.999+09:00');
+ const value=Math.min(end,Math.max(at,dailyLatest(item||{})+1,(day.closedAt??-1)+1));
+ // At the day's last millisecond there is no later representable time.
+ if(day.closedAt!==undefined&&value<=day.closedAt)delete day.closedAt;
+ return value;
+}
+function backfillDaily(value){
+ if(value.daily!==undefined)return;
+ // Only surviving first-answer evidence can be recovered. Past guided practice
+ // and replaced review sessions were never recorded and must not be invented.
+ for(const [lessonId,lesson]of Object.entries(value.lessons))for(const [questionId,answer]of Object.entries(lesson.answers))dailyObservation(value,{lessonId,questionId,...answer},true);
+ for(const [reviewId,answer]of Object.entries(value.activeReview?.answers||{})){
+  const review=value.reviews[reviewId];if(review)dailyObservation(value,{lessonId:review.lessonId,questionId:review.questionId,...answer},true);
+ }
+ fitDailyRecord(value);
+}
 
 function validate(raw,owner){
  if(typeof raw!=='string'||raw.length>500000)throw fail('LIFE_PROGRESS_UNREADABLE');
@@ -31,6 +94,7 @@ function validate(raw,owner){
   for(const answer of Object.values(run.answers))if(!object(answer)||typeof answer.correct!=='boolean'||typeof answer.helped!=='boolean'||!time(answer.at))throw fail('LIFE_PROGRESS_UNREADABLE');
   if(run.pendingHelp!==undefined&&(!object(run.pendingHelp)||Object.entries(run.pendingHelp).some(([id,value])=>!run.ids.includes(id)||value!==true)))throw fail('LIFE_PROGRESS_UNREADABLE');
  }
+ if(value.daily!==undefined)validateDaily(value.daily);
  return value;
 }
 
@@ -40,17 +104,28 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
  let state=empty(owner),stopped=false,readError=null,writeError=null,saving=null;
  const lessons=new Map(),questions=new Map();
  const check=()=>{guard();if(stopped)throw fail('ACCOUNT_CHANGED','이 계정의 생활 한국어 연결이 끝났어요.');};
- try{const raw=storage.getItem(key);if(raw!==null)state=validate(raw,owner);}catch(error){readError=error?.code?error:fail('LIFE_PROGRESS_UNREADABLE','이 기기의 진도를 확인하지 못했어요. 기존 기록은 보존했어요.');}
+ try{const raw=storage.getItem(key);if(raw!==null){state=validate(raw,owner);backfillDaily(state);}}catch(error){readError=error?.code?error:fail('LIFE_PROGRESS_UNREADABLE','이 기기의 진도를 확인하지 못했어요. 기존 기록은 보존했어요.');}
  function status(){
   let transport=null;try{transport=getSaveStatus?.();}catch{}
   const phase=readError?'unreadable':writeError?'unsaved':scoped?(transport?.rejected?'unsaved':transport?.phase||'saving'):'device';
-  return {owner,phase,scoped,saved:phase==='device'||phase==='synced',pending:transport?.pending||0,code:readError?.code||writeError?.code||transport?.code,
+  return {owner,phase,scoped,saved:phase==='device'||phase==='synced',pending:transport?.pending||0,rejected:transport?.rejected||0,code:readError?.code||writeError?.code||transport?.code,
    message:readError?'기존 진도를 읽지 못했어요. 원본 기록은 보존했어요.':writeError?'진도를 저장하지 못했어요. 화면의 진행은 유지하고 있어요.':scoped?(transport?.message||'계정에 생활 한국어 진도를 저장하고 있어요.'):'이 기기에 저장돼요.'};
  }
  const emit=()=>{try{onChange(api);}catch{/* Views cannot change ownership. */}};
+ function checkDailyWrite(){
+  check();if(readError)throw readError;
+  const value=status();let transport;try{transport=getSaveStatus?.();}catch{}
+  if(transport?.phase)value.phase=transport.phase;
+  if(value.rejected)throw fail('LIFE_PROGRESS_REJECTED','보관된 진도를 먼저 확인해 주세요.');
+  if(value.phase==='loading')throw fail('LIFE_PROGRESS_LOADING','진도를 불러오고 있어요.');
+  if(value.phase==='conflict')throw fail('REVISION_CONFLICT','사용할 진도를 먼저 선택해 주세요.');
+  if(value.phase==='unreadable')throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 먼저 확인해 주세요.');
+  if(value.phase==='stopped')throw fail('ACCOUNT_CHANGED','이 계정의 생활 한국어 연결이 끝났어요.');
+ }
  function commit(next){
   check();if(readError)throw fail('LIFE_PROGRESS_UNREADABLE','기존 진도를 확인하지 못했어요. 원본을 덮어쓰지 않았어요.');
   next.revision=state.revision+1;
+  fitDailyRecord(next);
   try{storage.setItem(key,JSON.stringify(next));writeError=null;state=next;}
   catch(error){
    // A conflict must retain the host's two alternatives. Device/quota failures
@@ -108,6 +183,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   const dueAt=old?(difficult?Math.min(old.dueAt,at+MINUTE):old.dueAt):at+(difficult?MINUTE:DAY);
   next.reviews[id]={id,questionId,lessonId,packId:q.packId||lessons.get(lessonId)?.packId,skillId:q.skillId,dueAt,lastAt:at,
    streak:difficult?0:old?.streak??0,lapses:(old?.lapses||0)+(difficult?1:0),intervalDays:difficult?0:old?.intervalDays??1};
+  dailyObservation(next,{questionId,lessonId,at,correct,helped});
   commit(next);return {...lessonState(lessonId),duplicate:false};
  }
  function finishLesson(id){
@@ -121,10 +197,11 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   return {id,completed:true,duplicate,completedAt:next.lessons[id].completedAt,totalCompleted:Object.values(state.lessons).filter(v=>v.completedAt!==null).length};
  }
  function dueReviews(limit=100){check();return Object.values(state.reviews).filter(v=>v.dueAt<=now()).sort((a,b)=>a.dueAt-b.dueAt||a.id.localeCompare(b.id)).slice(0,Math.max(0,Math.min(100,limit))).map(clone);}
- function startReview(limit=6){
+ function startReview(limit=6,preferredId=null){
   check();const existing=state.activeReview;
   if(existing&&existing.ids.some(id=>!existing.answers[id]))return clone(existing);
-  const next=clone(state),ids=dueReviews(limit).map(v=>v.id);if(!ids.length)return null;
+  const due=dueReviews(100);if(preferredId){const index=due.findIndex(r=>r.id===preferredId);if(index>0)due.unshift(...due.splice(index,1));}
+  const next=clone(state),ids=due.slice(0,Math.max(0,Math.min(100,limit))).map(v=>v.id);if(!ids.length)return null;
   next.activeReview={id:uuid(),startedAt:now(),ids,answers:{},pendingHelp:{}};commit(next);return clone(next.activeReview);
  }
  function markReviewHelp(id){
@@ -136,11 +213,30 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();const run=state.activeReview,keyId=id||reviewId||run?.ids.find(id=>state.reviews[id].questionId===questionId);
   if(!run||runId&&run.id!==runId||!run.ids.includes(keyId)||typeof correct!=='boolean'||typeof helped!=='boolean')throw TypeError('Invalid review answer');
   if(run.answers[keyId])return {duplicate:true,done:run.ids.every(id=>run.answers[id]),remaining:run.ids.filter(id=>!run.answers[id]).length};
-  helped=helped||run.pendingHelp?.[keyId]===true;
-  const next=clone(state),review=next.reviews[keyId],at=now(),difficult=!correct||helped;
+  const at=now(),guided=dailyTime(at)&&state.daily?.days[lifeDayKey(at)]?.items[state.reviews[keyId].questionId]?.guidedAt!==undefined;
+  helped=helped||run.pendingHelp?.[keyId]===true||guided;
+  const next=clone(state),review=next.reviews[keyId],difficult=!correct||helped;
   review.streak=difficult?0:review.streak+1;review.lapses+=difficult?1:0;review.intervalDays=difficult?0:INTERVALS[Math.min(review.streak-1,INTERVALS.length-1)];review.dueAt=at+(difficult?MINUTE:review.intervalDays*DAY);review.lastAt=at;
   next.activeReview.answers[keyId]={correct,helped,at};const remaining=next.activeReview.ids.filter(id=>!next.activeReview.answers[id]).length;
+  dailyObservation(next,{questionId:review.questionId,lessonId:review.lessonId,at,correct,helped});
   commit(next);return {duplicate:false,done:remaining===0,remaining,dueAt:review.dueAt,intervalDays:review.intervalDays};
+ }
+ function recordGuidedPractice({questionId,tutorId}={}){
+  checkDailyWrite();const q=questions.get(questionId),review=q&&state.reviews[q.review.id];
+  if(!q||!dailyId(questionId)||!dailyId(q.lessonId)||!TUTORS.has(tutorId)||!(state.lessons[q.lessonId]?.questionIds.includes(questionId)||review?.questionId===questionId&&review.lessonId===q.lessonId))throw TypeError('Invalid guided life practice');
+  const at=now(),dayKey=lifeDayKey(at),existing=state.daily?.days[dayKey]?.items[questionId];
+  if(existing?.guidedAt!==undefined&&existing.guidedAt>=Math.max(existing.observedAt??0,review?.lastAt??0))return {dayKey,item:clone(existing),duplicate:true,status:status()};
+  const next=clone(state),daily=next.daily??={version:1,days:{}},day=daily.days[dayKey]??={items:{}};
+  const item={...day.items[questionId],lessonId:q.lessonId,guidedAt:dailyEventTime(day,day.items[questionId],at),tutorId};
+  day.items[questionId]=item;trimDaily(daily);commit(next);return {dayKey,item:clone(item),duplicate:false,status:status()};
+ }
+ function markDayComplete(){
+  checkDailyWrite();const at=now(),dayKey=lifeDayKey(at),day=state.daily?.days[dayKey];
+  if(!day||!Object.keys(day.items).length)return {dayKey,closedAt:null,duplicate:false,empty:true,status:status()};
+  const latest=Math.max(...Object.values(day.items).map(dailyLatest));
+  if(day.closedAt!==undefined&&day.closedAt>=latest)return {dayKey,closedAt:day.closedAt,duplicate:true,empty:false,status:status()};
+  const next=clone(state),closedAt=Math.max(at,latest);next.daily.days[dayKey].closedAt=closedAt;commit(next);
+  return {dayKey,closedAt,duplicate:false,empty:false,status:status()};
  }
  function summary(packs=[],flat=[]){
   check();catalog(packs,flat);const ordered=packs.flatMap(pack=>(pack.lessons||[]).map(value=>typeof value==='string'?lessons.get(value):lessons.get(value.id)).filter(Boolean));
@@ -162,7 +258,7 @@ export function createLifeProgress({storage=globalThis.localStorage,owner='guest
   check();if(readError)throw readError;if(saving)return saving;
   saving=(async()=>{check();if(writeError){storage.setItem(key,JSON.stringify(state));writeError=null;}const result=save?await save():status();check();emit();return result;})().finally(()=>{saving=null;});return saving;
  }
- const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,flush,
+ const api=Object.freeze({key,owner,status,summary,lessonState,startLesson,setStage,recordAnswer,finishLesson,dueReviews,startReview,markReviewHelp,answerReview,recordGuidedPractice,markDayComplete,flush,
   exportSnapshot(){check();return clone(state);},stop(){stopped=true;},registerLesson:register});
  return api;
 }

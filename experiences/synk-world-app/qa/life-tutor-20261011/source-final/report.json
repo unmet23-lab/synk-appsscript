@@ -1,0 +1,584 @@
+{
+  "ok": true,
+  "at": "2026-10-11T10:42:18.976Z",
+  "base": "http://127.0.0.1:4314",
+  "passed": 118,
+  "checks": [
+    {
+      "name": "marin: life intro uses the selected AI tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: real wrong answer triggers its own hint and face",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: difficult expression appears in tutor help",
+      "passed": true
+    },
+    {
+      "name": "marin: tutor hint is retained as assistance rather than independent success",
+      "passed": true
+    },
+    {
+      "name": "marin: correct first answer celebrates with the selected tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: completion keeps the original first error and tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: guided success did not pull the scheduled review forward",
+      "passed": true
+    },
+    {
+      "name": "marin: scheduled transfer review keeps its chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: scheduled first error remains an error after tutor rehearsal",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe welcome uses the same selected tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: first cafe choices wait for staff recording",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "marin: real order repair triggers a tutor hint without receiving drinks",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-order: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-order: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "cafe-apply-order: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-order: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-order: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: corrected real order preserves the original wrong response",
+      "passed": true
+    },
+    {
+      "name": "marin: tutor text help keeps truthful unheard/assisted evidence",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply-last: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe completion still waits for pickup",
+      "passed": true
+    },
+    {
+      "name": "marin: cups received completes the real cafe with its tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe helper lists cafe difficulties without unrelated greetings",
+      "passed": true
+    },
+    {
+      "name": "marin 320px helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin landscape helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin landscape cafe: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: closing releases tutor and all staff playback",
+      "passed": true
+    },
+    {
+      "name": "kkamong: life intro uses the selected AI tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: real wrong answer triggers its own hint and face",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "kkamong: difficult expression appears in tutor help",
+      "passed": true
+    },
+    {
+      "name": "kkamong: tutor hint is retained as assistance rather than independent success",
+      "passed": true
+    },
+    {
+      "name": "kkamong: correct first answer celebrates with the selected tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: completion keeps the original first error and tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: guided success did not pull the scheduled review forward",
+      "passed": true
+    },
+    {
+      "name": "kkamong: scheduled transfer review keeps its chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "kkamong: scheduled first error remains an error after tutor rehearsal",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe welcome uses the same selected tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: first cafe choices wait for staff recording",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "kkamong: real order repair triggers a tutor hint without receiving drinks",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "cafe-visit-taste-drink: cancelling retains the same stage and records",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "cafe-visit-taste-drink: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-drink: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "kkamong: corrected real order preserves the original wrong response",
+      "passed": true
+    },
+    {
+      "name": "kkamong: tutor text help keeps truthful unheard/assisted evidence",
+      "passed": true
+    },
+    {
+      "name": "cafe-visit-taste-last: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe completion still waits for pickup",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cups received completes the real cafe with its tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe helper lists cafe difficulties without unrelated greetings",
+      "passed": true
+    },
+    {
+      "name": "kkamong 320px helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong landscape helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong landscape cafe: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: closing releases tutor and all staff playback",
+      "passed": true
+    },
+    {
+      "name": "mongle: life intro uses the selected AI tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: real wrong answer triggers its own hint and face",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "mongle: difficult expression appears in tutor help",
+      "passed": true
+    },
+    {
+      "name": "mongle: tutor hint is retained as assistance rather than independent success",
+      "passed": true
+    },
+    {
+      "name": "mongle: correct first answer celebrates with the selected tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: completion keeps the original first error and tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: guided success did not pull the scheduled review forward",
+      "passed": true
+    },
+    {
+      "name": "mongle: scheduled transfer review keeps its chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "mongle: scheduled first error remains an error after tutor rehearsal",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe welcome uses the same selected tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: first cafe choices wait for staff recording",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "mongle: real order repair triggers a tutor hint without receiving drinks",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose-order: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose-order: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "cafe-compose-order: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose-order: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose-order: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "mongle: corrected real order preserves the original wrong response",
+      "passed": true
+    },
+    {
+      "name": "mongle: tutor text help keeps truthful unheard/assisted evidence",
+      "passed": true
+    },
+    {
+      "name": "cafe-compose-last: chosen tutor stays quiet during staff audio",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe completion still waits for pickup",
+      "passed": true
+    },
+    {
+      "name": "mongle: cups received completes the real cafe with its tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe helper lists cafe difficulties without unrelated greetings",
+      "passed": true
+    },
+    {
+      "name": "mongle 320px helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle landscape helper: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle landscape cafe: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: closing releases tutor and all staff playback",
+      "passed": true
+    },
+    {
+      "name": "no uncaught errors, missing assets or outside services",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "httpErrors": [],
+        "external": []
+      }
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-greetings-expressions-hello-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-greetings-expressions-hello-transfer-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-cafe-repair.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-cafe-apply-order-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\marin-cafe-help-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-greetings-expressions-hello-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-greetings-expressions-hello-transfer-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-cafe-repair.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-cafe-visit-taste-drink-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\kkamong-cafe-help-320.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-greetings-expressions-hello-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-greetings-expressions-hello-transfer-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-cafe-repair.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-cafe-compose-order-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-final\\mongle-cafe-help-320.png"
+  ]
+}

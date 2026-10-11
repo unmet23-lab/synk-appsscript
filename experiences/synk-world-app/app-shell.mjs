@@ -12,13 +12,14 @@ const $=s=>document.querySelector(s);
 const connection=await loadWorldConfig();
 const operating=connection.mode==='account';
 const worldUrl=path=>new URL(connection.basePath+path,location.origin).href;
+const {firstSupport}=await import(worldUrl('brand-opening/game-tutor-support.mjs'));
 const home=window.__synkHome||(await import(worldUrl('brand-opening/home.mjs'))).home;
 let client,townSession,enrollmentView,lifeUI=null,lifeProgress=null,lifePort=null,lifeOwner=null,lifeGeneration=-1,lifeEpoch=0,lifeReady=null,lifeRecoveryShown=false;
 // Loading and session restoration run behind the company splash. A failed
 // optional opening must never disable the existing account or guest entrance.
 function startOpening(replay=false){return import(worldUrl('brand-opening/opening.mjs')).then(({mountBrandOpening})=>{
  home.setSceneActive?.(false);
- const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced,onEnter:(reason,scene)=>{if(scene)home.setSceneTime?.(scene.sceneTime);home.setSceneActive?.(true);}});window.__synkOpening=opening;
+ const opening=mountBrandOpening({replay,reducedMotion:home.state.reduced,onEnter:(reason,scene)=>{if(scene)home.setSceneTime?.(scene.sceneTime);home.setSceneActive?.(true);if(!replay&&['start','skip','unavailable'].includes(reason))home.startTutorial?.();}});window.__synkOpening=opening;
  return opening.done.finally(()=>home.setSceneActive?.(true));
 }).catch(()=>{document.querySelector('.synk-opening')?.remove();document.querySelector('#synk-opening-cover')?.remove();clearTimeout(window.__synkOpeningSafetyTimer);home.setSceneActive?.(true);});}
 const openingReady=startOpening();
@@ -94,7 +95,7 @@ function initializeLife(){
  const owner=client.snapshot?.accountId||'guest',generation=client.generation,epoch=++lifeEpoch;
  lifeOwner=owner;lifeGeneration=generation;lifeUI?.dispose();lifeProgress?.stop();lifePort?.dispose();lifeUI=null;lifeProgress=null;lifePort=null;lifeRecoveryShown=false;
  const guard=()=>{if(epoch!==lifeEpoch||(client.snapshot?.accountId||'guest')!==owner||generation!==client.generation)throw Object.assign(Error('생활 한국어 계정 연결이 바뀌었어요.'),{code:'ACCOUNT_CHANGED'});};
- home.updateLearning?.({completed:0,total:LESSONS.length,packs:PACKS,nextLesson:null,resume:false,dueCount:0,status:{phase:owner==='guest'?'device':'loading'}});
+ home.updateLearning?.({owner,completed:0,total:LESSONS.length,packs:PACKS,nextLesson:null,resume:false,dueCount:0,status:{phase:'loading'}});
  lifeReady=(async()=>{
   let port=null,mode='local',notice=null;
   if(owner!=='guest'){
@@ -174,6 +175,10 @@ function pending(){show('아직 저장 전이에요',`<p class="panel-descriptio
 function readDraft(run){try{const draft=JSON.parse(localStorage.getItem(`synk-world-v1-run:${client.snapshot.accountId}`)||'null');return draft?.runId===run.runId?draft:null;}catch{return null;}}
 function saveDraft(){if(!draftRun||!client.snapshot)return;try{localStorage.setItem(`synk-world-v1-run:${client.snapshot.accountId}`,JSON.stringify({runId:draftRun.runId,answers,requestId:draftRun.requestId}));}catch{}}
 async function play(){
+ if(home.ensureTutor)return home.ensureTutor(()=>startFirstPlay());
+ return startFirstPlay();
+}
+async function startFirstPlay(){
  if(!client.snapshot)return signIn();
  try{let run=client.snapshot.activeRun;if(!run){const result=await client.start();run=result.run||result.activeRun;}if(!run)throw Error('NO_RUN');const previous=readDraft(run);draftRun={...run,requestId:previous?.requestId||crypto.randomUUID()};answers=previous?.answers||[];questionIndex=Math.min(answers.length,run.questions.length-1);showQuestion();}
  catch(e){home.toast(errorText(e));}
@@ -181,12 +186,24 @@ async function play(){
 function showQuestion(){
  const q=draftRun.questions[questionIndex],choice=answers.find(a=>a.questionId===q.questionId)?.optionId;
  show('작은 문장, 첫걸음',`<div class="world-game-top"><span>초급 읽기</span><span>${questionIndex+1} / ${draftRun.questions.length}</span></div><div class="world-progress" aria-hidden="true"><i style="width:${(questionIndex+1)/draftRun.questions.length*100}%"></i></div><p class="world-prompt">${escape(q.prompt)}</p><div class="world-answers" role="group" aria-label="답 고르기">${q.options.map((o,i)=>`<button class="world-answer ${choice===o.optionId?'selected':''}" data-world="answer" data-option="${escape(o.optionId)}" aria-pressed="${choice===o.optionId}"><span>${i+1}</span>${escape(o.text)}</button>`).join('')}</div><p class="dialog-note">${questionIndex===0?'짧은 문장을 읽고 어울리는 답을 골라요.':'틀려도 괜찮아요. 마지막에 함께 확인해요.'}</p><div class="world-actions"><button class="felt-button" data-world="next" ${choice?'data-world-submit':'disabled'}>${questionIndex===draftRun.questions.length-1?'놀이 마치기':'다음 문장'} <span aria-hidden="true">→</span></button><button class="plain-button" data-world="pause">홈에서 잠깐 쉬기</button></div>`,'world-play');
+ const companion=home.mountGameTutor?.('first');if(companion){home.attachPanelResource(companion);if(choice)companion.react('picked');}
 }
 async function finish(){
  saveDraft();try{const result=await client.complete(draftRun.runId,answers,draftRun.requestId);lastCompletion=result.completion;try{localStorage.removeItem(`synk-world-v1-run:${client.snapshot.accountId}`);}catch{}showReward();}
  catch(e){if(e.code==='STALE_RESPONSE')return;show('결과를 확인하고 있어요',`<p class="panel-description">${escape(errorText(e))}<br>같은 결과로 다시 보내도 선물은 한 번만 지급돼요.</p><div class="world-actions"><button class="felt-button" data-world="finish" data-world-submit>결과 다시 보내기</button><button class="plain-button" data-world="pause">홈으로 돌아가기</button></div>`,'world-retry');}
 }
-function showReward(){const done=lastCompletion;show(done?.rewardGranted?'나의 첫 선물이 도착했어요':'오늘의 작은 놀이를 마쳤어요',`<div class="world-reward-art"><img src="assets/scarf.webp" alt="포근한 목도리"></div><p class="welcome-lead">${done?.rewardGranted?'첫 산책 목도리':'잘했어요, 한 걸음 더.'}</p><p class="panel-description">${done?.rewardGranted?'첫 놀이를 마친 선물을 옷장에 보관했어요.':'이미 받은 목도리는 옷장에서 다시 입을 수 있어요.'}<br>정답 수와 관계없이 참여한 첫걸음을 기억해요.</p><details class="world-review"><summary>함께 답 확인하기</summary>${(done?.answers||[]).map((a,i)=>`<p><strong>${i+1}. ${escape(draftRun.questions[i]?.prompt)}</strong><br>알맞은 답: ${escape(draftRun.questions[i]?.options.find(o=>o.optionId===a.correctOptionId)?.text)} ${a.correct?'✓':''}</p>`).join('')}</details><div class="world-actions"><button class="felt-button" data-world="wear-reward" data-world-submit>지금 목도리 입기</button><button class="plain-button" data-world="home">홈으로 돌아가기</button></div>`,'world-reward');}
+function showReward(){const done=lastCompletion;show(done?.rewardGranted?'나의 첫 선물이 도착했어요':'오늘의 작은 놀이를 마쳤어요',`<div class="world-reward-art"><img src="assets/scarf.webp" alt="포근한 목도리"></div><p class="welcome-lead">${done?.rewardGranted?'첫 산책 목도리':'잘했어요, 한 걸음 더.'}</p><p class="panel-description">${done?.rewardGranted?'첫 놀이를 마친 선물을 옷장에 보관했어요.':'이미 받은 목도리는 옷장에서 다시 입을 수 있어요.'}<br>정답 수와 관계없이 참여한 첫걸음을 기억해요.</p><details class="world-review"><summary>함께 답 확인하기</summary>${(done?.answers||[]).map((a,i)=>`<p><strong>${i+1}. ${escape(draftRun.questions[i]?.prompt)}</strong><br>알맞은 답: ${escape(draftRun.questions[i]?.options.find(o=>o.optionId===a.correctOptionId)?.text)} ${a.correct?'✓':''}</p>`).join('')}</details><div class="world-actions"><button class="felt-button" data-world="wear-reward" data-world-submit>지금 목도리 입기</button><button class="plain-button" data-world="home">홈으로 돌아가기</button></div>`,'world-reward');mountRewardTutor();}
+function mountRewardTutor(){
+ const companion=home.mountGameTutor?.('first',{practiceEnabled:false});if(!companion)return;
+ home.attachPanelResource(companion);companion.setPhase('results');companion.react('finish');
+ const review=document.querySelector('.world-review');if(!review)return;
+ for(const [index,result] of (lastCompletion?.answers||[]).entries()){
+  const button=document.createElement('button');button.type='button';button.className='plain-button';button.dataset.tutorReview=result.questionId;
+  button.textContent=result.correct?'맞힌 답 함께 보기':'어려웠던 답 함께 보기';
+  button.addEventListener('click',()=>{const q=draftRun.questions.find(q=>q.questionId===result.questionId);companion.react(result.correct?'success':'retry',{answer:true,support:!result.correct&&q?firstSupport(q,result,answers.find(a=>a.questionId===q.questionId)?.optionId):[]});});
+  review.querySelectorAll('p')[index]?.append(button);
+ }
+}
 const games={runner:{title:'바람길',path:'korean-runner/'},rhythm:{title:'말의 리듬',path:'korean-rhythm/'},hangul:{title:'한글 만나기',path:'hangul-stage/'}};
 function showGameConflict(id,session){
  const status=session.status().play;
@@ -195,6 +212,7 @@ function showGameConflict(id,session){
 }
 async function launchGame(id){
  const game=games[id];if(!game)return;
+ if(home.ensureTutor&&!home.tutor()?.tutor)return home.ensureTutor(()=>launchGame(id));
  let session;
  if(operating){
   if(!client.snapshot)return signIn();
@@ -207,7 +225,9 @@ async function launchGame(id){
   if(session.status().play.phase==='conflict'){showGameConflict(id,session);return;}
  }
  show(game.title,`<iframe class="game-frame" title="${game.title}" src="${worldUrl(game.path)}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,'game');
- if(session){activeGameSession=session;home.attachPanelResource({dispose:()=>{if(activeGameSession===session)activeGameSession=null;session.closeGame();}});}
+ const companion=home.mountGameTutor?.(id,{frame:document.querySelector('.game-frame')});
+ if(session)activeGameSession=session;
+ if(session||companion)home.attachPanelResource({dispose:()=>{companion?.dispose();if(session){if(activeGameSession===session)activeGameSession=null;session.closeGame();}}});
 }
 const learningSongs={'vowel-dance':{title:'모음 댄스',description:'모음 글자와 소리'},'geu-a-ga':{title:'그 아 가',description:'자음과 모음의 만남'},batchim:{title:'받침 노래',description:'글자 아래에 붙는 소리'}};
 function songs(){show('노래로 만나는 한글',`<div class="play-list">${Object.entries(learningSongs).map(([id,s])=>`<button data-world-song="${id}"><img src="${worldUrl('brand-opening/assets/home/headphones.webp')}" alt=""><span><strong>${s.title}</strong><small>${s.description}</small></span></button>`).join('')}</div>`,'world-songs');}
@@ -254,6 +274,7 @@ home.connectHost?.({profile,wardrobe,play,town,about,photo,songs,launchGame,lear
 try{const restored=await client.restore();await openingReady;if(!home.isMaru&&!restored&&!localStorage.getItem('synk-world-v1-welcomed'))welcome();}catch{await openingReady;if(!home.isMaru)welcome();else home.toast('계정 연결을 확인하지 못했어요. 내 공간에서 다시 연결할 수 있어요.');}
 renderStatus();
 if(new URLSearchParams(location.search).get('cafe')==='1')void openLife('cafe').catch(()=>home.toast('카페 연결을 확인한 뒤 다시 열어 주세요.'));
+if(new URLSearchParams(location.search).get('tutor')==='choose')home.chooseTutor?.();
 if(wardrobeRequested){if(client.snapshot)wardrobe();else signIn();}
 
 // pagehide closes this capability object; a restored document must reverify it.

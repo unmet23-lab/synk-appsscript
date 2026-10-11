@@ -1,0 +1,16 @@
+{
+  "message": "page.waitForFunction: Timeout 30000ms exceeded.\n    at ready (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\verify-tutors.cjs:9:39)\n    at C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\verify-tutors.cjs:27:60",
+  "checks": [],
+  "errors": [],
+  "httpErrors": [
+    {
+      "url": "http://127.0.0.1:4312/cafe-activity.mjs",
+      "status": 500
+    },
+    {
+      "url": "http://127.0.0.1:4312/cafe-ui.mjs",
+      "status": 500
+    }
+  ],
+  "external": []
+}

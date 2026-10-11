@@ -1,0 +1,128 @@
+{
+  "ok": true,
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-home-expressions-20261011\\world",
+  "at": "2026-10-11T13:29:17.913Z",
+  "checks": [
+    "account history loading hides memory claims and disables the home action",
+    "account choice overrides the different guest tutor on the home itself",
+    "first visit suggests a real first lesson without inventing a previous confusion",
+    "an actual first wrong answer becomes today's matching expression recommendation",
+    "reload restores the chosen tutor and the same remembered expression from account progress",
+    "home action opens the canonical transfer directly without opening the lesson panel",
+    "wrong guided response keeps the practice available with the chosen tutor reaction",
+    "guided success is account-saved at the successful choice before leaving practice",
+    "guided success returns to a celebrating home without replacing the original first response",
+    "guided completion adds one life progress write without any mastery or wallet mutation",
+    "logout restores the guest tutor without account memory, celebration or practice",
+    "standalone home loads the same bundled guest recommendation before any lesson is opened",
+    "standalone unreadable history shows connection guidance without a false memory or practice",
+    "unreadable guest source remains byte-for-byte intact",
+    "unreadable account history cannot become an invented home recommendation",
+    "home modules, tutor images, bundle and fonts resolve beneath the frozen /world mount"
+  ],
+  "calls": [
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/auth/v1/logout",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "outside": [],
+  "scope": {
+    "frozenStatic": true,
+    "standaloneHtml": "source",
+    "syntheticAccount": true,
+    "realOAuth": false,
+    "remoteDatabase": false,
+    "published": false
+  }
+}

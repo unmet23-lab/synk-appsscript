@@ -1,0 +1,1035 @@
+{
+  "at": "2026-10-10T12:26:15.277Z",
+  "base": "http://127.0.0.1:4314",
+  "pass": 141,
+  "fail": 0,
+  "checks": [
+    {
+      "name": "marin/runner: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 366,
+          "height": 605.1875
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "↑점프",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "↓숙이기",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "→오른쪽",
+            "w": 73.5,
+            "h": 68.5
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "marin/runner: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "↑점프",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "↓숙이기",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "→오른쪽",
+          "w": 73.5,
+          "h": 68.5
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "marin/runner: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "marin/runner: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "rehearsing again pauses the actual runner clock",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "finishing repeated practice continues the same runner round",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: early O needs the actual line timing",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual rhythm clock",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "marin/rhythm: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual Hangul session",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "marin/hangul: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "marin: a completed rehearsal is remembered",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "kkamong/runner: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 366,
+          "height": 600.6875
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "OF · ←",
+            "w": 155,
+            "h": 64
+          },
+          {
+            "text": "XJ · →",
+            "w": 155,
+            "h": 64
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "kkamong/rhythm: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "OF · ←",
+          "w": 155,
+          "h": 64
+        },
+        {
+          "text": "XJ · →",
+          "w": 155,
+          "h": 64
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "kkamong/rhythm: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: early O needs the actual line timing",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual rhythm clock",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "kkamong/rhythm: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual Hangul session",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "kkamong/hangul: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "kkamong: a completed rehearsal is remembered",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual runner",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "mongle/runner: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: early O needs the actual line timing",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual rhythm clock",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "mongle/rhythm: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: selected tutor leads the demonstration",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: game remains behind the practice",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 366,
+          "height": 612.6875
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "아",
+            "w": 155,
+            "h": 64
+          },
+          {
+            "text": "어",
+            "w": 155,
+            "h": 64
+          },
+          {
+            "text": "소리와 시범 듣기",
+            "w": 318,
+            "h": 56
+          }
+        ]
+      }
+    },
+    {
+      "name": "mongle/hangul: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "아",
+          "w": 155,
+          "h": 64
+        },
+        {
+          "text": "어",
+          "w": 155,
+          "h": 64
+        },
+        {
+          "text": "소리와 시범 듣기",
+          "w": 318,
+          "h": 56
+        }
+      ]
+    },
+    {
+      "name": "mongle/hangul: character speech reaches the hands-on turn",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: wrong control cannot advance",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: retry has a real approved face",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: real MP3 ends before input opens",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: success expression matches the tutor",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: all steps must be completed before game start",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: completion is not saved before the final start",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual Hangul session",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: completion is saved for this owner and game",
+      "pass": true
+    },
+    {
+      "name": "mongle/hangul: training is disposed and game controls regain focus",
+      "pass": true
+    },
+    {
+      "name": "mongle: a completed rehearsal is remembered",
+      "pass": true
+    },
+    {
+      "name": "leaving unfinished practice closes the frame and companion",
+      "pass": true
+    },
+    {
+      "name": "returning after cancellation starts from the uncompleted first step",
+      "pass": true
+    },
+    {
+      "name": "320x568: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 296,
+          "height": 544
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 60,
+            "h": 67
+          },
+          {
+            "text": "↑점프",
+            "w": 60,
+            "h": 67
+          },
+          {
+            "text": "↓숙이기",
+            "w": 60,
+            "h": 67
+          },
+          {
+            "text": "→오른쪽",
+            "w": 60,
+            "h": 67
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "320x568: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 60,
+          "h": 67
+        },
+        {
+          "text": "↑점프",
+          "w": 60,
+          "h": 67
+        },
+        {
+          "text": "↓숙이기",
+          "w": 60,
+          "h": 67
+        },
+        {
+          "text": "→오른쪽",
+          "w": 60,
+          "h": 67
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "740x320: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 716,
+          "height": 267
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 87,
+            "h": 68.5
+          },
+          {
+            "text": "↑점프",
+            "w": 87,
+            "h": 68.5
+          },
+          {
+            "text": "↓숙이기",
+            "w": 87,
+            "h": 68.5
+          },
+          {
+            "text": "→오른쪽",
+            "w": 87,
+            "h": 68.5
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 45.75
+          }
+        ]
+      }
+    },
+    {
+      "name": "740x320: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 87,
+          "h": 68.5
+        },
+        {
+          "text": "↑점프",
+          "w": 87,
+          "h": 68.5
+        },
+        {
+          "text": "↓숙이기",
+          "w": 87,
+          "h": 68.5
+        },
+        {
+          "text": "→오른쪽",
+          "w": 87,
+          "h": 68.5
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 45.75
+        }
+      ]
+    },
+    {
+      "name": "844x390: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 820,
+          "height": 267
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 113,
+            "h": 68.5
+          },
+          {
+            "text": "↑점프",
+            "w": 113,
+            "h": 68.5
+          },
+          {
+            "text": "↓숙이기",
+            "w": 113,
+            "h": 68.5
+          },
+          {
+            "text": "→오른쪽",
+            "w": 113,
+            "h": 68.5
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 45.75
+          }
+        ]
+      }
+    },
+    {
+      "name": "844x390: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 113,
+          "h": 68.5
+        },
+        {
+          "text": "↑점프",
+          "w": 113,
+          "h": 68.5
+        },
+        {
+          "text": "↓숙이기",
+          "w": 113,
+          "h": 68.5
+        },
+        {
+          "text": "→오른쪽",
+          "w": 113,
+          "h": 68.5
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 45.75
+        }
+      ]
+    },
+    {
+      "name": "1440x900: no horizontal overflow",
+      "pass": true,
+      "detail": {
+        "overflow": 0,
+        "rect": {
+          "width": 560,
+          "height": 605.1875
+        },
+        "buttons": [
+          {
+            "text": "×",
+            "w": 44,
+            "h": 44
+          },
+          {
+            "text": "←왼쪽",
+            "w": 122,
+            "h": 68.5
+          },
+          {
+            "text": "↑점프",
+            "w": 122,
+            "h": 68.5
+          },
+          {
+            "text": "↓숙이기",
+            "w": 122,
+            "h": 68.5
+          },
+          {
+            "text": "→오른쪽",
+            "w": 122,
+            "h": 68.5
+          },
+          {
+            "text": "시범 다시 보기",
+            "w": 107.71875,
+            "h": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "1440x900: all visible controls at least 44px",
+      "pass": true,
+      "detail": [
+        {
+          "text": "×",
+          "w": 44,
+          "h": 44
+        },
+        {
+          "text": "←왼쪽",
+          "w": 122,
+          "h": 68.5
+        },
+        {
+          "text": "↑점프",
+          "w": 122,
+          "h": 68.5
+        },
+        {
+          "text": "↓숙이기",
+          "w": 122,
+          "h": 68.5
+        },
+        {
+          "text": "→오른쪽",
+          "w": 122,
+          "h": 68.5
+        },
+        {
+          "text": "시범 다시 보기",
+          "w": 107.71875,
+          "h": 44
+        }
+      ]
+    },
+    {
+      "name": "unavailable audio cannot become a completed listening practice",
+      "pass": true
+    },
+    {
+      "name": "completion starts the actual Hangul session",
+      "pass": true
+    },
+    {
+      "name": "no browser exceptions",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no failed local assets",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "no external or paid requests",
+      "pass": true,
+      "detail": []
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": []
+}

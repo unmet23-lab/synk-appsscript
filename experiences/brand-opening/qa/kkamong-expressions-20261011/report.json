@@ -1,0 +1,1992 @@
+{
+  "ok": true,
+  "at": "2026-10-11T12:42:46.482Z",
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "기본: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "기쁨: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "놀람: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "눈웃음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "잔잔감음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "졸림: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "윙크: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "으쓱: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "민망: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "민망: rejected old face was replaced",
+      "pass": true
+    },
+    {
+      "name": "놀람: rejected old face was replaced",
+      "pass": true
+    },
+    {
+      "name": "390-intro: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-intro: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-intro: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "390-intro: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-intro: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "runtime image stays inside the Kkamong asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589"
+      }
+    },
+    {
+      "name": "kkamong-으쓱.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "390: introduction keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "390-success: actual face is 기쁨",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "390-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "runtime image stays inside the Kkamong asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589"
+      }
+    },
+    {
+      "name": "kkamong-기쁨.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+      }
+    },
+    {
+      "name": "390: success keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "390-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "390-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "runtime image stays inside the Kkamong asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea"
+      }
+    },
+    {
+      "name": "kkamong-민망.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "sha256": "758b2b522cea4749dc88fe57b75f2584603a7beab8e9bf5d12fa0b2b251f198c"
+      }
+    },
+    {
+      "name": "390: retry keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "390-rest: actual face is 기본",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-rest: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-rest: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "runtime image stays inside the Kkamong asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4"
+      }
+    },
+    {
+      "name": "kkamong-기본.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "sha256": "fd1dcb1003a465db0e588728acde069664d13d382823866bb332045f7a7d1722"
+      }
+    },
+    {
+      "name": "390-touch-surprise: actual face is 놀람",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-surprise: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-surprise: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "390-touch-surprise: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-touch-surprise: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "runtime image stays inside the Kkamong asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1"
+      }
+    },
+    {
+      "name": "kkamong-놀람.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+        "sha256": "29ab707f8df141ab23cf6aeee1cbfb5bd429d2c31f255808e20a7bd34ff8b0b8"
+      }
+    },
+    {
+      "name": "390-touch-proud: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-proud: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-proud: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-touch-proud: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "390-touch-shy: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-shy: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 140,
+          "height": 140
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "390-touch-shy: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "390-touch-shy: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 35,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 64,
+              "y": 36,
+              "w": 14,
+              "h": 15
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "390: greeting returns to base",
+      "pass": true
+    },
+    {
+      "name": "390: preview does not save tutor selection",
+      "pass": true
+    },
+    {
+      "name": "648-intro: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-intro: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-intro: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648: introduction keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "648-success: actual face is 기쁨",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648: success keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "648-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648: retry keeps canonical Kkamong wording",
+      "pass": true
+    },
+    {
+      "name": "648-rest: actual face is 기본",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: actual face is 놀람",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648-touch-proud: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-proud: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648-touch-shy: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-shy: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 73,
+              "y": 41,
+              "w": 16,
+              "h": 17
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "648: greeting returns to base",
+      "pass": true
+    },
+    {
+      "name": "648: preview does not save tutor selection",
+      "pass": true
+    },
+    {
+      "name": "chosen tutor belongs only to this isolated guest",
+      "pass": true
+    },
+    {
+      "name": "life: a real wrong answer triggers the selected tutor",
+      "pass": true
+    },
+    {
+      "name": "life-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "life-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "life-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 18,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 33,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "life: actual guided wrong answer remains retryable",
+      "pass": true
+    },
+    {
+      "name": "life-guided-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-guided-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-guided-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "life-guided-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "life-guided-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 22,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "life-guided-success: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-guided-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-guided-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "life-guided-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "life-guided-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 22,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "life: rehearsal preserves first answer and physical checkpoint",
+      "pass": true
+    },
+    {
+      "name": "life: return uses the same Kkamong companion",
+      "pass": true
+    },
+    {
+      "name": "life-success: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "life-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "life-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "life-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 18,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 33,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cafe: actual unavailable order produces repair and selected tutor",
+      "pass": true
+    },
+    {
+      "name": "cafe-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "cafe-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "cafe-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 18,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 33,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cafe: actual guided wrong answer remains retryable",
+      "pass": true
+    },
+    {
+      "name": "cafe-guided-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-guided-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-guided-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "cafe-guided-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "cafe-guided-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 22,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cafe-guided-success: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-guided-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 88,
+          "height": 88
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-guided-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "cafe-guided-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "cafe-guided-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 22,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 40,
+              "y": 22,
+              "w": 9,
+              "h": 9
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "cafe: rehearsal preserves first answer and physical checkpoint",
+      "pass": true
+    },
+    {
+      "name": "cafe: return uses the same Kkamong companion",
+      "pass": true
+    },
+    {
+      "name": "cafe: corrected order preserves its first wrong answer",
+      "pass": true
+    },
+    {
+      "name": "cafe-corrected: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-corrected: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 72,
+          "height": 72
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "cafe-corrected: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "cafe-corrected: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "cafe-corrected: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 18,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 33,
+              "y": 18,
+              "w": 8,
+              "h": 8
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "life and cafe keep the owner guest",
+      "pass": true
+    },
+    {
+      "name": "chosen tutor belongs only to this isolated guest",
+      "pass": true
+    },
+    {
+      "name": "game-hangul-retry: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "game-hangul-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "game-hangul-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "game-hangul-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "game-hangul-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 16,
+              "y": 16,
+              "w": 7,
+              "h": 7
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 29,
+              "y": 16,
+              "w": 7,
+              "h": 7
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "game-hangul-success: actual face is 으쓱",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "game-hangul-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 64,
+          "height": 64
+        },
+        "mask": "radial-gradient(25% 12% at 40.5% 31%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "game-hangul-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "game-hangul-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "game-hangul-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": true,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 16,
+              "y": 16,
+              "w": 7,
+              "h": 7
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 0,
+            "meanChannelDiff": 0,
+            "pixelsOver2": 0,
+            "region": {
+              "x": 29,
+              "y": 16,
+              "w": 7,
+              "h": 7
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "game keeps the chosen guest tutor",
+      "pass": true
+    },
+    {
+      "name": "closing game removes its tutor",
+      "pass": true
+    },
+    {
+      "name": "no browser errors, missing assets, external calls or server writes",
+      "pass": true,
+      "detail": {
+        "errors": [],
+        "missing": [],
+        "external": [],
+        "blockedWrites": []
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-intro.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-intro-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-intro-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-rest.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-rest-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-surprise.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-surprise-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-surprise-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-proud.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-proud-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-proud-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-shy.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-shy-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\390-touch-shy-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-intro.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-intro-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-intro-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-rest.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-rest-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-surprise.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-surprise-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-surprise-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-proud.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-proud-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-proud-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-shy.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-shy-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\648-touch-shy-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-guided-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\life-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-guided-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-corrected.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-corrected-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\cafe-corrected-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\kkamong-expressions-20261011\\game-hangul-success-eyes-compare.png"
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EC%9C%BC%EC%93%B1.webp?v=e1f338ab9589",
+      "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EC%81%A8.webp?v=e1f338ab9589",
+      "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%AF%BC%EB%A7%9D.webp?v=758b2b522cea",
+      "sha256": "758b2b522cea4749dc88fe57b75f2584603a7beab8e9bf5d12fa0b2b251f198c"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EA%B8%B0%EB%B3%B8.webp?v=fd1dcb1003a4",
+      "sha256": "fd1dcb1003a465db0e588728acde069664d13d382823866bb332045f7a7d1722"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/kkamong-%EB%86%80%EB%9E%8C.webp?v=29ab707f8df1",
+      "sha256": "29ab707f8df141ab23cf6aeee1cbfb5bd429d2c31f255808e20a7bd34ff8b0b8"
+    }
+  ]
+}

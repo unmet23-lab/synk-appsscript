@@ -1,0 +1,785 @@
+TAP version 13
+# Subtest: all four real game entrances have three directions in each distinct character voice
+ok 1 - all four real game entrances have three directions in each distinct character voice
+  ---
+  duration_ms: 5.2366
+  type: 'test'
+  ...
+# Subtest: success, retry, misses and stopping have their own reactions and available approved faces
+ok 2 - success, retry, misses and stopping have their own reactions and available approved faces
+  ---
+  duration_ms: 0.6071
+  type: 'test'
+  ...
+# Subtest: frames can signal only their own origin, game and version; payload does not carry account data
+ok 3 - frames can signal only their own origin, game and version; payload does not carry account data
+  ---
+  duration_ms: 0.5548
+  type: 'test'
+  ...
+# Subtest: unknown mascot identifiers cannot produce a substitute companion
+ok 4 - unknown mascot identifiers cannot produce a substitute companion
+  ---
+  duration_ms: 0.1492
+  type: 'test'
+  ...
+# Subtest: the three introduction cards stay equal to the approved source
+ok 5 - the three introduction cards stay equal to the approved source
+  ---
+  duration_ms: 6.9222
+  type: 'test'
+  ...
+# Subtest: a committed tutor is restored only for its owner
+ok 6 - a committed tutor is restored only for its owner
+  ---
+  duration_ms: 0.8233
+  type: 'test'
+  ...
+# Subtest: corrupt, unfinished and unknown records cannot skip first meeting
+ok 7 - corrupt, unfinished and unknown records cannot skip first meeting
+  ---
+  duration_ms: 1.0765
+  type: 'test'
+  ...
+# Subtest: blocked storage leaves first meeting usable and reports failure to persist
+ok 8 - blocked storage leaves first meeting usable and reports failure to persist
+  ---
+  duration_ms: 0.7952
+  type: 'test'
+  ...
+# Subtest: the selected tutor pauses and resumes the same real clip without claiming completion or restarting ended audio
+ok 9 - the selected tutor pauses and resumes the same real clip without claiming completion or restarting ended audio
+  ---
+  duration_ms: 10.8314
+  type: 'test'
+  ...
+# Subtest: voices requested behind the practice wait, and a cancelled clip resolves as unheard even if an old ended event arrives
+ok 10 - voices requested behind the practice wait, and a cancelled clip resolves as unheard even if an old ended event arrives
+  ---
+  duration_ms: 3.1997
+  type: 'test'
+  ...
+# Subtest: the demonstration, finished audio and actual correct action are all required before advancing
+ok 11 - the demonstration, finished audio and actual correct action are all required before advancing
+  ---
+  duration_ms: 3.8311
+  type: 'test'
+  ...
+# Subtest: early and late rhythm input can retry the next note; the right lane alone cannot pass
+ok 12 - early and late rhythm input can retry the next note; the right lane alone cannot pass
+  ---
+  duration_ms: 0.3073
+  type: 'test'
+  ...
+# Subtest: completion is saved only after every step, and cannot leak between owners, tutors or games
+ok 13 - completion is saved only after every step, and cannot leak between owners, tutors or games
+  ---
+  duration_ms: 0.6234
+  type: 'test'
+  ...
+# Subtest: runner keyboard practice uses the real controls, including Space and physical key alternatives
+ok 14 - runner keyboard practice uses the real controls, including Space and physical key alternatives
+  ---
+  duration_ms: 0.2264
+  type: 'test'
+  ...
+# Subtest: each instructional and feedback line preserves the chosen tutor speech signature
+ok 15 - each instructional and feedback line preserves the chosen tutor speech signature
+  ---
+  duration_ms: 0.6519
+  type: 'test'
+  ...
+# Subtest: runner timing, different action and no action remain physical observations rather than language diagnoses
+ok 16 - runner timing, different action and no action remain physical observations rather than language diagnoses
+  ---
+  duration_ms: 2.4899
+  type: 'test'
+  ...
+# Subtest: real rhythm verdicts keep sentence correctness separate from the actual timing quality, including both failures
+ok 17 - real rhythm verdicts keep sentence correctness separate from the actual timing quality, including both failures
+  ---
+  duration_ms: 6.1381
+  type: 'test'
+  ...
+# Subtest: unanswered and interrupted audio cannot become a fabricated sentence misunderstanding
+ok 18 - unanswered and interrupted audio cannot become a fabricated sentence misunderstanding
+  ---
+  duration_ms: 1.1319
+  type: 'test'
+  ...
+# Subtest: listening checks and server sentence feedback retain the actual selected and verified correct answers
+ok 19 - listening checks and server sentence feedback retain the actual selected and verified correct answers
+  ---
+  duration_ms: 0.5823
+  type: 'test'
+  ...
+# Subtest: the bridge accepts only bounded support on graded outcomes, strips identity/capabilities, and rejects remote audio or action-as-language
+ok 20 - the bridge accepts only bounded support on graded outcomes, strips identity/capabilities, and rejects remote audio or action-as-language
+  ---
+  duration_ms: 0.6722
+  type: 'test'
+  ...
+# Subtest: recent difficulties stay separated by owner, tutor and game, and guided success is not an original response
+ok 21 - recent difficulties stay separated by owner, tutor and game, and guided success is not an original response
+  ---
+  duration_ms: 0.9385
+  type: 'test'
+  ...
+# Subtest: focused practice requires the chosen action and timing, and never grants the complete introduction record
+ok 22 - focused practice requires the chosen action and timing, and never grants the complete introduction record
+  ---
+  duration_ms: 1.0318
+  type: 'test'
+  ...
+# Subtest: the no-action and held-note rehearsals cannot pass by a quick press or by moving during the waiting window
+ok 23 - the no-action and held-note rehearsals cannot pass by a quick press or by moving during the waiting window
+  ---
+  duration_ms: 0.272
+  type: 'test'
+  ...
+# Subtest: all error hints keep the mascot speech signature, including correct-language and missed-beat feedback
+ok 24 - all error hints keep the mascot speech signature, including correct-language and missed-beat feedback
+  ---
+  duration_ms: 0.8173
+  type: 'test'
+  ...
+# Subtest: 그 음절을 가진 목소리만 고른다 — 기본 목소리는 0번
+ok 25 - 그 음절을 가진 목소리만 고른다 — 기본 목소리는 0번
+  ---
+  duration_ms: 3.3575
+  type: 'test'
+  ...
+# Subtest: 목소리가 하나뿐이거나 여러 목소리가 승인 전이면 늘 기본(0)
+ok 26 - 목소리가 하나뿐이거나 여러 목소리가 승인 전이면 늘 기본(0)
+  ---
+  duration_ms: 0.3569
+  type: 'test'
+  ...
+# Subtest: 같은 문항은 다시 들어도 같은 목소리, 문항이 바뀌면 목소리가 돈다
+ok 27 - 같은 문항은 다시 들어도 같은 목소리, 문항이 바뀌면 목소리가 돈다
+  ---
+  duration_ms: 1.4701
+  type: 'test'
+  ...
+# 졸업까지 15일
+# Subtest: 첫 회차: 새 글자 셋(ㅏ ㅓ ㅗ)을 만나기 카드로 먼저 만나고, 보기는 만난 글자뿐이다
+ok 28 - 첫 회차: 새 글자 셋(ㅏ ㅓ ㅗ)을 만나기 카드로 먼저 만나고, 보기는 만난 글자뿐이다
+  ---
+  duration_ms: 12.3511
+  type: 'test'
+  ...
+# Subtest: 단원은 선행이다: 앞 단원의 글자를 다 만나기 전에는 다음 단원의 새 글자가 나오지 않는다
+ok 29 - 단원은 선행이다: 앞 단원의 글자를 다 만나기 전에는 다음 단원의 새 글자가 나오지 않는다
+  ---
+  duration_ms: 39.9588
+  type: 'test'
+  ...
+# Subtest: 같은 사람·같은 날·같은 회차는 같은 문항을 낸다
+ok 30 - 같은 사람·같은 날·같은 회차는 같은 문항을 낸다
+  ---
+  duration_ms: 2.262
+  type: 'test'
+  ...
+# Subtest: 같은 꼴은 세 번 넘게 이어지지 않고, 꼴이 셋 이상이면 회차에 셋 이상 섞인다
+ok 31 - 같은 꼴은 세 번 넘게 이어지지 않고, 꼴이 셋 이상이면 회차에 셋 이상 섞인다
+  ---
+  duration_ms: 16.5114
+  type: 'test'
+  ...
+# Subtest: 소리로 가를 수 없는 짝(ㅐ/ㅔ)과 같은 소리는 소리 문항의 보기에 함께 나오지 않는다
+ok 32 - 소리로 가를 수 없는 짝(ㅐ/ㅔ)과 같은 소리는 소리 문항의 보기에 함께 나오지 않는다
+  ---
+  duration_ms: 170.1811
+  type: 'test'
+  ...
+# Subtest: ㅓ/ㅗ를 자주 헷갈리는 사람에게 그 짝이 다시 오고, 이유 한 줄이 그 짝을 가리킨다
+ok 33 - ㅓ/ㅗ를 자주 헷갈리는 사람에게 그 짝이 다시 오고, 이유 한 줄이 그 짝을 가리킨다
+  ---
+  duration_ms: 1.194
+  type: 'test'
+  ...
+# Subtest: 「익힘」은 서로 다른 두 회차에 걸친 세 번의 혼자 맞힘으로만 선다
+ok 34 - 「익힘」은 서로 다른 두 회차에 걸친 세 번의 혼자 맞힘으로만 선다
+  ---
+  duration_ms: 1.4571
+  type: 'test'
+  ...
+# Subtest: 틀린 글자는 그날 다시 오고, 맞히기 시작하면 다음 복습까지의 간격이 벌어진다
+ok 35 - 틀린 글자는 그날 다시 오고, 맞히기 시작하면 다음 복습까지의 간격이 벌어진다
+  ---
+  duration_ms: 0.906
+  type: 'test'
+  ...
+# Subtest: 간판은 그 글자를 다 익혔을 때만 또렷해지고, 명패의 받침 칸은 받침을 익혀야 채워진다
+ok 36 - 간판은 그 글자를 다 익혔을 때만 또렷해지고, 명패의 받침 칸은 받침을 익혀야 채워진다
+  ---
+  duration_ms: 1.769
+  type: 'test'
+  ...
+# Subtest: 막히는 사람에게는 새 글자를 쉬게 하고, 난이도는 이어서 두 회차가 막히면 내려간다
+ok 37 - 막히는 사람에게는 새 글자를 쉬게 하고, 난이도는 이어서 두 회차가 막히면 내려간다
+  ---
+  duration_ms: 2.6067
+  type: 'test'
+  ...
+# Subtest: 「더 하기」는 하루 두 번까지다
+ok 38 - 「더 하기」는 하루 두 번까지다
+  ---
+  duration_ms: 1.2209
+  type: 'test'
+  ...
+# Subtest: 보이는 글은 한국어뿐이다(이유 한 줄·단원 이름·간판)
+ok 39 - 보이는 글은 한국어뿐이다(이유 한 줄·단원 이름·간판)
+  ---
+  duration_ms: 9.4801
+  type: 'test'
+  ...
+# Subtest: 필요한 소리의 목록에 글자·음절·받침 음절·낱말이 다 들어 있다(앱이 내는 소리는 모두 목록 안)
+ok 40 - 필요한 소리의 목록에 글자·음절·받침 음절·낱말이 다 들어 있다(앱이 내는 소리는 모두 목록 안)
+  ---
+  duration_ms: 92.8939
+  type: 'test'
+  ...
+# Subtest: 받침 단원은 다섯 단원(U1~U5)을 다 만난 뒤에 나오고, 받침 하나만 알 때는 「받침 없음」과 견준다
+ok 41 - 받침 단원은 다섯 단원(U1~U5)을 다 만난 뒤에 나오고, 받침 하나만 알 때는 「받침 없음」과 견준다
+  ---
+  duration_ms: 2.9595
+  type: 'test'
+  ...
+# Subtest: 받침 ㄱ·ㄷ·ㅂ·ㅅ·ㅈ(U7)은 1단에서 소리로 묻지 않고, [ㄷ]으로 같이 나는 받침은 소리 보기에 함께 나오지 않는다
+ok 42 - 받침 ㄱ·ㄷ·ㅂ·ㅅ·ㅈ(U7)은 1단에서 소리로 묻지 않고, [ㄷ]으로 같이 나는 받침은 소리 보기에 함께 나오지 않는다
+  ---
+  duration_ms: 53.2992
+  type: 'test'
+  ...
+# Subtest: 받침을 둘 이상 알면 음절 만들기에 받침 줄이 붙는다(자음·모음·받침 조각으로 받침 음절 만들기)
+ok 43 - 받침을 둘 이상 알면 음절 만들기에 받침 줄이 붙는다(자음·모음·받침 조각으로 받침 음절 만들기)
+  ---
+  duration_ms: 58.5338
+  type: 'test'
+  ...
+# Subtest: 짝 문항은 소리로 가를 수 있는 짝 둘이고, 가르쳐 주기는 복습 자리에서만 몽글이 든 틀린 보기와 함께 나온다
+ok 44 - 짝 문항은 소리로 가를 수 있는 짝 둘이고, 가르쳐 주기는 복습 자리에서만 몽글이 든 틀린 보기와 함께 나온다
+  ---
+  duration_ms: 44.3522
+  type: 'test'
+  ...
+# Subtest: 졸업: 핵심 글자를 다 만나고, 최근 스무 문항 90% 이상, 낱말을 이어서 다섯 번 읽어 내면. 그 뒤는 짧은 몸풀기
+ok 45 - 졸업: 핵심 글자를 다 만나고, 최근 스무 문항 90% 이상, 낱말을 이어서 다섯 번 읽어 내면. 그 뒤는 짧은 몸풀기
+  ---
+  duration_ms: 1.2919
+  type: 'test'
+  ...
+# Subtest: 다 맞히는 사람은 받침까지 만나고 졸업에 닿는다(사람 입력 0)
+ok 46 - 다 맞히는 사람은 받침까지 만나고 졸업에 닿는다(사람 입력 0)
+  ---
+  duration_ms: 7.8939
+  type: 'test'
+  ...
+# Subtest: 된소리·겹모음(U8·U9)은 받침 뒤에 나오고 졸업 조건이 아니다 — 졸업 뒤 몸풀기에서 남은 글자를 만난다
+ok 47 - 된소리·겹모음(U8·U9)은 받침 뒤에 나오고 졸업 조건이 아니다 — 졸업 뒤 몸풀기에서 남은 글자를 만난다
+  ---
+  duration_ms: 0.7161
+  type: 'test'
+  ...
+# Subtest: ㅒ·ㅖ·ㅢ는 문항에서 ㅇ하고만 음절을 만들고, 같은 소리(ㅚ·ㅙ·ㅞ, ㅒ·ㅖ)는 보기와 조각에 함께 나오지 않는다
+ok 48 - ㅒ·ㅖ·ㅢ는 문항에서 ㅇ하고만 음절을 만들고, 같은 소리(ㅚ·ㅙ·ㅞ, ㅒ·ㅖ)는 보기와 조각에 함께 나오지 않는다
+  ---
+  duration_ms: 75.3049
+  type: 'test'
+  ...
+# Subtest: 된소리를 헷갈리면(ㄲ을 ㄱ으로) 다음 회차 첫 문항이 그 짝의 짝 고르기다
+ok 49 - 된소리를 헷갈리면(ㄲ을 ㄱ으로) 다음 회차 첫 문항이 그 짝의 짝 고르기다
+  ---
+  duration_ms: 0.7629
+  type: 'test'
+  ...
+# Subtest: 오답 안내의 조사는 끝 음절의 받침을 따른다 — 각이 아니라 간이에요 · 다가 아니라 나예요, 사람은 · 엄마는
+ok 50 - 오답 안내의 조사는 끝 음절의 받침을 따른다 — 각이 아니라 간이에요 · 다가 아니라 나예요, 사람은 · 엄마는
+  ---
+  duration_ms: 0.2937
+  type: 'test'
+  ...
+# Subtest: 받침 노래: 신호가 겹치지 않고, 칸 글자는 모두 이 판의 글자이며, 결과 음절은 바탕 + 받침이다
+ok 51 - 받침 노래: 신호가 겹치지 않고, 칸 글자는 모두 이 판의 글자이며, 결과 음절은 바탕 + 받침이다
+  ---
+  duration_ms: 0.8478
+  type: 'test'
+  ...
+# Subtest: 모음 댄스: 신호가 겹치지 않고, 글자는 노래에서 잰 음절 시각(10-09 목소리)에 차례로 켜진다
+ok 52 - 모음 댄스: 신호가 겹치지 않고, 글자는 노래에서 잰 음절 시각(10-09 목소리)에 차례로 켜진다
+  ---
+  duration_ms: 0.2988
+  type: 'test'
+  ...
+# Subtest: 그 아 가 v4: 떠올리기 두 줄은 쉼 한 마디 동안 답 칸이 비고, 노래가 답을 부를 때 켜진다
+ok 53 - 그 아 가 v4: 떠올리기 두 줄은 쉼 한 마디 동안 답 칸이 비고, 노래가 답을 부를 때 켜진다
+  ---
+  duration_ms: 0.2256
+  type: 'test'
+  ...
+# Subtest: 겹모음 댄스: 신호가 겹치지 않고, 합치기 칸의 글자가 그 음절의 글자이며, 떠올리기는 답 앞에 쉰다
+ok 54 - 겹모음 댄스: 신호가 겹치지 않고, 합치기 칸의 글자가 그 음절의 글자이며, 떠올리기는 답 앞에 쉰다
+  ---
+  duration_ms: 0.5211
+  type: 'test'
+  ...
+# Subtest: a missing recording fails instead of falling back to generated music
+ok 55 - a missing recording fails instead of falling back to generated music
+  ---
+  duration_ms: 1.3518
+  type: 'test'
+  ...
+# Subtest: missing narration blocks listening play instead of silently becoming reading
+ok 56 - missing narration blocks listening play instead of silently becoming reading
+  ---
+  duration_ms: 0.3707
+  type: 'test'
+  ...
+# Subtest: narration and music are scheduled on one clock with music ducking
+ok 57 - narration and music are scheduled on one clock with music ducking
+  ---
+  duration_ms: 2.5136
+  type: 'test'
+  ...
+# Subtest: pause suspends the common context instead of discarding spoken content
+ok 58 - pause suspends the common context instead of discarding spoken content
+  ---
+  duration_ms: 0.2265
+  type: 'test'
+  ...
+# Subtest: sound preference can change before a song and after its audio context is gone
+ok 59 - sound preference can change before a song and after its audio context is gone
+  ---
+  duration_ms: 0.3135
+  type: 'test'
+  ...
+# Subtest: stopping releases the source, context and old gain while retaining the mute preference
+ok 60 - stopping releases the source, context and old gain while retaining the mute preference
+  ---
+  duration_ms: 0.2338
+  type: 'test'
+  ...
+# Subtest: recording-derived beat times cover the full song and interpolate half beats
+ok 61 - recording-derived beat times cover the full song and interpolate half beats
+  ---
+  duration_ms: 4.2135
+  type: 'test'
+  ...
+# Subtest: all nine charts reserve complete narration and two-button answer windows
+ok 62 - all nine charts reserve complete narration and two-button answer windows
+  ---
+  duration_ms: 7.2158
+  type: 'test'
+  ...
+# Subtest: accurate language choice before the beat does not award rhythm points
+ok 63 - accurate language choice before the beat does not award rhythm points
+  ---
+  duration_ms: 0.8893
+  type: 'test'
+  ...
+# Subtest: an on-beat incorrect meaning gets rhythm credit but no language credit
+ok 64 - an on-beat incorrect meaning gets rhythm credit but no language credit
+  ---
+  duration_ms: 0.6224
+  type: 'test'
+  ...
+# Subtest: a two-key chord submits only one language answer
+ok 65 - a two-key chord submits only one language answer
+  ---
+  duration_ms: 0.7494
+  type: 'test'
+  ...
+# Subtest: late language input is understood independently from a timing miss
+ok 66 - late language input is understood independently from a timing miss
+  ---
+  duration_ms: 0.3472
+  type: 'test'
+  ...
+# Subtest: no input is unanswered rather than a fabricated wrong choice
+ok 67 - no input is unanswered rather than a fabricated wrong choice
+  ---
+  duration_ms: 0.3451
+  type: 'test'
+  ...
+# Subtest: long notes require a sustained key, early release loses only the tail
+ok 68 - long notes require a sustained key, early release loses only the tail
+  ---
+  duration_ms: 0.4848
+  type: 'test'
+  ...
+# Subtest: holding through the end completes a long note exactly once
+ok 69 - holding through the end completes a long note exactly once
+  ---
+  duration_ms: 0.4318
+  type: 'test'
+  ...
+# Subtest: different rounds vary spoken claims and note patterns while preserving O/X positions
+ok 70 - different rounds vary spoken claims and note patterns while preserving O/X positions
+  ---
+  duration_ms: 0.6274
+  type: 'test'
+  ...
+# Subtest: a perfect simulated round has full rhythm credit and separate language accuracy
+ok 71 - a perfect simulated round has full rhythm credit and separate language accuracy
+  ---
+  duration_ms: 5.5627
+  type: 'test'
+  ...
+# Subtest: all unanswered events finish at zero and cannot exceed their rhythm denominator
+ok 72 - all unanswered events finish at zero and cannot exceed their rhythm denominator
+  ---
+  duration_ms: 3.155
+  type: 'test'
+  ...
+# Subtest: all transfer checks use a new sentence and exactly one matching answer
+ok 73 - all transfer checks use a new sentence and exactly one matching answer
+  ---
+  duration_ms: 0.3528
+  type: 'test'
+  ...
+# Subtest: input during narration is ignored and cannot predetermine an answer
+ok 74 - input during narration is ignored and cannot predetermine an answer
+  ---
+  duration_ms: 0.2895
+  type: 'test'
+  ...
+# Subtest: removed lanes cannot submit hidden answers or score points
+ok 75 - removed lanes cannot submit hidden answers or score points
+  ---
+  duration_ms: 0.2089
+  type: 'test'
+  ...
+# Subtest: all clips must load; missing files are retried without replacing loaded clips
+ok 76 - all clips must load; missing files are retried without replacing loaded clips
+  ---
+  duration_ms: 2.6078
+  type: 'test'
+  ...
+# Subtest: pause and resume keep the current source and its playback position
+ok 77 - pause and resume keep the current source and its playback position
+  ---
+  duration_ms: 0.5488
+  type: 'test'
+  ...
+# Subtest: next instruction stops the previous clip; completed clips restore music gain
+ok 78 - next instruction stops the previous clip; completed clips restore music gain
+  ---
+  duration_ms: 1.2695
+  type: 'test'
+  ...
+# Subtest: delivery marks a clip completed only on its actual ended event
+ok 79 - delivery marks a clip completed only on its actual ended event
+  ---
+  duration_ms: 1.0903
+  type: 'test'
+  ...
+# Subtest: both outer lanes return to the center on one press, including duplicated keydown
+ok 80 - both outer lanes return to the center on one press, including duplicated keydown
+  ---
+  duration_ms: 4.4505
+  type: 'test'
+  ...
+# Subtest: fresh consecutive taps still move from left through center to right
+ok 81 - fresh consecutive taps still move from left through center to right
+  ---
+  duration_ms: 0.4501
+  type: 'test'
+  ...
+# Subtest: arrow and letter aliases held together cannot skip the middle lane
+ok 82 - arrow and letter aliases held together cannot skip the middle lane
+  ---
+  duration_ms: 0.253
+  type: 'test'
+  ...
+# Subtest: blur or pause reset releases stuck keys for the next deliberate press
+ok 83 - blur or pause reset releases stuck keys for the next deliberate press
+  ---
+  duration_ms: 1.0765
+  type: 'test'
+  ...
+# Subtest: physical jumping, crouching and side dodging retain their different collision rules
+ok 84 - physical jumping, crouching and side dodging retain their different collision rules
+  ---
+  duration_ms: 1.6274
+  type: 'test'
+  ...
+# Subtest: all sixteen directions, negations and ordered instructions are physically executable
+ok 85 - all sixteen directions, negations and ordered instructions are physically executable
+  ---
+  duration_ms: 12.4492
+  type: 'test'
+  ...
+# Subtest: a request for a specific path is not solved by choosing a written word or an arbitrary path
+ok 86 - a request for a specific path is not solved by choosing a written word or an arbitrary path
+  ---
+  duration_ms: 0.5648
+  type: 'test'
+  ...
+# Subtest: a correctly chosen jump too early is recorded as timing, not an inferred language failure
+ok 87 - a correctly chosen jump too early is recorded as timing, not an inferred language failure
+  ---
+  duration_ms: 0.4283
+  type: 'test'
+  ...
+# Subtest: do not jump fails if a jump was made and already landed before the marker
+ok 88 - do not jump fails if a jump was made and already landed before the marker
+  ---
+  duration_ms: 1.0608
+  type: 'test'
+  ...
+# Subtest: a sequence records each marker separately, and a missing second action cannot clear it
+ok 89 - a sequence records each marker separately, and a missing second action cannot clear it
+  ---
+  duration_ms: 0.9844
+  type: 'test'
+  ...
+# Subtest: three performed requests award wind protection without a speed boost
+ok 90 - three performed requests award wind protection without a speed boost
+  ---
+  duration_ms: 0.9305
+  type: 'test'
+  ...
+# Subtest: ordinary collisions change survival protection without creating a language record
+ok 91 - ordinary collisions change survival protection without creating a language record
+  ---
+  duration_ms: 0.3117
+  type: 'test'
+  ...
+# Subtest: generated ordinary obstacles do not intrude on instruction response or sequence corridors
+ok 92 - generated ordinary obstacles do not intrude on instruction response or sequence corridors
+  ---
+  duration_ms: 58.7072
+  type: 'test'
+  ...
+# Subtest: even at maximum speed, a complete spoken instruction ends before its first action
+ok 93 - even at maximum speed, a complete spoken instruction ends before its first action
+  ---
+  duration_ms: 0.3867
+  type: 'test'
+  ...
+# Subtest: full ninety-second demonstrations perform sequences without collision on varied courses
+ok 94 - full ninety-second demonstrations perform sequences without collision on varied courses
+  ---
+  duration_ms: 84.1179
+  type: 'test'
+  ...
+# Subtest: landing, lane bounds and frame spikes remain safe, and endless mode continues
+ok 95 - landing, lane bounds and frame spikes remain safe, and endless mode continues
+  ---
+  duration_ms: 3.798
+  type: 'test'
+  ...
+# Subtest: all twelve completed MP3 checks can produce independent correct/incorrect listening evidence
+ok 96 - all twelve completed MP3 checks can produce independent correct/incorrect listening evidence
+  ---
+  duration_ms: 57.0859
+  type: 'test'
+  ...
+# Subtest: a replay after a full listen is help; it cannot make the heard instruction unheard
+ok 97 - a replay after a full listen is help; it cannot make the heard instruction unheard
+  ---
+  duration_ms: 2.3824
+  type: 'test'
+  ...
+# Subtest: a first listen after a failed load is the first listen, not help
+ok 98 - a first listen after a failed load is the first listen, not help
+  ---
+  duration_ms: 1.0354
+  type: 'test'
+  ...
+# Subtest: closing after a full listen leaves the question unanswered, not an audio failure
+ok 99 - closing after a full listen leaves the question unanswered, not an audio failure
+  ---
+  duration_ms: 0.9978
+  type: 'test'
+  ...
+# Subtest: missing/interrupted audio and cancelled questions create no incorrect language evidence
+ok 100 - missing/interrupted audio and cancelled questions create no incorrect language evidence
+  ---
+  duration_ms: 2.5549
+  type: 'test'
+  ...
+# Subtest: stale audio completion cannot unlock the following question
+ok 101 - stale audio completion cannot unlock the following question
+  ---
+  duration_ms: 1.3477
+  type: 'test'
+  ...
+# Subtest: a check is a sentence the run never says: running and practising do not spend its first try
+ok 102 - a check is a sentence the run never says: running and practising do not spend its first try
+  ---
+  duration_ms: 14.1079
+  type: 'test'
+  ...
+# Subtest: twelve authored checks: their own recorded clips and families, three choices, the answer in every place
+ok 103 - twelve authored checks: their own recorded clips and families, three choices, the answer in every place
+  ---
+  duration_ms: 13.8181
+  type: 'test'
+  ...
+# Subtest: check sentences link the grammar Strata reads in them
+ok 104 - check sentences link the grammar Strata reads in them
+  ---
+  duration_ms: 17.0019
+  type: 'test'
+  ...
+# Subtest: server assignment controls exact runner skill, level, modality and families without fallback
+ok 105 - server assignment controls exact runner skill, level, modality and families without fallback
+  ---
+  duration_ms: 4.4689
+  type: 'test'
+  ...
+# Subtest: free runner rounds use Core exposure history and choose new phrases on return
+ok 106 - free runner rounds use Core exposure history and choose new phrases on return
+  ---
+  duration_ms: 3.0477
+  type: 'test'
+  ...
+# Subtest: every authored wrong choice has a distinct short correction, explanation and stable machine ID
+ok 107 - every authored wrong choice has a distinct short correction, explanation and stable machine ID
+  ---
+  duration_ms: 1.8676
+  type: 'test'
+  ...
+# Subtest: post-answer replay changes no original result, provenance, independent count or grade and cannot rescore
+ok 108 - post-answer replay changes no original result, provenance, independent count or grade and cannot rescore
+  ---
+  duration_ms: 12.4447
+  type: 'test'
+  ...
+# Subtest: an incorrect response selects a different unseen family of the same actual goal next
+ok 109 - an incorrect response selects a different unseen family of the same actual goal next
+  ---
+  duration_ms: 45.1466
+  type: 'test'
+  ...
+# Subtest: a help-assisted correct response also gets an unseen same-goal follow-up without counting as independent
+ok 110 - a help-assisted correct response also gets an unseen same-goal follow-up without counting as independent
+  ---
+  duration_ms: 4.1914
+  type: 'test'
+  ...
+# Subtest: an assignment never expands its exact list or total to supply a follow-up
+ok 111 - an assignment never expands its exact list or total to supply a follow-up
+  ---
+  duration_ms: 6.1236
+  type: 'test'
+  ...
+# Subtest: spent assigned families remain honest review and are never labelled new
+ok 112 - spent assigned families remain honest review and are never labelled new
+  ---
+  duration_ms: 3.8657
+  type: 'test'
+  ...
+# Subtest: unknown history is not relabelled fresh, and mismatched assignment has no fallback
+ok 113 - unknown history is not relabelled fresh, and mismatched assignment has no fallback
+  ---
+  duration_ms: 1.4349
+  type: 'test'
+  ...
+# Subtest: failed first audio cannot create a choice response; answer after successful first retry remains unassisted
+ok 114 - failed first audio cannot create a choice response; answer after successful first retry remains unassisted
+  ---
+  duration_ms: 0.8198
+  type: 'test'
+  ...
+# Subtest: a prior presentation without an answer is never labelled an unseen question; first-response qualification stays Core-owned
+ok 115 - a prior presentation without an answer is never labelled an unseen question; first-response qualification stays Core-owned
+  ---
+  duration_ms: 1.3485
+  type: 'test'
+  ...
+# Subtest: listening with help and closing without an answer cannot return as an unseen or independent question
+ok 116 - listening with help and closing without an answer cannot return as an unseen or independent question
+  ---
+  duration_ms: 2.318
+  type: 'test'
+  ...
+# Subtest: Runner UI rechecks the actual fresh follow-up pair once; later correct answers and review replay do not reuse it
+ok 117 - Runner UI rechecks the actual fresh follow-up pair once; later correct answers and review replay do not reuse it
+  ---
+  duration_ms: 42.1673
+  type: 'test'
+  ...
+# Subtest: Runner UI shows assisted success and then links only that answer to a fresh failed follow-up
+ok 118 - Runner UI shows assisted success and then links only that answer to a fresh failed follow-up
+  ---
+  duration_ms: 8.7341
+  type: 'test'
+  ...
+# Subtest: Runner UI close drops the pending source before a new round
+ok 119 - Runner UI close drops the pending source before a new round
+  ---
+  duration_ms: 6.5433
+  type: 'test'
+  ...
+# Subtest: Runner UI preserves scoring without a readable recheck (noApi)
+ok 120 - Runner UI preserves scoring without a readable recheck (noApi)
+  ---
+  duration_ms: 5.6426
+  type: 'test'
+  ...
+# Subtest: Runner UI preserves scoring without a readable recheck (throws)
+ok 121 - Runner UI preserves scoring without a readable recheck (throws)
+  ---
+  duration_ms: 3.4196
+  type: 'test'
+  ...
+# Subtest: Runner UI does not recheck a remaining review question when no unseen follow-up is available
+ok 122 - Runner UI does not recheck a remaining review question when no unseen follow-up is available
+  ---
+  duration_ms: 4.0032
+  type: 'test'
+  ...
+# Subtest: Runner UI displays a helped incorrect follow-up without reporting independent success
+ok 123 - Runner UI displays a helped incorrect follow-up without reporting independent success
+  ---
+  duration_ms: 4.6139
+  type: 'test'
+  ...
+# Subtest: Runner UI displays unavailable measurement when the actual source evidence was excluded
+ok 124 - Runner UI displays unavailable measurement when the actual source evidence was excluded
+  ---
+  duration_ms: 3.7765
+  type: 'test'
+  ...
+# Subtest: Connected Maru mounts once at /
+ok 125 - Connected Maru mounts once at /
+  ---
+  duration_ms: 2.5546
+  type: 'test'
+  ...
+# Subtest: Connected Maru mounts once at /world/
+ok 126 - Connected Maru mounts once at /world/
+  ---
+  duration_ms: 0.3729
+  type: 'test'
+  ...
+# Subtest: Connected Maru mounts once at /preview/world/
+ok 127 - Connected Maru mounts once at /preview/world/
+  ---
+  duration_ms: 0.2582
+  type: 'test'
+  ...
+# Subtest: Config cannot close the bootstrap script
+ok 128 - Config cannot close the bootstrap script
+  ---
+  duration_ms: 0.2518
+  type: 'test'
+  ...
+# Subtest: Reject paths which could escape the mounted app
+ok 129 - Reject paths which could escape the mounted app
+  ---
+  duration_ms: 0.6205
+  type: 'test'
+  ...
+1..129
+# tests 129
+# suites 0
+# pass 129
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1367.9868

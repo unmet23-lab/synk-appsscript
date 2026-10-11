@@ -1,0 +1,132 @@
+{
+  "date": "2026-10-11",
+  "method": "Built-in ImageGen eye artwork: stitched smile/retry and subdued round surprise; aligned eye sockets on original body; no other facial features copied",
+  "base": "docs\\캐릭터\\정본_4K\\까몽_본체.png",
+  "baseSha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845",
+  "eyes": [
+    {
+      "cx": 1470,
+      "cy": 1474,
+      "sx": 450,
+      "sy": 456
+    },
+    {
+      "cx": 2184,
+      "cy": 1478,
+      "sx": 661,
+      "sy": 456
+    }
+  ],
+  "radius": {
+    "x": 153,
+    "y": 158
+  },
+  "edge": 10,
+  "files": [
+    {
+      "expression": "으쓱",
+      "source": "docs\\캐릭터\\표정교정_20261011\\까몽_스티치눈웃음_생성원본.png",
+      "sourceSha256": "2fc3b009a04326057e7d566772e3f68210e6924235626851b39f7b8e6277d841",
+      "samples": [
+        {
+          "sx": 450,
+          "sy": 456
+        },
+        {
+          "sx": 661,
+          "sy": 456
+        }
+      ],
+      "sampleSize": 124,
+      "output": "docs\\캐릭터\\표정교정_20261011\\까몽_으쓱_4K.png",
+      "sha256": "b688c1b1b90bb1205cbd619a377438f1f7da903d4a3a4862d646101eb1a0de57",
+      "changedPixels": 150646,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "resizeBoundaryPixels": 3
+      }
+    },
+    {
+      "expression": "눈웃음",
+      "source": "docs\\캐릭터\\표정교정_20261011\\까몽_스티치눈웃음_생성원본.png",
+      "sourceSha256": "2fc3b009a04326057e7d566772e3f68210e6924235626851b39f7b8e6277d841",
+      "samples": [
+        {
+          "sx": 450,
+          "sy": 456
+        },
+        {
+          "sx": 661,
+          "sy": 456
+        }
+      ],
+      "sampleSize": 124,
+      "output": "docs\\캐릭터\\표정교정_20261011\\까몽_눈웃음_4K.png",
+      "sha256": "b688c1b1b90bb1205cbd619a377438f1f7da903d4a3a4862d646101eb1a0de57",
+      "changedPixels": 150646,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "resizeBoundaryPixels": 3
+      }
+    },
+    {
+      "expression": "민망",
+      "source": "docs\\캐릭터\\표정교정_20261011\\까몽_스티치민망_생성원본.png",
+      "sourceSha256": "82878f93e3dfc977026c9c8f1c6203146ef768b975d495b73e7b8ace422a3d8a",
+      "samples": [
+        {
+          "sx": 452,
+          "sy": 456
+        },
+        {
+          "sx": 662,
+          "sy": 457
+        }
+      ],
+      "sampleSize": 124,
+      "output": "docs\\캐릭터\\표정교정_20261011\\까몽_민망_4K.png",
+      "sha256": "b4017d703155fb47c807a978a3b930b1c32d6d25771a66292ae36f6e3cf0884e",
+      "changedPixels": 150833,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "resizeBoundaryPixels": 3
+      }
+    },
+    {
+      "expression": "놀람",
+      "source": "docs\\캐릭터\\표정교정_20261011\\까몽_차분한놀람_생성원본.png",
+      "sourceSha256": "1c882a33e7ec4ecd9f4b948a9bfcbeae4ca2d7d3c328b5d68c0366d059fd5009",
+      "samples": [
+        {
+          "sx": 450,
+          "sy": 450
+        },
+        {
+          "sx": 666,
+          "sy": 452
+        }
+      ],
+      "sampleSize": 108,
+      "output": "docs\\캐릭터\\표정교정_20261011\\까몽_놀람_4K.png",
+      "sha256": "810ad4e4e066a8db2affd5a6550aa2b8013cac89374c617499fd56ae57bedfe4",
+      "changedPixels": 147943,
+      "outsideMaskRGBAChanges": 0,
+      "alphaChanges": 0,
+      "lossless480": {
+        "outsideMaskRGBAChanges": 0,
+        "alphaChanges": 0,
+        "resizeBoundaryPixels": 3
+      }
+    }
+  ],
+  "applied": true
+}

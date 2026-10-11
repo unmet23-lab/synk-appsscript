@@ -1,0 +1,114 @@
+{
+  "ok": false,
+  "at": "2026-10-11T11:25:13.915Z",
+  "base": "http://127.0.0.1:4314",
+  "passed": 22,
+  "checks": [
+    {
+      "name": "marin: life intro uses the selected AI tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: real wrong answer triggers its own hint and face",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: difficult expression appears in tutor help",
+      "passed": true
+    },
+    {
+      "name": "marin: tutor hint is retained as assistance rather than independent success",
+      "passed": true
+    },
+    {
+      "name": "marin: correct first answer celebrates with the selected tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: completion keeps the original first error and tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: guided success did not pull the scheduled review forward",
+      "passed": true
+    },
+    {
+      "name": "marin: scheduled transfer review keeps its chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello-transfer: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: scheduled first error remains an error after tutor rehearsal",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe welcome uses the same selected tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: first cafe choices wait for staff recording",
+      "passed": true
+    },
+    {
+      "name": "cafe-apply: chosen tutor stays quiet during staff audio",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\home-regression\\marin-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\home-regression\\marin-greetings-expressions-hello-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\home-regression\\marin-greetings-expressions-hello-transfer-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\home-regression\\failure.png"
+  ],
+  "failure": "page.waitForFunction: Timeout 15000ms exceeded.\n    at voice (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:19:313)\n    at async cafeFlow (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:59:2)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:79:93"
+}

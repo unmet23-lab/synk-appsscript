@@ -20,7 +20,7 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
  let failure;
  try{
   browser=await chromium.launch({channel:'msedge',headless:true});context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true});page=await context.newPage();page.setDefaultTimeout(15000);
-  await context.addInitScript(()=>sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-cafe-static',refresh_token:null,expires_at:Date.now()+3600000})));
+  await context.addInitScript(()=>{sessionStorage.setItem('synk.oauth.session.world',JSON.stringify({access_token:'synthetic-cafe-static',refresh_token:null,expires_at:Date.now()+3600000}));localStorage.setItem('synk.world.tutor.v1:11111111-1111-4111-8111-111111111111',JSON.stringify({version:1,completed:true,tutor:'kkamong'}));});
   await context.route('**/*',async route=>{
    const request=route.request(),u=new URL(request.url());if(u.origin===base)return route.continue();
    if(u.origin!==new URL(config.accountApiUrl).origin){unexpected.push(request.url());return route.abort();}
@@ -50,7 +50,10 @@ test('frozen /world cafe completes and restores the physical checkpoint through 
   await page.setViewportSize({width:390,height:844});await page.waitForFunction(()=>document.documentElement.dataset.layout==='portrait');await page.screenshot({path:path.join(output,'complete-portrait.png')});
   const {lessonById}=await import('../life-content.mjs');
   for(const id of ['cafe-visit-taste','cafe-visit-soldout','cafe-visit-change']){
-   await page.locator(`.life-actions [data-life-lesson="${id}"]`).click();await next();
+   // The new compose visit can be the completion CTA. Visit cards remain the
+   // deliberate entry for testing a particular story independent of ordering.
+   await page.locator('[data-life-home]').click();await page.locator('[data-view=cafe]').click();
+   await page.locator(`.cafe-visit-list [data-life-lesson="${id}"]`).click();await next();
    const l=lessonById(id),wrong=l.questions[0].choices.find(c=>c.id!==l.questions[0].answerId).id;await choose(wrong);await synced();
    let visit=JSON.parse(state.records[key]).lessons[id];const attemptId=visit.attemptId;
    check(id+' first error and physical order are saved atomically',visit.stage.cafe.phase==='repair'&&!visit.answers[l.questions[0].id].correct);

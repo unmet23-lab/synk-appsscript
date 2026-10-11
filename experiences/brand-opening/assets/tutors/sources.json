@@ -1,0 +1,237 @@
+{
+  "cardSource": "docs/캐릭터/소개글_정본.json",
+  "cardSourceSha256": "be6d0583b7da5eff6d803e742802dc9a182c58941f0b9c34d3978467d75179e1",
+  "reactionSource": "../SYNK-talk/lib/마스코트생명.js",
+  "soundSource": "../SYNK-talk/lib/가이드목소리.js",
+  "transform": "common canonical crop, 480px WebP; unchanged WAV; runtime keeps base body behind a face-only mask",
+  "files": [
+    {
+      "file": "marin-기본.webp",
+      "source": "docs/캐릭터/정본_4K/마린_본체.png",
+      "sourceSha256": "8beed3a55c33c39ad6a28bb7c98338853c356529ea2b68f30fd4908b65e9df13",
+      "sha256": "4cb24338578df4cd184104ed95988551476ef567062220f701509ba78d93a2fc"
+    },
+    {
+      "file": "marin-기쁨.webp",
+      "source": "docs/캐릭터/정본_4K/마린_몰래기쁨.png",
+      "sourceSha256": "0ac01b472a150f69948f65808616e84cd9185828c0b0868ffb090e22964bcfda",
+      "sha256": "514a213b8fe45ff6a596da3eb5322414629b6691bc1afcdb36e7aefc03efaaa5"
+    },
+    {
+      "file": "marin-놀람.webp",
+      "source": "docs/캐릭터/정본_4K/마린_놀람.png",
+      "sourceSha256": "9d0ac8412f0a70d45dafe01fd2ab3621242e1d253d082598d7314abb53c53e4d",
+      "sha256": "8ad2c636a63ec34fcab9f3b36941385377cac9dece67a813f2d6c70776f8bc01"
+    },
+    {
+      "file": "marin-눈웃음.webp",
+      "source": "docs/캐릭터/정본_4K/마린_눈웃음.png",
+      "sourceSha256": "8422b46c5b95e626780ab7b7ed0ba8e8905d87711e1c7ed654aef316c9a43141",
+      "sha256": "2765850ef5d1e1b3717cd69721eb7830d3a98be76e02da5d3a17a42230357014"
+    },
+    {
+      "file": "marin-잔잔감음.webp",
+      "source": "docs/캐릭터/정본_4K/마린_눈감음.png",
+      "sourceSha256": "b2da74742c2367c0538dac1b33f57eb3bd16a70cb4cd99636b3171a9f63d108b",
+      "sha256": "f441766a8e75621cd2b71a746a2bec6304f836d42d5b7e32beb9c9c925d5fedc"
+    },
+    {
+      "file": "marin-졸림.webp",
+      "source": "docs/캐릭터/정본_4K/마린_졸림.png",
+      "sourceSha256": "ceb565d1d2af126a210bd40ee8dd0afe95c4840e5003eb6bc55d50b1a12eb467",
+      "sha256": "ebfc1b3b92fc2fa9df0b7592024b204a2983c6fe58216304dff2d406dab578a9"
+    },
+    {
+      "file": "marin-민망.webp",
+      "source": "docs/캐릭터/정본_4K/마린_민망.png",
+      "sourceSha256": "b374da8fd5b250beecf076a2ef3c2d8e357ad937ed6a2a90f958b312ebf07899",
+      "sha256": "7d1f58987d033eabdd04e46bc97823b3f84cb83cf2f06c2213e70ae3c31c186c"
+    },
+    {
+      "file": "marin-집중.webp",
+      "source": "docs/캐릭터/정본_4K/마린_집중.png",
+      "sourceSha256": "2d4cdb76b565acecae1d6f99df5ebde29f86b924bb80af20d75cffdccffb80cb",
+      "sha256": "a0132ee5efcfd9922646f853418af6b235f3878da003900c1a01051d74d4862b"
+    },
+    {
+      "file": "marine-gidong.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-marine-gidong.wav",
+      "sourceSha256": "1fa8c28fb4e50cefbaccbc84cffe0d958867affad43f3eb280e151d0e4c6d5f3",
+      "sha256": "1fa8c28fb4e50cefbaccbc84cffe0d958867affad43f3eb280e151d0e4c6d5f3"
+    },
+    {
+      "file": "marine-mollae.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-marine-mollae.wav",
+      "sourceSha256": "9439612d332b38263b41bfbcec7dbaed7a387513a43006d04911fa62ca574fad",
+      "sha256": "9439612d332b38263b41bfbcec7dbaed7a387513a43006d04911fa62ca574fad"
+    },
+    {
+      "file": "marine-ansim.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-marine-ansim.wav",
+      "sourceSha256": "3bb0d21b5d91e906def423a56b66772fb566626e24e0685eaf6751168e12afff",
+      "sha256": "3bb0d21b5d91e906def423a56b66772fb566626e24e0685eaf6751168e12afff"
+    },
+    {
+      "file": "kkamong-기본.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_본체.png",
+      "sourceSha256": "2115c644b50d981ac693edb75cf0a78fda307e95b41c01afb41968472ab8f845",
+      "sha256": "fd1dcb1003a465db0e588728acde069664d13d382823866bb332045f7a7d1722"
+    },
+    {
+      "file": "kkamong-기쁨.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_눈웃음.png",
+      "sourceSha256": "b688c1b1b90bb1205cbd619a377438f1f7da903d4a3a4862d646101eb1a0de57",
+      "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+    },
+    {
+      "file": "kkamong-놀람.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_놀람.png",
+      "sourceSha256": "810ad4e4e066a8db2affd5a6550aa2b8013cac89374c617499fd56ae57bedfe4",
+      "sha256": "29ab707f8df141ab23cf6aeee1cbfb5bd429d2c31f255808e20a7bd34ff8b0b8"
+    },
+    {
+      "file": "kkamong-눈웃음.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_눈웃음.png",
+      "sourceSha256": "b688c1b1b90bb1205cbd619a377438f1f7da903d4a3a4862d646101eb1a0de57",
+      "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+    },
+    {
+      "file": "kkamong-잔잔감음.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_눈감음.png",
+      "sourceSha256": "3ce903be3f5d7120bda66aa9bc5c5a2195cebb03128469730e7019d6dae36dea",
+      "sha256": "b92506f6a01e10f710eff9edfd5dc059bf3936f5417d54ee9b396fd541b0834b"
+    },
+    {
+      "file": "kkamong-졸림.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_졸림.png",
+      "sourceSha256": "f03587b941e4414c0ff4fbeb933733d96d988e7d8d917b602536b8eef08f1a07",
+      "sha256": "e3a5f0ebbba1e8415a07383be61f71bec5b761ab4e2b2ffbed5b94ac3db5be18"
+    },
+    {
+      "file": "kkamong-윙크.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_윙크.png",
+      "sourceSha256": "392559d3ef86603f41e72661d6aaade1dfb56cf6f2c91bfadaebff48cfb0a7dc",
+      "sha256": "60a58000eaefcd458b3b35a2606274926978962c29a2f3005b30121884e807fa"
+    },
+    {
+      "file": "kkamong-으쓱.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_으쓱.png",
+      "sourceSha256": "b688c1b1b90bb1205cbd619a377438f1f7da903d4a3a4862d646101eb1a0de57",
+      "sha256": "e1f338ab958991195226f8d15018118f5c0480a7d25d3f0d73b87e47d24fea0b"
+    },
+    {
+      "file": "kkamong-민망.webp",
+      "source": "docs/캐릭터/정본_4K/까몽_민망.png",
+      "sourceSha256": "b4017d703155fb47c807a978a3b930b1c32d6d25771a66292ae36f6e3cf0884e",
+      "sha256": "758b2b522cea4749dc88fe57b75f2584603a7beab8e9bf5d12fa0b2b251f198c"
+    },
+    {
+      "file": "kkamong-bee.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-kkamong-bee.wav",
+      "sourceSha256": "9a2113ae4d7a4db61f3ed4cbab4b75c4ebe56a8bc0f0221110355e61a5996a89",
+      "sha256": "9a2113ae4d7a4db61f3ed4cbab4b75c4ebe56a8bc0f0221110355e61a5996a89"
+    },
+    {
+      "file": "kkamong-nyamnyam.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-kkamong-nyamnyam.wav",
+      "sourceSha256": "70653af350f6d6fcac0700e473beb5252f8aca214fb2dea0d6896fd7c6eaa27a",
+      "sha256": "70653af350f6d6fcac0700e473beb5252f8aca214fb2dea0d6896fd7c6eaa27a"
+    },
+    {
+      "file": "kkamong-ansim.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-kkamong-ansim.wav",
+      "sourceSha256": "f755e6a057adcdb51faeabac5ffcb9e5a538de5a468a507d2e30a800df92fb70",
+      "sha256": "f755e6a057adcdb51faeabac5ffcb9e5a538de5a468a507d2e30a800df92fb70"
+    },
+    {
+      "file": "mongle-기본.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_본체.png",
+      "sourceSha256": "2f431fb6de4f47bdba18c131ba0378dbd52d4bb478288f3f86105eeab498a2e6",
+      "sha256": "1d75c8fc59639ecf658c23cac632339f8eb5656f298758faf7b513867e84ce34"
+    },
+    {
+      "file": "mongle-기쁨.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+      "sourceSha256": "53919f367af68776de35759e1cbb74a15f5ceb05f6b262f62d9ca74bb9eac168",
+      "sha256": "a5c12e3c32bc78dacb8a6f46b78d06cd4b9a005d41b72d87bedf906316835258"
+    },
+    {
+      "file": "mongle-놀람.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_놀람.png",
+      "sourceSha256": "53f782956ff1c685b2fc6621418bfb3348307d7ad88df4fc3899625a5f191746",
+      "sha256": "d2aaa0e02b6fdd59efa1511112fa65d744eb9e7cfa98b5c0fc917c66ddce4687"
+    },
+    {
+      "file": "mongle-눈웃음.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_눈웃음.png",
+      "sourceSha256": "53919f367af68776de35759e1cbb74a15f5ceb05f6b262f62d9ca74bb9eac168",
+      "sha256": "a5c12e3c32bc78dacb8a6f46b78d06cd4b9a005d41b72d87bedf906316835258"
+    },
+    {
+      "file": "mongle-잔잔감음.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_눈감음.png",
+      "sourceSha256": "1858ac847e0be96b75595295bc725ddceafa71f5dceaee84896870d4cd397755",
+      "sha256": "6822f01385dc918ec419aafef19b065996f0895669154a3855906c686941053c"
+    },
+    {
+      "file": "mongle-윙크.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_윙크.png",
+      "sourceSha256": "df74d98f75b3653dd9633f2cd26f6c5210c7e7a39301fa9c72cc2382a20c68da",
+      "sha256": "5f6d20e203825aff55a1589d079c67c976c45578861a7b2a80c1151d7ab27636"
+    },
+    {
+      "file": "mongle-으쓱.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_으쓱.png",
+      "sourceSha256": "5fcf9954c1482164862237dda4c040e2ebf121ab3d1bfa7fd4d2b9bab1fd7e35",
+      "sha256": "1f1bd68f1eaa317cf596ba6ed8be52f7b31575469a6d036621429386dc4223a4"
+    },
+    {
+      "file": "mongle-졸림.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_졸림.png",
+      "sourceSha256": "386e3e652cebf76357b23932e71d94ecab1da90a7cf6494c3210318cf300c379",
+      "sha256": "9a75d10c7b29348befce3787cd87ccf192adb1d154d9ae88f7446c3456a9353d"
+    },
+    {
+      "file": "mongle-민망.webp",
+      "source": "docs/캐릭터/정본_4K/몽글_민망.png",
+      "sourceSha256": "9040bda4e7b4ed68695dd68bb0b253b402246217717d9b039474a4053a6805de",
+      "sha256": "885fcbc10fd5560fc635bc65d4021223eb5f78ba1d46de55cf1949a79dd71ac2"
+    },
+    {
+      "file": "mu.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-mu.wav",
+      "sourceSha256": "6f41871330fa446639f3b488cc4bbb2ac4a79e0094bb246701d238b7b015f8b1",
+      "sha256": "6f41871330fa446639f3b488cc4bbb2ac4a79e0094bb246701d238b7b015f8b1"
+    },
+    {
+      "file": "ppuu.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-ppuu.wav",
+      "sourceSha256": "eb7ace56f11b1198d3020e02b80d85d0c7916a8b7f91c02a5e26140c7af4bb02",
+      "sha256": "eb7ace56f11b1198d3020e02b80d85d0c7916a8b7f91c02a5e26140c7af4bb02"
+    },
+    {
+      "file": "myang.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-myang.wav",
+      "sourceSha256": "02dcf0695cf0e0f063ed43d4cd2f1539f3109449671dbc036846892ee3b1eee4",
+      "sha256": "02dcf0695cf0e0f063ed43d4cd2f1539f3109449671dbc036846892ee3b1eee4"
+    },
+    {
+      "file": "miyu.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-miyu.wav",
+      "sourceSha256": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652",
+      "sha256": "b938c764425c44146d88a85eee4c8066e49a7b780a837254c00008a7c32a5652"
+    },
+    {
+      "file": "mii.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-mii.wav",
+      "sourceSha256": "0de5136ab4b97e0f1931f0a718b62cf629e0059c28d09930bc76dfd1b656dd64",
+      "sha256": "0de5136ab4b97e0f1931f0a718b62cf629e0059c28d09930bc76dfd1b656dd64"
+    },
+    {
+      "file": "miyuu.wav",
+      "source": "../SYNK-talk/assets/sfx/synk-voice-miyuu.wav",
+      "sourceSha256": "57304714351c58ef9e94adb8f9db21263a8154c5e074f38877d069272c15a30a",
+      "sha256": "57304714351c58ef9e94adb8f9db21263a8154c5e074f38877d069272c15a30a"
+    }
+  ]
+}

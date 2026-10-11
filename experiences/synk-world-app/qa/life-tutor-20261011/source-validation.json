@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-10-11T10:42:18.976Z",
+  "local": true,
+  "browserChecks": 118,
+  "accountChecks": 10,
+  "nodePass": 76,
+  "runtimeFiles": [
+    {
+      "path": "experiences/brand-opening/home.mjs",
+      "sha256": "13a9657abb7ea405b4d3a20e1f87e0b61e48c05674dff1c0f2a8366f94ce934e",
+      "frozenSha256": "13a9657abb7ea405b4d3a20e1f87e0b61e48c05674dff1c0f2a8366f94ce934e",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "ba18f558d33d60399e4283951f22981502e6f7c79bd2ac358e392112d23f197d",
+      "frozenSha256": "ba18f558d33d60399e4283951f22981502e6f7c79bd2ac358e392112d23f197d",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/life-tutor.mjs",
+      "sha256": "251740fcd918e833509a3042172fbd5d6a082c2ddbeaf49dd9b1a882888695d7",
+      "frozenSha256": "251740fcd918e833509a3042172fbd5d6a082c2ddbeaf49dd9b1a882888695d7",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/life-tutor.css",
+      "sha256": "d02f54b2a47ba8c0ef57a907cae952481547b1e33ab7a3efda89fd0fccbffec9",
+      "frozenSha256": "d02f54b2a47ba8c0ef57a907cae952481547b1e33ab7a3efda89fd0fccbffec9",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/life-tutor-lines.mjs",
+      "sha256": "69b9b191d6a7e88d704d30ce812d5f1025a9bddac6755d9f4c94acf6873d723a",
+      "frozenSha256": "69b9b191d6a7e88d704d30ce812d5f1025a9bddac6755d9f4c94acf6873d723a",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/content/life-standalone.mjs",
+      "sha256": "98bcf7adabde0d91beac455288346097879c88f80fc695e891dba0aec9f6bfdf",
+      "frozenSha256": "98bcf7adabde0d91beac455288346097879c88f80fc695e891dba0aec9f6bfdf",
+      "same": true
+    },
+    {
+      "path": "experiences/brand-opening/content/life-ui.css",
+      "sha256": "6d57c2774f3e3cb5f70ff037207edbd2c44329ac20f8368996ada155646e2e36",
+      "frozenSha256": "6d57c2774f3e3cb5f70ff037207edbd2c44329ac20f8368996ada155646e2e36",
+      "same": true
+    },
+    {
+      "path": "experiences/synk-world-app/life-ui.mjs",
+      "sha256": "4185c3b66ab7d55b671f222d1367f2bc20bec815c4da6b06f88b54d5111be363",
+      "frozenSha256": "4185c3b66ab7d55b671f222d1367f2bc20bec815c4da6b06f88b54d5111be363",
+      "same": true
+    },
+    {
+      "path": "experiences/synk-world-app/cafe-ui.mjs",
+      "sha256": "98acfd23f8ab9f964930683d8b7916b36165d7a3c79bbcf3db8ae352f6eed6dd",
+      "frozenSha256": "98acfd23f8ab9f964930683d8b7916b36165d7a3c79bbcf3db8ae352f6eed6dd",
+      "same": true
+    },
+    {
+      "path": "experiences/synk-world-app/life-progress.mjs",
+      "sha256": "23601e8deb875be9d617f5f7a9f1d500427244ea0e9858da3909374e98d33790",
+      "frozenSha256": "23601e8deb875be9d617f5f7a9f1d500427244ea0e9858da3909374e98d33790",
+      "same": true
+    },
+    {
+      "path": "experiences/synk-world-app/cafe-activity.mjs",
+      "sha256": "5736c37ffd849c81d222b24a2cb9e8cda50d5e710b9e2a29b39d8f757a40cfa0",
+      "frozenSha256": "5736c37ffd849c81d222b24a2cb9e8cda50d5e710b9e2a29b39d8f757a40cfa0",
+      "same": true
+    },
+    {
+      "path": "experiences/synk-world-app/life-content.mjs",
+      "sha256": "01c9e87becaad1cb1b230c8d1406adb8112b70373716b81b73ebfa088545c54a",
+      "frozenSha256": "01c9e87becaad1cb1b230c8d1406adb8112b70373716b81b73ebfa088545c54a",
+      "same": true
+    },
+    {
+      "path": "tools/build-world-app-public.mjs",
+      "sha256": "866ff760a04b002d1c9c2d3cd7db756e819ad007e7750969bd21bf98cb4537ce"
+    }
+  ],
+  "realPhones": false,
+  "published": false,
+  "paidAI": false
+}

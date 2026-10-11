@@ -1,0 +1,456 @@
+{
+  "ok": true,
+  "at": "2026-10-11T11:58:22.567Z",
+  "checks": [
+    {
+      "name": "marin: no invented daily recap on first visit",
+      "passed": true
+    },
+    {
+      "name": "marin: actual day distinguishes independent, assisted and retry",
+      "passed": true
+    },
+    {
+      "name": "marin: unsuccessful guided choice does not save completion",
+      "passed": true
+    },
+    {
+      "name": "marin: successful choice saves before return and preserves first answers/checkpoint",
+      "passed": true
+    },
+    {
+      "name": "marin: reload remembers guided success and skips its repeat recommendation",
+      "passed": true
+    },
+    {
+      "name": "marin: recap contains chosen tutor and factual categories",
+      "passed": true
+    },
+    {
+      "name": "marin: recap taps and width",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: recap cancellation does not finish day",
+      "passed": true
+    },
+    {
+      "name": "marin: finishing persists once and leaves learning intact",
+      "passed": true
+    },
+    {
+      "name": "marin: same-day return retains completion and offers reread",
+      "passed": true
+    },
+    {
+      "name": "marin: home 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: recap 320 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "marin: recap 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: home 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: recap 740 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "marin: recap 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "marin: several days later says last time, never yesterday",
+      "passed": true
+    },
+    {
+      "name": "marin: next day greets using the real prior guided expression",
+      "passed": true
+    },
+    {
+      "name": "marin: next-day review is independently graded greetings-expressions-hello",
+      "passed": true
+    },
+    {
+      "name": "marin: next-day review is independently graded greetings-expressions-name",
+      "passed": true
+    },
+    {
+      "name": "marin: next-day review is independently graded greetings-expressions-thanks",
+      "passed": true
+    },
+    {
+      "name": "marin: next-day recap records actual independent success",
+      "passed": true
+    },
+    {
+      "name": "marin: the next-day review can be explicitly finished before another visit",
+      "passed": true
+    },
+    {
+      "name": "marin: new real cafe response reopens the finished day",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe practice uses its canonical changed situation",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe guided success is stored immediately before returning",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe guided saving preserves assessment and the physical checkpoint",
+      "passed": true
+    },
+    {
+      "name": "marin: guided return resumes the same cafe repair with the chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: cafe guided memory survives reload with the new day activity still open",
+      "passed": true
+    },
+    {
+      "name": "kkamong: no invented daily recap on first visit",
+      "passed": true
+    },
+    {
+      "name": "kkamong: actual day distinguishes independent, assisted and retry",
+      "passed": true
+    },
+    {
+      "name": "kkamong: unsuccessful guided choice does not save completion",
+      "passed": true
+    },
+    {
+      "name": "kkamong: successful choice saves before return and preserves first answers/checkpoint",
+      "passed": true
+    },
+    {
+      "name": "kkamong: reload remembers guided success and skips its repeat recommendation",
+      "passed": true
+    },
+    {
+      "name": "kkamong: recap contains chosen tutor and factual categories",
+      "passed": true
+    },
+    {
+      "name": "kkamong: recap taps and width",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: recap cancellation does not finish day",
+      "passed": true
+    },
+    {
+      "name": "kkamong: finishing persists once and leaves learning intact",
+      "passed": true
+    },
+    {
+      "name": "kkamong: same-day return retains completion and offers reread",
+      "passed": true
+    },
+    {
+      "name": "kkamong: home 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: recap 320 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "kkamong: recap 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: home 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: recap 740 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "kkamong: recap 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "kkamong: several days later says last time, never yesterday",
+      "passed": true
+    },
+    {
+      "name": "kkamong: next day greets using the real prior guided expression",
+      "passed": true
+    },
+    {
+      "name": "kkamong: next-day review is independently graded greetings-expressions-hello",
+      "passed": true
+    },
+    {
+      "name": "kkamong: next-day review is independently graded greetings-expressions-name",
+      "passed": true
+    },
+    {
+      "name": "kkamong: next-day review is independently graded greetings-expressions-thanks",
+      "passed": true
+    },
+    {
+      "name": "kkamong: next-day recap records actual independent success",
+      "passed": true
+    },
+    {
+      "name": "kkamong: the next-day review can be explicitly finished before another visit",
+      "passed": true
+    },
+    {
+      "name": "kkamong: new real cafe response reopens the finished day",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe practice uses its canonical changed situation",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe guided success is stored immediately before returning",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe guided saving preserves assessment and the physical checkpoint",
+      "passed": true
+    },
+    {
+      "name": "kkamong: guided return resumes the same cafe repair with the chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "kkamong: cafe guided memory survives reload with the new day activity still open",
+      "passed": true
+    },
+    {
+      "name": "mongle: no invented daily recap on first visit",
+      "passed": true
+    },
+    {
+      "name": "mongle: actual day distinguishes independent, assisted and retry",
+      "passed": true
+    },
+    {
+      "name": "mongle: unsuccessful guided choice does not save completion",
+      "passed": true
+    },
+    {
+      "name": "mongle: successful choice saves before return and preserves first answers/checkpoint",
+      "passed": true
+    },
+    {
+      "name": "mongle: reload remembers guided success and skips its repeat recommendation",
+      "passed": true
+    },
+    {
+      "name": "mongle: recap contains chosen tutor and factual categories",
+      "passed": true
+    },
+    {
+      "name": "mongle: recap taps and width",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: recap cancellation does not finish day",
+      "passed": true
+    },
+    {
+      "name": "mongle: finishing persists once and leaves learning intact",
+      "passed": true
+    },
+    {
+      "name": "mongle: same-day return retains completion and offers reread",
+      "passed": true
+    },
+    {
+      "name": "mongle: home 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: recap 320 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "mongle: recap 320",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: home 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: recap 740 opens at the title instead of scrolling to the footer",
+      "passed": true,
+      "detail": {
+        "scrollTop": 0,
+        "titleVisible": true,
+        "titleFocused": true
+      }
+    },
+    {
+      "name": "mongle: recap 740",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "mongle: several days later says last time, never yesterday",
+      "passed": true
+    },
+    {
+      "name": "mongle: next day greets using the real prior guided expression",
+      "passed": true
+    },
+    {
+      "name": "mongle: next-day review is independently graded greetings-expressions-hello",
+      "passed": true
+    },
+    {
+      "name": "mongle: next-day review is independently graded greetings-expressions-name",
+      "passed": true
+    },
+    {
+      "name": "mongle: next-day review is independently graded greetings-expressions-thanks",
+      "passed": true
+    },
+    {
+      "name": "mongle: next-day recap records actual independent success",
+      "passed": true
+    },
+    {
+      "name": "mongle: the next-day review can be explicitly finished before another visit",
+      "passed": true
+    },
+    {
+      "name": "mongle: new real cafe response reopens the finished day",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe practice uses its canonical changed situation",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe guided success is stored immediately before returning",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe guided saving preserves assessment and the physical checkpoint",
+      "passed": true
+    },
+    {
+      "name": "mongle: guided return resumes the same cafe repair with the chosen tutor",
+      "passed": true
+    },
+    {
+      "name": "mongle: cafe guided memory survives reload with the new day activity still open",
+      "passed": true
+    },
+    {
+      "name": "no uncaught errors, missing assets or outside services",
+      "passed": true,
+      "detail": {
+        "errors": [],
+        "assets": [],
+        "external": []
+      }
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "external": []
+}

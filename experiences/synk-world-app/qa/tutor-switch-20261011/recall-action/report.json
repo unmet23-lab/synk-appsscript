@@ -1,0 +1,315 @@
+{
+  "scope": "one local isolated guest recall CTA; no account login; real UI guided record",
+  "checks": [
+    {
+      "name": "actual next-day recall line names yesterday Marin",
+      "pass": true,
+      "detail": {
+        "home": {
+          "owner": "guest",
+          "tutor": "kkamong",
+          "recommendation": {
+            "kind": "recall",
+            "id": "cafe-visit-soldout-menu",
+            "title": "주스는 품절이에요.",
+            "command": "review",
+            "label": "오늘의 복습 시작",
+            "memory": {
+              "id": "cafe-visit-soldout-menu",
+              "lessonId": "cafe-visit-soldout",
+              "expressionId": "cafe-soldout",
+              "title": "주스는 품절이에요.",
+              "kind": "guided",
+              "at": 1791726332963,
+              "guidedAt": 1791726332963,
+              "observedAt": 1791726332866,
+              "tutorId": "marin",
+              "when": "어제",
+              "tryAlone": true
+            }
+          },
+          "completed": "",
+          "days": {
+            "date": "2026-10-12",
+            "today": {
+              "date": "2026-10-12",
+              "items": [],
+              "count": 0,
+              "latestAt": 0,
+              "closedAt": 0,
+              "closed": false,
+              "independent": [],
+              "together": [],
+              "retry": []
+            },
+            "previous": {
+              "date": "2026-10-11",
+              "items": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "count": 1,
+              "latestAt": 1791726332963,
+              "closedAt": 1791726333188,
+              "closed": true,
+              "independent": [],
+              "together": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "retry": []
+            },
+            "when": "어제"
+          },
+          "recapOpen": false,
+          "companion": {
+            "tutor": "kkamong",
+            "scope": "home",
+            "kind": "library",
+            "face": "기본",
+            "guideOpen": false,
+            "practice": null,
+            "practised": [],
+            "reactionAudioPlaying": false
+          }
+        },
+        "text": "오늘의 복습 시작",
+        "disabled": false,
+        "line": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.",
+        "panel": false
+      }
+    },
+    {
+      "name": "actual CTA text equals recall label and command",
+      "pass": true,
+      "detail": {
+        "home": {
+          "owner": "guest",
+          "tutor": "kkamong",
+          "recommendation": {
+            "kind": "recall",
+            "id": "cafe-visit-soldout-menu",
+            "title": "주스는 품절이에요.",
+            "command": "review",
+            "label": "오늘의 복습 시작",
+            "memory": {
+              "id": "cafe-visit-soldout-menu",
+              "lessonId": "cafe-visit-soldout",
+              "expressionId": "cafe-soldout",
+              "title": "주스는 품절이에요.",
+              "kind": "guided",
+              "at": 1791726332963,
+              "guidedAt": 1791726332963,
+              "observedAt": 1791726332866,
+              "tutorId": "marin",
+              "when": "어제",
+              "tryAlone": true
+            }
+          },
+          "completed": "",
+          "days": {
+            "date": "2026-10-12",
+            "today": {
+              "date": "2026-10-12",
+              "items": [],
+              "count": 0,
+              "latestAt": 0,
+              "closedAt": 0,
+              "closed": false,
+              "independent": [],
+              "together": [],
+              "retry": []
+            },
+            "previous": {
+              "date": "2026-10-11",
+              "items": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "count": 1,
+              "latestAt": 1791726332963,
+              "closedAt": 1791726333188,
+              "closed": true,
+              "independent": [],
+              "together": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "retry": []
+            },
+            "when": "어제"
+          },
+          "recapOpen": false,
+          "companion": {
+            "tutor": "kkamong",
+            "scope": "home",
+            "kind": "library",
+            "face": "기본",
+            "guideOpen": false,
+            "practice": null,
+            "practised": [],
+            "reactionAudioPlaying": false
+          }
+        },
+        "text": "오늘의 복습 시작",
+        "disabled": false,
+        "line": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.",
+        "panel": false
+      }
+    },
+    {
+      "name": "periodic home refresh preserves recall CTA consistency",
+      "pass": true,
+      "detail": {
+        "home": {
+          "owner": "guest",
+          "tutor": "kkamong",
+          "recommendation": {
+            "kind": "recall",
+            "id": "cafe-visit-soldout-menu",
+            "title": "주스는 품절이에요.",
+            "command": "review",
+            "label": "오늘의 복습 시작",
+            "memory": {
+              "id": "cafe-visit-soldout-menu",
+              "lessonId": "cafe-visit-soldout",
+              "expressionId": "cafe-soldout",
+              "title": "주스는 품절이에요.",
+              "kind": "guided",
+              "at": 1791726332963,
+              "guidedAt": 1791726332963,
+              "observedAt": 1791726332866,
+              "tutorId": "marin",
+              "when": "어제",
+              "tryAlone": true
+            }
+          },
+          "completed": "",
+          "days": {
+            "date": "2026-10-12",
+            "today": {
+              "date": "2026-10-12",
+              "items": [],
+              "count": 0,
+              "latestAt": 0,
+              "closedAt": 0,
+              "closed": false,
+              "independent": [],
+              "together": [],
+              "retry": []
+            },
+            "previous": {
+              "date": "2026-10-11",
+              "items": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "count": 1,
+              "latestAt": 1791726332963,
+              "closedAt": 1791726333188,
+              "closed": true,
+              "independent": [],
+              "together": [
+                {
+                  "id": "cafe-visit-soldout-menu",
+                  "lessonId": "cafe-visit-soldout",
+                  "expressionId": "cafe-soldout",
+                  "title": "주스는 품절이에요.",
+                  "kind": "guided",
+                  "at": 1791726332963,
+                  "guidedAt": 1791726332963,
+                  "observedAt": 1791726332866,
+                  "tutorId": "marin"
+                }
+              ],
+              "retry": []
+            },
+            "when": "어제"
+          },
+          "recapOpen": false,
+          "companion": {
+            "tutor": "kkamong",
+            "scope": "home",
+            "kind": "library",
+            "face": "기본",
+            "guideOpen": false,
+            "practice": null,
+            "practised": [],
+            "reactionAudioPlaying": false
+          }
+        },
+        "text": "오늘의 복습 시작",
+        "disabled": false,
+        "line": "어제 「주스는 품절이에요.」, 마린과 같이 봤지? 오늘은 네가 먼저 골라 봐. 이 몸은 여기 있을게.",
+        "panel": false
+      }
+    },
+    {
+      "name": "click opens actual scheduled review introduction",
+      "pass": true,
+      "detail": "까몽 · 함께하는 AI 튜터이 몸이 생활 한국어도 같이 봐 주지. 짧은 말 하나부터 시작해 봐. …내 옆자리 비었어.표현 도움1개의 표현이 기다려요.같은 답을 외우는 대신, 새로운 생활 장면에서 골라요.구름 한 잔, 카페돌아온 표현 연습하기 →다음 학습 이어 하기마루로 돌아가기이 기기에 저장돼요."
+    },
+    {
+      "name": "review start opens actual transfer and retains new tutor",
+      "pass": true,
+      "detail": {
+        "phase": "review",
+        "tutor": "kkamong",
+        "prompt": "새 안내판에서 주문할 수 있는 음료를 골라요."
+      }
+    },
+    {
+      "name": "local guest has no errors, missing resources, external requests or writes",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "writes": []
+}

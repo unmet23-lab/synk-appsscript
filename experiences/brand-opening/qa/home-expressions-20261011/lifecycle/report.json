@@ -1,0 +1,2440 @@
+{
+  "scope": "Isolated browser lifecycle checks of the served production createLifeTutor module used by home, not a full home-flow or visual test.",
+  "baseline": {
+    "capturedBeforeFix": true,
+    "method": "Three isolated components with reduced:true and practiceCompleted:true; setActive(false), setActive(true), advance 20000ms.",
+    "observed": {
+      "marin": "눈웃음",
+      "kkamong": "으쓱",
+      "mongle": "기쁨"
+    },
+    "expected": "기본"
+  },
+  "checks": [
+    {
+      "id": "marin",
+      "name": "success face and one listener per lifecycle source",
+      "expected": {
+        "face": "눈웃음",
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "눈웃음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "success held for configured reaction time",
+      "expected": {
+        "face": "눈웃음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "눈웃음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "success returns to baseline without stale body animation",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "idle closes approved eyes",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "blink opens after 130ms",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "reduced motion preserves authored success feedback",
+      "expected": {
+        "face": "눈웃음",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "눈웃음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "baseline regression fixed: deactivate/reactivate during reduced success",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null,
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "blink before deactivate",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "deactivation resets closed eyes immediately",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "inactive remains at baseline",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "reactivation resumes exactly one blink cycle",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "reactivated blink restores",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "manual reduced mode closes pending blink safely",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "manual reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "manual motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "OS reduced change clears current blink before normal 130ms reopening",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "OS reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "OS motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "hidden clears closed eyes",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "hidden has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "visible resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "guide suspends background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": true
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "guide keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "guide close resets background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": false
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "guide close resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "practice suspends background blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "practice keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "practice cancel restores base",
+      "expected": {
+        "face": "기본",
+        "practice": null
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "practice cancel resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "dispose removes document and media listeners",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "marin",
+      "name": "disposed tutor unaffected by later motion event",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "marin",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "success face and one listener per lifecycle source",
+      "expected": {
+        "face": "으쓱",
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "으쓱",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "success held for configured reaction time",
+      "expected": {
+        "face": "으쓱"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "으쓱",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "success returns to baseline without stale body animation",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "idle closes approved eyes",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "blink opens after 130ms",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "reduced motion preserves authored success feedback",
+      "expected": {
+        "face": "으쓱",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "으쓱",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "baseline regression fixed: deactivate/reactivate during reduced success",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null,
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "blink before deactivate",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "deactivation resets closed eyes immediately",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "inactive remains at baseline",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "reactivation resumes exactly one blink cycle",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "reactivated blink restores",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "manual reduced mode closes pending blink safely",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "manual reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "manual motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "OS reduced change clears current blink before normal 130ms reopening",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "OS reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "OS motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "hidden clears closed eyes",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "hidden has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "visible resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "guide suspends background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": true
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "guide keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "guide close resets background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": false
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "guide close resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "practice suspends background blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "practice keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "practice cancel restores base",
+      "expected": {
+        "face": "기본",
+        "practice": null
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "practice cancel resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "dispose removes document and media listeners",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "kkamong",
+      "name": "disposed tutor unaffected by later motion event",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "kkamong",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "success face and one listener per lifecycle source",
+      "expected": {
+        "face": "기쁨",
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기쁨",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "success held for configured reaction time",
+      "expected": {
+        "face": "기쁨"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기쁨",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "success returns to baseline without stale body animation",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "idle closes approved eyes",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "blink opens after 130ms",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "reduced motion preserves authored success feedback",
+      "expected": {
+        "face": "기쁨",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기쁨",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": "success",
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "baseline regression fixed: deactivate/reactivate during reduced success",
+      "expected": {
+        "face": "기본",
+        "bodyReaction": null,
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "practiceSuccess",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "blink before deactivate",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "deactivation resets closed eyes immediately",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "inactive remains at baseline",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "reactivation resumes exactly one blink cycle",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "reactivated blink restores",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "manual reduced mode closes pending blink safely",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "manual reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "manual motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "OS reduced change clears current blink before normal 130ms reopening",
+      "expected": {
+        "face": "기본",
+        "reduced": "true"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "OS reduced mode has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "true",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "OS motion restored resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "hidden clears closed eyes",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "hidden has no automatic blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "visible resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "guide suspends background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": true
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "guide keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": true,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "guide close resets background",
+      "expected": {
+        "face": "기본",
+        "guideOpen": false
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "guide close resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "practice suspends background blink",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "practice keeps background resting",
+      "expected": {
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": {
+          "id": "probe-expression",
+          "selected": null,
+          "correct": false
+        },
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "practice cancel restores base",
+      "expected": {
+        "face": "기본",
+        "practice": null
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "practice cancel resumes blink",
+      "expected": {
+        "face": "잔잔감음"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "잔잔감음",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": true,
+        "listeners": {
+          "motion": 1,
+          "visibility": 1
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "dispose removes document and media listeners",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    },
+    {
+      "id": "mongle",
+      "name": "disposed tutor unaffected by later motion event",
+      "expected": {
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        },
+        "face": "기본"
+      },
+      "actual": {
+        "tutor": "mongle",
+        "scope": "home",
+        "kind": "library",
+        "face": "기본",
+        "guideOpen": false,
+        "practice": null,
+        "practised": [],
+        "reactionAudioPlaying": false,
+        "reduced": "false",
+        "bodyReaction": null,
+        "connected": false,
+        "listeners": {
+          "motion": 0,
+          "visibility": 0
+        }
+      },
+      "passed": true
+    }
+  ],
+  "final": {
+    "passed": 93,
+    "failed": 0,
+    "errors": [],
+    "networkWrites": [],
+    "externalRequests": []
+  }
+}

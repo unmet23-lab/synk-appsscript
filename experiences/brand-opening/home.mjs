@@ -1,3 +1,7 @@
+import {createTutorOnboarding} from './tutor-onboarding.mjs';
+import {createGameTutor} from './game-tutor.mjs';
+import {createLifeTutor} from './life-tutor.mjs';
+import {createHomeTutor} from './home-tutor.mjs';
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const asset=path=>new URL(path,import.meta.url).href;
@@ -14,6 +18,7 @@ let lastFocus=null,panelKind='',inView=true,manualReduced=false,playToken=0,fram
 let learningUI=null,learningLoader=null;
 let host=null,panelResource=null,sceneActive=true,toastTimer,equipment={slots:{},dyes:{}};
 let orientationTask=Promise.resolve();
+let tutorUI,homeTutor;
 try{manualReduced=localStorage.getItem('synk.world.maru.reduced')==='true';}catch{}
 try{const saved=localStorage.getItem('synk.world.maru.orientation');if(['auto','portrait','landscape'].includes(saved))displayPreference=saved;}catch{}
 const sceneSource=()=>asset(`assets/world-menu-${layout==='landscape'?'desktop':'mobile'}-omni11-v9-web.mp4`);
@@ -43,6 +48,7 @@ function chooseOrientation(value){
  });
 }
 function syncScene(){
+ homeTutor?.setActive(sceneActive&&!panel.open);
  const shouldPlay=sceneActive&&!document.hidden&&!panel.open&&inView&&!reduced.matches&&!manualReduced;
  const token=++playToken;
  if(!shouldPlay){video.pause();if(reduced.matches||manualReduced)scene.classList.remove('is-playing');return;}
@@ -88,19 +94,28 @@ function callHost(command,...args){
  return true;
 }
 function openGame(id){
+ if(games[id])tutorUI.ensure(()=>launchGame(id));
+}
+function launchGame(id){
  const game=games[id];if(!game)return;
  if(callHost('launchGame',id))return;
  const path=asset(game.path);
  openPanel(game.title,`<div class="frame-loader" role="status"><p>놀이를 준비하고 있어요.</p><a href="${path}">새 화면으로 열기</a></div><iframe class="game-frame" title="${game.title}" src="${path}" allow="autoplay; fullscreen" allowfullscreen></iframe>`,{type:'game',nav:'play'});
  const frame=content.querySelector('iframe');frame.addEventListener('load',()=>{if(!frame.isConnected)return;clearTimeout(frameTimer);content.querySelector('.frame-loader')?.remove();},{once:true});
+ const companion=home.mountGameTutor(id,{frame});if(companion)home.attachPanelResource(companion);
  frameTimer=setTimeout(()=>{const label=content.querySelector('.frame-loader p');if(label)label.textContent='연결이 조금 늦어지고 있어요. 새 화면으로도 열 수 있어요.';},8000);
 }
 async function callLearning(command){
+ if(command==='initialize')return callLearningReady(command);
+ tutorUI.ensure(()=>callLearningReady(command));
+}
+async function callLearningReady(command){
  if(host){callHost(command==='learn'?'learn':command);return;}
  if(!learningLoader)learningLoader=import('./content/life-standalone.mjs').then(({setupLife})=>{learningUI=setupLife(home,path=>asset('assets/'+path));return learningUI;}).catch(error=>{learningLoader=null;toast('생활 콘텐츠를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.');throw error;});
  try{const ui=await learningLoader;ui[command==='learn'?'next':command]?.();}catch{}
 }
-function updateLearning(summary){
+function updateLearning(summary,details){
+ homeTutor?.update(summary,details);
  const next=summary.nextLesson,button=$('#life-next-button'),label=$('#life-next-title'),kicker=$('#life-next-kicker'),caption=$('#life-progress-caption'),review=$('#life-review-count');
  if(!button)return;
  button.disabled=summary.status?.phase==='loading';
@@ -114,6 +129,13 @@ function showPlay(){openPanel('어떤 놀이가 좋을까?',`<div class="life-me
 function showWardrobe(){if(callHost('wardrobe'))return;openPanel('오늘의 몽글은 어떤 모습?',`<img class="panel-art" src="${asset('assets/home/scarf.webp')}" alt="음표 장식이 달린 포근한 펠트 목도리"><p class="panel-description">작은 목도리 하나로 달라지는 기분.<br>입혀 보고, 나만의 차림을 찾아보세요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">나의 옷장 열기 <span aria-hidden="true">↗</span></a></div><p class="panel-note">옷장에서는 기존 계정 연결과 보유품 확인을 이어갑니다. 사진은 차림 예시예요.</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
 function showMe(){if(callHost('profile'))return;openPanel('나만의 속도로, 차근차근.',`<img class="panel-art" src="${asset('assets/home/mongle-smile.webp')}" alt="눈웃음 짓는 펠트 몽글"><p class="panel-description">지금은 자유롭게 둘러보고 있어요.<br>나의 차림과 놀이 기록은 계정을 연결한 공간에서 확인할 수 있어요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?opening=off')}">나의 공간 연결하기 <span aria-hidden="true">↗</span></a><button class="quiet-button" data-close>지금은 조금 더 둘러볼게요</button></div>`,{eyebrow:'YOUR LITTLE WORLD',nav:'me'});}
 function showSettings(){openPanel('편안하게 머물러요.',`<fieldset class="orientation-settings"><legend>화면 방향</legend><div class="orientation-options">${[['auto','자동'],['portrait','세로'],['landscape','가로']].map(([value,label])=>`<label><input type="radio" name="orientation" value="${value}" ${displayPreference===value?'checked':''}><span>${label}</span></label>`).join('')}</div><p id="orientation-status" class="orientation-help" role="status"></p></fieldset><label class="settings-row"><span><strong>풍경 움직임 줄이기</strong><small>한강 마루를 고요한 사진으로 보여줘요.</small></span><input id="reduce-motion" type="checkbox" ${manualReduced||reduced.matches?'checked':''} ${reduced.matches?'disabled':''}></label>${reduced.matches?'<p class="panel-note">기기의 움직임 감소 설정을 따르고 있어요.</p>':''}<div class="panel-actions">${host?'<button class="felt-button" data-replay-opening>오프닝 다시 보기 <span aria-hidden="true">↗</span></button>':`<a class="felt-button" href="${asset('index.html')}">오프닝 다시 보기 <span aria-hidden="true">↗</span></a>`}${host?'<button class="quiet-button" data-home-host="about">SYNK WORLD 소개</button>':''}</div>`,{eyebrow:'MAKE YOURSELF AT HOME'});syncLayout();}
+function showTutorSettings(){
+ showSettings();
+ const button=document.createElement('button');button.className='felt-button';
+ button.textContent=tutorUI.choice()?`나의 AI 튜터 · ${tutorUI.choice().name}`:'함께할 AI 튜터 고르기';
+ button.dataset.tutorOpen='';button.addEventListener('click',()=>home.chooseTutor());
+ content.querySelector('.panel-actions').prepend(button);
+}
 document.addEventListener('click',event=>{
  if(event.defaultPrevented)return;
  const button=event.target.closest('[data-view],[data-game],[data-close],[data-world],[data-replay-opening],[data-home-host]');if(!button)return;
@@ -128,7 +150,7 @@ content.addEventListener('change',event=>{if(event.target.name==='orientation')c
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));
 $('#panel-close').addEventListener('click',closePanel);panel.addEventListener('cancel',event=>{event.preventDefault();closePanel();});panel.addEventListener('click',event=>{if(event.target===panel){const r=panel.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closePanel();}});
 panel.addEventListener('close',()=>{if(!panel.open&&(content.childElementCount||panelResource))closePanel();});
-$('#settings-open').addEventListener('click',showSettings);window.addEventListener('pagehide',event=>{video.pause();if(!event.persisted)disposePanelContent();});
+$('#settings-open').addEventListener('click',showTutorSettings);window.addEventListener('pagehide',event=>{video.pause();if(!event.persisted)disposePanelContent();});
 window.addEventListener('pageshow',syncLayout);
 function toast(message){
  const notice=$('#home-toast');clearTimeout(toastTimer);
@@ -139,6 +161,8 @@ function toast(message){
  toastTimer=setTimeout(()=>{notice.hidden=true;},3800);
 }
 function updateAccount({snapshot=null,status='welcome',pending=false,busy=false,operating=false}={}){
+ tutorUI.setOwner(snapshot?.accountId||'guest');
+ homeTutor?.refresh();
  const label=busy?(snapshot?'저장 중':'계정 확인 중'):status==='loading'?'계정 확인 중':status==='offline'?'연결 대기 중':status==='conflict'?'저장 확인 필요':pending?'저장 대기 중':snapshot?(operating?'계정 연결됨':'시험 계정 연결됨'):'계정 연결하기';
  $('#home-account-status').textContent=label;
  $('.profile-control').dataset.state=status;
@@ -152,10 +176,30 @@ export const home={
  setSceneActive(active){sceneActive=Boolean(active);syncScene();},setSceneTime,
  setEquipment(slots={},dyes={}){equipment={slots:{...slots},dyes:{...dyes}};},
  connectHost(callbacks){host=callbacks||null;document.documentElement.dataset.connected=String(Boolean(host));},
- updateAccount,updateLearning
+ updateAccount,updateLearning,
+ startTutorial:()=>tutorUI.open(),chooseTutor:()=>tutorUI.open({force:true}),ensureTutor:then=>tutorUI.ensure(then),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics()
 };
+home.mountGameTutor=(game,{frame=null,practiceEnabled=true}={})=>{
+ const companion=createGameTutor({tutorId:tutorUI.choice()?.id,game,container:content,frame,reduced:()=>home.state.reduced,owner:tutorUI.metrics().owner,onExit:closePanel,practiceEnabled});
+ if(!companion)return null;
+ window.__synkGameTutor=companion;
+ return {...companion,dispose(){companion.dispose();if(window.__synkGameTutor===companion)delete window.__synkGameTutor;}};
+};
+home.mountLifeTutor=options=>createLifeTutor({...options,tutorId:tutorUI.choice()?.id,container:content,reduced:()=>home.state.reduced});
+tutorUI=createTutorOnboarding({home,asset,onChoice:tutor=>{
+ const profile=$('.profile-portrait img'),caption=$('.place-heading>p:last-child');
+ profile.src=asset(tutor?`assets/tutors/${tutor.images.기본}`:'assets/home/mongle-smile.webp');
+ caption.textContent=tutor?`${tutor.name}과 오늘의 한국어`:'세 친구와 오늘의 한국어';
+ homeTutor?.refresh();
+}});
+homeTutor=createHomeTutor({container:$('#home-tutor'),getTutor:()=>tutorUI.metrics(),learn:command=>void callLearning(command),choose:()=>home.chooseTutor(),profile:showMe,reduced:()=>home.state.reduced});
+homeTutor.refresh();
+const initialTutor=tutorUI.choice();
+if(initialTutor){$('.profile-portrait img').src=asset(`assets/tutors/${initialTutor.images.기본}`);$('.place-heading>p:last-child').textContent=`${initialTutor.name}과 오늘의 한국어`;}
 window.__synkHome=home;
 export default home;
 syncLayout();
 
 if(!window.__SYNK_WORLD_CONNECTED__)void callLearning('initialize').then(()=>{if(new URLSearchParams(location.search).get('cafe')==='1')learningUI?.cafe();});
+if(!window.__SYNK_WORLD_CONNECTED__&&new URLSearchParams(location.search).get('welcome')==='1')home.startTutorial();
+if(!window.__SYNK_WORLD_CONNECTED__&&new URLSearchParams(location.search).get('tutor')==='choose')home.chooseTutor();

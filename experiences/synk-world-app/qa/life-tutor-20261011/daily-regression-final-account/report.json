@@ -1,0 +1,118 @@
+{
+  "ok": true,
+  "payload": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-app-daily-tutor-20261011-r3\\world",
+  "at": "2026-10-11T12:03:17.192Z",
+  "checks": [
+    "account choice overrides the different guest tutor",
+    "guided answer adds one account life record at success while keeping first error and repair checkpoint",
+    "frozen account page restores selected tutor and the actual repair checkpoint",
+    "story keeps its three distinct actors beside the selected mentor",
+    "logout restores guest tutor and does not leak account difficulties",
+    "owner change released account guide and draft view",
+    "bundled standalone home uses the same guest tutor",
+    "standalone bundle offers the canonical transfer exercise",
+    "only life progress was written and no wallet mutation occurred",
+    "all new modules, art and fonts resolve under the mounted public path"
+  ],
+  "calls": [
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-world-v1/bootstrap",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-account",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": null
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/functions/v1/synk-play",
+      "action": "progress"
+    },
+    {
+      "path": "/auth/v1/logout",
+      "action": null
+    }
+  ],
+  "errors": [],
+  "assets": [],
+  "outside": [],
+  "scope": {
+    "frozenStatic": true,
+    "standaloneHtml": "source",
+    "syntheticAccount": true,
+    "realOAuth": false,
+    "remoteDatabase": false,
+    "published": false
+  }
+}

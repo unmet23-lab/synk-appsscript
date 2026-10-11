@@ -1,0 +1,63 @@
+{
+  "tests": 102,
+  "pass": 102,
+  "fail": 0,
+  "files": [
+    {
+      "path": "experiences/brand-opening/tutor-practice-core.mjs",
+      "sha256": "6da91cd545aab46ec1d906bfb4ddbc388bbe3a835b97bfd2658fc7cceb7482f7"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice-lines.mjs",
+      "sha256": "ad0926d349788d0506b1ed61c9ac3b4984c9d6cf59301e256a19cd1ec8dce848"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice.mjs",
+      "sha256": "e3ec4750a8ee243521ddd1448a13a336f357845f453c1629ec99da687dea4650"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor.mjs",
+      "sha256": "e3e80d6c44b62da8ad05148ad00baf036bae41206b06d959744b629543d6ce88"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor-channel.mjs",
+      "sha256": "cf7d6ef686f5d4296f14519b81742a8e03f107c03bad598dc1960a825718f618"
+    },
+    {
+      "path": "experiences/brand-opening/home.mjs",
+      "sha256": "e1f15d8b7acb8ffcf4f25a5cdf34c10512d0b31bcffec00ba7a35c93c19d152b"
+    },
+    {
+      "path": "experiences/synk-world-app/app-shell.mjs",
+      "sha256": "25cf5a596ddce8e638bf1cd4272aba3159e06ece73e40f2f37737777981a04b7"
+    },
+    {
+      "path": "experiences/korean-runner/app.mjs",
+      "sha256": "c5f8fd0887bd788a73bfdde1685c8f08452146a21da77cf82a8ee57a7311d375"
+    },
+    {
+      "path": "experiences/korean-rhythm/app.mjs",
+      "sha256": "c969ec2448fce01b55403318fa8329b4fb7a34cf300e5d467bfa6d2931a63147"
+    },
+    {
+      "path": "experiences/hangul-stage/app.mjs",
+      "sha256": "6ca509349cf4de33bf6f29d9b8a6dacc28a2f4572305609d0fb3e26b40ed8b2a"
+    },
+    {
+      "path": "experiences/hangul-stage/audio.mjs",
+      "sha256": "c1026a5bbabe4850ae77aa76f7a1020f947395bdef3529002db689335a3e908f"
+    },
+    {
+      "path": "experiences/brand-opening/tutor-practice.css",
+      "sha256": "4319b82c5b2c5a66b40aab32ba8255742f55be1e8fa4d59206ca40356bdd06f8"
+    },
+    {
+      "path": "experiences/brand-opening/game-tutor.css",
+      "sha256": "a259a1676b457b3188f18d5b6c7ec6661f302ec003bb9f906444d62f08b024dd"
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "5e87dd42a36615904cf4a9674de7e542d4c091a87bd26523ffcc8234c005ac24"
+    }
+  ]
+}

@@ -1,0 +1,1017 @@
+{
+  "ok": false,
+  "audit": true,
+  "selectionOnly": true,
+  "tutors": [
+    "marin",
+    "mongle"
+  ],
+  "at": "2026-10-11T12:49:35.893Z",
+  "base": "http://127.0.0.1:4314",
+  "checks": [
+    {
+      "name": "marin 기본: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 기쁨: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 놀람: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 눈웃음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 잔잔감음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 졸림: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 민망: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "marin 집중: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "648-intro: actual face is 집중",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-intro: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-intro: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.0017921146953406,
+            "pixelsOver2": 457,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 38,
+            "meanChannelDiff": 1.0293138760880696,
+            "pixelsOver2": 480,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-intro: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3"
+      }
+    },
+    {
+      "name": "marin-집중.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "sha256": "7b017ff287e3dae3d0d4edec6071e347f8362afdce039faa604fe823ea9d4199"
+      }
+    },
+    {
+      "name": "648: introduction keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-success: actual face is 기쁨",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp?v=f216e39c1bd5",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp?v=f216e39c1bd5",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-success: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-success: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 40,
+            "meanChannelDiff": 2.1482334869431643,
+            "pixelsOver2": 735,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 44,
+            "meanChannelDiff": 2.260880696364567,
+            "pixelsOver2": 745,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-success: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp?v=f216e39c1bd5"
+      }
+    },
+    {
+      "name": "marin-기쁨.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp?v=f216e39c1bd5",
+        "sha256": "f216e39c1bd5d547229e87c9b04084b4ac5151532a6385ba3bee292d680d9043"
+      }
+    },
+    {
+      "name": "648: success keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-retry: actual face is 집중",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-retry: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-retry: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-retry: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.0017921146953406,
+            "pixelsOver2": 457,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 38,
+            "meanChannelDiff": 1.0293138760880696,
+            "pixelsOver2": 480,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-retry: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "648: retry keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-rest: actual face is 기본",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-rest: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d"
+      }
+    },
+    {
+      "name": "marin-기본.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "sha256": "4cb24338578df4cd184104ed95988551476ef567062220f701509ba78d93a2fc"
+      }
+    },
+    {
+      "name": "648-touch-surprise: actual face is 놀람",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=179046bce140",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=179046bce140",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-surprise: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-surprise: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 207,
+            "meanChannelDiff": 7.076932923707117,
+            "pixelsOver2": 691,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 210,
+            "meanChannelDiff": 6.527009728622632,
+            "pixelsOver2": 660,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-surprise: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=179046bce140"
+      }
+    },
+    {
+      "name": "marin-놀람.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=179046bce140",
+        "sha256": "179046bce140e1a4d7201e30b220f70a271acfcecd1c6877ed8f024b15049c5b"
+      }
+    },
+    {
+      "name": "648-touch-proud: actual face is 집중",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-proud: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-proud: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.0017921146953406,
+            "pixelsOver2": 457,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 38,
+            "meanChannelDiff": 1.0293138760880696,
+            "pixelsOver2": 480,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-proud: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "648-touch-shy: actual face is 민망",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=1eb663314949",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=1eb663314949",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-touch-shy: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-touch-shy: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 0.8099078341013825,
+            "pixelsOver2": 408,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.2414234511008704,
+            "pixelsOver2": 503,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-touch-shy: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=1eb663314949"
+      }
+    },
+    {
+      "name": "marin-민망.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=1eb663314949",
+        "sha256": "1eb66331494916aa6d775589091bf285c3fa01b96fd378a32ea10823cd742210"
+      }
+    },
+    {
+      "name": "648: greeting returns to base",
+      "pass": true
+    },
+    {
+      "name": "648: natural idle blink occurs",
+      "pass": true
+    },
+    {
+      "name": "648-idle-blink: actual face is 잔잔감음",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6392c31f45b5",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-idle-blink: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6392c31f45b5",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(37% 18% at 50% 47%, rgb(0, 0, 0) 80%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-idle-blink: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-idle-blink: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.0403225806451613,
+            "pixelsOver2": 468,
+            "region": {
+              "x": 32,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 39,
+            "meanChannelDiff": 1.0631080389144905,
+            "pixelsOver2": 487,
+            "region": {
+              "x": 85,
+              "y": 45,
+              "w": 42,
+              "h": 62
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-idle-blink: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6392c31f45b5"
+      }
+    },
+    {
+      "name": "marin-잔잔감음.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6392c31f45b5",
+        "sha256": "6392c31f45b51b074e3b9b2a5fc28d93cc120cd8f0c54deff27bd82150d461da"
+      }
+    },
+    {
+      "name": "648: idle blink returns to base",
+      "pass": true
+    },
+    {
+      "name": "648: preview does not save tutor selection",
+      "pass": true
+    },
+    {
+      "name": "mongle 기본: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 기쁨: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 놀람: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 눈웃음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 잔잔감음: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 윙크: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 으쓱: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 졸림: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "mongle 민망: profile version equals file content hash",
+      "pass": true
+    },
+    {
+      "name": "648-intro: actual face is 눈웃음",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 163.96316528320312,
+          "height": 163.96316528320312
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: approved base body and face mask remain intact",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 163.96316528320312,
+          "height": 163.96316528320312
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-intro: tutor dialogue remains visible",
+      "pass": true
+    },
+    {
+      "name": "648-intro: screenshot retained the requested face",
+      "pass": true
+    },
+    {
+      "name": "648-intro: both rendered eyes match the unmasked canonical sprite",
+      "pass": false,
+      "detail": {
+        "sameSize": true,
+        "eyes": [
+          {
+            "side": "left",
+            "maxChannelDiff": 3,
+            "meanChannelDiff": 0.04353883664228492,
+            "pixelsOver2": 1,
+            "region": {
+              "x": 40,
+              "y": 40,
+              "w": 29,
+              "h": 33
+            }
+          },
+          {
+            "side": "right",
+            "maxChannelDiff": 6,
+            "meanChannelDiff": 0.11424590734935562,
+            "pixelsOver2": 11,
+            "region": {
+              "x": 91,
+              "y": 40,
+              "w": 29,
+              "h": 33
+            }
+          }
+        ],
+        "body": {
+          "maxChannelDiff": 0,
+          "meanChannelDiff": 0
+        }
+      }
+    },
+    {
+      "name": "648-intro: torso brightness equals the fixed base render",
+      "pass": true,
+      "detail": {
+        "maxChannelDiff": 0,
+        "meanChannelDiff": 0
+      }
+    },
+    {
+      "name": "runtime image stays inside the selected mascot asset folder",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132"
+      }
+    },
+    {
+      "name": "mongle-눈웃음.webp: served bytes and cache version match the generated file",
+      "pass": true,
+      "detail": {
+        "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+        "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+      }
+    },
+    {
+      "name": "648: introduction keeps canonical selected mascot wording",
+      "pass": true
+    },
+    {
+      "name": "648-success: actual face is 기쁨",
+      "pass": true,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    },
+    {
+      "name": "648-success: approved base body and face mask remain intact",
+      "pass": false,
+      "detail": {
+        "body": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EB%B3%B8.webp?v=1d75c8fc5963",
+        "face": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EA%B8%B0%EC%81%A8.webp?v=b22bfea3b132",
+        "complete": true,
+        "bodyWithinPortrait": {
+          "x": 0,
+          "y": 0,
+          "width": 160,
+          "height": 160
+        },
+        "mask": "radial-gradient(38% 18% at 50% 38%, rgb(0, 0, 0) 75%, rgba(0, 0, 0, 0) 100%)"
+      }
+    }
+  ],
+  "errors": [],
+  "missing": [],
+  "external": [],
+  "blockedWrites": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-intro.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-intro-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-intro-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-success.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-success-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-success-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-retry.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-retry-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-retry-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-rest.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-rest-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-surprise.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-surprise-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-surprise-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-proud.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-proud-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-proud-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-shy.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-shy-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-touch-shy-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-idle-blink.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-idle-blink-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\marin\\648-idle-blink-eyes-compare.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro-portrait.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\before\\mongle\\648-intro-eyes-compare.png"
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%A7%91%EC%A4%91.webp?v=7b017ff287e3",
+      "sha256": "7b017ff287e3dae3d0d4edec6071e347f8362afdce039faa604fe823ea9d4199"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EC%81%A8.webp?v=f216e39c1bd5",
+      "sha256": "f216e39c1bd5d547229e87c9b04084b4ac5151532a6385ba3bee292d680d9043"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EA%B8%B0%EB%B3%B8.webp?v=4cb24338578d",
+      "sha256": "4cb24338578df4cd184104ed95988551476ef567062220f701509ba78d93a2fc"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%86%80%EB%9E%8C.webp?v=179046bce140",
+      "sha256": "179046bce140e1a4d7201e30b220f70a271acfcecd1c6877ed8f024b15049c5b"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EB%AF%BC%EB%A7%9D.webp?v=1eb663314949",
+      "sha256": "1eb66331494916aa6d775589091bf285c3fa01b96fd378a32ea10823cd742210"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/marin-%EC%9E%94%EC%9E%94%EA%B0%90%EC%9D%8C.webp?v=6392c31f45b5",
+      "sha256": "6392c31f45b51b074e3b9b2a5fc28d93cc120cd8f0c54deff27bd82150d461da"
+    },
+    {
+      "url": "http://127.0.0.1:4314/brand-opening/assets/tutors/mongle-%EB%88%88%EC%9B%83%EC%9D%8C.webp?v=b22bfea3b132",
+      "sha256": "b22bfea3b132eb4ee27d9b5d9b93f4df74708d7c3062213e2015d2246f819aac"
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: 648-success: approved base body and face mask remain intact\n    at check (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\verify-expressions.cjs:18:182)\n    at capture (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\verify-expressions.cjs:107:2)\n    at async selection (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\verify-expressions.cjs:124:3)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\brand-opening\\qa\\mascot-expressions-20261011\\verify-expressions.cjs:217:3"
+}

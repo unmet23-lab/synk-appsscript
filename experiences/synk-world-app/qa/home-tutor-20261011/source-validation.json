@@ -1,0 +1,145 @@
+{
+  "at": "2026-10-11T11:29:37.451Z",
+  "sources": [
+    {
+      "path": "experiences/brand-opening/home.html",
+      "sha256": "a9e1463e56f22c27fcb56a9ca848d8721999bb27ce5296ec48059d07028ab09b"
+    },
+    {
+      "path": "experiences/brand-opening/home.mjs",
+      "sha256": "6e57d12782a1ddbc20bcc83e7a7a5c6b75203f86b18a2e919d3f22417700a321"
+    },
+    {
+      "path": "experiences/brand-opening/home.css",
+      "sha256": "8ba0be566445a86390fb34ba2f945952454ec50d1cec4a3c79d4cb6aafe8ef84"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor.mjs",
+      "sha256": "57ea6aa0f7c7c078a35cee31163870d965b19955c7b93498f3392fba44657edb"
+    },
+    {
+      "path": "experiences/brand-opening/home-tutor-lines.mjs",
+      "sha256": "309e7d7b9bbf0094db0186103face427337caee2dc5cfb9a71caa5b57b3fba5b"
+    },
+    {
+      "path": "experiences/brand-opening/life-tutor.mjs",
+      "sha256": "eeb97a816d672498191f6202bebde11937c24397c3cf24b346d7c5998c635f06"
+    },
+    {
+      "path": "experiences/brand-opening/content/life-standalone.mjs",
+      "sha256": "c8a05e764a91a81ca1e552c32424b70ddeb25aa07c76999ed0068f00789f0548"
+    },
+    {
+      "path": "experiences/synk-world-app/life-ui.mjs",
+      "sha256": "cfb2d29665756053d9d6683991a0e6392c0ecb737d0fd4b1f82c8560e08d4bb7"
+    },
+    {
+      "path": "experiences/synk-world-app/life-progress.mjs",
+      "sha256": "4a71e7b31deff8ecc808418e6a1166ea93d681ec6967b379ebbc01873d4ff9dd"
+    },
+    {
+      "path": "experiences/synk-world-app/app-shell.mjs",
+      "sha256": "3f8c017e6d1f273af703d0577df783aac6ddf5956a82952786836f6aec8f1727"
+    },
+    {
+      "path": "tools/build-world-app-public.mjs",
+      "sha256": "4c2f4ce8933e70fdd036c609b48b33d1a6bf3a30de8da60720665cc62bfdbb0e"
+    }
+  ],
+  "frozen": [
+    {
+      "source": "experiences/brand-opening/home.mjs",
+      "payload": "brand-opening/home.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/brand-opening/home.css",
+      "payload": "brand-opening/home.css",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor.mjs",
+      "payload": "brand-opening/home-tutor.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/brand-opening/home-tutor-lines.mjs",
+      "payload": "brand-opening/home-tutor-lines.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/brand-opening/life-tutor.mjs",
+      "payload": "brand-opening/life-tutor.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/brand-opening/content/life-standalone.mjs",
+      "payload": "brand-opening/content/life-standalone.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/synk-world-app/life-ui.mjs",
+      "payload": "life-ui.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/synk-world-app/life-progress.mjs",
+      "payload": "life-progress.mjs",
+      "equal": true,
+      "byteEqual": true,
+      "sourceMatchesBuild": true
+    },
+    {
+      "source": "experiences/synk-world-app/app-shell.mjs",
+      "payload": "app-shell.mjs",
+      "equal": true,
+      "byteEqual": false,
+      "sourceMatchesBuild": true,
+      "transform": "Public builder rewrites ../synk-world-home/ imports to ./"
+    }
+  ],
+  "checks": {
+    "source": {
+      "count": 61,
+      "ok": true
+    },
+    "account": {
+      "count": 15,
+      "ok": true
+    },
+    "lifecycle": {
+      "count": 19,
+      "ok": true
+    },
+    "regression": {
+      "count": 118,
+      "ok": true
+    }
+  },
+  "unit": {
+    "count": 57,
+    "ok": true
+  },
+  "payload": ".tmp/world-app-home-tutor-20261011-r2/world",
+  "manifestOk": true,
+  "scope": {
+    "published": false,
+    "realOAuth": false,
+    "syntheticAccount": true,
+    "remoteDatabaseWritten": false
+  }
+}

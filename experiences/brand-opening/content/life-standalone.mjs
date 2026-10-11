@@ -652,6 +652,73 @@ var safeId = (value) => typeof value === "string" && /^[a-z0-9][a-z0-9_-]{0,119}
 var object = (value) => value !== null && typeof value === "object" && !Array.isArray(value) && [Object.prototype, null].includes(Object.getPrototypeOf(value));
 var time = (value) => Number.isSafeInteger(value) && value >= 0;
 var empty = (owner) => ({ version: LIFE_PROGRESS_VERSION, owner, revision: 0, activeLessonId: null, activeReview: null, lessons: {}, reviews: {} });
+var TUTORS = /* @__PURE__ */ new Set(["marin", "kkamong", "mongle"]);
+var OUTCOMES = /* @__PURE__ */ new Set(["independent", "assisted", "retry"]);
+var dailyId = (value) => safeId(value) && !["constructor", "prototype"].includes(value);
+var DAILY_MAX_TIME = 253402268399999;
+var dailyTime = (value) => time(value) && value <= DAILY_MAX_TIME;
+function lifeDayKey(at) {
+  if (!dailyTime(at)) throw TypeError("Invalid learning time");
+  return new Date(at + 9 * 36e5).toISOString().slice(0, 10);
+}
+var dailyLatest = (item) => Math.max(item.observedAt ?? 0, item.guidedAt ?? 0);
+function trimDaily(daily) {
+  const keys = Object.keys(daily.days).sort();
+  for (const key of keys.slice(0, -30)) delete daily.days[key];
+  for (const day of Object.values(daily.days)) {
+    const ids = Object.keys(day.items).sort((a, b) => dailyLatest(day.items[b]) - dailyLatest(day.items[a]) || (a < b ? -1 : a > b ? 1 : 0));
+    for (const id of ids.slice(100)) delete day.items[id];
+  }
+}
+function fitDailyRecord(value) {
+  if (!value.daily) return;
+  const bytes = () => new TextEncoder().encode(JSON.stringify(value)).length;
+  while (bytes() > 48e4) {
+    const oldest = Object.keys(value.daily.days).sort()[0];
+    if (!oldest) break;
+    delete value.daily.days[oldest];
+  }
+}
+function validateDaily(daily) {
+  const invalid = () => {
+    throw fail("LIFE_PROGRESS_UNREADABLE");
+  };
+  if (!object(daily) || daily.version !== 1 || !object(daily.days) || Object.keys(daily).some((key) => !["version", "days"].includes(key)) || Object.keys(daily.days).length > 30) invalid();
+  for (const [key, day] of Object.entries(daily.days)) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || !object(day) || Object.keys(day).some((key2) => !["items", "closedAt"].includes(key2)) || !object(day.items) || !Object.keys(day.items).length || Object.keys(day.items).length > 100) invalid();
+    const sameDay = (at) => dailyTime(at) && lifeDayKey(at) === key;
+    if (day.closedAt !== void 0 && !sameDay(day.closedAt)) invalid();
+    for (const [id, item] of Object.entries(day.items)) {
+      if (!dailyId(id) || !object(item) || Object.keys(item).some((key2) => !["lessonId", "observedAt", "outcome", "guidedAt", "tutorId"].includes(key2)) || !dailyId(item.lessonId)) invalid();
+      if (item.observedAt === void 0 ? item.outcome !== void 0 : item.outcome === void 0 || !sameDay(item.observedAt) || !OUTCOMES.has(item.outcome)) invalid();
+      if (item.guidedAt === void 0 ? item.tutorId !== void 0 : !sameDay(item.guidedAt) || !TUTORS.has(item.tutorId)) invalid();
+      if (item.observedAt === void 0 && item.guidedAt === void 0) invalid();
+    }
+  }
+}
+function dailyObservation(next, { questionId, lessonId, at, correct, helped }, migrating = false) {
+  if (!dailyTime(at) || !dailyId(questionId) || !dailyId(lessonId)) return;
+  const dayKey = lifeDayKey(at), daily = next.daily ??= { version: 1, days: {} }, day = daily.days[dayKey] ??= { items: {} }, old = day.items[questionId];
+  if (migrating && old?.observedAt >= at) return;
+  const observedAt = migrating ? at : dailyEventTime(day, old, at);
+  day.items[questionId] = { ...old, lessonId, observedAt, outcome: correct ? helped ? "assisted" : "independent" : "retry" };
+  trimDaily(daily);
+}
+function dailyEventTime(day, item, at) {
+  const end = Date.parse(lifeDayKey(at) + "T23:59:59.999+09:00");
+  const value = Math.min(end, Math.max(at, dailyLatest(item || {}) + 1, (day.closedAt ?? -1) + 1));
+  if (day.closedAt !== void 0 && value <= day.closedAt) delete day.closedAt;
+  return value;
+}
+function backfillDaily(value) {
+  if (value.daily !== void 0) return;
+  for (const [lessonId, lesson2] of Object.entries(value.lessons)) for (const [questionId, answer] of Object.entries(lesson2.answers)) dailyObservation(value, { lessonId, questionId, ...answer }, true);
+  for (const [reviewId, answer] of Object.entries(value.activeReview?.answers || {})) {
+    const review = value.reviews[reviewId];
+    if (review) dailyObservation(value, { lessonId: review.lessonId, questionId: review.questionId, ...answer }, true);
+  }
+  fitDailyRecord(value);
+}
 function validate(raw, owner) {
   if (typeof raw !== "string" || raw.length > 5e5) throw fail("LIFE_PROGRESS_UNREADABLE");
   let value;
@@ -678,6 +745,7 @@ function validate(raw, owner) {
     for (const answer of Object.values(run.answers)) if (!object(answer) || typeof answer.correct !== "boolean" || typeof answer.helped !== "boolean" || !time(answer.at)) throw fail("LIFE_PROGRESS_UNREADABLE");
     if (run.pendingHelp !== void 0 && (!object(run.pendingHelp) || Object.entries(run.pendingHelp).some(([id, value2]) => !run.ids.includes(id) || value2 !== true))) throw fail("LIFE_PROGRESS_UNREADABLE");
   }
+  if (value.daily !== void 0) validateDaily(value.daily);
   return value;
 }
 function createLifeProgress({ storage = globalThis.localStorage, owner = "guest", now = Date.now, uuid = () => crypto.randomUUID(), onChange = () => {
@@ -693,7 +761,10 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   };
   try {
     const raw = storage.getItem(key);
-    if (raw !== null) state = validate(raw, owner);
+    if (raw !== null) {
+      state = validate(raw, owner);
+      backfillDaily(state);
+    }
   } catch (error) {
     readError = error?.code ? error : fail("LIFE_PROGRESS_UNREADABLE", "\uC774 \uAE30\uAE30\uC758 \uC9C4\uB3C4\uB97C \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uAE30\uC874 \uAE30\uB85D\uC740 \uBCF4\uC874\uD588\uC5B4\uC694.");
   }
@@ -710,6 +781,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       scoped,
       saved: phase === "device" || phase === "synced",
       pending: transport?.pending || 0,
+      rejected: transport?.rejected || 0,
       code: readError?.code || writeError?.code || transport?.code,
       message: readError ? "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uC77D\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8 \uAE30\uB85D\uC740 \uBCF4\uC874\uD588\uC5B4\uC694." : writeError ? "\uC9C4\uB3C4\uB97C \uC800\uC7A5\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uD654\uBA74\uC758 \uC9C4\uD589\uC740 \uC720\uC9C0\uD558\uACE0 \uC788\uC5B4\uC694." : scoped ? transport?.message || "\uACC4\uC815\uC5D0 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC9C4\uB3C4\uB97C \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694." : "\uC774 \uAE30\uAE30\uC5D0 \uC800\uC7A5\uB3FC\uC694."
     };
@@ -720,10 +792,27 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     } catch {
     }
   };
+  function checkDailyWrite() {
+    check2();
+    if (readError) throw readError;
+    const value = status();
+    let transport;
+    try {
+      transport = getSaveStatus?.();
+    } catch {
+    }
+    if (transport?.phase) value.phase = transport.phase;
+    if (value.rejected) throw fail("LIFE_PROGRESS_REJECTED", "\uBCF4\uAD00\uB41C \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (value.phase === "loading") throw fail("LIFE_PROGRESS_LOADING", "\uC9C4\uB3C4\uB97C \uBD88\uB7EC\uC624\uACE0 \uC788\uC5B4\uC694.");
+    if (value.phase === "conflict") throw fail("REVISION_CONFLICT", "\uC0AC\uC6A9\uD560 \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694.");
+    if (value.phase === "unreadable") throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uBA3C\uC800 \uD655\uC778\uD574 \uC8FC\uC138\uC694.");
+    if (value.phase === "stopped") throw fail("ACCOUNT_CHANGED", "\uC774 \uACC4\uC815\uC758 \uC0DD\uD65C \uD55C\uAD6D\uC5B4 \uC5F0\uACB0\uC774 \uB05D\uB0AC\uC5B4\uC694.");
+  }
   function commit(next) {
     check2();
     if (readError) throw fail("LIFE_PROGRESS_UNREADABLE", "\uAE30\uC874 \uC9C4\uB3C4\uB97C \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC6D0\uBCF8\uC744 \uB36E\uC5B4\uC4F0\uC9C0 \uC54A\uC558\uC5B4\uC694.");
     next.revision = state.revision + 1;
+    fitDailyRecord(next);
     try {
       storage.setItem(key, JSON.stringify(next));
       writeError = null;
@@ -809,6 +898,7 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
       lapses: (old?.lapses || 0) + (difficult ? 1 : 0),
       intervalDays: difficult ? 0 : old?.intervalDays ?? 1
     };
+    dailyObservation(next, { questionId, lessonId, at, correct, helped });
     commit(next);
     return { ...lessonState(lessonId), duplicate: false };
   }
@@ -828,11 +918,16 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     check2();
     return Object.values(state.reviews).filter((v) => v.dueAt <= now()).sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id)).slice(0, Math.max(0, Math.min(100, limit))).map(clone2);
   }
-  function startReview(limit = 6) {
+  function startReview(limit = 6, preferredId = null) {
     check2();
     const existing = state.activeReview;
     if (existing && existing.ids.some((id) => !existing.answers[id])) return clone2(existing);
-    const next = clone2(state), ids = dueReviews(limit).map((v) => v.id);
+    const due = dueReviews(100);
+    if (preferredId) {
+      const index = due.findIndex((r) => r.id === preferredId);
+      if (index > 0) due.unshift(...due.splice(index, 1));
+    }
+    const next = clone2(state), ids = due.slice(0, Math.max(0, Math.min(100, limit))).map((v) => v.id);
     if (!ids.length) return null;
     next.activeReview = { id: uuid(), startedAt: now(), ids, answers: {}, pendingHelp: {} };
     commit(next);
@@ -853,8 +948,9 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     const run = state.activeReview, keyId = id || reviewId || run?.ids.find((id2) => state.reviews[id2].questionId === questionId);
     if (!run || runId && run.id !== runId || !run.ids.includes(keyId) || typeof correct !== "boolean" || typeof helped !== "boolean") throw TypeError("Invalid review answer");
     if (run.answers[keyId]) return { duplicate: true, done: run.ids.every((id2) => run.answers[id2]), remaining: run.ids.filter((id2) => !run.answers[id2]).length };
-    helped = helped || run.pendingHelp?.[keyId] === true;
-    const next = clone2(state), review = next.reviews[keyId], at = now(), difficult = !correct || helped;
+    const at = now(), guided = dailyTime(at) && state.daily?.days[lifeDayKey(at)]?.items[state.reviews[keyId].questionId]?.guidedAt !== void 0;
+    helped = helped || run.pendingHelp?.[keyId] === true || guided;
+    const next = clone2(state), review = next.reviews[keyId], difficult = !correct || helped;
     review.streak = difficult ? 0 : review.streak + 1;
     review.lapses += difficult ? 1 : 0;
     review.intervalDays = difficult ? 0 : INTERVALS[Math.min(review.streak - 1, INTERVALS.length - 1)];
@@ -862,8 +958,33 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     review.lastAt = at;
     next.activeReview.answers[keyId] = { correct, helped, at };
     const remaining = next.activeReview.ids.filter((id2) => !next.activeReview.answers[id2]).length;
+    dailyObservation(next, { questionId: review.questionId, lessonId: review.lessonId, at, correct, helped });
     commit(next);
     return { duplicate: false, done: remaining === 0, remaining, dueAt: review.dueAt, intervalDays: review.intervalDays };
+  }
+  function recordGuidedPractice({ questionId, tutorId } = {}) {
+    checkDailyWrite();
+    const q = questions.get(questionId), review = q && state.reviews[q.review.id];
+    if (!q || !dailyId(questionId) || !dailyId(q.lessonId) || !TUTORS.has(tutorId) || !(state.lessons[q.lessonId]?.questionIds.includes(questionId) || review?.questionId === questionId && review.lessonId === q.lessonId)) throw TypeError("Invalid guided life practice");
+    const at = now(), dayKey = lifeDayKey(at), existing = state.daily?.days[dayKey]?.items[questionId];
+    if (existing?.guidedAt !== void 0 && existing.guidedAt >= Math.max(existing.observedAt ?? 0, review?.lastAt ?? 0)) return { dayKey, item: clone2(existing), duplicate: true, status: status() };
+    const next = clone2(state), daily = next.daily ??= { version: 1, days: {} }, day = daily.days[dayKey] ??= { items: {} };
+    const item = { ...day.items[questionId], lessonId: q.lessonId, guidedAt: dailyEventTime(day, day.items[questionId], at), tutorId };
+    day.items[questionId] = item;
+    trimDaily(daily);
+    commit(next);
+    return { dayKey, item: clone2(item), duplicate: false, status: status() };
+  }
+  function markDayComplete() {
+    checkDailyWrite();
+    const at = now(), dayKey = lifeDayKey(at), day = state.daily?.days[dayKey];
+    if (!day || !Object.keys(day.items).length) return { dayKey, closedAt: null, duplicate: false, empty: true, status: status() };
+    const latest = Math.max(...Object.values(day.items).map(dailyLatest));
+    if (day.closedAt !== void 0 && day.closedAt >= latest) return { dayKey, closedAt: day.closedAt, duplicate: true, empty: false, status: status() };
+    const next = clone2(state), closedAt = Math.max(at, latest);
+    next.daily.days[dayKey].closedAt = closedAt;
+    commit(next);
+    return { dayKey, closedAt, duplicate: false, empty: false, status: status() };
   }
   function summary(packs = [], flat = []) {
     check2();
@@ -927,6 +1048,8 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
     startReview,
     markReviewHelp,
     answerReview,
+    recordGuidedPractice,
+    markDayComplete,
     flush,
     exportSnapshot() {
       check2();
@@ -949,7 +1072,7 @@ function cafeDrink(kind, count = 1) {
 var actions = (text, attribute, extra = "") => `<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text} <span aria-hidden="true">\u2192</span></button>${extra}<button class="quiet-button" data-life-pause>\uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`;
 var cast = (photo) => `<div class="cafe-friends">${["mongle", "kkamong", "marine"].map((id) => photo(id)).join("")}</div>`;
 var speakerName = (id) => ({ mongle: "\uBABD\uAE00", kkamong: "\uAE4C\uBABD", marine: "\uB9C8\uB9B0", narrator: "\uC791\uC740 \uC774\uC57C\uAE30" })[id] || "\uCE5C\uAD6C";
-function cafeMarkup(state, { photo, helped = false, firstAnswer = null, lessonId = CAFE_LESSON_ID, speechAvailable = false, speechPhase = "idle" } = {}) {
+function cafeMarkup(state, { photo, helped = false, firstAnswer = null, retryButton = () => "", lessonId = CAFE_LESSON_ID, speechAvailable = false, speechPhase = "idle" } = {}) {
   const visit = cafeVisitById(lessonId), receipt = cafeReceipt(state, lessonId), step = visit.steps[state.step];
   const receiptHtml = `<div class="cafe-ticket"><small>\uB098\uC758 \uC8FC\uBB38\uD45C</small><strong>${esc(receipt.label)}</strong><span>${esc(receipt.place)}</span></div>`;
   const scene2 = (message, kind = "counter") => `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" aria-label="${kind === "table" ? "\uCE5C\uAD6C\uC640 \uC549\uC740 \uC790\uB9AC" : "\uCE74\uD398 \uC8FC\uBB38\uB300"}"><div class="cafe-place-label">\uAD6C\uB984 \uD55C \uC794 <span>\uB3D9\uB124 \uCE74\uD398</span></div>${cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink || "empty"}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink, receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
@@ -970,7 +1093,7 @@ function cafeMarkup(state, { photo, helped = false, firstAnswer = null, lessonId
   }).join("");
   const primary = step.compose && !ready ? actions(isCafeOrder(state.order, { complete: true }) ? "\uC774 \uC8FC\uBB38\uC73C\uB85C \uBD80\uD0C1\uD558\uAE30" : "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-submit ${needsHearing || !isCafeOrder(state.order, { complete: true }) ? "disabled" : ""}`) : actions(ready ? step.next : repair ? "\uC8FC\uBB38\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694" : "\uC9C1\uC6D0\uC5D0\uAC8C \uB9D0\uC744 \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-next ${ready ? "" : "disabled"}`);
   const seats = ready && state.step === visit.seatStep ? `<fieldset class="cafe-seats"><legend>\uC5B4\uB290 \uC790\uB9AC\uC5D0 \uC549\uC744\uAE4C\uC694?</legend>${Object.entries(CAFE_SEATS).map(([id, label]) => `<button class="plain-button" data-life-cafe-seat="${id}" aria-pressed="${state.seat === id}">${label}</button>`).join("")}</fieldset>` : "";
-  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}"><span>${visit.number}\uBC88\uC9F8 \uCE74\uD398 \uBC29\uBB38 \xB7 ${step.name}</span><span>${state.step + 1} / 3</span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${scene2(trayMessage)}${receiptHtml}</div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>${step.name}</small><h3>${esc(step.goal || q.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0${hiddenQuestion ? " \xB7 \uADC0 \uAE30\uC6B8\uC5EC \uB4E4\uC5B4\uC694" : ""}</small><p ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uB2E4\uC2DC \uB9D0\uD574 \uBCFC\uAE4C\uC694? \uC9C1\uC6D0\uC774 \uC8FC\uBB38\uC744 \uBC14\uAFD4 \uC904 \uAC70\uC608\uC694.</p>' : ""}<div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uC8FC\uBB38 \uD45C\uD604 \uB3C4\uC6C0</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? '<p class="cafe-review-note">\uB3C4\uC6C0\uC774 \uD544\uC694\uD588\uB358 \uD45C\uD604\uC740 \uBCF5\uC2B5\uC5D0 \uB0A8\uACA8 \uB458\uAC8C\uC694.</p>' : ""}</section></div>${primary}`;
+  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}"><span>${visit.number}\uBC88\uC9F8 \uCE74\uD398 \uBC29\uBB38 \xB7 ${step.name}</span><span>${state.step + 1} / 3</span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${scene2(trayMessage)}${receiptHtml}</div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>${step.name}</small><h3>${esc(step.goal || q.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0${hiddenQuestion ? " \xB7 \uADC0 \uAE30\uC6B8\uC5EC \uB4E4\uC5B4\uC694" : ""}</small><p ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uB2E4\uC2DC \uB9D0\uD574 \uBCFC\uAE4C\uC694? \uC9C1\uC6D0\uC774 \uC8FC\uBB38\uC744 \uBC14\uAFD4 \uC904 \uAC70\uC608\uC694.</p>' : ""}<div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uC8FC\uBB38 \uD45C\uD604 \uB3C4\uC6C0</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? '<p class="cafe-review-note">\uB3C4\uC6C0\uC774 \uD544\uC694\uD588\uB358 \uD45C\uD604\uC740 \uBCF5\uC2B5\uC5D0 \uB0A8\uACA8 \uB458\uAC8C\uC694.</p>' : ""}${repair || helped || firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? retryButton(q) : ""}</section></div>${primary}`;
 }
 function cafeComposer(state, ready) {
   const fields = [["drink", "\uC74C\uB8CC", [["juice", "\uC8FC\uC2A4"], ["tea", "\uCC28"]]], ["temperature", "\uC628\uB3C4", [["warm", "\uB530\uB73B\uD558\uAC8C"], ["cold", "\uCC28\uAC11\uAC8C"]]], ["count", "\uC794 \uC218", [[1, "\uD55C \uC794"], [2, "\uB450 \uC794"], [3, "\uC138 \uC794"]]]];
@@ -1095,12 +1218,15 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
 } }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   for (const [variable, file] of Object.entries({ "--cafe-room": "cafe-room-v1.webp", "--cafe-drinks": "cafe-drinks-v2.png", "--cafe-ice": "cafe-ice.webp" })) panel.style.setProperty(variable, `url("${asset("home/" + file)}")`);
-  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null;
+  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, companion = null, place = "life";
+  const practised = /* @__PURE__ */ new Set();
+  const exposedTransfers = /* @__PURE__ */ new Set();
   const speech = createCafeSpeech({ asset, onChange() {
     if (ended || !shown || context?.phase !== "cafe") return;
     const metrics = speech.metrics(), button = content.querySelector("[data-life-cafe-speech]"), status = content.querySelector(".cafe-speech-status");
     if (button) button.textContent = !metrics.available ? "\uC9C8\uBB38 \uC18C\uB9AC \uB2E4\uC2DC \uC900\uBE44\uD558\uAE30" : metrics.phase === "playing" ? "\uC9C8\uBB38 \uB4E3\uAE30 \uC7A0\uAE50 \uBA48\uCD94\uAE30" : metrics.phase === "paused" ? "\uC9C8\uBB38 \uC774\uC5B4 \uB4E3\uAE30" : cafeRun.listen?.heard ? "\uC9C1\uC6D0 \uC9C8\uBB38 \uB2E4\uC2DC \uB4E3\uAE30" : "\uC9C1\uC6D0 \uC9C8\uBB38 \uB4E3\uAE30";
     if (status && metrics.phase === "error") status.textContent = "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB4E3\uAE30\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.";
+    companion?.update(tutorState());
   } });
   void speech.prepare();
   const summary = () => getProgress().summary(PACKS, LESSONS);
@@ -1109,20 +1235,99 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (ended) return;
     try {
       const value = summary();
-      home.updateLearning?.(value);
+      home.updateLearning?.(value, { snapshot: getProgress().exportSnapshot(), lessons: LESSONS, preparePractice: prepareHomePractice, completePractice: completeTutorPractice, finishDay: finishTutorDay });
       onSummary(value);
     } catch {
+    }
+  }
+  function completeTutorPractice(questionId, tutorId) {
+    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    return getProgress().recordGuidedPractice({ questionId, tutorId });
+  }
+  function finishTutorDay() {
+    if (ended) throw Error("\uD559\uC2B5 \uC5F0\uACB0\uC774 \uBC14\uB00C\uC5C8\uC5B4\uC694.");
+    return getProgress().markDayComplete();
+  }
+  function prepareHomePractice(id) {
+    if (ended) return false;
+    try {
+      const p = getProgress(), s = p.status();
+      if (["loading", "conflict", "unreadable"].includes(s.phase) || s.rejected) return false;
+      const snapshot = p.exportSnapshot(), record = Object.values(snapshot.reviews).find((r) => r.questionId === id);
+      if (!record || record.lapses <= 0 || record.streak !== 0) return false;
+      exposedTransfers.add(record.id);
+      const run = record.dueAt <= Date.now() ? p.startReview(6, record.id) : snapshot.activeReview;
+      if (run?.ids.includes(record.id) && !run.answers[record.id]) p.markReviewHelp(record.id);
+      return true;
+    } catch {
+      return false;
     }
   }
   function statusLine() {
     const s = getProgress().status();
     return `<p class="life-save-status" data-save-phase="${escape(s.phase)}" role="status">${escape(s.message)}</p>`;
   }
+  function tutorState() {
+    const l = lessonById(context?.lessonId), cafe = context?.phase === "cafe";
+    const original = context?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
+    const q = context?.phase === "review" ? context.reviewQuestion : original;
+    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase);
+    const requiresHearing = cafe && current && cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown;
+    return {
+      scope: place,
+      phase: cafe ? cafeRun.phase : context?.phase,
+      question: current ? q : null,
+      questionId: original?.id,
+      answered: cafe ? !!cafeRun.choiceId : !!lastFeedback,
+      feedback: current && !cafe ? lastFeedback : null,
+      helped,
+      requiresHearing,
+      listening: cafe && speech.metrics().phase === "playing",
+      compose: cafe && context.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0
+    };
+  }
+  function tutorHint() {
+    speech.pause();
+    if (!context) return;
+    if (context.phase === "cafe") {
+      if (tutorState().requiresHearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
+      helped = true;
+      persistCafe();
+      renderCafe();
+      return;
+    }
+    if (!["questions", "review"].includes(context.phase)) return;
+    if (!lastFeedback) {
+      helped = true;
+      if (context.phase === "questions") persistStage();
+      else getProgress().markReviewHelp(context.reviewId);
+    }
+    const hint = content.querySelector(".life-hint");
+    if (hint) hint.hidden = false;
+    content.querySelector("[data-life-help]")?.setAttribute("aria-expanded", "true");
+    companion?.update({ ...tutorState(), hinting: true });
+  }
+  function prepareTutorPractice(id) {
+    const value = tutorState();
+    if (value.questionId !== id || value.answered) return;
+    helped = true;
+    if (context.phase === "cafe") persistCafe();
+    else if (context.phase === "questions") persistStage();
+    else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
+  }
+  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">\uD29C\uD130\uC640 \uC774 \uD45C\uD604 \uB2E4\uC2DC \uC5F0\uC2B5</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA" } = {}) {
     generation++;
     rendering = true;
     show(title, html + statusLine(), { type, eyebrow, nav: "play" });
+    const tutor = home.mountLifeTutor?.({ state: tutorState(), snapshot: getProgress().exportSnapshot(), lessons: LESSONS, practised: [...practised], onHint: tutorHint, onPause: () => speech.pause(), onPreparePractice: prepareTutorPractice, onPracticeSuccess: (id) => completeTutorPractice(id, home.tutor?.().tutor), onPracticeComplete: (id) => {
+      practised.add(id);
+      companion?.update({ ...tutorState(), practiceCompleted: true });
+    } });
+    companion = tutor;
     home.attachPanelResource({ dispose() {
+      tutor?.dispose();
+      if (companion === tutor) companion = null;
       if (!rendering) {
         speech.stop();
         shown = false;
@@ -1154,6 +1359,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function packs() {
     if (!ensureReadable()) return;
+    place = "life";
     context = null;
     paint("\uC791\uC740 \uB9D0\uB85C \uC2DC\uC791\uD558\uB294 \uD55C\uAD6D \uC0DD\uD65C", `<div class="life-heading" tabindex="-1"><p>\uC778\uC0AC\uBD80\uD130 \uC57D\uC18D\uAE4C\uC9C0, \uCE5C\uAD6C\uB4E4\uACFC \uD55C \uD329\uC529.</p><p class="life-library-note">${PACKS.length}\uAC1C \uC0DD\uD65C \uD329 \xB7 ${LESSONS.length}\uAC1C \uC9E7\uC740 \uD559\uC2B5</p></div><div class="life-pack-grid">${PACKS.map((p) => packCard(p)).join("")}</div><div class="life-library-footer"><button class="plain-button" data-life-stories>\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30 \uBAA8\uC544 \uBCF4\uAE30</button><button class="plain-button" data-life-review>\uC624\uB298\uC758 \uBCF5\uC2B5</button></div>`);
   }
@@ -1166,6 +1372,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function stories() {
     if (!ensureReadable()) return;
+    place = "life";
     context = null;
     paint("\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC758 \uC791\uC740 \uD558\uB8E8", `<div class="life-heading" tabindex="-1"><div class="life-cast">${Object.keys(friends).map((f) => photo(f)).join("")}</div><p>\uC8FC\uBB38\uD558\uACE0, \uAE38\uC744 \uCC3E\uACE0, \uC57D\uC18D\uC744 \uC9C0\uCF1C\uC694.<br>\uC138 \uCE5C\uAD6C\uC640 \uC77D\uACE0 \uACE0\uB974\uB294 \uC0DD\uD65C \uC774\uC57C\uAE30.</p></div><div class="life-pack-grid">${PACKS.map((p) => packCard(p, { story: true })).join("")}</div><h3 class="cafe-library-title">\uB0B4\uAC00 \uD568\uAED8 \uB9CC\uB4DC\uB294 \uCE74\uD398 \uC774\uC57C\uAE30</h3><div class="life-lesson-list">${cafeVisitCards()}</div>`);
   }
@@ -1173,6 +1380,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!ensureReadable()) return;
     const value = packById(id);
     if (!value) return;
+    place = id === "cafe" ? "cafe" : "life";
     context = null;
     const p = getProgress(), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const cafe = id === "cafe" ? `<div class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small>\uC6B0\uB9AC\uC758 \uCE74\uD398 \xB7 ${visited} / ${CAFE_VISITS.length}\uBC88\uC758 \uC791\uC740 \uD558\uB8E8</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uCE74\uD398\uC5D0\uC11C \uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uCE74\uD398 \uC774\uC57C\uAE30"} <span aria-hidden="true">\u2192</span></button></div></div><h3 class="cafe-library-title">\uB2E4\uC2DC \uC62C \uB54C\uB9C8\uB2E4 \uB2E4\uB978 \uD558\uB8E8</h3><div class="life-lesson-list cafe-visit-list">${cafeVisitCards()}</div>` : "";
@@ -1192,6 +1400,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!ensureReadable()) return;
     const lesson2 = lessonById(id);
     if (!lesson2) return;
+    place = lesson2.packId === "cafe" ? "cafe" : "life";
     speech.stop();
     const p = getProgress();
     p.summary(PACKS, LESSONS);
@@ -1223,7 +1432,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context.phase = "cafe";
     context.questionIndex = cafeRun.step;
     const q = cafeQuestion(cafeRun.step, context.lessonId), first = q ? getProgress().lessonState(context.lessonId).answers[q.id] : null;
-    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, helped, firstAnswer: first, lessonId: context.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
+    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, helped, firstAnswer: first, retryButton, lessonId: context.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
   }
   function ensureHeard() {
     if (cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown) throw Error("\uC9C1\uC6D0 \uC9C8\uBB38\uC744 \uB05D\uAE4C\uC9C0 \uB4E3\uAC70\uB098 \uAE00\uC790 \uB3C4\uC6C0\uC744 \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
@@ -1327,7 +1536,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function questionMarkup(q, feedback, { lesson: lesson2 = null, reviewIndex = 0, reviewTotal = 0 } = {}) {
     const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape(c.text)}</span></button>`).join("");
-    return `<div class="life-question-layout"><section class="life-question-copy"><div class="life-question-title" tabindex="-1"><small>${lesson2 ? "\uC77D\uACE0 \uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uACE8\uB77C\uC694" : `\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694 \xB7 ${reviewIndex + 1} / ${reviewTotal}`}</small><h3>${escape(q.prompt)}</h3></div><p class="life-context">${escape(q.context || "")}</p>${photo("marine", "life-question-friend")}<button class="quiet-button life-help" data-life-help ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape(q.explanation)}</p></section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div>${feedback ? `<div class="life-feedback" role="status"><strong>${feedback.correct && !feedback.helped ? "\uC798 \uACE8\uB790\uC5B4\uC694." : "\uD568\uAED8 \uD655\uC778\uD574\uC694."}</strong><p>${escape(q.explanation)}</p>${!feedback.correct || feedback.helped ? "<small>\uC774 \uD45C\uD604\uC740 \uC7A0\uC2DC \uB4A4 \uC0C8 \uC0C1\uD669\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694.</small>" : ""}</div>` : ""}</section></div><div class="life-actions"><button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C\uC73C\uB85C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uC9C4\uB3C4 \uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`;
+    return `<div class="life-question-layout"><section class="life-question-copy"><div class="life-question-title" tabindex="-1"><small>${lesson2 ? "\uC77D\uACE0 \uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uACE8\uB77C\uC694" : `\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694 \xB7 ${reviewIndex + 1} / ${reviewTotal}`}</small><h3>${escape(q.prompt)}</h3></div><p class="life-context">${escape(q.context || "")}</p><button class="quiet-button life-help" data-life-help ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape(q.explanation)}</p></section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div>${feedback ? `<div class="life-feedback" role="status"><strong>${feedback.correct && !feedback.helped ? "\uC798 \uACE8\uB790\uC5B4\uC694." : "\uD568\uAED8 \uD655\uC778\uD574\uC694."}</strong><p>${escape(q.explanation)}</p>${!feedback.correct || feedback.helped ? "<small>\uC774 \uD45C\uD604\uC740 \uC7A0\uC2DC \uB4A4 \uC0C8 \uC0C1\uD669\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694.</small>" + retryButton(q) : ""}</div>` : ""}</section></div><div class="life-actions"><button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C\uC73C\uB85C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uC9C4\uB3C4 \uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`;
   }
   function choose(choiceId) {
     if (lastFeedback) return;
@@ -1351,6 +1560,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function review() {
     if (!ensureReadable()) return;
+    place = "life";
     context = null;
     lastFeedback = null;
     helped = false;
@@ -1359,8 +1569,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     paint("\uC624\uB298 \uB3CC\uC544\uC628 \uD45C\uD604", `<div class="life-review-summary life-heading" tabindex="-1">${photo("kkamong", "life-intro-friend")}<h3>${s.dueCount ? `${s.dueCount}\uAC1C\uC758 \uD45C\uD604\uC774 \uAE30\uB2E4\uB824\uC694.` : future ? "\uBC30\uC6B4 \uD45C\uD604\uC774 \uC798 \uC26C\uACE0 \uC788\uC5B4\uC694." : "\uCCAB \uD45C\uD604\uC744 \uB9CC\uB098\uB7EC \uAC08\uAE4C\uC694?"}</h3><p>${s.dueCount ? "\uAC19\uC740 \uB2F5\uC744 \uC678\uC6B0\uB294 \uB300\uC2E0, \uC0C8\uB85C\uC6B4 \uC0DD\uD65C \uC7A5\uBA74\uC5D0\uC11C \uACE8\uB77C\uC694." : future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape(future)}\uBD80\uD130 \uC5F4\uB824\uC694.` : "\uC0DD\uD65C \uD329\uC744 \uB9C8\uCE58\uBA74 \uB098\uC5D0\uAC8C \uD544\uC694\uD55C \uBCF5\uC2B5\uC774 \uC0DD\uACA8\uC694."}</p></div>${s.dueCount ? `<div class="life-review-topics">${s.dueReviews.map((r) => `<span>${escape(packById(r.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")}</span>`).join("")}</div>` : ""}<div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uB3CC\uC544\uC628 \uD45C\uD604 \uC5F0\uC2B5\uD558\uAE30 <span aria-hidden="true">\u2192</span></button>' : ""}<button class="plain-button" data-life-next>\uB2E4\uC74C \uD559\uC2B5 \uC774\uC5B4 \uD558\uAE30</button><button class="quiet-button" data-life-home>\uB9C8\uB8E8\uB85C \uB3CC\uC544\uAC00\uAE30</button></div>`, { type: "life-review" });
   }
   function reviewStart() {
-    reviewRun = getProgress().startReview(6);
+    const p = getProgress();
+    reviewRun = p.startReview(6);
     if (!reviewRun) return review();
+    for (const id of reviewRun.ids) if (exposedTransfers.has(id) && !reviewRun.answers[id]) p.markReviewHelp(id);
     lastFeedback = null;
     helped = false;
     renderReview();
@@ -1382,8 +1594,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function chooseReview(id) {
     if (lastFeedback) return;
-    const q = context.reviewQuestion;
-    getProgress().answerReview({ id: context.reviewId, runId: reviewRun.id, correct: id === q.answerId, helped });
+    const q = context.reviewQuestion, p = getProgress();
+    p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct: id === q.answerId, helped });
+    helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
     lastFeedback = { question: q, choiceId: id, correct: id === q.answerId, helped };
     const html = questionMarkup(q, lastFeedback, { reviewIndex: context.questionIndex, reviewTotal: reviewRun.ids.length });
     paint("\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694", `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}"><span>\uD45C\uD604 \uBCF5\uC2B5</span><span>${context.questionIndex + 1} / ${reviewRun.ids.length}</span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
@@ -1472,14 +1685,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       renderCafe();
       content.querySelector("[data-life-cafe-help]")?.focus({ preventScroll: true });
     },
-    help: () => {
-      helped = true;
-      if (context.phase === "questions") persistStage();
-      else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
-      const hint = content.querySelector(".life-hint");
-      if (hint) hint.hidden = false;
-      content.querySelector("[data-life-help]")?.setAttribute("aria-expanded", "true");
-    }
+    help: tutorHint,
+    "tutor-retry": (el) => companion?.openPractice(el.dataset.lifeTutorRetry)
   };
   function click(event) {
     const button = event.target.closest("button");
@@ -1497,7 +1704,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   document.addEventListener("click", click);
   timer = setInterval(updateHome, 15e3);
   updateHome();
-  return { packs, stories, review, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
+  return { packs, stories, review, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
     ended = true;
     speech.dispose();
     clearInterval(timer);

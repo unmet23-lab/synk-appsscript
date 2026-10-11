@@ -13,6 +13,10 @@ import { mountListeningCheck } from './listening-check-ui.mjs';
 import { scoreRun, skillReport, skillOf, SKILL_LABEL, STEP_WORD } from './report.mjs';
 import { drawHeroRoad } from './hero.mjs';
 import { preloadImages } from './kit/lab.mjs';
+import {runnerSupport,obstacleSupport,runnerCheckSupport} from '../brand-opening/game-tutor-support.mjs';
+
+let gameTutor=null;
+const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
 
 const byId = (id) => document.getElementById(id);
 const QA = /[?&]qa(?:[=&]|$)/.test(location.search);
@@ -103,6 +107,7 @@ const qa = { scale: 1, auto: false, plan: [] };
 
 function show(id) {
   screen = id;
+  if(id==='lobby')tutorEvent('lobby');
   for (const s of ['lobby', 'game', 'results']) byId(s).hidden = s !== id;
   document.body.classList.toggle('playing', id === 'game');
   window.scrollTo(0, 0);
@@ -178,6 +183,7 @@ async function start() {
   tip(opening || '바람이 길을 알려 줘요. 잘 듣고 움직여요!', 2600);
   announce('한국어 부탁을 듣고 바람길을 달려요. 왼쪽·오른쪽 화살표로 길을 바꾸고, 위는 점프, 아래는 숙이기예요.');
   starting = false;
+  tutorEvent('playing');
 }
 
 function resetRunUI() {
@@ -200,23 +206,24 @@ function closeUnanswered() {
 
 function handle(n) {
   switch (n.type) {
-    case 'instruction': showInstruction(n.mission); break;
+    case 'instruction': showInstruction(n.mission); tutorEvent('listening'); break;
     case 'stepResult': renderSteps(n.mission); break;
     case 'step': world?.light(n.step); SFX.step(); sparkle(); break;
     case 'correct': {
       const rec = model.answers[resolvedSeen++]; if (rec) rec.texted = !!n.mission.texted;
       recordAction(n.mission, true); sayDone(n.mission); SFX.correct();
+      tutorEvent('success',{answer:true});
       popText(model.combo >= 3 ? `좋아요! 연속 ${model.combo}` : '좋아요!', 'ok', model.combo);
       punch(byId('g-combo-wrap')); break;
     }
     case 'wrong': {
       const rec = model.answers[resolvedSeen++]; if (rec) rec.texted = !!n.mission.texted;
-      recordAction(n.mission, false); sayMissed(n.mission, n.record || rec); break;
+      recordAction(n.mission, false); sayMissed(n.mission, n.record || rec); tutorEvent('retry',{answer:true,support:runnerSupport(n.record||rec)}); break;
     }
     case 'earnedShield': shields += 1; SFX.shield(); setTimeout(() => { if (running && !model?.finished) popText('바람막!', 'shield'); }, 520);
       if (shields === 1) tip('세 번 연속! 바람막이 한 번은 부딪혀도 지켜 줘요.', 2600); break;
     case 'shield': world?.knock(model); SFX.block(); popText('막았어요!', 'shield'); break;
-    case 'hit': world?.knock(model); SFX.bump(); popText('쿵!', 'bump'); punch(byId('g-guard')); break;
+    case 'hit': world?.knock(model); SFX.bump(); popText('쿵!', 'bump'); punch(byId('g-guard')); tutorEvent('retry',{reason:'obstacle',support:n.mission?[]:obstacleSupport(n.obstacle)}); break;
     case 'jump': SFX.jump(); break;
     case 'slide': SFX.slide(); break;
     case 'finish': finish(); break;
@@ -368,11 +375,13 @@ function pause() {
   if (!running || !model || model.finished || paused) return;
   paused = true; keyboard.reset(); gesture = null; voiceBank?.pause().catch(() => {});
   openDialog('pause-dialog'); announce('잠깐 멈췄어요.');
+  tutorEvent('paused');
 }
 function audioFault(retry) {
   retryAudio = retry;
   if (running) { paused = true; keyboard.reset(); voiceBank?.pause().catch(() => {}); }
   openDialog('audio-dialog');
+  tutorEvent('paused');
 }
 async function resume() {
   if (!running || !model || model.finished || resuming) return;
@@ -381,6 +390,7 @@ async function resume() {
     if (!await ensureVoices()) { audioFault(resume); return; }
     if (pendingInstruction) { if (!voiceBank.play(pendingInstruction)) { audioFault(resume); return; } pendingInstruction = null; }
     closeDialogs(); document.activeElement?.blur?.(); lastFrame = performance.now(); paused = false;
+    tutorEvent('playing');
   } catch { audioFault(resume); } finally { resuming = false; }
 }
 function home() {
@@ -405,6 +415,7 @@ function finish() {
   if (newBest) { best = distance; store('best', best); }
   SFX.finish(); popText(completed ? '도착!' : '여기까지!', 'end');
   renderResults({ completed, distance, newBest });
+  tutorEvent('finish',{completed});
   announce(`달리기 끝. ${distance}미터, 부탁 ${model.correct}개를 해냈어요.`);
   setTimeout(() => { if (ending && screen === 'game') { ending = false; show('results'); byId('r-title').focus({ preventScroll: true }); } }, reduced() ? 700 : 1500);
 }
@@ -514,7 +525,7 @@ byId('learning-reset').addEventListener('click', () => {
   catch (error) { if (error?.code !== 'ACCOUNT_RESET_REQUIRED') learningFailed = true; }
   renderLobby();
 });
-const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; } });
+const listeningCheck = mountListeningCheck({ coach, beforeOpen: () => { if (running && !model?.finished) return false; cancelVoice(); return true; },onListen:()=>tutorEvent('listening'),onFeedback:(correct,detail)=>tutorEvent(correct?'success':'retry',{answer:true,support:!correct&&detail?runnerCheckSupport(detail.item,detail.choice,detail.feedback):[]}),onClose:()=>tutorEvent('lobby') });
 
 let resizeT = 0;
 window.addEventListener('resize', () => { cancelGesture(); clearTimeout(resizeT); resizeT = setTimeout(() => { if (screen === 'lobby') drawHeroRoad(byId('hero-road')); placeTip(); }, 140); });
@@ -575,3 +586,9 @@ if (QA) {
     summary: () => learn('summary'),
   };
 }
+
+// Install after the game's pause/check state exists.
+if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
+ gameTutor=connectGameTutor('runner',{onHelp:()=>{pause();if(listeningCheck.open){listeningCheck.interrupt();tutorEvent('paused');}},onPracticeComplete:()=>{if(listeningCheck.open)return;if(screen==='game'&&running&&!model?.finished)void resume();else void start();},onResumeAfterHelp:()=>{if(screen==='game'&&running&&!model?.finished)void resume();}});
+ if(screen==='game'&&running&&!model?.finished)tutorEvent(paused?'paused':'playing');else if(screen==='results')tutorEvent('finish',{completed:model?.reason==='tour'});else tutorEvent('lobby');
+}).catch(()=>{});

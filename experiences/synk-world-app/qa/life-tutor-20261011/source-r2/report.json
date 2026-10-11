@@ -1,0 +1,65 @@
+{
+  "ok": false,
+  "at": "2026-10-11T10:34:18.151Z",
+  "base": "http://127.0.0.1:4314",
+  "passed": 11,
+  "checks": [
+    {
+      "name": "marin: life intro uses the selected AI tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: real wrong answer triggers its own hint and face",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided practice shows its actual new situation",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: readable without horizontal overflow and all taps >=44px",
+      "passed": true,
+      "detail": {
+        "overflow": 0,
+        "small": 0
+      }
+    },
+    {
+      "name": "greetings-expressions-hello: wrong guided response keeps choices available and uses tutor expression",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: guided success enables return",
+      "passed": true
+    },
+    {
+      "name": "greetings-expressions-hello: success returns to the exact same real item without changing first responses or review spacing",
+      "passed": true
+    },
+    {
+      "name": "marin: difficult expression appears in tutor help",
+      "passed": true
+    },
+    {
+      "name": "marin: tutor hint is retained as assistance rather than independent success",
+      "passed": true
+    },
+    {
+      "name": "marin: correct first answer celebrates with the selected tutor",
+      "passed": true
+    },
+    {
+      "name": "marin: completion keeps the original first error and tutor",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": [],
+  "images": [
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-r2\\marin-life-hint.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-r2\\marin-greetings-expressions-hello-guided.png",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-20261011\\source-r2\\failure.png"
+  ],
+  "failure": "locator.click: Error: strict mode violation: locator('[data-life-review]') resolved to 2 elements:\n    1) <button data-view=\"review\" data-life-review=\"\" aria-label=\"나의 복습 일정 보기\">…</button> aka getByRole('button', { name: '나의 복습 일정 보기' })\n    2) <button data-life-review=\"\" class=\"plain-button\">복습 일정 보기</button> aka getByRole('button', { name: '복습 일정 보기', exact: true })\n\nCall log:\n\u001b[2m  - waiting for locator('[data-life-review]')\u001b[22m\n\n    at lifeFlow (C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:46:43)\n    at async C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-world-app\\qa\\life-tutor-browser.cjs:79:74"
+}

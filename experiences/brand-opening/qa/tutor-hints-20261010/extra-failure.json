@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-10T14:36:49.539Z",
+  "error": "Error: page.evaluate: ReferenceError: entry is not defined\n    at eval (eval at evaluate (:311:30), <anonymous>:1:66)\n    at Array.find (<anonymous>)\n    at eval (eval at evaluate (:311:30), <anonymous>:1:51)\n    at UtilityScript.evaluate (<anonymous>:313:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)",
+  "checks": [
+    {
+      "name": "a real jump input at the late marker becomes a timing hint",
+      "pass": true
+    },
+    {
+      "name": "runner timing still is not a language diagnosis",
+      "pass": true
+    },
+    {
+      "name": "the focused jump rehearsal includes its marker timing",
+      "pass": true
+    },
+    {
+      "name": "jump rehearsal does not replace the original timing miss",
+      "pass": true
+    },
+    {
+      "name": "the real chart has a held note for the control check",
+      "pass": true
+    },
+    {
+      "name": "early release of an actual held note gets control help",
+      "pass": true
+    },
+    {
+      "name": "a quick press cannot pass the held-note rehearsal",
+      "pass": true
+    }
+  ],
+  "errors": [],
+  "httpErrors": [],
+  "external": []
+}

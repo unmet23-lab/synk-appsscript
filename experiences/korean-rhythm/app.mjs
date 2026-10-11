@@ -7,6 +7,10 @@ import { TRACKS, LEVELS, RoundState } from './core.mjs';
 import { MusicPlayer } from './audio.mjs';
 import { Stage } from './stage.mjs';
 import { rhythmItem, FLOW_RHYTHM, timingObservation, timingSummary, assignmentTracks, assignmentTrack, rhythmTargetLabel, nextTrackLine } from './personalization.mjs';
+import {rhythmSupport} from '../brand-opening/game-tutor-support.mjs';
+
+let gameTutor=null;
+const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -131,6 +135,7 @@ function nudgeOffset(ms) { state.offset = Math.max(-OFFSET_MAX, Math.min(OFFSET_
 function show(name) {
   for (const s of ['lobby', 'game', 'results']) $(s).hidden = s !== name;
   state.screen = name;
+  if(name==='lobby')tutorEvent('lobby');
   document.body.classList.toggle('playing', name === 'game');
   if (name !== 'game') window.scrollTo({ top: 0, behavior: 'instant' });
   if (name === 'game') stage.resize();
@@ -160,6 +165,7 @@ async function start() {
     collectionRoundId = globalThis.SynkPlayCollection?.roundId('rhythm') || null;
     stage.reset(); startTiming(); tip(null); setMongle('smile');
     music.start(buffer, round.beat);
+    tutorEvent('playing');
     lastFrame = performance.now(); lastUi = 0;
     cancelAnimationFrame(raf); raf = requestAnimationFrame(frame);
     $('pause-button').focus({ preventScroll: true });
@@ -245,6 +251,7 @@ function showQuestion(q) {
   $('q-say').hidden = !q.texted; $('q-text-btn').hidden = !!q.texted; card.classList.toggle('texted', !!q.texted);
   if (q.texted) showText(q);
   setMongle('focus');
+  tutorEvent('listening');
   announce(`듣기 ${n}번. 문장을 끝까지 들어요.`);
 }
 function questionPhase(q, t) {
@@ -292,6 +299,8 @@ function eventEffect(event) {
   }
   if (event.quality > 0) { stage.hit(event.lane, event.quality); music.hit(event.lane); judgment(event.lane, event.quality); }
   if (event.q) answered(event);
+  else if(event.quality>0)tutorEvent('success');
+  else if(event.quality===0)tutorEvent('retry',{reason:'timing',support:rhythmSupport(event)});
 }
 /** 답이 정해졌다(박자에 맞춰 눌렀거나, 고른 채 선을 지났거나, 답하지 않았다). 기록하고 정답을 보여 준다. */
 function answered(event) {
@@ -310,6 +319,7 @@ function answered(event) {
   pads.forEach((b, i) => { b.classList.toggle('right', i === right); b.classList.toggle('intent', i === q.response); });
   if (q.presentationId) learn((c) => c.help(q.presentationId, 'answer'));
   setMongle(result === 'ok' ? 'cheer' : 'curious');
+  tutorEvent(result==='ok'?'success':'retry',{answer:true,support:rhythmSupport(event),...(result==='none'?{reason:'unanswered'}:{})});
   announce(`${$('q-ask').textContent} 정답은 ${q.answer === 'O' ? '오' : '엑스'}.`);
 }
 
@@ -378,6 +388,7 @@ async function pause() {
   $('pause-where').textContent = state.loading ? `${state.round.track.title} · 준비 중`
     : `${state.round.track.title} · ${clock(music.time)} / ${clock(state.round.duration)}`;
   if (!$('pause-dialog').open) $('pause-dialog').showModal();
+  tutorEvent('paused');
   $('resume-button').focus({ preventScroll: true });
 }
 let resuming = false;
@@ -387,6 +398,7 @@ async function resume() {
   try {
     await music.resume();
     if (music.state !== 'running') throw new Error('suspended');
+    tutorEvent('playing');
     state.paused = false;
     if ($('pause-dialog').open) $('pause-dialog').close();
     lastFrame = performance.now();
@@ -413,6 +425,7 @@ function finish() {
   state.pressed.clear(); state.paused = false;
   resetQuestion(); tip(null);
   show('results');
+  tutorEvent('finish');
   const correct = r.correctCount, total = r.questions.length, stars = correct >= total ? 3 : correct >= total - 1 ? 2 : correct >= Math.ceil(total / 2) ? 1 : 0;
   $('r-kicker').textContent = `${r.track.title} · ${LEVELS[r.levelName].label}`;
   $('r-correct').textContent = String(correct); $('r-total').textContent = String(total);
@@ -504,6 +517,8 @@ async function recall() {
       options.children[q.answer === 'O' ? 0 : 1].classList.add('right');   // 맞는 답에 펠트 체크(틀린 답에 X 표시 없음)
       $('recall-sentence').textContent = `“${q.prompt}”`; $('recall-question').textContent = q.question;
       $('recall-feedback').textContent = option === q.answer ? '잘 들었어요.' : `이 문장의 답은 ${q.answer}예요.`;
+      const correct=option===q.answer;
+      tutorEvent(correct?'success':'retry',{answer:true,support:rhythmSupport({quality:1,correct,q:{...q,id:source.id+'-recall',category:source.category,explanation:`들은 말은 ‘${q.prompt}’예요. 질문과 다시 비교해 보세요.`,options:['O','X'],response:option==='O'?0:1,delivered:'completed'}})});
       if (presentationId) learn((c) => c.help(presentationId, 'answer'));
       state.recallIndex += 1;
       renderRecommendation();
@@ -610,3 +625,8 @@ if (QA) {
     stage: () => stage,
   };
 }
+
+if(globalThis.parent&&globalThis.parent!==globalThis)void import('../brand-opening/game-tutor-channel.mjs').then(({connectGameTutor})=>{
+ gameTutor=connectGameTutor('rhythm',{onHelp:()=>pause(),onPracticeComplete:()=>{if(state.screen==='game'&&state.round)void resume();else void start();},onResumeAfterHelp:()=>{if(state.screen==='game'&&state.round)void resume();}});
+ tutorEvent(state.screen==='game'?(state.paused?'paused':'playing'):state.screen==='results'?'finish':'lobby');
+}).catch(()=>{});

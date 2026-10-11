@@ -3,6 +3,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {publicWorldConfig} from '../experiences/synk-world-app/operating-mode.mjs';
+import {renderWorldDocument} from '../experiences/synk-world-app/document.mjs';
 const root=fileURLToPath(new URL('../',import.meta.url));
 const args=process.argv.slice(2),arg=name=>{const i=args.indexOf(name);return i<0?null:args[i+1];};
 if(!arg('--config'))throw Error('Usage: build-world-app-public.mjs --config public-config.json [--out directory] [--base-path /world/] [--reuse payload-world-dir]');
@@ -82,13 +83,10 @@ function copyTree(source,target='',accept=()=>true){
 }
 const home=path.join(root,'experiences/synk-world-home'),town=path.join(root,'experiences/synk-town');
 copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
-const indexSource=path.join(home,'index.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
-const bootstrap=JSON.stringify(config).replaceAll('<','\\u003c');
-const cover='<div id="synk-opening-cover" aria-hidden="true" style="position:fixed;inset:0;background:#000;z-index:2147483646"></div><script>window.__synkOpeningSafetyTimer=setTimeout(function(){document.getElementById("synk-opening-cover")?.remove()},5000)</script>';
-const html=rewrite(indexBytes.toString('utf8').replace('<head>',`<head><script>window.__SYNK_WORLD_CONNECTED__=true;window.__SYNK_WORLD_CONFIG__=${bootstrap};</script>`)
- .replace('</head>','<link rel="stylesheet" href="./app-shell.css"><link rel="stylesheet" href="./brand-opening/opening.css"><script type="module" src="./app-shell.mjs"></script></head>').replace('<body>','<body>'+cover));
+const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
+const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
-for(const name of ['app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
@@ -100,10 +98,15 @@ for(const name of ['three.module.js','three.core.js','THREE-LICENSE.txt'])copyFi
 for(const name of ['azure-sky-v3.jpg','azure-sky-v3-mobile.jpg','terrain-normal.jpg','cliff-normal.jpg'])copyFile(path.join(home,'scene-assets/graphics-v2',name),'town/day-assets/'+name);
 copyFile(path.join(home,'assets/felt-coral.webp'),'town/day-assets/felt-coral.webp');
 const opening=path.join(root,'experiences/brand-opening');
- for(const name of ['opening.mjs','opening.css'])copyFile(path.join(opening,name),'brand-opening/'+name);
- const openingSource=fs.readFileSync(path.join(opening,'opening.mjs'),'utf8')+fs.readFileSync(path.join(opening,'opening.css'),'utf8');
- const openingAssets=new Set([...openingSource.matchAll(/[\"']([a-zA-Z0-9_.-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g)].map(match=>match[1]));
- for(const match of openingSource.matchAll(/url\([\"']?\.\/assets\/([^\"')]+)[\"']?\)/g))openingAssets.add(match[1]);
+ for(const name of ['content/life-standalone.mjs','content/life-ui.css'])copyFile(path.join(opening,name),'brand-opening/'+name);
+ for(const name of ['opening.mjs','opening.css','home.mjs','home.css','tutor-onboarding.mjs','tutor-onboarding.css','tutor-profiles.mjs','tutor-choice.mjs','game-tutor.mjs','game-tutor.css','game-tutor-lines.mjs','game-tutor-contract.mjs','game-tutor-channel.mjs','tutor-practice.mjs','tutor-practice.css','tutor-practice-core.mjs','tutor-practice-lines.mjs','tutor-review.mjs','tutor-review.css','game-tutor-support.mjs','life-tutor.mjs','life-tutor.css','life-tutor-lines.mjs','home-tutor.mjs','home-tutor-lines.mjs','home-tutor-days.mjs','home-tutor-recap.mjs'])copyFile(path.join(opening,name),'brand-opening/'+name);
+ copyTree(path.join(opening,'assets/tutors'),'brand-opening/assets/tutors',(_source,relative)=>/\.(?:webp|wav)$/.test(relative)||/\/(?:marin|mongle)-face-mask\.svg$/.test(relative));
+ copyTree(path.join(opening,'assets/cafe-voice'),'brand-opening/assets/cafe-voice',(_source,relative)=>/^[a-z0-9-]+\.mp3$/.test(path.basename(relative))||path.basename(relative)==='manifest.json');
+ const openingSource=['opening.mjs','opening.css','home.mjs','home.css','home.html'].map(name=>fs.readFileSync(path.join(opening,name),'utf8')).join('\n');
+ const openingAssets=new Set([...fs.readFileSync(path.join(opening,'opening.mjs'),'utf8').matchAll(/[\"']([a-zA-Z0-9_.-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g)].map(match=>match[1]));
+ for(const match of openingSource.matchAll(/url\([\"']?(?:\.\/)?assets\/([^\"')]+)[\"']?\)/g))openingAssets.add(match[1]);
+ for(const match of openingSource.matchAll(/[\"']assets\/([a-zA-Z0-9_./-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g))openingAssets.add(match[1]);
+ for(const name of fs.readdirSync(path.join(opening,'assets/home')))if(/\.(?:webp|woff2)$/.test(name)||name==='cafe-drinks-v2.png')openingAssets.add('home/'+name);
 for(const name of openingAssets)copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.
