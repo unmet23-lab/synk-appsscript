@@ -177,7 +177,7 @@ async function start() {
   // 공통 코인(play-common): 이 판의 번호. 90초를 끝까지 달린 판만 받는다(그만두거나 부딪혀 멈추면 받지 않는다). 코인은 학습 기록에 쓰지 않는다.
   collectionRoundId = globalThis.SynkPlayCollection?.roundId('runner') || null;
   resolvedSeen = 0; shields = 0; pendingInstruction = null; ending = false; paused = false; running = true; musicClock = 0; musicStep = 0;
-  world.clear(); world.resize(); updateHud(true);
+  world.clear(); world.resize(); world.resetFrameBudget(); updateHud(true);
   lastFrame = performance.now();
   const opening = (() => { try { return live?.intro().line?.text || null; } catch { return null; } })();
   tip(opening || '바람이 길을 알려 줘요. 잘 듣고 움직여요!', 2600);
@@ -340,17 +340,18 @@ function updateHud() {
   const m = model.currentMission, step = model.currentStep;
   if (m && step && !say.hidden && (say.dataset.phase === 'listening' || say.dataset.phase === 'move')) {
     const left = step.d - model.distance;
-    byId('say-near').style.transform = `scaleX(${Math.max(0, Math.min(1, left / m.cueDistance)).toFixed(3)})`;
-    say.classList.toggle('soon', left < 11);
+    setHud('near', Math.max(0, Math.min(1, left / m.cueDistance)).toFixed(3), (v) => { byId('say-near').style.transform = `scaleX(${v})`; });
+    setHud('soon', left < 11, (v) => { say.classList.toggle('soon', v); });
   }
 }
 
 /* ── 그림 돌리기: 멈춤을 아는 시간. 한 걸음은 0.05초까지(확인용 빨리 감기도 같은 걸음으로 나눈다) ── */
 function frame(now) {
   requestAnimationFrame(frame);
-  const real = Math.min((now - lastFrame) / 1000, 0.05); lastFrame = now;
-  if (screen !== 'game' || !world) return;
+  const interval = now - lastFrame, real = Math.min(interval / 1000, 0.05); lastFrame = now;
+  if (screen !== 'game' || !world || document.hidden) return;
   if (running && !paused && model && !model.finished) {
+    world.observeFrame(interval);
     let left = real * qa.scale;
     while (left > 1e-6 && running && !paused && !model.finished) {
       const dt = Math.min(0.05, left); left -= dt;
@@ -364,16 +365,16 @@ function frame(now) {
     }
     updateHud();
   }
-  if (paused) { if (now - pausedDrawAt < 250) return; pausedDrawAt = now; }   // 멈춘 동안은 장면이 그대로라 가끔만 다시 그린다(크기가 바뀌어도 비지 않게)
+  if (paused && !world.needsRender) return;   // 정지 장면은 크기가 바뀐 때만 다시 그린다.
   world.render(paused ? 0 : real, model);
 }
-let pausedDrawAt = 0;
 requestAnimationFrame(frame);
 
 /* ── 멈춤 · 목소리 문제 · 처음으로 ── */
 function pause() {
   if (!running || !model || model.finished || paused) return;
   paused = true; keyboard.reset(); gesture = null; voiceBank?.pause().catch(() => {});
+  world?.resetFrameBudget();
   openDialog('pause-dialog'); announce('잠깐 멈췄어요.');
   tutorEvent('paused');
 }
@@ -389,7 +390,7 @@ async function resume() {
   try {
     if (!await ensureVoices()) { audioFault(resume); return; }
     if (pendingInstruction) { if (!voiceBank.play(pendingInstruction)) { audioFault(resume); return; } pendingInstruction = null; }
-    closeDialogs(); document.activeElement?.blur?.(); lastFrame = performance.now(); paused = false;
+    closeDialogs(); document.activeElement?.blur?.(); lastFrame = performance.now(); world?.resetFrameBudget(); paused = false;
     tutorEvent('playing');
   } catch { audioFault(resume); } finally { resuming = false; }
 }

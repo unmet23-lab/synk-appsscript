@@ -1,12 +1,15 @@
 'use strict';
 // Installed archives are physical files. Electron's patched fs treats .asar as
 // a virtual directory and returns ENOENT when hashing the archive itself.
-const fs=process.versions.electron?require('original-fs').promises:require('node:fs/promises');
+const physicalFs=process.versions.electron?require('original-fs'):require('node:fs'),fs=physicalFs.promises;
 const path=require('node:path'),crypto=require('node:crypto');
 const {CLIENTS,identity}=require('./catalog.cjs');
 const {inside}=require('./security.cjs');
-const {releasesFor,compareVersions}=require('./release-catalog.cjs');
-const digest=async file=>crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex');
+const {releasesFor,compareVersions,installerPath}=require('./release-catalog.cjs');
+// Executables can exceed 200 MiB. Bounded chunks keep integrity checks from
+// retaining both clients in memory or hashing a whole executable in one turn.
+// Every inspection still reads fresh physical bytes, including before launch.
+const digest=async file=>{const hash=crypto.createHash('sha256');for await(const chunk of physicalFs.createReadStream(file))hash.update(chunk);return hash.digest('hex');};
 function installationPaths(id,{platform,mode,programRoot}) {
   const c=identity(id,mode),p=platform==='win32'?path.win32:path.posix;
   const root=platform==='win32'?p.join(programRoot,c.executableName):p.join(programRoot,c.executableName+'.app');
@@ -17,7 +20,7 @@ function createInstallations({clientId,mode,platform,arch,programRoot,releases=[
     if(!Object.hasOwn(CLIENTS,id))return {id,status:'unavailable',canLaunch:false,reason:'UNKNOWN_CLIENT'};
     const c=identity(id,mode),base={id,name:c.name,canLaunch:false};
     if(id===clientId)return {...base,status:'current',reason:'CURRENT_CLIENT'};
-    const candidates=releasesFor(releases,{platform,arch,mode}).filter(r=>r.id===id),latest=candidates[0];
+    const candidates=releasesFor(releases,{platform,arch,mode}).filter(r=>r.id===id),latest=candidates.find(r=>installerPath(r,programRoot))||candidates[0];
     if(!latest)return {...base,status:'unavailable',reason:'RELEASE_UNAVAILABLE'};
     if(!['win32','darwin'].includes(platform))return {...base,status:'unavailable',reason:'UNSUPPORTED_PLATFORM'};
     const locations=installationPaths(id,{platform,mode,programRoot});

@@ -78,6 +78,18 @@ test('catalog loader ignores missing, unapproved and mismatched platform manifes
   await fs.writeFile(target,JSON.stringify({version:1,approved:false,source:'verified-local-builds',releases:[f.release]}));assert.deepEqual(loadDevelopmentReleases({root:f.root,platform:'win32',arch:'x64'}),[]);
   await fs.writeFile(target,JSON.stringify({version:1,approved:true,source:'verified-local-builds',releases:[f.release]}));assert.equal(loadDevelopmentReleases({root:f.root,platform:'win32',arch:'x64'}).length,1);assert.deepEqual(loadDevelopmentReleases({root:f.root,platform:'win32',arch:'arm64'}),[]);
 });
+
+test('newer launch-only pins preserve available installers without offering a downgrade as an update',async t=>{
+  const f=await fixture(t),legacy={...f.release,version:'0.4.2'};delete legacy.installer;
+  const options={...f.opts,releases:[legacy,f.release]},locations=installationPaths('world',options);
+  await fs.mkdir(path.dirname(locations.asar),{recursive:true});await fs.writeFile(locations.executable,'exe');await fs.writeFile(locations.asar,'asar');
+  await fs.writeFile(locations.metadata,JSON.stringify({clientId:'world',appId:'im.synk.world.preview',mode:'development',platform:'win32',arch:'x64',version:legacy.version}));
+  const service=createClientLifecycle(options);t.after(()=>service.dispose());
+  const world=(await service.getClients()).find(row=>row.id==='world');
+  assert.equal(world.canLaunch,true);assert.equal(world.version,'0.4.2');assert.equal(world.updateAvailable,false);
+  assert.equal(world.latestVersion,'0.3.0');assert.equal(world.installer.version,'0.3.0');assert.equal(world.installer.canPrepare,true);
+  await service.prepareClient('world');const ready=await waitFor(service,'ready');assert.equal(ready.installer.transferredBytes,f.release.installer.bytes);
+});
 test('catalog generation verifies installer, executable and archive hashes before approving local packages',async t=>{
   const f=await fixture(t),exe=path.join(path.dirname(f.sourcePath),'app.exe'),asar=path.join(path.dirname(f.sourcePath),'app.asar');await fs.writeFile(exe,'exe');await fs.writeFile(asar,'asar');
   await fs.mkdir(path.join(f.root,'artifacts'));const report={ok:true,packages:[{clientId:'world',mode:'development',platform:'win32',arch:'x64',appId:'im.synk.world.preview',version:'0.3.0',installer:{path:f.sourcePath,sha256:f.release.installer.sha256,bytes:f.release.installer.bytes},executable:{path:exe,sha256:hash('exe')},asar:{path:asar,sha256:hash('asar')}}]};

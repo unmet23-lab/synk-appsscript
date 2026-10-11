@@ -5,7 +5,7 @@ import {createHomeTutor} from './home-tutor.mjs';
 const $=selector=>document.querySelector(selector);
 const $$=selector=>[...document.querySelectorAll(selector)];
 const asset=path=>new URL(path,import.meta.url).href;
-for(const [key,file] of Object.entries({'paper-button':'button-white.webp','coral-button':'button-coral.webp','cream':'quality-cream.webp','blush':'quality-blush.webp'}))document.documentElement.style.setProperty('--life-'+key,`url("${asset('assets/home/'+file)}")`);
+for(const [key,file] of Object.entries({'paper-button':'button-white-ui.webp','coral-button':'button-coral-ui.webp','cream':'quality-cream-ui.webp','blush':'quality-blush-ui.webp'}))document.documentElement.style.setProperty('--life-'+key,`url("${asset('assets/home/'+file)}")`);
 for(const [key,file] of Object.entries({'drinks':'cafe-drinks-v2.png','room':'cafe-room-v1.webp'}))document.documentElement.style.setProperty('--cafe-'+key,`url("${asset('assets/home/'+file)}")`);
 const panel=$('#world-panel'),content=$('#panel-content'),scene=$('.maru-scene'),video=$('.scene-video');
 const landscape=matchMedia('(orientation:landscape)'),spacious=matchMedia('(min-width:600px) and (min-height:600px) and (pointer:fine)'),reduced=matchMedia('(prefers-reduced-motion:reduce)');

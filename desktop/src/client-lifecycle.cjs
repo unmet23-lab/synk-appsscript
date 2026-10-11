@@ -13,7 +13,7 @@ function createClientLifecycle(options) {
   let disposed=false,installCache=null,installCacheAt=0,inspectPending=null;
   const notify=()=>{if(!disposed){try{onChange();}catch{}}};
   function denied(id) {if(typeof id!=='string'||!Object.hasOwn(CLIENTS,id))return 'UNKNOWN_CLIENT';if(clientId!=='platform')return 'LAUNCHER_ONLY';if(id==='platform')return 'CURRENT_CLIENT';return null;}
-  function latest(id) {return releases.find(r=>r.id===id);}
+  function latest(id) {return releases.find(r=>r.id===id&&installerPath(r,packageRoot))||releases.find(r=>r.id===id);}
   function availability(id) {const r=latest(id);return !denied(id)&&!disposed&&mode==='development'&&!!installerPath(r,packageRoot);}
   function state(id) {
     const r=latest(id),available=availability(id),j=jobs.get(id),status=j?.status||(available?'idle':'unavailable');

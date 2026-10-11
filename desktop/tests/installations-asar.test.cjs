@@ -8,12 +8,23 @@ async function electronProbe(){
   try{
     const assert=require('node:assert/strict'),{createInstallations,installationPaths}=require('../src/installations.cjs');
     const releases=JSON.parse(await fs.readFile(path.join(root,'releases.json'),'utf8'));
-    const options={clientId:'platform',mode:'development',platform:'win32',arch:'x64',programRoot:path.join(root,'Programs'),releases,spawn(){throw Error('NO_PROCESS_ALLOWED');}};
+    const spawnAttempts=[];
+    const options={clientId:'platform',mode:'development',platform:'win32',arch:'x64',programRoot:path.join(root,'Programs'),releases,spawn(file){spawnAttempts.push(file);throw Error('NO_PROCESS_ALLOWED');}};
     const service=createInstallations(options),world=installationPaths('world',options),archive=await fs.readFile(world.asar),executable=await fs.readFile(world.executable),metadata=await fs.readFile(world.metadata);
     let patchedReadCode;try{await require('node:fs/promises').readFile(world.asar);}catch(error){patchedReadCode=error.code;}
     assert.equal(patchedReadCode,'ENOENT','the regression must exercise Electron ASAR virtualization');
     const before=await service.getClients();
     for(const id of ['world','messenger']){const row=before.find(item=>item.id===id);assert.equal(row.status,'installed');assert.equal(row.canLaunch,true);}
+    // A previous good list result must never authorize launch from cached hashes,
+    // even for a replacement with identical size and restored modification time.
+    const executableStat=await fs.stat(world.executable),replacement=Buffer.from(executable);replacement[0]^=1;
+    await fs.writeFile(world.executable,replacement);await fs.utimes(world.executable,executableStat.atime,executableStat.mtime);
+    const [replacedList,replacedLaunch]=await Promise.all([service.getClients(),service.launch('world')]);
+    assert.equal(replacedList.find(item=>item.id==='world').reason,'INVALID_INSTALLATION');
+    assert.equal(replacedLaunch.code,'INVALID_INSTALLATION');assert.equal(spawnAttempts.length,0);await fs.writeFile(world.executable,executable);
+    const archiveStat=await fs.stat(world.asar),replacedArchive=Buffer.from(archive);replacedArchive[replacedArchive.length-1]^=1;
+    await fs.writeFile(world.asar,replacedArchive);await fs.utimes(world.asar,archiveStat.atime,archiveStat.mtime);
+    assert.equal((await service.launch('world')).code,'INVALID_INSTALLATION');assert.equal(spawnAttempts.length,0);await fs.writeFile(world.asar,archive);
     const verifyInvalid=async()=>{const row=(await service.getClients()).find(item=>item.id==='world');assert.equal(row.reason,'INVALID_INSTALLATION');assert.equal(row.canLaunch,false);};
     await fs.writeFile(world.executable,'tampered synthetic executable');await verifyInvalid();await fs.writeFile(world.executable,executable);
     await fs.writeFile(world.asar,Buffer.concat([archive,Buffer.from('tampered')]));await verifyInvalid();await fs.writeFile(world.asar,archive);
@@ -22,8 +33,9 @@ async function electronProbe(){
     const escaped=createInstallations({...options,realpath:async file=>file===world.asar?outside:fs.realpath(file)});
     assert.equal((await escaped.getClients()).find(item=>item.id==='world').reason,'INVALID_INSTALLATION');
     const messenger=installationPaths('messenger',options);await fs.unlink(messenger.asar);assert.equal((await service.getClients()).find(item=>item.id==='messenger').reason,'NOT_INSTALLED');
+    assert.equal((await service.launch('messenger')).code,'NOT_INSTALLED');assert.equal(spawnAttempts.length,0);
     assert.equal(BrowserWindow.getAllWindows().length,0);assert.notEqual(process.noAsar,true);
-    await fs.writeFile(path.join(root,'result.json'),JSON.stringify({ok:true,electron:process.versions.electron,windowCount:0,patchedReadCode,installedIds:before.filter(item=>item.canLaunch).map(item=>item.id),tamperedExecutableRejected:true,tamperedArchiveRejected:true,wrongMetadataRejected:true,outsideRealpathRejected:true,missingArchiveRejected:true,globalAsarSupportUnchanged:true}));app.exit(0);
+    await fs.writeFile(path.join(root,'result.json'),JSON.stringify({ok:true,electron:process.versions.electron,windowCount:0,patchedReadCode,installedIds:before.filter(item=>item.canLaunch).map(item=>item.id),tamperedExecutableRejected:true,tamperedArchiveRejected:true,wrongMetadataRejected:true,outsideRealpathRejected:true,missingArchiveRejected:true,freshLaunchVerification:true,sameSizeReplacementRejected:true,concurrentInspectionSafe:true,globalAsarSupportUnchanged:true}));app.exit(0);
   }catch(error){await fs.writeFile(path.join(root,'result.json'),JSON.stringify({ok:false,message:error.message,stack:error.stack}));app.exit(1);}
 }
 if(process.versions.electron){void electronProbe();}

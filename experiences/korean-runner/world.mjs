@@ -19,6 +19,34 @@ const GRAIN_METERS = 1.6;   // 마을 물건에 깔리는 펠트 결 한 장의 
 const loadImg = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
 const color = (hex) => new T.Color(hex);
 
+// CSS 크기와 조작 좌표는 그대로 두고 3D 버퍼만 제한한다. Retina 전체 해상도는
+// 같은 장면에 최대 네 배의 픽셀을 그리므로, 먼저 160만 픽셀 안에서 시작한다.
+export function renderPixelRatio(width, height, deviceRatio = 1, scale = 1) {
+  return Math.min(deviceRatio > 0 ? deviceRatio : 1, 1.5, Math.sqrt(1600000 / Math.max(1, width * height))) * scale;
+}
+
+// 실제 프레임 간격으로만 그리기 품질을 조절한다. 게임·목소리 시간은 건드리지 않는다.
+// 두 초 이상 느릴 때 한 단계 낮추고, 여덟 초 안정된 뒤에만 한 단계 복원한다.
+export function createFrameBudget() {
+  const levels = [1, 0.85, 0.7, 0.6];
+  let level = 0, elapsed = 0, samples = 0, stable = 0;
+  return {
+    get scale() { return levels[level]; },
+    reset() { elapsed = 0; samples = 0; stable = 0; },
+    sample(ms) {
+      if (!Number.isFinite(ms) || ms <= 0 || ms > 1000) { this.reset(); return false; }
+      elapsed += ms; samples += 1;
+      if (elapsed < 2000 || samples < 12) return false;
+      const fps = samples * 1000 / elapsed, interval = elapsed;
+      elapsed = 0; samples = 0;
+      if (fps < 45) { stable = 0; if (level < levels.length - 1) { level += 1; return true; } }
+      else if (fps > 57) { stable += interval; if (level > 0 && stable >= 8000) { level -= 1; stable = 0; return true; } }
+      else stable = 0;
+      return false;
+    },
+  };
+}
+
 /** 여러 기하를 하나로(정점 색 + 펠트 결 상자 투영 UV). 칸 하나·장애물 하나가 그리기 한 번이 된다. */
 function mergeParts(parts) {
   let nv = 0, ni = 0;
@@ -59,6 +87,7 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
   renderer.shadowMap.enabled = true; renderer.shadowMap.type = T.PCFSoftShadowMap;
   renderer.setClearColor(0x000000, 0);
   const aniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const budget = createFrameBudget();
 
   const scene = new T.Scene();
   scene.fog = new T.Fog(FOG_COLOR, VIEW.fogNear, VIEW.fogFar);
@@ -71,6 +100,7 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
   sun.castShadow = true;
   Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 26, bottom: -20, near: 1, far: 70 });
   sun.shadow.radius = 4; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
+  sun.shadow.mapSize.set(1024, 1024);
   scene.add(sun, sun.target);
 
   const feltTex = (img, rx = 1, ry = 1) => {
@@ -239,10 +269,10 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
     }
     return g;
   }
-  const objects = new Map();   // 사건 → 그룹
+  const objects = new Map(), keep = new Set();   // 사건 → 그룹; 매 장면의 집합은 재사용한다
   function dropEvent(e, g) { scene.remove(g); if (g.userData.lamps) g.userData.lamps.dispose(); objects.delete(e); }
   function syncEvents(model, dt) {
-    const keep = new Set();
+    keep.clear();
     for (const e of model?.events || []) {
       if (e.kind === 'coin') continue;   // 별 줍기는 없다(보상은 공통 코인 하나)
       const ahead = e.d - model.distance;
@@ -261,7 +291,7 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
   }
 
   // ── 카메라: 화면 비율에 맞춰 한 번 자리를 잡는다. 세로 화면은 길 세 칸이 폭에 들도록 뒤로 물러난다 ──
-  let W = 1, H = 1;
+  let W = 0, H = 0, pixelRatio = 0, needsRender = true;
   const focus = new T.Vector3(0, 0.85, VIEW.playerZ);
   function frame() {
     const aspect = W / H, portrait = aspect < 1;
@@ -278,12 +308,14 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
   }
   function resize() {
     const r = canvas.getBoundingClientRect();
-    W = Math.max(1, r.width); H = Math.max(1, r.height);
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    renderer.setPixelRatio(dpr); renderer.setSize(W, H, false);
-    sun.shadow.mapSize.set(W * dpr > 1400 ? 2048 : 1024, W * dpr > 1400 ? 2048 : 1024);
-    if (sun.shadow.map) { sun.shadow.map.dispose(); sun.shadow.map = null; }
+    const width = Math.max(1, Math.round(r.width)), height = Math.max(1, Math.round(r.height));
+    const dpr = renderPixelRatio(width, height, window.devicePixelRatio || 1, budget.scale);
+    if (W === width && H === height && pixelRatio === dpr) return;
+    W = width; H = height; pixelRatio = dpr;
+    // setPixelRatio와 setSize를 함께 부르면 버퍼를 두 번 다시 만든다.
+    renderer.setDrawingBufferSize(W, H, dpr);
     frame();
+    needsRender = true;
   }
   const project = (x, y, z) => { const p = new T.Vector3(x, y, z).project(camera); return { x: (p.x + 1) / 2 * W, y: (1 - p.y) / 2 * H }; };
 
@@ -310,6 +342,7 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
     shield.visible = !!model && model.shield > 0;
     contact.position.x = x; contact.material.opacity = 1 - Math.min(0.7, y * 0.32); contact.scale.setScalar(1 + y * 0.12);
     renderer.render(scene, camera);
+    needsRender = false;
   }
 
   const ro = new ResizeObserver(resize); ro.observe(canvas);
@@ -319,6 +352,9 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
 
   return {
     render, resize, project,
+    get needsRender() { return needsRender; },
+    observeFrame(ms) { if (budget.sample(ms)) resize(); },
+    resetFrameBudget() { budget.reset(); },
     /** 몽글 머리 위(점수 글자 자리)의 화면 좌표 */
     runnerScreen: (model) => project(model ? model.x : 0, (model ? model.y : 0) + 1.75, VIEW.playerZ),
     /** 표시선 하나를 지나며 해낸 동작: 그 문의 등불을 켠다 */
@@ -349,7 +385,8 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
       }
       return { drawn, n, colors: colors.size, width: w, height: h };
     },
-    get info() { return { renderer: `Three.js ${T.REVISION}`, frames, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, events: objects.size, width: W, height: H }; },
+    get info() { return { renderer: `Three.js ${T.REVISION}`, frames, drawCalls: renderer.info.render.calls, triangles: renderer.info.render.triangles, events: objects.size, width: W, height: H,
+      pixelRatio, renderWidth: canvas.width, renderHeight: canvas.height, qualityScale: budget.scale, shadowSize: sun.shadow.mapSize.x }; },
     destroy() { ro.disconnect(); renderer.dispose(); },
   };
 }
