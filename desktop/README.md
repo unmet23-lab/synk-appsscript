@@ -1,12 +1,12 @@
 # SYNK 데스크톱 클라이언트
 
-## 2026-10-12 공개 Mac 설치판 · Apple Silicon Preview 0.4.1
+## 2026-10-12 공개 Mac 설치판 · Apple Silicon·Intel Preview 0.4.1
 
-[홈페이지](https://synk.im/#platform)에서 Windows x64와 **Apple Silicon(M 시리즈) Mac, macOS 13 이상** 설치판을 받는다. Mac Platform에는 WORLD·Workspace DMG가 함께 들어 있으며, 각각 Applications에 원래 앱 이름으로 복사한 뒤 Platform에서 설치 상태를 새로고침한다. WORLD는 인터넷에 연결하면 별도 개발 서버·Node.js 없이 실행한다.
+[홈페이지](https://synk.im/#platform)에서 Windows x64와 **Apple Silicon·Intel Mac, macOS 13 이상** 설치판을 받는다. Mac Platform에는 WORLD·Workspace DMG가 함께 들어 있으며 각각 Applications에 원래 앱 이름으로 복사한 뒤 Platform에서 설치 상태를 새로고침한다. WORLD는 인터넷에 연결하면 별도 개발 서버·Node.js 없이 실행한다.
 
-Mac은 아직 Developer ID 서명·Apple 공증을 받지 않은 Preview다. 홈페이지의 Mac 설치 안내에 첫 실행 알림 대응을 제공한다. Intel판은 빌드·서명 검사 뒤 3D 게임 실행 검증이 실패하여 공개하지 않았다. 실제 Intel Mac 실행 확인이 남아 있다.
+Intel판에 누락된 Vulkan loader를 공식 고정 원천에서 빌드해 서명 전에 동봉했다. 실제 Intel macOS CI에서 DMG·서명·CPU·pin41/41, WORLD15/15, 재연결10/10, Platform16/16을 통과했고 공개 세 DMG를 비로그인 전체 다운로드하여 SHA를 대조했다. GPU 없는 Intel CI에서만 소프트웨어 그래픽을 사용했으며 앱의 기본 그래픽·샌드박스는 유지했다. Apple Silicon의 기존 검증·파일은 유지한다.
 
-Apple Silicon 실제 DMG 복사·해시·서명38/38, WORLD 학습15/15, 연결 복구10/10, Platform16/16을 통과하고 세 공개 DMG를 익명으로 끝까지 내려받아 SHA를 대조했다. 실사용자 MacBook의 Gatekeeper 승인·운영 계정 왕복은 이 CI 검증에 포함하지 않는다. [공개 파일·홈페이지와 검증 범위](../docs/_ops/qa/platform-macos-preview-20261012/README.md).
+Mac은 Developer ID 서명·Apple 공증 전 Preview다. **M 시리즈는 Apple Silicon판을 사용한다.** Intel판을 Rosetta로 실행한 추가 검사는 게임 정지·시간 초과가 남아 지원 조합에서 제외한다. 실물 Intel GPU 성능·사용자 MacBook의 Gatekeeper 승인·운영 계정 왕복은 미검증이다. [공개 결과와 정확한 검증 범위](../docs/_ops/qa/platform-macos-preview-20261012/README.md).
 
 ## 2026-10-12 이 PC의 튜터 홈 · WORLD 0.4.2
 

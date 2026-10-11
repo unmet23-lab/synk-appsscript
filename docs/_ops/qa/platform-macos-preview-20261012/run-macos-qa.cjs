@@ -32,6 +32,11 @@ try{
       const signature=run('/usr/bin/codesign',['-dv','--verbose=4',app]);
       check(client+' ad-hoc code signature verifies',/Signature=adhoc/.test(signature.stderr),signature.stderr.split(/\r?\n/).filter(x=>/^(Identifier|Signature|TeamIdentifier|Runtime Version)=/.test(x)));
       const arch=run('/usr/bin/lipo',['-archs',executable]).stdout.trim();check(client+' executable CPU architecture',arch===(manifest.arch==='arm64'?'arm64':'x86_64'),arch);
+      if(manifest.arch==='x64'){
+        const library=path.join(app,'Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libvulkan.dylib');
+        const provenance=JSON.parse(fs.readFileSync(path.join(app,'Contents/Resources/Vulkan-Loader/provenance.json')));
+        check(client+' signed Intel graphics loader and license included',run('/usr/bin/lipo',['-archs',library]).stdout.trim()==='x86_64'&&provenance.loaderCommit==='fa218055ff4948b159f31d43f800c808a13d51df'&&fs.existsSync(path.join(app,'Contents/Resources/Vulkan-Loader/LICENSES')),{sha256:sha(library),provenance});
+      }
       const runtime=JSON.parse(asar.extractFile(archive,'runtime.json'));
       bundles[client]={client,app,executable,archive,metadata,runtime,installer:p.installer,signature:'ad-hoc',manifestExecutableSha:p.executable.sha256,manifestAsarSha:p.asar.sha256};
     }finally{if(mounted)run('/usr/bin/hdiutil',['detach',mount]);}

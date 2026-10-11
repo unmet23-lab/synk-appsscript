@@ -1,33 +1,60 @@
 {
-  "checkedAt": "2026-10-11T17:20:01.253789+00:00",
+  "checkedAt": "2026-10-11T18:14:32.255Z",
   "ok": true,
-  "browser": "Codex in-app Chromium",
-  "liveUrls": [
-    "https://synk.im/#platform",
-    "https://synk.im/en/#platform"
-  ],
-  "checks": {
-    "koWindowsLink": true,
-    "koAppleSiliconLink": true,
-    "enWindowsLink": true,
-    "enAppleSiliconLink": true,
-    "intelDownloadAbsent": true,
-    "koMacGuideExpanded": true,
-    "enMacGuideExpanded": true,
-    "guideApplications": true,
-    "guideMacOS13": true,
-    "guideIntelPending": true,
-    "guideNotarizationDisclosure": true,
-    "guideAppleSupportLink": true,
-    "mobileViewportWidth": 390,
-    "mobileDocumentScrollWidth": 375,
-    "mobileHorizontalOverflow": false,
-    "temporaryViewportReset": true
-  },
-  "screenshots": [
-    "homepage-public-ko.png",
-    "homepage-public-en.png",
-    "homepage-public-mobile.png",
-    "homepage-public-downloads.png"
+  "checks": [
+    {
+      "guideOpen": true,
+      "links": [
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-arm64.dmg",
+          "text": "Mac용 · Apple Silicon ↓",
+          "width": 221.203125
+        },
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-x64.dmg",
+          "text": "Mac용 · Intel ↓",
+          "width": 158.6640625
+        }
+      ],
+      "overflow": false,
+      "url": "https://synk.im/#platform",
+      "width": 1280
+    },
+    {
+      "guideOpen": true,
+      "links": [
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-arm64.dmg",
+          "left": 20,
+          "right": 241.203125,
+          "text": "Mac용 · Apple Silicon ↓"
+        },
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-x64.dmg",
+          "left": 20,
+          "right": 178.6640625,
+          "text": "Mac용 · Intel ↓"
+        }
+      ],
+      "overflow": false,
+      "url": "https://synk.im/#platform",
+      "width": 390
+    },
+    {
+      "guideOpen": true,
+      "links": [
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-arm64.dmg",
+          "text": "Mac · Apple Silicon ↓"
+        },
+        {
+          "href": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-Platform-Preview-0.4.1-mac-x64.dmg",
+          "text": "Mac · Intel ↓"
+        }
+      ],
+      "overflow": false,
+      "url": "https://synk.im/en/#platform",
+      "width": 1280
+    }
   ]
 }

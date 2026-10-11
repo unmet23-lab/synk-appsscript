@@ -1,39 +1,48 @@
 # SYNK Mac Preview 0.4.1 · 2026-10-12
 
-Windows·WORLD 독립 실행에 이어 MacBook 설치판을 추가했다. **공개 대상은 Apple Silicon(M 시리즈), macOS 13 이상**이다. Intel판은 빌드·서명 검사에 통과했지만 3D 게임 실행 검증에 실패하여 배포하지 않는다.
+Windows·WORLD 독립 실행에 이어 **macOS 13 이상 Apple Silicon(M 시리즈)·Intel**용 Platform·WORLD·Workspace DMG를 제공한다. [홈페이지](https://synk.im/#platform) · [Preview 릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.1-20261012).
 
-[Pages 배포 성공](https://github.com/unmet23-lab/synk-policy/actions/runs/38159005935) · [전체 사이트 점검 성공](https://github.com/unmet23-lab/synk-policy/actions/runs/38159005987) · 공개17파일 SHA17/17 · 실제 한영/390px 브라우저 확인 완료.
+Intel 공개 원천은 `96e7847f2651cc680cbb00fe237ffd4072ea26e4`, 홈페이지 원문은 `74fe54b`다. 기존 WORLD 공개 변경 `5c79e12`까지 보존했다. [Pages 배포](https://github.com/unmet23-lab/synk-policy/actions/runs/38162775426) · [사이트 점검](https://github.com/unmet23-lab/synk-policy/actions/runs/38162775495). 최종 배포 상태와 실제 화면은 `deployment.json`, `public-site.json`, `public-browser.json`으로 확인한다.
 
-공개 원천 커밋: `0e5f32178527ce0c59c2cef7d55c7ddf3d1d6107` · 홈페이지 원문 `bca9d729ec551d1f06b64eebb859fec809119f8d`.
+## 다운로드와 설치
 
-## 공개 결과
+- Mac은 Apple Silicon `mac-arm64.dmg`, Intel `mac-x64.dmg`로 구분한다. 두 종류 모두 macOS 13 이상이다. 홈페이지 한영 버튼과 설치 안내·질문 답변·llms.txt를 함께 갱신했다.
+- WORLD는 공개 HTTPS 서비스에 연결한다. 인터넷이 필요하며 Node.js나 별도 개발 서버는 필요 없다. Platform은 로컬 renderer와 해당 CPU의 WORLD·Workspace 설치 파일을 포함한다.
+- DMG 앱을 Applications에 원래 이름으로 복사하고 Platform에서 설치 상태를 새로고침한다. ad-hoc 서명 Preview로 Developer ID 서명·Apple 공증·자동 업데이트는 없다. 첫 실행 안내는 [Apple 공식 안내](https://support.apple.com/ko-kr/102445)를 따른다.
+- Intel 세 파일을 비로그인 상태로 끝까지 내려받아 크기·SHA-256을 대조했다. `x64/fixed/public-downloads.json`, `mac-package-x64.json`, `SHA256SUMS-x64.txt`가 근거다. ARM 세 파일의 기존 전체 다운로드 근거는 `arm64/public-downloads.json`이다.
 
-- [다운로드 홈페이지](https://synk.im/#platform)와 [Preview 릴리스](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.1-20261012). Mac 세 DMG(Platform·WORLD·Workspace)를 공개했고 각 파일의 익명 전체 다운로드 SHA-256·크기가 manifest와 일치한다. `arm64/public-downloads.json`, `release-final.json` 참고.
-- 홈페이지는 Apple Silicon 다운로드·macOS 13 이상·Applications 설치·미공증 첫 실행 안내를 제공한다. Intel 설치 버튼은 제공하지 않는다. 홈페이지의 실제 공개 확인 결과는 `public-site.json`과 `homepage-public*.png`에 보관한다.
-- WORLD는 공개 HTTPS 서비스에 연결하므로 Node.js나 별도 개발 서버가 필요 없다. 인터넷은 필요하다. Platform은 로컬 renderer와 해당 CPU의 WORLD·Workspace 설치 파일을 포함한다.
+## Intel 수정과 검증
 
-## 검증
+Electron 44.5.1의 Mac 배포본에 Chromium 151 이상에서 SwiftShader가 필요로 하는 `libvulkan.dylib`가 빠져 있었다. 공식 Khronos SDK 1.4.363.0의 고정 커밋에서 Intel·macOS 13용으로 빌드해 앱 서명 전에 포함했다. 라이선스·원천 커밋·빌드 전 SHA도 앱 안에 동봉한다. 기본 그래픽 선택과 앱 샌드박스, 기존 앱 소스는 유지했다.
 
-| 대상 | 실제 결과 |
-| --- | --- |
-| Apple Silicon 실제 DMG 복사·서명·CPU·해시·설치 pin | 38/38 |
-| 실제 WORLD 시작→기본 학습→3D 게임 이동·일시정지→계정 복귀 | 15/15 |
-| 연결 실패 안내→HTTPS 재연결 | 10/10 |
-| Platform 로컬 실행·두 앱 인식·동봉 DMG 준비 | 16/16 |
-| 홈페이지 한영 빌드·행동 계약 | 29/29 |
-| 원천 패키징·보안 / 수명주기·경로·renderer | 30/30 / 31/31 |
+- Vulkan-Headers: `6802bb4733b63ed5efd3adb308a6c885ef180ea1`
+- Vulkan-Loader: `fa218055ff4948b159f31d43f800c808a13d51df`
+- 설치 도구가 Rosetta에서 ARM Electron을 자동 선택하던 별도 진단 오류도 고쳤다. npm 설치 뒤 목표 CPU를 명시하여 Electron을 설치하고 실제 process.arch를 검사한다.
 
-- [Apple Silicon 통과 CI 38153512498](https://github.com/unmet23-lab/synk-policy/actions/runs/38153512498). 실제 DMG에서 격리 Applications로 복사한 서명 앱을 새 프로필로 실행했다. WORLD는 16개 음성과 실제 Three.js 프레임 진행·이동을 확인했다. 계정 provider 요청·개발 서버 요청·pageErrors는 0이다.
-- 첫 빌드38152987511에서 Platform 서명 도중 동봉 DMG가 재서명되어 pin이 달라지는 문제를 검출했다. 두 DMG 경로만 재서명에서 제외하고 상위 앱 리소스 봉인을 유지하여 수정했다.
-- Intel 기본 CI38153512498은 GPU의 GL 초기화 실패, SwiftShader CI38154830885는 Vulkan 초기화 실패였다. Rosetta CI38156112969의 실제 x64 앱은 Three.js를 생성했으나 frames=4·elapsed=0.15에서 진행을 확인하지 못했다. 이 실행의 별도 preflight는 processArch=arm64여서 Intel 증거로 사용하지 않는다. 이후 목표 CPU 일치 검사를 추가했다.
-- 표시 창38157423326과 프레임 제한 해제38158251085에서도 같은 x64 설치 파일의 게임 진행 검사가 실패했다. 마지막 실행은 visible=true·focus=true·paused=false·pageErrors=[]이며 52.6초 동안 RAF29회, 게임 frames4·elapsed0.15였다. 정확한 원인은 미확정이다. `x64/`에 후보 manifest와 실패 결과를 보관한다. **이 후보는 공개하지 않았다.**
+| 실제 설치 파일 검사 | Intel x64 | Apple Silicon arm64 |
+| --- | --- | --- |
+| DMG 복사·서명·CPU·해시·설치 pin | 41/41 | 38/38 |
+| WORLD 시작→기본 학습→게임 진행·이동·일시정지→계정 화면 복귀 | 15/15 | 15/15 |
+| 연결 실패 안내→HTTPS 재연결 | 10/10 | 10/10 |
+| Platform 로컬 실행·두 앱 인식·동봉 DMG 준비 | 16/16 | 16/16 |
+| 공개 DMG 전체 GET·SHA | 3/3 | 3/3 |
 
-## 재현 원천과 범위
+[Intel 통과 CI 38160482694](https://github.com/unmet23-lab/synk-policy/actions/runs/38160482694)는 **Intel macOS VM에서 실제 x64 앱**을 실행했다(process.arch=x64, RUNNER_ARCH=X64, translated=false). 실제 DMG를 격리 Applications에 복사하고 코드 서명을 검증한 뒤 새 프로필로 실행했다. 게임의 실제 프레임·시간 진행, 조작과 복귀를 확인했으며 provider 요청·개발 서버 요청·pageErrors는 0이다. `x64/fixed/`에 전체 결과를 보관한다. 화면 캡처는 VM의 그리기 지연이 있을 수 있어 개별 화면 표시 주장은 DOM 검사와 구분한다.
 
-[공개 고정 원천·빌더](https://github.com/unmet23-lab/synk-policy/tree/main/.github/desktop-preview)는 기존 공개 Windows Platform·WORLD0.4.1와 Workspace0.4.0에서 추출한321파일을 고정하고, Mac 설치 안내6곳만3renderer파일에 적용한다. 각 소스 SHA와 공개 설정을 검증한다. 원천·QA 보관본은 이 폴더의 `build.cjs`, `mac-renderer-overlay.json`, `source-validation.json`, `native-smoke.cjs`, `run-macos-qa.cjs`다. 앱은 ad-hoc 서명이며 Developer ID 서명·Apple 공증·자동 업데이트는 없다.
+Intel CI에는 하드웨어 GPU가 없어 **검사 프로세스에만 SwiftShader 플래그**를 사용했다. 이 플래그는 앱 소스·설치 파일의 기본 실행 설정에 넣지 않았다. GPU 샌드박스를 끄지 않았다. 물리 Intel GPU의 성능을 증명하는 시험은 아니다. 별도 무디버거 Intel 진단에서도 WebGL2 픽셀과 실제 게임 64프레임·3.11초 진행을 확인했다.
 
-CI 실행은 실제 사용자 MacBook의 Gatekeeper 승인·Keychain 재승인·운영 계정 로그인/재로그인 인수를 대신하지 않는다. Platform에서 자식 DMG를 준비하고 설치된 앱을 인식한 것까지 확인했으며 Platform을 통한 자식 프로세스 실행은 검사하지 않았다. 현재 Windows 설치본·실사용자 프로필은 변경하지 않았다. 실제 Intel Mac에서 게임 실행을 확인한 후에만 Intel 배포를 재개한다.
+[Apple Silicon 통과 CI 38153512498](https://github.com/unmet23-lab/synk-policy/actions/runs/38153512498)의 기존 설치 파일은 변경하지 않았다. 홈페이지 관련 웹 시험은 29/29 통과했다.
 
-## 공식 근거
+## 지원 조합과 남은 범위
 
-2026-10-12 확인: [Electron44 macOS13 요구](https://www.electronjs.org/blog/electron-44-0), [Apple 첫 실행 안내](https://support.apple.com/ko-kr/102445), [Electron-builder 서명](https://www.electron.build/v26/docs/mac/), [Chromium 프레임 스위치 정의](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/components/viz/common/switches.cc). Vulkan loader 관련 [CEF upstream 기록](https://github.com/chromiumembedded/cef/issues/4230)은 참고 근거이며 이번 Intel 실패의 원인으로 확정하지 않는다.
+**Intel 설치판은 Intel Mac에서, M 시리즈에서는 Apple Silicon 설치판을 사용한다.** x64 일반 Electron의 Rosetta·기본 Metal 진단은 진행했지만, 실제 패키지 Rosetta 검사38161673838은 frames4·elapsed0.15에서 멈췄다. 디버거 분리 검사38162193973도 시간 초과로 종료됐다. 이 조합을 통과했다고 보고하지 않으며 이번 Preview 지원 조합에서 제외한다. `x64/rosetta-default-failure/`에 근거가 있다. 실패한 디버거 변경은 QA 원천에서 되돌렸다.
+
+CI는 실사용자 MacBook의 Gatekeeper 승인·Keychain 재승인·운영 계정 로그인/재로그인·물리 Intel GPU 성능을 대신하지 않는다. Platform에서 자식 DMG 준비와 설치된 앱 인식까지 확인했으며 Platform을 통한 자식 프로세스 실행은 검사하지 않았다. 실제 사용자 Windows 설치본·프로필은 변경하지 않았다.
+
+## 재현과 이전 실패 기록
+
+[공개 고정 원천·빌더](https://github.com/unmet23-lab/synk-policy/tree/main/.github/desktop-preview)는 기존 공개 Windows Platform·WORLD0.4.1와 Workspace0.4.0에서 추출한321파일을 고정한다. Mac 설치 안내6곳만3renderer파일에 적용하고, Intel 그래픽 라이브러리는 별도로 서명 전에 추가한다. 원천 SHA와 공개 설정·개인정보 패턴 검사를 통과했다. 원천·QA 보관본은 이 폴더의 `build.cjs`, `build-vulkan-loader.sh`, `mac-renderer-overlay.json`, `native-smoke.cjs`, `run-macos-qa.cjs`다.
+
+이전 Intel 기본 GPU 초기화 실패38153512498, Vulkan 초기화 실패38154830885, Rosetta 게임 정지38156112969·38157423326·38158251085는 `x64/` 및 `intel-ci-gpu-failure/`의 과거 근거다. 이때의 후보는 공개하지 않았고 이번에 재빌드한 해시만 공개했다. 초기 Platform 서명 중 동봉 DMG가 재서명되는 문제는 두 동봉 DMG만 재서명에서 제외하여 수정했고 상위 앱 리소스 봉인은 유지했다.
+
+공식 근거(2026-10-12 확인): [CEF Vulkan loader 누락 기록](https://github.com/chromiumembedded/cef/issues/4230), [Electron44 macOS13 요구](https://www.electronjs.org/blog/electron-44-0), [Electron 설치의 CPU 선택](https://github.com/electron/electron/blob/v44.5.1/npm/install.js), [Electron-builder 서명](https://www.electron.build/v26/docs/mac/).

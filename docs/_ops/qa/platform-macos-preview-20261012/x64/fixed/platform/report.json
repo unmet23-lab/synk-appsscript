@@ -1,0 +1,176 @@
+{
+  "checkedAt": "2026-10-11T17:50:04.613Z",
+  "ok": true,
+  "asarSha256": "5db4dba472b81e888d5981cf72abbef783c078c6931075ea024e519f0c10eec0",
+  "packageBytesUnchanged": true,
+  "code": 0,
+  "error": null,
+  "result": {
+    "ok": true,
+    "mode": "platform",
+    "packaged": true,
+    "arch": "x64",
+    "electron": "44.5.1",
+    "archive": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications/SYNKPlatformPreview.app/Contents/Resources/app.asar",
+    "visible": true,
+    "profileIsolated": true,
+    "installationRoot": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/Applications",
+    "checks": [
+      {
+        "name": "actual packaged native architecture",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before app initialization",
+        "ok": true
+      },
+      {
+        "name": "window hidden",
+        "ok": true
+      },
+      {
+        "name": "Platform local renderer and native environment",
+        "ok": true
+      },
+      {
+        "name": "Platform empty configured account stays signed out",
+        "ok": true
+      },
+      {
+        "name": "world managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "world",
+          "name": "SYNK WORLD",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.1",
+          "latestVersion": "0.4.1",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.1",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 158791048,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "world embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "world real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.1",
+          "progress": 100,
+          "transferredBytes": 158791048,
+          "totalBytes": 158791048,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "messenger managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "messenger",
+          "name": "SYNK Workspace",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.1",
+          "latestVersion": "0.4.1",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.1",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 158588373,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "messenger embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "messenger real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.1",
+          "progress": 100,
+          "transferredBytes": 158588373,
+          "totalBytes": 158588373,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "visible Mac installation help points to Applications",
+        "ok": true,
+        "detail": {
+          "text": "개발 미리보기 배포\n\n포함된 설치 파일을 이 기기에 복사하고 확인합니다. Mac에서는 설치 파일을 열고 앱을 Applications 폴더로 옮겨 주세요. 설치 완료 후 라이브러리에서 실행할 수 있어요.",
+          "width": 1082,
+          "height": 81.796875,
+          "visible": true
+        }
+      },
+      {
+        "name": "Platform boot requires no network",
+        "ok": true
+      },
+      {
+        "name": "no account provider request with empty vault",
+        "ok": true
+      },
+      {
+        "name": "no localhost development server requests",
+        "ok": true
+      },
+      {
+        "name": "QA window visibility matches requested mode",
+        "ok": true
+      }
+    ],
+    "errors": [],
+    "pageErrors": [],
+    "requests": [],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "openRequestsSuppressed": [],
+    "screenshots": [
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/platform/platform-installation-help.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/platform/platform-library.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "managedChildLaunched": false,
+    "unlimitedFrames": false,
+    "graphicsBackend": "CI-only SwiftShader",
+    "runnerArch": "X64",
+    "translated": false
+  }
+}

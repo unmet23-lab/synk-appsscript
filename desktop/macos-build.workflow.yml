@@ -1,6 +1,3 @@
-# Reference copy of the public frozen-source Preview workflow.
-# It runs in unmet23-lab/synk-policy; copying this file alone is insufficient.
-# See docs/_ops/qa/platform-macos-preview-20261012/README.md.
 name: SYNK macOS Preview
 
 on:
@@ -11,7 +8,7 @@ on:
         options: [both, arm64, x64]
         default: both
   push:
-    branches: [codex/macos-preview-20261012, codex/macos-intel-preview-20261012]
+    branches: [codex/macos-preview-20261012, codex/macos-intel-preview-20261012, codex/macos-intel-fix-20261012]
     paths:
       - '.github/desktop-preview/**'
       - '.github/workflows/desktop-macos-preview.yml'
@@ -27,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: ${{ fromJSON((inputs.architecture == 'x64' || github.ref_name == 'codex/macos-intel-preview-20261012') && '[{"arch":"x64","runner":"macos-15"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15"}]') }}
+        include: ${{ fromJSON((inputs.architecture == 'x64' || startsWith(github.ref_name, 'codex/macos-intel-')) && '[{"arch":"x64","runner":"macos-15-intel"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15-intel"}]') }}
     defaults:
       run:
         working-directory: .github/desktop-preview
@@ -44,11 +41,22 @@ jobs:
       - name: Install pinned build tools
         run: npm ci --no-audit --no-fund
         env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - name: Install the exact Electron CPU architecture
+        run: node node_modules/electron/install.js
+        env:
           npm_config_arch: ${{ matrix.arch }}
-      - name: Verify graphics before packaging (x64 uses preinstalled Rosetta)
+      - name: Build and stage the missing Intel graphics loader
+        if: matrix.arch == 'x64'
+        run: |
+          bash build-vulkan-loader.sh
+          cp native-libs/x64/libvulkan.dylib 'node_modules/electron/dist/Electron.app/Contents/Frameworks/Electron Framework.framework/Versions/A/Libraries/libvulkan.dylib'
+          codesign --force --deep --sign - node_modules/electron/dist/Electron.app
+      - name: Verify graphics before packaging
         run: node qa/probe-gpu.cjs
         env:
           SYNK_QA_EXPECTED_ARCH: ${{ matrix.arch }}
+          SYNK_QA_SOFTWARE_GPU: ${{ matrix.arch == 'x64' && '1' || '0' }}
       - name: Validate frozen public source
         run: node build.cjs --validate-only
       - name: Build native Preview DMGs
@@ -62,6 +70,7 @@ jobs:
         run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }}
         env:
           SYNK_QA_VISIBLE: '1'
+          SYNK_QA_SOFTWARE_GPU: ${{ matrix.arch == 'x64' && '1' || '0' }}
       - name: Save verified installers
         uses: actions/upload-artifact@v7
         with:
