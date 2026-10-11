@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "version": "0.4.2",
+  "completedAt": "2026-10-11T16:01:12.026Z",
+  "installer": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\SYNK-WORLD-Preview-0.4.2-win-x64.exe",
+    "sha256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f",
+    "bytes": 132344543
+  },
+  "asar": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload\\resources\\app.asar",
+    "sha256": "19e20929ad9308074be4a4c956e540d0b912e97c02dccc580211315a7966625f",
+    "files": 103
+  },
+  "executable": {
+    "path": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\payload\\SYNKWorldPreview.exe",
+    "sha256": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+    "before": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+    "after": "43d835bafae5b03a3350d94264e95e20e721578375616636c1f8d73fbee28874",
+    "fileVersion": "0.4.2.0",
+    "nonVersionResourcesUnchanged": 54,
+    "codeDataSectionsUnchanged": 14
+  },
+  "entry": "https://synk.im/world/",
+  "sourceHash": "6f55c22c747e9b9582a4036b6b5853eb77b2a5cb0d11aed0135d5eb5d3267cd0",
+  "payloadFiles": 74,
+  "actualInstallerExtracted": true,
+  "allDeliveredBytesMatch": true,
+  "privacyFindings": [],
+  "platformUntouched": true,
+  "userProfilesTouched": false,
+  "installerExecuted": false,
+  "publicUpload": false,
+  "unsignedPreview": true
+}

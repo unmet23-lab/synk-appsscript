@@ -1,0 +1,77 @@
+{
+  "at": "2026-10-11T15:59:39.495Z",
+  "worktree": "C:/Users/q1212/Documents/SYNK-talk-tutor-life-release-20261012",
+  "head": "a5dcbe5a9f1c85ee89402396b37001b34ae79db3",
+  "baselineCommit": "2d112cd866c9c074b72a4e0855a098b89fb96fc1",
+  "sourceProof": {
+    "at": "2026-10-11T15:56:36.679Z",
+    "scope": "Candidate preparation only; no backend deployment or database access",
+    "baseline": {
+      "slug": "synk-play",
+      "version": 9,
+      "status": "ACTIVE",
+      "verify_jwt": true,
+      "updated_at": 1791538555375,
+      "bodyBytes": 775290,
+      "bodySHA256": "0b3e3ca927d9060fed44f4b3486e261223a86fc65a8e7760df64735c69735d25",
+      "sources": [
+        {
+          "name": "source/index.ts",
+          "bytes": 687,
+          "sha256": "ccd7a51e36602eca40287a71c2e9c7d0cc104bd1cc5a1ec5e389b605fec9acdb",
+          "sourceMapBytes": 1222
+        },
+        {
+          "name": "source/synk-play-runtime.mjs",
+          "bytes": 473151,
+          "sha256": "dca48a7b484b24f11de7bb847e179124656a5a4bd2b387d60c4b4cca022d8723",
+          "sourceMapBytes": 0
+        }
+      ]
+    },
+    "candidate": {
+      "indexOriginalPreserved": true,
+      "runtimeExactSingleAllowlistAddition": true,
+      "runtimeBytes": 473189,
+      "runtimeSHA256": "a8971259f9c077c5a246bea8e585b928d83e0a6d98165025e3015138a7797bd0",
+      "runtimeCJS_SHA256": "21a763975456e0c64860bece08dcdbfc1a46e6b801e630ce7d1186f80234645b",
+      "indexBytes": 620,
+      "indexSHA256": "465dc2157dfa8e8518c8724d6c28939333fa6c101dc01cd82643306759560a0b"
+    },
+    "canonical": {
+      "file": "experiences/play-common/play-data.mjs",
+      "sourceSHA256": "0fa9956df184c8499b8d7675bf95d34b88604337f18847c07f6c361e0d54d9f9",
+      "generatedModuleSHA256": "99083c7618378515cb9679dd50c06ed9a5e595036a68869430595771029111fe",
+      "candidateModuleSHA256": "99083c7618378515cb9679dd50c06ed9a5e595036a68869430595771029111fe",
+      "completePlayDataModuleEqualsCanonicalBuild": true
+    },
+    "unchangedContracts": [
+      "entrypoint",
+      "authentication",
+      "database",
+      "wallet/rewards",
+      "all previous record keys",
+      "request validation except added allowed key",
+      "concurrency/idempotency",
+      "runtime feature flag"
+    ],
+    "localWholeRuntimeExcluded": true
+  },
+  "files": [
+    {
+      "name": "index.ts",
+      "bytes": 620,
+      "sha256": "465dc2157dfa8e8518c8724d6c28939333fa6c101dc01cd82643306759560a0b",
+      "exactFrozenCandidate": true
+    },
+    {
+      "name": "synk-play-runtime.mjs",
+      "bytes": 473189,
+      "sha256": "a8971259f9c077c5a246bea8e585b928d83e0a6d98165025e3015138a7797bd0",
+      "exactFrozenCandidate": true
+    }
+  ],
+  "deployTool": "node tools/원격배포.js supabase/functions/synk-play --적용 --운영",
+  "databaseWrites": 0,
+  "authChanges": 0
+}

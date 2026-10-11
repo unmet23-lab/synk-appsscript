@@ -10717,6 +10717,50 @@ var PUBLIC = Object.freeze({ world: "https://synk.im/account/client.html?product
 // experiences/synk-world-app/world-account.mjs
 var import_account_client = __toESM(require_account_client(), 1);
 
+// experiences/synk-account/src/desktop-account.mjs
+function createDesktopAccountClient({ bridge, product, guard }) {
+  if (!["platform", "world"].includes(product) || typeof guard !== "function" || typeof bridge?.accountRequest !== "function") throw new TypeError("Trusted desktop account bridge required");
+  async function request(operation, params = {}, signal) {
+    guard();
+    if (signal?.aborted) throw Object.assign(new Error("\uC694\uCCAD\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694."), { code: "ABORTED" });
+    const result = await bridge.accountRequest(operation, params);
+    guard();
+    if (signal?.aborted) throw Object.assign(new Error("\uC694\uCCAD\uC744 \uCDE8\uC18C\uD588\uC5B4\uC694."), { code: "ABORTED" });
+    if (result?.ok !== true) throw Object.assign(new Error(result?.error?.message || "\uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), {
+      code: result?.error?.code || "ACCOUNT_UNAVAILABLE",
+      retryable: result?.error?.retryable === true,
+      status: result?.error?.status,
+      revision: result?.revision
+    });
+    return result;
+  }
+  return Object.freeze({
+    configured: true,
+    product,
+    play: Object.freeze({
+      load: () => request("playLoad"),
+      mutate: (body) => request("playMutate", body)
+    }),
+    load: () => request("load"),
+    release: () => request("release"),
+    atlasSummary: () => request("atlasSummary"),
+    setLearning: (enabled, expected_revision) => request("setLearning", { enabled, expected_revision }),
+    updateProfile: (profile, expected_profile_revision) => request("updateProfile", { profile, expected_profile_revision }),
+    revokeSession: (session_id) => request("revokeSession", { session_id }),
+    revokeAll: () => request("revokeAll"),
+    requestDeletion: (request_id) => request("requestDeletion", { request_id }),
+    exportPage: ({ after = 0, until } = {}) => request("exportPage", { after, ...until == null ? {} : { until } }),
+    learning: Object.freeze({
+      get: ({ after, revision, signal }) => request("learningGet", { after, revision }, signal),
+      post: ({ revision, events, signal }) => request("learningPost", { revision, events }, signal)
+    }),
+    memory: Object.freeze({
+      get: ({ revision, signal }) => request("memoryGet", { revision }, signal),
+      post: ({ revision, entries, signal }) => request("memoryPost", { revision, entries }, signal)
+    })
+  });
+}
+
 // experiences/korean-racing/play-catalog.js
 var PLAY_GAMES = Object.freeze([
   {
@@ -12654,22 +12698,31 @@ function createWorldAccount({
   navigate = (url) => location.assign(url),
   onInvalidate = () => {
   },
+  onConnect = () => {
+  },
+  bridge = globalThis.synkDesktop,
   accountFactory = import_account_client.default.createAccountClient,
   requestToken = tokenRequest,
   now = Date.now
 } = {}) {
+  const native = typeof bridge?.accountRequest === "function" && typeof bridge?.authStatus === "function";
   const config = readConfig(raw, getUrl()), key = "synk.oauth.session.world";
   const binding = [config.supabaseUrl, config.accountApiUrl, config.clients.world.clientId, config.clients.world.redirectUri].join("|");
   const entry = createPlatformEntry({ clientKey: "world", getUrl, replaceUrl });
   let session = null, rawSession = null, owner = null, currentSessionId = null, currentAccount = null, epoch = 0, closed = false, refreshing = null, pendingExchange = null, townBinding = null, townStateRevision = -1, verifiedClient = null, gameHost = null, gameLaunch = 0, lifeHost = null, lifeLaunch = 0, verification = 0;
+  let nativeIdentity = null, nativeAccountId = null, nativeGeneration = -1, signedOutGeneration = -1, nativeEvents = 0, nativeReady = null, unsubscribe = null;
   const controllers = /* @__PURE__ */ new Set();
   const guard = (expected) => {
     if (closed || expected !== epoch) throw changed();
-    if (session && storage.getItem(key) !== rawSession) {
+    if (!native && session && storage.getItem(key) !== rawSession) {
       clear();
       throw changed();
     }
   };
+  const forgetSession = () => {
+    if (!native) storage.removeItem(key);
+  };
+  const clientFor = (expected) => native ? createDesktopAccountClient({ bridge, product: "world", guard: () => guard(expected) }) : accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: "world", getAccessToken: () => session?.access_token, refresh: () => renew(expected), guard: () => guard(expected), fetch: fetcher });
   const gameBinding = (data) => JSON.stringify([data?.account?.synk_user_id, data?.account?.status, data?.learning?.enabled, data?.learning?.revision, data?.capabilities?.learningSync]);
   function stopGames() {
     gameHost?.dispose();
@@ -12690,8 +12743,56 @@ function createWorldAccount({
     verifiedClient = null;
     townBinding = null;
     townStateRevision = -1;
+    nativeIdentity = null;
+    nativeAccountId = null;
     for (const c of controllers) c.abort();
     onInvalidate();
+  }
+  function nativeStatus(state) {
+    if (closed) return false;
+    const generation = state?.sessionGeneration, id = state?.account?.synk_user_id;
+    if (!Number.isSafeInteger(generation) || generation < nativeGeneration) return !!session;
+    nativeGeneration = generation;
+    if (state.status === "restoring" && !state.error && nativeIdentity && nativeIdentity === `${nativeAccountId}:${generation}`) return true;
+    if (state.signedIn === true && typeof id === "string" && id && generation > signedOutGeneration) {
+      const identity = `${id}:${generation}`;
+      if (identity !== nativeIdentity) {
+        clear();
+        nativeIdentity = identity;
+        nativeAccountId = id;
+        session = { native: true };
+      }
+      return true;
+    }
+    if (session || owner) clear();
+    return false;
+  }
+  async function prepareNative() {
+    if (nativeReady) return nativeReady;
+    const expected = epoch;
+    const pending = (async () => {
+      if (typeof bridge.getEnvironment !== "function" || typeof bridge.onAuthChanged !== "function" || typeof bridge.authSignIn !== "function" || typeof bridge.authSignOut !== "function") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
+      const environment = await bridge.getEnvironment();
+      guard(expected);
+      if (environment?.clientId !== "world") throw Object.assign(Error("WORLD \uC571\uC758 \uACC4\uC815 \uC5F0\uACB0\uC744 \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "INVALID_BRIDGE" });
+      unsubscribe = bridge.onAuthChanged((state) => {
+        const before = nativeIdentity;
+        nativeEvents++;
+        if (nativeStatus(state) && nativeIdentity !== before) {
+          const identity = nativeIdentity;
+          queueMicrotask(() => {
+            if (!closed && nativeIdentity === identity) onConnect();
+          });
+        }
+      });
+    })();
+    nativeReady = pending;
+    try {
+      await pending;
+    } catch (error2) {
+      if (nativeReady === pending) nativeReady = null;
+      throw error2;
+    }
   }
   function save(value) {
     session = value;
@@ -12719,18 +12820,18 @@ function createWorldAccount({
     guard(expected);
     if (!session) return false;
     const read = ++verification;
-    if (session.expires_at <= now() + 3e4) {
+    if (!native && session.expires_at <= now() + 3e4) {
       await renew(expected);
       guard(expected);
     }
-    const client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: "world", getAccessToken: () => session?.access_token, refresh: () => renew(expected), guard: () => guard(expected), fetch: fetcher });
+    const client = clientFor(expected);
     const data = await client.load();
     guard(expected);
     if (read !== verification) throw changed();
     const id = data.account?.synk_user_id;
     if (data.ok !== true || typeof id !== "string" || !id || data.account.status !== "active") throw Object.assign(Error("\uD65C\uC131\uD654\uB41C SYNK ID\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694."), { code: "ACCOUNT_UNAVAILABLE" });
-    entry.assertAccount(id);
-    if (owner && id !== owner) {
+    if (!native) entry.assertAccount(id);
+    if (owner && id !== owner || native && id !== nativeAccountId) {
       clear();
       throw changed();
     }
@@ -12742,6 +12843,21 @@ function createWorldAccount({
     return true;
   }
   async function restore() {
+    if (native) {
+      await prepareNative();
+      guard(epoch);
+      const observed = nativeEvents, state = await bridge.authStatus();
+      guard(epoch);
+      if (observed === nativeEvents) nativeStatus(state);
+      if (!session) return false;
+      const expected2 = epoch;
+      try {
+        return await verify(expected2);
+      } catch (error2) {
+        if (expected2 === epoch && authErrors.has(error2.code)) clear();
+        throw error2;
+      }
+    }
     const expected = epoch;
     entry.capture(storage);
     entry.restore(storage);
@@ -12784,12 +12900,20 @@ function createWorldAccount({
     } catch (error2) {
       if (authErrors.has(error2.code)) {
         clear();
-        storage.removeItem(key);
+        forgetSession();
       }
       throw error2;
     }
   }
   async function signIn() {
+    if (native) {
+      await prepareNative();
+      guard(epoch);
+      clear();
+      const result = await bridge.authSignIn();
+      if (result?.ok === false) throw Object.assign(Error(result.error?.message || "SYNK ID \uB85C\uADF8\uC778\uC744 \uC2DC\uC791\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694."), { code: result.error?.code || "AUTH_REQUIRED" });
+      return;
+    }
     clear();
     entry.resume();
     entry.stop();
@@ -12822,7 +12946,7 @@ function createWorldAccount({
         } catch (error2) {
           if (expected === epoch && authErrors.has(error2.code)) {
             clear();
-            storage.removeItem(key);
+            forgetSession();
           }
           throw error2;
         }
@@ -12851,7 +12975,7 @@ function createWorldAccount({
     } catch (error2) {
       if (expected === epoch && authErrors.has(error2.code)) {
         clear();
-        storage.removeItem(key);
+        forgetSession();
       }
       throw error2;
     }
@@ -12870,7 +12994,7 @@ function createWorldAccount({
     } catch (error2) {
       if (expected === epoch && authErrors.has(error2.code)) {
         clear();
-        storage.removeItem(key);
+        forgetSession();
       }
       throw error2;
     }
@@ -12889,7 +13013,7 @@ function createWorldAccount({
       } catch (error2) {
         if (expected === epoch && authErrors.has(error2.code)) {
           clear();
-          storage.removeItem(key);
+          forgetSession();
         }
         throw error2;
       }
@@ -12920,6 +13044,33 @@ function createWorldAccount({
       townStateRevision = -1;
     }
     if (path === "town/sharing" && !townBinding?.classId) throw Object.assign(Error("CLASSROOM_FORBIDDEN"), { code: "CLASSROOM_FORBIDDEN", status: 403 });
+    const accept = (data, ok, status) => {
+      guard(expected);
+      if (status === 401 || authErrors.has(data?.error?.code)) {
+        clear();
+        forgetSession();
+      }
+      if (ok && path !== "town/sharing" && !path.startsWith("enrollment/") && data?.accountId !== owner) throw Object.assign(Error("\uB2E4\uB978 \uACC4\uC815\uC758 \uC751\uB2F5\uC744 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "ACCOUNT_MISMATCH" });
+      if (ok && data.binding) {
+        const next = data.binding;
+        if (townBinding && (next.classId !== townBinding.classId || Number(next.sharing?.revision) < Number(townBinding.sharing?.revision) || Number(next.membershipRevision) < Number(townBinding.membershipRevision) || next.sharing?.revision === townBinding.sharing?.revision && townBinding.sharing?.enabled === false && next.sharing?.enabled === true)) throw Object.assign(Error("TOWN_SNAPSHOT_CHANGED"), { code: "TOWN_SNAPSHOT_CHANGED" });
+        townBinding = next;
+      }
+      if (ok && path.startsWith("town/") && Number.isSafeInteger(data.state?.revision)) {
+        if (data.state.revision < townStateRevision) throw Object.assign(Error("TOWN_SNAPSHOT_CHANGED"), { code: "TOWN_SNAPSHOT_CHANGED" });
+        townStateRevision = data.state.revision;
+      }
+      return { ok, status, json: async () => {
+        guard(expected);
+        return data;
+      } };
+    };
+    if (native) {
+      const body = options.body === void 0 ? void 0 : JSON.parse(options.body);
+      if (body !== void 0 && (!body || typeof body !== "object" || Array.isArray(body))) throw new TypeError("Invalid WORLD request body");
+      const data = await bridge.accountRequest("worldRequest", { route: path, ...body === void 0 ? {} : { body }, ...path.startsWith("town/") && path !== "town/entry" && townBinding?.classId ? { classId: townBinding.classId } : {} });
+      return accept(data, data?.ok === true, data?.ok === true ? 200 : data?.error?.status || 503);
+    }
     const endpoint = path === "town/sharing" || path.startsWith("enrollment/") ? "synk-classroom" : path.startsWith("town/") ? "synk-town" : "synk-world-v1", suffix = path === "town/sharing" ? "api/world/town/sharing" : path.startsWith("enrollment/") ? `api/${path}` : path.startsWith("town/") ? path.slice(5) : path;
     const url = new URL(config.accountApiUrl);
     url.pathname = url.pathname.replace(/\/$/, "").replace(/\/functions\/v1(?:\/synk-(?:account|world-v1|town))?$/, "") + `/functions/v1/${endpoint}/${suffix}`;
@@ -12950,24 +13101,7 @@ function createWorldAccount({
         }
         const data = await response.json();
         guard(expected);
-        if (response.status === 401 || authErrors.has(data?.error?.code)) {
-          clear();
-          storage.removeItem(key);
-        }
-        if (response.ok && path !== "town/sharing" && !path.startsWith("enrollment/") && data?.accountId !== owner) throw Object.assign(Error("\uB2E4\uB978 \uACC4\uC815\uC758 \uC751\uB2F5\uC744 \uC801\uC6A9\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694."), { code: "ACCOUNT_MISMATCH" });
-        if (response.ok && data.binding) {
-          const next = data.binding;
-          if (townBinding && (next.classId !== townBinding.classId || Number(next.sharing?.revision) < Number(townBinding.sharing?.revision) || Number(next.membershipRevision) < Number(townBinding.membershipRevision) || next.sharing?.revision === townBinding.sharing?.revision && townBinding.sharing?.enabled === false && next.sharing?.enabled === true)) throw Object.assign(Error("TOWN_SNAPSHOT_CHANGED"), { code: "TOWN_SNAPSHOT_CHANGED" });
-          townBinding = next;
-        }
-        if (response.ok && path.startsWith("town/") && Number.isSafeInteger(data.state?.revision)) {
-          if (data.state.revision < townStateRevision) throw Object.assign(Error("TOWN_SNAPSHOT_CHANGED"), { code: "TOWN_SNAPSHOT_CHANGED" });
-          townStateRevision = data.state.revision;
-        }
-        return { ok: response.ok, status: response.status, json: async () => {
-          guard(expected);
-          return data;
-        } };
+        return accept(data, response.ok, response.status);
       }
     } finally {
       clearTimeout(timer);
@@ -12975,6 +13109,12 @@ function createWorldAccount({
     }
   }
   async function logout() {
+    if (native) {
+      signedOutGeneration = Math.max(signedOutGeneration, nativeGeneration);
+      clear();
+      const result = await bridge.authSignOut();
+      return { serverRevoked: result?.ok === true && result.serverRevoked === true };
+    }
     const captured = session, id = currentSessionId;
     clear();
     entry.cancel();
@@ -13020,7 +13160,7 @@ function createWorldAccount({
       const expected = epoch;
       guard(expected);
       if (!owner || typeof enabled !== "boolean" || !Number.isSafeInteger(expectedRevision) || expectedRevision < 0) throw new TypeError("Invalid account learning preference");
-      const client = accountFactory({ url: config.accountApiUrl, anonKey: config.supabasePublishableKey, product: "world", getAccessToken: () => session?.access_token, refresh: () => renew(expected), guard: () => guard(expected), fetch: fetcher });
+      const client = clientFor(expected);
       try {
         await client.setLearning(enabled, expectedRevision);
         guard(expected);
@@ -13030,7 +13170,7 @@ function createWorldAccount({
       } catch (error2) {
         if (authErrors.has(error2.code)) {
           clear();
-          storage.removeItem(key);
+          forgetSession();
         }
         throw error2;
       }
@@ -13045,6 +13185,8 @@ function createWorldAccount({
     stop() {
       clear();
       closed = true;
+      unsubscribe?.();
+      unsubscribe = null;
     }
   });
 }

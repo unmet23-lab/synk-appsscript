@@ -1,0 +1,20 @@
+{
+  "verifiedAt": "2026-10-11T16:01:31.331Z",
+  "baselineMatchesPublicHTTP": true,
+  "httpStatus": 200,
+  "publicSha256": "9b43b972c949d44cc249d68a9943c96ac15c8fd861045b4f9897f1dec309e676",
+  "changedModules": [
+    "// experiences/synk-world-app/world-account.mjs"
+  ],
+  "addedModules": [
+    "// experiences/synk-account/src/desktop-account.mjs"
+  ],
+  "removedModules": [],
+  "candidateSha256": "d646cf1883baee21a8bc6cfc91496cd16bbe8dd14e68ed510d855225ffe0bd54",
+  "tests": {
+    "passed": 30,
+    "failed": 0,
+    "log": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\tutor-account-desktop-20261012\\bundle-tests.log"
+  },
+  "otherBundledRuntimeByteIdentical": true
+}

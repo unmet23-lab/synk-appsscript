@@ -1,18 +1,18 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{createRequire}=require('node:module');
-const {DEV_URLS,PLATFORM_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY:entry}=require('../src/catalog.cjs');
+const {DEV_URLS,PLATFORM_ENTRY,WORLD_CLOUD_PREVIEW_ENTRY:entry,WORLD_ACCOUNT_ENTRY:accountEntry}=require('../src/catalog.cjs');
 const {safeEntry,allowedNavigation,trustedEntry,assertSender,externalDestination,downloadSpec,contentSecurityPolicy}=require('../src/security.cjs');
 const {createConnectionContent}=require('../src/connection-content.cjs');
 const {configFor,parseOptions,previewEntry}=require('../tools/package.cjs');
 const enabled={clientId:'world',worldCloudPreview:true};
 
-test('WORLD HTTPS Preview requires its explicit flag, exact product URL and development identity',()=>{
+test('WORLD HTTPS Preview requires its explicit flag, exact tutor home URL and development identity',()=>{
   assert.equal(safeEntry(entry,'development',enabled),true);
   for(const worldCloudPreview of [undefined,false,'true',1,null])assert.equal(safeEntry(entry,'development',{clientId:'world',worldCloudPreview}),false);
   for(const clientId of ['platform','messenger',undefined])assert.equal(safeEntry(entry,'development',{clientId,worldCloudPreview:true}),false);
   assert.equal(safeEntry(entry,'release',enabled),false);
   for(const messengerCloudPreview of [true,'true',1,null])assert.equal(safeEntry(entry,'development',{...enabled,messengerCloudPreview}),false);
-  for(const value of ['https://synk.im/world/','https://synk.im/account/client.html','https://synk.im/account/client.html?product=platform',entry+'&play=learning-hub',entry+'#x',entry.replace('synk.im','synk.im:443'),entry.replace('synk.im','user@synk.im'),entry.replace('synk.im','synk.im.evil.invalid'),entry.replace('https:','http:'),DEV_URLS.world,PLATFORM_ENTRY])assert.equal(safeEntry(value,'development',enabled),false,value);
+  for(const value of [accountEntry,'https://synk.im/world/mobile.html','https://synk.im/account/client.html?product=platform',entry+'?play=learning-hub',entry+'#x',entry.replace('synk.im','synk.im:443'),entry.replace('synk.im','user@synk.im'),entry.replace('synk.im','synk.im.evil.invalid'),entry.replace('https:','http:'),DEV_URLS.world,PLATFORM_ENTRY])assert.equal(safeEntry(value,'development',enabled),false,value);
   assert.equal(safeEntry(DEV_URLS.world,'development',{clientId:'world'}),true);
   assert.equal(safeEntry('https://release.example.org/','release'),true);
 });
@@ -37,8 +37,9 @@ test('public game navigation permits named games but never grants game or subfra
   assert.match(contentSecurityPolicy('subFrame'),/frame-ancestors 'self'/);
 });
 
-test('public home and ID links leave the native window only at fixed canonical destinations',()=>{
-  assert.equal(externalDestination('https://synk.im/world/',entry,'world','development'),'https://synk.im/world/');
+test('tutor home stays native while ID links leave only at fixed canonical destinations',()=>{
+  assert.equal(externalDestination(entry,entry,'world','development'),null);
+  assert.equal(externalDestination(entry,DEV_URLS.world,'world','development'),entry);
   for(const page of ['platform.html','index.html'])assert.equal(externalDestination('https://synk.im/account/'+page+'?token=synthetic#home',entry,'world','development'),'https://synk.im/account/'+page);
   for(const value of ['https://synk.im/account/client.html?product=platform','https://synk.im/account/unknown.html','https://synk.im/world/?token=synthetic','https://evil.invalid/account/platform.html','https://user@synk.im/account/index.html'])assert.equal(externalDestination(value,entry,'world','development'),null,value);
   assert.equal(externalDestination('https://synk.im/account/platform.html',DEV_URLS.world,'world','development'),null);
@@ -50,11 +51,22 @@ test('public home and ID links leave the native window only at fixed canonical d
 
 test('returning from public games accepts one named play intent and rejects polluted query values',()=>{
   for(const play of ['learning-hub','korean-racing','korean-runner','korean-rhythm','order-rush','entry-check','story-classroom','blank-slice']){
-    const value=entry+'&play='+play;assert.equal(trustedEntry(value,entry,'world'),true);assert.equal(allowedNavigation(value,entry,'world'),true);
+    const value=accountEntry+'&play='+play;assert.equal(trustedEntry(value,entry,'world'),true);assert.equal(allowedNavigation(value,entry,'world'),true);
     const frame={url:value},contents={mainFrame:frame},window={webContents:contents,isDestroyed:()=>false};assert.doesNotThrow(()=>assertSender({sender:contents,senderFrame:frame},window,entry,'world'));
   }
-  for(const suffix of ['&play=','&play=unknown','&play=https://evil.invalid','&play=../world','&play=learning-hub&play=learning-hub','&play=learning-hub&product=world','&play=learning-hub&code=synthetic','&play=learning-hub&next=https://evil.invalid']){assert.equal(trustedEntry(entry+suffix,entry,'world'),false,suffix);assert.equal(allowedNavigation(entry+suffix,entry,'world'),false,suffix);}
+  for(const suffix of ['&play=','&play=unknown','&play=https://evil.invalid','&play=../world','&play=learning-hub&play=learning-hub','&play=learning-hub&product=world','&play=learning-hub&code=synthetic','&play=learning-hub&next=https://evil.invalid']){assert.equal(trustedEntry(accountEntry+suffix,entry,'world'),false,suffix);assert.equal(allowedNavigation(accountEntry+suffix,entry,'world'),false,suffix);}
   assert.equal(trustedEntry(DEV_URLS.world+'&play=learning-hub',DEV_URLS.world,'world'),false);
+});
+
+test('native tutor trust covers exact home variants and denies polluted or game-frame senders',()=>{
+  for(const page of ['','index.html','mobile.html','desktop.html'])for(const query of ['','?opening=off','?opening=replay&tutor=choose','?cafe=1','?wardrobe=1']){
+    const url=entry+page+query;assert.equal(trustedEntry(url,entry,'world'),true,url);assert.equal(allowedNavigation(url,entry,'world'),true,url);
+  }
+  for(const suffix of ['?code=secret','?next=evil','?opening=off&opening=off','?tutor=other','?cafe=2','#callback','/','private.html','korean-runner/index.html'])assert.equal(trustedEntry(entry+suffix,entry,'world'),false,suffix);
+  for(const slug of ['korean-runner','korean-rhythm','hangul-stage','town'])for(const ending of ['/','/index.html']){
+    const url=entry+slug+ending;assert.equal(allowedNavigation(url,entry,'world'),true);assert.equal(trustedEntry(url,entry,'world'),false);
+  }
+  assert.doesNotMatch(contentSecurityPolicy('mainFrame').split(';').find(part=>part.trim().startsWith('script-src')),/unsafe-inline|unsafe-eval/);
 });
 
 test('WORLD cloud retry preserves the exact HTTPS entry and gives internet guidance',async()=>{

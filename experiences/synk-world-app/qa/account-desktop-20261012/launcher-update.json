@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-11T16:17:15.366Z",
+  "ok": true,
+  "platformVersion": "0.4.0",
+  "platformCodePreserved": 116,
+  "changedArchiveMembers": [
+    "runtime.json"
+  ],
+  "beforeSHA256": "5fa7f09ffb7a45c6d6905c387f686ee11dff3c50742555a87c6c3d99b8bb4265",
+  "afterSHA256": "7d0e3bfde740f5a0e35b99caa68ffa2574c15b578650b468832780e83836714b",
+  "world": {
+    "id": "world",
+    "name": "SYNK WORLD",
+    "canLaunch": true,
+    "status": "installed",
+    "reason": null,
+    "version": "0.4.2",
+    "latestVersion": "0.4.2",
+    "updateAvailable": false
+  },
+  "otherClientsUnchanged": true,
+  "profilesAccessed": false,
+  "worldInstallerSHA256": "ac7f53ccc06d6ad653f18f0465fc79687e0d8ed6374cbaf1ac702db75cc7115f",
+  "backup": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\world-tutor-native-20261012\\launcher\\before-app.asar"
+}

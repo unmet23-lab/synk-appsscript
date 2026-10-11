@@ -26,7 +26,7 @@ const openingReady=startOpening();
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 let screen='',draftRun=null,answers=[],questionIndex=0,lastCompletion=null,wardrobeStudio=null,gameLaunch=0,activeGameSession=null,gameRecovery=null;
 const wardrobeRequested=new URLSearchParams(location.search).get('wardrobe')==='1';
-const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>client?.invalidate()}):null;
+const account=operating?createWorldAccount({config:connection.account,onInvalidate:()=>client?.invalidate(),onConnect:()=>client?.restore().catch(()=>home.toast('계정 연결을 다시 확인해 주세요.'))}):null;
 client=new WorldClient({onChange:renderStatus,account});
 const stateLine=document.createElement('div');stateLine.className='world-state';stateLine.setAttribute('role','status');
 if(!home.isMaru){

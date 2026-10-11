@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-11T16:20:30.588Z",
+  "method": "Actual Chrome UI with existing real SYNK ID session; no synthetic account, no injected learning records",
+  "accountIdentifiersRecorded": false,
+  "credentialsRecorded": false,
+  "checks": [
+    {
+      "name": "SYNK ID login returns to WORLD with connected account",
+      "pass": true
+    },
+    {
+      "name": "Select Kkamong through the actual tutor introduction and confirmation UI",
+      "pass": true
+    },
+    {
+      "name": "First live life save rejected before server allowlist fix",
+      "pass": true,
+      "expectedFailure": true
+    },
+    {
+      "name": "After live synk-play v10 update, complete the three greeting questions correctly",
+      "pass": true
+    },
+    {
+      "name": "Completion UI reports life progress saved to SYNK account",
+      "pass": true,
+      "observed": "생활 한국어 진도가 SYNK 계정에 저장됐어요."
+    },
+    {
+      "name": "New navigation restores Kkamong and completed lesson with the next recommendation",
+      "pass": true,
+      "observed": "1 / 22 학습 완료 · 계정별 진도; 이름표를 찾아서"
+    },
+    {
+      "name": "Logout clears signed-in tutor/learning view and returns to separate guest state",
+      "pass": true,
+      "observed": "0 / 22 학습 완료 · 이 기기의 진도; 나의 AI 튜터 만나기"
+    },
+    {
+      "name": "Real SYNK ID re-login restores Kkamong, 1 completed lesson and 3 practiced expressions",
+      "pass": true,
+      "observed": "까몽; 1 / 22 학습 완료 · 계정별 진도; 오늘의 3개 표현 · 마무리하기"
+    }
+  ],
+  "learningPerformed": {
+    "lesson": "첫 인사 세 마디",
+    "initialCorrect": 3,
+    "questions": 3,
+    "completedLessons": 1
+  },
+  "boundaries": {
+    "tutorChoice": "local device storage keyed by verified account; no cross-device tutor sync",
+    "lifeProgress": "server account record synk.life-korean.progress.v1",
+    "nativeRealAccountRoundtrip": false,
+    "physicalPhone": false,
+    "realGameCompletion": false
+  },
+  "capture": "The actual completion screenshot was shown through CUA. Later screenshot export reported a zero-width browser surface; native isolated screenshots are saved separately."
+}

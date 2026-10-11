@@ -1,0 +1,251 @@
+{
+  "at": "2026-10-11T16:01:02.976Z",
+  "scope": "Management API code/metadata verification only; no account or student records read",
+  "head": "a5dcbe5a9f1c85ee89402396b37001b34ae79db3",
+  "before": {
+    "slug": "synk-play",
+    "version": 9,
+    "status": "ACTIVE",
+    "verify_jwt": true,
+    "updated_at": 1791538555375
+  },
+  "after": {
+    "slug": "synk-play",
+    "version": 10,
+    "status": "ACTIVE",
+    "verify_jwt": true,
+    "updated_at": 1791734458801
+  },
+  "bodyBytes": 775328,
+  "bodySHA256": "dabcb0c2d16704ed75386c767910ae236288286e96200537d983abddfce76c7a",
+  "checks": [
+    {
+      "name": "function ACTIVE and JWT policy unchanged",
+      "pass": true
+    },
+    {
+      "name": "same exact module set",
+      "pass": true
+    },
+    {
+      "name": "source/index.ts complete source matches",
+      "pass": true,
+      "sha256": "ccd7a51e36602eca40287a71c2e9c7d0cc104bd1cc5a1ec5e389b605fec9acdb"
+    },
+    {
+      "name": "source/synk-play-runtime.mjs complete source matches",
+      "pass": true,
+      "sha256": "a8971259f9c077c5a246bea8e585b928d83e0a6d98165025e3015138a7797bd0"
+    },
+    {
+      "name": "---SUPABASE-ESZIP-VERSION-ESZIP--- complete source matches",
+      "pass": true,
+      "sha256": "d84bdb34d4eeef4034d77e5403f850e35bc4a51b1143e3a83510e1aaad839748"
+    },
+    {
+      "name": "vfs://0 complete source matches",
+      "pass": true,
+      "sha256": "3d02ad59441b0dcb7e2bfe9758590cc5a1a148281b8bb1cfc55c31a92915e0c3"
+    },
+    {
+      "name": "vfs://1 complete source matches",
+      "pass": true,
+      "sha256": "15e6345adb6708bf3b99ad39fc2231c2fb61de5f6cba4b7a7a6be881482a4ec3"
+    },
+    {
+      "name": "vfs://2 complete source matches",
+      "pass": true,
+      "sha256": "85cfbed9a5ab0db41ab8e97b806c881af29807dfe99bc656fdf1a18c1c13b6c6"
+    },
+    {
+      "name": "vfs://3 complete source matches",
+      "pass": true,
+      "sha256": "001ff5e0c8d634674f483d07fbcd620a797e3101f842d6c20ca3ace936260465"
+    },
+    {
+      "name": "vfs://4 complete source matches",
+      "pass": true,
+      "sha256": "69fe44fcd23f53b552ceee422ab051c2c05082c59bb9b1e5c83d4058aeb4d5d4"
+    },
+    {
+      "name": "vfs://5 complete source matches",
+      "pass": true,
+      "sha256": "67c45a5151032aa46b587abc15381fe4efd97c696e5c1b53082b8161309c4ee2"
+    },
+    {
+      "name": "vfs://6 complete source matches",
+      "pass": true,
+      "sha256": "53b73b5ee2919ab5561229c62a4e2db578f63ca613b795b380c23cb684f2d514"
+    },
+    {
+      "name": "vfs://7 complete source matches",
+      "pass": true,
+      "sha256": "5d0b1ec9705281ed4a60236fe5f65654038bae117845a71d19e35374d34c0cfa"
+    },
+    {
+      "name": "vfs://8 complete source matches",
+      "pass": true,
+      "sha256": "05ea787f79cefaf16310f14119fbfd36d2fed0795581b0df1b0e63b591a3ed94"
+    },
+    {
+      "name": "vfs://9 complete source matches",
+      "pass": true,
+      "sha256": "1883bd4536eab1c94b9e708d325b13708b0f18ec80020e3a825f34a72f603b81"
+    },
+    {
+      "name": "vfs://10 complete source matches",
+      "pass": true,
+      "sha256": "b818801b4e6e2a130fa728c71e77118e290ba6c587e399c54f99b068d907b777"
+    },
+    {
+      "name": "vfs://11 complete source matches",
+      "pass": true,
+      "sha256": "15e6345adb6708bf3b99ad39fc2231c2fb61de5f6cba4b7a7a6be881482a4ec3"
+    },
+    {
+      "name": "vfs://12 complete source matches",
+      "pass": true,
+      "sha256": "85cfbed9a5ab0db41ab8e97b806c881af29807dfe99bc656fdf1a18c1c13b6c6"
+    },
+    {
+      "name": "vfs://13 complete source matches",
+      "pass": true,
+      "sha256": "001ff5e0c8d634674f483d07fbcd620a797e3101f842d6c20ca3ace936260465"
+    },
+    {
+      "name": "vfs://14 complete source matches",
+      "pass": true,
+      "sha256": "102e650674e9c6b8238b80f136d67237de5358cd0d4fb3e677d3897c1d0b7af0"
+    },
+    {
+      "name": "vfs://15 complete source matches",
+      "pass": true,
+      "sha256": "67c45a5151032aa46b587abc15381fe4efd97c696e5c1b53082b8161309c4ee2"
+    },
+    {
+      "name": "vfs://16 complete source matches",
+      "pass": true,
+      "sha256": "368a278367814e80f7ae816e01e202279f3ce38347f2ac465b562ebeb61d84ca"
+    },
+    {
+      "name": "vfs://17 complete source matches",
+      "pass": true,
+      "sha256": "9ce6fd98780e0adff813d13cc03951e5b1c66d602637beb6f9494c40e7b9212e"
+    },
+    {
+      "name": "vfs://18 complete source matches",
+      "pass": true,
+      "sha256": "b02b13cf2b5d435368c7d61989af1692a9965b6edf9b60e1d0bc320ac42f48df"
+    },
+    {
+      "name": "vfs://19 complete source matches",
+      "pass": true,
+      "sha256": "e6c9e8f43272ae853944613560e5eabb15955fd8b2981749e7fa1c9015f370db"
+    },
+    {
+      "name": "vfs://20 complete source matches",
+      "pass": true,
+      "sha256": "228d507fecad50ad9addcd58fe6d72b1f196517c5d29fd57ab6cad2eaaac2191"
+    },
+    {
+      "name": "vfs://21 complete source matches",
+      "pass": true,
+      "sha256": "c9bfd7d57f1402676a42c8b6a49386ca18f95ccc687fdaad625f3a3fc7ba3f81"
+    },
+    {
+      "name": "vfs://22 complete source matches",
+      "pass": true,
+      "sha256": "fa6944a20ca5e6fbaf98fd202eb8c7004d5b4ab786e36b9ed02ee31dbe196c9f"
+    },
+    {
+      "name": "vfs://23 complete source matches",
+      "pass": true,
+      "sha256": "7d20fa53a3930be070609d7912ecd14c347df3526805bca2f6cb7eb35d2e62cf"
+    },
+    {
+      "name": "vfs://24 complete source matches",
+      "pass": true,
+      "sha256": "fad515c5d5e76e0f44e7e4408342301ec4df51517ffdbb836be9942cd48e5a99"
+    },
+    {
+      "name": "vfs://25 complete source matches",
+      "pass": true,
+      "sha256": "84b46a3940d3bd1fbea85e5beb5b7c652f3f1058fec2c6cc5ce351730533ee10"
+    },
+    {
+      "name": "vfs://26 complete source matches",
+      "pass": true,
+      "sha256": "a9bfd4b7e012b87a59d0c2cd92a3924c9f860de9a15bfbb5a5edd800fae6b457"
+    },
+    {
+      "name": "vfs://27 complete source matches",
+      "pass": true,
+      "sha256": "75ae9c69a1aaf3be4d8d65e4742c36018b89594907b85769e560c2590716c109"
+    },
+    {
+      "name": "vfs://28 complete source matches",
+      "pass": true,
+      "sha256": "4e13b04c965e8dcc45104091a92318715af96e7f6d820faea9097a014930bc70"
+    },
+    {
+      "name": "vfs://29 complete source matches",
+      "pass": true,
+      "sha256": "5c6dfb4fa656f814a47749d342daa86a1dbaa9e695f43ac1c7050302c7e91fea"
+    },
+    {
+      "name": "vfs://30 complete source matches",
+      "pass": true,
+      "sha256": "40b498ca792f3d28b1ce8a99b931cbd9c04c2931366b9fdc93a19083e545b9ff"
+    },
+    {
+      "name": "vfs://31 complete source matches",
+      "pass": true,
+      "sha256": "8ba968fc19489cdb670e8fc0d184b942eafa5f3d7a06dca4b165318fcd57e9fb"
+    },
+    {
+      "name": "vfs://32 complete source matches",
+      "pass": true,
+      "sha256": "c173163cf79bcaa50ecef8b62f0abcfa42fee1f0f25fc048e599d74e6b0045de"
+    },
+    {
+      "name": "vfs://33 complete source matches",
+      "pass": true,
+      "sha256": "4e442484c1842b5a6065a8fc058f9a77327bead59c834b40454dc751e8c56fcd"
+    },
+    {
+      "name": "vfs://34 complete source matches",
+      "pass": true,
+      "sha256": "c96411ecdd1bdeeac8096b325a2da3777775cdfb1357046e8e12f60de96274e6"
+    },
+    {
+      "name": "vfs://35 complete source matches",
+      "pass": true,
+      "sha256": "cacbb7829fdc44382199306cc9b516eb44df1b26bd984c2516b11933ac8049f8"
+    },
+    {
+      "name": "vfs://36 complete source matches",
+      "pass": true,
+      "sha256": "6b56b1f0c7a63493b52bbcf977396dcfc5e894b668ebc827d54809b26ffd3301"
+    },
+    {
+      "name": "---EDGE-RUNTIME-METADATA--- complete source matches",
+      "pass": true,
+      "sha256": "b236fd780a7960c62abdcf05c2e74fdf3efcded69d1bbeba32e8e58045d456fe"
+    },
+    {
+      "name": "unrelated function metadata unchanged",
+      "pass": true
+    },
+    {
+      "name": "entrypoint original TypeScript is unchanged",
+      "pass": true
+    }
+  ],
+  "passed": 45,
+  "total": 45,
+  "allPassed": true,
+  "databaseWrites": 0,
+  "authOrSecretChanges": 0,
+  "accountRowsRead": 0,
+  "rollback": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\tutor-life-backend-20261012\\synk-play-v9.rollback.eszip"
+}
