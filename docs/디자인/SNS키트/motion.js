@@ -214,6 +214,8 @@
   };
 
   // 실땀 와이프: 새 장면이 왼쪽부터 열리고, 그 경계를 실땀 한 줄이 따라간다(꿰매며 넘긴다)
+  // 실 무늬는 kit.css의 .k-seam이 그린다. 인라인 스타일에 var(--thread-paper)를 쓰면 실 사진 경로가 문서 기준으로 풀려
+  // 렌더에서 /assets/thread-*.webp 404로 실이 사라졌다(snapshot은 kit.css를 문서에 끼워 넣어 멀쩡해 보인다, 2026-10-13)
   M.seam = (tl, from, to, t, o = {}) => {
     const root = one(o.root || '#root');
     const W = o.w ?? 1080, H = o.h ?? 1920;
@@ -221,12 +223,14 @@
     let s = document.getElementById(id);
     if (!s) {
       s = document.createElement('div'); s.id = id; s.className = 'k-seam';
-      s.style.cssText = `position:absolute;top:-40px;left:0;width:44px;height:${H + 80}px;z-index:9001;pointer-events:none;opacity:0;border:0;border-left:30px solid transparent;border-image:var(--thread-paper) 250 / 0 0 0 40px / 0 round;filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))`;
+      s.style.cssText = `position:absolute;top:-40px;left:0;width:44px;height:${H + 80}px;z-index:9001;pointer-events:none;opacity:0`;
       root.appendChild(s);
     }
     const dur = o.dur ?? 0.62;
     lift(tl, one(to), t);
     tl.fromTo(one(to), { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: dur, ease: 'power2.inOut' }, t);
+    // 기다리는 줄도 화면 밖(x -30)에 보이게 둔다. 숨기면 실 사진을 처음 그리는 때가 찍는 순서마다 달라져
+    // 같은 시각의 .k-stitch가 다르게 찍혔다. 대신 왼쪽 끝 0~7px에 그림자가 줄 하나당 1~2단계 남는다(2026-10-13 시험)
     tl.fromTo(s, { x: -30, opacity: 1 }, { x: W - 10, opacity: 1, duration: dur, ease: 'power2.inOut' }, t);
     tl.set(s, { opacity: 0 }, t + dur);
     tl.set(one(from), { opacity: 0 }, t + dur);
