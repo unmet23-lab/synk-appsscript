@@ -1,0 +1,17 @@
+2.5s start clicked
+12.0s question-playing reached: {"phase":"question","label":"첫 번째 질문","turn":"1 / 2","status":"면접관의 질문을 들으세요.","vr":"이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":0.5,"paused":false,"op":"1"},{"src":"strict-listening-4k.mp4","t":0,"paused":true,
+13.6s room preview clicked mid-question
+13.6s auto-paused reached: {"phase":"paused","label":"일시 정지","turn":"1 / 2","status":"진행을 멈췄습니다. 이어서 진행하면 마이크를 다시 엽니다.","vr":"좌석 주변 공간을 준비하고 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":2.02,"paused":true,"op":"1"},{"src":"strict-listening-4k.mp4","t":0,"paused":true,"op":"0"}]}
+15.3s console warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+15.7s preview open
+18.7s Esc
+19.5s after Esc {"phase":"paused","previewHidden":true}
+19.5s resume clicked
+19.5s resumed reached: {"phase":"question","label":"첫 번째 질문","turn":"1 / 2","status":"면접관의 질문을 들으세요.","vr":"화면에서 면접을 계속할 수 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":2.1,"paused":false,"op":"1"},{"src":"strict-listening-4k.mp4","t":0,"paused":true,"op":"0"}]}
+21.3s answer1 reached: {"phase":"listening","label":"답변 중","turn":"1 / 2","status":"답변 화면을 준비하고 있습니다.","vr":"화면에서 면접을 계속할 수 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":3.87,"paused":false,"op":"1"},{"src":"strict-listen-plan-tail-4k.mp4","t":0,"paused":true,"op":"0"}]}
+22.9s second open phase listening
+24.3s answer1 submitted
+32.6s answer2 reached: {"phase":"listening","label":"답변 중","turn":"2 / 2","status":"답변 화면을 준비하고 있습니다.","vr":"화면에서 면접을 계속할 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0,"paused":true,"op":"0"},{"src":"strict-followup-experience-4k.mp4","t":5.66,"paused":false,"op":
+34.4s answer2 submitted
+35.9s complete reached: {"phase":"complete","label":"면접 종료","turn":"2 QUESTIONS","status":"면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.","vr":"화면에서 면접을 계속할 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0.5,"paused":true,"op":"0"},{"src":"strict-followup-experience-4k.mp4","t":8
+40.2s complete preview captured

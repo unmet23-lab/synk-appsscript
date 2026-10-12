@@ -1,32 +1,62 @@
 <!doctype html>
 <html lang="ko">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101512"><title>SYNK PATH · Quest 면접실</title><link rel="icon" href="../../assets/logo-path.webp"><link rel="stylesheet" href="./rehearsal.css"></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#060709"><meta name="color-scheme" content="dark"><title>SYNK PATH · Quest 면접실</title><link rel="icon" href="../../assets/logo-path-320.webp"><link rel="stylesheet" href="./rehearsal.css"></head>
 <body>
-  <header><a href="./nanobanana.html" aria-label="이전 영상 비교"><img src="../../assets/logo-path.webp" alt="SYNK PATH"></a><span>QUEST / SEATED INTERVIEW</span><a href="./nanobanana.html">영상 비교</a></header>
-  <main>
-    <div class="heading"><div><p class="eyebrow">요양보호사 · 착석형 음성 면접 · 60~90초</p><h1>자리에 앉으면,<br>면접이 시작됩니다.</h1></div><p class="intro">고개를 돌려 방을 둘러보고, 질문에 소리 내어 답하세요.<br>말하는 동안에도 세 면접관의 시선과 필기는 이어집니다.</p></div>
-    <section class="interview" aria-label="실사 면접 연습">
+  <header class="topbar"><a class="brand" href="./nanobanana.html" aria-label="이전 영상 비교"><img src="../../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="topbar-label">QUEST / SEATED INTERVIEW</span><a class="topbar-link" href="./nanobanana.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>영상 비교</a></header>
+  <main class="room">
+    <section class="hero" aria-labelledby="room-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="eyebrow-code">PATH · VR INTERVIEW</span><span class="eyebrow-tag">요양보호사 면접</span></p>
+        <h1 id="room-title"><span>자리에 앉으면,</span> <span>면접이 시작됩니다.</span></h1>
+      </div>
+      <div class="hero-side">
+        <p class="intro">고개를 돌려 방을 둘러보고, 질문에 소리 내어 답하세요. 말하는 동안에도 세 면접관의 시선과 필기는 이어집니다.</p>
+        <dl class="gauges">
+          <div><dt>질문</dt><dd>2<small>개</small></dd></div>
+          <div><dt>연습 시간</dt><dd>60~90<small>초</small></dd></div>
+          <div><dt>답변 시간</dt><dd>30·25<small>초</small></dd></div>
+          <div><dt>음성 처리</dt><dd>기기 안</dd></div>
+        </dl>
+      </div>
+    </section>
+    <section class="studio interview" aria-label="실사 면접 연습">
       <div class="screen" id="screen">
         <div id="film-stage" aria-label="세 면접관 영상"></div>
-        <img id="reference" src="../../assets/interview/film/room-poster-4k.jpg" alt="세 면접관이 앉아 있는 시작 장면. 시작하면 같은 장면의 영상으로 이어집니다.">
-        <div class="screen-top"><span id="phase-label">면접 시작 전</span><span id="timer"></span></div>
+        <img id="reference" src="../../assets/interview/film/room-poster-1920.jpg" srcset="../../assets/interview/film/room-poster-1280.jpg 1280w, ../../assets/interview/film/room-poster-1920.jpg 1920w, ../../assets/interview/film/room-poster-4k.jpg 3840w" sizes="(max-width: 900px) calc(100vw - 32px), calc(min(100vw, 1408px) - 420px)" width="3840" height="2160" fetchpriority="high" decoding="async" alt="세 면접관이 앉아 있는 시작 장면. 시작하면 같은 장면의 영상으로 이어집니다.">
+        <div class="screen-top"><span class="chip phase"><i aria-hidden="true"></i><span id="phase-label">면접 시작 전</span></span><span id="timer" class="chip timer"></span></div>
         <div id="pause-overlay" class="overlay" hidden><p>일시 정지</p><span>마이크가 닫혔습니다.</span></div>
         <div id="complete-overlay" class="overlay" hidden><p>면접을 마쳤습니다.</p><span>두 질문에 대한 답변을 마쳤습니다.</span></div>
         <div class="caption" id="question-caption"></div>
       </div>
       <div class="console">
+        <div class="poster" aria-hidden="true"><span class="poster-led">테스트 이용</span><img src="../../assets/path-vr-felt-480.webp" alt="" width="480" height="416" loading="lazy" decoding="async"><strong class="poster-word">면접</strong><span class="poster-note">SEATED · VR</span></div>
         <div class="status-row"><p id="status" role="status" aria-live="polite">직접 입력하거나 음성 입력을 준비한 뒤 시작하세요.</p><span class="turn" id="turn-label">2 QUESTIONS</span></div>
-        <div id="quality-control" class="quality-control" hidden><label for="quality">영상 화질</label><select id="quality"><option value="4k" selected>4K · 720p 확대</option><option value="720p">720p 원본</option></select><p id="quality-note">주변 벽·창문·천장은 재질 디테일을 새로 보강한 4K 이미지로 이어집니다. 재생이 버거우면 영상은 720p로 선택할 수 있습니다.</p></div>
-        <div class="mode-row"><fieldset><legend>답변 방식</legend><label><input type="radio" name="mode" value="text" checked> 직접 입력</label><label><input type="radio" name="mode" value="voice"> 마이크로 답변</label></fieldset><button id="voice-prepare" class="subtle" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" hidden>2. 마이크 확인</button><span id="voice-status"></span><meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter><p id="mic-check-result" role="status" hidden></p></div>
+        <div class="mode-row">
+          <fieldset class="segmented"><legend>답변 방식</legend><label><input type="radio" name="mode" value="text" checked><span>직접 입력</span></label><label><input type="radio" name="mode" value="voice"><span>마이크로 답변</span></label></fieldset>
+          <div class="voice-steps"><button id="voice-prepare" class="subtle" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" hidden>2. 마이크 확인</button></div>
+          <span id="voice-status"></span>
+          <meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter>
+          <p id="mic-check-result" role="status" hidden></p>
+          <p class="voice-hint">처음 한 번 약 103MB의 한국어 음성 모델과 실행 파일을 받습니다. 준비하는 동안에도 ‘직접 입력’으로 바로 시작할 수 있습니다.</p>
+        </div>
         <p id="answer-context" class="answer-context small" hidden></p>
         <div id="answer-area" hidden><p id="recognition-note" class="answer-context small" hidden></p><label id="answer-label" for="answer">내 답변</label><textarea id="answer" rows="3" maxlength="2000" placeholder="면접관의 질문이 끝난 뒤 답변을 입력하세요."></textarea><p id="partial" class="partial" aria-live="off"></p><details id="recognized-full" hidden><summary>전체 인식 내용 보기</summary><p id="recognized-full-text" class="small"></p></details></div>
         <div class="actions"><button id="start" class="primary">면접 시작</button><button id="submit" class="primary" hidden>답변 완료</button><button id="confirm" class="primary" hidden>이 부분이 맞아요</button><button id="retry" hidden>다시 답변</button><button id="repeat" hidden>질문 다시 듣기</button><button id="pause" hidden>일시 정지</button><button id="stop" class="subtle" hidden>종료</button><button id="room-preview" class="subtle">방 둘러보기</button><button id="vr" class="subtle" disabled>VR 지원 확인 중</button></div>
+        <div id="quality-control" class="quality-control" hidden><label for="quality">영상 화질</label><select id="quality"><option value="4k" selected>4K · 720p 확대</option><option value="720p">720p 원본</option></select><p id="quality-note">주변 벽·창문·천장은 재질 디테일을 새로 보강한 4K 이미지로 이어집니다. 재생이 버거우면 영상은 720p로 선택할 수 있습니다.</p></div>
         <p id="vr-status" class="small">VR에서는 음성으로 답변합니다. PC 화면에서는 바로 직접 입력할 수 있습니다.</p>
-        <p class="privacy">음성 입력은 처음에 약 103MB의 한국어 음성 모델과 실행 파일을 준비합니다. 명확한 답변은 자동으로 이어지고, 애매한 부분만 짧게 확인합니다. 말한 내용은 기기 안에서 처리하며, 답변과 음성을 저장하거나 서버로 보내지 않습니다.</p>
+        <ul class="privacy" aria-label="음성과 답변 처리"><li>마이크만 씁니다. 카메라는 켜지 않습니다.</li><li>말한 내용은 이 기기 안에서 글로 바꿉니다.</li><li>답변과 음성은 저장하거나 서버로 보내지 않습니다.</li></ul>
       </div>
+      <section id="result" class="result" aria-labelledby="result-title" hidden>
+        <div class="result-head"><p class="kicker">RESULT · 02 / 02</p><h2 id="result-title">이번 후속 질문</h2></div>
+        <dl id="branch-result"></dl>
+        <p class="small">이번 테스트에서는 실제 경험·준비 계획을 구분해 녹화된 두 후속 질문 중 하나를 고릅니다. 추가 질문 영상 제작은 보류 중입니다. 채용 점수나 합격 여부를 판단하지 않습니다.</p>
+      </section>
+      <section class="notes" aria-label="연습 안내">
+        <article><span class="note-index">01</span><h2>첫 답변 30초 · 후속 답변 25초</h2><p>질문과 전환을 포함해 약 60~90초를 연습합니다. 말을 일찍 마치면 더 빨리 끝나며, 잠시 멈추거나 다시 듣는 시간은 별도입니다. 답변 뒤 약 6초간 말이 없으면 마이크를 닫고 다음 질문으로 이어집니다. 주어·경험 유무 등 의미가 애매한 부분만 확인하며, 그 부분만 고치거나 다시 말할 수 있습니다. 확인·수정 시간은 별도이며, 진행 중인 필기는 끝나는 구간까지 기다립니다.</p></article>
+        <article><span class="note-index">02</span><h2>앉은 자리에서 천천히 둘러보세요</h2><p>PC는 좌우 30° 전환이 기본이며, 드래그는 직접 켤 수 있습니다. VR은 실제 고개 움직임을 그대로 따릅니다. 어지러우면 바로 중단하세요. <span id="media-limit">면접관은 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.</span> 착용감과 프레임 성능은 실제 Quest에서 다시 확인해야 합니다.</p></article>
+        <article><span class="note-index">03</span><h2>Quest에서는 세 단계로 들어갑니다</h2><ol class="steps"><li><b>한국어 음성 준비</b>처음 한 번 약 103MB를 내려받고, 이후에는 이 기기에서 다시 씁니다.</li><li><b>마이크 확인</b>“면접 연습을 시작하겠습니다”처럼 한 문장을 말해 봅니다.</li><li><b>Quest 면접실 입장</b>의자에 앉아 정면을 본 상태로 들어갑니다.</li></ol></article>
+      </section>
     </section>
-    <section id="result" class="result" hidden><h2>이번 후속 질문</h2><p id="branch-result"></p><p class="small">이번 테스트에서는 실제 경험·준비 계획을 구분해 녹화된 두 후속 질문 중 하나를 고릅니다. 추가 질문 영상 제작은 보류 중입니다. 채용 점수나 합격 여부를 판단하지 않습니다.</p></section>
-    <div class="notes"><p><b>첫 답변 30초 · 후속 답변 25초</b><br>질문과 전환을 포함해 약 60~90초를 연습합니다. 말을 일찍 마치면 더 빨리 끝나며, 잠시 멈추거나 다시 듣는 시간은 별도입니다. 답변 뒤 약 6초간 말이 없으면 마이크를 닫고 다음 질문으로 이어집니다. 주어·경험 유무 등 의미가 애매한 부분만 확인하며, 그 부분만 고치거나 다시 말할 수 있습니다. 확인·수정 시간은 별도이며, 진행 중인 필기는 끝나는 구간까지 기다립니다.</p><p><b>앉은 자리에서 천천히 둘러보세요</b><br>PC는 좌우 30° 전환이 기본이며, 드래그는 직접 켤 수 있습니다. VR은 실제 고개 움직임을 그대로 따릅니다. 어지러우면 바로 중단하세요. <span id="media-limit">면접관은 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.</span> 착용감과 프레임 성능은 실제 Quest에서 다시 확인해야 합니다.</p></div>
     <div id="vr-stage" aria-hidden="true"></div>
   </main>
   <footer><span>SYNK PATH · 첫 면접 연습</span><a href="../">기존 3D 연습</a></footer>

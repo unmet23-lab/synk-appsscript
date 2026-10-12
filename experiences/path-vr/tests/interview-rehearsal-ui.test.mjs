@@ -75,7 +75,7 @@ async function voicePageHarness() {
     secure: true, xr: { isSessionSupported: async () => false },
     createStage: async () => ({ startPreview() { calls.previewStart++; }, stopPreview() { calls.previewStop++; }, dispose() {} }),
   });
-  const ui = Object.fromEntries(['answer', 'mic-check-result', 'mic-meter', 'voice-status'].map((name) => [name, { value: '', textContent: '' }]));
+  const ui = Object.fromEntries(['answer', 'mic-check-result', 'mic-meter', 'voice-status', 'vr-status'].map((name) => [name, { value: '', textContent: '' }]));
   context = vm.createContext({
     session, ui, vr, DOMException, performance, speechTurn: createSpeechTurn(), mergeVoiceResults, transcriptReviewPages, voiceError,
     assessVoiceAnswer, replaceVoiceSpan, rebaseConfirmedSpans, CLIPS, WhisperModel: class {},
@@ -91,7 +91,7 @@ async function voicePageHarness() {
     "let voice = null, mode = 'voice', checkingMic = false, micActive = true, partial = '', voicePrefix = '', voiceFailed = false, epoch = 0, busy = false, micStopping = null, disposed = false;",
     'let microphoneReady = true, micLevel = 0, micPeak = 0, calibrationText = "", settling = false, preparingVoice = false, lastTick = 0;',
     'let voicePrefixResult = { text: "" }, voiceReview = null, reviewPage = 0;',
-    'let voiceAssessment = null, clarificationBase = null, confirmedSpans = [];',
+    'let voiceAssessment = null, clarificationBase = null, confirmedSpans = [], roomLoading = false;',
     section('const abortError =', '\nfunction getState()'),
     section('function getState()', '\nfunction render()'),
     section('function getVoice()', '\nasync function prepareVoice()'),
@@ -101,6 +101,7 @@ async function voicePageHarness() {
     section('async function retry()', '\nasync function repeat()'),
     section('async function pause()', '\nasync function changeMode('),
     section("document.addEventListener('keydown'", '\nconst timer ='),
+    section('// The first look-around builds the room', "\nui['room-preview'].addEventListener"),
     'getVoice();',
   ].join('\n'), context);
   return {
@@ -121,6 +122,8 @@ async function voicePageHarness() {
     retry: () => vm.runInContext('retry()', context),
     pause: () => vm.runInContext('pause()', context),
     resume: () => vm.runInContext('resume()', context),
+    openRoomPreview: () => vm.runInContext('openRoomPreview()', context),
+    roomLoading: () => vm.runInContext('roomLoading', context),
     stop: () => vm.runInContext('stop()', context),
     final(text, confidence = .95, metadata = {}) {
       assert.ok(finalResolve, 'stop must request final recognition first');
@@ -220,6 +223,26 @@ test('review keeps the microphone off and preserves an edited draft across previ
     await h.confirm();
     assert.equal(h.session.snapshot().clip, CLIPS.experience);
     assert.equal(h.session.snapshot().answers[0].text, '저는 할머니의 식사를 도와드렸습니다.');
+  } finally { await h.vr.dispose(); }
+});
+
+test('a first mid-answer look-around holds resume until the room opens, even while the last transcript is still settling', async () => {
+  const h = await voicePageHarness();
+  try {
+    assert.equal(h.vr.roomReady, false);
+    const opening = h.openRoomPreview();
+    assert.equal(h.session.snapshot().paused, true, 'the interview pauses before the room is built');
+    assert.equal(h.calls.micStop, 1); assert.equal(h.roomLoading(), true);
+    await h.resume();
+    assert.equal(h.session.snapshot().paused, true, 'resume waits while the last transcript and the room are on their way');
+    assert.equal(h.calls.filmResume, 0); assert.equal(h.calls.previewStart, 0);
+    h.final('요양원에서 어르신을 돌봤습니다.');
+    await opening;
+    assert.equal(h.vr.previewing, true); assert.equal(h.calls.previewStart, 1);
+    assert.equal(h.roomLoading(), false);
+    await h.resume();
+    assert.equal(h.session.snapshot().paused, false);
+    assert.equal(h.calls.filmResume, 1);
   } finally { await h.vr.dispose(); }
 });
 

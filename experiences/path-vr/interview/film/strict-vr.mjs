@@ -61,6 +61,71 @@ export function pickStrictVRControl(uv, state = {}) {
   return control?.enabled ? control.action : null;
 }
 
+// The desk panel is a soft paper card: neutral paper, ink text, a status dot
+// and pill buttons with the PATH green primary. Button rectangles stay BUTTONS
+// so controller picking is unchanged. Any 2D context works, so the panel can be
+// checked in a normal browser without a headset.
+export function paintStrictVRHUD(context, state = {}) {
+  const seconds = Number.isFinite(state.remainingSeconds) ? Math.max(0, Math.ceil(state.remainingSeconds)) : null;
+  const micLevel = Math.round(Math.max(0, Math.min(1, Number(state.micLevel) || 0)) * 8) / 8;
+  const answerQuote = String(state.branch?.evidence?.quote || '');
+  const lines = (text, x, y, maxWidth, lineHeight, maxLines) => {
+    let line = '', lineNumber = 0;
+    for (const character of String(text || '')) {
+      if (context.measureText(line + character).width > maxWidth) {
+        context.fillText(line, x, y + lineNumber * lineHeight);
+        line = ''; lineNumber++;
+        if (lineNumber >= maxLines) return;
+      }
+      line += character;
+    }
+    if (lineNumber < maxLines) context.fillText(line, x, y + lineNumber * lineHeight);
+  };
+  const pill = (x, y, w, h, fill, stroke) => {
+    context.beginPath();
+    if (typeof context.roundRect === 'function') context.roundRect(x, y, w, h, Math.min(h, w) / 2); else context.rect(x, y, w, h);
+    if (fill) { context.fillStyle = fill; context.fill(); }
+    if (stroke) { context.strokeStyle = stroke; context.lineWidth = 2; context.stroke(); }
+  };
+  context.fillStyle = '#EDEDEB'; context.fillRect(0, 0, HUD_WIDTH, HUD_HEIGHT);
+  context.textAlign = 'left'; context.textBaseline = 'top';
+  const status = state.paused ? '일시정지 · 마이크 꺼짐'
+    : state.phase === 'confirming' ? `애매한 부분 확인 · ${(state.reviewPage || 0) + 1}/${state.reviewPages?.length || 1} · 마이크 꺼짐`
+    : state.phase === 'reviewing' ? '면접관이 답변을 검토하고 있습니다'
+    : state.phase === 'repair' ? '답변을 확인하지 못했습니다'
+    : state.canSubmit ? `답변 중${seconds === null ? '' : ` · ${seconds}초`}`
+    : state.settling ? '자리에 앉아 정면을 바라보세요'
+    : state.canStart ? '면접 준비' : '질문을 듣는 중';
+  const dot = state.paused || state.canStart && !state.settling ? '#8A8F98'
+    : state.phase === 'confirming' || state.phase === 'repair' || state.settling ? '#D9A21B'
+    : state.canSubmit ? state.micActive ? '#E5483B' : '#4E8A3A' : '#3D6BC9';
+  context.fillStyle = dot; context.beginPath(); context.arc(46, 39, 8, 0, Math.PI * 2); context.fill();
+  context.fillStyle = '#5B5F66'; context.font = '600 28px "PATH Sans", SUIT, sans-serif';
+  context.fillText(status, 66, 22);
+  if (state.micActive) {
+    pill(1320, 24, 160, 15, '#D9DAD6');
+    pill(1320, 24, Math.max(15, 160 * micLevel), 15, '#526956');
+  }
+  context.fillStyle = '#08090C'; context.font = '700 36px "PATH Sans", SUIT, sans-serif';
+  lines(state.phase === 'confirming' ? state.reviewPages?.[state.reviewPage || 0] || state.transcript : state.clarificationPrompt || state.question || '세 면접관의 질문에 소리 내어 답변하세요.', 36, 70, 1460, 46, state.phase === 'confirming' ? 4 : 2);
+  context.fillStyle = '#4A4E55'; context.font = '500 29px "PATH Sans", SUIT, sans-serif';
+  const transcript = String(state.transcript || '');
+  const answerContext = answerQuote && ['reviewing', 'followup'].includes(state.phase) ? `첫 답변: “${answerQuote.slice(0, 100)}”` : '';
+  if (state.phase !== 'confirming') lines(state.phase === 'repair' ? '다시 답변하거나 질문을 다시 들으세요.' : answerContext || (transcript ? `인식: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '답변을 마치면 이어집니다. 애매한 부분만 확인합니다.' : '답변을 마치면 아래에서 완료하세요.' : '선택 버튼으로 시작합니다.'), 36, 184, 1460, 38, 2);
+  else { context.font = '500 24px "PATH Sans", SUIT, sans-serif'; context.fillText(state.reviewPrompt || '틀리면 이 부분만 다시 말하세요. 나머지 답변은 유지됩니다.', 36, 266, 1460); }
+  getStrictVRControls(state).forEach((control, index) => {
+    const exit = control.action === 'exit', primary = index === 0;
+    if (!control.enabled) pill(control.x, control.y, control.w, control.h, '#E3E3E1');
+    else if (primary) pill(control.x, control.y, control.w, control.h, '#526956');
+    else if (exit) pill(control.x + 1, control.y + 1, control.w - 2, control.h - 2, null, '#B4B6BA');
+    else pill(control.x, control.y, control.w, control.h, '#DCDCDA');
+    context.fillStyle = !control.enabled ? '#A3A6AB' : primary ? '#FFFFFF' : '#08090C';
+    context.font = '700 30px "PATH Sans", SUIT, sans-serif'; context.textAlign = 'center';
+    context.fillText(control.label, control.x + control.w / 2, control.y + 18, control.w - 24);
+  });
+  context.textAlign = 'left';
+}
+
 async function buildStage({ mount, getFrameState, getState, onAction, onClosePreview = () => {} }) {
   const THREE = await import('../../vendor/three.module.js');
   const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false, powerPreference: 'high-performance' });
@@ -101,14 +166,14 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
   const pointerGeometry = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]);
   let lastSelect = 0, lastHUDKey = '', firstFrame = true, running = false, previewing = false, drag = null, freeDrag = false, stageDisposed = false, videoWarmupRevision = 0;
   let look = { yaw: 0, pitch: 0 };
+  // Glass controls over the room preview. Their look lives in rehearsal.css.
   const closeButton = document.createElement('button');
-  closeButton.textContent = '화면 연습으로 돌아가기'; closeButton.type = 'button'; closeButton.hidden = true;
-  Object.assign(closeButton.style, { position: 'absolute', right: '20px', top: '18px', zIndex: '2', padding: '12px 16px', background: '#18241de8', color: '#f2f2ec', border: '1px solid #b7c5ad', borderRadius: '6px', cursor: 'pointer' });
+  closeButton.textContent = '화면 연습으로 돌아가기'; closeButton.type = 'button'; closeButton.hidden = true; closeButton.className = 'preview-close';
   closeButton.addEventListener('click', onClosePreview); mount.append(closeButton);
-  const previewHint = document.createElement('p'); previewHint.textContent = '좌우 30°씩 · Home 정면 · Esc 닫기'; previewHint.hidden = true;
-  Object.assign(previewHint.style, { position: 'absolute', left: '14px', top: '14px', maxWidth: '45%', margin: '0', padding: '8px 10px', color: '#f2f2ec', font: '12px/1.5 SUIT,sans-serif', background: '#18241de8', borderRadius: '5px', pointerEvents: 'none' }); mount.append(previewHint);
-  const previewControls = document.createElement('div'); previewControls.hidden = true; previewControls.setAttribute('aria-label', '방 둘러보기 조작');
-  Object.assign(previewControls.style, { position: 'absolute', left: '12px', right: '12px', bottom: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'center' }); mount.append(previewControls);
+  const previewHint = document.createElement('p'); previewHint.textContent = '좌우 30°씩 · Home 정면 · Esc 닫기'; previewHint.hidden = true; previewHint.className = 'preview-hint';
+  mount.append(previewHint);
+  const previewControls = document.createElement('div'); previewControls.hidden = true; previewControls.className = 'preview-controls'; previewControls.setAttribute('aria-label', '방 둘러보기 조작');
+  mount.append(previewControls);
   function applyLook(next) { look = next; camera.rotation.set(look.pitch, look.yaw, 0, 'YXZ'); }
   function turn(direction) { if (!previewing) return; drag = null; applyLook(previewLookAfter(look, { type: 'turn', direction })); }
   function resetLook() { if (!previewing) return; drag = null; applyLook(previewLookAfter(look, { type: 'reset' })); }
@@ -117,7 +182,6 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
     ['드래그 켜기', () => { freeDrag = !freeDrag; drag = null; updateDragMode(); }],
   ].map(([label, action]) => {
     const button = document.createElement('button'); button.type = 'button'; button.textContent = label;
-    Object.assign(button.style, { padding: '10px 13px', background: '#18241df2', color: '#f2f2ec', border: '1px solid #b7c5ad' });
     button.addEventListener('click', action); previewControls.append(button); return { button, action };
   });
   function updateDragMode() {
@@ -181,18 +245,6 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
     return { controller, line, select };
   });
 
-  function lines(text, x, y, maxWidth, lineHeight, maxLines) {
-    let line = '', lineNumber = 0;
-    for (const character of String(text || '')) {
-      if (context.measureText(line + character).width > maxWidth) {
-        context.fillText(line, x, y + lineNumber * lineHeight);
-        line = ''; lineNumber++;
-        if (lineNumber >= maxLines) return;
-      }
-      line += character;
-    }
-    if (lineNumber < maxLines) context.fillText(line, x, y + lineNumber * lineHeight);
-  }
   function drawHUD(state) {
     const seconds = Number.isFinite(state.remainingSeconds) ? Math.max(0, Math.ceil(state.remainingSeconds)) : null;
     const micLevel = Math.round(Math.max(0, Math.min(1, Number(state.micLevel) || 0)) * 8) / 8;
@@ -200,36 +252,8 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
     const key = JSON.stringify([state.phase, state.question, state.transcript, state.reviewPrompt, state.clarificationPrompt, answerQuote, seconds, state.paused, state.canStart, state.canSubmit, state.canConfirm, state.reviewPage, state.settling, state.micActive, micLevel, state.automaticEnd]);
     if (key === lastHUDKey) return;
     lastHUDKey = key;
-    context.fillStyle = '#e8e7e2'; context.fillRect(0, 0, HUD_WIDTH, HUD_HEIGHT);
-    context.textAlign = 'left'; context.textBaseline = 'top';
-    context.fillStyle = '#555653'; context.font = '500 28px SUIT, sans-serif';
-    const status = state.paused ? '일시정지 · 마이크 꺼짐'
-      : state.phase === 'confirming' ? `애매한 부분 확인 · ${(state.reviewPage || 0) + 1}/${state.reviewPages?.length || 1} · 마이크 꺼짐`
-      : state.phase === 'reviewing' ? '면접관이 답변을 검토하고 있습니다'
-      : state.phase === 'repair' ? '답변을 확인하지 못했습니다'
-      : state.canSubmit ? `답변 중${seconds === null ? '' : ` · ${seconds}초`}`
-      : state.settling ? '자리에 앉아 정면을 바라보세요'
-      : state.canStart ? '면접 준비' : '질문을 듣는 중';
-    context.fillText(status, 36, 22);
-    if (state.micActive) {
-      context.fillStyle = '#b9bdb0'; context.fillRect(1320, 24, 160, 15);
-      context.fillStyle = '#526847'; context.fillRect(1320, 24, Math.max(4, 160 * micLevel), 15);
-    }
-    context.fillStyle = '#252a22'; context.font = '500 36px SUIT, sans-serif';
-    lines(state.phase === 'confirming' ? state.reviewPages?.[state.reviewPage || 0] || state.transcript : state.clarificationPrompt || state.question || '세 면접관의 질문에 소리 내어 답변하세요.', 36, 70, 1460, 46, state.phase === 'confirming' ? 4 : 2);
-    context.fillStyle = '#575c51'; context.font = '400 29px SUIT, sans-serif';
-    const transcript = String(state.transcript || '');
-    const answerContext = answerQuote && ['reviewing', 'followup'].includes(state.phase) ? `첫 답변: “${answerQuote.slice(0, 100)}”` : '';
-    if (state.phase !== 'confirming') lines(state.phase === 'repair' ? '다시 답변하거나 질문을 다시 들으세요.' : answerContext || (transcript ? `인식: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '답변을 마치면 이어집니다. 애매한 부분만 확인합니다.' : '답변을 마치면 아래에서 완료하세요.' : '선택 버튼으로 시작합니다.'), 36, 184, 1460, 38, 2);
-    else { context.font = '400 24px SUIT, sans-serif'; context.fillText(state.reviewPrompt || '틀리면 이 부분만 다시 말하세요. 나머지 답변은 유지됩니다.', 36, 266, 1460); }
-    for (const control of getStrictVRControls(state)) {
-      context.fillStyle = control.enabled ? '#cecfca' : '#deded8';
-      context.fillRect(control.x, control.y, control.w, control.h);
-      context.fillStyle = control.enabled ? '#252d20' : '#999d8e';
-      context.font = '500 30px SUIT, sans-serif'; context.textAlign = 'center';
-      context.fillText(control.label, control.x + control.w / 2, control.y + 18, control.w - 24);
-    }
-    context.textAlign = 'left'; hudTexture.needsUpdate = true;
+    paintStrictVRHUD(context, state);
+    hudTexture.needsUpdate = true;
   }
   function frame(time, xrFrame) {
     if (!running) return;
@@ -388,7 +412,7 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
       if (globalThis.document?.body) { bodyOverflow = document.body.style.overflow; document.body.style.overflow = 'hidden'; }
       if (mount) {
         previewStyle = mount.style?.cssText || '';
-        if (mount.style) Object.assign(mount.style, { position: 'fixed', inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '92vw', maxWidth: '1240px', height: '80dvh', maxHeight: '820px', zIndex: '100', overflow: 'hidden', background: '#bec2bb', border: '8px solid #101512', borderRadius: '8px', boxShadow: '0 0 0 100vmax #08100bbb' });
+        if (mount.style) Object.assign(mount.style, { position: 'fixed', inset: 'auto', left: '50%', top: '50%', transform: 'translate(-50%, -50%)', width: '92vw', maxWidth: '1240px', height: '80dvh', maxHeight: '820px', zIndex: '100', overflow: 'hidden', background: '#0C0D10', border: '1px solid rgba(255,255,255,.14)', borderRadius: '28px', boxShadow: '0 0 0 100vmax rgba(6,7,9,.8), 0 40px 120px rgba(0,0,0,.6)' });
         mount.hidden = false; mount.setAttribute?.('aria-hidden', 'false');
       }
       prepared.startPreview();
@@ -422,10 +446,13 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
       throw error;
     }
   }
-  async function prepareRoom() {
+  async function prepareRoom({ onlyIfStarted = false } = {}) {
     if (disposed) return false;
+    // A flat screen builds the room when it is first opened. onlyIfStarted
+    // finishes a headset check or build already under way and starts nothing.
+    if (onlyIfStarted) { await checkTask; if (disposed || !stage && !stageTask) return false; }
     try { return !!await ensureStage(); }
     catch { emit('unsupported', '방 둘러보기를 준비하지 못했습니다. 화면에서 연습할 수 있습니다.'); return false; }
   }
-  return Object.freeze({ check, enter, exit, preview, closePreview, warmVideoFrames, prepareRoom, dispose, get active() { return !!session; }, get pending() { return pending; }, get previewing() { return previewing; } });
+  return Object.freeze({ check, enter, exit, preview, closePreview, warmVideoFrames, prepareRoom, dispose, get active() { return !!session; }, get pending() { return pending; }, get previewing() { return previewing; }, get roomReady() { return !!stage; } });
 }

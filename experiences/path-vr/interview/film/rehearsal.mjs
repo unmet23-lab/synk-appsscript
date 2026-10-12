@@ -14,7 +14,16 @@ ui.confirm = $('confirm'); ui['recognition-note'] = $('recognition-note');
 const durationProfile = REHEARSAL_DURATION_PROFILES.quest;
 const speechTurn = createSpeechTurn();
 let film = null, manifest = null, mode = 'text', voice = null, busy = false, preparingVoice = false, micActive = false, epoch = 0, disposed = false, lastTick = performance.now(), partial = '', voiceFailed = false, vrSupported = false, voicePrefix = '', micStopping = null, microphoneReady = false, checkingMic = false, micLevel = 0, micPeak = 0, calibrationText = '', settling = false;
-let manifestLoad = null, playbackManifest = null, selectedQuality = '4k', filmQuality = null;
+// Start light where 4K cannot show or would stall: phone screens, data saver and 2G/3G links.
+// downlink is not used: Chrome reports a starting guess (1.45 Mbps in a fresh profile) until it
+// has measured the network. The 4K upscale stays the default elsewhere, and a quality the user picks is kept.
+function preferredQuality() {
+  const connection = globalThis.navigator?.connection;
+  const phone = !!globalThis.matchMedia?.('(max-width: 760px), (max-height: 500px) and (pointer: coarse)').matches;
+  const slow = !!connection && (connection.saveData === true || /(^|-)2g|3g/.test(connection.effectiveType || ''));
+  return phone || slow ? '720p' : '4k';
+}
+let manifestLoad = null, playbackManifest = null, selectedQuality = preferredQuality(), filmQuality = null, roomLoading = false;
 let listeningSequence = null, listeningRun = 0, listeningEnabled = false, scheduledListeningOwner = null;
 let voicePrefixResult = { text: '' }, voiceReview = null, reviewPage = 0;
 let voiceAssessment = null, clarificationBase = null, confirmedSpans = [];
@@ -42,6 +51,8 @@ function render() {
     ui['media-limit'].textContent = hasUpscale && selectedQuality === '4k' ? '면접관은 720p 원본을 4K로 확대한 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.' : `면접관은 ${selectedHeight || 480}p 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.`;
   }
   document.body.classList.toggle('in-session', active || state.phase === 'complete');
+  // Styling hooks only: the status dots and on-air ring read these attributes.
+  Object.assign(document.body.dataset, { phase: state.paused ? 'paused' : state.phase, mode, mic: state.micActive ? 'on' : 'off', urgent: state.phase === 'listening' && !state.paused && state.remainingSeconds <= 10 ? 'on' : 'off' });
   const labels = { idle: '면접 시작 전', preparing: '영상 준비', question: '첫 번째 질문', followup: '후속 질문', listening: '답변 중', confirming: '애매한 부분 확인', reviewing: '답변 검토', repair: '답변 확인', complete: '면접 종료', error: '연결 확인' };
   ui['phase-label'].textContent = state.paused ? '일시 정지' : labels[state.phase] || '';
   ui['turn-label'].textContent = active ? `${state.turn} / 2` : '2 QUESTIONS';
@@ -70,7 +81,7 @@ function render() {
   ui.submit.hidden = state.phase !== 'listening'; ui.submit.disabled = !state.canSubmit;
   ui.retry.hidden = !['repair', 'confirming'].includes(state.phase); ui.retry.disabled = busy || state.paused; ui.retry.textContent = state.phase === 'confirming' ? '이 부분만 다시 말하기' : mode === 'text' && ui.answer.value.trim() ? '수정한 답변 제출' : '다시 답변';
   ui.repeat.hidden = !['listening', 'repair'].includes(state.phase); ui.repeat.disabled = busy || state.paused;
-  ui.pause.hidden = !active; ui.pause.textContent = state.paused ? '이어서 진행' : '일시 정지'; ui.pause.disabled = state.phase === 'preparing';
+  ui.pause.hidden = !active; ui.pause.textContent = state.paused ? '이어서 진행' : '일시 정지'; ui.pause.disabled = state.phase === 'preparing' || roomLoading;
   ui.stop.hidden = !active;
   ui['voice-prepare'].hidden = mode !== 'voice' || !!voice?.ready;
   ui['voice-prepare'].disabled = preparingVoice || active && state.phase !== 'repair';
@@ -80,7 +91,7 @@ function render() {
   ui['mic-meter'].hidden = !checkingMic && !micActive;
   ui['mic-meter'].value = micLevel;
   ui['mic-check-result'].hidden = mode !== 'voice' || active;
-  ui['room-preview'].disabled = preparingVoice || checkingMic || busy || !!vr?.active;
+  ui['room-preview'].disabled = preparingVoice || checkingMic || busy || roomLoading || !!vr?.active;
   for (const input of document.querySelectorAll('input[name="mode"]')) input.disabled = active && !['repair', 'listening'].includes(state.phase) || !!clarificationBase || busy || preparingVoice || checkingMic || !!vr?.active;
   ui.vr.disabled = !vrSupported || !state.voiceReady || mode !== 'voice' || busy || !!vr?.active;
   ui.vr.textContent = vrSupported ? 'Quest 면접실 입장' : 'Quest에서 VR 입장';
@@ -94,7 +105,16 @@ function render() {
   };
   ui.status.textContent = state.paused ? '진행을 멈췄습니다. 이어서 진행하면 마이크를 다시 엽니다.' : messages[state.phase] || '';
   ui.result.hidden = state.phase !== 'complete';
-  ui['branch-result'].textContent = state.phase === 'complete' ? `답변: “${answerQuote}”\n${state.branch?.reason || ''}\n후속 질문: “${state.branch?.question || ''}”` : '';
+  const branchRows = state.phase === 'complete' ? [['answer', '내 답변', answerQuote && `“${answerQuote}”`], ['reason', '질문 의도', state.branch?.reason || ''], ['followup', '후속 질문', state.branch?.question && `“${state.branch.question}”`]].filter((row) => row[2]) : [];
+  const branchKey = JSON.stringify(branchRows);
+  if (ui['branch-result'].dataset.key !== branchKey) {
+    ui['branch-result'].dataset.key = branchKey;
+    ui['branch-result'].replaceChildren(...branchRows.map(([kind, label, text]) => {
+      const row = document.createElement('div'), term = document.createElement('dt'), detail = document.createElement('dd');
+      row.className = kind; term.textContent = label; detail.textContent = text; row.append(term, detail);
+      return row;
+    }));
+  }
 }
 function report(error) {
   if (error?.name === 'AbortError' || disposed) return;
@@ -228,7 +248,9 @@ async function start() {
     film?.stop(); await ensureFilm(token); guard(token);
     // Upload the room before speech/video run together. Opening it mid-answer
     // must not compile its first 4K textures during a short film handoff.
-    await vr.prepareRoom(); guard(token);
+    // A headset check or an earlier look-around has already begun the room; a
+    // flat screen that never opened it skips the 7.9MB build (openRoomPreview).
+    await vr.prepareRoom({ onlyIfStarted: true }); guard(token);
     listeningSequence?.resetSession();
     await film.prepare(Object.values(CLIPS)); guard(token);
     await vr.warmVideoFrames(); guard(token);
@@ -374,7 +396,7 @@ async function pause() {
   if (current(token) && result?.text) { voicePrefixResult = mergeVoiceResults([voicePrefixResult, result]); voicePrefix = voicePrefixResult.text; partial = voicePrefix; ui.answer.value = partial; render(); }
 }
 async function resume() {
-  const state = session.snapshot(); if (!state.paused || busy) return;
+  const state = session.snapshot(); if (!state.paused || busy || roomLoading) return;
   const token = epoch; busy = true; session.resume(); render();
   if (state.phase === 'preparing') { session.reset(); busy = false; return start(); }
   await film.resume(); guard(token);
@@ -410,7 +432,20 @@ for (const name of ['start', 'submit', 'confirm', 'retry', 'repeat', 'stop']) ui
 ui.pause.addEventListener('click', () => void action(session.snapshot().paused ? 'resume' : 'pause'));
 ui['voice-prepare'].addEventListener('click', () => void prepareVoice());
 ui['microphone-check'].addEventListener('click', () => void checkMicrophone());
-ui['room-preview'].addEventListener('click', () => { void vr.preview().catch(report); });
+// The first look-around builds the room. Mid-interview, pause first and hold
+// resume until the room opens (pause can wait seconds for the last voice
+// transcript), so its downloads and 4K uploads never run under the film's
+// timed handoffs.
+async function openRoomPreview() {
+  if (vr.roomReady || !activePhases.includes(session.snapshot().phase)) { await vr.preview(); return; }
+  roomLoading = true; ui['vr-status'].textContent = '좌석 주변 공간을 처음 준비하는 동안 면접을 잠시 멈춥니다.'; render();
+  try {
+    await pause();
+    await vr.preview();
+    if (!vr.roomReady && session.snapshot().paused) ui['vr-status'].textContent = '방 둘러보기를 준비하지 못했습니다. 「이어서 진행」으로 면접을 계속할 수 있습니다.';
+  } finally { roomLoading = false; render(); }
+}
+ui['room-preview'].addEventListener('click', () => { void openRoomPreview().catch(report); });
 ui.vr.addEventListener('click', () => { void vr.enter().catch(report); });
 ui.quality.addEventListener('change', () => {
   if (activePhases.includes(session.snapshot().phase) || busy || preparingVoice || checkingMic || vr.active || !rehearsalMediaQualities(manifest).includes(ui.quality.value)) { render(); return; }

@@ -1,0 +1,59 @@
+{
+ "url": "http://127.0.0.1:4401/path/interview/film/rehearsal.html",
+ "profile": "desktop",
+ "runs": [
+  {
+   "lcp": 868,
+   "fcp": 816,
+   "lcpEl": "IMG.:path-vr-felt.webp",
+   "load": 1412,
+   "cssEnd": 160,
+   "fontEnd": 1381,
+   "kb": 1640
+  },
+  {
+   "lcp": 736,
+   "fcp": 300,
+   "lcpEl": "IMG.:path-vr-felt.webp",
+   "load": 1384,
+   "cssEnd": 133,
+   "fontEnd": 1351,
+   "kb": 1640
+  },
+  {
+   "lcp": 736,
+   "fcp": 304,
+   "lcpEl": "IMG.:path-vr-felt.webp",
+   "load": 1379,
+   "cssEnd": 130,
+   "fontEnd": 1352,
+   "kb": 1640
+  },
+  {
+   "lcp": 740,
+   "fcp": 308,
+   "lcpEl": "IMG.:path-vr-felt.webp",
+   "load": 1367,
+   "cssEnd": 140,
+   "fontEnd": 1338,
+   "kb": 1640
+  },
+  {
+   "lcp": 1296,
+   "fcp": 264,
+   "lcpEl": "reference:room-poster-4k.jpg",
+   "load": 1358,
+   "cssEnd": 108,
+   "fontEnd": 1327,
+   "kb": 1640
+  }
+ ],
+ "median": {
+  "lcp": 740,
+  "fcp": 304,
+  "load": 1379,
+  "kb": 1640,
+  "cssEnd": 133,
+  "fontEnd": 1351
+ }
+}

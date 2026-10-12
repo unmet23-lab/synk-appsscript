@@ -1,0 +1,11 @@
+3.9s start clicked
+15.2s answer1 waiting: {"phase":"preparing","label":"영상 준비","turn":"1 / 2","status":"면접 장면을 기기에서 준비하고 있습니다.","videos":[{"src":"strict-question-720p.mp4","t":0,"paused":true,"ready":0,"op":"0"},{"src":"strict-followup-plan-720p.mp4","t":0,"paused":true,"ready":4,"op":"0"}]}
+29.4s answer1 reached: {"phase":"listening","label":"답변 중","turn":"1 / 2","status":"답변 화면을 준비하고 있습니다.","videos":[{"src":"strict-question-720p.mp4","t":4.38,"paused":false,"ready":4,"op":"1"},{"src":"strict-listen-plan-tail-720p.mp4","t":0.02,"paused":false,"ready":4,"op":"0"}]}
+29.6s answer1 submitted
+30.6s followup waiting: {"phase":"reviewing","label":"답변 검토","turn":"1 / 2","status":"면접관이 답변을 검토하고 있습니다.","videos":[{"src":"strict-question-720p.mp4","t":4.56,"paused":false,"ready":4,"op":"1"},{"src":"strict-listen-plan-tail-720p.mp4","t":0.5,"paused":true,"ready":4,"op":"0"}]}
+34.6s followup reached: {"phase":"followup","label":"후속 질문","turn":"2 / 2","status":"첫 답변에 따른 후속 질문입니다.","videos":[{"src":"strict-question-720p.mp4","t":8.75,"paused":true,"ready":4,"op":"1"},{"src":"strict-followup-experience-720p.mp4","t":0,"paused":true,"ready":0,"op":"0"}]}
+45.9s answer2 waiting: {"phase":"followup","label":"후속 질문","turn":"2 / 2","status":"첫 답변에 따른 후속 질문입니다.","videos":[{"src":"strict-question-720p.mp4","t":8.75,"paused":true,"ready":4,"op":"1"},{"src":"strict-followup-experience-720p.mp4","t":4.66,"paused":false,"ready":4,"op":"1"}]}
+45.9s answer2 reached: {"phase":"listening","label":"답변 중","turn":"2 / 2","status":"답변을 입력한 뒤 완료를 누르세요.","videos":[{"src":"strict-listen-plan-tail-720p.mp4","t":0.5,"paused":true,"ready":4,"op":"0"},{"src":"strict-followup-experience-720p.mp4","t":5.67,"paused":false,"ready":4,"op":"1"}]}
+46.3s answer2 submitted
+48.3s complete reached: {"phase":"complete","label":"면접 종료","turn":"2 QUESTIONS","status":"면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-720p.mp4","t":0.5,"paused":true,"ready":4,"op":"0"},{"src":"strict-followup-experience-720p.mp4","t":8.01,"paused":true,"ready":4,"op":"1"}]}
+49.7s result: 내 답변 / “요양원 봉사활동에서 어르신 식사를 직접 도와드린 경험이 있습니다.” / 질문 의도 / 답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다. / 후속 질문 / “그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.”

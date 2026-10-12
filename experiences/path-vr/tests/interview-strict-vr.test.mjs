@@ -17,6 +17,35 @@ test('explicit interview preparation warms one room without entering XR or start
   await room.dispose(); assert.equal(disposals, 1); assert.equal(await room.prepareRoom(), false);
 });
 
+test('a flat-screen interview start finishes a room already begun but never starts the 3D build itself', async () => {
+  let builds = 0;
+  const room = createStrictVR({ mount: { hidden: true } }, { secure: true,
+    xr: { isSessionSupported: async () => false, requestSession() {} },
+    createStage: async () => { builds++; return { startPreview() {}, stopPreview() {}, dispose() {} }; },
+  });
+  assert.equal(await room.check(), false);
+  assert.equal(await room.prepareRoom({ onlyIfStarted: true }), false);
+  assert.equal(builds, 0); assert.equal(room.roomReady, false);
+  await room.preview(); assert.equal(builds, 1); assert.equal(room.roomReady, true);
+  assert.equal(await room.prepareRoom({ onlyIfStarted: true }), true); assert.equal(builds, 1);
+  await room.dispose(); assert.equal(room.roomReady, false);
+});
+
+test('a headset check still running at interview start is awaited so its room build never overlaps playback', async () => {
+  let builds = 0, release;
+  const supported = new Promise((resolve) => { release = resolve; });
+  const room = createStrictVR({ mount: { hidden: true } }, { secure: true,
+    xr: { isSessionSupported: () => supported, requestSession() {} },
+    createStage: async () => { builds++; return { startPreview() {}, stopPreview() {}, dispose() {} }; },
+  });
+  const checking = room.check();
+  const preparing = room.prepareRoom({ onlyIfStarted: true });
+  release(true);
+  assert.equal(await preparing, true); assert.equal(await checking, true);
+  assert.equal(builds, 1); assert.equal(room.roomReady, true);
+  await room.dispose();
+});
+
 test('PC turns stay in fixed steps, keep a level horizon, and can return directly to the front', () => {
   let look = { yaw: 0, pitch: .2 };
   for (let i = 0; i < 3; i++) look = previewLookAfter(look, { type: 'turn', direction: 1 });

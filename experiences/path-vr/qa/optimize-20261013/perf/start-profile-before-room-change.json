@@ -1,0 +1,265 @@
+{
+ "quality": "4k",
+ "width": 1440,
+ "longTasks": [
+  {
+   "at": 148,
+   "dur": 107
+  },
+  {
+   "at": 271,
+   "dur": 79
+  },
+  {
+   "at": 351,
+   "dur": 81
+  },
+  {
+   "at": 432,
+   "dur": 60
+  },
+  {
+   "at": 493,
+   "dur": 60
+  },
+  {
+   "at": 553,
+   "dur": 146
+  },
+  {
+   "at": 700,
+   "dur": 159
+  },
+  {
+   "at": 876,
+   "dur": 215
+  },
+  {
+   "at": 1153,
+   "dur": 67
+  }
+ ],
+ "meta": {
+  "idle": 7836,
+  "program": 199,
+  "gc": 11
+ },
+ "urls": [
+  {
+   "url": "(native)",
+   "ms": 8052
+  },
+  {
+   "url": "vendor/three.module.js",
+   "ms": 970
+  },
+  {
+   "url": "interview/film-player.mjs",
+   "ms": 8
+  },
+  {
+   "url": "vendor/three.core.js",
+   "ms": 7
+  },
+  {
+   "url": "film/rehearsal.mjs",
+   "ms": 5
+  },
+  {
+   "url": "film/room-space.mjs",
+   "ms": 2
+  },
+  {
+   "url": "film/strict-vr.mjs",
+   "ms": 2
+  },
+  {
+   "url": "film/rehearsal-session.mjs",
+   "ms": 1
+  }
+ ],
+ "top": [
+  {
+   "fn": "texSubImage2D @ vendor/three.module.js:9825",
+   "ms": 939
+  },
+  {
+   "fn": "prime @ interview/film-player.mjs:220",
+   "ms": 5
+  },
+  {
+   "fn": "getContext @ vendor/three.module.js:15176",
+   "ms": 4
+  },
+  {
+   "fn": "getExtension @ vendor/three.module.js:3740",
+   "ms": 3
+  },
+  {
+   "fn": "WebGLShader @ vendor/three.module.js:5571",
+   "ms": 3
+  },
+  {
+   "fn": "render @ film/rehearsal.mjs:38",
+   "ms": 3
+  },
+  {
+   "fn": "replaceLightNums @ vendor/three.module.js:5805",
+   "ms": 2
+  },
+  {
+   "fn": "WebGLProgram.isReady @ vendor/three.module.js:6625",
+   "ms": 2
+  },
+  {
+   "fn": "WebGLRenderer.setSize @ vendor/three.module.js:15460",
+   "ms": 2
+  },
+  {
+   "fn": "(anon) @ film/rehearsal.mjs:453",
+   "ms": 2
+  },
+  {
+   "fn": "createInterviewSpace @ film/room-space.mjs:152",
+   "ms": 2
+  },
+  {
+   "fn": "WebGLRenderer.compile @ vendor/three.module.js:16141",
+   "ms": 2
+  },
+  {
+   "fn": "resolveIncludes @ vendor/three.module.js:5836",
+   "ms": 2
+  },
+  {
+   "fn": "(anon) @ interview/film-player.mjs:128",
+   "ms": 2
+  },
+  {
+   "fn": "(anon) @ vendor/three.core.js:1",
+   "ms": 2
+  },
+  {
+   "fn": "getParameters @ vendor/three.module.js:6826",
+   "ms": 2
+  },
+  {
+   "fn": "uploadTexture @ vendor/three.module.js:10998",
+   "ms": 1
+  },
+  {
+   "fn": "setup @ vendor/three.module.js:7936",
+   "ms": 1
+  },
+  {
+   "fn": "RegExp: ^[ \\t]*#include +<([\\w\\d./]+)> @ :0",
+   "ms": 1
+  },
+  {
+   "fn": "WebGLProgram @ vendor/three.module.js:6048",
+   "ms": 1
+  },
+  {
+   "fn": "(anon) @ interview/film-player.mjs:170",
+   "ms": 1
+  },
+  {
+   "fn": "buildStage @ film/strict-vr.mjs:129",
+   "ms": 1
+  },
+  {
+   "fn": "WebGLState @ vendor/three.module.js:8835",
+   "ms": 1
+  },
+  {
+   "fn": "cloneUniforms @ vendor/three.core.js:20884",
+   "ms": 1
+  },
+  {
+   "fn": "generateUUID @ vendor/three.core.js:1825",
+   "ms": 1
+  }
+ ],
+ "requests": [
+  {
+   "url": "vendor/three.module.js",
+   "type": "script",
+   "t": 27
+  },
+  {
+   "url": "vendor/three.core.js",
+   "type": "script",
+   "t": 41
+  },
+  {
+   "url": "film/room-reference-4k.jpg",
+   "type": "image",
+   "t": 89
+  },
+  {
+   "url": "room/carpet-4k.jpg",
+   "type": "image",
+   "t": 90
+  },
+  {
+   "url": "room/front-room-extension-4k.jpg",
+   "type": "image",
+   "t": 93
+  },
+  {
+   "url": "room/front-room-wide-4k.jpg",
+   "type": "image",
+   "t": 94
+  },
+  {
+   "url": "room/left-wall-detail-4k.jpg",
+   "type": "image",
+   "t": 95
+  },
+  {
+   "url": "room/right-wall-detail-4k.jpg",
+   "type": "image",
+   "t": 96
+  },
+  {
+   "url": "room/back-wall-detail-4k.jpg",
+   "type": "image",
+   "t": 98
+  },
+  {
+   "url": "film/room-poster-4k.jpg",
+   "type": "image",
+   "t": 99
+  },
+  {
+   "url": "room/desk-4k.jpg",
+   "type": "image",
+   "t": 101
+  },
+  {
+   "url": "room/ceiling-detail-4k.jpg",
+   "type": "image",
+   "t": 101
+  },
+  {
+   "url": "film/strict-followup-experience-4k.mp4",
+   "type": "media",
+   "t": 1222
+  },
+  {
+   "url": "film/strict-followup-plan-4k.mp4",
+   "type": "media",
+   "t": 2299
+  },
+  {
+   "url": "film/strict-question-4k.mp4",
+   "type": "media",
+   "t": 5351
+  },
+  {
+   "url": "film/strict-listening-4k.mp4",
+   "type": "media",
+   "t": 8365
+  }
+ ]
+}

@@ -1,0 +1,65 @@
+{
+ "scenario": "flat",
+ "quality": "720p",
+ "width": 390,
+ "overlay": false,
+ "startToQuestionMs": 11726,
+ "roomRequestsBeforeQuestion": 13,
+ "completeAtMs": 28282,
+ "roomRequestsAfterComplete": 0,
+ "ok": true,
+ "requests": [
+  {
+   "t": -3205,
+   "file": "film/room-poster-4k.jpg"
+  },
+  {
+   "t": 33,
+   "file": "vendor/three.module.js"
+  },
+  {
+   "t": 83,
+   "file": "vendor/three.core.js"
+  },
+  {
+   "t": 204,
+   "file": "film/room-poster-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "film/room-reference-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/carpet-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/front-room-extension-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/front-room-wide-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/left-wall-detail-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/right-wall-detail-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/back-wall-detail-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/desk-4k.jpg"
+  },
+  {
+   "t": 204,
+   "file": "room/ceiling-detail-4k.jpg"
+  }
+ ]
+}

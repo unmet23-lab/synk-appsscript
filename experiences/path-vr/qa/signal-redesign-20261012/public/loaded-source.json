@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-12T14:12:48.253Z",
+  "report": [
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "expected": "5379e261d0815206b5749ce23d28f5f22cddd33783b938d7c4fb0a30bf6b62ee",
+      "loaded": "5379e261d0815206b5749ce23d28f5f22cddd33783b938d7c4fb0a30bf6b62ee",
+      "same": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.css",
+      "expected": "9cff3a3229f33ac5e07cfe0f079e02a5a2789e5d9fdc47ae48741664482865a4",
+      "loaded": "9cff3a3229f33ac5e07cfe0f079e02a5a2789e5d9fdc47ae48741664482865a4",
+      "same": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "expected": "ebd6061e69903be587e0c28f0a96f39e9b4254f52ed3d256e4f1d2312aa4fd2f",
+      "loaded": "ebd6061e69903be587e0c28f0a96f39e9b4254f52ed3d256e4f1d2312aa4fd2f",
+      "same": true
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "expected": "3675e61e8469a0e6576c55638dbac3eedf29fa72af6dd4578e05695e0f05dd95",
+      "loaded": "3675e61e8469a0e6576c55638dbac3eedf29fa72af6dd4578e05695e0f05dd95",
+      "same": true
+    },
+    {
+      "file": "path/assets/path-vr-felt.webp",
+      "expected": "0f91013250a4445042f5e2b1c136d66255677ffd1e7b241ff896b0880f75eed7",
+      "loaded": "0f91013250a4445042f5e2b1c136d66255677ffd1e7b241ff896b0880f75eed7",
+      "same": true
+    },
+    {
+      "file": "account/platform.css",
+      "expected": "fd8515d9e99bb7f9fd5da6c7ac9977928d7cad85b2f5f9d37f97beae68792bab",
+      "loaded": "fd8515d9e99bb7f9fd5da6c7ac9977928d7cad85b2f5f9d37f97beae68792bab",
+      "same": true
+    },
+    {
+      "file": "account/dist/platform.js",
+      "expected": "add2914ec08d6d329430943f4142c776298137c81d7b30d9741c3041d677d03c",
+      "loaded": "add2914ec08d6d329430943f4142c776298137c81d7b30d9741c3041d677d03c",
+      "same": true
+    },
+    {
+      "file": "account/assets/path-vr-felt.webp",
+      "expected": "0f91013250a4445042f5e2b1c136d66255677ffd1e7b241ff896b0880f75eed7",
+      "loaded": "0f91013250a4445042f5e2b1c136d66255677ffd1e7b241ff896b0880f75eed7",
+      "same": true
+    }
+  ],
+  "errors": []
+}

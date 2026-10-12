@@ -1,0 +1,22 @@
+{
+ "scenario": "fail",
+ "quality": "720p",
+ "width": 1440,
+ "overlay": true,
+ "startToQuestionMs": 10334,
+ "roomRequestsBeforeQuestion": 0,
+ "failure": {
+  "vr": "방 둘러보기를 준비하지 못했습니다. 「이어서 진행」으로 면접을 계속할 수 있습니다.",
+  "pauseDisabled": false,
+  "pauseLabel": "이어서 진행",
+  "previewHidden": true
+ },
+ "completeAtMs": 27233,
+ "ok": true,
+ "requests": [
+  {
+   "t": 11594,
+   "file": "vendor/three.module.js"
+  }
+ ]
+}
