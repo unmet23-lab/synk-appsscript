@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- Mac DMG 창 배경(660×448). 플랫폼 「플랫폼」 포스터와 같은 청금석 면 + 스튜디오 빛 + 그레인 위에 앱 → Applications 화살표와 안내.
+     Finder는 창 높이에 제목 막대(macOS 15에서 28pt)를 넣어서 배경 아래쪽이 그만큼 가려진다. 그래서 내용은 위쪽 660×420에만 두고 아래 28pt는 바탕만 잇는다.
+     아이콘(앱 180,200 · Applications 480,200 · 112pt)과 이름(13pt, y 269–280)은 Finder가 그린다. 이름 글자는 어두운 모드에서도 검정이라
+     이름 자리에 흰 알약을 깐다(2026-10-13 macOS 15.7 CI 실제 창으로 잼). 다시 만들 때: node make-background.mjs -->
+<html lang="ko">
+<meta charset="utf-8">
+<style>
+  @font-face{font-family:SUIT;src:url('../../docs/브랜드_폰트/SUIT/SUIT-Variable.woff2') format('woff2');font-weight:100 900}
+  @font-face{font-family:'DM Mono';src:url('../../docs/브랜드_폰트/DM_Mono/DMMono-Medium.ttf') format('truetype');font-weight:500;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027,U+2190-21FF}
+  html,body{margin:0;background:transparent}
+  .bg{position:relative;isolation:isolate;overflow:hidden;width:660px;height:448px;color:#fff;font-family:SUIT,sans-serif;
+    background:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1)),#3D6BC9}
+  .grain{position:absolute;inset:0;z-index:1;opacity:.3;mix-blend-mode:overlay;pointer-events:none;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  .layer{position:absolute;inset:0;z-index:2}
+  .scope{position:absolute;left:28px;top:30px;font:500 10.5px/1 'DM Mono',monospace;letter-spacing:.14em;color:rgba(255,255,255,.7)}
+  .stage{position:absolute;right:26px;top:22px;display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 12px 0 11px;border-radius:999px;background:#FAFAF9;color:#08090C;font-size:12px;font-weight:800;letter-spacing:-.01em;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(0,0,0,.24)}
+  .stage::before{content:'';width:7px;height:7px;border-radius:50%;background:#3D6BC9;box-shadow:0 0 0 3px rgba(61,107,201,.25)}
+  /* Finder가 아이콘 이름(검정 13pt)을 쓰는 자리: 흰 알약으로 대비를 둔다 */
+  .name{position:absolute;top:262px;height:24px;border-radius:12px;background:#FAFAF9;box-shadow:0 6px 16px rgba(0,0,0,.18)}
+  .drag{position:absolute;left:252px;top:170px;width:156px;text-align:center;font:500 10px/1 'DM Mono',monospace;letter-spacing:.2em;color:rgba(255,255,255,.72)}
+  svg.arrow{position:absolute;left:252px;top:188px}
+  .title{position:absolute;left:0;right:0;top:312px;text-align:center;font-size:18px;font-weight:800;letter-spacing:-.02em;line-height:1.3}
+  .sub{position:absolute;left:24px;right:24px;top:340px;text-align:center;font-size:12px;font-weight:600;line-height:1.6;color:rgba(255,255,255,.82)}
+  .sub span{display:block;white-space:nowrap}
+  .en{position:absolute;left:0;right:0;top:386px;text-align:center;font:500 9px/1 'DM Mono',monospace;letter-spacing:.14em;color:rgba(255,255,255,.6)}
+</style>
+<div class="bg" id="bg">
+  <div class="grain"></div>
+  <div class="layer">
+    <span class="scope">SYNK · PLATFORM · 0.4.3</span>
+    <span class="stage">끌어서 설치</span>
+    <span class="name" style="left:100px;width:160px"></span>
+    <span class="name" style="left:430px;width:100px"></span>
+    <span class="drag">DRAG</span>
+    <svg class="arrow" width="156" height="24" viewBox="0 0 156 24" fill="none" stroke="#FFFFFF" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 12h146M138 4l12 8-12 8"/>
+    </svg>
+    <div class="title">SYNK를 Applications 폴더로 끌어 놓으세요</div>
+    <div class="sub"><span>옮긴 뒤 응용 프로그램에서 열어요. DMG 안에서 바로 열지 마세요.</span><span>처음 열 때 확인 창이 나오면 시스템 설정 → 개인정보 보호 및 보안에서 「그래도 열기」를 눌러요.</span></div>
+    <div class="en">DRAG SYNK INTO APPLICATIONS · THEN OPEN IT FROM THERE</div>
+  </div>
+</div>
+</html>

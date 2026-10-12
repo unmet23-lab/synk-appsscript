@@ -1,0 +1,262 @@
+{
+  "request": "유호 「웅 기다렸다가 넣고 mac 관련한거 전부 진행해」 2026-10-13",
+  "dmgWindowRevision": "mac-signal.1",
+  "appVersion": "0.4.3",
+  "release": {
+    "tag": "platform-preview-0.4.3-mac-signal.1-20261013",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-mac-signal.1-20261013",
+    "prerelease": true,
+    "createdBy": "github-actions (release job of desktop-macos-dmg-signal.yml)",
+    "target": "e2c81d559cd82b94c7665fffa595a93f6a7cea5a"
+  },
+  "replaces": {
+    "release": "platform-preview-0.4.3-20261012",
+    "keptPublished": true
+  },
+  "packages": [
+    {
+      "arch": "arm64",
+      "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-arm64.dmg",
+      "bytes": 459131084,
+      "sha256": "6515cd82d6737c00344b647bbd2080693f8402bded0da96b7990ee50384c7ca0",
+      "githubAssetDigestMatches": true,
+      "publicDownload": {
+        "status": 200,
+        "contentLength": 459131084
+      },
+      "source": {
+        "file": "SYNK-Platform-Preview-0.4.3-mac-arm64.dmg",
+        "bytes": 457408094,
+        "sha256": "e0796502af692e386aa28dacfae2492b1ca30e6241435213e4a73521cc32a28a"
+      },
+      "app": {
+        "name": "SYNKPlatformPreview.app",
+        "entries": 601,
+        "files": 268,
+        "bytes": 631716152,
+        "treeSHA256": "8c7ed7b87dcb16975dd4791616f039ae9f43f79ac07fd87d1892e3ff8dc1489a",
+        "unchangedFromPublished": true,
+        "minimumSystemVersion": "13.0"
+      },
+      "codesignVerified": true,
+      "volumeName": "SYNK Platform Preview 0.4.3 arm64",
+      "rootEntries": [
+        ".DS_Store",
+        ".VolumeIcon.icns",
+        ".background.tiff",
+        "Applications",
+        "SYNKPlatformPreview.app"
+      ],
+      "backgroundInDmg": {
+        "file": ".background.tiff",
+        "bytes": 1741028,
+        "sha256": "db3f0c98ef57f1a499c26c75bde9cb721dfeee2b1dcb31eec97e17985db5386c"
+      },
+      "runner": {
+        "macOS": "15.7.9",
+        "hostArch": "arm64",
+        "node": "v24.20.0"
+      },
+      "finderWindow": [
+        {
+          "mode": "light",
+          "bounds": [
+            364,
+            25,
+            1024,
+            473
+          ],
+          "screen": [
+            0,
+            0,
+            1024,
+            768
+          ]
+        },
+        {
+          "mode": "dark",
+          "bounds": [
+            364,
+            25,
+            1024,
+            473
+          ],
+          "screen": [
+            0,
+            0,
+            1024,
+            768
+          ]
+        }
+      ],
+      "publishedWindowBounds": [
+        400,
+        25,
+        940,
+        405
+      ]
+    },
+    {
+      "arch": "x64",
+      "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-x64.dmg",
+      "bytes": 476792659,
+      "sha256": "1b8a9e5230f6e700841b64b6052cc5082a4ffb79a01a362620ed7f680ae2edb3",
+      "githubAssetDigestMatches": true,
+      "publicDownload": {
+        "status": 200,
+        "contentLength": 476792659
+      },
+      "source": {
+        "file": "SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+        "bytes": 475085655,
+        "sha256": "28919a62be30fb86733356ab7636c20b20f5257571eb7aa704f6b0946afbb333"
+      },
+      "app": {
+        "name": "SYNKPlatformPreview.app",
+        "entries": 611,
+        "files": 276,
+        "bytes": 649605928,
+        "treeSHA256": "d4887e4884e0121fc4eeeb219d274d21ac79aa23d9ed088d9215d1a2177f563c",
+        "unchangedFromPublished": true,
+        "minimumSystemVersion": "13.0"
+      },
+      "codesignVerified": true,
+      "volumeName": "SYNK Platform Preview 0.4.3 x64",
+      "rootEntries": [
+        ".DS_Store",
+        ".VolumeIcon.icns",
+        ".background.tiff",
+        "Applications",
+        "SYNKPlatformPreview.app"
+      ],
+      "backgroundInDmg": {
+        "file": ".background.tiff",
+        "bytes": 1741028,
+        "sha256": "db3f0c98ef57f1a499c26c75bde9cb721dfeee2b1dcb31eec97e17985db5386c"
+      },
+      "runner": {
+        "macOS": "15.7.9",
+        "hostArch": "x64",
+        "node": "v24.19.0"
+      },
+      "finderWindow": [
+        {
+          "mode": "light",
+          "bounds": [
+            400,
+            136,
+            1060,
+            584
+          ],
+          "screen": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        },
+        {
+          "mode": "dark",
+          "bounds": [
+            400,
+            136,
+            1060,
+            584
+          ],
+          "screen": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "publishedWindowBounds": [
+        400,
+        170,
+        940,
+        550
+      ]
+    }
+  ],
+  "window": {
+    "background": "660×448 (content in the top 660×420; Finder puts its 28pt title bar inside the stored window height)",
+    "iconSize": 112,
+    "iconTextSize": 13,
+    "app": [
+      180,
+      200
+    ],
+    "applications": [
+      480,
+      200
+    ],
+    "iconNames": "black in light and dark mode on macOS 15 → white pills",
+    "backgroundSHA256": {
+      "png": "8d1e437759ed5078cdc06c10ce5249da969a07d2970a1de5f9cb899494a7b7de",
+      "png2x": "c7b77425e730795e00a9012af937bff62324029273423bb66038a3d261aa44ac"
+    }
+  },
+  "sources": {
+    "synkPolicy": {
+      "commit": "e2c81d559cd82b94c7665fffa595a93f6a7cea5a",
+      "paths": [
+        ".github/desktop-preview/mac-dmg-signal/",
+        ".github/workflows/desktop-macos-dmg-signal.yml"
+      ]
+    },
+    "synkAppsscript": "desktop/mac-dmg/"
+  },
+  "ci": {
+    "build": "https://github.com/unmet23-lab/synk-policy/actions/runs/38296456890",
+    "release": "https://github.com/unmet23-lab/synk-policy/actions/runs/38296894702",
+    "earlierRuns": [
+      {
+        "run": 38294810156,
+        "result": "failure",
+        "why": "expected .background/ folder; dmgbuild writes .background.tiff at the volume root"
+      },
+      {
+        "run": 38295153987,
+        "result": "success",
+        "why": "first window 660×420: Finder hid the bottom 28pt (English line) and drew the names in black in dark mode → 660×448 + white pills"
+      },
+      {
+        "run": 38295714406,
+        "result": "arm64 success, x64 artifact upload ENOTFOUND (runner network)"
+      }
+    ]
+  },
+  "homepage": {
+    "synkPolicy": "d29be3d48d778e2b45141588dc65b79a11672016",
+    "files": [
+      "index.html",
+      "en/index.html",
+      "llms.txt"
+    ],
+    "change": "Apple silicon and Intel DMG links and the Mac checksum link → platform-preview-0.4.3-mac-signal.1-20261013 (6 lines)",
+    "pages": {
+      "run": 38297088971,
+      "conclusion": "success"
+    },
+    "siteCheck": {
+      "run": 38297088822,
+      "conclusion": "success"
+    },
+    "liveBytes": "3/3 same",
+    "browser": "synk.im Mac dialog links read from the live DOM; no old 0.4.3-20261012 link left",
+    "buildCheck": "clean SYNK-website clone at ef7e8df: build output differs from the HEAD build only by the three URLs",
+    "synkWebsite": "557837e60570cb82427856b0454bd5cbc892ea88 (codex/company-conversations, pushed; peer edits in the shared copy kept)"
+  },
+  "notChanged": [
+    "SYNKPlatformPreview.app bytes, permissions, symlinks and ad-hoc signature",
+    "volume name, volume icon, Applications link",
+    "Windows signal.2 installer and its link",
+    "release platform-preview-0.4.3-20261012"
+  ],
+  "notDone": [
+    "real Mac install acceptance by a person",
+    "Apple notarization",
+    "app icon shape (flat white square) — inside the app bundle, next app version"
+  ]
+}

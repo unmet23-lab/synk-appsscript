@@ -72,7 +72,21 @@
 
 **공개(10-13, 유호님 「웅 공개해줘」):** 설치 원본 24개를 synk-policy `.github/desktop-preview/signal-installer/`에 올리고(`9da9282d`) 그 커밋으로 프리릴리스 [`platform-preview-0.4.3-signal.2-20261013`](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-signal.2-20261013)을 만들었다(설치 파일 399,801,344 bytes, SHA-256 `929632ea797d7c6babe4a5e9b768cb9430daa123a65df9895003970e0751fc27`, 체크섬·공개용 패키지 기록). 로그인 없이 공개 주소에서 다시 받아 크기·해시가 같았다. 홈페이지는 공개본에 플랫폼 구역·site.css·site.js·14쪽 토큰·llms.txt만 옮겨 심어 `d95c65bf`로 올렸고(원본 SYNK-website `ef7e8df`), 공개 전 synk.im 주소로 덮어 연 14쪽 × 1440·390에서 콘솔 오류·실패 요청·가로 넘침 0이었다. Pages 빌드와 「synk.im 배포 점검」(바뀐 파일 바이트 대조 + 주요 페이지 검사)이 모두 성공했다. 기록: [공개 기록](../../_ops/qa/installer-signal2-20261013/release.json).
 
-**남은 것(제안):** Mac DMG 창 배경(아이콘 → 화살표 → Applications + 한국어 한 줄)은 macOS CI 빌드와 새 릴리스가 필요하다. 첫 실행 위치가 Applications 밖이면 옮기기 제안, 설치가 한계 시간을 넘기면 실패 화면으로 넘기는 것은 앱·엔진 쪽 일이다.
+<a id="mac-dmg-20261013"></a>
+
+### Mac DMG 창 (mac-signal.1, `desktop/mac-dmg/`)
+
+> 유호님 「웅 기다렸다가 넣고 mac 관련한거 전부 진행해」(10-13). 전에는 electron-builder 기본 창(회색 바탕 + 점선 화살표)이었다.
+
+- **창**: 「플랫폼」 포스터와 같은 청금석 면 + 스튜디오 빛 + 그레인. 왼쪽 위 `SYNK · PLATFORM · 0.4.3` 모노 라벨, 오른쪽 위 기울인 흰 스티커 「끌어서 설치」. 가운데 SYNK 앱(180,200)과 Applications(480,200)를 112pt로 나란히 두고 사이에 흰 화살표와 `DRAG`. 아래 「SYNK를 Applications 폴더로 끌어 놓으세요」, 「옮긴 뒤 응용 프로그램에서 열어요. DMG 안에서 바로 열지 마세요.」, 「처음 열 때 확인 창이 나오면 시스템 설정 → 개인정보 보호 및 보안에서 「그래도 열기」를 눌러요.」, 영어 모노 한 줄.
+- **실제 Finder에서 잰 것**: 창 높이에 제목 막대(macOS 15에서 28pt)가 들어가 배경 아래가 그만큼 가려진다 → 배경을 660×448로 만들고 내용은 위 660×420에만 둔다. 아이콘 이름(13pt)은 어두운 모드에서도 검정이라 흰 알약 위에 앉혔다. 첫 판(660×420, 이름 밑 옅은 빛)은 CI 창에서 영어 줄이 잘리고 이름 대비가 약해 고쳤다.
+- **바뀌지 않은 것**: DMG 안의 SYNKPlatformPreview.app은 공개 0.4.3과 모든 파일·권한·심볼릭 링크가 같다(Apple 칩 268개·Intel 276개 파일, `codesign --verify --deep --strict` 통과). 볼륨 이름·볼륨 아이콘·Applications 링크도 그대로다. 이미 설치한 사람은 다시 받을 필요가 없다.
+
+전후 화면: [Mac DMG 창 전후](화면/맥DMG창-전후.jpg)
+
+**공개(10-13):** 원본을 synk-policy `.github/desktop-preview/mac-dmg-signal/`과 워크플로 `desktop-macos-dmg-signal.yml`로 올리고(`e2c81d55`), macOS 15 CI(Apple 칩·Intel, [실행 38296456890](https://github.com/unmet23-lab/synk-policy/actions/runs/38296456890))가 공개 DMG를 받아 확인값을 맞춘 뒤 다시 포장하고, 앱 트리·서명·Finder 실제 창(밝은·어두운 모드)을 확인했다. 릴리스 작업은 같은 실행의 파일만 기록과 다시 대조해 프리릴리스 [`platform-preview-0.4.3-mac-signal.1-20261013`](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-mac-signal.1-20261013)을 만들었다(arm64 459,131,084 bytes `6515cd82…`, x64 476,792,659 bytes `1b8a9e52…`). 공개 주소 두 개가 200·정확한 크기로 열렸다. 홈페이지 Mac 링크 세 곳(두 칩·확인값)을 공개본에서 바꿔 `d29be3d4`로 올렸고(원본 SYNK-website `557837e`), Pages·「synk.im 배포 점검」 성공, 라이브 3개 파일 바이트 일치. 기존 `platform-preview-0.4.3-20261012` 릴리스는 그대로 둔다. 기록: [Mac 공개 기록](../../_ops/qa/mac-dmg-signal1-20261013/release.json).
+
+**남은 것(제안):** 앱 아이콘이 macOS 모양(둥근 사각형)이 아니라 흰 정사각형이라 Finder·Dock에서 다른 앱과 어긋난다 — 앱 안 파일이라 다음 앱 판에서 바꾼다. 첫 실행 위치가 Applications 밖이면 옮기기 제안, 설치가 한계 시간을 넘기면 실패 화면으로 넘기는 것은 앱·엔진 쪽 일이다. Apple 공증을 받으면 창의 「그래도 열기」 줄을 뺀다.
 
 ## 한 줄 원칙
 
