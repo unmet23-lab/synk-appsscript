@@ -632,3 +632,185 @@
 @media(prefers-reduced-motion:reduce){
   :root .synk-workspace *,:root #overlay *{transition:none!important;animation:none!important}
 }
+
+/* ───────────── 9판(2026-10-12) — 10-11 뒤에 붙은 화면을 같은 문법으로 ─────────────
+   고객 관리(PULSE 고객 프로젝트)·제작 도구·트렌드·레퍼런스와 화면마다 달라진 기본 입력.
+   펠트 질감·크림/파스텔 바탕·베리색 한글 눈썹을 걷고 흰 판·1px 선·계기판·검은 알약으로 맞춘다.
+   클래스만 고르고 JS·HTML은 바꾸지 않는다. 움직임은 손을 올리거나 누를 때의 짧은 전환뿐이다. */
+
+/* 공통 입력: 아직 시그널을 입지 않은 기본 셀렉트·체크 상자 */
+:root .synk-workspace main select:not([multiple]):not(.filter-select){-webkit-appearance:none;appearance:none;min-height:46px;padding:0 42px 0 14px;border:1px solid var(--sg-line-2);border-radius:var(--sg-r-md);background:var(--sg-paper) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-opacity='.62' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E") right 14px center/16px no-repeat;color:var(--sg-ink);font:500 14px/1.4 var(--sg-sans);box-shadow:none;cursor:pointer;transition:border-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
+:root .synk-workspace main select:not([multiple]):not(.filter-select):hover{border-color:var(--sg-ink-4)}
+:root .synk-workspace main select:not([multiple]):not(.filter-select):focus{outline:none;border-color:var(--sg-lapis);box-shadow:0 0 0 4px rgba(61,107,201,.14)}
+:root .synk-workspace main select:disabled{opacity:.55;cursor:default}
+:root .synk-workspace main :is(input[type=checkbox],input[type=radio]){accent-color:var(--sg-ink);width:18px;height:18px}
+
+/* 고객 관리 · 머리 */
+:root .synk-workspace .client-desk{--cd-ink:var(--sg-ink);--cd-muted:var(--sg-ink-3);--cd-brand:var(--sg-ink-3);color:var(--sg-ink);font-family:var(--sg-sans)}
+:root .synk-workspace .client-desk .cd-heading{margin:0 0 34px;align-items:flex-end}
+:root .synk-workspace .client-desk .cd-heading>img{display:none}
+:root .synk-workspace .client-desk .cd-heading h1{margin:0;font:850 44px/1.12 var(--sg-sans);letter-spacing:-.05em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-heading p{margin:12px 0 0;max-width:62ch;font-size:15px;line-height:1.65;font-weight:450;color:var(--sg-ink-3)}
+/* 눈썹: 베리색 한글 대신 작은 회색 라벨 + 사업 색 점(PULSE 베리 점 하나만) */
+:root .synk-workspace .client-desk .cd-eyebrow{display:inline-flex;align-items:center;gap:8px;margin:0 0 16px;font:700 12px/1.2 var(--sg-sans);letter-spacing:0;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk .cd-eyebrow:before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--sg-ink-4)}
+:root .synk-workspace .client-desk .cd-heading .cd-eyebrow:before{background:var(--sg-berry)}
+
+/* 고객 관리 · 숫자 세 칸 = 1px 선 계기판 */
+:root .synk-workspace .client-desk .cd-metrics{gap:0;padding:0;margin:0 0 26px;border-block:1px solid var(--sg-line-2)}
+:root .synk-workspace .client-desk .cd-metrics>div{gap:6px;padding:18px 22px 20px}
+:root .synk-workspace .client-desk .cd-metrics>div:first-child{padding-left:0}
+:root .synk-workspace .client-desk .cd-metrics>div+div{border-left:1px solid var(--sg-line)}
+:root .synk-workspace .client-desk .cd-metrics strong{font:800 34px/1.05 var(--sg-sans);letter-spacing:-.03em;font-variant-numeric:tabular-nums;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-metrics span{font-size:12.5px;font-weight:650;color:var(--sg-ink-3)}
+
+/* 고객 관리 · 단추: 색은 7판 규칙이 정한다(흰 알약·검은 주 단추). 여기서는 크기·글자·손 올림 */
+:root .synk-workspace .client-desk .cd-button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 18px;font:650 14px/1.3 var(--sg-sans);letter-spacing:-.01em;transition:background-color .16s var(--sg-ease),border-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease),transform .12s var(--sg-ease)}
+:root .synk-workspace .client-desk .cd-button:hover:not(:disabled){background-color:var(--sg-surface-1)!important;border-color:var(--sg-ink-4)!important}
+:root .synk-workspace .client-desk .cd-button:active:not(:disabled){transform:translateY(1px)}
+:root .synk-workspace .client-desk :is(.cd-button.cd-primary,.cd-toolbar>.cd-button[data-client="new"]):hover:not(:disabled){background-color:#1A1B20!important;box-shadow:0 0 0 4px rgba(61,107,201,.18)!important}
+:root .synk-workspace .client-desk .cd-toolbar{gap:8px;margin:0 0 22px}
+:root .synk-workspace .client-desk .cd-toolbar small{font-size:12.5px;color:var(--sg-ink-3)}
+
+/* 프로젝트를 열어 두었을 때는 다음 행동이 「지금 할 일」 카드에 있으므로 도구 줄의 「프로젝트 접수」를 선 알약으로 낮춘다(7판 검은 주 단추보다 한 단계 구체적) */
+:root .synk-workspace .client-desk:has(.cps-overview)>.cd-toolbar>.cd-button[data-client="new"]{background-color:var(--sg-paper)!important;color:var(--sg-ink)!important;border:1px solid var(--sg-line-2)!important;box-shadow:none!important;font-weight:650}
+:root .synk-workspace .client-desk:has(.cps-overview)>.cd-toolbar>.cd-button[data-client="new"]:hover:not(:disabled){background-color:var(--sg-surface-1)!important;border-color:var(--sg-ink-4)!important}
+
+/* 고객 관리 · 입력 칸 */
+:root .synk-workspace .client-desk .cd-field{gap:8px;font-size:13px;font-weight:700;color:var(--sg-ink-2)}
+:root .synk-workspace .client-desk .cd-field :is(input:not([type=checkbox]):not([type=radio]),textarea){min-height:46px;padding:11px 14px;border:1px solid var(--sg-line-2);border-radius:var(--sg-r-md);background:var(--sg-paper);color:var(--sg-ink);font:500 14px/1.55 var(--sg-sans);transition:border-color .16s var(--sg-ease),box-shadow .16s var(--sg-ease)}
+:root .synk-workspace .client-desk .cd-field :is(input,select,textarea):focus{outline:none;border-color:var(--sg-lapis);box-shadow:0 0 0 4px rgba(61,107,201,.14)}
+:root .synk-workspace .client-desk .cd-field small{font-size:12px;font-weight:450;color:var(--sg-ink-3)}
+
+/* 고객 관리 · 왼쪽 목록 카드(고른 카드는 검은 테 하나) */
+:root .synk-workspace .client-desk .cd-project{gap:6px;padding:16px 18px;border:1px solid var(--sg-line);border-radius:16px;background:var(--sg-paper);box-shadow:none;transition:background .16s var(--sg-ease),border-color .16s var(--sg-ease)}
+:root .synk-workspace .client-desk .cd-project:hover{background:var(--sg-surface-1);border-color:var(--sg-line-2)}
+:root .synk-workspace .client-desk .cd-project.selected{border-color:var(--sg-ink);background:var(--sg-paper);box-shadow:inset 0 0 0 1px var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-project :is(span,b){font-size:12px;font-weight:600;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk .cd-project strong{font-size:15.5px;line-height:1.4;font-weight:800;letter-spacing:-.02em;color:var(--sg-ink)}
+
+/* 고객 관리 · 선택한 프로젝트: 크림 판 대신 흰 판 + 1px 선 */
+:root .synk-workspace .client-desk .cps-overview{padding:26px 28px;border:1px solid var(--sg-line);border-radius:var(--sg-r-panel);background:var(--sg-paper);box-shadow:none}
+:root .synk-workspace .client-desk .cps-overview-heading h2{margin:0;font:850 28px/1.2 var(--sg-sans);letter-spacing:-.045em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cps-overview-heading p{margin:8px 0 0;font-size:13.5px;color:var(--sg-ink-3)}
+/* 단계 표시: 펠트 꼬리표 대신 점 + 글자 칩 */
+:root .synk-workspace .client-desk .cd-tag{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;font:700 12px/1 var(--sg-sans);white-space:nowrap}
+:root .synk-workspace .client-desk .cd-tag:before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--sg-lapis)}
+/* 사실 세 칸 = 작은 계기판 */
+:root .synk-workspace .client-desk .cps-facts{gap:0;padding:0;margin:22px 0 0;border-block:1px solid var(--sg-line)}
+:root .synk-workspace .client-desk .cps-facts>*{padding:14px 18px}
+:root .synk-workspace .client-desk .cps-facts>*:first-child{padding-left:0}
+:root .synk-workspace .client-desk .cps-facts>*+*{border-left:1px solid var(--sg-line)}
+:root .synk-workspace .client-desk .cps-facts span{font-size:12px;font-weight:650;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk .cps-facts strong{font:800 18px/1.3 var(--sg-sans);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--sg-ink)}
+/* 지금 할 일: 화면에서 한 칸만 워크스페이스 면(검정 + 옅은 청금석) */
+:root .synk-workspace .client-desk .cps-next{margin:20px 0 0;padding:22px 24px;border:0;border-radius:18px;background:var(--sg-face);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+:root .synk-workspace .client-desk .cps-next .cd-eyebrow{margin-bottom:10px;color:var(--sg-on-face)}
+:root .synk-workspace .client-desk .cps-next .cd-eyebrow:before{background:var(--sg-on-face)}
+:root .synk-workspace .client-desk .cps-next strong{display:block;font:850 22px/1.3 var(--sg-sans);letter-spacing:-.035em;color:#fff}
+:root .synk-workspace .client-desk .cps-next p{margin:8px 0 16px;color:var(--sg-frame-ink-2)}
+:root .synk-workspace .client-desk .cps-next>.cd-button.cd-primary,:root .synk-workspace .client-desk .cps-next>.cd-button:not(.cd-primary){background-color:#fff!important;border:0!important;color:var(--sg-ink)!important;box-shadow:none!important}
+:root .synk-workspace .client-desk .cps-next>.cd-button.cd-primary:hover:not(:disabled),:root .synk-workspace .client-desk .cps-next>.cd-button:not(.cd-primary):hover:not(:disabled){background-color:#EDEDEB!important;box-shadow:0 0 0 4px rgba(197,214,245,.24)!important}
+/* 단계와 관계없이 확인할 일: 버터 점 하나로 */
+:root .synk-workspace .client-desk .cps-alerts{margin-top:20px;padding-top:20px;border-top:1px solid var(--sg-line)}
+:root .synk-workspace .client-desk .cps-alerts strong{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:750;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cps-alerts strong:before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sg-butter);box-shadow:0 0 0 3px rgba(245,196,69,.25)}
+:root .synk-workspace .client-desk .cps-alerts button{border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-surface-1);color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cps-alerts button:hover{background:var(--sg-surface-2)}
+
+/* 안내 문단: 파랑·초록·연두·보라·베이지로 갈리던 바탕을 한 가지 옅은 면으로 */
+:root .synk-workspace .client-desk :is(p,div)[class*="-note"],:root .synk-workspace .client-desk :is(p,div)[class*="-notice"],:root .synk-workspace .client-desk :is(p,div)[class*="-empty"],:root .synk-workspace .client-desk .cd-intake-report{padding:12px 14px;border:1px solid var(--sg-line);border-radius:12px;background:var(--sg-surface-1);color:var(--sg-ink-2);font-size:13px;line-height:1.65}
+:root .synk-workspace .client-desk :is(p,div)[class*="-error"]{border-radius:12px;background:#FDF0EE;color:#9E2A1E}
+
+/* 접었다 펴는 섹션 = 1px 선 판, 머리는 큰 굵은 제목 + 회색 요약 + 꺾쇠 */
+:root .synk-workspace .client-desk details.cps-section{margin:0 0 10px;border:1px solid var(--sg-line);border-radius:18px;background:var(--sg-paper);box-shadow:none;overflow:hidden}
+:root .synk-workspace .client-desk details.cps-section>summary{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:18px 52px 18px 22px;cursor:pointer;list-style:none}
+:root .synk-workspace .client-desk details.cps-section>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .client-desk details.cps-section>summary:before{content:none;display:none}
+:root .synk-workspace .client-desk details.cps-section>summary:after{content:'';position:absolute;right:22px;top:50%;width:9px;height:9px;margin-top:-6px;border-right:2px solid var(--sg-ink-3);border-bottom:2px solid var(--sg-ink-3);transform:rotate(45deg);transition:transform .16s var(--sg-ease)}
+:root .synk-workspace .client-desk details.cps-section[open]>summary:after{margin-top:-2px;transform:rotate(225deg)}
+:root .synk-workspace .client-desk details.cps-section>summary:hover{background:var(--sg-surface-1)}
+:root .synk-workspace .client-desk .cps-section-title{font:800 16px/1.35 var(--sg-sans);letter-spacing:-.025em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cps-section-summary{width:100%;padding-left:0;font-size:12.5px;font-weight:550;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk details.cps-section[open]>summary{border-bottom:1px solid var(--sg-line);background:var(--sg-paper)}
+:root .synk-workspace .client-desk details.cps-section[open]>summary:hover{background:var(--sg-surface-1)}
+:root .synk-workspace .client-desk details.cps-section .cd-card{margin:0;padding:18px 22px 22px;border:0;border-radius:0;background:transparent;box-shadow:none}
+/* 섹션 밖에 홀로 선 카드 */
+:root .synk-workspace .client-desk .cd-card{border:1px solid var(--sg-line);border-radius:18px;background:var(--sg-paper);box-shadow:none}
+:root .synk-workspace .client-desk .cd-card h2{font:850 20px/1.3 var(--sg-sans);letter-spacing:-.035em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-card :is(h3,h4){letter-spacing:-.025em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-card legend{font-size:13px;font-weight:800;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cps-view-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 12px;font-size:12.5px;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk .cps-view-controls .cd-button{min-height:36px;padding:0 14px;font-size:13px}
+/* 새 소식·초안 머리 */
+:root .synk-workspace .client-desk :is(.cnews-heading,.cdf-heading)>div{flex:1 1 320px;min-width:0}
+:root .synk-workspace .client-desk :is(.cnews-heading,.cdf-heading)>.cd-button{flex:none;white-space:nowrap}
+:root .synk-workspace .client-desk :is(.cnews-heading,.cdf-heading) h3{margin:0 0 6px;font:800 16px/1.35 var(--sg-sans);letter-spacing:-.025em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk :is(.cnews-heading,.cdf-heading) p{margin:0;font-size:12.5px;line-height:1.6;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk :is(.cnews-heading,.cdf-heading) .cd-button{min-height:34px;padding:0 13px;font-size:12.5px}
+:root .synk-workspace .client-desk :is(.cnews,.cdf){margin-top:20px;padding-top:18px;border-top:1px solid var(--sg-line)}
+/* 링크: 베리 대신 잉크 + 밑줄 */
+:root .synk-workspace .client-desk :is(.cd-version a,.cd-invite a,.cd-intake-files a){color:var(--sg-ink);text-decoration:underline;text-decoration-color:var(--sg-ink-4);text-underline-offset:4px}
+:root .synk-workspace .client-desk :is(.cd-version a,.cd-invite a,.cd-intake-files a):hover{text-decoration-color:var(--sg-ink)}
+
+/* 트렌드·레퍼런스: 글자만 남던 머리 단추를 선 알약으로, 보기 바꾸기는 분할 캡슐로 */
+:root .synk-workspace .wr-section-head:has(>.cr-head-actions){flex-wrap:wrap}
+:root .synk-workspace .cr-head-actions{display:flex;flex:1 0 100%;flex-wrap:wrap;align-items:center;justify-content:flex-start;gap:8px;margin-top:2px}
+:root .synk-workspace .cr-head-actions>.btn.primary{margin-left:auto}
+:root .synk-workspace .cr-head-actions .btn.quiet{border-color:var(--sg-line-2);background:var(--sg-paper)}
+:root .synk-workspace .cr-head-actions .btn.quiet:hover{background:var(--sg-surface-1);border-color:var(--sg-ink-4)}
+:root .synk-workspace .cr-view-tabs{display:inline-flex;gap:4px;padding:4px;border-radius:999px;background:var(--sg-surface-1);box-shadow:inset 0 0 0 1px var(--sg-line)}
+:root .synk-workspace .cr-view-tabs .btn{min-height:38px;border-color:transparent;box-shadow:none}
+:root .synk-workspace .cr-view-tabs .btn.quiet{background:transparent;color:var(--sg-ink-2)}
+:root .synk-workspace .cr-view-tabs .btn.primary{box-shadow:0 6px 16px -8px rgba(8,9,12,.6)}
+:root .synk-workspace :is(.cr-empty,.cr-sync-status){padding:14px 16px;border:1px solid var(--sg-line);border-radius:14px;background:var(--sg-surface-1)}
+
+/* 제작 도구: 파란 파일 선택 칸을 선 알약으로 */
+:root .synk-workspace .pc-file-select{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 18px;border:1px solid var(--sg-line-2);border-radius:999px;background:var(--sg-paper);color:var(--sg-ink);font-weight:650;cursor:pointer}
+:root .synk-workspace .pc-file-select:hover{background:var(--sg-surface-1);border-color:var(--sg-ink-4)}
+
+@media(max-width:900px){
+  :root .synk-workspace .client-desk .cd-heading h1{font-size:36px}
+  :root .synk-workspace .client-desk .cd-metrics>div{padding:14px 12px 16px}
+  :root .synk-workspace .client-desk .cd-metrics strong{font-size:28px}
+}
+@media(max-width:700px){
+  :root .synk-workspace main select:not([multiple]):not(.filter-select),:root .synk-workspace .client-desk .cd-field :is(input:not([type=checkbox]):not([type=radio]),textarea){font-size:16px}
+  :root .synk-workspace .client-desk .cd-heading h1{font-size:32px}
+  :root .synk-workspace .client-desk .cps-overview{padding:20px 18px}
+  :root .synk-workspace .client-desk .cps-overview-heading h2{font-size:23px}
+  :root .synk-workspace .client-desk .cd-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :root .synk-workspace .client-desk .cd-metrics>div{padding:16px 14px 18px}
+  :root .synk-workspace .client-desk .cd-metrics>div:nth-child(odd){padding-left:0}
+  :root .synk-workspace .client-desk .cd-metrics>div:nth-child(3){grid-column:1/-1;border-left:0;border-top:1px solid var(--sg-line)}
+  :root .synk-workspace .client-desk .cd-metrics span{word-break:keep-all}
+  :root .synk-workspace .client-desk .cps-facts{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :root .synk-workspace .client-desk .cps-facts>*{padding:12px 10px}
+  :root .synk-workspace .client-desk .cps-facts>*:first-child{grid-column:1/-1;padding-left:0;border-bottom:1px solid var(--sg-line)}
+  :root .synk-workspace .client-desk .cps-facts>*:nth-child(2){border-left:0;padding-left:0}
+  :root .synk-workspace .client-desk details.cps-section>summary{padding:16px 46px 16px 16px}
+  :root .synk-workspace .client-desk details.cps-section .cd-card{padding:16px}
+}
+@media(max-width:520px){
+  :root .synk-workspace .client-desk .cps-overview-heading>.cd-tag{order:-1;margin-bottom:4px}
+}
+@media(forced-colors:active){
+  :root .synk-workspace .client-desk :is(.cd-project.selected,.cps-next){outline:2px solid Highlight}
+}
+@media(prefers-reduced-motion:reduce){
+  :root .synk-workspace .client-desk *,:root .synk-workspace .cr-panel *{transition:none!important}
+}
+
+/* 고객 관리 · 휴대폰 「선택한 프로젝트」 띠와 주의 표시: 크림·버터 판 대신 옅은 면 */
+:root .synk-workspace .client-desk .cps-selected-project{border:1px solid var(--sg-line);border-radius:16px;background:var(--sg-surface-1)}
+:root .synk-workspace .client-desk .cps-selected-project .cd-button{flex:none;white-space:nowrap}
+:root .synk-workspace .client-desk .cps-attention-label{display:inline-flex;align-items:center;gap:6px;padding:3px 9px;border:0;border-radius:999px;background:var(--sg-surface-2);color:var(--sg-ink);font-weight:700}
+:root .synk-workspace .client-desk .cps-attention-label:before{content:'';flex:none;width:6px;height:6px;border-radius:50%;background:var(--sg-butter)}
+/* 프로젝트를 고르면 개요 판으로 초점을 옮긴다. 마우스·손가락으로 고를 때는 두꺼운 테를 그리지 않고, 키보드일 때만 청금석 2px */
+:root .synk-workspace .client-desk .cps-overview:focus{outline:none}
+:root .synk-workspace .client-desk .cps-overview:focus-visible{outline:2px solid var(--sg-lapis);outline-offset:2px}
+/* 고객 관리 · 아직 고른 프로젝트가 없을 때: 펠트 그림을 걷고 옅은 판 하나 */
+:root .synk-workspace .client-desk .cd-welcome{display:grid;justify-items:center;align-content:center;gap:10px;min-height:240px;padding:40px 28px;border:1px solid var(--sg-line);border-radius:var(--sg-r-panel);background:var(--sg-paper-2);text-align:center}
+:root .synk-workspace .client-desk .cd-welcome>img{display:none}
+:root .synk-workspace .client-desk .cd-welcome h2{margin:0;font:850 22px/1.35 var(--sg-sans);letter-spacing:-.035em;color:var(--sg-ink)}
+:root .synk-workspace .client-desk .cd-welcome p{margin:0;max-width:42ch;font-size:13.5px;line-height:1.65;color:var(--sg-ink-3)}
