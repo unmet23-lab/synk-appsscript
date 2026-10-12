@@ -7,6 +7,23 @@ import {getContentCatalog,generateContentIdeas,renderBriefMarkdown} from './cont
 const input=(extra={})=>({seriesId:'synkbrief-use',topic:'회의 메모에서 할 일 찾기',...extra});
 const filled=()=>input({audience:'첫 업무를 맡은 동료',experience:'직접 적은 회의 메모에서 담당자를 다시 찾았다.',proof:'제작일의 원본 메모와 실제 실행 화면을 비교할 예정',takeaway:'담당자가 적힌 문장을 원본에서 대조하기',entertainment:'같은 이름이 메모와 표에서 이어지는 모습을 보기',authenticity:{basis:'직접 경험은 메모를 다시 읽었던 일. 도구 결과는 새로 검증해야 한다.',ownPerspective:'표의 모양보다 담당자와 기한의 근거를 먼저 본다.',limits:'메모에 없는 기한은 만들지 않는다.',disclosure:'예시 메모는 가상 자료로 표시한다.'}});
 
+test('editorial experiment notes stay metadata across every series and never enter viewer ideas or reviews',()=>{
+  const editorialNote='제작자 전용 실험표식\n72시간 완주율 40% · 이전 3편 중앙값 70%\n중간 설명만 줄이고 같은 출처로 다시 관측한다.\n출처 https://www.youtube.com/watch?v=abcdefghijk';
+  for(const series of getContentCatalog().series){
+    const values=input({seriesId:series.id}),baseline=generateContentIdeas(values),plan=generateContentIdeas({...values,editorialNote});
+    assert.equal(plan.input.editorialNote,editorialNote);assert.deepEqual(plan.ideas,baseline.ideas,'editor notes cannot change narration, visuals, CTA or materials for '+series.id);
+    for(const key of ['personalization','authenticity','reviewAxes','missingQuestions','checklist'])assert.deepEqual(plan[key],baseline[key],key+' must retain viewer-facing requirements');
+    assert.doesNotMatch(JSON.stringify(plan.ideas),/제작자 전용 실험표식|72시간 완주율|abcdefghijk/);
+    const markdown=renderBriefMarkdown(plan);assert.match(markdown,/## 이번 편 제작 실험/);assert.ok(markdown.includes(editorialNote));assert.doesNotMatch(markdown.slice(markdown.indexOf('## 안 1.')),/제작자 전용 실험표식|72시간 완주율|abcdefghijk/);
+  }
+});
+
+test('editorial notes enforce their own size and text contract and are escaped only in the editor section',()=>{
+  assert.equal(generateContentIdeas(input()).input.editorialNote,'');assert.equal(generateContentIdeas(input({editorialNote:'x'.repeat(3000)})).input.editorialNote.length,3000);
+  for(const editorialNote of ['x'.repeat(3001),{},[],3,'bad\u0000note'])assert.throws(()=>generateContentIdeas(input({editorialNote})),TypeError);
+  const raw='## forged heading\n<script>alert(1)</script>',plan=generateContentIdeas(input({editorialNote:raw})),markdown=renderBriefMarkdown(plan);assert.equal(plan.input.editorialNote,raw);assert.doesNotMatch(markdown,/<script>/);assert.match(markdown,/&lt;script&gt;/);assert.ok(!markdown.includes('\n## forged heading'));
+});
+
 test('catalog resolves ten company series and current synkbrief names to source documents',()=>{
   const catalog=getContentCatalog();assert.equal(catalog.series.length,10);
   assert.deepEqual(catalog.series.filter(s=>s.id.startsWith('synkbrief')).map(s=>s.name),['synkbrief 뉴스','synkbrief 활용','synkbrief 기초']);

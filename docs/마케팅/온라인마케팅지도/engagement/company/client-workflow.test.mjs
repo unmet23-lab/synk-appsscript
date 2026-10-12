@@ -93,3 +93,19 @@ test('reviewer grant cannot mutate source ownership, invitations or media; sourc
   f.update('reviewer',messageId,'accept');assert.equal(f.workflow.workspace(f.users.owner).items[0].kind,'delivery');
   row=f.read();f.projects.addVersion(f.users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'사용 안내'});
 });
+
+test('ordinary message capacity cannot remove outstanding feedback or bypass the assigned review',async t=>{
+  const f=await fixture(t),v1=f.version('v1');f.action('feedback',{versionId:v1.id,text:'보존해야 할 수정 요청'});
+  const messageId=f.read().messages.at(-1).id,v2=f.version('v2');
+  f.update('owner',messageId,'submit_review',{versionId:v2.id});f.action('approve',{versionId:v2.id});
+  for(let i=0;i<299;i++)f.projects.message(f.users.owner,f.read().id,{revision:f.read().revision,text:'내부 검토 참고 '+i,visibility:'internal'});
+  let row=f.read();const originalRequest=row.messages.find(message=>message.id===messageId);
+  assert.equal(row.messages.length,301);assert.equal(originalRequest.resolved,false);assert.equal(originalRequest.workflow.status,'review');
+  rejects(()=>f.projects.message(f.users.owner,row.id,{revision:row.revision,text:'history must not rotate'}),409);
+  rejects(()=>f.projects.addVersion(f.users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'사용 안내'}),409);
+  assert.equal(f.workflow.workspace(f.users.reviewer).items.filter(item=>item.messageId===messageId).length,1);
+  f.update('reviewer',messageId,'accept');row=f.read();
+  assert.equal(row.messages.find(message=>message.id===messageId).resolved,true);
+  row=f.projects.addVersion(f.users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'사용 안내'}).project;
+  assert.equal(row.stage,'delivered');assert.equal(row.messages.length,301);assert.ok(row.messages.some(message=>message.id===messageId));
+});

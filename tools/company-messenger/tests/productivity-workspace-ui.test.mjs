@@ -18,6 +18,20 @@ function fixture(){
 }
 const task={id:'t1',messageId:'1',channelId:'c1',title:'시안 수정',stage:'review',status:'doing',assignee:{id:'u1',name:'담당'},reviewer:{id:'u2',name:'검토'},createdBy:{id:'u1',name:'담당'},dueDate:'2026-10-08',revision:7,resultMessageId:'2',allowedStages:[],canManage:true};
 
+test('customer follow-up links preserve their exact internal target and show contact context',()=>{
+  const f=fixture();f.run("state.integrated={canWrite:true};state.customerWork=[{id:'follow',kind:'follow_up',group:'next',title:'고객 후속 연락',projectTitle:'합성 시안',customerName:'합성 고객',statusLabel:'연락일 지남',dueDate:'2026-10-10',text:'일정 확인 <script>',href:'/?tab=workroom&section=clients&project=p1&followUp=1',actions:[]}]");
+  const html=f.run('customerWorkHtml(state.customerWork)');assert.match(html,/연락 기록 열기/);assert.match(html,/2026-10-10/);assert.match(html,/합성 시안/);assert.match(html,/합성 고객/);assert.match(html,/followUp=1/);assert.match(html,/&lt;script&gt;/);assert.doesNotMatch(html,/data-client-work=/);
+  assert.equal(f.run("safeClientWorkflowHref('/?tab=workroom&section=clients&project=p1&followUp=1')"),'http://localhost/?tab=workroom&section=clients&project=p1&followUp=1');
+  for(const query of ['followUp=0','followUp=','followUp=1&followUp=1','followUp=1&next=/admin']){f.context.href='/?tab=workroom&section=clients&project=p1&'+query;assert.equal(f.run('safeClientWorkflowHref(href)'),null);}
+});
+
+test('rights expiry tasks retain only a valid registered source destination',()=>{
+  const f=fixture(),project='11111111-1111-4111-8111-111111111111',target='material:reference:22222222-2222-4222-8222-222222222222',href='/?tab=workroom&section=clients&project='+project+'&rights=1&rightsTarget='+encodeURIComponent(target);f.context.href=href;assert.equal(f.run('safeClientWorkflowHref(href)'),'http://localhost'+href);
+  f.context.href=href.replace(encodeURIComponent(target),'portfolio');assert.equal(f.run('safeClientWorkflowHref(href)'),'http://localhost'+f.context.href);
+  for(const bad of [href+'&rightsTarget=portfolio',href+'&delivery=1',href+'&message=one',href+'&next=/admin',href.replace('rights=1&',''),href.replace('rights=1','rights=0'),href.replace(encodeURIComponent(target),'material:other:22222222-2222-4222-8222-222222222222'),href.replace(encodeURIComponent(target),''),href.replace(project,'invalid')]){f.context.href=bad;assert.equal(f.run('safeClientWorkflowHref(href)'),null,bad);}
+  f.context.item={id:'rights',group:'next',kind:'client_rights_expiry',title:'자료 사용기한 확인',text:'등록 기간 만료 7일 전',actionLabel:'사용 조건 기록 열기',href,actions:[]};f.run('state.integrated={canWrite:true};state.customerWork=[item]');const html=f.run('customerWorkHtml(state.customerWork,null)');assert.match(html,/사용 조건 기록 열기/);assert.match(html,/rightsTarget=material%3Areference%3A/);
+});
+
 test('today renders actual stage, due urgency and all four work groups without a company API in standalone',async()=>{
   const f=fixture();f.run("state.personalTab='workday'");const loading=f.run('loadPersonalPanel()');assert.equal(f.requests.length,1);assert.equal(f.requests[0].path,'/api/workday');
   f.requests[0].resolve({date:'2026-10-09',groups:{reply:[],due:[task],review:[],waiting:[task]},counts:{reply:0,due:1,review:0,waiting:1}});await loading;
@@ -46,6 +60,14 @@ test('decision pagination preserves query, kind and history selection',async()=>
 test('customer destinations allow only one same-origin client context and never credentials or injected routes',()=>{
   const f=fixture(),valid='/?tab=workroom&section=clients&project=p1&version=v1&message=m1&seconds=12.5';f.context.href=valid;assert.equal(f.run('safeClientWorkflowHref(href)'),'http://localhost'+valid);
   for(const href of ['https://elsewhere.test'+valid,'http://user:password@localhost'+valid,valid+'#x',valid+'&tab=workroom',valid+'&next=/admin','/?tab=home&section=clients&project=p1',valid.replace('12.5','-1'),valid.replace('12.5','Infinity')]){f.context.href=href;assert.equal(f.run('safeClientWorkflowHref(href)'),null,href);}
+});
+
+test('kickoff, changes and delivery customer tasks preserve their exact destination and action label',()=>{
+  const f=fixture();for(const context of ['kickoff','delivery','closeout','changes','requests','schedule']){
+    const href='/?tab=workroom&section=clients&project=p1&'+context+'=1';f.context.href=href;assert.equal(f.run('safeClientWorkflowHref(href)'),'http://localhost'+href);
+    for(const suffix of ['&kickoff=1','&message=m1','&followUp=1','#x']){f.context.href=href+suffix;assert.equal(f.run('safeClientWorkflowHref(href)'),null);}
+  }
+  f.run("state.integrated={canWrite:true};state.customerWork=[{id:'kickoff',group:'next',kind:'client_kickoff',title:'착수 자료 확인',text:'원본에서 확인',actionLabel:'착수 준비 열기',href:'/?tab=workroom&section=clients&project=p1&kickoff=1',actions:[]}]");const html=f.run('customerWorkHtml(state.customerWork,null)');assert.match(html,/착수 준비 열기/);assert.match(html,/kickoff=1/);
 });
 
 test('change summaries use crew names, retain both reviewer changes and escape untrusted content',()=>{

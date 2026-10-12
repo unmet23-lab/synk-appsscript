@@ -1,0 +1,100 @@
+{
+  "kind": "fictional-advertising-project-demo",
+  "brand": "MORU / 모루",
+  "disclaimer": "PULSE 체험용 · 가상 브랜드",
+  "audio": "Intentionally silent; no audio track",
+  "origin": "Original code-rendered illustration and typography; no third-party product imagery",
+  "fonts": [
+    "SUIT ExtraBold / Medium",
+    "Inter Tight Bold / Medium"
+  ],
+  "durationSeconds": 15,
+  "width": 960,
+  "height": 540,
+  "fps": 24,
+  "versions": {
+    "v1": "CTA at 11–15s: 자세히 보기, low emphasis",
+    "v2": "CTA at 11–15s: 모루 첫 잔 만나보기, prominent rust pill"
+  },
+  "assets": [
+    {
+      "file": "preview-v1.mp4",
+      "bytes": 216584,
+      "sha256": "aaf61e97702ac9ee025db45d32d036d22f142127070929a4bc69ac992dcb05d7",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 960,
+            "height": 540,
+            "r_frame_rate": "24/1",
+            "duration": "15.000000"
+          }
+        ],
+        "format": {
+          "duration": "15.000000"
+        }
+      }
+    },
+    {
+      "file": "preview-v2.mp4",
+      "bytes": 223356,
+      "sha256": "7a42a3c8787d380845fb058547077950a30a808cd48a61ffe7f69b6c7760bdae",
+      "probe": {
+        "programs": [],
+        "stream_groups": [],
+        "streams": [
+          {
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 960,
+            "height": 540,
+            "r_frame_rate": "24/1",
+            "duration": "15.000000"
+          }
+        ],
+        "format": {
+          "duration": "15.000000"
+        }
+      }
+    },
+    {
+      "file": "reference-bold.png",
+      "bytes": 66580,
+      "sha256": "d457f1f1b83fde8391f14b7d0e26734ede5d2b4b82bcb1b174c1a95fe77f440b"
+    },
+    {
+      "file": "reference-calm.png",
+      "bytes": 64587,
+      "sha256": "1027e51858e1b488a8b144e2c6fb73113d4507f4d8176d5b0f2836cfddbb90e0"
+    },
+    {
+      "file": "reference-warm.png",
+      "bytes": 65476,
+      "sha256": "dd7d8460a8b1f03e1019c91294b298c9f2060d063ef35e1dbd84285e2223ed5a"
+    },
+    {
+      "file": "scene-1.png",
+      "bytes": 65476,
+      "sha256": "dd7d8460a8b1f03e1019c91294b298c9f2060d063ef35e1dbd84285e2223ed5a"
+    },
+    {
+      "file": "scene-2.png",
+      "bytes": 65934,
+      "sha256": "70fb22ceee495df73a5d0fb7ba10528a65409b9ae9d58a1a42287f63f34e037c"
+    },
+    {
+      "file": "scene-3.png",
+      "bytes": 61201,
+      "sha256": "3ec0ed585e1fd67fe2be87c5a4e00f69855ce2b7690925540d52960a90ffe3e6"
+    },
+    {
+      "file": "scene-4.png",
+      "bytes": 63881,
+      "sha256": "94d8f94b3bfa28c2d20c523d0122147497fe3358d2193441e45ebd3cc514f801"
+    }
+  ]
+}

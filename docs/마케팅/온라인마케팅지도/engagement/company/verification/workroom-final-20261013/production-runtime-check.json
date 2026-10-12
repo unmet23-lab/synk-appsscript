@@ -1,0 +1,135 @@
+{
+  "schema": "workroom-production-runtime-readonly/v1",
+  "at": "2026-10-12T20:53:24.622742+00:00",
+  "image": "sha256:8120a2016085a99ea4dd14e5e7dca40de1a52d9dd2ae2f0c53480d380b6049a1",
+  "running": true,
+  "health": "healthy",
+  "result": {
+    "checks": [
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/automation-health.mjs",
+        "sha256": "587bf0af3b5ce3193c649d2a70d1c624d8f349dfa8beb895fc58ffc0ef3c9153",
+        "actual": "587bf0af3b5ce3193c649d2a70d1c624d8f349dfa8beb895fc58ffc0ef3c9153",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-archive.mjs",
+        "sha256": "12d85c841df3af1c1ed5bc20f811fe4e08ffad0e0c9a96ea8e531ee52883edf7",
+        "actual": "12d85c841df3af1c1ed5bc20f811fe4e08ffad0e0c9a96ea8e531ee52883edf7",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-material-usage.mjs",
+        "sha256": "0e1067ce7d4fdbd83f85836b05f26175387c97d4513681d9efa619e5b4d339e3",
+        "actual": "0e1067ce7d4fdbd83f85836b05f26175387c97d4513681d9efa619e5b4d339e3",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-rights-reminders.mjs",
+        "sha256": "e64b75f28ae632ab51bb161cabced9eb25f2153ce54c301527f26d79170d42d0",
+        "actual": "e64b75f28ae632ab51bb161cabced9eb25f2153ce54c301527f26d79170d42d0",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-rights.mjs",
+        "sha256": "5374f99bcec192fa3e4a979f3e4229a96e7f400375b7324fdfec14e383780cad",
+        "actual": "5374f99bcec192fa3e4a979f3e4229a96e7f400375b7324fdfec14e383780cad",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-task-rechecks.mjs",
+        "sha256": "5d22fcf6eae2501f7a1c72433d7b0dace7b60d5078eb3794348aed14416ff1ff",
+        "actual": "5d22fcf6eae2501f7a1c72433d7b0dace7b60d5078eb3794348aed14416ff1ff",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/client-workflow.mjs",
+        "sha256": "6d576e39bafc61e365ffc216c04c72744faa1195a301940261ac55fe07652a6d",
+        "actual": "6d576e39bafc61e365ffc216c04c72744faa1195a301940261ac55fe07652a6d",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs",
+        "sha256": "8ba2b6725bbabdd5a13dd333a5debc1146dc65e89c3318f16ca2c8ad759f0bc7",
+        "actual": "8ba2b6725bbabdd5a13dd333a5debc1146dc65e89c3318f16ca2c8ad759f0bc7",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/automation-health.js",
+        "sha256": "1f9b0958fc2114c13e30dc64e285de926055662ea73d11dcf9cec4c5735aed54",
+        "actual": "1f9b0958fc2114c13e30dc64e285de926055662ea73d11dcf9cec4c5735aed54",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.js",
+        "sha256": "5ff26a18040023db528dd7d73f44097cb50123e84888a44b7c1f392db44e5121",
+        "actual": "5ff26a18040023db528dd7d73f44097cb50123e84888a44b7c1f392db44e5121",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-delivery-archive.css",
+        "sha256": "9d0d49e078c20438d9f5407eb4f0a87c62242d6a8f6741f759f8d3031f62189c",
+        "actual": "9d0d49e078c20438d9f5407eb4f0a87c62242d6a8f6741f759f8d3031f62189c",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.js",
+        "sha256": "8c730b811adf439c0c384449fad220ae02bb58fca4a2c5476dfa61e45f7c0a49",
+        "actual": "8c730b811adf439c0c384449fad220ae02bb58fca4a2c5476dfa61e45f7c0a49",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-material-usage.css",
+        "sha256": "362f62b0825a4d60a2c8886c5a7f1fb0b28ee0b371345443d5ee9cd5aa3f7269",
+        "actual": "362f62b0825a4d60a2c8886c5a7f1fb0b28ee0b371345443d5ee9cd5aa3f7269",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-materials.js",
+        "sha256": "7b9d8024b441d394c5808c2b2cb8f23c49cf1b8f15c9445f656263ce396accf8",
+        "actual": "7b9d8024b441d394c5808c2b2cb8f23c49cf1b8f15c9445f656263ce396accf8",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-projects.js",
+        "sha256": "dc943b62ae26315f41f428fecf48a715080d38b22df1f01565b69330a62e6ca7",
+        "actual": "dc943b62ae26315f41f428fecf48a715080d38b22df1f01565b69330a62e6ca7",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-rights.js",
+        "sha256": "091e8021263498e3e5238263ec5e1f32937186cefafe41cf660ad10a91ab5fd6",
+        "actual": "091e8021263498e3e5238263ec5e1f32937186cefafe41cf660ad10a91ab5fd6",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/client-schedule.js",
+        "sha256": "9ebfb20baa9f6598503282d26deb4eb45e172c0479f74471c0128f05f53b9b84",
+        "actual": "9ebfb20baa9f6598503282d26deb4eb45e172c0479f74471c0128f05f53b9b84",
+        "matched": true
+      },
+      {
+        "path": "docs/마케팅/온라인마케팅지도/engagement/company/public/index.html",
+        "sha256": "75130de693d90b437986a6186f0262e4c669ff36f60f7551cafc5c75cf196ce3",
+        "actual": "75130de693d90b437986a6186f0262e4c669ff36f60f7551cafc5c75cf196ce3",
+        "matched": true
+      },
+      {
+        "path": "tools/company-messenger/public/app.js",
+        "sha256": "2967ead89ba229ccf88e9e2d9bbde17f5ec9305199ab1cc2de8934f241eaf6d1",
+        "actual": "2967ead89ba229ccf88e9e2d9bbde17f5ec9305199ab1cc2de8934f241eaf6d1",
+        "matched": true
+      }
+    ],
+    "matched": 19,
+    "expected": 19,
+    "flags": {
+      "SYNK_COMPANY_BACKGROUND_JOBS_ENABLED": "0",
+      "SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED": "1",
+      "SYNK_COMPANY_AI_GENERATION_ENABLED": null,
+      "SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED": "1",
+      "SYNK_COMPANY_WEB_PUSH_ENABLED": "1"
+    }
+  },
+  "remoteMutationCalls": 0
+}

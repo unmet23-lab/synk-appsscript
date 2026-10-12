@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="referrer" content="no-referrer">
+  <meta name="theme-color" content="#99295D">
+  <meta name="description" content="원하는 광고의 방향부터 장면과 영상 확인까지, SYNK PULSE에서 함께 만듭니다.">
+  <title>SYNK PULSE · 함께 만드는 광고</title>
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./icons/icon-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./assets/scrapbook.css">
+  <link rel="stylesheet" href="./app.css">
+  <link rel="stylesheet" href="./casting.css">
+  <script type="module" src="./app.mjs"></script>
+  <link rel="stylesheet" href="./production.css">
+  <link rel="stylesheet" href="./preview.css">
+</head>
+<body class="sb-page">
+  <a class="skip-link" href="#main">본문으로 건너뛰기</a>
+  <header class="app-header"><a class="brand" href="./" aria-label="PULSE 처음으로"><img src="./assets/brand-pulse.webp" alt="SYNK PULSE" width="206" height="62"></a><span class="header-caption">함께 만드는 광고</span><div id="header-actions" class="header-actions"></div></header>
+  <div id="connection-banner" class="connection-banner" role="status" hidden>인터넷 연결이 끊겼어요. 작성 중인 내용은 이 화면에 남아 있습니다.</div>
+  <div id="pulse-live" hidden></div>
+  <main id="main" tabindex="-1"><div class="loading" role="status"><span class="loading-mark"></span>프로젝트를 확인하고 있어요.</div></main>
+  <p id="notice" class="notice" role="status" aria-live="polite" hidden></p>
+  <dialog id="app-dialog" class="app-dialog" aria-labelledby="dialog-title"></dialog>
+  <noscript><p class="empty-note">프로젝트를 보려면 브라우저에서 JavaScript를 허용해 주세요.</p></noscript>
+</body>
+</html>

@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 const STAGES = ['requested', 'accepted', 'doing', 'review', 'changes', 'done'];
 const statusFor = stage => stage === 'done' ? 'done' : ['doing', 'review', 'changes'].includes(stage) ? 'doing' : 'todo';
 const legacyStage = status => ({ todo: 'requested', doing: 'doing', done: 'done' })[status];
+const workdayDateFor = timestamp => new Date(Date.parse(timestamp) + 9 * 3600000).toISOString().slice(0, 10);
 
 // Events contain references and workflow changes, never a second copy of chat text.
 export function createProductivityService({ db, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled = true, workNotificationsEnabled = backgroundJobsEnabled }) {
@@ -10,6 +11,7 @@ export function createProductivityService({ db, assert, textField, now, transact
   const one = (sql, ...args) => db.prepare(sql).get(...args);
   const all = (sql, ...args) => db.prepare(sql).all(...args);
   const run = (sql, ...args) => db.prepare(sql).run(...args);
+  let shapingWorkdayDate = null;
   const columns = new Set(all('PRAGMA table_info(message_tasks)').map(row => row.name));
   for (const [name, type] of [['stage', "TEXT NOT NULL DEFAULT 'requested'"], ['reviewer_id', 'TEXT REFERENCES users(id)'], ['result_message_id', 'INTEGER REFERENCES messages(id) ON DELETE SET NULL']]) {
     if (!columns.has(name)) db.exec(`ALTER TABLE message_tasks ADD COLUMN ${name} ${type}`);
@@ -58,9 +60,13 @@ export function createProductivityService({ db, assert, textField, now, transact
     const channelId = one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id;
     return !canPost(row.reviewer_id, channelId);
   }
+  function assigneeUnavailable(row) {
+    const channelId = one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id;
+    return !canPost(row.assignee_id, channelId);
+  }
   function canReassignReviewer(row, userId) {
     const channelId = one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id;
-    return row.stage === 'review' && reviewerUnavailable(row) && row.assignee_id !== userId && (row.creator_id === userId || isOwner(userId)) && canPost(userId, channelId);
+    return STAGES.includes(row.stage) && row.stage !== 'done' && reviewerUnavailable(row) && !assigneeUnavailable(row) && row.assignee_id !== userId && (row.creator_id === userId || isOwner(userId)) && canPost(userId, channelId);
   }
   function canManageTask(row, userId) {
     try { requirePosting(userId, one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id); } catch { return false; }
@@ -68,6 +74,7 @@ export function createProductivityService({ db, assert, textField, now, transact
   }
   function allowedStages(row, userId) {
     if (!canManageTask(row, userId)) return [];
+    if (reviewerUnavailable(row) || assigneeUnavailable(row)) return [];
     const assignee = row.assignee_id === userId, reviewer = row.reviewer_id === userId;
     if (row.stage === 'requested') return assignee ? ['accepted'] : [];
     if (row.stage === 'accepted') return assignee ? ['doing', ...(!row.reviewer_id ? ['done'] : [])] : [];
@@ -75,24 +82,68 @@ export function createProductivityService({ db, assert, textField, now, transact
     if (row.stage === 'review') return reviewer ? ['changes', 'done'] : [];
     return assignee || row.creator_id === userId ? ['doing'] : [];
   }
-  function taskShape(row, userId, withMessage = false) {
+  function taskWorkday(row, userId, date) {
+    const todayReasons = [], remainingReasons = [];
+    if (row.status === 'done' || row.stage === 'done') return { date, todayReasons, remainingReasons };
+    const assigned = row.assignee_id === userId;
+    const assignedWork = assigned && ['accepted', 'doing'].includes(row.stage);
+    if (assigned && ['requested', 'changes'].includes(row.stage)) todayReasons.push('reply');
+    if (assignedWork && row.due_date && row.due_date <= date) todayReasons.push('due');
+    if (row.reviewer_id === userId && row.stage === 'review') todayReasons.push('review');
+    if (canReassignReviewer(row, userId)) todayReasons.push('recovery');
+    if (assignedWork && row.due_date && row.due_date > date) remainingReasons.push('upcoming');
+    if (assignedWork && !row.due_date) remainingReasons.push('undated');
+    if (!todayReasons.length && ((row.creator_id === userId && !assigned) || (assigned && row.stage === 'review'))) remainingReasons.push('waiting');
+    return { date, todayReasons, remainingReasons };
+  }
+  function taskMessageShape(message, userId, date) {
+    // messageShape synchronously re-enters taskShape through messageExtras.
+    // Keep the nested task on the same server day, including at midnight.
+    const previousDate = shapingWorkdayDate;
+    shapingWorkdayDate = date;
+    try { return messageShape(message, userId); }
+    finally { shapingWorkdayDate = previousDate; }
+  }
+  function taskShape(row, userId, withMessage = false, date = null) {
     if (!row) return null;
     const message = one('SELECT * FROM messages WHERE id=?', row.message_id);
     if (!message || !accessible(userId, message.channel_id)) return null;
     const result = row.result_message_id && one('SELECT * FROM messages WHERE id=? AND channel_id=?', row.result_message_id, message.channel_id);
+    const taskDate = date ?? shapingWorkdayDate ?? workdayDateFor(now());
     return { id: row.id, messageId: String(row.message_id), channelId: message.channel_id, title: row.title,
       assignee: activeUser(row.assignee_id), reviewer: activeUser(row.reviewer_id), reviewerId: row.reviewer_id,
-      reviewerUnavailable: reviewerUnavailable(row), canReassignReviewer: canReassignReviewer(row, userId), dueDate: row.due_date,
+      reviewerUnavailable: reviewerUnavailable(row), assigneeUnavailable: assigneeUnavailable(row), canReassignReviewer: canReassignReviewer(row, userId), dueDate: row.due_date,
       status: row.status, stage: row.stage, revision: row.revision, resultMessageId: result ? String(result.id) : null,
       resultMessage: result ? { id: String(result.id), channelId: result.channel_id, body: result.body, user: activeUser(result.user_id), createdAt: result.created_at } : null,
       createdBy: activeUser(row.creator_id), createdAt: row.created_at, updatedAt: row.updated_at,
       canManage: canManageTask(row, userId), allowedStages: allowedStages(row, userId),
-      ...(withMessage ? { message: messageShape(message, userId) } : {}) };
+      workday: taskWorkday(row, userId, taskDate),
+      ...(withMessage ? { message: taskMessageShape(message, userId, taskDate) } : {}) };
+  }
+  function weeklySummary(userId, { startAt, endAt, nextStartDate, nextEndDate, today = workdayDateFor(now()) }) {
+    assert(activeUser(userId), 401, '회사 계정으로 로그인해 주세요.');
+    const completed = [], attention = [], upcoming = [], finished = new Map();
+    const stageLabel = { requested: '수락 대기', accepted: '수락함', doing: '진행 중', review: '검토 대기', changes: '수정 요청', done: '완료' };
+    for (const event of all("SELECT task_id,changes,created_at FROM productivity_events WHERE kind IN ('task_stage','task_created') AND created_at>=? AND created_at<? ORDER BY created_at,sequence", startAt, endAt)) {
+      let changes; try { changes = JSON.parse(event.changes); } catch { throw new Error('업무 변경 기록을 확인하지 못했습니다.'); }
+      if (changes.to === 'done') finished.set(event.task_id, event.created_at);
+    }
+    for (const row of all('SELECT t.*,m.channel_id FROM message_tasks t JOIN messages m ON m.id=t.message_id WHERE t.assignee_id=? OR t.reviewer_id=? ORDER BY t.updated_at DESC,t.id', userId, userId)) {
+      if (!accessible(userId, row.channel_id)) continue;
+      const stage = row.stage || legacyStage(row.status), href = '/?' + new URLSearchParams({ tab: 'messenger', channelId: row.channel_id, messageId: String(row.message_id), panel: 'tasks' });
+      const item = { id: 'task:' + row.id, kind: 'task', title: row.title, href, statusLabel: stageLabel[stage] || '상태 확인', dueDate: row.due_date || null };
+      if (row.assignee_id === userId && finished.has(row.id)) completed.push({ ...item, occurredAt: finished.get(row.id), text: stage === 'done' ? '이 기간에 완료한 내 담당 업무입니다.' : '이 기간에 완료한 기록이 있으며 현재는 다시 진행 중입니다.', statusLabel: stage === 'done' ? '완료' : '완료 후 ' + (stageLabel[stage] || '상태 변경') });
+      if (stage === 'done') continue;
+      const needsAction = (row.assignee_id === userId && (['requested', 'changes'].includes(stage) || (['accepted', 'doing'].includes(stage) && row.due_date && row.due_date <= today))) || row.reviewer_id === userId && stage === 'review';
+      if (needsAction) attention.push({ ...item, text: row.due_date ? row.due_date + '까지 · 현재 처리할 업무' : '수락 또는 수정이 필요한 업무입니다.' });
+      if (row.assignee_id === userId && row.due_date && row.due_date >= nextStartDate && row.due_date <= nextEndDate) upcoming.push({ ...item, text: row.due_date + '까지 · 현재 등록된 마감' });
+    }
+    return { completed, attention, upcoming };
   }
   function event(message, userId, kind, { taskId = null, decisionId = null, changes = {} } = {}) {
     run('INSERT INTO productivity_events(message_id,actor_id,kind,task_id,decision_id,changes,created_at) VALUES(?,?,?,?,?,?,?)', message.id, userId, kind, taskId, decisionId, JSON.stringify(changes), now());
   }
-  function upsertTask({ messageId, userId, body, method = 'PATCH' }) {
+  function upsertTask({ messageId, userId, body, method = 'PATCH', atomic = false, deferPublish = null }) {
     const message = requireMessage(String(messageId), userId), channel = requirePosting(userId, message.channel_id);
     const prior = one('SELECT * FROM message_tasks WHERE message_id=?', message.id);
     assert(method !== 'PATCH' || prior, 404, '업무를 찾을 수 없습니다.');
@@ -148,7 +199,7 @@ export function createProductivityService({ db, assert, textField, now, transact
     const changed = !prior || prior.title !== title || prior.assignee_id !== assigneeId || prior.reviewer_id !== reviewerId || prior.due_date !== dueDate || prior.stage !== stage || (prior.result_message_id ?? null) !== normalizedResult;
     if (!changed) return { task: taskShape(prior, userId), created: false };
     const notifications = [];
-    transaction(() => {
+    const writeTask = () => {
       if (prior) {
         const updated = run('UPDATE message_tasks SET assignee_id=?,reviewer_id=?,title=?,due_date=?,status=?,stage=?,result_message_id=?,updated_at=?,revision=revision+1 WHERE id=? AND revision=?', assigneeId, reviewerId, title, dueDate, statusFor(stage), stage, normalizedResult, now(), prior.id, prior.revision);
         assert(updated.changes === 1, 409, '업무가 변경되었습니다. 다시 불러와 주세요.');
@@ -165,13 +216,20 @@ export function createProductivityService({ db, assert, textField, now, transact
       for (const personId of new Set([assigneeId, reviewerId, prior?.assignee_id, prior?.reviewer_id, task.creator_id].filter(Boolean))) {
         if (personId !== userId && mode(personId, channel.id) !== 'mute' && notify(personId, message, 'task', `task:${task.id}:${task.revision}:${personId}`)) notifications.push(personId);
       }
-    });
-    publish('message', channel.id);
-    for (const personId of notifications) publish('notification', channel.id, personId);
+    };
+    if (atomic) { assert(db.isTransaction, 500, '업무 저장 트랜잭션을 확인해 주세요.'); writeTask(); }
+    else transaction(writeTask);
+    const publishTask = () => {
+      publish('message', channel.id);
+      for (const personId of notifications) publish('notification', channel.id, personId);
+    };
+    if (deferPublish) deferPublish(publishTask); else publishTask();
     return { task: taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', message.id), userId), created: !prior };
   }
   function workday(userId) {
-    const date = new Date(Date.parse(now()) + 9 * 3600000).toISOString().slice(0, 10);
+    const serverNow = now(), serverTime = Date.parse(serverNow), day = 86400000, offset = 9 * 3600000;
+    const date = workdayDateFor(serverNow);
+    const nextDayRefreshAfterMs = (Math.floor((serverTime + offset) / day) + 1) * day - offset - serverTime + 1000;
     const rows = all('SELECT t.*,m.channel_id FROM message_tasks t JOIN messages m ON m.id=t.message_id WHERE t.status<>? ORDER BY CASE WHEN t.due_date IS NULL THEN 1 ELSE 0 END,t.due_date,t.updated_at DESC', 'done').filter(row => accessible(userId, row.channel_id));
     const groups = {
       reply: rows.filter(row => row.assignee_id === userId && ['requested', 'changes'].includes(row.stage)),
@@ -179,8 +237,28 @@ export function createProductivityService({ db, assert, textField, now, transact
       review: rows.filter(row => row.reviewer_id === userId && row.stage === 'review'),
       waiting: rows.filter(row => (row.creator_id === userId && row.assignee_id !== userId) || (row.assignee_id === userId && row.stage === 'review')),
     };
-    const total = new Set(Object.values(groups).flat().map(row => row.id)).size;
-    return { date, groups: Object.fromEntries(Object.entries(groups).map(([key, list]) => [key, list.map(row => taskShape(row, userId, true))])), counts: Object.fromEntries(Object.entries(groups).map(([key, list]) => [key, list.length])), total };
+    const basis = new Map(rows.map(row => [row.id, taskWorkday(row, userId, date)]));
+    const todayGroups = {
+      reply: rows.filter(row => basis.get(row.id).todayReasons.includes('reply')),
+      due: rows.filter(row => basis.get(row.id).todayReasons.includes('due')),
+      review: rows.filter(row => basis.get(row.id).todayReasons.includes('review')),
+      recovery: rows.filter(row => basis.get(row.id).todayReasons.includes('recovery')),
+    };
+    const remainingGroups = {
+      upcoming: rows.filter(row => basis.get(row.id).remainingReasons.includes('upcoming')),
+      undated: rows.filter(row => basis.get(row.id).remainingReasons.includes('undated')),
+      waiting: rows.filter(row => basis.get(row.id).remainingReasons.includes('waiting')),
+    };
+    const shapes = new Map();
+    const summarize = lists => ({
+      groups: Object.fromEntries(Object.entries(lists).map(([key, list]) => [key, list.map(row => {
+        if (!shapes.has(row.id)) shapes.set(row.id, taskShape(row, userId, true, date));
+        return shapes.get(row.id);
+      })])),
+      counts: Object.fromEntries(Object.entries(lists).map(([key, list]) => [key, list.length])),
+      total: new Set(Object.values(lists).flat().map(row => row.id)).size,
+    });
+    return { date, serverNow, nextDayRefreshAfterMs, ...summarize(groups), today: summarize(todayGroups), remaining: summarize(remainingGroups), openTotal: rows.filter(row => row.assignee_id === userId).length };
   }
   function digestPreferences(userId) {
     const row = one('SELECT * FROM due_digest_preferences WHERE user_id=?', userId);
@@ -334,5 +412,5 @@ export function createProductivityService({ db, assert, textField, now, transact
     if (match && method === 'GET') { const decision = decisionShape(one('SELECT * FROM message_decisions WHERE id=?', match[1]), user.id); assert(decision, 404, '결정을 찾을 수 없습니다.'); respond(200, { decision }); return true; }
     return false;
   }
-  return { taskShape, canManageTask, upsertTask, getTask: (messageId, userId) => taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', messageId), userId), workday, catchUp, decisions, createDecision, assertMessageMutable, deliverDueDigests, dueNotifications, readDueNotification, digestPreferences, handle };
+  return { taskShape, canManageTask, upsertTask, getTask: (messageId, userId) => taskShape(one('SELECT * FROM message_tasks WHERE message_id=?', messageId), userId), workday, weeklySummary, catchUp, decisions, createDecision, assertMessageMutable, deliverDueDigests, dueNotifications, readDueNotification, digestPreferences, handle };
 }

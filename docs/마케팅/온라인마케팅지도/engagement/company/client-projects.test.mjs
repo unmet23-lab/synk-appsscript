@@ -53,3 +53,34 @@ test('a new approved preview cannot reuse an older final file as delivered',asyn
 test('media authorization reloads a demoted administrator instead of accepting the stale role',async t=>{const {users,service,create,store}=await fixture(t);const row=create('other'),media={id:'11111111-1111-4111-8111-111111111111',diskName:'private.png',mimeType:'image/png',fileName:'시안.png',byteSize:100};service.addVersion(users.other,row.id,{revision:row.revision,kind:'preview',label:'v1'},media);assert.equal(service.mediaFor(users.admin,media.id).id,media.id);store.put('users',users.admin.id,{...users.admin,role:'member'});throwsStatus(()=>service.mediaFor(users.admin,media.id),404);});
 
 test('malformed dates and unsafe material URLs produce validation errors without changing the project',async t=>{const {users,service,create}=await fixture(t),row=create();for(const dueDate of ['2026-99-99','2026-02-30','yesterday'])throwsStatus(()=>service.save(users.owner,{...draft,revision:row.revision,dueDate},row.id),400);for(const url of ['javascript:alert(1)','http://files.example/x','https://user:password@files.example/x'])throwsStatus(()=>service.addVersion(users.owner,row.id,{revision:row.revision,kind:'preview',label:'v1',url}),400);assert.equal(service.project(users.owner,row.id).revision,row.revision);});
+
+test('full ordinary message history is preserved and customer approval has separately bounded capacity',async t=>{
+  const {users,service,create}=await fixture(t);let row=create();
+  const customer=service.open(service.invite(users.owner,row.id,{revision:row.revision}).invite);row=service.project(users.owner,row.id);
+  row=service.addVersion(users.owner,row.id,{revision:row.revision,kind:'preview',label:'v1',url:'https://files.example/v1'}).project;
+  for(let i=0;i<300;i++)row=service.message(users.owner,row.id,{revision:row.revision,text:'내부 기록 '+i,visibility:'internal'}).project;
+  const ids=row.messages.map(message=>message.id),revision=row.revision;
+  throwsStatus(()=>service.message(users.owner,row.id,{revision,text:'must not evict'}),409);
+  throwsStatus(()=>service.customerAction(customer.session,customer.csrf,{revision,action:'support',text:'must not grow ordinary history'}),409);
+  assert.equal(service.project(users.owner,row.id).revision,revision);
+  assert.equal(service.read(customer.session).project.messages.length,0,'private notes must not leak to the customer');
+  row=service.customerAction(customer.session,customer.csrf,{revision,action:'approve',versionId:row.versions[0].id}).project;
+  const stored=service.project(users.owner,row.id);
+  assert.deepEqual(stored.messages.slice(0,300).map(message=>message.id),ids);
+  assert.equal(stored.messages.length,301);assert.equal(stored.messages.at(-1).action,'approve');
+  throwsStatus(()=>service.customerAction(customer.session,customer.csrf,{revision:row.revision,action:'approve',versionId:row.versions[0].id}),409);
+  throwsStatus(()=>service.message(users.owner,row.id,{revision:row.revision,text:'ordinary capacity remains full'}),409);
+  row=service.addVersion(users.owner,row.id,{revision:row.revision,kind:'final',label:'final',url:'https://files.example/final',guide:'승인 시안의 최종본'}).project;
+  assert.equal(row.stage,'delivered');assert.equal(row.messages.length,301);
+});
+
+test('verified receipt lookup returns the existing import only to a current administrator',async t=>{
+  const {users,service,store}=await fixture(t),receipt={id:'p_'+'1'.repeat(32),subject:'합성 기존 접수',contact:'합성 고객',message:'원래 요청',receivedAt:'2026-10-08T00:00:00Z',files:[]};
+  assert.equal(service.findImportedReceipt(users.admin,receipt.id),null);
+  const imported=service.importReceipt(users.admin,receipt),before=store.get('clientProjects',imported.project.id);
+  assert.equal(service.findImportedReceipt(users.admin,receipt.id).project.id,imported.project.id);
+  throwsStatus(()=>service.findImportedReceipt(users.owner,receipt.id),403);
+  store.put('users',users.admin.id,{...users.admin,role:'member'});
+  throwsStatus(()=>service.findImportedReceipt(users.admin,receipt.id),403);
+  assert.deepEqual(store.get('clientProjects',imported.project.id),before);
+});

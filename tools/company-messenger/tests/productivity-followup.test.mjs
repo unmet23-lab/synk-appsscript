@@ -54,6 +54,8 @@ test('a departed reviewer can be replaced by the present requester without chang
   f.db.prepare('DELETE FROM memberships WHERE user_id=? AND channel_id=?').run('reviewer', 'room');
   const view = f.productivity.getTask(task.messageId, 'requester');
   assert.equal(view.reviewerUnavailable, true); assert.equal(view.canReassignReviewer, true); assert.equal(view.reviewerId, 'reviewer');
+  assert.equal(view.reviewer.name, 'reviewer', 'company-active departed reviewer retains their name and unavailable flag');
+  assert.deepEqual(f.productivity.getTask(task.messageId, 'worker').allowedStages, []);
   assert.equal(f.productivity.getTask(task.messageId, 'worker').canReassignReviewer, false);
   assert.throws(() => f.patch(task, 'worker', { reassignReviewer: true, reviewerId: 'replacement' }), status(403));
   assert.throws(() => f.patch(task, 'outsider', { reassignReviewer: true, reviewerId: 'replacement' }), status(403));
@@ -73,6 +75,7 @@ test('disabled or downgraded reviewers require current posting authority for rec
   const f = await fixture(t), task = f.reviewTask();
   f.db.prepare('UPDATE users SET active=0 WHERE id=?').run('reviewer');
   assert.equal(f.productivity.getTask(task.messageId, 'requester').reviewer, null);
+  assert.deepEqual(f.productivity.getTask(task.messageId, 'worker').allowedStages, []);
   f.db.prepare('UPDATE users SET role=? WHERE id=?').run('viewer', 'requester');
   assert.equal(f.productivity.getTask(task.messageId, 'requester').canReassignReviewer, false);
   assert.throws(() => f.patch(task, 'requester', { reassignReviewer: true, reviewerId: 'replacement' }), status(403));

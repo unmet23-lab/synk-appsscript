@@ -140,6 +140,7 @@ function syncWorkspaceLocation(){
   if(['overview','analysis','history'].includes(state.tab)&&section==='team'&&state.teamId)url.searchParams.set('teamId',state.teamId);else url.searchParams.delete('teamId');
   if(state.tab==='content'&&section==='plan'&&cp.draftId)url.searchParams.set('draftId',cp.draftId);else url.searchParams.delete('draftId');
   if(hash.has('view'))url.hash='';
+  if(url.searchParams.has('publicationAction')&&!(state.tab==='workroom'&&section==='tools'&&typeof makerTools!=='undefined'&&makerTools.view==='publication'))for(const key of ['publicationAction','inboxId','productionId','versionId','packageId','publicationFormat','entryId','checkpoint'])url.searchParams.delete(key);
   if(url.href!==location.href)history.replaceState(null,'',url.pathname+url.search+url.hash);
 }
 function marketingNavigation(){
@@ -246,6 +247,18 @@ function shareWorkspaceView(){
 window.addEventListener('message',event=>{
   if(event.origin!==location.origin||event.source!==workspaceModule.frame?.contentWindow||!event.data||typeof event.data!=='object')return;
   const type=event.data.type;
+  if(type==='messenger:automation-open'){
+    if(state.user&&state.tab==='messenger'){makerTools.view='automation';selectWorkspaceView('workroom','tools');render();makerToolsEnsure();}
+    return;
+  }
+  if(type==='messenger:client-open'){
+    if(state.user&&typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(event.data.url)).catch(error=>notify(error.message));
+    return;
+  }
+  if(type==='messenger:publication-open'){
+    if(state.user&&typeof openPublicationWorkflowLink==='function')void Promise.resolve(openPublicationWorkflowLink(event.data.url)).catch(error=>notify(error.message));
+    return;
+  }
   if(type==='messenger:device-notifications'){if(state.user)void window.SynkDeviceNotifications?.open();return;}
   if(type==='messenger:client-open'){
     if(state.user&&typeof openClientWorkflowLink==='function')void Promise.resolve(openClientWorkflowLink(event.data.url)).catch(error=>notify(error.message));

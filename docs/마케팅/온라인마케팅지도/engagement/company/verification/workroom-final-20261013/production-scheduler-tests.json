@@ -1,0 +1,40 @@
+{
+  "schema": "synk-workroom-scheduler-overlay-verified/v1",
+  "at": "2026-10-12T20:04:46.403Z",
+  "files": [
+    {
+      "path": "docs\\마케팅\\온라인마케팅지도\\engagement\\company\\server.mjs",
+      "sha256": "8ba2b6725bbabdd5a13dd333a5debc1146dc65e89c3318f16ca2c8ad759f0bc7",
+      "bytes": 187373,
+      "role": "runtime"
+    },
+    {
+      "path": "docs\\마케팅\\온라인마케팅지도\\engagement\\company\\server-workroom-schedule.test.mjs",
+      "sha256": "0baaaaa7b67900ee235c62b2c754a3f3af913f54281acb3f41188731bf7383b9",
+      "bytes": 4331,
+      "role": "test"
+    }
+  ],
+  "baseline": "c730 plus frozen 46-file workroom overlay",
+  "tests": {
+    "command": "node --test --test-reporter=tap server-workroom-schedule.test.mjs server-automation-health.test.mjs server-publication-links.test.mjs server-weekly-summary.test.mjs server-work-notifications.test.mjs",
+    "total": 36,
+    "passed": 36,
+    "failed": 0,
+    "skipped": 0,
+    "log": "scheduler-test.tap.log",
+    "logSha256": "f21b60a58395ea724a1435f5bda7fae238d25b045c3412bb5d59ab49a5be71f0"
+  },
+  "envAddition": {
+    "SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED": "1"
+  },
+  "sourceMutation": false,
+  "productionMutation": false,
+  "notes": [
+    "Set env on both production and standby through approved HA environment contract; existing env_file passes it without compose change.",
+    "Existing background flag stays 0; no performance/SNS collector or Drive deletion queue activated.",
+    "Local final-file folder inbox remains host-local by existing gate; production cannot watch user PC folder.",
+    "Delivery inspection timer retains its existing independent default.",
+    "Default-unset behavior and explicit per-job overrides are preserved."
+  ]
+}

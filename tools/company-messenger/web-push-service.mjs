@@ -43,7 +43,10 @@ export function validatePushEndpoint(value) {
   check(typeof value === 'string' && value.length <= 4096 && !/[\s\x00-\x1f\\]/.test(value), 400, '이 브라우저의 알림 주소를 확인해 주세요.');
   let url; try { url = new URL(value); } catch { throw fail(400, '이 브라우저의 알림 주소를 확인해 주세요.'); }
   const host = url.hostname;
-  const trusted = ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'push.services.mozilla.com'].includes(host) || /^(?:[a-z0-9-]+\.)+push\.apple\.com$/.test(host) || /^(?:[a-z0-9-]+\.)+notify\.windows\.com$/.test(host);
+  // Chromium's kPushMessagingStagingGcmEndpoint uses this exact host and path.
+  // Keep compatibility scoped to the capability route, not arbitrary Google URLs.
+  const chromiumStaging = host === 'jmt17.google.com' && /^\/fcm\/send\/[^/]+$/.test(url.pathname);
+  const trusted = chromiumStaging || ['fcm.googleapis.com', 'updates.push.services.mozilla.com', 'push.services.mozilla.com'].includes(host) || /^(?:[a-z0-9-]+\.)+push\.apple\.com$/.test(host) || /^(?:[a-z0-9-]+\.)+notify\.windows\.com$/.test(host);
   check(url.protocol === 'https:' && !url.username && !url.password && !url.hash && (!url.port || url.port === '443') && trusted && url.pathname !== '/', 400, '지원하는 브라우저의 알림 주소만 등록할 수 있습니다.');
   // The capability URL is opaque: preserve its original path and query bytes.
   return url.href;

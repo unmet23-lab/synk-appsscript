@@ -60,15 +60,25 @@ const busyRuns = () => (state.data?.runs || []).some(run => ['running', 'queued'
 let renderedTab = '';
 const searchIcon = () => '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>';
 
-async function api(path, body, method = body === undefined ? 'GET' : 'POST') {
+async function api(path, body, method = body === undefined ? 'GET' : 'POST', {signal} = {}) {
+  signal?.throwIfAborted();
+  // Cancelling one read never cancels a shared native session recovery.
+  const wait=async pending=>{
+    if(!signal)return pending;
+    let onAbort;
+    try{signal.throwIfAborted();return await Promise.race([pending,new Promise((_,reject)=>{onAbort=()=>reject(signal.reason);signal.addEventListener('abort',onAbort,{once:true});})]);}
+    finally{if(onAbort)signal.removeEventListener('abort',onAbort);}
+  };
   const authStamp=companyAuthSnapshot();
   if(authStamp.userId&&typeof ensureNativeSynkCompanySession==='function'){
-    const recovery=ensureNativeSynkCompanySession();if(recovery?.then)await recovery;
+    const recovery=ensureNativeSynkCompanySession();if(recovery?.then)await wait(recovery);
     if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
   }
+  signal?.throwIfAborted();
   path = demoApiUrl(path,method);
-  const response = await fetch(path, { method, credentials: 'same-origin', headers: { ...(isDemoMode() && !['/api/me','/api/login','/api/logout','/api/launch'].includes(path.split('?')[0]) ? {'X-Synk-Demo':'1'} : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(method !== 'GET' && state.csrf ? { 'X-CSRF-Token': state.csrf } : {}) }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
-  const content = await response.json().catch(() => ({}));
+  const response = await fetch(path, { method, ...(signal?{signal}:{}), credentials: 'same-origin', headers: { ...(isDemoMode() && !['/api/me','/api/login','/api/logout','/api/launch'].includes(path.split('?')[0]) ? {'X-Synk-Demo':'1'} : {}), ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}), ...(method !== 'GET' && state.csrf ? { 'X-CSRF-Token': state.csrf } : {}) }, ...(body !== undefined ? { body: JSON.stringify(body) } : {}) });
+  const content = await wait(response.json().catch(() => ({})));
+  signal?.throwIfAborted();
   if(!companyAuthCurrent(authStamp))throw companyAuthChanged();
   if (!response.ok) {
     const err = new Error(content.error || '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');
@@ -256,7 +266,7 @@ function shell(content) {
   if(state.tab==='workroom'&&typeof ensureWorkroom==='function')ensureWorkroom();
   if(state.tab==='handbook'&&typeof ensureCompanyGuide==='function')ensureCompanyGuide();
 }
-function render() { if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { if(state.tab==='teaching'&&!isDemoMode()&&typeof renderTeachingOnly==='function')renderTeachingOnly();else renderAuth();return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if ((!isAdmin() && state.tab === 'settings') || (!canManageTeam() && state.tab === 'members')) state.tab = 'overview'; if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ teaching:typeof teachingWorkspacePage==='function'?teachingWorkspacePage:()=>'',home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
+function render() { if(typeof clientSearchSyncIdentity==='function')clientSearchSyncIdentity(); if(typeof wpSyncIdentity==='function')wpSyncIdentity(); if(typeof wrSuspendDaily==='function'&&(!state.user||state.tab!=='workroom'))wrSuspendDaily(); if (!state.user) { if(state.tab==='teaching'&&!isDemoMode()&&typeof renderTeachingOnly==='function')renderTeachingOnly();else renderAuth();return; } if (!state.data) return; if(isDemoMode() && (!['overview','analysis','history'].includes(state.tab)||state.marketingView==='channels'))selectWorkspaceView('all'); if(['channels','collection','studio'].includes(state.tab))selectWorkspaceView(state.tab); if ((!isAdmin() && state.tab === 'settings') || (!canManageTeam() && state.tab === 'members')) state.tab = 'overview'; if(isMarketingWorkspace())state.lastMarketingTab=state.tab; shell(({ teaching:typeof teachingWorkspacePage==='function'?teachingWorkspacePage:()=>'',home: typeof marinHomePage==='function'?marinHomePage:()=>'<section class="empty"><h1>홈을 준비하고 있어요</h1><p>잠시 뒤 다시 불러와 주세요.</p></section>', workroom: marinWorkroomPage, handbook: companyGuidePage, overview: marketingPage, analysis: analysisPage, history: historyPage, members: membersPage, settings: settingsPage, messenger: messengerWorkspacePage, content: contentPage })[state.tab]()); }
 function pageHeading(kicker,title,description,actions='') { const names={'EXPLORE YOUR GROWTH':'성과 분석','CHANNEL LIBRARY':'채널','PEOPLE & TEAMS':'팀·크루','COLLECTION CENTER':'수집 센터'};return `<header class="page-heading"><div><h1>${names[kicker]||title}</h1><p>${description}</p></div>${actions?`<div class="heading-actions">${actions}</div>`:''}</header>`; }
 function marketingScopeDescription() {
   return state.scope === 'mine' ? '내가 담당하는 채널의 성과와 다음 할 일을 확인하세요.' : state.scope === 'team' ? '팀별 성과를 한눈에 비교하고, 선택한 팀의 흐름을 살펴보세요.' : isAdmin() ? '회사 전체 채널의 성과와 운영 상태를 한눈에 확인하세요.' : '내 권한으로 열람할 수 있는 모든 채널을 모아 봅니다.';
@@ -379,6 +389,7 @@ function chartSvg(daily, label) {
 }
 function compactNumber(value) { const abs = Math.abs(value); return abs >= 1e8 ? `${(value / 1e8).toFixed(1).replace('.0', '')}억` : abs >= 1e4 ? `${(value / 1e4).toFixed(1).replace('.0', '')}만` : number(Math.round(value)); }
 function commandModal(){
+  if(typeof clientSearchOpen==='function'){clientSearchOpen();return;}
   modal('빠른 검색','채널이나 메뉴 이름으로 바로 이동하세요.',`<label class="command-input">${searchIcon()}<input type="search" data-command-search aria-label="채널 또는 메뉴 검색" placeholder="채널, 담당자, 메뉴 검색" autocomplete="off"></label><div class="command-results" aria-live="polite"></div><div class="command-footer"><span><kbd>↑</kbd><kbd>↓</kbd> 이동 <kbd>Enter</kbd> 선택</span><span><kbd>Esc</kbd> 닫기</span></div>`);
   renderCommandResults('');
 }
@@ -474,7 +485,7 @@ function modal(title, subtitle, body, wide = false, drawer = false) {
   document.body.classList.add('modal-open');
   requestAnimationFrame(() => (overlay.querySelector('input:not([type="hidden"]),textarea,select') || overlay.querySelector('button'))?.focus());
 }
-function closeModal() { state.modalRequest++; overlay.innerHTML = ''; document.body.classList.remove('modal-open'); state.returnFocus?.focus?.(); state.returnFocus = null; }
+function closeModal() { if(typeof clientSearchCancel==='function')clientSearchCancel();state.modalRequest++; overlay.innerHTML = ''; document.body.classList.remove('modal-open'); state.returnFocus?.focus?.(); state.returnFocus = null; }
 function addChannelModal() { modal('담당 채널 등록', '페이지 주소를 한 줄에 하나씩 붙여넣어 주세요.', `<form class="form-stack" data-form="add-channels"><div class="form-error" role="alert"></div><label class="field">채널 주소<textarea name="urls" required placeholder="https://www.youtube.com/@우리채널\nhttps://www.instagram.com/우리계정/\nhttps://www.facebook.com/우리페이지\nhttps://www.tiktok.com/@우리계정"></textarea><small>여러 주소를 한 번에 등록할 수 있어요. 이미 등록된 주소는 중복으로 만들지 않습니다.</small></label>${isAdmin() ? `<label class="field">담당자<select name="ownerId">${(state.data.members || []).filter(row => row.active !== false && row.role !== 'viewer').map(row => `<option value="${escape(row.id)}" ${row.id === state.user.id ? 'selected' : ''}>${escape(row.name)}</option>`).join('')}</select></label>` : ''}<div class="note-box">${icon('info')}<div>주소를 등록한 뒤 해당 채널의 <strong>계정 연결</strong>을 진행해 주세요. 첫 수집이 완료되면 실제 콘텐츠와 수치를 볼 수 있어요.</div></div><div class="modal-actions">${button('취소', 'close-modal')}<button type="submit" class="btn primary">채널 등록${icon('plus')}</button></div></form>`); }
 async function dayModal(date) {
   modal(`${escape(date.replaceAll('-', '.'))}의 성장 기록`, '이날의 기록과 콘텐츠별 전일 대비 증감을 확인하세요.', '<div class="loading-panel"><span class="loading-line"></span></div>', true, true);

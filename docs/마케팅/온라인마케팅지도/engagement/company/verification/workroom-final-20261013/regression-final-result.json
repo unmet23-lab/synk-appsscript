@@ -1,0 +1,244 @@
+{
+  "createdAt": "2026-10-12T17:45:50.722Z",
+  "status": "passed_with_documented_skips",
+  "scope": "Resolved baseline regression for291 selected company/messenger test files, covering implemented automation1-34 and shared local dependencies. 29 excluded by user;35 new cases are reported separately.",
+  "baseline": {
+    "fileCount": 291,
+    "counts": {
+      "tests": 3570,
+      "pass": 3567,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 3,
+      "todo": 0
+    },
+    "durationMs": 482320.5906,
+    "originalResult": "regression-result.json",
+    "originalLog": "regression.tap.log",
+    "note": "Original2 failures remain preserved in the original artifacts; corrected expectations and targeted reruns resolve them. The full suite was not repeated."
+  },
+  "resolvedFailures": [
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\engagement\\company\\server-client-rechecks.test.mjs",
+      "name": "HTTP personal date preserves all automation cards, issue/manual counts, full groups and unread customer alerts",
+      "originalExpected": 16,
+      "originalActual": 17,
+      "cause": "Feature34 correctly added rights expiration as the 17th automation-health card; these two legacy tests still expected 16.",
+      "change": "Updated count to17 and asserted presence of the rights card; retained all source preservation, grouping, unread alerts and authorization assertions.",
+      "status": "resolved",
+      "evidence": "regression-fixed-checks.tap.log"
+    },
+    {
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\engagement\\company\\server-project-task-groups.test.mjs",
+      "name": "both HTTP views share source grouping and links; completing work updates both without creating tasks",
+      "originalExpected": 16,
+      "originalActual": 17,
+      "cause": "Feature34 correctly added rights expiration as the 17th automation-health card; these two legacy tests still expected 16.",
+      "change": "Updated count to17 and asserted presence of the rights card; retained all source preservation, grouping, unread alerts and authorization assertions.",
+      "status": "resolved",
+      "evidence": "regression-fixed-checks.tap.log"
+    }
+  ],
+  "skips": [
+    {
+      "name": "symlink media cannot substitute an outside file",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\engagement\\company\\client-delivery-archive.test.mjs",
+      "reason": "Windows host has no file symlink privilege"
+    },
+    {
+      "name": "stored subtitle symlinks are never served",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\engagement\\company\\client-delivery-media.test.mjs",
+      "reason": "이 환경은 파일 symlink 생성을 허용하지 않습니다."
+    },
+    {
+      "name": "file symlinks are rejected before reading",
+      "file": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\docs\\마케팅\\온라인마케팅지도\\engagement\\company\\delivery-file-inspection.test.mjs",
+      "reason": "이 환경은 파일 심볼릭 링크 생성을 허용하지 않습니다."
+    }
+  ],
+  "followups": [
+    {
+      "file": "regression-fixed-checks.tap.log",
+      "counts": {
+        "tests": 6,
+        "pass": 6,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 2623.5836
+      }
+    },
+    {
+      "file": "archive-native-crc-tests.tap.log",
+      "counts": {
+        "tests": 20,
+        "pass": 19,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 1,
+        "duration_ms": 6597.9558
+      }
+    },
+    {
+      "file": "rights-final-regression.tap.log",
+      "counts": {
+        "tests": 23,
+        "pass": 23,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 11416.4061
+      }
+    },
+    {
+      "file": "ui-bridge-tests.tap",
+      "counts": {
+        "tests": 63,
+        "pass": 63,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 475.29
+      }
+    },
+    {
+      "file": "usage-client-tests.tap",
+      "counts": {
+        "tests": 12,
+        "pass": 12,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 135.3694
+      }
+    },
+    {
+      "file": "usage-http-backup.log",
+      "counts": {
+        "tests": 32,
+        "pass": 32,
+        "fail": 0,
+        "cancelled": 0,
+        "skipped": 0,
+        "duration_ms": 13901.2633
+      }
+    }
+  ],
+  "changedSourceCoverage": {
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-client-rechecks.test.mjs": [
+      "regression-fixed-checks.tap.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-project-task-groups.test.mjs": [
+      "regression-fixed-checks.tap.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-archive.mjs": [
+      "archive-native-crc-tests.tap.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-rights-reminders.mjs": [
+      "rights-final-regression.tap.log",
+      "usage-http-backup.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-rights.mjs": [
+      "rights-final-regression.tap.log",
+      "usage-http-backup.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": [
+      "rights-final-regression.tap.log",
+      "usage-http-backup.log"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js": [],
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-materials.js": [
+      "ui-bridge-tests.tap",
+      "usage-client-tests.tap"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-rights.js": [
+      "ui-bridge-tests.tap",
+      "usage-client-tests.tap"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-schedule.js": [
+      "ui-bridge-tests.tap",
+      "usage-client-tests.tap"
+    ],
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/signal.css": []
+  },
+  "unrelatedConcurrentEdits": {
+    "files": [
+      "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js",
+      "docs/마케팅/온라인마케팅지도/engagement/company/public/signal.css"
+    ],
+    "note": "Concurrent login-poster styling edits to public/app.js and public/signal.css are outside feature35 and outside this targeted rerun evidence; preserved unchanged by this agent."
+  },
+  "newTestsNotIncludedInBaseline": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-material-usage-client.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-material-usage.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-client-material-usage.test.mjs"
+  ],
+  "sourceHashes": {
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-client-rechecks.test.mjs": "b80fdd54b5c9a1148604cdbcffe25311a896374a1ab8b2e0cb3cc587035d530e",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server-project-task-groups.test.mjs": "b910c7a3ec567480c83f3de45ccd88d6c147fc1e76a1d78864b6f75a805468a6",
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-archive.mjs": "12d85c841df3af1c1ed5bc20f811fe4e08ffad0e0c9a96ea8e531ee52883edf7",
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-rights-reminders.mjs": "e64b75f28ae632ab51bb161cabced9eb25f2153ce54c301527f26d79170d42d0",
+    "docs/마케팅/온라인마케팅지도/engagement/company/client-rights.mjs": "5374f99bcec192fa3e4a979f3e4229a96e7f400375b7324fdfec14e383780cad",
+    "docs/마케팅/온라인마케팅지도/engagement/company/server.mjs": "392ea0f19ae02f10a036d45f2fba4c24face40fa4b5ac75ae5c85dc245f9f8ef",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/app.js": "113c15575f193254ee2bd1ca85d23f63b8cbbea06babbffabb331be77d38d49d",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-materials.js": "7b9d8024b441d394c5808c2b2cb8f23c49cf1b8f15c9445f656263ce396accf8",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-rights.js": "091e8021263498e3e5238263ec5e1f32937186cefafe41cf660ad10a91ab5fd6",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/client-schedule.js": "9ebfb20baa9f6598503282d26deb4eb45e172c0479f74471c0128f05f53b9b84",
+    "docs/마케팅/온라인마케팅지도/engagement/company/public/signal.css": "7c238cee226dab1abcc17362ad00a9e0f1b57086ecfb4aa3559032062dd1e6ad"
+  },
+  "archiveOptimization": {
+    "evidence": "archive-crc-benchmark.json",
+    "review": "archive-review.json",
+    "scope": "Native incremental CRC CPU optimization; bounded streaming, authorization and ZIP behavior unchanged."
+  },
+  "newFeature35": {
+    "unit": {
+      "file": "client-material-usage.test.mjs",
+      "tests": 10,
+      "evidence": "usage-http-backup.log"
+    },
+    "http": {
+      "file": "server-client-material-usage.test.mjs",
+      "tests": 7,
+      "evidence": "usage-http-backup.log"
+    },
+    "client": {
+      "file": "client-material-usage-client.test.mjs",
+      "tests": 12,
+      "evidence": "usage-client-tests.tap"
+    },
+    "note": "All three files were absent from the captured291-file baseline manifest. Their29 cases are new to that baseline, while the15 backup/container cases are repeated validation and are not added again. Container120 internal checks are not separately summed."
+  },
+  "aggregateUniqueAssertions": {
+    "tests": 3599,
+    "pass": 3596,
+    "fail": 0,
+    "skipped": 3,
+    "note": "3570 baseline assertions after resolving two outdated expected-card counts, plus29 new feature35 assertions; excludes duplicate reruns.",
+    "testFileCount": 294
+  },
+  "updatedAt": "2026-10-12T17:53:16.120Z",
+  "sourceHashesCapturedAt": "2026-10-12T17:47:35.654Z",
+  "finalFeature35SourceHashes": {
+    "server.mjs": "392ea0f19ae02f10a036d45f2fba4c24face40fa4b5ac75ae5c85dc245f9f8ef",
+    "client-material-usage.mjs": "0e1067ce7d4fdbd83f85836b05f26175387c97d4513681d9efa619e5b4d339e3",
+    "client-material-usage.test.mjs": "9bd11234ba314694203d6ab7b281e43a57c4234812fa2281abf94e3769fb4a30",
+    "client-material-usage-client.test.mjs": "cb2bf3202abc6b6b81065c67fb435927507d51a0059dd971c2525a97a670cda9",
+    "server-client-material-usage.test.mjs": "373721165894257b5cbafecbd631e517f77d8ffe7d7f32ff4aa752792bffe6b1",
+    "public/client-material-usage.js": "8c730b811adf439c0c384449fad220ae02bb58fca4a2c5476dfa61e45f7c0a49",
+    "public/client-material-usage.css": "362f62b0825a4d60a2c8886c5a7f1fb0b28ee0b371345443d5ee9cd5aa3f7269",
+    "public/client-materials.js": "7b9d8024b441d394c5808c2b2cb8f23c49cf1b8f15c9445f656263ce396accf8",
+    "public/client-rights.js": "091e8021263498e3e5238263ec5e1f32937186cefafe41cf660ad10a91ab5fd6",
+    "public/client-schedule.js": "9ebfb20baa9f6598503282d26deb4eb45e172c0479f74471c0128f05f53b9b84"
+  },
+  "finalProductFix": {
+    "priority": "P2",
+    "issue": "Readonly original material incorrectly labeled as current final file",
+    "resolved": true,
+    "evidence": [
+      "usage-client-tests.tap",
+      "review-source.json"
+    ],
+    "latestUiTests": 12
+  }
+}
