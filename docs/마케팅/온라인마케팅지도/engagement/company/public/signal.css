@@ -374,48 +374,63 @@
 :root .synk-workspace .cg-atglance dd{color:var(--sg-ink);font-weight:650}
 
 /* ── 로그인 ──────────────────────────────────────── */
-/* 2판(10-10 유호님 「너무 투박하다」): 흰 카드를 걷었다. 어두운 틀 위 유리 판에 입력을 띄우고, 판 모서리 밖으로 뻗는 1px 안내선,
-   위에서 떨어지는 옅은 빛, 옅은 격자를 깔았다(Recent AuthKit 노출 11.9만 · Dark Mode Auth Screens 6.6만, Railway · Resend 로그인).
-   모두 멈춰 있는 그림이다. 무지개 테는 입력 칸을 누르고 있을 때만 켠다. */
-:root .auth-layout{position:relative;isolation:isolate;color-scheme:dark;color:var(--sg-frame-ink);
-  background:radial-gradient(18% 64% at 77% -8%,rgba(197,214,245,.2),transparent 74%),radial-gradient(40% 48% at 77% 52%,rgba(61,107,201,.26),transparent 72%),radial-gradient(22% 26% at 93% 86%,rgba(224,92,151,.1),transparent 70%),var(--sg-frame)}
-:root .auth-layout::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px,linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px) 0 0/72px 72px;
-  -webkit-mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%);mask-image:radial-gradient(52% 62% at 76% 46%,#000,transparent 78%)}
-:root .auth-intro>.brand-logo{filter:invert(1)}
-:root .auth-form-side{width:100%;background:transparent}
-:root .auth-intro:after{content:none!important}
-@media(min-width:1000px){
-  :root .auth-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(380px,440px);align-items:center;gap:clamp(48px,7vw,120px);padding:56px clamp(48px,7vw,120px);min-height:100dvh}
-  :root .auth-intro{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0;max-width:720px}
-  :root .auth-intro>.brand-logo{width:72px;margin:0 0 56px}
-  :root .auth-intro .intro-body{display:block}
-  :root .auth-intro .eyebrow{display:flex;align-items:center;gap:12px;margin:0 0 22px;font:500 11px/1 var(--sg-mono);letter-spacing:.18em;color:var(--sg-frame-ink-3)}
-  :root .auth-intro .eyebrow:after{content:'';width:56px;height:1px;background:var(--sg-frame-line-2)}
-  :root .auth-intro h1{font-size:clamp(52px,5.6vw,84px);line-height:1.04;font-weight:900;letter-spacing:-.06em;color:var(--sg-on-face);word-break:keep-all}
-  :root .auth-intro .lead{margin-top:26px;font-size:17px;line-height:1.7;color:var(--sg-frame-ink-2)}
-  :root .auth-features{display:flex;flex-wrap:wrap;gap:8px;margin-top:34px}
-  :root .auth-feature{display:inline-flex;align-items:center;gap:9px;min-height:40px;padding:0 16px 0 10px;border-radius:999px;background:var(--sg-glass);box-shadow:var(--sg-glass-flat);color:var(--sg-frame-ink-2);font-size:13px;font-weight:600}
-  :root .auth-feature>span{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.08);color:var(--sg-frame-ink)}
-  :root .auth-feature .icon{width:14px;height:14px}
-  :root .auth-intro .auth-foot{display:block;margin-top:56px;font:600 12px/1 var(--sg-sans);letter-spacing:0;color:var(--sg-frame-ink-3)}
-  /* 큰 제목은 위가 밝고 아래로 청금석이 짙어지는 금속빛 글자(AuthKit 제목 방식) */
-  @supports ((-webkit-background-clip:text) or (background-clip:text)){
-    :root .auth-intro h1{background:linear-gradient(176deg,#F4F7FD 6%,#C5D6F5 50%,#8BA3D6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-  }
-  /* 유리 판 + 모서리 밖으로 뻗는 안내선 */
-  :root .auth-form-side{position:relative;max-width:440px;padding:36px 36px 28px;border-radius:26px;
-    background:radial-gradient(90% 36% at 50% 0%,rgba(197,214,245,.1),transparent 70%),linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.015) 42%),rgba(12,13,17,.55);
-    -webkit-backdrop-filter:blur(24px) saturate(1.5);backdrop-filter:blur(24px) saturate(1.5);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 0 0 1px rgba(255,255,255,.08),0 60px 140px -30px rgba(0,0,0,.8)}
-  :root .auth-form-side::before,:root .auth-form-side::after{content:'';position:absolute;pointer-events:none}
-  :root .auth-form-side::before{inset:0 -40px;border-block:1px solid rgba(255,255,255,.08);-webkit-mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
-  :root .auth-form-side::after{inset:-40px 0;border-inline:1px solid rgba(255,255,255,.08);-webkit-mask-image:linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(180deg,transparent,#000 40px,#000 calc(100% - 40px),transparent)}
-}
-:root .auth-form-card{background:transparent;color:var(--sg-frame-ink)}
+/* 3판(10-13 유호님 「이거 니가 디자인해준 거 아닌 것 같은데 다시 해줘 … synk 플랫폼에 적용한 것처럼」).
+   2판은 1000px보다 좁으면 큰 문구와 유리 판이 모두 빠지고 입력칸만 남았다(PC 워크스페이스 창·좁은 브라우저에서 그 모습이 보였다).
+   3판은 플랫폼 앱 상세와 같은 문법이다. 책상(#060709) 위 떠 있는 본문 판(#0C0D10) 안에 Workspace 포스터와 로그인을 나란히 둔다.
+   포스터는 플랫폼 「워크스페이스」 포스터 그대로다: 검은 면 #17181C + 스튜디오 빛 + 그레인, 파란 펠트 노트북(제 색, -3°),
+   옅은 청금석 큰 한글, 기울인 상태 스티커, 모노 라벨. 어느 폭에서도 포스터가 남는다 — 넓으면 가로 포스터와 계기판,
+   중간이면 세로 포스터, 휴대폰이면 위쪽 띠. 스스로 움직이는 효과는 없다. 무지개 테는 입력 칸을 누르고 있을 때만 켠다. */
+:root .auth-layout{--auth-bar:64px;--auth-desk:16px;--auth-pad:20px;
+  --auth-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position:relative;isolation:isolate;color-scheme:dark;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,400px);grid-template-rows:minmax(0,1fr);align-items:center;justify-content:stretch;
+  gap:clamp(28px,4.5vw,76px);min-height:100dvh;height:auto;margin:0;
+  padding:calc(var(--auth-bar) + var(--auth-pad)) calc(var(--auth-desk) + var(--auth-pad) + clamp(0px,1.6vw,28px)) calc(var(--auth-desk) + var(--auth-pad)) calc(var(--auth-desk) + var(--auth-pad));
+  background:var(--sg-frame);color:var(--sg-frame-ink);font-family:var(--sg-sans);letter-spacing:-.012em}
+/* 본문 판: 위 막대 아래를 채우는 둥근 판(플랫폼 --panel, 반경 22, 안쪽 1px 선) */
+:root .auth-layout::before{content:'';position:absolute;z-index:-1;top:var(--auth-bar);left:var(--auth-desk);right:var(--auth-desk);bottom:var(--auth-desk);border-radius:var(--sg-r-panel);background:var(--sg-frame-2);box-shadow:inset 0 0 0 1px var(--sg-frame-line);pointer-events:none;-webkit-mask-image:none;mask-image:none}
+/* 위 막대: 로그인한 뒤의 워크스페이스 위 막대와 같은 로고 + WORKSPACE 알약 */
+:root .auth-bar{position:absolute;top:0;left:var(--auth-desk);right:var(--auth-desk);height:var(--auth-bar);display:flex;align-items:center;gap:10px;padding:0 14px}
+:root .auth-bar .brand-logo{display:block;width:44px;height:26px;margin:0;object-fit:contain;filter:invert(1)}
+:root .auth-edition{font:500 10px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-2);padding:6px 9px 5px;border:1px solid var(--sg-frame-line-2);border-radius:999px;white-space:nowrap}
+
+/* 포스터 열 */
+:root .auth-intro{grid-column:1;grid-row:1;align-self:stretch;justify-self:stretch;display:flex;flex-direction:column;align-items:stretch;justify-content:center;gap:16px;min-width:0;min-height:0;width:auto;max-width:none;height:auto;margin:0;padding:0;border:0;background:transparent;box-shadow:none;color:var(--sg-on-face)}
+:root .auth-intro::after,:root .auth-intro:after{content:none!important;display:none}
+:root .auth-poster{position:relative;isolation:isolate;overflow:hidden;container-type:inline-size;flex:1 1 auto;min-height:440px;max-height:860px;display:flex;flex-direction:column;justify-content:flex-end;border-radius:var(--sg-r-xl);
+  background:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1)),var(--sg-face);
+  color:var(--sg-on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(197,214,245,.22)}
+:root .auth-poster::after{content:'';position:absolute;inset:0;z-index:1;background:var(--auth-grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
+/* 노트북: 투명 여백이 커서 플랫폼처럼 화면에서만 키운다(원본 그림은 그대로) */
+:root .auth-poster-media{position:absolute;z-index:0;top:0;right:0;bottom:0;width:56%;display:grid;grid-template:100%/100%;place-items:center;padding:12% 7% 18% 4%;pointer-events:none}
+:root .auth-poster-media img{display:block;width:100%;height:100%;max-width:520px;max-height:100%;object-fit:contain;filter:drop-shadow(0 26px 30px rgba(0,0,0,.32)) drop-shadow(0 5px 8px rgba(0,0,0,.2));transform:rotate(-3deg) scale(1.3)}
+:root .auth-poster-top{position:absolute;z-index:2;top:22px;left:26px;right:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+:root .auth-poster-scope{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font:500 11.5px/1.4 var(--sg-mono);letter-spacing:.12em;opacity:.62}
+:root .auth-poster-stage{flex:none;display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px;border-radius:999px;background:var(--sg-on-face);color:var(--sg-ink);font-size:12px;font-weight:800;letter-spacing:-.01em;white-space:nowrap;transform:rotate(-2.5deg);box-shadow:0 8px 22px rgba(0,0,0,.24)}
+:root .auth-poster-stage::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sg-lapis);box-shadow:0 0 0 3px rgba(61,107,201,.25)}
+:root .auth-poster-text{position:relative;z-index:2;display:flex;flex-direction:column;align-items:flex-start;padding:76px 26px 26px;max-width:none}
+:root .auth-poster .eyebrow{display:block;margin:0;padding:0;border:0;background:none;font:500 11px/1.3 var(--sg-mono);letter-spacing:.16em;color:inherit;opacity:.78}
+:root .auth-poster .eyebrow::before,:root .auth-poster .eyebrow::after{content:none}
+:root .auth-poster h1{display:flex;flex-direction:column;align-items:flex-start;gap:14px;margin:10px 0 16px;padding:0;font-size:inherit;font-weight:900;line-height:1;letter-spacing:0;color:var(--sg-on-face);background:none;-webkit-text-fill-color:currentColor;word-break:keep-all}
+:root .auth-poster-name{font:700 15px/1.2 var(--sg-latin);letter-spacing:.02em;opacity:.9}
+/* 두 줄 큰 글자: 긴 줄(스페이스, 4자) 기준으로 포스터 폭에 맞춘다. 자간은 플랫폼 규칙 −.085em + 글자 수 × .01em */
+:root .auth-poster-word{display:block;margin:0 0 0 -.05em;font-size:clamp(64px,12.5cqw,136px);font-weight:900;line-height:.88;letter-spacing:-.045em;white-space:nowrap}
+:root .auth-poster .lead{margin:0;max-width:30ch;font-size:17px;font-weight:650;line-height:1.5;letter-spacing:-.015em;color:var(--sg-on-face);opacity:.94;word-break:keep-all}
+:root .auth-poster-caption{position:absolute;z-index:2;right:22px;bottom:22px;max-width:44%;overflow:hidden;text-overflow:ellipsis;padding:4px 9px;border-radius:999px;background:rgba(8,9,12,.62);color:var(--sg-frame-ink);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);font:500 10px/1.5 var(--sg-mono);letter-spacing:.12em;white-space:nowrap}
+/* 계기판: 1px 세로선으로 나눈 세 칸(플랫폼 실행 줄의 숫자판) */
+:root .auth-readouts{flex:none;display:flex;align-items:stretch;flex-wrap:wrap;row-gap:12px;margin:0;padding:2px 0 0}
+:root .auth-readouts>div{display:flex;flex-direction:column;justify-content:center;gap:6px;padding:2px 22px;border-left:1px solid var(--sg-frame-line-2)}
+:root .auth-readouts>div:first-child{padding-left:6px;border-left:0}
+:root .auth-readouts dt{font:500 10px/1 var(--sg-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--sg-frame-ink-3)}
+:root .auth-readouts dd{margin:0;font-size:15px;font-weight:800;letter-spacing:-.015em;color:var(--sg-frame-ink);white-space:nowrap}
+
+/* 로그인 열: 판 위에 바로 놓는다(유리 판·안내선 없음) */
+:root .auth-form-side{grid-column:2;grid-row:1;position:relative;align-self:center;justify-self:center;display:block;width:100%;max-width:400px;min-height:0;margin:0;padding:8px 0;border:0;border-radius:0;background:transparent;box-shadow:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+:root .auth-form-side::before,:root .auth-form-side::after{content:none}
+:root .auth-form-card{width:100%;max-width:none;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--sg-frame-ink)}
 :root .auth-form-card>.eyebrow{display:inline-flex;align-items:center;gap:9px;margin:0 0 20px;padding:7px 12px 7px 10px;border-radius:999px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.09);font:500 10.5px/1 var(--sg-mono);letter-spacing:.16em;color:var(--sg-frame-ink-2)}
 :root .auth-form-card>.eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:#6FD39B;box-shadow:0 0 0 3px rgba(111,211,155,.14),0 0 10px rgba(111,211,155,.65)}
-:root .auth-form-card h2{margin:0;font-size:34px;line-height:1.16;font-weight:850;letter-spacing:-.05em;color:var(--sg-frame-ink);word-break:keep-all}
+:root .auth-form-card h2{margin:0;font-size:36px;line-height:1.14;font-weight:850;letter-spacing:-.05em;color:var(--sg-frame-ink);word-break:keep-all}
 :root .auth-form-card .auth-description{margin:12px 0 26px;font-size:14.5px;line-height:1.65;color:var(--sg-frame-ink-3);word-break:keep-all}
 /* SYNK ID: 유리 알약 + 싱ㅋ 글자 표시, 아래 한 줄은 상태 등(준비 중 노랑 · 쓸 수 있음 초록), 그 뒤 OR 구분선 */
 :root .synk-login-entry{display:grid;gap:10px;margin:0}
@@ -437,8 +452,8 @@
 :root .auth-form-card .field input::placeholder{color:rgba(250,250,249,.38);font-weight:500}
 :root .auth-form-card .field input:hover{border-color:rgba(255,255,255,.18);background-color:rgba(255,255,255,.055)}
 :root .auth-form-card .field input:focus{outline:0;border-color:transparent;background:linear-gradient(#111217,#111217) padding-box,var(--sg-iris) border-box;box-shadow:0 0 0 4px rgba(61,107,201,.26),0 12px 32px -14px rgba(224,92,151,.5)}
-:root .auth-form-card .field input:-webkit-autofill{-webkit-text-fill-color:var(--sg-frame-ink);caret-color:var(--sg-lapis-light);box-shadow:0 0 0 60px #121318 inset;transition:background-color 99999s step-end}
-:root .auth-form-card .field input:-webkit-autofill:focus{box-shadow:0 0 0 60px #121318 inset,0 0 0 4px rgba(61,107,201,.3)}
+:root .auth-form-card .field input:-webkit-autofill{-webkit-text-fill-color:var(--sg-frame-ink);caret-color:var(--sg-lapis-light);box-shadow:0 0 0 60px #15161A inset;transition:background-color 99999s step-end}
+:root .auth-form-card .field input:-webkit-autofill:focus{box-shadow:0 0 0 60px #15161A inset,0 0 0 4px rgba(61,107,201,.3)}
 :root .auth-form-card .form-error{display:flex;align-items:flex-start;gap:9px;margin:0;padding:11px 14px;border:0;border-radius:12px;background:rgba(249,104,89,.1);box-shadow:inset 0 0 0 1px rgba(249,104,89,.3);color:#FFB3AA;font-size:13px;font-weight:600;line-height:1.55}
 :root .auth-form-card .form-error::before{content:'';flex:none;width:6px;height:6px;margin-top:7px;border-radius:50%;background:var(--sg-coral);box-shadow:0 0 8px rgba(249,104,89,.7)}
 :root .auth-form-card .form-error:empty{display:none}
@@ -453,14 +468,47 @@
 :root .auth-form-card .auth-form-footer{margin-top:22px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);color:var(--sg-frame-ink-3);font-size:12.5px;line-height:1.7;word-break:keep-all}
 :root .auth-form-card .auth-form-footer .text-button{margin-top:8px;padding:0;color:var(--sg-lapis-light);font-size:13px;font-weight:700;text-decoration:underline;text-decoration-color:rgba(197,214,245,.4);text-underline-offset:3px}
 @media(prefers-reduced-motion:reduce){:root .auth-form-card .auth-submit,:root .auth-form-card .auth-submit .icon{transition:none}:root .auth-form-card .auth-submit:hover .icon,:root .auth-form-card .auth-submit:active{transform:none}}
-/* 휴대폰·좁은 창: 판을 걷고 입력이 바로 어두운 바탕 위에 뜬다(Resend 방식), 빛은 위에서 */
-@media(max-width:999.98px){
-  :root .auth-layout{justify-content:flex-start;gap:30px;padding:48px 20px 40px;background:radial-gradient(70% 38% at 50% -4%,rgba(197,214,245,.14),transparent 72%),radial-gradient(80% 40% at 50% 26%,rgba(61,107,201,.16),transparent 72%),var(--sg-frame)}
-  :root .auth-layout::before{-webkit-mask-image:radial-gradient(90% 46% at 50% 18%,#000,transparent 78%);mask-image:radial-gradient(90% 46% at 50% 18%,#000,transparent 78%)}
-  :root .auth-intro{width:100%;max-width:420px;justify-content:flex-start;align-items:flex-start}
-  :root .auth-intro>.brand-logo{width:56px;margin:0}
-  :root .auth-form-side{width:100%;max-width:420px;padding:0;background:transparent}
+
+/* 중간 폭(PC 워크스페이스 창·좁은 브라우저): 세로 포스터(2:3, 로그인 높이와 비슷하게) + 로그인. 계기판·캡션은 걷는다 */
+@media(max-width:1179.98px){
+  :root .auth-layout{grid-template-columns:minmax(0,1fr) minmax(300px,380px);gap:clamp(24px,3.6vw,48px)}
+  :root .auth-intro{align-self:center}
+  :root .auth-poster{flex:none;aspect-ratio:2/3;min-height:0;max-height:calc(100dvh - var(--auth-bar) - 2 * var(--auth-pad) - var(--auth-desk))}
+  :root .auth-readouts,:root .auth-poster-caption{display:none}
+}
+/* 포스터가 좁으면(세로 포스터) 노트북을 위쪽 가운데에, 큰 글자를 아래에 둔다. 노트북 상자는 큰 글자 머리보다 위에서 끝난다 */
+@container (max-width:600px){
+  :root .auth-poster-media{top:54px;right:0;bottom:auto;left:0;width:auto;height:44%;padding:0 10%}
+  :root .auth-poster-media img{transform:rotate(-3deg) scale(1.22)}
+  :root .auth-poster-text{padding:0 22px 22px}
+  :root .auth-poster-top{top:18px;left:22px;right:18px}
+  :root .auth-poster h1{gap:12px;margin:10px 0 14px}
+  :root .auth-poster-word{font-size:clamp(48px,17.5cqw,104px)}
+  :root .auth-poster .lead{font-size:15.5px}
+}
+/* 휴대폰: 판을 걷고 포스터는 위쪽 띠로, 로그인은 그 아래 */
+@media(max-width:759.98px){
+  :root .auth-layout{--auth-bar:56px;grid-template-columns:minmax(0,1fr);grid-template-rows:auto auto;align-items:start;gap:22px;padding:var(--auth-bar) 16px 36px}
+  :root .auth-layout::before{content:none}
+  :root .auth-bar{left:4px;right:4px;padding:0 6px}
+  :root .auth-intro{grid-column:1;grid-row:1;align-self:start}
+  :root .auth-poster{aspect-ratio:auto;height:clamp(208px,55vw,250px);max-height:none;border-radius:var(--sg-r-panel)}
+  :root .auth-form-side{grid-column:1;grid-row:2;align-self:start;max-width:440px;padding:0}
+  :root .auth-form-card>.eyebrow{margin-bottom:16px}
   :root .auth-form-card h2{font-size:30px}
+  :root .auth-form-card .auth-description{margin:10px 0 22px}
+}
+/* 휴대폰 띠 안: 노트북은 오른쪽, 이름과 큰 글자는 왼쪽 아래(위 컨테이너 규칙보다 뒤에 둔다) */
+@media(max-width:759.98px){
+  :root .auth-poster-media{top:52px;right:3%;bottom:20px;left:auto;width:44%;height:auto;padding:0}
+  :root .auth-poster-media img{transform:rotate(-3deg) scale(1.2)}
+  :root .auth-poster-top{top:16px;left:18px;right:16px}
+  :root .auth-poster-text{padding:0 18px 18px}
+  :root .auth-poster .eyebrow{display:none}
+  :root .auth-poster h1{gap:10px;margin:0 0 4px}
+  :root .auth-poster-name{font-size:13px}
+  :root .auth-poster-word{font-size:clamp(44px,14.5cqw,64px)}
+  :root .auth-poster .lead{display:none}
 }
 
 /* 첫 로딩·연결 오류 화면: 바탕이 어두워졌으니 글자·로고를 밝게, 오류 상자는 흰 판으로(10-10 공식 검수 P2) */

@@ -26,6 +26,7 @@
 - `felt-ui/slab-coral-long.webp`, `felt-ui/slab-blush-long.webp`, `felt-ui/slab-blush.webp`, `felt-ui/chip-blush-long.webp`, `felt-ui/badge-check.webp`, `felt-ui/badge-cream.webp`, `felt-ui/badge-coral.webp`, `felt-ui/tex-coral.webp`, `felt-ui/tex-blush.webp`: `docs/디자인/펠트부품/assets/ui/`의 같은 파일명. 누르는 주 행동·선택·배지와 국소 재질에 쓴다.
 - `felt-ui/lapis-fabric.png`: `docs/캐릭터/펠트패치_0815/LapisDeep.png`.
 - `laptop-felt.webp`, `sticker-adapt.webp`: `docs/마케팅/맞춤도구/assets/`의 같은 파일명.
+- `signal-laptop.webp`: 플랫폼 런처 `desktop/assets/launcher/laptop.webp`(= `docs/디자인/SNS키트/assets/felt-laptop.webp`)와 같은 바이트. 워크스페이스 로그인 3판의 Workspace 포스터에 쓴다(2026-10-13).
 
 최신 부품 규칙은 `docs/디자인/펠트부품/README.md`를 따른다. 작은 조작부는 실제 `felt-ui/` 판·칩·배지 사진을 쓰며, 오래 읽는 메시지와 입력 면은 흰 바탕으로 둔다. CSS 점선·납작한 테이프·흩어진 색점은 추가하지 않는다.
 
