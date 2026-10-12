@@ -1,0 +1,133 @@
+name: SYNK Platform with Signal child installers (Mac)
+
+# Rebuilds Platform Preview 0.4.3 for Mac with the Signal WORLD and Workspace DMGs inside and gives the
+# Platform DMG the Signal window (mac-dmg-signal/build-platform-children-mac.cjs), then runs the public
+# 0.4.3 native QA on the result. A build run never publishes. A dispatch with release_from_run creates a
+# draft prerelease from the files that run checked; the Windows installer is added before it is published.
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        options: [both, arm64, x64]
+        default: both
+      release_from_run:
+        description: 'Create a draft prerelease from the checked Mac DMGs of this run id (empty: build only)'
+        type: string
+        default: ''
+      release_tag:
+        type: string
+        default: platform-preview-0.4.3-signal.3-20261013
+  push:
+    branches: [claude/platform-signal-children-20261013]
+    paths:
+      - '.github/desktop-preview/mac-dmg-signal/**'
+      - '.github/workflows/desktop-platform-signal-children.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  mac:
+    name: Mac ${{ matrix.arch }}
+    if: ${{ !inputs.release_from_run }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.architecture == 'x64' && '[{"arch":"x64","runner":"macos-15-intel"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15-intel"}]') }}
+    defaults:
+      run:
+        working-directory: .github/desktop-preview
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          architecture: ${{ matrix.arch }}
+          cache: npm
+          cache-dependency-path: .github/desktop-preview/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - run: node node_modules/electron/install.js
+        env:
+          npm_config_arch: ${{ matrix.arch }}
+      - name: Build Intel graphics loader
+        if: matrix.arch == 'x64'
+        run: bash build-vulkan-loader.sh
+      - run: node build-platform-performance.cjs --validate-only
+      - name: Signal child DMGs, Platform with them, Signal Platform DMG
+        run: node mac-dmg-signal/build-platform-children-mac.cjs --arch=${{ matrix.arch }} --shots
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify actual mounted DMGs and native Platform
+        run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }} --scope=platform
+        env:
+          SYNK_QA_VISIBLE: '1'
+          SYNK_QA_SOFTWARE_GPU: ${{ matrix.arch == 'x64' && '1' || '0' }}
+      - name: Save the checked Platform DMG and its records
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-platform-signal3-dmg-${{ matrix.arch }}
+          path: .github/desktop-preview/mac-dmg-signal/out/platform-signal.3/${{ matrix.arch }}/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Save screenshots, child records and QA evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-platform-signal3-evidence-${{ matrix.arch }}
+          path: |
+            .github/desktop-preview/mac-dmg-signal/shots/
+            .github/desktop-preview/mac-dmg-signal/out/*/${{ matrix.arch }}/*.json
+            .github/desktop-preview/mac-dmg-signal/out/*/${{ matrix.arch }}/*.txt
+            .github/desktop-preview/dist/${{ matrix.arch }}/deliverables/*.json
+            .github/desktop-preview/dist/${{ matrix.arch }}/deliverables/*.txt
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/mac-native-qa.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/report.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/*.png
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/*-process.log
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Draft the prerelease with the checked Mac DMGs
+    if: ${{ inputs.release_from_run }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Download the DMGs checked by the build run
+        uses: actions/download-artifact@v8
+        with:
+          pattern: synk-platform-signal3-dmg-*
+          merge-multiple: true
+          path: release-input
+          run-id: ${{ inputs.release_from_run }}
+          github-token: ${{ github.token }}
+      - name: Check the files against their records
+        run: node .github/desktop-preview/mac-dmg-signal/release-children.cjs release-input release-output
+        env:
+          RELEASE_FROM_RUN: ${{ inputs.release_from_run }}
+      - name: Create the draft prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          gh release create "$TAG" release-output/*.dmg release-output/SHA256SUMS-mac.txt release-output/mac-platform-signal.3.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease --draft \
+            --title "SYNK Platform Preview 0.4.3 · Signal installers for WORLD and Workspace (signal.3)" \
+            --notes "Draft: the Windows installer and the notes are added before publishing."

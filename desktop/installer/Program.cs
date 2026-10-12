@@ -17,16 +17,18 @@ namespace Synk.SignalInstaller
             string cache = null;
             try
             {
+                Assembly assembly = Assembly.GetExecutingAssembly();
+                InstallSpec spec;
+                using (Stream stream = assembly.GetManifestResourceStream("install.json"))
+                    spec = (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
+                SignalProduct product = SignalProduct.ById(spec.Product);
+                // 제품마다 설치 화면 하나만(플랫폼 안에서 WORLD와 워크스페이스 설치 창을 함께 열 수 있다)
                 bool created;
-                using (Mutex mutex = new Mutex(true, @"Local\SYNK.Signal.Installer." + WindowsIdentity.GetCurrent().User.Value, out created))
+                using (Mutex mutex = new Mutex(true, @"Local\SYNK.Signal.Installer." + product.Id + "." + WindowsIdentity.GetCurrent().User.Value, out created))
                 {
-                    if (!created) { MessageBox.Show("이미 SYNK 설치 화면이 열려 있습니다.", "SYNK 설치"); return 1; }
+                    if (!created) { MessageBox.Show("이미 " + product.ShortName + " 설치 화면이 열려 있습니다.", product.WindowTitle); return 1; }
                     try
                     {
-                        Assembly assembly = Assembly.GetExecutingAssembly();
-                        InstallSpec spec;
-                        using (Stream stream = assembly.GetManifestResourceStream("install.json"))
-                            spec = (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
                         cache = InstallerEngine.CreatePrivateCache();
                         foreach (string resource in assembly.GetManifestResourceNames())
                             if (resource.StartsWith("font."))
@@ -34,7 +36,7 @@ namespace Synk.SignalInstaller
                                 using (FileStream target = new FileStream(Path.Combine(cache, resource.Substring(5)), FileMode.CreateNew, FileAccess.Write)) source.CopyTo(target);
                         InstallerEngine engine = new InstallerEngine(spec, delegate { return assembly.GetManifestResourceStream("backend.exe"); });
                         Application app = new Application();
-                        SignalWindow window = new SignalWindow(cache, spec.Version);
+                        SignalWindow window = new SignalWindow(cache, spec.Version, product);
                         window.SetInstalled(Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)));
                         window.SetInstallLocation(PreviewDirectory(engine, spec), spec.MinFreeBytes);
                         window.InstallRequested += async delegate

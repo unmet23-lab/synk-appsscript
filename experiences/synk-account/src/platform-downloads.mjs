@@ -4,11 +4,11 @@ const RELEASES = 'https://github.com/unmet23-lab/synk-policy/releases';
 export const PLATFORM_DOWNLOADS = {
   version: '0.4.3',
   windows: { tab: 'Windows', label: 'Windows용 다운로드', sticker: 'Windows 64비트', need: 'Windows 10·11 64비트', sign: '정식 코드 서명 전',
-    file: 'SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe', bytes: 399801344, tag: 'platform-preview-0.4.3-signal.2-20261013' },
+    file: 'SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe', bytes: 402711552, tag: 'platform-preview-0.4.3-signal.3-20261013' },
   'mac-arm64': { tab: 'Mac · Apple Silicon', label: 'Mac용 다운로드', chip: 'Apple Silicon', sticker: 'macOS 13 이상', need: 'macOS 13 이상 · Apple M 시리즈', sign: 'Apple 공증 전',
-    file: 'SYNK-Platform-Preview-0.4.3-Signal-mac-arm64.dmg', bytes: 459131084, tag: 'platform-preview-0.4.3-mac-signal.1-20261013' },
+    file: 'SYNK-Platform-Preview-0.4.3-Signal-mac-arm64.dmg', bytes: 461989581, tag: 'platform-preview-0.4.3-signal.3-20261013' },
   'mac-x64': { tab: 'Mac · Intel', label: 'Mac용 다운로드', chip: 'Intel', sticker: 'macOS 13 이상', need: 'macOS 13 이상 · Intel 프로세서', sign: 'Apple 공증 전',
-    file: 'SYNK-Platform-Preview-0.4.3-Signal-mac-x64.dmg', bytes: 476792659, tag: 'platform-preview-0.4.3-mac-signal.1-20261013' },
+    file: 'SYNK-Platform-Preview-0.4.3-Signal-mac-x64.dmg', bytes: 479616102, tag: 'platform-preview-0.4.3-signal.3-20261013' },
 };
 export const DOWNLOAD_OS = ['windows', 'mac-arm64', 'mac-x64'];
 export const downloadHref = os => `${RELEASES}/download/${PLATFORM_DOWNLOADS[os].tag}/${PLATFORM_DOWNLOADS[os].file}`;
