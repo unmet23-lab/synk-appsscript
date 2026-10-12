@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { WhisperModel } from '../interview/whisper-model.mjs';
-import { createPcmBuffer, createWhisperWorkerRuntime, decoderWords, OUTPUT_RATE } from '../interview/whisper-worker.mjs';
+import { createPcmBuffer, createWhisperWorkerRuntime, decoderWords, loadWhisperBackend, OUTPUT_RATE, whisperModelBases } from '../interview/whisper-worker.mjs';
 
 const tick = () => new Promise((resolve) => setImmediate(resolve));
 const deferred = () => { let resolve, reject; const promise = new Promise((yes, no) => { resolve = yes; reject = no; }); return { promise, resolve, reject }; };
@@ -258,4 +258,159 @@ test('a worker inference timeout terminates it and returns an error instead of h
 
 test('worker URLs cannot point to another origin', () => {
   assert.throws(() => new WhisperModel({ workerUrl: 'https://outside.example/worker.mjs' }), /same-origin/);
+});
+
+const LOCAL_MODELS = new URL('../models/', new URL('../interview/whisper-worker.mjs', import.meta.url)).href;
+const BUCKET_MODELS = 'https://storage.googleapis.com/synk-path-media/path/v2/models/83ac9cfcb9b70af3/';
+
+const PROBE = BUCKET_MODELS + 'whisper-base/generation_config.json';
+const HOSTED = { schemaVersion: 1, model: { base: BUCKET_MODELS } };
+// media-hosting.json answers with `body`; the bucket check (HEAD) answers with `head` (a response, an Error, or a function).
+function hostingFetch(body, { ok = true, head = { ok: true, status: 200 }, calls = [] } = {}) {
+  return async (url, init = {}) => {
+    calls.push(`${init.method || 'GET'} ${url}`);
+    if (/\/interview\/media-hosting\.json$/.test(url)) { assert.equal(init.cache, 'no-store'); return { ok, json: async () => body }; }
+    assert.equal(url, PROBE);
+    assert.deepEqual([init.method, init.credentials, init.cache], ['HEAD', 'omit', 'no-store']);
+    if (head instanceof Error) throw head;
+    return typeof head === 'function' ? head() : head;
+  };
+}
+const fakeTimers = () => { const pending = new Map(); let next = 0; return { pending, setTimeout(callback) { pending.set(++next, callback); return next; }, clearTimeout(id) { pending.delete(id); }, fire() { for (const [id, callback] of [...pending]) { pending.delete(id); callback(); } } }; };
+const cacheWith = (urls) => ({ async open(name) { assert.equal(name, 'transformers-cache'); return { async match(url) { return urls.includes(url) ? { ok: true } : undefined; } }; } });
+
+test('the public build tries the bucket copy of the model first and always keeps this origin behind it', async () => {
+  const calls = [];
+  assert.deepEqual(await whisperModelBases({ fetchImpl: hostingFetch(HOSTED, { calls }), cacheStorage: cacheWith([]) }), [BUCKET_MODELS, LOCAL_MODELS]);
+  assert.deepEqual(calls, ['GET ' + new URL('../interview/media-hosting.json', import.meta.url).href, 'HEAD ' + PROBE]);
+  for (const [name, fetchImpl] of [
+    ['local build (model: null)', hostingFetch({ schemaVersion: 1, model: null })],
+    ['missing hosting file', hostingFetch({}, { ok: false })],
+    ['network failure', async () => { throw new TypeError('Failed to fetch'); }],
+    ['broken json', async () => ({ ok: true, json: async () => { throw new SyntaxError('bad json'); } })],
+    ['another bucket', hostingFetch({ model: { base: 'https://storage.googleapis.com/another-bucket/path/models/83ac9cfcb9b70af3/' } })],
+    ['another host', hostingFetch({ model: { base: 'https://outside.example/synk-path-media/path/models/83ac9cfcb9b70af3/' } })],
+    ['retired bucket', hostingFetch({ model: { base: 'https://storage.googleapis.com/synk-public-media/path/models/83ac9cfcb9b70af3/' } })],
+    ['not a revision folder', hostingFetch({ model: { base: 'https://storage.googleapis.com/synk-path-media/path/v2/models/' } })],
+    // The first upload (public cache) stays readable from Google's edge cache after the cap closes the bucket.
+    ['pre-v2 public-cache folder', hostingFetch({ model: { base: 'https://storage.googleapis.com/synk-path-media/path/models/83ac9cfcb9b70af3/' } })],
+    ['query string', hostingFetch({ model: { base: BUCKET_MODELS + '?x=1' } })],
+  ]) assert.deepEqual(await whisperModelBases({ fetchImpl, cacheStorage: cacheWith([]) }), [LOCAL_MODELS], name);
+});
+
+test('a closed, failing or silent model bucket sends a new visitor straight to this origin', async () => {
+  for (const [name, head, expire] of [
+    ['403 after the monthly cap', { ok: false, status: 403 }, false],
+    ['missing optional file (404)', { ok: false, status: 404 }, false],
+    ['CORS or network failure', new TypeError('Failed to fetch'), false],
+    ['no answer before the timeout', () => new Promise(() => {}), true],
+  ]) {
+    const timers = fakeTimers();
+    const pending = whisperModelBases({ fetchImpl: hostingFetch(HOSTED, { head }), cacheStorage: cacheWith([]), timers });
+    if (expire) { for (let i = 0; i < 50 && !timers.pending.size; i++) await new Promise((resolve) => setImmediate(resolve)); assert.equal(timers.pending.size, 1, name); timers.fire(); }
+    assert.deepEqual(await pending, [LOCAL_MODELS], name);
+    assert.equal(timers.pending.size, 0, name);
+  }
+});
+
+test('a browser that already keeps the bucket copy uses it without asking the bucket, even while it is closed', async () => {
+  const calls = [];
+  assert.deepEqual(await whisperModelBases({ fetchImpl: hostingFetch(HOSTED, { calls, head: { ok: false, status: 403 } }), cacheStorage: cacheWith([PROBE]) }), [BUCKET_MODELS, LOCAL_MODELS]);
+  assert.equal(calls.filter((call) => call.startsWith('HEAD')).length, 0);
+  // Cache Storage refused (private mode, storage policy): fall back to the HEAD check.
+  const refused = { async open() { throw new DOMException('denied', 'SecurityError'); } };
+  assert.deepEqual(await whisperModelBases({ fetchImpl: hostingFetch(HOSTED), cacheStorage: refused }), [BUCKET_MODELS, LOCAL_MODELS]);
+  assert.deepEqual(await whisperModelBases({ fetchImpl: hostingFetch(HOSTED), cacheStorage: undefined }), [BUCKET_MODELS, LOCAL_MODELS]);
+});
+
+function fakeTransformers(failing) {
+  const env = { backends: { onnx: { wasm: {} } } }, attempts = [];
+  class LogitsProcessor {}
+  class LogitsProcessorList extends Array {}
+  const pipeline = async (task, model, options) => {
+    attempts.push({ task, model, base: env.localModelPath, localOnly: options.local_files_only });
+    if (failing.has(env.localModelPath)) throw new Error('Forbidden access to file: ' + env.localModelPath);
+    return { dispose() {} };
+  };
+  return { transformers: { pipeline, env, LogitsProcessor, LogitsProcessorList }, attempts, env };
+}
+
+test('a worker loads one model folder: a bucket-copy failure is marked for a fresh worker, never retried in place', async () => {
+  // After a failed session ONNX Runtime refuses every later session in the same worker (10-13 browser run:
+  // the same-origin retry failed with the bucket attempt's "protobuf parsing failed").
+  const closed = fakeTransformers(new Set([BUCKET_MODELS]));
+  await assert.rejects(loadWhisperBackend(() => {}, { base: BUCKET_MODELS, transformers: closed.transformers }), (error) => error.hostedModel === true && /Forbidden access/.test(error.message));
+  assert.deepEqual(closed.attempts.map((attempt) => attempt.base), [BUCKET_MODELS]);
+  assert.ok(closed.attempts.every((attempt) => attempt.model === 'whisper-base' && attempt.localOnly === true));
+  assert.equal(closed.env.allowRemoteModels, false, 'the model hub is never contacted');
+
+  const local = fakeTransformers(new Set([BUCKET_MODELS]));
+  const backend = await loadWhisperBackend(() => {}, { localOnly: true, transformers: local.transformers });
+  assert.equal(typeof backend.decode, 'function');
+  assert.equal(backend.hosted, false);
+  assert.deepEqual(local.attempts.map((attempt) => attempt.base), [LOCAL_MODELS]);
+
+  const open = fakeTransformers(new Set());
+  assert.equal((await loadWhisperBackend(() => {}, { base: BUCKET_MODELS, transformers: open.transformers })).hosted, true);
+
+  const broken = fakeTransformers(new Set([LOCAL_MODELS]));
+  await assert.rejects(loadWhisperBackend(() => {}, { localOnly: true, transformers: broken.transformers }), (error) => !error.hostedModel && /Forbidden access/.test(error.message));
+});
+
+test('the worker runtime marks bucket-copy load failures for a retry (not warmup failures), and passes localOnly through', async () => {
+  const runtime = (loadBackend) => { const events = []; return { events, runtime: createWhisperWorkerRuntime({ postMessage: (event) => events.push(event), loadBackend }) }; };
+  let seen;
+  const hostedLoad = runtime(async (progress, options) => { seen = options; throw Object.assign(new Error('Forbidden access to file'), { hostedModel: true }); });
+  await hostedLoad.runtime.handle({ action: 'load' });
+  assert.deepEqual(seen, { localOnly: false });
+  assert.deepEqual(hostedLoad.events.at(-1), { event: 'error', error: 'Forbidden access to file', fallback: true });
+  const hostedWarmup = runtime(async () => ({ hosted: true, async warmup() { throw new Error('bad generation config'); }, async dispose() {} }));
+  await hostedWarmup.runtime.handle({ action: 'load' });
+  // Same bytes as this site's copy (upload receipt): a retry would only download the model again before the same error.
+  assert.deepEqual(hostedWarmup.events.at(-1), { event: 'error', error: 'bad generation config' });
+  const localLoad = runtime(async (progress, options) => { seen = options; throw new Error('local copy broken'); });
+  await localLoad.runtime.handle({ action: 'load', localOnly: true });
+  assert.deepEqual(seen, { localOnly: true });
+  assert.deepEqual(localLoad.events.at(-1), { event: 'error', error: 'local copy broken' });
+});
+
+test('a bucket-copy failure starts exactly one fresh worker for this site\'s copy, and the replaced worker is ignored', () => {
+  const workers = [];
+  class Worker {
+    messages = []; terminated = false;
+    constructor(url, options) { workers.push(this); this.url = url; this.options = options; }
+    postMessage(data) { this.messages.push(data); }
+    terminate() { this.terminated = true; }
+    send(data) { this.onmessage({ data }); }
+  }
+  const errors = [], loads = [];
+  const model = new WhisperModel({ Worker });
+  model.on('error', (event) => errors.push(event.error)); model.on('load', (event) => loads.push(event));
+  assert.deepEqual(workers[0].messages, [{ action: 'load' }]);
+  workers[0].send({ event: 'error', error: 'Forbidden access to file', fallback: true });
+  assert.equal(workers.length, 2); assert.equal(workers[0].terminated, true);
+  assert.equal(workers[1].url, workers[0].url); assert.deepEqual(workers[1].options, workers[0].options);
+  assert.deepEqual(workers[1].messages, [{ action: 'load', localOnly: true }]);
+  assert.deepEqual(errors, [], 'the retry is not reported as a failure');
+  workers[0].send({ event: 'load', result: true }); workers[0].onerror({ message: 'late' });
+  assert.equal(model.ready, false, 'messages from the replaced worker are ignored'); assert.deepEqual(errors, []);
+  workers[1].send({ event: 'load', result: true });
+  assert.equal(model.ready, true); assert.equal(loads.length, 1);
+  new model.KaldiRecognizer(16000);
+  assert.equal(workers[1].messages.at(-1).action, 'create');
+  model.dispose(); assert.equal(workers[1].terminated, true);
+
+  for (const [name, first, second] of [
+    ['this site\'s copy fails too', { event: 'error', error: 'Forbidden', fallback: true }, { event: 'error', error: 'local copy broken', fallback: true }],
+    ['a failure that is not about the bucket copy', { event: 'error', error: 'wasm missing' }, null],
+  ]) {
+    workers.length = 0;
+    const failing = new WhisperModel({ Worker }), failures = [];
+    failing.on('error', (event) => failures.push(event.error));
+    workers[0].send(first);
+    if (second) workers[1].send(second);
+    assert.equal(workers.length, second ? 2 : 1, name);
+    assert.deepEqual(failures, [second ? 'local copy broken' : 'wasm missing'], name);
+    assert.equal(workers.at(-1).terminated, true, name);
+  }
 });

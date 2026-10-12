@@ -1,0 +1,6 @@
+2.7s probe []
+8.0s start clicked
+20.0s question playing after 12313ms from storage.googleapis.com
+20.4s worker whisper-worker.mjs
+21.9s worker whisper-worker.mjs
+29.5s model {"ok":true,"localOnly":true,"files":["preprocessor_config.json","tokenizer_config.json","config.json","tokenizer.json","onnx/decoder_model_merged_quantized.onnx","onnx/encoder_model_quantized.onnx","generation_config.json"],"ms":9137}

@@ -6,7 +6,8 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { PAGES_OUTPUT, PAGES_CSP, pagesDocument, pagesRuntimeFile, preparePagesInterview, verifyPagesInterview } from '../../../tools/package-path-interview.mjs';
 import { evaluateFilmReadiness, resolveFilmClipUrl } from '../interview/film-player.mjs';
-import { mediaPublicUrl } from '../../../tools/upload-path-media.mjs';
+import { mediaPublicUrl, modelFiles } from '../../../tools/upload-path-media.mjs';
+import { whisperModelBases } from '../interview/whisper-worker.mjs';
 import { CLIPS, selectRehearsalMedia } from '../interview/film/rehearsal-session.mjs';
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const sourceRoot = path.join(repo, 'experiences/path-vr');
@@ -22,9 +23,10 @@ test('Pages meta policy precedes resource loading and does not grant parent eval
   assert.match(PAGES_CSP, /worker-src 'self'/);
   assert.match(PAGES_CSP, /'wasm-unsafe-eval'/);
   assert.doesNotMatch(PAGES_CSP, /(?:^|\s)'unsafe-eval'|frame-ancestors/);
-  // Films alone may come from the media bucket; scripts, workers and fetches stay same-origin.
-  assert.match(PAGES_CSP, /media-src 'self' blob: https:\/\/storage\.googleapis\.com;/);
-  assert.doesNotMatch(PAGES_CSP.replace(/media-src[^;]*;/, ''), /googleapis/);
+  // Films and the speech model files alone may come from the PATH media bucket path; scripts and workers stay same-origin.
+  assert.match(PAGES_CSP, /media-src 'self' blob: https:\/\/storage\.googleapis\.com\/synk-path-media\/path\/;/);
+  assert.match(PAGES_CSP, /connect-src 'self' blob: https:\/\/storage\.googleapis\.com\/synk-path-media\/path\/;/);
+  assert.doesNotMatch(PAGES_CSP.replace(/(?:media|connect)-src[^;]*;/g, ''), /googleapis/);
   assert.equal(output.replace(/<meta http-equiv="Content-Security-Policy"[^>]*><meta name="referrer"[^>]*>/, ''), input);
 });
 
@@ -39,7 +41,7 @@ test('Pages transform refuses ambiguous or pre-existing policy and development p
 test('public manifest preserves exact continuity, clip hashes and both qualities', async () => {
   const source = await readFile(path.join(sourceRoot, 'interview/film/strict-manifest.json'));
   const original = JSON.parse(source), { data, transform } = pagesRuntimeFile('interview/film/strict-manifest.json', source), manifest = JSON.parse(data);
-  assert.equal(transform, 'public-runtime-video-manifest-v2');
+  assert.equal(transform, 'public-runtime-video-manifest-v3');
   assert.equal(evaluateFilmReadiness(manifest, Object.values(CLIPS)).ready, true);
   assert.match(manifest.notice, /생성 영상·이미지/);
   assert.match(manifest.notice, /720p.*4K/);
@@ -55,11 +57,14 @@ test('public manifest preserves exact continuity, clip hashes and both qualities
   for (const clip of manifest.clips) {
     const old = original.clips.find((row) => row.id === clip.id);
     for (const key of ['sha256', 'dialogue', 'answerStartSeconds', 'speechEndSeconds', 'safeExitWindowsSeconds', 'playbackStartSeconds']) assert.deepEqual(clip[key], old[key], key);
-    // Each film points at the media bucket object named by the same file and hash (tools/upload-path-media.mjs).
+    // Each film points at the media bucket object named by the same file and hash (tools/upload-path-media.mjs),
+    // and keeps the published copy as its fallback for when the monthly cap closes the bucket.
     assert.equal(clip.src, mediaPublicUrl(path.posix.basename(old.src), old.sha256));
+    assert.equal(clip.fallbackSrc, old.src);
     for (const quality of ['4k', '720p']) {
       assert.equal(clip.variants[quality].sha256, old.variants[quality].sha256);
       assert.equal(clip.variants[quality].src, mediaPublicUrl(path.posix.basename(old.variants[quality].src), old.variants[quality].sha256));
+      assert.equal(clip.variants[quality].fallbackSrc, old.variants[quality].src);
     }
     for (const key of ['headHoldMs', 'tailHoldMs', 'validated']) assert.equal(clip.transition[key], old.transition[key]);
   }
@@ -69,7 +74,7 @@ test('Pages overlay is minimal, deterministic and source-audited', async () => {
   const first = await preparePagesInterview(), reportBytes = await readFile(first.manifest), report = JSON.parse(reportBytes);
   const verification = await verifyPagesInterview();
   assert.equal(verification.checksumFiles, first.files);
-  assert.equal(verification.transformedDocuments, 2);
+  assert.equal(verification.transformedDocuments, 3);
   assert.equal(verification.preservedIntroduction, true);
   assert.equal(first.deployed, false);
   assert.equal(report.entrypoint, '/path/interview/film/rehearsal.html');
@@ -105,10 +110,18 @@ test('Pages overlay is minimal, deterministic and source-audited', async () => {
   const manifest = JSON.parse(await readFile(path.join(first.publicDirectory, 'path/interview/film/strict-manifest.json')));
   for (const clip of manifest.clips) for (const media of [clip, ...Object.values(clip.variants)]) {
     const url = resolveFilmClipUrl(media.src, { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' });
-    assert.ok(url?.startsWith(`https://storage.googleapis.com/synk-public-media/path/interview/film/${media.sha256.slice(0, 16)}/`), media.src);
-    // The same bytes stay published beside the page, so tabs opened on the previous manifest keep playing.
-    assert.ok(published.has('path/assets/interview/film/' + path.posix.basename(new URL(url).pathname)), media.src);
+    assert.ok(url?.startsWith(`https://storage.googleapis.com/synk-path-media/path/v2/interview/film/${media.sha256.slice(0, 16)}/`), media.src);
+    // The same bytes stay published beside the page: the fallback when the bucket is closed.
+    const fallback = resolveFilmClipUrl(media.fallbackSrc, { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' });
+    assert.equal(fallback, 'https://synk.im/path/assets/interview/film/' + path.posix.basename(new URL(url).pathname), media.src);
+    const copy = report.files.find((row) => row.file === new URL(fallback).pathname.slice(1));
+    assert.equal(copy?.sha256, media.sha256, media.fallbackSrc);
   }
+  // The speech model is named from the bucket too, with the published models/ copy behind it.
+  const hosting = JSON.parse(await readFile(path.join(first.publicDirectory, 'path/interview/media-hosting.json')));
+  assert.deepEqual(hosting, { schemaVersion: 1, model: { base: modelFiles().base } });
+  assert.deepEqual(await whisperModelBases({ cacheStorage: undefined, fetchImpl: async (url, init = {}) => init.method === 'HEAD' ? { ok: url === hosting.model.base + 'whisper-base/generation_config.json' } : { ok: true, json: async () => hosting } }),
+    [hosting.model.base, new URL('../models/', new URL('../interview/whisper-worker.mjs', import.meta.url)).href]);
   const second = await preparePagesInterview();
   assert.equal(second.manifestSHA256, first.manifestSHA256);
   assert.deepEqual(await readFile(second.manifest), reportBytes);

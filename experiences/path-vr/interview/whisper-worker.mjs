@@ -1,9 +1,39 @@
-/** Local Korean Whisper inference. No audio requests, remote models or WebGPU. */
+/** Local Korean Whisper inference. Audio never leaves the device; no model hub requests or WebGPU.
+ * The model files come from this site, or in the public build first from the PATH media bucket. */
 export const OUTPUT_RATE = 16_000;
 export const MAX_AUDIO_SECONDS = 30;
 export const PARTIAL_INTERVAL_SECONDS = 8;
 const MAX_GENERATED_TOKENS = 384;
 const ENGINE = 'whisper-base';
+const LOCAL_MODELS = new URL('../models/', import.meta.url).href;
+// tools/upload-path-media.mjs stores each model revision under its own hash, so only this shape is accepted.
+const HOSTED_MODELS = /^https:\/\/storage\.googleapis\.com\/synk-path-media\/path\/v2\/models\/[0-9a-f]{16}\/$/;
+
+/** Model folders in the order to try. The public build's media-hosting.json names the bucket copy
+ * (GitHub Pages empties its cache on every deploy); this origin's copy always follows, so a bucket
+ * closed by the monthly cap (tools/path-media-cap/) or unreachable still leaves a working model
+ * (one folder per worker: whisper-model.mjs starts a fresh worker for this origin's copy).
+ * A browser that already keeps the bucket copy (transformers.js Cache Storage) uses it even while the
+ * bucket is closed. Otherwise one HEAD request, like the films' check, must answer within timeoutMs:
+ * a closed, missing or silent bucket goes straight to this origin instead of stalling the model load. */
+export async function whisperModelBases({ fetchImpl = globalThis.fetch, cacheStorage = globalThis.caches, timers = globalThis, timeoutMs = 5000,
+  hostingUrl = new URL('./media-hosting.json', import.meta.url).href } = {}) {
+  let base = null;
+  try {
+    const response = await fetchImpl(hostingUrl, { cache: 'no-store' });
+    const named = response.ok ? (await response.json())?.model?.base : null;
+    if (typeof named === 'string' && HOSTED_MODELS.test(named)) base = named;
+  } catch { /* The same-origin copy below still loads. */ }
+  if (!base) return [LOCAL_MODELS];
+  // generation_config.json is the one file transformers.js may silently skip, so it is the one checked.
+  const probe = base + 'whisper-base/generation_config.json';
+  try { if (await (await cacheStorage?.open('transformers-cache'))?.match(probe)) return [base, LOCAL_MODELS]; } catch { /* No cache: ask the bucket. */ }
+  let timer;
+  const expired = new Promise((resolve) => { timer = timers.setTimeout(() => resolve(null), timeoutMs); });
+  const response = await Promise.race([Promise.resolve().then(() => fetchImpl(probe, { method: 'HEAD', mode: 'cors', credentials: 'omit', cache: 'no-store' })).catch(() => null), expired]);
+  timers.clearTimeout(timer);
+  return response?.ok ? [base, LOCAL_MODELS] : [LOCAL_MODELS];
+}
 
 /** Streaming resampling with a low-pass FIR when reducing the sample rate.
  * The worklet sends signed-16-bit-range floats, not normalized float PCM.
@@ -119,20 +149,31 @@ export function decoderWords(raw, ids, observations, tokenizer) {
   });
 }
 
-export async function loadWhisperBackend(progress) {
-  const { pipeline, env, LogitsProcessor, LogitsProcessorList } = await import('../vendor/transformers/transformers.min.js');
+export async function loadWhisperBackend(progress, { base, transformers, localOnly = false } = {}) {
+  const { pipeline, env, LogitsProcessor, LogitsProcessorList } = transformers || await import('../vendor/transformers/transformers.min.js');
   env.allowRemoteModels = false; env.allowLocalModels = true;
-  env.localModelPath = new URL('../models/', import.meta.url).href;
   env.useBrowserCache = true; env.useFSCache = false;
   env.backends.onnx.wasm.numThreads = 1; env.backends.onnx.wasm.proxy = false;
   env.backends.onnx.wasm.wasmPaths = new URL('../vendor/transformers/', import.meta.url).href;
-  const pipe = await pipeline('automatic-speech-recognition', 'whisper-base', {
-    device: 'wasm', dtype: 'q8', local_files_only: true,
-    progress_callback(event) {
-      if (event.status === 'progress') progress({ phase: 'download', file: event.file, loaded: event.loaded, total: event.total });
-      else if (event.status === 'initiate' || event.status === 'ready') progress({ phase: 'initialize' });
-    },
-  });
+  // One folder per worker: after a failed session ONNX Runtime refuses later sessions in this worker,
+  // so a failure on the bucket copy is reported (hostedModel) and a fresh worker loads LOCAL_MODELS.
+  const folder = base || (localOnly ? LOCAL_MODELS : (await whisperModelBases())[0]);
+  const hosted = folder !== LOCAL_MODELS;
+  // transformers.js joins localModelPath with 'whisper-base/<file>' and fetches it without credentials.
+  env.localModelPath = folder;
+  let pipe;
+  try {
+    pipe = await pipeline('automatic-speech-recognition', 'whisper-base', {
+      device: 'wasm', dtype: 'q8', local_files_only: true,
+      progress_callback(event) {
+        if (event.status === 'progress') progress({ phase: 'download', file: event.file, loaded: event.loaded, total: event.total });
+        else if (event.status === 'initiate' || event.status === 'ready') progress({ phase: 'initialize' });
+      },
+    });
+  } catch (error) {
+    if (hosted) throw Object.assign(new Error(error?.message || String(error)), { hostedModel: true });
+    throw error;
+  }
   class Observe extends LogitsProcessor {
     constructor() { super(); this.values = []; }
     _call(ids, logits) {
@@ -162,7 +203,7 @@ export async function loadWhisperBackend(progress) {
       for (const tensor of Object.values(inputs)) tensor?.dispose?.();
     }
   }
-  return { decode, warmup: () => decode(new Float32Array(OUTPUT_RATE), true), dispose: () => pipe.dispose() };
+  return { decode, warmup: () => decode(new Float32Array(OUTPUT_RATE), true), dispose: () => pipe.dispose(), hosted };
 }
 
 /** Dependency seams exercise PCM ordering and inference ownership without a model download. */
@@ -231,14 +272,21 @@ export function createWhisperWorkerRuntime({ postMessage, loadBackend = loadWhis
       if (disposed) return;
       if (data.action === 'load') {
         if (!loading) loading = (async () => {
+          let created = null;
           try {
-            const created = await loadBackend((event) => emit('progress', event));
+            created = await loadBackend((event) => emit('progress', event), { localOnly: data.localOnly === true });
             if (disposed) { await created.dispose?.(); return; }
             backend = created;
             emit('progress', { phase: 'warmup' }); emit('inference-start');
             await backend.warmup();
             emit('inference-end'); emit('load', { result: true });
-          } catch (error) { emit('inference-end'); emit('error', { error: error?.message || String(error) }); }
+          } catch (error) {
+            emit('inference-end');
+            // fallback: loading the bucket copy failed; whisper-model.mjs retries this site's copy in a new worker. A warmup
+            // failure is not marked: the bytes match this site's copy (upload receipt) and the HEAD check covers the one
+            // optional file, so a retry would only download the model again before the same error.
+            emit('error', { error: error?.message || String(error), ...(error?.hostedModel ? { fallback: true } : {}) });
+          }
         })();
         await loading;
       } else if (data.action === 'create') {

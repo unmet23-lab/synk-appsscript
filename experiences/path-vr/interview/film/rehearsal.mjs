@@ -1,4 +1,4 @@
-import { createFilmPlayer, evaluateFilmReadiness } from '../film-player.mjs';
+import { chooseFilmSources, createFilmPlayer, evaluateFilmReadiness } from '../film-player.mjs';
 import { createVoiceInput, voiceError, mergeVoiceResults } from '../voice.mjs';
 import { WhisperModel } from '../whisper-model.mjs';
 import { assessVoiceAnswer, replaceVoiceSpan, rebaseConfirmedSpans } from './voice-assessment.mjs';
@@ -208,7 +208,7 @@ async function loadManifest() {
   if (!manifestLoad) manifestLoad = (async () => {
     const response = await fetch('./strict-manifest.json', { cache: 'no-store' });
     if (!response.ok) throw new Error('면접 영상 목록을 불러오지 못했습니다.');
-    const source = await response.json();
+    const source = await chooseFilmSources(await response.json());
     const ready = evaluateFilmReadiness(source, Object.values(CLIPS));
     if (!ready.ready) throw new Error('면접 영상의 제작·검수가 아직 완료되지 않았습니다.');
     manifest = source;

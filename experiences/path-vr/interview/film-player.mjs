@@ -10,7 +10,7 @@ const ORIGIN_FALLBACK = 'https://path.invalid/interview/';
 // Public builds serve the films from the PATH media bucket (tools/upload-path-media.mjs) because
 // GitHub Pages empties its cache on every site deploy. Only this fixed https prefix is accepted
 // besides the page's own origin; the bucket answers synk.im with CORS so the room can draw frames.
-export const TRUSTED_FILM_PREFIXES = Object.freeze(['https://storage.googleapis.com/synk-public-media/path/']);
+export const TRUSTED_FILM_PREFIXES = Object.freeze(['https://storage.googleapis.com/synk-path-media/path/']);
 const abortError = () => new DOMException('영상 작업이 취소되었습니다.', 'AbortError');
 function filmError(code, message) { const error = new Error(message); error.name = 'FilmPlaybackError'; error.code = code; return error; }
 const playbackStart = (clip) => clip.playbackStartSeconds === undefined ? 0 : clip.playbackStartSeconds;
@@ -37,6 +37,26 @@ export function resolveFilmClipUrl(src, { moduleUrl = import.meta.url, pageUrl =
   } catch { return null; }
 }
 const clipUrl = resolveFilmClipUrl;
+
+/** The public manifest pairs each bucket file with `fallbackSrc`, its copy on this origin. One HEAD
+ * request decides for the whole session: when the monthly cap has closed the bucket
+ * (tools/path-media-cap/) or it does not answer in time, every clip plays from this origin. */
+export async function chooseFilmSources(manifest, { fetchImpl = globalThis.fetch, timeoutMs = 5000, timers = globalThis } = {}) {
+  const clips = Array.isArray(manifest?.clips) ? manifest.clips : [];
+  const probe = clips.flatMap((clip) => [clip, ...Object.values(clip?.variants || {})])
+    .find((media) => typeof media?.fallbackSrc === 'string' && typeof media.src === 'string' && TRUSTED_FILM_PREFIXES.some((prefix) => media.src.startsWith(prefix)));
+  if (!probe) return manifest;
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  let timer;
+  const expired = new Promise((resolve) => { timer = timers.setTimeout(() => { controller?.abort(); resolve(null); }, timeoutMs); });
+  const response = await Promise.race([Promise.resolve().then(() => fetchImpl(probe.src, { method: 'HEAD', mode: 'cors', credentials: 'omit', cache: 'no-store', signal: controller?.signal })).catch(() => null), expired]);
+  timers.clearTimeout(timer);
+  if (response?.ok) return manifest;
+  const local = (media) => typeof media?.fallbackSrc === 'string' ? { ...media, src: media.fallbackSrc } : media;
+  return { ...manifest, clips: clips.map((clip) => clip?.variants
+    ? { ...local(clip), variants: Object.fromEntries(Object.entries(clip.variants).map(([quality, media]) => [quality, local(media)])) }
+    : local(clip)) };
+}
 
 export function evaluateFilmReadiness(manifest, requiredIds) {
   const errors = [], missing = [];

@@ -1,0 +1,332 @@
+{
+ "expect": "open",
+ "quality": "720p",
+ "probe": [],
+ "startToQuestionMs": 12313,
+ "playingFrom": [
+  "storage.googleapis.com"
+ ],
+ "model": {
+  "ok": true,
+  "localOnly": true,
+  "files": [
+   "preprocessor_config.json",
+   "tokenizer_config.json",
+   "config.json",
+   "tokenizer.json",
+   "onnx/decoder_model_merged_quantized.onnx",
+   "onnx/encoder_model_quantized.onnx",
+   "generation_config.json"
+  ],
+  "ms": 9137
+ },
+ "ok": true,
+ "network": {
+  "page HEAD storage.googleapis.com 200": 2,
+  "failed HEAD storage.googleapis.com net::ERR_ABORTED": 2,
+  "page GET storage.googleapis.com 206": 13,
+  "failed GET storage.googleapis.com net::ERR_ABORTED": 8,
+  "page GET storage.googleapis.com 200": 8,
+  "page GET storage.googleapis.com 403": 1,
+  "page GET synk.im 200": 7
+ },
+ "modelHosts": [
+  "storage.googleapis.com 200",
+  "storage.googleapis.com net::ERR_ABORTED",
+  "storage.googleapis.com 403",
+  "synk.im 200"
+ ],
+ "filmHosts": [
+  "storage.googleapis.com 206",
+  "storage.googleapis.com net::ERR_ABORTED"
+ ],
+ "net": [
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "5d1680de4b5c7234/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "5d1680de4b5c7234/strict-followup-experience-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "5d1680de4b5c7234/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "5d1680de4b5c7234/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "d2853c0c84408e45/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "d2853c0c84408e45/strict-followup-plan-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "d2853c0c84408e45/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "d2853c0c84408e45/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "5d1680de4b5c7234/strict-followup-experience-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "c7b71793b8c646f5/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "c7b71793b8c646f5/strict-question-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "c7b71793b8c646f5/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "c7b71793b8c646f5/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "d2853c0c84408e45/strict-followup-plan-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "10a9d1ad6b07c701/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "10a9d1ad6b07c701/strict-listening-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "10a9d1ad6b07c701/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "10a9d1ad6b07c701/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/preprocessor_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "onnx/decoder_model_merged_quantized.onnx",
+   "status": 403
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "onnx/encoder_model_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/preprocessor_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "onnx/encoder_model_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "10a9d1ad6b07c701/strict-listening-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "onnx/decoder_model_merged_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "87324cbe873db3ff/strict-listen-plan-tail-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "c7b71793b8c646f5/strict-question-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  }
+ ]
+}

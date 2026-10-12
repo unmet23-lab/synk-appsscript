@@ -1,0 +1,39 @@
+0.3s REQ GET SITE:interview/whisper-model.mjs
+0.6s REQ HEAD GCS:path/v2/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4
+0.6s REQ GET SITE:interview/whisper-worker.mjs
+0.6s WORKER whisper-worker.mjs
+0.7s REQ GET SITE:interview/media-hosting.json
+0.7s RES 200 SITE:interview/media-hosting.json
+0.7s REQ HEAD GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/generation_config.json
+1.7s RES 200 GCS:path/v2/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4
+1.7s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/generation_config.json
+1.7s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer.json
+1.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer_config.json
+1.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/config.json
+1.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/preprocessor_config.json
+2.0s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer.json
+3.8s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/config.json
+3.8s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer_config.json
+3.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/onnx/encoder_model_quantized.onnx
+3.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/onnx/decoder_model_merged_quantized.onnx
+3.8s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/generation_config.json
+3.8s RES 403 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/onnx/decoder_model_merged_quantized.onnx
+4.0s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/preprocessor_config.json
+4.0s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer.json
+4.0s REQ GET GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer_config.json
+4.0s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/generation_config.json
+4.0s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/onnx/encoder_model_quantized.onnx
+5.1s REQ GET SITE:interview/whisper-worker.mjs
+5.1s WORKER whisper-worker.mjs
+5.1s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer_config.json
+5.1s RES 200 GCS:path/v2/models/83ac9cfcb9b70af3/whisper-base/tokenizer.json
+5.1s WORKER closed
+5.3s REQ GET SITE:models/whisper-base/tokenizer.json
+5.3s REQ GET SITE:models/whisper-base/tokenizer_config.json
+5.3s REQ GET SITE:models/whisper-base/config.json
+5.3s REQ GET SITE:models/whisper-base/preprocessor_config.json
+5.6s REQ GET SITE:models/whisper-base/onnx/encoder_model_quantized.onnx
+5.7s REQ GET SITE:models/whisper-base/onnx/decoder_model_merged_quantized.onnx
+5.9s REQ GET SITE:models/whisper-base/generation_config.json
+14.7s RESULT {"ok":true,"localOnly":true,"ms":14149,"hasSpawn":"function"}
+14.8s WORKER closed

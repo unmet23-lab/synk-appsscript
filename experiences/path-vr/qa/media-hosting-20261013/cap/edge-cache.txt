@@ -1,0 +1,27 @@
+# 구글 가장자리 캐시와 월 한도 차단 (10-13 05:00 KST 무렵, curl, Origin: https://synk.im)
+#
+# 처음 올린 객체(path/interview/…, path/models/…)는 Cache-Control: public, max-age=31536000, immutable 이었다.
+# 버킷 공개를 닫은 뒤에도 구글 가장자리 캐시에 담긴 사본이 그대로 나갔다(Age 헤더). 이러면 자주 받는 파일일수록
+# 한도에 닿아도 계속 전송·청구된다. 그래서 private(브라우저만 1년 저장, 공유 캐시 금지)으로 path/v2/ 아래에 다시 올렸다.
+
+## 같은 generation_config.json을 세 번씩 받기(버킷 열림)
+1 v2(private)  HEAD 200 Cache-Control: private, max-age=31536000, immutable   GET 200
+1 v1(public)   HEAD 200 Cache-Control: public, max-age=31536000, immutable    GET 200
+2 v2(private)  HEAD 200                                                       GET 200
+2 v1(public)   HEAD 200 Age: 3                                                GET 200 Age: 3
+3 v2(private)  HEAD 200                                                       GET 200
+3 v1(public)   HEAD 200 Age: 6                                                GET 200 Age: 6
+
+## 가짜 초과 알림으로 버킷을 닫은 뒤
+v1(public)   HEAD 200 Age: 23   GET 200 Age: 23     ← 캐시가 계속 내준다
+v2(private)  HEAD 403 (권한 전파 몇 초 뒤부터 6번 연속 403)   GET 403
+
+## 그보다 앞서(05:00 전) 브라우저 확인에서 본 증상
+닫힌 버킷인데 v1 작은 모델 파일(config·tokenizer 등)은 캐시에서 200, 큰 onnx 두 개만 403 → 음성 엔진이 403 본문을
+모델로 읽다 실패했고, 같은 작업자에서 synk.im 사본으로 다시 불러도 "protobuf parsing failed"로 실패했다
+(transformers.js 3.8.1은 처음 실패한 세션을 붙들고 이후 세션 생성마다 그 실패를 다시 낸다).
+→ 버킷 사본이 실패하면 whisper-model.mjs가 새 작업자를 띄워 synk.im 사본만 불러오게 했다(model-fresh-worker.txt).
+
+## 속도(이 PC 회선, 같은 시각): 공유 캐시를 꺼도 차이 없음
+720p 2.8MB : v2 0.9~2.6MB/s · v1 1.2~2.1MB/s
+4K 9.9MB   : v2 1.2~2.7MB/s · v1 2.2~2.5MB/s

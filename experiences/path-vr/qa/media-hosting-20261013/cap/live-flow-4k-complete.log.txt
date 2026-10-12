@@ -1,0 +1,9 @@
+4.8s start clicked
+15.9s question-playing reached: {"phase":"question","label":"첫 번째 질문","turn":"1 / 2","status":"면접관의 질문을 들으세요.","vr":"이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":0.55,"paused":false,"op":"1"},{"src":"strict-listening-4k.mp4","t":0,"paused":true
+19.2s answer1 reached: {"phase":"listening","label":"답변 중","turn":"1 / 2","status":"답변 화면을 준비하고 있습니다.","vr":"이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":3.9,"paused":false,"op":"1"},{"src":"strict-listen-plan-tail-4k.mp4","t":0,"pause
+21.0s answer1 submitted
+30.1s answer2 reached: {"phase":"listening","label":"답변 중","turn":"2 / 2","status":"답변 화면을 준비하고 있습니다.","vr":"이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0.5,"paused":true,"op":"0"},{"src":"strict-followup-experience-4k.mp4","t
+30.2s answer2 submitted
+32.5s complete reached: {"phase":"complete","label":"면접 종료","turn":"2 QUESTIONS","status":"면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.","vr":"이 브라우저에서 VR 기기를 찾지 못했습니다. 화면에서 방을 둘러볼 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0.5,"paused":true,"op":"0"},{"src":"strict-followup
+41.7s console warning: THREE.WebGLRenderer: KHR_parallel_shader_compile extension not supported.
+45.9s complete preview captured
