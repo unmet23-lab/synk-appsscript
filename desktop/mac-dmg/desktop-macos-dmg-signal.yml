@@ -1,0 +1,110 @@
+name: SYNK macOS DMG window
+
+# Repackages the published Platform Preview 0.4.3 Mac DMGs with the Signal DMG window.
+# The application bundle is copied byte for byte; only the DMG window and file name change.
+# A build run never publishes. A dispatch with release_from_run publishes the files that run verified.
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        options: [both, arm64, x64]
+        default: both
+      release_from_run:
+        description: 'Publish the verified DMGs of this run id as a prerelease (empty: build only)'
+        type: string
+        default: ''
+      release_tag:
+        type: string
+        default: platform-preview-0.4.3-mac-signal.1-20261013
+  push:
+    branches: [claude/mac-dmg-signal-20261013]
+    paths:
+      - '.github/desktop-preview/mac-dmg-signal/**'
+      - '.github/workflows/desktop-macos-dmg-signal.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  repackage:
+    name: DMG ${{ matrix.arch }}
+    if: ${{ !inputs.release_from_run }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.architecture == 'x64' && '[{"arch":"x64","runner":"macos-15-intel"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15-intel"}]') }}
+    defaults:
+      run:
+        working-directory: .github/desktop-preview
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: .github/desktop-preview/package-lock.json
+      - name: Install pinned build tools
+        run: npm ci --no-audit --no-fund
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - name: Repackage the published DMG with the Signal window
+        run: node mac-dmg-signal/repackage.cjs --arch=${{ matrix.arch }} --shots
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Save the verified DMG and its record
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-macos-dmg-signal-dmg-${{ matrix.arch }}
+          path: .github/desktop-preview/mac-dmg-signal/out/${{ matrix.arch }}/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Save the Finder window screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-macos-dmg-signal-shots-${{ matrix.arch }}
+          path: .github/desktop-preview/mac-dmg-signal/shots/${{ matrix.arch }}/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  release:
+    name: Publish the verified DMGs
+    if: ${{ inputs.release_from_run }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - name: Download the DMGs verified by the build run
+        uses: actions/download-artifact@v8
+        with:
+          pattern: synk-macos-dmg-signal-dmg-*
+          merge-multiple: true
+          path: release-input
+          run-id: ${{ inputs.release_from_run }}
+          github-token: ${{ github.token }}
+      - name: Check the files against their records and write the notes
+        run: node .github/desktop-preview/mac-dmg-signal/release.cjs release-input release-output
+        env:
+          RELEASE_FROM_RUN: ${{ inputs.release_from_run }}
+      - name: Create the prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.release_tag }}
+        run: |
+          gh release create "$TAG" release-output/*.dmg release-output/SHA256SUMS-mac-signal.txt release-output/public-release-manifest.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --prerelease \
+            --title "$(cat release-output/title.txt)" --notes-file release-output/notes.md
