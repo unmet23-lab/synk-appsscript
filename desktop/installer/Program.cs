@@ -36,6 +36,7 @@ namespace Synk.SignalInstaller
                         Application app = new Application();
                         SignalWindow window = new SignalWindow(cache, spec.Version);
                         window.SetInstalled(Directory.Exists(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)));
+                        window.SetInstallLocation(PreviewDirectory(engine, spec), spec.MinFreeBytes);
                         window.InstallRequested += async delegate
                         {
                             window.ShowProgress("설치를 준비합니다", "설치할 수 있는지 확인합니다.", null);
@@ -63,6 +64,18 @@ namespace Synk.SignalInstaller
             }
             catch (Exception error) { MessageBox.Show("설치 화면을 열 수 없습니다.\n" + error.Message, "SYNK 설치", MessageBoxButton.OK, MessageBoxImage.Error); return 1; }
             finally { if (cache != null) try { Directory.Delete(cache, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+        }
+
+        // 준비 화면에 보일 설치 위치. 읽기 전용 확인만 하고, 확인이 막히면(예: SYNK 실행 중) 기본 위치를 보인다.
+        // 실제 설치 때는 엔진이 같은 확인을 다시 하고, 막힌 이유는 그때 실패 화면으로 알린다.
+        static string PreviewDirectory(InstallerEngine engine, InstallSpec spec)
+        {
+            try { return engine.Preflight(); }
+            catch (Exception)
+            {
+                try { return Path.GetFullPath(Environment.ExpandEnvironmentVariables(spec.InstallDirectory)).TrimEnd('\\'); }
+                catch (Exception) { return null; }
+            }
         }
     }
 }

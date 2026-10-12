@@ -1,0 +1,24 @@
+<!doctype html>
+<!-- 설치 창 왼쪽 「플랫폼」 포스터의 바탕 그림. 플랫폼 런처의 포스터 CSS(desktop/renderer/launcher.css .hero·--studio·--grain·.art-cut)를
+     그대로 옮겨 글자 없이 찍는다. 글자(라벨·스티커·큰 한글)는 설치 창이 직접 그린다. 다시 만들 때: node make-poster.cjs -->
+<html lang="ko">
+<meta charset="utf-8">
+<style>
+  html,body{margin:0;background:transparent}
+  :root{
+    --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    --studio:radial-gradient(120% 85% at 28% -10%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 55%,rgba(0,0,0,.1));
+  }
+  /* 플랫폼 기본 사업 색(--face #3D6BC9, launcher.css :root) */
+  .poster{position:relative;isolation:isolate;overflow:hidden;width:308px;height:428px;border-radius:14px;
+    background:var(--studio),#3D6BC9;box-shadow:inset 0 1px 0 rgba(255,255,255,.16)}
+  /* 누끼 물건(흰 펠트 synk)은 제 색 그대로, 그림자를 붙여 −3° 세운다(.art-cut) */
+  .felt{position:absolute;left:50%;top:104px;width:214px;transform:translateX(-50%) rotate(-3deg);
+    filter:drop-shadow(0 22px 26px rgba(0,0,0,.3)) drop-shadow(0 4px 6px rgba(0,0,0,.18))}
+  .grain{position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
+</style>
+<div class="poster" id="poster">
+  <img class="felt" src="../../../docs/디자인/SNS키트/assets/logo-synk-paper.webp" alt="">
+  <div class="grain"></div>
+</div>
+</html>
