@@ -1,0 +1,77 @@
+{
+ "scenario": "flat",
+ "quality": "720p",
+ "width": 390,
+ "overlay": false,
+ "startToQuestionMs": 7083,
+ "roomRequestsBeforeQuestion": 0,
+ "completeAtMs": 23839,
+ "roomRequestsAfterComplete": 12,
+ "ok": true,
+ "requests": [
+  {
+   "t": 24900,
+   "file": "vendor/three.module.js"
+  },
+  {
+   "t": 24976,
+   "file": "vendor/three.core.js"
+  },
+  {
+   "t": 25259,
+   "file": "film/room-reference-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/carpet-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/front-room-extension-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/front-room-wide-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/left-wall-detail-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/right-wall-detail-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/back-wall-detail-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "film/room-poster-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/desk-4k.jpg"
+  },
+  {
+   "t": 25261,
+   "file": "room/ceiling-detail-4k.jpg"
+  }
+ ],
+ "gcs": {
+  "count": 17,
+  "statuses": [
+   206
+  ],
+  "acao": [
+   "https://synk.im"
+  ],
+  "files": [
+   "strict-followup-experience-720p.mp4",
+   "strict-followup-plan-720p.mp4",
+   "strict-question-720p.mp4",
+   "strict-listening-720p.mp4",
+   "strict-listen-plan-tail-720p.mp4"
+  ]
+ }
+}

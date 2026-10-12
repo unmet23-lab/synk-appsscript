@@ -677,3 +677,28 @@ test('same-origin film URLs retain a mounted path without weakening media valida
     for (const invalid of ['https://remote.example/clip.mp4', 'https://user:password@synk.example/clip.mp4', '../assets/clip.mp4#fragment', 'data:video/mp4,clip', '../assets/poster.jpg', '..\\assets\\clip.mp4']) assert.equal(resolveFilmClipUrl(invalid, context), null, invalid);
   }
 });
+
+test('the PATH media bucket is the only other origin a film may come from', () => {
+  const context = { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' };
+  const hosted = 'https://storage.googleapis.com/synk-public-media/path/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4';
+  assert.equal(resolveFilmClipUrl(hosted, context), hosted);
+  for (const invalid of [
+    'http://storage.googleapis.com/synk-public-media/path/interview/film/x/clip.mp4',
+    'https://storage.googleapis.com/another-bucket/path/clip.mp4',
+    'https://storage.googleapis.com/synk-public-media/other/clip.mp4',
+    'https://storage.googleapis.com/synk-public-media/path/../other/clip.mp4',
+    'https://storage.googleapis.com/synk-public-media/path/clip.mp4?alt=media',
+    'https://storage.googleapis.com/synk-public-media/path/clip.mp4#t=1',
+    'https://user@storage.googleapis.com/synk-public-media/path/clip.mp4',
+    'https://storage.googleapis.com.evil.example/synk-public-media/path/clip.mp4',
+    'https://storage.googleapis.com/synk-public-media/path/poster.jpg',
+  ]) assert.equal(resolveFilmClipUrl(invalid, context), null, invalid);
+});
+
+test('films are requested in CORS mode so the room can draw their frames', () => {
+  const env = environment();
+  try {
+    assert.equal(env.videos.length, 2);
+    for (const video of env.videos) assert.equal(video.crossOrigin, 'anonymous');
+  } finally { env.player.dispose(); }
+});

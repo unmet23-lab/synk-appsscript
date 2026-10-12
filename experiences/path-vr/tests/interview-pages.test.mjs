@@ -6,6 +6,7 @@ import { createHash } from 'node:crypto';
 import { fileURLToPath } from 'node:url';
 import { PAGES_OUTPUT, PAGES_CSP, pagesDocument, pagesRuntimeFile, preparePagesInterview, verifyPagesInterview } from '../../../tools/package-path-interview.mjs';
 import { evaluateFilmReadiness, resolveFilmClipUrl } from '../interview/film-player.mjs';
+import { mediaPublicUrl } from '../../../tools/upload-path-media.mjs';
 import { CLIPS, selectRehearsalMedia } from '../interview/film/rehearsal-session.mjs';
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const sourceRoot = path.join(repo, 'experiences/path-vr');
@@ -21,6 +22,9 @@ test('Pages meta policy precedes resource loading and does not grant parent eval
   assert.match(PAGES_CSP, /worker-src 'self'/);
   assert.match(PAGES_CSP, /'wasm-unsafe-eval'/);
   assert.doesNotMatch(PAGES_CSP, /(?:^|\s)'unsafe-eval'|frame-ancestors/);
+  // Films alone may come from the media bucket; scripts, workers and fetches stay same-origin.
+  assert.match(PAGES_CSP, /media-src 'self' blob: https:\/\/storage\.googleapis\.com;/);
+  assert.doesNotMatch(PAGES_CSP.replace(/media-src[^;]*;/, ''), /googleapis/);
   assert.equal(output.replace(/<meta http-equiv="Content-Security-Policy"[^>]*><meta name="referrer"[^>]*>/, ''), input);
 });
 
@@ -35,7 +39,7 @@ test('Pages transform refuses ambiguous or pre-existing policy and development p
 test('public manifest preserves exact continuity, clip hashes and both qualities', async () => {
   const source = await readFile(path.join(sourceRoot, 'interview/film/strict-manifest.json'));
   const original = JSON.parse(source), { data, transform } = pagesRuntimeFile('interview/film/strict-manifest.json', source), manifest = JSON.parse(data);
-  assert.equal(transform, 'public-runtime-video-manifest-v1');
+  assert.equal(transform, 'public-runtime-video-manifest-v2');
   assert.equal(evaluateFilmReadiness(manifest, Object.values(CLIPS)).ready, true);
   assert.match(manifest.notice, /생성 영상·이미지/);
   assert.match(manifest.notice, /720p.*4K/);
@@ -50,8 +54,13 @@ test('public manifest preserves exact continuity, clip hashes and both qualities
   }
   for (const clip of manifest.clips) {
     const old = original.clips.find((row) => row.id === clip.id);
-    for (const key of ['src', 'sha256', 'dialogue', 'answerStartSeconds', 'speechEndSeconds', 'safeExitWindowsSeconds', 'playbackStartSeconds']) assert.deepEqual(clip[key], old[key], key);
-    for (const quality of ['4k', '720p']) assert.equal(clip.variants[quality].sha256, old.variants[quality].sha256);
+    for (const key of ['sha256', 'dialogue', 'answerStartSeconds', 'speechEndSeconds', 'safeExitWindowsSeconds', 'playbackStartSeconds']) assert.deepEqual(clip[key], old[key], key);
+    // Each film points at the media bucket object named by the same file and hash (tools/upload-path-media.mjs).
+    assert.equal(clip.src, mediaPublicUrl(path.posix.basename(old.src), old.sha256));
+    for (const quality of ['4k', '720p']) {
+      assert.equal(clip.variants[quality].sha256, old.variants[quality].sha256);
+      assert.equal(clip.variants[quality].src, mediaPublicUrl(path.posix.basename(old.variants[quality].src), old.variants[quality].sha256));
+    }
     for (const key of ['headHoldMs', 'tailHoldMs', 'validated']) assert.equal(clip.transition[key], old.transition[key]);
   }
 });
@@ -96,7 +105,9 @@ test('Pages overlay is minimal, deterministic and source-audited', async () => {
   const manifest = JSON.parse(await readFile(path.join(first.publicDirectory, 'path/interview/film/strict-manifest.json')));
   for (const clip of manifest.clips) for (const media of [clip, ...Object.values(clip.variants)]) {
     const url = resolveFilmClipUrl(media.src, { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' });
-    assert.ok(published.has(new URL(url).pathname.slice(1)), media.src);
+    assert.ok(url?.startsWith(`https://storage.googleapis.com/synk-public-media/path/interview/film/${media.sha256.slice(0, 16)}/`), media.src);
+    // The same bytes stay published beside the page, so tabs opened on the previous manifest keep playing.
+    assert.ok(published.has('path/assets/interview/film/' + path.posix.basename(new URL(url).pathname)), media.src);
   }
   const second = await preparePagesInterview();
   assert.equal(second.manifestSHA256, first.manifestSHA256);
