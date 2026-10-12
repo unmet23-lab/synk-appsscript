@@ -102,9 +102,19 @@ test('Ctrl+K and / open the search, / is ignored while typing, Escape closes an 
 });
 
 test('arrow characters use the Inter Tight arrow face instead of SUIT chevrons', () => {
-  assert.match(css, /@font-face\{font-family:'SYNK Arrow';src:url\('\.\/assets\/InterTight-Medium\.ttf'\) format\('truetype'\);[^}]*unicode-range:U\+2190-2193;size-adjust:130%\}/);
-  assert.match(css, /--sans:'SYNK Arrow',SUIT,'Inter Tight',system-ui,sans-serif;/);
-  assert.ok(fs.existsSync(new URL('../assets/InterTight-Medium.ttf', import.meta.url)));
+  // The arrow face is the four Inter Tight Medium arrows only (tools/build-platform-fonts.py), not the whole TTF.
+  assert.match(css, /@font-face\{font-family:'SYNK Arrow';src:url\('\.\/assets\/SYNKArrow\.woff2'\) format\('woff2'\);[^}]*unicode-range:U\+2190-2193;size-adjust:130%\}/);
+  assert.match(css, /--sans:'SYNK Arrow','SYNK Sans','Inter Tight',system-ui,sans-serif;/);
+  assert.ok(fs.existsSync(new URL('../assets/SYNKArrow.woff2', import.meta.url)));
+});
+
+test('the platform loads the SUIT screen subset first and the rest only for characters outside it', () => {
+  // SYNK Sans is SUIT renamed for the OFL reserved name. The rest face is declared first and never
+  // claims a screen-subset character, so the screen face is the only font a first view needs.
+  const faces = [...css.matchAll(/@font-face\{font-family:'SYNK Sans';src:url\('\.\/assets\/(SYNKSans-(?:rest|ui)\.woff2)'\)[^}]*unicode-range:([^}]+)\}/g)];
+  assert.deepEqual(faces.map((face) => face[1]), ['SYNKSans-rest.woff2', 'SYNKSans-ui.woff2']);
+  for (const [, file] of faces) assert.ok(fs.existsSync(new URL(`../assets/${file}`, import.meta.url)));
+  assert.doesNotMatch(css, /SUIT-Variable\.woff2|\.ttf'/);
 });
 
 test('phone menu stays reachable while scrolling and the search row scrolls with the page', () => {

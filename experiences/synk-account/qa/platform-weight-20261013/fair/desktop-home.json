@@ -1,0 +1,108 @@
+{
+ "profile": "desktop",
+ "rounds": 5,
+ "runs": {
+  "old": [
+   {
+    "lcp": 6176,
+    "fcp": 4512,
+    "load": 4936,
+    "cssEnd": 1175,
+    "fontEnd": 2905,
+    "kb": 1369
+   },
+   {
+    "lcp": 1340,
+    "fcp": 292,
+    "load": 1280,
+    "cssEnd": 151,
+    "fontEnd": 1244,
+    "kb": 1369
+   },
+   {
+    "lcp": 1308,
+    "fcp": 244,
+    "load": 1268,
+    "cssEnd": 127,
+    "fontEnd": 1239,
+    "kb": 1369
+   },
+   {
+    "lcp": 1292,
+    "fcp": 244,
+    "load": 1247,
+    "cssEnd": 114,
+    "fontEnd": 1221,
+    "kb": 1369
+   },
+   {
+    "lcp": 1300,
+    "fcp": 264,
+    "load": 1259,
+    "cssEnd": 146,
+    "fontEnd": 1236,
+    "kb": 1369
+   }
+  ],
+  "new": [
+   {
+    "lcp": 904,
+    "fcp": 588,
+    "load": 829,
+    "cssEnd": 341,
+    "fontEnd": 601,
+    "kb": 438
+   },
+   {
+    "lcp": 552,
+    "fcp": 268,
+    "load": 511,
+    "cssEnd": 136,
+    "fontEnd": 370,
+    "kb": 438
+   },
+   {
+    "lcp": 728,
+    "fcp": 404,
+    "load": 673,
+    "cssEnd": 159,
+    "fontEnd": 638,
+    "kb": 438
+   },
+   {
+    "lcp": 588,
+    "fcp": 272,
+    "load": 542,
+    "cssEnd": 165,
+    "fontEnd": 529,
+    "kb": 438
+   },
+   {
+    "lcp": 556,
+    "fcp": 256,
+    "load": 505,
+    "cssEnd": 140,
+    "fontEnd": 467,
+    "kb": 438
+   }
+  ]
+ },
+ "summary": {
+  "old": {
+   "fcp": 264,
+   "lcp": 1308,
+   "load": 1268,
+   "kb": 1369,
+   "cssEnd": 146,
+   "fontEnd": 1239
+  },
+  "new": {
+   "fcp": 272,
+   "lcp": 588,
+   "load": 542,
+   "kb": 438,
+   "cssEnd": 159,
+   "fontEnd": 529
+  }
+ }
+}
