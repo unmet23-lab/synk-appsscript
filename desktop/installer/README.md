@@ -1,8 +1,10 @@
 # SYNK Platform Preview — Signal Windows installer
 
-This directory builds the Signal installation window for the existing Windows x64 Platform Preview **0.4.3**. The installer revision is **signal.1**; its Windows file version is **0.4.3.1**. The installed application and bundled child installers remain byte-for-byte identical to the pinned public 0.4.3 payload.
+This directory builds the Signal installation window for the existing Windows x64 Platform Preview **0.4.3**. The installer revision is **signal.2** (2026-10-13 redesign; signal.1 was published on 2026-10-12); its Windows file version is **0.4.3.2**. The installed application and bundled child installers remain byte-for-byte identical to the pinned public 0.4.3 payload.
 
-The entry screen, installation progress, failure guidance and completion screen are native WPF UI. The executable contains the NSIS installation engine, application payload, approved SYNK artwork and fonts. The installer does not need a browser, WebView or a development server. Downloading the build dependencies and original payload requires internet access; the packaged installer contains its installation files.
+The entry screen, installation progress, failure guidance and completion screen are native WPF UI. The executable contains the NSIS installation engine, application payload, approved SYNK artwork and fonts. The installer does not need a browser, WebView or a development server.
+
+signal.2 follows the platform launcher's Signal 2 grammar (`docs/디자인/플랫폼_시그널/README.md#installer-download-20261013`): a title bar with the 싱ㅋ wordmark and a `PLATFORM` pill, a floating panel, and a lapis "플랫폼" poster (studio light, grain, the approved white felt synk logo, a tilted status sticker) beside a mono eyebrow, a large headline, readouts (installation location, required and available space, no administrator rights), a three-step progress indicator with a segmented bar, and white-pill actions. Steps without a percentage show the elapsed time. Mono labels and large Korean type are drawn with per-glyph tracking (`TrackedText`), because WPF text blocks have no letter spacing. The poster background `art/poster-platform.png` is rendered from `art/poster.html` with `art/make-poster.mjs`; the text on the poster is drawn by the window. The installation location shown before installing comes from the engine's read-only `Preflight`; if that check is blocked, the default location is shown and the engine reports the reason when installation starts. Downloading the build dependencies and original payload requires internet access; the packaged installer contains its installation files.
 
 ## Installation behavior
 
@@ -68,10 +70,20 @@ The test creates a tiny application with a random fixture identity, builds a rea
 
 The checks cover read-only preflight, damaged-engine rejection, manifest traversal, insufficient disk space, real installation, verified launch, installed-file tampering, running-app protection in both layers, reinstall data preservation and fixture removal. Test receipts identify the fixture and distinguish fixture acceptance from a real Platform installation. A successful fixture run alone does not establish real-account, real-device or public-download acceptance.
 
+## Check the window
+
+The window can be checked without building the full installer or installing anything. Compile the window with the render check and pass the font directory and an output directory; it writes each state (ready, reinstall, preparing, 64 %, 42 s without a percentage, verifying, complete, failure, long failure) at 100 %, 150 % and 200 % and fails on any font fallback.
+
+```powershell
+$fw = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319"
+& "$fw\csc.exe" /nologo /target:exe /platform:x64 /out:$env:TEMP\signal-ui-check.exe /r:System.Core.dll /r:System.Xaml.dll "/r:$fw\WPF\PresentationFramework.dll" "/r:$fw\WPF\PresentationCore.dll" "/r:$fw\WPF\WindowsBase.dll" "/resource:art\poster-platform.png,art.poster-platform.png" SignalWindow.cs tests\ui-check.cs
+& $env:TEMP\signal-ui-check.exe fonts $env:TEMP\signal-ui-render
+```
+
 ## Files and publication
 
 `Program.cs` connects the native window to `InstallerEngine.cs`; `SignalWindow.cs` defines the Signal UI. `signal-safety.nsh` supplies the final NSIS running-process guard. `app.manifest` requests current-user execution and DPI handling. `build-signal.cjs` pins the public payload, assembles the package and writes the inventory. `baseline-files.json` is the public application-file contract.
 
-The `fonts` directory includes SUIT, Inter Tight and DM Mono with their SIL Open Font License notices. The build embeds the five font files and all three notices in the installer. `platform.ico` and the wordmark geometry in the window source are the SYNK brand assets used by this installer.
+The `fonts` directory includes SUIT (Medium, ExtraBold, Heavy), Inter Tight and DM Mono with their SIL Open Font License notices. The build embeds the six font files, all three notices and the poster background in the installer. `platform.ico`, the wordmark geometry in the window source and the felt synk logo in `art/poster-platform.png` (from `docs/디자인/SNS키트/assets/logo-synk-paper.webp`) are the SYNK brand assets used by this installer.
 
-The intended release tag is `platform-preview-0.4.3-signal.1-20261012`. Homepage Windows links point to its `SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe` asset; the 0.4.3 Mac URLs stay on their existing release. Publish only the final executable, its matching checksum and a reviewed public package report. Do not publish build directories, local fixture manifests, machine paths or private installation records. Source publication belongs in `.github/desktop-preview/signal-installer/` of the existing public repository.
+signal.1 was published as `platform-preview-0.4.3-signal.1-20261012`. signal.2 was published on 2026-10-13 as the prerelease `platform-preview-0.4.3-signal.2-20261013` (target `9da9282dc1af35a458bfabf6c19d7afdafe41ee3`; `SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe`, 399,801,344 bytes, SHA-256 `929632ea797d7c6babe4a5e9b768cb9430daa123a65df9895003970e0751fc27`). Homepage Windows links point to that asset; the 0.4.3 Mac URLs stay on their existing release. Publish only the final executable, its matching checksum and a reviewed public package report. Do not publish build directories, local fixture manifests, machine paths or private installation records. Source publication belongs in `.github/desktop-preview/signal-installer/` of the existing public repository.

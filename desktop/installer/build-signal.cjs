@@ -47,15 +47,17 @@ async function main() {
   json(path.join(output,'install.json'),spec); json(path.join(output,'backend-config.json'),config);
   const target=path.join(output,'SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe');
   const framework=path.join(process.env.WINDIR,'Microsoft.NET/Framework64/v4.0.30319');
-  const resources=['SUIT-Medium.otf','SUIT-ExtraBold.otf','InterTight-Medium.ttf','InterTight-Bold.ttf','DMMono-Medium.ttf'].map(file=>'/resource:'+path.join(fonts,file)+',font.'+file);
+  const resources=['SUIT-Medium.otf','SUIT-ExtraBold.otf','SUIT-Heavy.otf','InterTight-Medium.ttf','InterTight-Bold.ttf','DMMono-Medium.ttf'].map(file=>'/resource:'+path.join(fonts,file)+',font.'+file);
+  // 왼쪽 「플랫폼」 포스터 바탕(art/make-poster.mjs로 만든 그림). 창이 자기 어셈블리에서 읽는다.
+  resources.push('/resource:'+path.join(ROOT,'art','poster-platform.png')+',art.poster-platform.png');
   const assembly=path.join(output,'AssemblyInfo.cs');
-  fs.writeFileSync(assembly,'using System.Reflection;\n[assembly: AssemblyTitle("SYNK Platform Preview 설치")]\n[assembly: AssemblyCompany("SYNK")]\n[assembly: AssemblyProduct("SYNK Platform Preview")]\n[assembly: AssemblyVersion("0.4.3.1")]\n[assembly: AssemblyFileVersion("0.4.3.1")]\n');
+  fs.writeFileSync(assembly,'using System.Reflection;\n[assembly: AssemblyTitle("SYNK Platform Preview 설치")]\n[assembly: AssemblyCompany("SYNK")]\n[assembly: AssemblyProduct("SYNK Platform Preview")]\n[assembly: AssemblyVersion("0.4.3.2")]\n[assembly: AssemblyFileVersion("0.4.3.2")]\n');
   const licenses=['SUIT-LICENSE.txt','InterTight-LICENSE.txt','DMMono-LICENSE.txt'].map(file=>'/resource:'+path.join(fonts,file)+',license.'+file);
   command(path.join(framework,'csc.exe'),['/nologo','/target:winexe','/platform:x64','/optimize+','/out:'+target,'/win32manifest:'+path.join(ROOT,'app.manifest'),'/win32icon:'+icon,
     '/r:System.Core.dll','/r:System.Runtime.Serialization.dll','/r:System.Xaml.dll',...['PresentationFramework.dll','PresentationCore.dll','WindowsBase.dll'].map(file=>'/r:'+path.join(framework,'WPF',file)),
     '/resource:'+path.join(output,'install.json')+',install.json','/resource:'+backend+',backend.exe',...resources,...licenses,...['Program.cs','InstallerEngine.cs','SignalWindow.cs'].map(file=>path.join(ROOT,file)),assembly]);
   assert(JSON.stringify(await inventory(payload))===JSON.stringify(files),'Builder modified public app payload');
-  const report={ok:true,builtAt:new Date().toISOString(),appVersion:spec.version,installerRevision:'signal.1',baseline:pin,installer:{file:path.basename(target),bytes:fs.statSync(target).size,sha256:await sha(target)},backend:{bytes:spec.backendBytes,sha256:spec.backendSHA256},appPayloadUnchanged:true,payloadFiles:files.length,nsisGUID:guid,unsignedPreview:true,requiresDotNetFramework:'4.8',sources:await inventory(ROOT).then(list=>list.filter(item=>!item.path.startsWith('dist/')))};
+  const report={ok:true,builtAt:new Date().toISOString(),appVersion:spec.version,installerRevision:'signal.2',baseline:pin,installer:{file:path.basename(target),bytes:fs.statSync(target).size,sha256:await sha(target)},backend:{bytes:spec.backendBytes,sha256:spec.backendSHA256},appPayloadUnchanged:true,payloadFiles:files.length,nsisGUID:guid,unsignedPreview:true,requiresDotNetFramework:'4.8',sources:await inventory(ROOT).then(list=>list.filter(item=>!item.path.startsWith('dist/')))};
   json(path.join(output,'windows-signal-package.json'),report);
   fs.writeFileSync(path.join(output,'SHA256SUMS-signal-win-x64.txt'),report.installer.sha256+'  '+path.basename(target)+'\n');
   console.log(JSON.stringify(report));

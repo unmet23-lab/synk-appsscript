@@ -1,0 +1,96 @@
+{
+  "checkedAt": "2026-10-12T18:30:24+00:00",
+  "status": "published",
+  "userApproval": "유호 「웅 공개해줘」 2026-10-13",
+  "appVersion": "0.4.3",
+  "installerRevision": "signal.2",
+  "installer": {
+    "file": "SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+    "bytes": 399801344,
+    "sha256": "929632ea797d7c6babe4a5e9b768cb9430daa123a65df9895003970e0751fc27"
+  },
+  "backend": {
+    "sha256": "6eeecb83d6b1151785b031d5e0f7b5f0693caceba2e9d1cbf2ea2bc596df4afa",
+    "unchangedFrom": "signal.1"
+  },
+  "appPayloadUnchanged": true,
+  "payloadFiles": 76,
+  "source": "desktop/installer",
+  "publicSourceCommit": "9da9282dc1af35a458bfabf6c19d7afdafe41ee3",
+  "publicSources": 24,
+  "release": {
+    "tag": "platform-preview-0.4.3-signal.2-20261013",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-signal.2-20261013",
+    "prerelease": true,
+    "target": "9da9282dc1af35a458bfabf6c19d7afdafe41ee3",
+    "assets": {
+      "SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe": "sha256:929632ea797d7c6babe4a5e9b768cb9430daa123a65df9895003970e0751fc27",
+      "SHA256SUMS-signal-win-x64.txt": "sha256:db2c87e52d6b16811289a7cb946e4b2347edf1ccb6b1f70757f4ddbfadc11742",
+      "public-release-manifest.json": "sha256:c31e810e6ea53245fff2fdccd31feee6965c9e52265eda584e098361863a9664"
+    }
+  },
+  "publicDownload": {
+    "status": 200,
+    "bytes": 399801344,
+    "sha256Matches": true,
+    "authenticationUsed": false
+  },
+  "validation": {
+    "uiStates": 9,
+    "uiScales": [
+      100,
+      150,
+      200
+    ],
+    "fontFallbacks": 0,
+    "realExecutableOpenedAt200Percent": true,
+    "installationPerformed": false,
+    "fixtureChecksFromSignal1": "12/12 (engine byte-identical, not re-run)"
+  },
+  "homepage": {
+    "publicCommit": "d95c65bf1d9e52d494cd4459a618082aa48ba1db",
+    "websiteSourceCommit": "ef7e8dfdd656129fcbaa237c90eeb57e0657dc18",
+    "files": 17,
+    "preflight": "candidate served at https://synk.im via route override: 14 pages x 1440/390, console errors 0, failed requests 0, horizontal overflow 0, Mac/Windows dialogs and signal.2 links",
+    "pages": {
+      "conclusion": "success",
+      "databaseId": 38288932469,
+      "headSha": "d95c65bf1d9e52d494cd4459a618082aa48ba1db",
+      "name": "pages build and deployment",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38288932469"
+    },
+    "siteCheck": {
+      "conclusion": "success",
+      "databaseId": 38288933025,
+      "headSha": "d95c65bf1d9e52d494cd4459a618082aa48ba1db",
+      "name": "synk.im 배포 점검",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38288933025"
+    },
+    "liveBytes": {
+      "checkedAt": "2026-10-12T18:31:57+00:00",
+      "same": 17,
+      "of": 17,
+      "method": "curl with cache-busting query, sha256 vs published candidate"
+    }
+  },
+  "notChanged": [
+    "Mac DMG releases (platform-preview-0.4.3-20261012)",
+    "signal.1 release kept"
+  ],
+  "publicSourceRuns": {
+    "pages": {
+      "conclusion": "success",
+      "databaseId": 38287738556,
+      "headSha": "9da9282dc1af35a458bfabf6c19d7afdafe41ee3",
+      "name": "pages build and deployment",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38287738556"
+    },
+    "siteCheck": {
+      "conclusion": "success",
+      "databaseId": 38287739419,
+      "headSha": "9da9282dc1af35a458bfabf6c19d7afdafe41ee3",
+      "name": "synk.im 배포 점검",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38287739419"
+    }
+  }
+}
