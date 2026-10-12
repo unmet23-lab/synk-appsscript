@@ -19,6 +19,72 @@ using ShapePath = System.Windows.Shapes.Path;
 namespace Synk.SignalInstaller
 {
     /// <summary>
+    /// 설치 창이 그리는 제품. 플랫폼·WORLD·워크스페이스는 같은 창에서 포스터의 사업 색·펠트 물건·큰 한글과 문구만 다르다.
+    /// 사업 색과 글자색은 플랫폼 웹(experiences/synk-account/platform.css)의 --face·--on-face와 같다.
+    /// 짧은 이름(ShortName)에는 「를」「가」가 붙는다(SYNK를·WORLD를·워크스페이스를).
+    /// </summary>
+    public sealed class SignalProduct
+    {
+        public string Id, ShortName, ProductName, Edition, Scope, Category, Name, Word, Lead, PosterResource, PosterLabel, Intro, CompleteText, NextStep;
+        public double WordSize, WordLineHeight, WordTracking;
+        public Color OnFace, Accent;
+
+        public string LaunchLabel { get { return ShortName + " 열기"; } }
+        public string WindowTitle { get { return ProductName + " 설치"; } }
+
+        public static SignalProduct ById(string id)
+        {
+            switch (id) {
+                case "world": return World();
+                case "messenger": return Workspace();
+                default: return Platform();
+            }
+        }
+
+        public static SignalProduct Platform()
+        {
+            return new SignalProduct {
+                Id = "platform", ShortName = "SYNK", ProductName = "SYNK Platform Preview", Edition = "PLATFORM",
+                Scope = "SYNK · PLATFORM", Category = "ONE SYNK ID", Name = "SYNK Platform",
+                // 큰 한글: 자간은 플랫폼 규칙 −.085em + 글자 수(3) × .01em
+                Word = "플랫폼", WordSize = 86, WordLineHeight = 70, WordTracking = -.055,
+                Lead = "앱과 회원 혜택을 한곳에서.", PosterResource = "art.poster-platform.png", PosterLabel = "청금석 면 위에 선 흰 펠트 synk 로고",
+                Intro = "앱과 회원 혜택을 한곳에서 여는 SYNK 플랫폼이에요.\n지금 쓰는 Windows 계정에 바로 설치해요.",
+                CompleteText = "SYNK 열기를 누르면 플랫폼이 열려요.\n다음부터는 시작 메뉴에서도 열 수 있어요.", NextStep = "SYNK ID 로그인",
+                OnFace = Colors.White, Accent = Hex("#3D6BC9")
+            };
+        }
+
+        public static SignalProduct World()
+        {
+            return new SignalProduct {
+                Id = "world", ShortName = "WORLD", ProductName = "SYNK WORLD Preview", Edition = "WORLD",
+                Scope = "SYNK · WORLD", Category = "PLAY · LEARN · CONNECT", Name = "SYNK WORLD",
+                Word = "월드", WordSize = 112, WordLineHeight = 92, WordTracking = -.065,
+                Lead = "놀면서 익히는 한국어.", PosterResource = "art.poster-world.png", PosterLabel = "코랄 면 위에 선 펠트 책",
+                Intro = "놀면서 한국어를 익히는 SYNK WORLD예요.\n지금 쓰는 Windows 계정에 바로 설치해요.",
+                CompleteText = "WORLD 열기를 누르면 바로 열려요.\nSYNK 플랫폼에서는 「설치 상태 확인」을 눌러 주세요.", NextStep = "플랫폼에서 확인",
+                OnFace = Hex("#1E0E0A"), Accent = Hex("#F96859")
+            };
+        }
+
+        public static SignalProduct Workspace()
+        {
+            return new SignalProduct {
+                Id = "messenger", ShortName = "워크스페이스", ProductName = "SYNK Workspace Preview", Edition = "WORKSPACE",
+                Scope = "SYNK · WORKSPACE", Category = "WORK · TEACH · CREATE", Name = "SYNK Workspace",
+                Word = "워크\n스페이스", WordSize = 64, WordLineHeight = 58, WordTracking = -.05,
+                Lead = "수업·대화·업무를 한곳에서.", PosterResource = "art.poster-messenger.png", PosterLabel = "먹색 면 위에 선 펠트 노트북",
+                Intro = "수업·대화·업무를 한곳에서 여는 SYNK 워크스페이스예요.\n지금 쓰는 Windows 계정에 바로 설치해요.",
+                CompleteText = "워크스페이스 열기를 누르면 바로 열려요.\nSYNK 플랫폼에서는 「설치 상태 확인」을 눌러 주세요.", NextStep = "플랫폼에서 확인",
+                OnFace = Hex("#C5D6F5"), Accent = Hex("#3D6BC9")
+            };
+        }
+
+        private static Color Hex(string value) { return (Color)ColorConverter.ConvertFromString(value); }
+    }
+
+    /// <summary>
     /// 설치 창 — 싱ㅋ 시그널 2(플랫폼 런처 desktop/renderer/launcher.css)와 같은 문법이다.
     /// 책상(#060709) 위 떠 있는 본문 판(#0C0D10) 안에 왼쪽 「플랫폼」 포스터(플랫폼 기본 사업 색 청금석 + 스튜디오 빛 + 그레인 +
     /// 흰 펠트 synk + 아주 큰 한글 + 기울인 상태 스티커)와 오른쪽 모노 눈썹·큰 제목·계기판·흰 알약 단추를 둔다.
@@ -54,6 +120,8 @@ namespace Synk.SignalInstaller
         private readonly GlyphTypeface suitMedium, suitBold, suitHeavy, interBold, mono;
         private readonly IList<GlyphTypeface> fallbacks;
         private readonly string version;
+        private readonly SignalProduct product;
+        private readonly Brush accent;
 
         private readonly TrackedText headline, stickerText;
         private readonly Ellipse stickerDot;
@@ -79,8 +147,13 @@ namespace Synk.SignalInstaller
         public event EventHandler InstallRequested;
         public event EventHandler LaunchRequested;
 
-        public SignalWindow(string fontDirectory, string version)
+        public SignalWindow(string fontDirectory, string version) : this(fontDirectory, version, null) { }
+
+        public SignalWindow(string fontDirectory, string version, SignalProduct product)
         {
+            this.product = product ?? SignalProduct.Platform();
+            accent = new SolidColorBrush(this.product.Accent);
+            accent.Freeze();
             // 빠지거나 굵기가 다른 글꼴은 포장 오류다. 다른 시스템 글꼴로 조용히 바꿔 그리지 않는다.
             IList<FontFamily> families = ReadFontFamilies(fontDirectory);
             suit = RequireFont(families, "SUIT", 500, 800, 900);
@@ -91,7 +164,7 @@ namespace Synk.SignalInstaller
             fallbacks = new[] { suitMedium, Face(inter, 500), mono };
             this.version = String.IsNullOrWhiteSpace(version) ? "" : version.Trim();
 
-            Title = "SYNK Platform Preview 설치";
+            Title = this.product.WindowTitle;
             Width = 760;
             Height = 512;
             WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -149,11 +222,13 @@ namespace Synk.SignalInstaller
 
             // 왼쪽 포스터
             Grid poster = new Grid { Width = 308, Height = 428, VerticalAlignment = VerticalAlignment.Top };
-            Image art = new Image { Source = LoadArt("art.poster-platform.png"), Stretch = Stretch.Fill, Width = 308, Height = 428 };
+            Image art = new Image { Source = LoadArt(this.product.PosterResource), Stretch = Stretch.Fill, Width = 308, Height = 428 };
             RenderOptions.SetBitmapScalingMode(art, BitmapScalingMode.HighQuality);
-            AutomationProperties.SetName(art, "청금석 면 위에 선 흰 펠트 synk 로고");
+            AutomationProperties.SetName(art, this.product.PosterLabel);
             poster.Children.Add(art);
-            TrackedText scope = Text(mono, 9.5, .12, White62, "SYNK · PLATFORM");
+            // 포스터 글자는 사업 색 위 --on-face(플랫폼 흰색, WORLD 먹색, 워크스페이스 옅은 청금석)에 투명도만 달리한다
+            Color onFace = this.product.OnFace;
+            TrackedText scope = Text(mono, 9.5, .12, Tint(onFace, 0x9E), this.product.Scope);
             scope.Decorative = true;
             scope.Margin = new Thickness(20, 21, 0, 0);
             scope.HorizontalAlignment = HorizontalAlignment.Left;
@@ -161,7 +236,7 @@ namespace Synk.SignalInstaller
             poster.Children.Add(scope);
             // 상태 스티커: 흰 알약을 살짝 기울여 붙인다(플랫폼 .product-stage). 점 색이 설치 상태를 말한다
             StackPanel stickerRow = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Center };
-            stickerDot = new Ellipse { Width = 7, Height = 7, Fill = Lapis, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center };
+            stickerDot = new Ellipse { Width = 7, Height = 7, Fill = accent, Margin = new Thickness(0, 0, 7, 0), VerticalAlignment = VerticalAlignment.Center };
             stickerRow.Children.Add(stickerDot);
             stickerText = Text(suitBold, 11, -.01, OnInk, "설치 준비");
             stickerText.VerticalAlignment = VerticalAlignment.Center;
@@ -175,17 +250,17 @@ namespace Synk.SignalInstaller
             AutomationProperties.SetLiveSetting(stickerText, AutomationLiveSetting.Polite);
             poster.Children.Add(sticker);
             StackPanel posterText = new StackPanel { VerticalAlignment = VerticalAlignment.Bottom, Margin = new Thickness(20, 0, 20, 21) };
-            TrackedText category = Text(mono, 9.5, .16, White78, "ONE SYNK ID");
+            TrackedText category = Text(mono, 9.5, .16, Tint(onFace, 0xC7), this.product.Category);
             category.Decorative = true;
             posterText.Children.Add(category);
-            TrackedText name = Text(interBold, 13, .02, White90, "SYNK Platform");
+            TrackedText name = Text(interBold, 13, .02, Tint(onFace, 0xE6), this.product.Name);
             name.Margin = new Thickness(0, 8, 0, 0);
             posterText.Children.Add(name);
-            // 큰 한글: 자간은 플랫폼 규칙 −.085em + 글자 수(3) × .01em
-            TrackedText word = Text(suitHeavy, 86, -.055, Ink, "플랫폼", 70);
+            // 큰 한글: 자간은 플랫폼 규칙 −.085em + 글자 수 × .01em
+            TrackedText word = Text(suitHeavy, this.product.WordSize, this.product.WordTracking, onFace == Colors.White ? Ink : Tint(onFace, 0xFF), this.product.Word, this.product.WordLineHeight);
             word.Margin = new Thickness(-4, 10, 0, 0);
             posterText.Children.Add(word);
-            TrackedText lead = Text(suitBold, 13, -.015, Solid("#F0FFFFFF"), "앱과 회원 혜택을 한곳에서.");
+            TrackedText lead = Text(suitBold, 13, -.015, Tint(onFace, 0xF0), this.product.Lead);
             lead.Margin = new Thickness(0, 12, 0, 0);
             posterText.Children.Add(lead);
             poster.Children.Add(posterText);
@@ -298,11 +373,11 @@ namespace Synk.SignalInstaller
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action(SetReady)); return; }
             state = InstallerState.Ready;
             clock.Stop();
-            SetHeadline(installed ? "SYNK를,\n다시 설치해요." : "SYNK를,\n내 PC에.");
+            SetHeadline(product.ShortName + (installed ? "를,\n다시 설치해요." : "를,\n내 PC에."));
             description.Text = installed
-                ? "설치된 SYNK를 같은 자리에 다시 설치해요.\n계정과 앱 기록은 그대로 남아요."
-                : "앱과 회원 혜택을 한곳에서 여는 SYNK 플랫폼이에요.\n지금 쓰는 Windows 계정에 바로 설치해요.";
-            SetSticker(installed ? "다시 설치" : "설치 준비", Lapis);
+                ? "설치된 " + product.ShortName + "를 같은 자리에 다시 설치해요.\n계정과 앱 기록은 그대로 남아요."
+                : product.Intro;
+            SetSticker(installed ? "다시 설치" : "설치 준비", accent);
             ShowBlock(infoBlock);
             RefreshInfo();
             SetButtons(installed ? "다시 설치하기" : "설치하기", "나중에", true);
@@ -348,11 +423,11 @@ namespace Synk.SignalInstaller
             state = InstallerState.Complete;
             clock.Stop();
             SetHeadline("설치가\n끝났어요.");
-            description.Text = "SYNK 열기를 누르면 플랫폼이 열려요.\n다음부터는 시작 메뉴에서도 열 수 있어요.";
+            description.Text = product.CompleteText;
             SetSticker("설치됨", Green);
             ShowBlock(infoBlock);
             RefreshInfo();
-            SetButtons("SYNK 열기", "나중에 열기", true);
+            SetButtons(product.LaunchLabel, "나중에 열기", true);
             primary.Focus();
             Announce(headline);
         }
@@ -380,7 +455,7 @@ namespace Synk.SignalInstaller
             if (state == InstallerState.Complete) {
                 primary.IsEnabled = false;
                 primaryLabel.Text = "여는 중";
-                AutomationProperties.SetName(primary, "SYNK 여는 중");
+                AutomationProperties.SetName(primary, product.ShortName + " 여는 중");
                 EventHandler launch = LaunchRequested;
                 if (launch != null) launch(this, EventArgs.Empty);
                 else ShowComplete();
@@ -454,7 +529,7 @@ namespace Synk.SignalInstaller
             if (state == InstallerState.Complete) {
                 SetReadout(0, "VERSION", version.Length == 0 ? "Preview" : version);
                 SetReadout(1, "CHECK", "파일 확인 끝");
-                SetReadout(2, "NEXT", "SYNK ID 로그인");
+                SetReadout(2, "NEXT", product.NextStep);
             } else {
                 SetReadout(0, "REQUIRED", "약 " + Size(requiredBytes));
                 SetReadout(1, "AVAILABLE", FreeSpace());
@@ -506,11 +581,11 @@ namespace Synk.SignalInstaller
             return parts[0] + "\\" + parts[1] + "\\…\\" + parts[parts.Length - 2] + "\\" + parts[parts.Length - 1];
         }
 
-        private static int StepOf(string title)
+        private int StepOf(string title)
         {
             if (title == null) return 0;
             if (title.StartsWith("설치를 준비", StringComparison.Ordinal) || title.StartsWith("설치를 시작", StringComparison.Ordinal)) return 1;
-            if (title.StartsWith("SYNK를 설치", StringComparison.Ordinal)) return 2;
+            if (title.StartsWith(product.ShortName + "를 설치", StringComparison.Ordinal)) return 2;
             if (title.StartsWith("설치를 확인", StringComparison.Ordinal)) return 3;
             return 0;
         }
@@ -525,12 +600,12 @@ namespace Synk.SignalInstaller
             }
         }
 
-        private static string StepDetail(int value, string fallback)
+        private string StepDetail(int value, string fallback)
         {
             switch (value) {
                 case 1: return "받은 설치 파일을 풀고 손상되지 않았는지 확인해요.";
                 case 2: return "이 단계는 진행률 대신 걸린 시간을 보여 드려요.";
-                case 3: return "SYNK를 열기 전에 설치된 파일을 하나씩 확인해요.";
+                case 3: return product.ShortName + "를 열기 전에 설치된 파일을 하나씩 확인해요.";
                 default: return fallback ?? "";
             }
         }
@@ -564,7 +639,7 @@ namespace Synk.SignalInstaller
             Viewbox mark = new Viewbox { Child = logo, Stretch = Stretch.Uniform, Height = 18, VerticalAlignment = VerticalAlignment.Center };
             AutomationProperties.SetName(mark, "싱ㅋ");
             lockup.Children.Add(mark);
-            TrackedText edition = Text(mono, 8.5, .2, Ink3, "PLATFORM");
+            TrackedText edition = Text(mono, 8.5, .2, Ink3, product.Edition);
             edition.Decorative = true;
             lockup.Children.Add(new Border {
                 Margin = new Thickness(11, 0, 0, 0), Padding = new Thickness(8, 4, 7, 4), CornerRadius = new CornerRadius(999),
@@ -640,7 +715,7 @@ namespace Synk.SignalInstaller
             heading.Children.Add(meter);
             block.Children.Add(heading);
             bar = new ProgressBar { Minimum = 0, Maximum = 100, Height = 8, Margin = new Thickness(0, 11, 0, 10), Template = SegmentTemplate() };
-            AutomationProperties.SetName(bar, "SYNK 설치 진행률");
+            AutomationProperties.SetName(bar, product.ShortName + " 설치 진행률");
             block.Children.Add(bar);
             note = Paragraph(12.5, Ink3, 19);
             note.MinHeight = 19;
@@ -814,6 +889,13 @@ namespace Synk.SignalInstaller
         private static Brush Solid(string value)
         {
             SolidColorBrush brush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(value));
+            brush.Freeze();
+            return brush;
+        }
+
+        private static Brush Tint(Color color, byte alpha)
+        {
+            SolidColorBrush brush = new SolidColorBrush(Color.FromArgb(alpha, color.R, color.G, color.B));
             brush.Freeze();
             return brush;
         }

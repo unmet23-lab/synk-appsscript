@@ -1,0 +1,262 @@
+{
+  "request": "유호 「1,2 둘다 클로드판으로 다만들어줘」 2026-10-13 (1 = 플랫폼 안 WORLD·워크스페이스 설치 창, 2 = 웹 플랫폼 다운로드 화면)",
+  "release": {
+    "tag": "platform-preview-0.4.3-signal.3-20261013",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-signal.3-20261013",
+    "prerelease": true,
+    "target": "af7d2596eda4450152fe3126c2796a82b2bf98b0",
+    "assets": [
+      {
+        "file": "SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "bytes": 402711552,
+        "sha256": "1707e53d8a779d5ea86ee8e4fcb9a12d2d4cac89319e23bef274da0a32b75c72"
+      },
+      {
+        "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-arm64.dmg",
+        "bytes": 461989581,
+        "sha256": "1493bf35da001fc017498e6c56f6a3d83cacc4a15d2a1a5e0f968a0929f9ceac"
+      },
+      {
+        "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-x64.dmg",
+        "bytes": 479616102,
+        "sha256": "e73b05dcca205d1d82e77f45365788f8c5e688b58530478e9de242efb89339fd"
+      }
+    ],
+    "githubDigestsMatch": true,
+    "publicDownloads": "200 with exact Content-Length (3/3)"
+  },
+  "windows": {
+    "installerRevision": "signal.3",
+    "platformPayload": {
+      "files": 76,
+      "appAsarSHA256": "22eefe865b8ae1baf62895f0a0f3e7f58d21ee1cbb6d8091fa95d62939f6c087",
+      "executableSHA256": "7aede380943f08a88ad5d0937c21a6a94656887057ccb4c7799283ea6c942f8f",
+      "changedFromPublished043": [
+        "resources/clients/world.exe",
+        "resources/clients/messenger.exe",
+        "resources/app.asar (runtime.json: the two installer pins)",
+        "SYNKPlatformPreview.exe (Electron archive integrity value)"
+      ],
+      "frozenSourceManifestSHA256": "774d6da33a132da95552e15aa90e1a87dcd880db32836e30c2619d47e6d6cab6",
+      "performanceOverlay": [
+        {
+          "file": "src/installations.cjs",
+          "baselineSHA256": "5bab184a03e4a8a71c42069793b0739667bcd0ec0ce8090929fa6b3861b97f19",
+          "afterSHA256": "ec36d04bf479558ec2fa8b21486723e97a1c14dc1535069fab38cba966fdc20d"
+        },
+        {
+          "file": "src/client-lifecycle.cjs",
+          "baselineSHA256": "035d5e97104f38462ded28b8a7023c21268b1ea15d732e61c5fdb49944275324",
+          "afterSHA256": "ed4a313a54a80190f1b6bf28f470b5210a7d57b06e906526ef8e135786572b81"
+        }
+      ]
+    },
+    "childInstallers": [
+      {
+        "id": "world",
+        "bundledAs": "resources/clients/world.exe",
+        "installerRevision": "signal.1",
+        "bytes": 134938624,
+        "sha256": "91d478cbd17744440d422c5e2fcf22e9d281befcb11ebd1418926744e7f03a5a",
+        "app": {
+          "version": "0.4.1",
+          "files": 74,
+          "executableSHA256": "121d567ba96e50c4feb20cf3fb3958c52635be67585774ddd392ebf159226e5f",
+          "asarSHA256": "1cce12377fb2ec81de0f57ac86063894e9ab220ae56d38deab37d84143769208",
+          "unchangedFromPublished": true
+        },
+        "source": {
+          "sha256": "e0363ee835484b5f5a75be05a7a787df71983738cf98a140b9f5eaeb12283e86",
+          "bytes": 132342850,
+          "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.1-20261012/SYNK-WORLD-Preview-0.4.1-win-x64.exe"
+        },
+        "nsisGUID": "26232ff5-f9d2-5946-ba23-f2a14a3a286e"
+      },
+      {
+        "id": "messenger",
+        "bundledAs": "resources/clients/messenger.exe",
+        "installerRevision": "signal.1",
+        "bytes": 134678016,
+        "sha256": "6ec90f99d6d84bca24eb4a883bab64801b6cd9f495a983b751ba237a52288a17",
+        "app": {
+          "version": "0.4.0",
+          "files": 74,
+          "executableSHA256": "f78fbae7d2457c0994207d18a8e6c037d0120edd3f368ad29ff9fed84cb10481",
+          "asarSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a",
+          "unchangedFromPublished": true
+        },
+        "source": {
+          "sha256": "ec84d50e4c48b8834434a60f941fa703ad96d63c85922d3f82fcb06d758b2cff",
+          "bytes": 132289127,
+          "from": "resources/clients/messenger.exe in SYNK-Platform-Preview-0.4.3-win-x64.exe"
+        },
+        "nsisGUID": "953c4764-b59b-5e41-be9c-d08ba198b736"
+      }
+    ],
+    "electronZip": {
+      "file": "electron-v44.5.1-win32-x64.zip",
+      "sha256": "9b382492dcfee91f8f9e92c91f7972550a1b95d2299cac72279dab33a600d7db",
+      "checkedAgainst": "official SHASUMS256.txt"
+    },
+    "validation": {
+      "engineFixtureChecks": 12,
+      "uiProducts": [
+        "platform",
+        "world",
+        "messenger"
+      ],
+      "uiStates": 9,
+      "uiScales": [
+        100,
+        150,
+        200
+      ],
+      "fontFallbacks": 0,
+      "realExecutablesOpenedAt200Percent": 3,
+      "payloadComparedWithPublished043": true,
+      "installationPerformedDuringValidation": false
+    },
+    "builtOn": "this Windows PC (desktop/installer), sources = synk-policy af7d2596 signal-installer/"
+  },
+  "mac": {
+    "buildRun": "https://github.com/unmet23-lab/synk-policy/actions/runs/38308487821",
+    "buildCommit": "db4527cf7a5c105ec89ac7f92f5b0014e8f6d1b1 (branch claude/platform-signal-children-20261013, kept; same build files as af7d2596)",
+    "draftRun": "https://github.com/unmet23-lab/synk-policy/actions/runs/38310028496",
+    "arches": {
+      "arm64": {
+        "signalDMG": {
+          "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-arm64.dmg",
+          "bytes": 461989581,
+          "sha256": "1493bf35da001fc017498e6c56f6a3d83cacc4a15d2a1a5e0f968a0929f9ceac"
+        },
+        "plainDMG": {
+          "file": "SYNK-Platform-Preview-0.4.3-mac-arm64.dmg",
+          "sha256": "01a3a446ed5bce3333f1cc5ce5a1d65af1a482f79a7551be4c7b0f2ff58c4081",
+          "bytes": 460211301
+        },
+        "appFiles": 268,
+        "appTreeSHA256": "901680b2e6fe8634f7414a123c6ec09c019ab893e1906623e2ff0241723ba32f",
+        "executableSHA256": "a5cf24a43d164401b98153019bc80200a31aa3f9a010751948746c8794e52cea",
+        "asarSHA256": "d3b47ea777b43f3c88716a3881de071cbdb071d36b7175c12014e1ac2ad64227",
+        "children": {
+          "world": {
+            "file": "SYNK-WORLD-Preview-0.4.1-Signal-mac-arm64.dmg",
+            "bytes": 154556952,
+            "sha256": "2dbc3da604fbd146db3bd4a2d5db945c768e5862b517c0715b5351f720723f06",
+            "replaces": {
+              "file": "SYNK-WORLD-Preview-0.4.1-mac-arm64.dmg",
+              "sha256": "71f9fa1171ff76087bd172a057fb46df5baea0f0c3ff5ef546f5d245af2f49a4",
+              "bytes": 152884190
+            },
+            "appFiles": 266,
+            "appUnchanged": true
+          },
+          "messenger": {
+            "file": "SYNK-Workspace-Preview-0.4.1-Signal-mac-arm64.dmg",
+            "bytes": 153870831,
+            "sha256": "738e6ea5b32c799d7f32283143283c85c9ec633f7e3e03e2f9ead7d47ceb63a0",
+            "replaces": {
+              "file": "SYNK-Workspace-Preview-0.4.1-mac-arm64.dmg",
+              "sha256": "a4a30674bac32fb6f17d8c5d390d41ccfb30095ee51debd77784eba145093f49",
+              "bytes": 152735791
+            },
+            "appFiles": 266,
+            "appUnchanged": true
+          }
+        },
+        "nativeQA": {
+          "checks": 34,
+          "passed": 34
+        },
+        "runner": {
+          "macOS": "15.7.9",
+          "hostArch": "arm64",
+          "node": "v24.20.0"
+        }
+      },
+      "x64": {
+        "signalDMG": {
+          "file": "SYNK-Platform-Preview-0.4.3-Signal-mac-x64.dmg",
+          "bytes": 479616102,
+          "sha256": "e73b05dcca205d1d82e77f45365788f8c5e688b58530478e9de242efb89339fd"
+        },
+        "plainDMG": {
+          "file": "SYNK-Platform-Preview-0.4.3-mac-x64.dmg",
+          "sha256": "b81c6919ce21757fa50d031b8a8a31bd76cfe059d9fe052883a579673c138293",
+          "bytes": 477852350
+        },
+        "appFiles": 276,
+        "appTreeSHA256": "7d80069e09ee537a7de81bd3051bb170a5a43af513d2753f65ffbdd8fb3a69ee",
+        "executableSHA256": "56ed0a9d6f841006981a96f4a160c6d11c540bba6a0fdca866e2d34270891635",
+        "asarSHA256": "306ef424dd8122e6b6b9cf2f546bd97d8af14736a4edd71b2c8c4561059d8458",
+        "children": {
+          "world": {
+            "file": "SYNK-WORLD-Preview-0.4.1-Signal-mac-x64.dmg",
+            "bytes": 160454982,
+            "sha256": "1a4e5f78436c40af060c579abe5cf0621e059c8ea09e4fe3b42e9bbfb7c521b6",
+            "replaces": {
+              "file": "SYNK-WORLD-Preview-0.4.1-mac-x64.dmg",
+              "sha256": "d21e051858a80987e134ebd1c8dbf024511d430de2b71512f89a5a817bd06938",
+              "bytes": 158791048
+            },
+            "appFiles": 274,
+            "appUnchanged": true
+          },
+          "messenger": {
+            "file": "SYNK-Workspace-Preview-0.4.1-Signal-mac-x64.dmg",
+            "bytes": 159761587,
+            "sha256": "06e3b849886f179607cbe85edee36a08fe26797fba3697a68baa58fe33d419c5",
+            "replaces": {
+              "file": "SYNK-Workspace-Preview-0.4.1-mac-x64.dmg",
+              "sha256": "fc442aa1ab2cb7f4587697d78d1d8607acd6a0857289f4bdd907527f1fd8df92",
+              "bytes": 158588373
+            },
+            "appFiles": 274,
+            "appUnchanged": true
+          }
+        },
+        "nativeQA": {
+          "checks": 37,
+          "passed": 37
+        },
+        "runner": {
+          "macOS": "15.7.9",
+          "hostArch": "x64",
+          "node": "v24.19.0"
+        }
+      }
+    },
+    "finderWindows": "world · messenger · platform, light and dark, published (before) light"
+  },
+  "homepageAndWeb": {
+    "synkPolicy": "4e332642200dd2356343a6a6c354b0c21c755940",
+    "files": [
+      "index.html",
+      "en/index.html",
+      "llms.txt",
+      "account/dist/platform.js"
+    ],
+    "pages": {
+      "run": 38310806957,
+      "conclusion": "success"
+    },
+    "siteCheck": {
+      "run": 38310806961,
+      "conclusion": "success"
+    },
+    "liveBytes": "4/4 same",
+    "liveBrowser": "ko/en dialogs and the web platform download view read signal.3 links; web sizes 384MB/441MB/457MB; no page errors",
+    "synkWebsite": "06a7f04bba2cf243ce8a890ef5141d3ea1f5d144 (codex/company-conversations, pushed)",
+    "webPlatformDownloadView": "first published as synk-policy 72aeb1a1 (signal.2/mac-signal.1 files), table moved to signal.3 in 4e332642"
+  },
+  "notChanged": [
+    "WORLD and Workspace app bytes on both systems",
+    "Platform frozen sources and 0.4.3 performance overlay",
+    "earlier releases stay published"
+  ],
+  "notDone": [
+    "a person installing WORLD/Workspace through the Platform on a real PC or Mac",
+    "publisher signing / Apple notarization",
+    "app icon shape"
+  ]
+}

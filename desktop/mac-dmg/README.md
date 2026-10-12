@@ -30,6 +30,12 @@ Outputs are `out/<arch>/SYNK-Platform-Preview-0.4.3-Signal-mac-<arch>.dmg`, `SHA
 
 To publish, dispatch the workflow again with `release_from_run` set to the id of the build run that was checked. The release job downloads that run's DMGs, checks them against its records and creates the prerelease.
 
+## WORLD and Workspace DMGs inside the Platform (signal.3)
+
+`repackage.cjs --product=world|messenger` gives the 0.4.1 WORLD and Workspace DMGs that the Platform installs their own Signal windows: coral with dark type (`background-world*.png`) and ink with light lapis type (`background-messenger*.png`), the platform web `--face`/`--on-face` values, with 「WORLD를·워크스페이스를 Applications 폴더로 끌어 놓으세요」 and a line that sends the user back to **설치 상태 확인** in the Platform. The apps inside are the pinned public bytes: every file is compared, and the executable and `app.asar` are checked against the 0.4.3 Platform's pins in `../platform-performance/manifest.json`. `--source=<DMG>` repackages a DMG built in the same job instead of a published one, and `--revision` names the output.
+
+`build-platform-children-mac.cjs` (workflow `desktop-platform-signal-children.yml`, native macOS 15 runners) then rebuilds Platform 0.4.3 exactly like `../build-platform-performance.cjs` — frozen 0.4.1 sources, the 0.4.3 performance overlay, `build.cjs` `buildClient`, the Intel graphics loader on x64 — with those DMGs as `Contents/Resources/clients/world.dmg` and `messenger.dmg`. It writes the deliverables in the public 0.4.3 shape so `../qa/run-macos-qa.cjs --scope=platform` checks the mounted DMGs and the native Platform, and finally repackages the new Platform DMG with the Signal window (revision **signal.3**). The Platform app is rebuilt and ad-hoc signed again, so its bytes are not those of the public 0.4.3 Mac app; its sources, overlay and child apps are. A dispatch with `release_from_run` drafts the prerelease from the DMGs that run checked (`release-children.cjs`); the Windows installer from `../signal-installer/` is added before it is published.
+
 ## Published
 
 [platform-preview-0.4.3-mac-signal.1-20261013](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-mac-signal.1-20261013) (prerelease, 2026-10-13) holds the DMGs built and checked by [run 38296456890](https://github.com/unmet23-lab/synk-policy/actions/runs/38296456890) from commit `e2c81d55` and published by its release job ([run 38296894702](https://github.com/unmet23-lab/synk-policy/actions/runs/38296894702)):

@@ -76,9 +76,29 @@ The window can be checked without building the full installer or installing anyt
 
 ```powershell
 $fw = "$env:WINDIR\Microsoft.NET\Framework64\v4.0.30319"
-& "$fw\csc.exe" /nologo /target:exe /platform:x64 /out:$env:TEMP\signal-ui-check.exe /r:System.Core.dll /r:System.Xaml.dll "/r:$fw\WPF\PresentationFramework.dll" "/r:$fw\WPF\PresentationCore.dll" "/r:$fw\WPF\WindowsBase.dll" "/resource:art\poster-platform.png,art.poster-platform.png" SignalWindow.cs tests\ui-check.cs
-& $env:TEMP\signal-ui-check.exe fonts $env:TEMP\signal-ui-render
+& "$fw\csc.exe" /nologo /target:exe /platform:x64 /out:$env:TEMP\signal-ui-check.exe /r:System.Core.dll /r:System.Xaml.dll "/r:$fw\WPF\PresentationFramework.dll" "/r:$fw\WPF\PresentationCore.dll" "/r:$fw\WPF\WindowsBase.dll" "/resource:art\poster-platform.png,art.poster-platform.png" "/resource:art\poster-world.png,art.poster-world.png" "/resource:art\poster-messenger.png,art.poster-messenger.png" SignalWindow.cs tests\ui-check.cs
+foreach ($product in 'platform','world','messenger') { & $env:TEMP\signal-ui-check.exe fonts $env:TEMP\signal-ui-render $product }
 ```
+
+## WORLD and Workspace installers, and the Platform that carries them
+
+The same window and engine also install the two apps the Platform installs for the user. `--product=world` and `--product=messenger` choose the app identity (`im.synk.world.preview` · `SYNKWorldPreview`, `im.synk.messenger.preview` · `SYNKMessengerPreview`), the poster (`art/poster-world.png`: coral with the felt book and dark type; `art/poster-messenger.png`: ink with the felt laptop and light lapis type, the platform web `--face`/`--on-face` values), the big Korean word (월드, 워크/스페이스) and the copy. The completion button opens the app; the Platform recognises it after **설치 상태 확인**, because the engine installs where the original NSIS installer did (`%LOCALAPPDATA%\Programs\<executable name>`, the same NSIS GUID). The apps are the bytes the Platform pins in its `runtime.json` (Windows: WORLD 0.4.1, Workspace 0.4.0): the build checks the source installer, the extracted executable and `app.asar` against those pins and every file against `baseline-files-world.json` / `baseline-files-messenger.json`.
+
+```powershell
+node build-signal.cjs --product=world "--builder=$builderRoot" "--baseline=<SYNK-WORLD-Preview-0.4.1-win-x64.exe>" "--out=$outputRoot\world"
+node build-signal.cjs --product=messenger "--builder=$builderRoot" "--baseline=<resources\clients\messenger.exe of the 0.4.3 Platform installer>" "--out=$outputRoot\messenger"
+```
+
+The WORLD source installer is published in `platform-preview-0.4.1-20261012`. The Workspace one exists only inside the Platform installers; extract `resources\clients\messenger.exe` with 7-Zip and the build checks its pin.
+
+`build-platform-children.cjs` rebuilds the Platform 0.4.3 installer exactly like `../build-platform-performance.cjs` (frozen 0.4.1 sources, the 0.4.3 performance overlay, the same electron-builder configuration) with these two installers as `resources/clients/world.exe` and `messenger.exe`. Compared with the public 0.4.3 payload, only those two files, their `runtime.json` pins, and therefore `app.asar` and the executable (Electron keeps the archive integrity value in it) differ; the other 72 files and 116 archive members are identical. Run it from a synk-policy checkout after `npm ci` in `.github/desktop-preview`, then wrap the result:
+
+```powershell
+node build-platform-children.cjs "--world=<Signal WORLD installer>" "--messenger=<Signal Workspace installer>" "--out=<dir>" ["--electron-checksums=<official SHASUMS256.txt>"]
+node build-signal.cjs --product=platform "--pin=<dir>\platform-pin.json" "--baseline=<dir>\dist\SYNK-Platform-Preview-0.4.3-win-x64.exe" --inventory=baseline-files-platform-children.json --revision=signal.3 --file-version=0.4.3.3 "--builder=$builderRoot" "--out=<dir>\signal"
+```
+
+`--electron-checksums` is for networks where Node cannot verify GitHub's download certificate chain: the cached Electron zip is checked against the official checksum file fetched by another client, and electron-builder does not fetch it again.
 
 ## Files and publication
 

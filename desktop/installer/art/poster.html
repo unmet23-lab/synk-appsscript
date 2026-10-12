@@ -1,6 +1,7 @@
 <!doctype html>
-<!-- 설치 창 왼쪽 「플랫폼」 포스터의 바탕 그림. 플랫폼 런처의 포스터 CSS(desktop/renderer/launcher.css .hero·--studio·--grain·.art-cut)를
-     그대로 옮겨 글자 없이 찍는다. 글자(라벨·스티커·큰 한글)는 설치 창이 직접 그린다. 다시 만들 때: node make-poster.cjs -->
+<!-- 설치 창 왼쪽 포스터의 바탕 그림. 플랫폼 런처의 포스터 CSS(desktop/renderer/launcher.css .hero·--studio·--grain·.art-cut)를
+     그대로 옮겨 글자 없이 찍는다. 글자(라벨·스티커·큰 한글)는 설치 창이 직접 그린다. 다시 만들 때: node make-poster.mjs
+     ?product=world·messenger면 그 앱의 사업 색(플랫폼 웹 --face)과 펠트 물건으로 찍는다. 없으면 플랫폼(청금석 + 흰 펠트 synk). -->
 <html lang="ko">
 <meta charset="utf-8">
 <style>
@@ -16,9 +17,20 @@
   .felt{position:absolute;left:50%;top:104px;width:214px;transform:translateX(-50%) rotate(-3deg);
     filter:drop-shadow(0 22px 26px rgba(0,0,0,.3)) drop-shadow(0 4px 6px rgba(0,0,0,.18))}
   .grain{position:absolute;inset:0;z-index:1;background:var(--grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
+  /* WORLD: 코랄 면 + 펠트 책(플랫폼 웹 .app-card.world와 같은 그림) */
+  .poster.world{background:var(--studio),#F96859}
+  .poster.world .felt{top:54px;width:252px}
+  /* 워크스페이스: 먹색 면 + 펠트 노트북. 먹색 위 그림자는 옅게 보이므로 그대로 둔다 */
+  .poster.messenger{background:var(--studio),#17181C;box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+  .poster.messenger .felt{top:28px;width:206px}
 </style>
 <div class="poster" id="poster">
   <img class="felt" src="../../../docs/디자인/SNS키트/assets/logo-synk-paper.webp" alt="">
   <div class="grain"></div>
 </div>
+<script>
+  const product=new URLSearchParams(location.search).get('product');
+  const felt={world:'../../assets/launcher/world-book.avif',messenger:'../../assets/launcher/laptop.webp'}[product];
+  if(felt){document.getElementById('poster').classList.add(product);document.querySelector('.felt').src=felt;}
+</script>
 </html>

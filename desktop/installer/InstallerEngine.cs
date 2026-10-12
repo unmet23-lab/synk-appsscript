@@ -32,6 +32,9 @@ namespace Synk.SignalInstaller
         [DataMember(Name="backendBytes")] public long BackendBytes;
         [DataMember(Name="minFreeBytes")] public long MinFreeBytes;
         [DataMember(Name="files")] public List<InstallFile> Files;
+        // 설치 창이 그릴 제품(platform·world·messenger)과 안내 문구에 쓰는 짧은 이름. 없으면 플랫폼·「SYNK」.
+        [DataMember(Name="product")] public string Product;
+        [DataMember(Name="shortName")] public string ShortName;
     }
 
     public sealed class InstallerEngine
@@ -41,6 +44,7 @@ namespace Synk.SignalInstaller
         string verifiedDirectory;
         string RegistryKey { get { return @"Software\" + spec.Guid; } }
         string UninstallKey { get { return @"Software\Microsoft\Windows\CurrentVersion\Uninstall\" + spec.Guid; } }
+        string Short { get { return String.IsNullOrWhiteSpace(spec.ShortName) ? "SYNK" : spec.ShortName.Trim(); } }
 
         public InstallerEngine(InstallSpec spec, Func<Stream> backendFactory)
         {
@@ -98,12 +102,12 @@ namespace Synk.SignalInstaller
             Process[] running = Process.GetProcessesByName(System.IO.Path.GetFileNameWithoutExtension(spec.ExecutableName));
             try
             {
-                if (running.Length != 0) throw new InvalidOperationException("SYNK가 실행 중입니다. 작업을 저장하고 SYNK를 닫은 뒤 다시 설치해 주세요.");
+                if (running.Length != 0) throw new InvalidOperationException(Short + "가 실행 중입니다. 작업을 저장하고 " + Short + "를 닫은 뒤 다시 설치해 주세요.");
             }
             finally { foreach (Process p in running) p.Dispose(); }
             if (!String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, RegistryKey, "InstallLocation")) ||
                 !String.IsNullOrWhiteSpace(ReadRegistry(RegistryHive.LocalMachine, UninstallKey, "UninstallString")))
-                throw new InvalidOperationException("모든 사용자용 SYNK가 설치되어 있습니다. 해당 설치를 정리한 뒤 현재 사용자용으로 설치해 주세요.");
+                throw new InvalidOperationException("모든 사용자용 " + Short + "가 설치되어 있습니다. 해당 설치를 정리한 뒤 현재 사용자용으로 설치해 주세요.");
             Version existing, incoming;
             string current = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "DisplayVersion");
             if (Version.TryParse(current, out existing) && Version.TryParse(spec.Version, out incoming) && existing > incoming)
@@ -122,7 +126,7 @@ namespace Synk.SignalInstaller
             long required = spec.MinFreeBytes > 0 ? spec.MinFreeBytes : 3L * 1024 * 1024 * 1024;
             foreach (string drive in new HashSet<string>(new [] { root, System.IO.Path.GetPathRoot(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)), System.IO.Path.GetPathRoot(System.IO.Path.GetTempPath()) }, StringComparer.OrdinalIgnoreCase))
                 if (new DriveInfo(drive).AvailableFreeSpace < required)
-                    throw new IOException("설치할 공간이 부족합니다. 드라이브에 약 3 GB의 여유 공간을 확보해 주세요.");
+                    throw new IOException("설치할 공간이 부족합니다. 드라이브에 약 " + Math.Ceiling(required / (1024.0 * 1024 * 1024)).ToString("0", System.Globalization.CultureInfo.InvariantCulture) + " GB의 여유 공간을 확보해 주세요.");
             return directory;
         }
 
@@ -162,13 +166,13 @@ namespace Synk.SignalInstaller
                     if (held.Length != spec.BackendBytes || !String.Equals(HashFile(backend), spec.BackendSHA256, StringComparison.OrdinalIgnoreCase))
                         throw new IOException("설치 파일 확인에 실패했습니다. 홈페이지에서 다시 받아 주세요.");
                     Preflight();
-                    progress("SYNK를 설치합니다", "잠시만 기다려 주세요. 설치 중에는 창을 닫을 수 없습니다.", null);
+                    progress(Short + "를 설치합니다", "잠시만 기다려 주세요. 설치 중에는 창을 닫을 수 없습니다.", null);
                     ProcessStartInfo start = new ProcessStartInfo(backend, "/S /currentuser") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = cache };
                     using (Process child = Process.Start(start))
                     {
                         if (child == null) throw new IOException("설치를 시작할 수 없습니다.");
                         child.WaitForExit();
-                        if (child.ExitCode == 20) throw new InvalidOperationException("SYNK가 실행 중이거나 실행 상태를 확인할 수 없습니다. SYNK를 닫고 다시 시도해 주세요.");
+                        if (child.ExitCode == 20) throw new InvalidOperationException(Short + "가 실행 중이거나 실행 상태를 확인할 수 없습니다. " + Short + "를 닫고 다시 시도해 주세요.");
                         if (child.ExitCode != 0) throw new IOException("설치가 완료되지 않았습니다. 다시 시도해 주세요. (코드 " + child.ExitCode + ")");
                     }
                 }
@@ -198,7 +202,7 @@ namespace Synk.SignalInstaller
                 if (!info.Exists || (info.Attributes & FileAttributes.ReparsePoint) != 0 || info.Length != item.Bytes ||
                     !String.Equals(HashFile(file), item.SHA256, StringComparison.OrdinalIgnoreCase))
                     throw new IOException("설치 파일을 확인하지 못했습니다: " + item.Path + ". 다시 설치해 주세요.");
-                progress("설치를 확인합니다", "SYNK를 열기 전에 설치된 파일을 확인합니다.", ++done * 100 / spec.Files.Count);
+                progress("설치를 확인합니다", Short + "를 열기 전에 설치된 파일을 확인합니다.", ++done * 100 / spec.Files.Count);
             }
             string uninstall = ReadRegistry(RegistryHive.CurrentUser, UninstallKey, "UninstallString");
             string uninstallFile = null;
@@ -234,11 +238,11 @@ namespace Synk.SignalInstaller
 
         public void Launch()
         {
-            if (verifiedDirectory == null) throw new InvalidOperationException("설치 완료 후 SYNK를 열 수 있습니다.");
+            if (verifiedDirectory == null) throw new InvalidOperationException("설치 완료 후 " + Short + "를 열 수 있습니다.");
             string executable = System.IO.Path.Combine(verifiedDirectory, spec.ExecutableName);
             InstallFile expected = spec.Files.Find(delegate(InstallFile item) { return String.Equals(item.Path, spec.ExecutableName, StringComparison.OrdinalIgnoreCase); });
             if (expected == null || !String.Equals(HashFile(executable), expected.SHA256, StringComparison.OrdinalIgnoreCase))
-                throw new IOException("SYNK 실행 파일을 확인하지 못했습니다. 다시 설치해 주세요.");
+                throw new IOException(Short + " 실행 파일을 확인하지 못했습니다. 다시 설치해 주세요.");
             Process.Start(new ProcessStartInfo(executable) { WorkingDirectory = verifiedDirectory, UseShellExecute = true });
         }
     }
