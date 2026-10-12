@@ -45,6 +45,8 @@ for (const file of ['studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']
 for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', file)));
 for (const file of ['laptop-felt.webp', 'sticker-search.webp', 'sticker-person.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/마케팅/맞춤도구/assets', file)));
 output('assets/synk-logo.svg', fs.readFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg')));
+// 다운로드 화면 「플랫폼」 포스터의 흰 펠트 synk(홈페이지 다운로드 창·설치 창과 같은 그림).
+output('assets/brand-synk-paper.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/SNS키트/assets/logo-synk-paper.webp')));
 for (const id of ['platform', 'world']) output(`assets/app-${id}.png`, fs.readFileSync(path.join(sourceRoot, `desktop/assets/${id}.png`)));
 for (const [source, name] of [['InterTight/InterTight-Regular.ttf', 'InterTight-Regular.ttf'], ['InterTight/InterTight-Medium.ttf', 'InterTight-Medium.ttf'], ['DM_Mono/DMMono-Medium.ttf', 'DMMono-Medium.ttf']]) output(`assets/${name}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트', source)));
 const esbuild = require(require.resolve('esbuild', { paths: [dir] }));
