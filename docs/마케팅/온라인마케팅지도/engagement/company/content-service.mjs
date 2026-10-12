@@ -62,6 +62,7 @@ export function createContentService({store,clock=()=>new Date().toISOString(),f
     user=writable(user);object(input);
     const data={seriesId:string(input.seriesId,100,'시리즈',true),topic:string(input.topic,300,'주제',true)};
     for(const key of ['audience','experience','proof','takeaway','entertainment'])data[key]=string(input[key],3000,key);
+    data.editorialNote=string(input.editorialNote,3000,'이번 편 제작 실험');
     if(input.authenticity!==undefined){object(input.authenticity);data.authenticity=Object.fromEntries(['basis','ownPerspective','limits','disclosure'].map(key=>[key,string(input.authenticity[key],2000,key)]));}
     if(input.personalization!==undefined){object(input.personalization);data.personalization=Object.fromEntries(['situation','choice','nextStep'].map(key=>[key,string(input.personalization[key],2000,key)]));}
     const benchmarkId=string(input.benchmarkId,100,'보고서 ID'),benchmarkItemId=string(input.benchmarkItemId,100,'선정 콘텐츠 ID');

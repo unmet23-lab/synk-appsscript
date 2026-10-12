@@ -1,0 +1,127 @@
+{
+  "at": "2026-10-12T20:53:23.670Z",
+  "scope": "Read-only public TLS, static SHA/MIME and unauthenticated route guards. No credentials, production project reads or writes.",
+  "base": "https://workspace.synk.im",
+  "passed": true,
+  "results": [
+    {
+      "path": "/client-delivery-archive.js",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 252,
+      "bytes": 10673,
+      "contentType": "text/javascript; charset=utf-8",
+      "statusMatches": true,
+      "sha256": "5ff26a18040023db528dd7d73f44097cb50123e84888a44b7c1f392db44e5121",
+      "hashMatches": true,
+      "mimeMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/client-delivery-archive.css",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 216,
+      "bytes": 1052,
+      "contentType": "text/css; charset=utf-8",
+      "statusMatches": true,
+      "sha256": "9d0d49e078c20438d9f5407eb4f0a87c62242d6a8f6741f759f8d3031f62189c",
+      "hashMatches": true,
+      "mimeMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/client-material-usage.js",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 216,
+      "bytes": 12079,
+      "contentType": "text/javascript; charset=utf-8",
+      "statusMatches": true,
+      "sha256": "8c730b811adf439c0c384449fad220ae02bb58fca4a2c5476dfa61e45f7c0a49",
+      "hashMatches": true,
+      "mimeMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/client-material-usage.css",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 33,
+      "bytes": 776,
+      "contentType": "text/css; charset=utf-8",
+      "statusMatches": true,
+      "sha256": "362f62b0825a4d60a2c8886c5a7f1fb0b28ee0b371345443d5ee9cd5aa3f7269",
+      "hashMatches": true,
+      "mimeMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/automation-health.js",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 33,
+      "bytes": 22694,
+      "contentType": "text/javascript; charset=utf-8",
+      "statusMatches": true,
+      "sha256": "1f9b0958fc2114c13e30dc64e285de926055662ea73d11dcf9cec4c5735aed54",
+      "hashMatches": true,
+      "mimeMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/api/health",
+      "status": 200,
+      "expectedStatus": 200,
+      "elapsedMs": 20,
+      "bytes": 85,
+      "contentType": "application/json; charset=utf-8",
+      "statusMatches": true,
+      "health": {
+        "ok": true,
+        "ready": true
+      },
+      "passed": true
+    },
+    {
+      "path": "/api/client-projects/00000000-0000-4000-8000-000000000000/material-usage",
+      "status": 401,
+      "expectedStatus": 401,
+      "elapsedMs": 26,
+      "bytes": 42,
+      "contentType": "application/json; charset=utf-8",
+      "statusMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/api/client-projects/00000000-0000-4000-8000-000000000000/delivery-archive",
+      "status": 401,
+      "expectedStatus": 401,
+      "elapsedMs": 25,
+      "bytes": 42,
+      "contentType": "application/json; charset=utf-8",
+      "statusMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/api/automation-health",
+      "status": 401,
+      "expectedStatus": 401,
+      "elapsedMs": 25,
+      "bytes": 42,
+      "contentType": "application/json; charset=utf-8",
+      "statusMatches": true,
+      "passed": true
+    },
+    {
+      "path": "/api/weekly-summary",
+      "status": 401,
+      "expectedStatus": 401,
+      "elapsedMs": 50,
+      "bytes": 42,
+      "contentType": "application/json; charset=utf-8",
+      "statusMatches": true,
+      "passed": true
+    }
+  ]
+}

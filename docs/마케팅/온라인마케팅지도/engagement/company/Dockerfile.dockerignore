@@ -7,6 +7,12 @@
 !docs/마케팅/온라인마케팅지도/engagement/analytics.mjs
 !docs/마케팅/온라인마케팅지도/engagement/company/
 !docs/마케팅/온라인마케팅지도/engagement/company/*.mjs
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/pdfkit.cjs
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/SUIT-Regular.otf
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/SUIT-OFL.txt
+!docs/마케팅/온라인마케팅지도/engagement/company/vendor/completion-pdf/THIRD-PARTY-LICENSES.txt
 !docs/마케팅/온라인마케팅지도/engagement/company/workroom-guide.json
 !docs/마케팅/온라인마케팅지도/engagement/company/content-catalog.json
 !docs/마케팅/온라인마케팅지도/engagement/company/benchmark-upload-template.json
@@ -22,6 +28,7 @@
 !tools/company-messenger/company-integration.mjs
 !tools/company-messenger/collaboration-service.mjs
 !tools/company-messenger/productivity-service.mjs
+!tools/company-messenger/direct-task-service.mjs
 !tools/company-messenger/web-push-service.mjs
 !tools/company-messenger/platform-navigation.mjs
 !tools/company-messenger/public
@@ -189,6 +196,9 @@ docs/마케팅/온라인마케팅지도/engagement/company/*.test.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/verify-*.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/preview-*.mjs
 docs/마케팅/온라인마케팅지도/engagement/company/*-check.mjs
+# These are imported runtime services, not standalone validation programs.
+!docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.mjs
+!docs/마케팅/온라인마케팅지도/engagement/company/client-delivery-check.mjs
 **/.env
 **/.env.*
 **/*.sqlite

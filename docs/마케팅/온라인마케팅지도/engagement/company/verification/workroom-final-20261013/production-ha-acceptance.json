@@ -1,0 +1,65 @@
+{
+  "schema": "workroom-production-ha-acceptance/v1",
+  "at": "2026-10-12T21:46:23.426Z",
+  "releaseSha256": "7b2ccbf0c170d117cb0543ffa66df2886cd9f19ef3becb57b54d5df972052303",
+  "status": "passed",
+  "armed": true,
+  "epoch": 7,
+  "publicHttps": {
+    "status": 200,
+    "ready": true,
+    "tlsVerified": true
+  },
+  "nodeRoles": {
+    "primary": {
+      "alive": true,
+      "ready": true
+    },
+    "standby": {
+      "alive": true,
+      "ready": false
+    }
+  },
+  "replicaHealthy": true,
+  "controllerObservationMs": 28622,
+  "controllerRestarts": 0,
+  "normalObservation": {
+    "durationMs": 240097,
+    "samples": 5,
+    "regions": 3,
+    "errorSamples": 0
+  },
+  "isolatedRestore": {
+    "status": "passed",
+    "network": "none",
+    "uid": 1000,
+    "publishedPorts": 0,
+    "originalKeyMatches": true,
+    "qaContainersRemoved": true,
+    "productionContainersUnchanged": true
+  },
+  "currentReleaseOutageTested": false,
+  "knownLimitation": "Intermittent request timeouts and protective stops occurred during acceptance. Recovery and subsequent healthy observations were verified; exact API cause is not established and no fix of that cause or continuous uptime is claimed.",
+  "proofs": [
+    {
+      "path": ".tmp/pulse-workspace-integration-20261013/ha-compat/dr/backup-status-7b2-v5.json",
+      "sha256": "ee7a59871308aa1d04e67c7f8f1befcc5fe364f4a7ecd3b428b89e0c55066622"
+    },
+    {
+      "path": ".tmp/pulse-workspace-integration-20261013/ha-compat/dr/restore-7b2-v2.json",
+      "sha256": "049623c5d7cef3e8c0b0c01ebd8d534e98603bd61f26448e370651426968c099"
+    },
+    {
+      "path": ".tmp/pulse-workspace-integration-20261013/ha-compat/dr/binding-7b2-v1.json",
+      "sha256": "7b107fd282bc9e2e72aff671175868a5065f8e4d7d8b0e3c49edd2aa44fdf50f"
+    },
+    {
+      "path": ".tmp/pulse-workspace-integration-20261013/ha-compat/natural-7b2-v6.json",
+      "sha256": "0eccb2218dea59295e2434578cc138c51cf555d20c79ec11f88f2ae8a13057a4"
+    },
+    {
+      "path": ".tmp/pulse-workspace-integration-20261013/ha-compat/arm-postcheck-7b2-v6.json",
+      "sha256": "439e9b8f0ec13b1b7313785ca4ec4198ac36429b484f862e102f934bb5197098"
+    }
+  ]
+}

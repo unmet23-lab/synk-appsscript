@@ -7,6 +7,7 @@ import {Store} from './store.mjs';
 import {createClientProjectsService} from './client-projects.mjs';
 import {createClientWorkflowService} from './client-workflow.mjs';
 import {createClientNotificationsService} from './client-notifications.mjs';
+import {createPulseStudioService} from './pulse-studio.mjs';
 const rejects=(run,status)=>assert.throws(run,error=>error.status===status);
 const tick=()=>new Promise(resolve=>setImmediate(resolve));
 const draft={title:'알림 왕복 합성 프로젝트',customerName:'합성 고객',summary:'고객 시안 검토',internalNotes:'PRIVATE-PROJECT'};
@@ -94,4 +95,83 @@ test('failed source transaction rolls back event together and emits no uncommitt
   const f=await fixture(t),before=JSON.stringify(f.row());await tick();f.changes.length=0;
   assert.throws(()=>f.store.transaction(()=>{f.customerAction('support',{text:'rollback message'});throw new Error('synthetic rollback');}),/synthetic rollback/);
   await tick();assert.equal(JSON.stringify(f.row()),before);assert.equal(f.notifications.unreadCount(f.users.owner),0);assert.deepEqual(f.changes,[]);
+});
+
+test('a feedback round creates one durable generic alert anchored to its first message while retaining individual workflow items',async t=>{
+  const f=await fixture(t),version=f.version('v1'),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  for(let i=0;i<3;i++)studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'save_feedback_draft',versionId:version.id,text:'PRIVATE-ROUND-ITEM-'+i,seconds:i});
+  assert.equal(f.notifications.list(f.users.owner).notifications.some(item=>item.type==='customer_feedback_round'),false);
+  const draft=studio.customerState(f.customer.session).project.studio.feedbackRounds.drafts[0];
+  studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'submit_feedback_round',draftId:draft.id,versionId:version.id,representativeName:'PRIVATE-REPRESENTATIVE-NAME',confirmed:true});
+  const round=f.row().studio.feedbackRounds.rounds[0],alerts=f.notifications.list(f.users.owner).notifications.filter(item=>item.type==='customer_feedback_round');
+  assert.equal(alerts.length,1);assert.equal(alerts[0].messageId,round.items[0].messageId);assert.equal(alerts[0].versionId,version.id);assert.equal(alerts[0].tab,'review');assert.match(alerts[0].text,/1차 수정 의견 3개/);assert.doesNotMatch(JSON.stringify(alerts),/PRIVATE-ROUND-ITEM|PRIVATE-REPRESENTATIVE-NAME/);
+  const link=new URL(alerts[0].href,'https://company.example');assert.equal(link.searchParams.get('message'),round.items[0].messageId);assert.equal(link.searchParams.get('version'),version.id);assert.equal(link.searchParams.get('seconds'),'0');
+  const events=f.row().notificationEvents.filter(event=>event.type==='customer_feedback_round');assert.equal(events.length,1);assert.equal(events[0].feedbackRoundId,round.id);assert.doesNotMatch(JSON.stringify(events),/PRIVATE-|text|body/);
+  assert.equal(f.notifications.list(f.users.owner).notifications.filter(item=>item.type==='customer_feedback').length,0);
+  assert.equal(f.workflow.workspace(f.users.owner).items.filter(item=>item.kind==='feedback').length,3);
+  const before=JSON.stringify(f.row());for(let i=0;i<3;i++)assert.equal(f.notifications.list(f.users.owner).notifications.filter(item=>item.type==='customer_feedback_round').length,1);assert.equal(JSON.stringify(f.row()),before);
+  await f.restart();assert.equal(f.notifications.list(f.users.owner).notifications.find(item=>item.type==='customer_feedback_round').id,alerts[0].id);
+});
+
+test('round alerts preserve legacy individual feedback and hide when the linked round or first message disappears',async t=>{
+  const f=await fixture(t),version=f.version('v1'),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  f.customerAction('feedback',{versionId:version.id,text:'기존 개별 의견',seconds:2});
+  studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'save_feedback_draft',versionId:version.id,text:'취합한 의견',seconds:3});
+  const draft=studio.customerState(f.customer.session).project.studio.feedbackRounds.drafts[0];studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'submit_feedback_round',draftId:draft.id,versionId:version.id,representativeName:'담당자',confirmed:true});
+  const alerts=f.notifications.list(f.users.owner).notifications;assert.equal(alerts.filter(item=>item.type==='customer_feedback').length,1);assert.equal(alerts.filter(item=>item.type==='customer_feedback_round').length,1);
+  const source=f.row(),roundAlert=alerts.find(item=>item.type==='customer_feedback_round');f.store.put('clientProjects',source.id,{...source,studio:{...source.studio,feedbackRounds:{...source.studio.feedbackRounds,rounds:[]}}});assert.equal(f.notifications.list(f.users.owner).notifications.some(item=>item.id===roundAlert.id),false);
+  f.store.put('clientProjects',source.id,{...source,messages:source.messages.filter(item=>item.id!==roundAlert.messageId)});assert.equal(f.notifications.list(f.users.owner).notifications.some(item=>item.id===roundAlert.id),false);
+});
+
+test('project news projects only the selected accessible project and GET never marks anything read',async t=>{
+  const f=await fixture(t);f.customerAction('support',{text:'선택 프로젝트 소식'});
+  const second=f.projects.save(f.users.owner,{...draft,title:'다른 프로젝트'}).project,customer=f.projects.open(f.projects.invite(f.users.owner,second.id,{revision:second.revision}).invite);
+  f.projects.customerAction(customer.session,customer.csrf,{revision:f.store.get('clientProjects',second.id).revision,action:'support',text:'다른 프로젝트 소식'});
+  const before=JSON.stringify(f.store.all('clientProjects')),reads=f.store.all('clientNotificationReads');
+  t.mock.method(f.projects,'workspace',()=>{throw new Error('Scoped news must not build every project projection');});
+  const news=f.notifications.projectNews(f.users.owner,f.row().id);assert.equal(news.projectId,f.row().id);assert.equal(news.revision,f.row().revision);assert.equal(news.unreadCount,1);assert.equal(news.items.length,1);assert.equal(news.items[0].body,'선택 프로젝트 소식');
+  assert.equal(JSON.stringify(f.store.all('clientProjects')),before);assert.deepEqual(f.store.all('clientNotificationReads'),reads);
+});
+
+test('project read changes one personal receipt, preserves every source field, persists, and agrees with existing notifications',async t=>{
+  const f=await fixture(t);f.customerAction('support',{text:'첫 소식'});f.customerAction('support',{text:'둘째 소식'});
+  const first=f.notifications.projectNews(f.users.owner,f.row().id),id=first.items[0].id,before=JSON.stringify(f.row());
+  const after=f.notifications.readProjectNews(f.users.owner,f.row().id,{id});assert.equal(after.unreadCount,1);assert.equal(after.items.some(item=>item.id===id),false);assert.equal(JSON.stringify(f.row()),before);assert.equal(f.store.all('clientNotificationReads').length,1);
+  const saved=f.store.all('clientNotificationReads');f.notifications.readProjectNews(f.users.owner,f.row().id,{id});assert.deepEqual(f.store.all('clientNotificationReads'),saved);
+  assert.ok(f.notifications.list(f.users.owner).notifications.find(item=>item.id===id).readAt);await f.restart();assert.equal(f.notifications.projectNews(f.users.owner,f.row().id).unreadCount,1);assert.equal(JSON.stringify(f.row()),before);
+  f.notifications.read(f.users.owner,after.items[0].id);assert.equal(f.notifications.projectNews(f.users.owner,f.row().id).unreadCount,0);
+});
+
+test('project news read rejects bulk, foreign-project and no-longer-authorized selections without writes',async t=>{
+  const f=await fixture(t);f.customerAction('support',{text:'하나만 확인'});const id=f.notifications.projectNews(f.users.owner,f.row().id).items[0].id;
+  const second=f.projects.save(f.users.owner,{...draft,title:'다른 프로젝트'}).project;
+  for(const input of [{all:true},{ids:[id]},{id,all:false},{id:''},{id:'x'.repeat(1001)},null,[]])rejects(()=>f.notifications.readProjectNews(f.users.owner,f.row().id,input),400);
+  rejects(()=>f.notifications.readProjectNews(f.users.owner,second.id,{id}),404);
+  for(const name of ['peer','other'])rejects(()=>f.notifications.projectNews(f.users[name],f.row().id),404);
+  for(const name of ['viewer','admin','manager']){assert.equal(f.notifications.projectNews(f.users[name],f.row().id).unreadCount,0);rejects(()=>f.notifications.readProjectNews(f.users[name],f.row().id,{id}),404);}
+  f.store.put('users',f.users.owner.id,{...f.users.owner,role:'viewer'});assert.equal(f.notifications.projectNews(f.users.owner,f.row().id).unreadCount,0);rejects(()=>f.notifications.readProjectNews(f.users.owner,f.row().id,{id}),404);
+  assert.equal(f.store.all('clientNotificationReads').length,0);
+});
+
+test('project news keeps reviewer reads personal and hides archived or removed message sources',async t=>{
+  const f=await fixture(t),version=f.version('승인 시안');f.customerAction('approve',{versionId:version.id});
+  const owner=f.notifications.projectNews(f.users.owner,f.row().id),approval=owner.items.find(item=>item.type==='customer_approval');assert.ok(approval);
+  f.notifications.readProjectNews(f.users.reviewer,f.row().id,{id:approval.id});assert.ok(f.notifications.projectNews(f.users.owner,f.row().id).items.some(item=>item.id===approval.id));
+  const row=f.row();f.store.put('clientProjects',row.id,{...row,messages:row.messages.filter(message=>message.id!==approval.messageId)});assert.equal(f.notifications.projectNews(f.users.owner,row.id).items.some(item=>item.id===approval.id),false);rejects(()=>f.notifications.readProjectNews(f.users.owner,row.id,{id:approval.id}),404);
+  f.store.put('clientProjects',row.id,{...row,stage:'archived'});assert.equal(f.notifications.projectNews(f.users.owner,row.id).unreadCount,0);rejects(()=>f.notifications.readProjectNews(f.users.owner,row.id,{id:approval.id}),404);
+  f.store.remove('clientProjects',row.id);rejects(()=>f.notifications.projectNews(f.users.owner,row.id),404);
+});
+
+test('studio news links the original PULSE tab and full unread count is not capped at 1000',async t=>{
+  const f=await fixture(t),studio=createPulseStudioService({store:f.store,clientProjects:f.projects});
+  studio.customerMutate(f.customer.session,f.customer.csrf,{revision:f.row().revision,action:'save_preferences',preferences:{mood:'PRIVATE-STUDIO-DRAFT'}});
+  f.store.put('clientProjects',f.row().id,{...f.row(),nextStep:'UNRELATED-CURRENT-NEXT-STEP'});
+  const first=f.notifications.projectNews(f.users.owner,f.row().id).items.find(item=>item.type==='customer_preferences'),url=new URL(first.href,'https://workspace.example');assert.equal(url.pathname,'/pulse-app/');assert.equal(url.searchParams.get('mode'),'staff');assert.equal(url.searchParams.get('project'),f.row().id);assert.equal(url.searchParams.get('tab'),'direction');assert.doesNotMatch(JSON.stringify(first),/PRIVATE-STUDIO-DRAFT/);
+  assert.equal(first.body,'고객이 남긴 취향을 PULSE 원문에서 확인해 주세요.');assert.doesNotMatch(first.body,/UNRELATED-CURRENT/);
+  const legacyItem=f.notifications.list(f.users.owner).notifications.find(item=>item.id===first.id),legacy=new URL(legacyItem.href,'https://workspace.example');assert.equal(legacy.pathname,'/');assert.equal(legacy.searchParams.get('section'),'clients');assert.equal(legacyItem.body,'UNRELATED-CURRENT-NEXT-STEP');
+  const source=f.row(),event=source.notificationEvents.find(event=>event.id===first.id);
+  for(const [type,tab,description]of [['customer_reference','direction','참고자료 의견'],['customer_strategy','strategy','작성한 제작 설계'],['customer_strategy_confirmed','strategy','제작 설계 확인'],['customer_concept','concepts','선택한 콘셉트'],['customer_scene','storyboard','장면 검토'],['customer_comment','history','기획 의견']]){f.store.put('clientProjects',source.id,{...source,notificationEvents:[{...event,type,tab}]});const item=f.notifications.projectNews(f.users.owner,source.id).items[0];assert.ok(item.body.includes(description),type);assert.doesNotMatch(item.body,/UNRELATED-CURRENT/);assert.equal(new URL(item.href,'https://workspace.example').searchParams.get('tab'),tab);}
+  f.store.put('clientProjects',source.id,source);
+  const row=f.row();f.store.put('clientProjects',row.id,{...row,notificationEvents:Array.from({length:1005},(_,i)=>({...row.notificationEvents.find(event=>event.id===first.id),id:'count-test:'+i}))});
+  const result=f.notifications.projectNews(f.users.owner,row.id);assert.equal(result.unreadCount,1005);assert.equal(result.items.length,1005);
 });

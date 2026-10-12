@@ -31,5 +31,5 @@ test('a newer destination or a manual room choice wins over an older pending req
 test('personal shortcuts open assigned tasks and saved messages even after using other filters',async()=>{
  const f=fixture();f.run("state.taskScope='all';state.taskFilter='done';state.savedView='reminders'");
  await f.message({requestId:'tasks',panel:'tasks'});assert.equal(f.state.taskScope,'mine');assert.equal(f.state.taskFilter,'all');
- await f.message({requestId:'saved',panel:'saved'});assert.equal(f.state.savedView,'saved');assert.deepEqual(f.calls.filter(row=>row[0]==='panel').map(row=>Array.from(row)),[['panel','tasks'],['panel','saved']]);
+ await f.message({requestId:'saved',panel:'saved'});assert.equal(f.state.savedView,'saved');assert.deepEqual(f.calls.filter(row=>row[0]==='panel').map(row=>Array.from(row)),[['panel','workday'],['panel','saved']]);
 });

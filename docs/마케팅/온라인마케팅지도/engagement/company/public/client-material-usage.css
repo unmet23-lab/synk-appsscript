@@ -1,0 +1,6 @@
+.cmu-controls{padding:18px 0;margin:12px 0;border-top:1px solid var(--line,#e4e4e4);border-bottom:1px solid var(--line,#e4e4e4)}
+.cmu-controls h3{margin:0 0 10px;font-size:16px}.cmu-controls p,.cmu-item p{line-height:1.7;overflow-wrap:anywhere}
+.cmu-summary{font-weight:600}.cmu-note{color:#795a2d}.cmu-filter{max-width:260px;margin:12px 0}
+.cmu-item{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line,#e4e4e4)}
+.cmu-item form{display:flex;align-items:end;flex-wrap:wrap;gap:10px}.cmu-item .cd-field{flex:1;min-width:140px}.cmu-item select{width:100%;max-width:100%}.cmu-item button{flex:none}.cmu-item p{font-size:13px;margin:0 0 8px}
+@media(max-width:480px){.cmu-item form{align-items:stretch}.cmu-item .cd-field{flex-basis:100%}.cmu-item button{width:100%}}

@@ -5,6 +5,8 @@ const marinSessionKey=userId=>`synk-marin:session:${userId}`;
 function safeMarinAction(value){
   if(!value||typeof value!=='object'||typeof value.label!=='string'||!value.label.trim())return null;
   const label=value.label.trim().slice(0,100),validId=id=>typeof id==='string'&&/^[a-zA-Z0-9_. -]{1,100}$/.test(id);
+  if(value.type==='weekly-summary')return{type:'weekly-summary',label};
+  if(value.type==='automation-health')return{type:'automation-health',label};
   if(value.type==='profile'){
     const draft={};for(const key of ['skills','preferredTasks'])if(Array.isArray(value.draft?.[key]))draft[key]=[...new Set(value.draft[key].filter(id=>typeof id==='string'&&/^[a-z-]{1,40}$/.test(id)))].slice(0,12);
     const hours=value.draft?.availableHours;if(typeof hours==='number'&&Number.isFinite(hours)&&hours>=0&&hours<=80&&Number.isInteger(hours*2))draft.availableHours=hours;
@@ -85,6 +87,8 @@ async function submitMarinMessage(retry=false){
 }
 async function dispatchMarinAction(entryIndex,actionIndex){
   const action=safeMarinAction(marinHome.entries[Number(entryIndex)]?.actions?.[Number(actionIndex)]);if(!action||marinHome.userId!==state.user?.id)return false;
+  if(action.type==='weekly-summary'){location.href=new URL('/?tab=workroom&section=tools&tool=weekly',location.origin).href;return true;}
+  if(action.type==='automation-health'){location.href=new URL('/?tab=workroom&section=tools&tool=automation',location.origin).href;return true;}
   if(action.type==='profile'){if(typeof openMarinProfile==='function'){await openMarinProfile(action.draft);return true;}notify('업무 카드를 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='team-builder'){if(typeof openMarinTeamBuilder==='function'){await openMarinTeamBuilder();return true;}notify('팀 구성 화면을 준비하고 있어요. 잠시 뒤 다시 불러와 주세요.');return false;}
   if(action.type==='messenger')return openWorkspaceDestination(action);

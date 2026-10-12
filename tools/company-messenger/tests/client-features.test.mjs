@@ -9,9 +9,9 @@ function fixture(){
   const node=()=>({innerHTML:'',textContent:'',value:'',disabled:false,open:false,classList:{add(){},remove(){},toggle(){}},addEventListener(){},querySelector(){return null;},querySelectorAll(){return[];}});
   nodes.set('#app',node());nodes.set('#modal',node());
   const document={hidden:false,activeElement:null,querySelector:selector=>nodes.get(selector)||null,querySelectorAll:()=>[],addEventListener(){}};
-  const context=vm.createContext({document,location:{pathname:'/',origin:'http://localhost'},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,crypto:{randomUUID:()=> 'fixture-uuid'},CSS:{escape:String}});
+  const context=vm.createContext({document,location:{pathname:'/',origin:'http://localhost'},window:{parent:{},matchMedia:()=>({matches:false,addEventListener(){}}),addEventListener(){}},localStorage:{getItem:key=>storage.get(key)??null,setItem:(key,value)=>storage.set(key,String(value)),removeItem:key=>storage.delete(key)},setTimeout:()=>1,clearTimeout(){},URL,URLSearchParams,crypto:{randomUUID:()=> '00000000-0000-4000-8000-000000000001'},CSS:{escape:String}});
   const run=code=>vm.runInContext(code,context);
-  run(source);run("Object.assign(state,{user:{id:'u1',name:'담당자',role:'owner'},channels:[{id:'c1',kind:'channel',name:'팀',memberIds:['u1'],unread:1}],channelId:'c1',chatCategory:'all'});");
+  run(source);run("Object.assign(state,{sendRecovery:{messages:true,uploads:true},user:{id:'u1',name:'담당자',role:'owner'},channels:[{id:'c1',kind:'channel',name:'팀',memberIds:['u1'],unread:1}],channelId:'c1',chatCategory:'all'});");
   return{run,context,nodes,storage,document,node};
 }
 
