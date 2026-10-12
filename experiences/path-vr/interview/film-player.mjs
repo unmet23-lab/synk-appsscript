@@ -7,6 +7,10 @@
  * pause/stop cancel asynchronous work; play/queue callers handle AbortError.
  */
 const ORIGIN_FALLBACK = 'https://path.invalid/interview/';
+// Public builds serve the films from the PATH media bucket (tools/upload-path-media.mjs) because
+// GitHub Pages empties its cache on every site deploy. Only this fixed https prefix is accepted
+// besides the page's own origin; the bucket answers synk.im with CORS so the room can draw frames.
+export const TRUSTED_FILM_PREFIXES = Object.freeze(['https://storage.googleapis.com/synk-public-media/path/']);
 const abortError = () => new DOMException('영상 작업이 취소되었습니다.', 'AbortError');
 function filmError(code, message) { const error = new Error(message); error.name = 'FilmPlaybackError'; error.code = code; return error; }
 const playbackStart = (clip) => clip.playbackStartSeconds === undefined ? 0 : clip.playbackStartSeconds;
@@ -27,7 +31,8 @@ export function resolveFilmClipUrl(src, { moduleUrl = import.meta.url, pageUrl =
     // one level deeper, so document-relative resolution would be incorrect.
     const moduleBase = /^https?:/.test(moduleUrl) ? moduleUrl : new URL('./film-player.mjs', ORIGIN_FALLBACK).href;
     const url = new URL(src, moduleBase);
-    if (!['http:', 'https:'].includes(url.protocol) || url.origin !== new URL(pageUrl).origin || url.username || url.password || url.hash) return null;
+    const trusted = url.protocol === 'https:' && !url.search && TRUSTED_FILM_PREFIXES.some((prefix) => url.href.startsWith(prefix));
+    if (!['http:', 'https:'].includes(url.protocol) || (url.origin !== new URL(pageUrl).origin && !trusted) || url.username || url.password || url.hash) return null;
     return /\.(?:mp4|webm)$/i.test(decodeURIComponent(url.pathname)) ? url.href : null;
   } catch { return null; }
 }
@@ -51,7 +56,7 @@ export function evaluateFilmReadiness(manifest, requiredIds) {
   for (const id of new Set(ids)) {
     const clip = clips.find((candidate) => candidate?.id === id);
     if (!clip || !clip.src || clip.status !== 'ready') { missing.push(id); continue; }
-    if (!clipUrl(clip.src)) errors.push(`${id}: 같은 출처의 MP4/WebM 원본이 필요합니다.`);
+    if (!clipUrl(clip.src)) errors.push(`${id}: 같은 출처나 PATH 영상 저장소의 MP4/WebM 원본이 필요합니다.`);
     if (!['speaking', 'listening'].includes(clip.kind)) errors.push(`${id}: 영상 종류를 확인해 주세요.`);
     if (clip.audio !== (clip.kind === 'listening' ? 'silent' : 'native')) errors.push(`${id}: 질문은 원본 음성, 경청은 무음이어야 합니다.`);
     const start = playbackStart(clip);
@@ -71,6 +76,8 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded 
   Object.assign(stage.style, { position: 'relative', width: '100%', height: '100%', minHeight: '1px', background: '#000' });
   const slots = [0, 1].map((index) => {
     const video = document.createElement('video');
+    // CORS before any src: frames from the media bucket must stay usable as WebGL textures.
+    video.crossOrigin = 'anonymous';
     video.preload = 'auto'; video.playsInline = true; video.controls = false; video.muted = true; video.loop = false;
     video.setAttribute('playsinline', ''); video.setAttribute('aria-hidden', 'true'); video.tabIndex = -1;
     Object.assign(video.style, { position: 'absolute', inset: '0', width: '100%', height: '100%', objectFit: 'contain', opacity: '0', pointerEvents: 'none', transition: transitionMs ? `opacity ${transitionMs}ms linear` : 'none' });

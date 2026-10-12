@@ -4,7 +4,8 @@
  */
 import { publicFiles, WHISPER_PUBLIC_FILES } from '../experiences/path-vr/server.mjs';
 import { createHash } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, readFileSync } from 'node:fs';
+import { mediaPublicUrl } from './upload-path-media.mjs';
 import { copyFile, lstat, mkdir, readFile, readdir, realpath, rmdir, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -49,7 +50,7 @@ export function isPackageRuntime(file) {
       : /^[a-zA-Z0-9_.-]+\.(?:png|jpe?g|webp|hdr|exr)$/.test(name);
 }
 
-const PAGE_CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'none'";
+const PAGE_CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: https://storage.googleapis.com; font-src 'self'; connect-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'none'";
 // Pages does not interpret _headers. Meta CSP cannot enforce frame-ancestors;
 // omit that directive rather than reporting a protection the browser ignores.
 export const PAGES_CSP = PAGE_CSP.replace("; frame-ancestors 'none'", '');
@@ -106,9 +107,17 @@ export function pagesRuntimeFile(file, source) {
       const runtime = Object.fromEntries(clipKeys.filter((key) => key in clip).map((key) => [key, clip[key]]));
       const transition = Object.fromEntries(['headHoldMs', 'tailHoldMs', 'validated'].map((key) => [key, clip.transition[key]]));
       const variants = Object.fromEntries(Object.entries(clip.variants).map(([quality, media]) => [quality, Object.fromEntries(mediaKeys.map((key) => [key, media[key]]))]));
-      return { ...runtime, transition, variants };
+      // Films come from the PATH media bucket (tools/upload-path-media.mjs): Pages empties its cache on
+      // every site deploy and 4K files then arrived at about 200KB/s. The object path carries the file
+      // hash, so check the local file still has that hash before pointing at it.
+      const hosted = (media) => {
+        const bytes = readFileSync(path.join(SOURCE, 'interview', media.src));
+        if (createHash('sha256').update(bytes).digest('hex') !== media.sha256) throw new Error('Video hash does not match its file: ' + media.src);
+        return { ...media, src: mediaPublicUrl(path.posix.basename(media.src), media.sha256) };
+      };
+      return { ...hosted(runtime), transition, variants: Object.fromEntries(Object.entries(variants).map(([quality, media]) => [quality, hosted(media)])) };
     });
-    return { data: Buffer.from(JSON.stringify(result, null, 2) + '\n'), transform: 'public-runtime-video-manifest-v1' };
+    return { data: Buffer.from(JSON.stringify(result, null, 2) + '\n'), transform: 'public-runtime-video-manifest-v2' };
   }
   return { data: source, transform: 'byte-copy' };
 }

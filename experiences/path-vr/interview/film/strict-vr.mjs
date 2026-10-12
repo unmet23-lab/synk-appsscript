@@ -424,8 +424,10 @@ export function createStrictVR({ mount, getFrameState = () => [], getState = () 
     if (!previewing) return;
     previewing = false; stage?.stopPreview();
     if (globalThis.document?.body) document.body.style.overflow = bodyOverflow;
-    if (mount) { mount.hidden = true; if (mount.style) mount.style.cssText = previewStyle; mount.setAttribute?.('aria-hidden', 'true'); }
+    // Hand focus back before hiding the room, so aria-hidden never lands on a focused element.
     previewFocus?.focus?.({ preventScroll: true }); previewFocus = null;
+    if (mount?.contains?.(globalThis.document?.activeElement)) globalThis.document.activeElement.blur?.();
+    if (mount) { mount.hidden = true; if (mount.style) mount.style.cssText = previewStyle; mount.setAttribute?.('aria-hidden', 'true'); }
     emit(supported ? 'ready' : 'unsupported', supported ? 'VR 사용 가능 · 음성 입력을 준비한 뒤 들어가세요.' : '화면에서 면접을 계속할 수 있습니다.');
   }
   async function dispose() {

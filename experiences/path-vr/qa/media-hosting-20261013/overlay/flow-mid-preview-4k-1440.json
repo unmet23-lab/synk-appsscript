@@ -1,0 +1,93 @@
+{
+ "scenario": "mid",
+ "quality": "4k",
+ "width": 1440,
+ "overlay": true,
+ "startToQuestionMs": 5891,
+ "roomRequestsBeforeQuestion": 0,
+ "resumeDuringBuild": {
+  "pauseDisabled": true,
+  "previewDisabled": true,
+  "vr": "좌석 주변 공간을 준비하고 있습니다.",
+  "phaseAfterTry": "paused"
+ },
+ "afterOpen": {
+  "pauseDisabled": false,
+  "previewDisabled": false
+ },
+ "roomRequestsOnPreview": 12,
+ "afterEsc": {
+  "phase": "paused",
+  "previewHidden": true
+ },
+ "secondOpenPhase": "listening",
+ "completeAtMs": 29027,
+ "roomRequestsAfterComplete": 0,
+ "ok": true,
+ "requests": [
+  {
+   "t": 7423,
+   "file": "vendor/three.module.js"
+  },
+  {
+   "t": 7440,
+   "file": "vendor/three.core.js"
+  },
+  {
+   "t": 7526,
+   "file": "film/room-reference-4k.jpg"
+  },
+  {
+   "t": 7545,
+   "file": "room/carpet-4k.jpg"
+  },
+  {
+   "t": 7547,
+   "file": "room/front-room-extension-4k.jpg"
+  },
+  {
+   "t": 7548,
+   "file": "room/front-room-wide-4k.jpg"
+  },
+  {
+   "t": 7552,
+   "file": "room/left-wall-detail-4k.jpg"
+  },
+  {
+   "t": 7553,
+   "file": "room/right-wall-detail-4k.jpg"
+  },
+  {
+   "t": 7556,
+   "file": "room/back-wall-detail-4k.jpg"
+  },
+  {
+   "t": 7557,
+   "file": "film/room-poster-4k.jpg"
+  },
+  {
+   "t": 7559,
+   "file": "room/desk-4k.jpg"
+  },
+  {
+   "t": 7561,
+   "file": "room/ceiling-detail-4k.jpg"
+  }
+ ],
+ "gcs": {
+  "count": 7,
+  "statuses": [
+   206
+  ],
+  "acao": [
+   "https://synk.im"
+  ],
+  "files": [
+   "strict-followup-experience-4k.mp4",
+   "strict-followup-plan-4k.mp4",
+   "strict-question-4k.mp4",
+   "strict-listening-4k.mp4",
+   "strict-listen-plan-tail-4k.mp4"
+  ]
+ }
+}
