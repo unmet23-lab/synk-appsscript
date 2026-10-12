@@ -36,7 +36,13 @@ output('src/generated/world-learning-host.cjs', fs.readFileSync(path.join(source
 for (const file of ['SUIT-Variable.woff2', 'InterTight-700.woff2', 'scrapbook.css', 'sticker-book.webp', 'thread-shift.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'experiences/learning-hub/assets', file)));
 for (const file of ['slab-coral-long.webp', 'slab-cream-long.webp', 'chip-blush-long.webp', 'badge-cream.webp', 'badge-check.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui', file)));
 output('assets/tex-blush.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui/tex-blush.webp')));
-for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png', 'studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
+// 플랫폼 글꼴: SUIT를 화면 글자·나머지 두 조각(SYNK Sans), 화살표 네 글자 조각, TTF의 WOFF2(tools/build-platform-fonts.py).
+for (const file of ['SYNKSans-ui.woff2', 'SYNKSans-rest.woff2', 'SYNKArrow.woff2', 'InterTight-Regular.woff2', 'InterTight-Medium.woff2', 'DMMono-Medium.woff2']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트/플랫폼_웹', file)));
+// 플랫폼 카드(235px)·상세(453px)에는 800px 사본이면 고해상도 화면에서도 같아 보인다(168KB→99KB).
+output('assets/path-vr-felt.webp', fs.readFileSync(path.join(sourceRoot, 'experiences/path-vr/assets/path-vr-felt-800.webp')));
+for (const file of ['studio-camera.webp', 'wide-lapis.webp', 'wide-butter.webp']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'desktop/assets/launcher', file)));
+// 회원 혜택 그림 세 장은 웹에서 보이는 크기에 맞춘 판이다(이름·형식 그대로, 데스크톱 앱은 원본을 쓴다).
+for (const file of ['care-note.webp', 'fortune-star.avif', 'teacher-cover.png']) output(`assets/member/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/플랫폼_시그널/웹그림', file)));
 for (const file of ['laptop-felt.webp', 'sticker-search.webp', 'sticker-person.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/마케팅/맞춤도구/assets', file)));
 output('assets/synk-logo.svg', fs.readFileSync(path.join(sourceRoot, 'docs/홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg')));
 for (const id of ['platform', 'world']) output(`assets/app-${id}.png`, fs.readFileSync(path.join(sourceRoot, `desktop/assets/${id}.png`)));

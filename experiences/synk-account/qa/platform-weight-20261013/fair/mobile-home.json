@@ -1,0 +1,108 @@
+{
+ "profile": "mobile",
+ "rounds": 5,
+ "runs": {
+  "old": [
+   {
+    "lcp": 1488,
+    "fcp": 1104,
+    "load": 7095,
+    "cssEnd": 501,
+    "fontEnd": 7066,
+    "kb": 1369
+   },
+   {
+    "lcp": 1304,
+    "fcp": 760,
+    "load": 7121,
+    "cssEnd": 485,
+    "fontEnd": 7092,
+    "kb": 1369
+   },
+   {
+    "lcp": 1716,
+    "fcp": 916,
+    "load": 7127,
+    "cssEnd": 512,
+    "fontEnd": 7101,
+    "kb": 1369
+   },
+   {
+    "lcp": 2300,
+    "fcp": 1084,
+    "load": 7238,
+    "cssEnd": 521,
+    "fontEnd": 7201,
+    "kb": 1369
+   },
+   {
+    "lcp": 1768,
+    "fcp": 1100,
+    "load": 7193,
+    "cssEnd": 533,
+    "fontEnd": 7120,
+    "kb": 1369
+   }
+  ],
+  "new": [
+   {
+    "lcp": 1708,
+    "fcp": 928,
+    "load": 2557,
+    "cssEnd": 528,
+    "fontEnd": 2542,
+    "kb": 438
+   },
+   {
+    "lcp": 1412,
+    "fcp": 812,
+    "load": 2535,
+    "cssEnd": 526,
+    "fontEnd": 2524,
+    "kb": 438
+   },
+   {
+    "lcp": 1496,
+    "fcp": 896,
+    "load": 2547,
+    "cssEnd": 530,
+    "fontEnd": 2535,
+    "kb": 438
+   },
+   {
+    "lcp": 1312,
+    "fcp": 828,
+    "load": 2560,
+    "cssEnd": 554,
+    "fontEnd": 2549,
+    "kb": 438
+   },
+   {
+    "lcp": 2084,
+    "fcp": 932,
+    "load": 2572,
+    "cssEnd": 555,
+    "fontEnd": 2551,
+    "kb": 438
+   }
+  ]
+ },
+ "summary": {
+  "old": {
+   "fcp": 1084,
+   "lcp": 1716,
+   "load": 7127,
+   "kb": 1369,
+   "cssEnd": 512,
+   "fontEnd": 7101
+  },
+  "new": {
+   "fcp": 896,
+   "lcp": 1496,
+   "load": 2557,
+   "kb": 438,
+   "cssEnd": 530,
+   "fontEnd": 2542
+  }
+ }
+}

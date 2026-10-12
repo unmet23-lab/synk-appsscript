@@ -1,0 +1,76 @@
+{
+ "profile": "mobile",
+ "rounds": 3,
+ "runs": {
+  "old": [
+   {
+    "lcp": 7748,
+    "fcp": 1868,
+    "load": 17119,
+    "cssEnd": 641,
+    "fontEnd": 10585,
+    "kb": 3348
+   },
+   {
+    "lcp": 4828,
+    "fcp": 880,
+    "load": 16839,
+    "cssEnd": 418,
+    "fontEnd": 10048,
+    "kb": 3348
+   },
+   {
+    "lcp": 6332,
+    "fcp": 900,
+    "load": 16802,
+    "cssEnd": 517,
+    "fontEnd": 11945,
+    "kb": 3348
+   }
+  ],
+  "new": [
+   {
+    "lcp": 2232,
+    "fcp": 940,
+    "load": 5181,
+    "cssEnd": 462,
+    "fontEnd": 2936,
+    "kb": 975
+   },
+   {
+    "lcp": 2248,
+    "fcp": 1032,
+    "load": 5314,
+    "cssEnd": 675,
+    "fontEnd": 3213,
+    "kb": 975
+   },
+   {
+    "lcp": 2108,
+    "fcp": 840,
+    "load": 5223,
+    "cssEnd": 546,
+    "fontEnd": 3091,
+    "kb": 975
+   }
+  ]
+ },
+ "summary": {
+  "old": {
+   "fcp": 900,
+   "lcp": 6332,
+   "load": 16839,
+   "kb": 3348,
+   "cssEnd": 517,
+   "fontEnd": 10585
+  },
+  "new": {
+   "fcp": 940,
+   "lcp": 2232,
+   "load": 5223,
+   "kb": 975,
+   "cssEnd": 546,
+   "fontEnd": 3091
+  }
+ }
+}
