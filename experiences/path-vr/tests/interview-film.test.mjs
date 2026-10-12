@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { createFilmPlayer, evaluateFilmReadiness, resolveFilmClipUrl } from '../interview/film-player.mjs';
+import { chooseFilmSources, createFilmPlayer, evaluateFilmReadiness, resolveFilmClipUrl } from '../interview/film-player.mjs';
 
 const tick = () => new Promise((resolve) => setTimeout(resolve, 2));
 async function until(predicate) { for (let i = 0; i < 100; i++) { if (predicate()) return; await tick(); } assert.fail('condition did not become true'); }
@@ -680,19 +680,75 @@ test('same-origin film URLs retain a mounted path without weakening media valida
 
 test('the PATH media bucket is the only other origin a film may come from', () => {
   const context = { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' };
-  const hosted = 'https://storage.googleapis.com/synk-public-media/path/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4';
+  const hosted = 'https://storage.googleapis.com/synk-path-media/path/v2/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4';
   assert.equal(resolveFilmClipUrl(hosted, context), hosted);
   for (const invalid of [
-    'http://storage.googleapis.com/synk-public-media/path/interview/film/x/clip.mp4',
+    'http://storage.googleapis.com/synk-path-media/path/interview/film/x/clip.mp4',
     'https://storage.googleapis.com/another-bucket/path/clip.mp4',
-    'https://storage.googleapis.com/synk-public-media/other/clip.mp4',
-    'https://storage.googleapis.com/synk-public-media/path/../other/clip.mp4',
-    'https://storage.googleapis.com/synk-public-media/path/clip.mp4?alt=media',
-    'https://storage.googleapis.com/synk-public-media/path/clip.mp4#t=1',
-    'https://user@storage.googleapis.com/synk-public-media/path/clip.mp4',
-    'https://storage.googleapis.com.evil.example/synk-public-media/path/clip.mp4',
-    'https://storage.googleapis.com/synk-public-media/path/poster.jpg',
+    // The first bucket (synk-public-media) is retired; manifests may no longer point at it.
+    'https://storage.googleapis.com/synk-public-media/path/interview/film/8e8db2f4a5e98ff1/strict-question-4k.mp4',
+    'https://storage.googleapis.com/synk-path-media/other/clip.mp4',
+    'https://storage.googleapis.com/synk-path-media/path/../other/clip.mp4',
+    'https://storage.googleapis.com/synk-path-media/path/clip.mp4?alt=media',
+    'https://storage.googleapis.com/synk-path-media/path/clip.mp4#t=1',
+    'https://user@storage.googleapis.com/synk-path-media/path/clip.mp4',
+    'https://storage.googleapis.com.evil.example/synk-path-media/path/clip.mp4',
+    'https://storage.googleapis.com/synk-path-media/path/poster.jpg',
   ]) assert.equal(resolveFilmClipUrl(invalid, context), null, invalid);
+});
+
+function hostedManifest() {
+  const bucket = 'https://storage.googleapis.com/synk-path-media/path/v2/interview/film/';
+  const media = (name, hash) => ({ src: `${bucket}${hash}/${name}`, fallbackSrc: `../assets/interview/film/${name}`, sha256: hash.padEnd(64, '0') });
+  return { status: 'ready', clips: [
+    { id: 'strict-question', ...media('strict-question-4k.mp4', '1111111111111111'), variants: { '4k': media('strict-question-4k.mp4', '1111111111111111'), '720p': media('strict-question-720p.mp4', '2222222222222222') } },
+    { id: 'strict-listening', ...media('strict-listening-4k.mp4', '3333333333333333'), variants: { '4k': media('strict-listening-4k.mp4', '3333333333333333'), '720p': media('strict-listening-720p.mp4', '4444444444444444') } },
+  ] };
+}
+const sameOrigin = (manifest) => manifest.clips.flatMap((clip) => [clip, ...Object.values(clip.variants)]).every((media) => media.src === media.fallbackSrc);
+const fakeTimers = () => { const pending = new Map(); let next = 0; return { pending, setTimeout(callback) { pending.set(++next, callback); return next; }, clearTimeout(id) { pending.delete(id); }, fire() { for (const [id, callback] of [...pending]) { pending.delete(id); callback(); } } }; };
+
+test('an open media bucket keeps the hosted films after one uncredentialed HEAD request', async () => {
+  const manifest = hostedManifest(), requests = [], timers = fakeTimers();
+  const chosen = await chooseFilmSources(manifest, { timers, fetchImpl: async (url, init) => { requests.push({ url, init }); return { ok: true, status: 200 }; } });
+  assert.equal(chosen, manifest);
+  assert.equal(requests.length, 1);
+  assert.equal(requests[0].url, manifest.clips[0].src);
+  assert.equal(requests[0].init.method, 'HEAD');
+  assert.equal(requests[0].init.credentials, 'omit');
+  assert.equal(requests[0].init.cache, 'no-store');
+  assert.equal(timers.pending.size, 0, 'the probe timeout is cleared');
+});
+
+test('a bucket closed by the monthly cap, unreachable or silent switches every film to its published copy', async () => {
+  const context = { moduleUrl: 'https://synk.im/path/interview/film-player.mjs', pageUrl: 'https://synk.im/path/interview/film/rehearsal.html' };
+  for (const [name, fetchImpl, expire] of [
+    ['403 after the cap', async () => ({ ok: false, status: 403 }), false],
+    ['CORS or network failure', async () => { throw new TypeError('Failed to fetch'); }, false],
+    ['no answer before the timeout', () => new Promise(() => {}), true],
+    ['fetch unavailable', undefined, false],
+  ]) {
+    const manifest = hostedManifest(), timers = fakeTimers();
+    const pending = chooseFilmSources(manifest, { timers, fetchImpl: fetchImpl ?? null });
+    if (expire) { await Promise.resolve(); timers.fire(); }
+    const chosen = await pending;
+    assert.ok(sameOrigin(chosen), name);
+    assert.ok(!sameOrigin(manifest), `${name}: the loaded manifest object is not mutated`);
+    for (const clip of chosen.clips) for (const media of [clip, ...Object.values(clip.variants)]) assert.equal(resolveFilmClipUrl(media.src, context), 'https://synk.im/path/assets/interview/film/' + media.src.split('/').at(-1), name);
+    assert.equal(timers.pending.size, 0, name);
+  }
+});
+
+test('manifests without a hosted copy are never probed', async () => {
+  let requests = 0;
+  const fetchImpl = async () => { requests += 1; return { ok: false }; };
+  const local = { clips: [{ id: 'strict-question', src: '../assets/interview/film/strict-question-4k.mp4', variants: { '4k': { src: '../assets/interview/film/strict-question-4k.mp4' } } }] };
+  assert.equal(await chooseFilmSources(local, { fetchImpl }), local);
+  // A fallback beside an untrusted host is not a reason to contact that host.
+  const foreign = { clips: [{ id: 'strict-question', src: 'https://remote.example/clip.mp4', fallbackSrc: '../assets/interview/film/strict-question-4k.mp4' }] };
+  assert.equal(await chooseFilmSources(foreign, { fetchImpl }), foreign);
+  assert.equal(await chooseFilmSources(null, { fetchImpl }), null);
+  assert.equal(requests, 0);
 });
 
 test('films are requested in CORS mode so the room can draw their frames', () => {

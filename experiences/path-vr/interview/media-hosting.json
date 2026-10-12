@@ -1,0 +1,5 @@
+{
+  "schemaVersion": 1,
+  "note": "Local and packaged builds load the speech model from ../models/. The public Pages build (tools/package-path-interview.mjs) names the PATH media bucket copy here and keeps ../models/ as the fallback.",
+  "model": null
+}

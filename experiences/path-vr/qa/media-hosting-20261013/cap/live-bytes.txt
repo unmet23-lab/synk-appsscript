@@ -1,0 +1,8 @@
+same path/interview/film-player.mjs
+same path/interview/film/rehearsal.html
+same path/interview/film/rehearsal.mjs
+same path/interview/film/strict-manifest.json
+same path/interview/media-hosting.json
+same path/interview/whisper-model.mjs
+same path/interview/whisper-worker.mjs
+round 9: 7/7

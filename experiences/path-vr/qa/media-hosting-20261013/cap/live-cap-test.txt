@@ -1,0 +1,28 @@
+# 월 한도 자동 차단 실제 시험 (10-13, 사이트가 아직 옛 버킷 synk-public-media를 쓰던 때 새 버킷 synk-path-media로)
+# 방법: 예산 토픽 path-media-budget에 예산 알림 모양의 가짜 메시지(attributes test=synthetic)를 보내고,
+#       버킷 IAM·라벨과 로그인 없는 HEAD를 5초마다 본다. 스크립트는 세션 작업 폴더의 live-test.mjs·watch.mjs·stale-test.mjs.
+# 시각은 함수 로그 기준 UTC(+9시간 = KST).
+
+## 1차 (04:07~04:15 KST) — 처음 배포한 함수(공개 해제 → 라벨 순서, 버킷 storage.admin)
+close  : costAmount 10001 / budgetAmount 10000 KRW → 71초 뒤 닫힘, 72초 뒤 로그인 없는 요청 403
+         배포 직후 호출 권한(run.invoker)이 퍼지기 전 4번 거절(19:07:04~19:07:45) → 재시도 정책으로 다시 배달되어 19:08:10 closed
+reopen : costAmount 0 → 6초 뒤 열림·200
+
+## Fable 검수 뒤 고친 함수(라벨 먼저 → 공개 해제, 지난 기간·늦게 온 알림 무시, 정책 버전 3, 버킷 전용 사용자 역할 pathMediaCap)
+# 2차 첫 시도에서 결함 발견: 라벨을 바꾸면 버킷 metageneration과 함께 IAM etag도 바뀌어 공개 해제(PUT /iam)가 412로 거절됐다.
+2026-10-12T19:40:46 ERROR POST 500  Error: PUT /iam 412 "At least one of the pre-conditions you specified did not hold."   (6번 재시도 모두 412)
+# → 라벨을 바꾼 뒤 IAM 정책을 다시 읽도록 고치고(index.js), 가짜 GCS 시험도 etag가 metageneration을 따르게 바꿨다(tests/path-media-cap.test.mjs).
+2026-10-12T19:45:17 (새 리비전 배포)
+2026-10-12T19:46:39 {"action":"closed","cost":10001,"budget":10000}            # 남아 있던 재시도 배달을 새 함수가 처리
+2026-10-12T19:47:00 {"action":"reopened","cost":0,"budget":10000}
+2026-10-12T19:47:14 {"action":"closed","cost":10001,"budget":10000}            # 새 메시지: 6초 뒤 닫힘, 12초 뒤 로그인 없는 요청 403
+2026-10-12T19:47:26 {"action":"reopened","cost":0,"budget":10000}              # 6초 뒤 열림·200
+2026-10-12T19:47:44 {"action":"ignored","reason":"previous period","cost":20000,"periodStart":"2026-09-01T07:00:00Z"}  # 지난달 초과 알림 → 버킷은 열린 채(200)
+
+## deploy.mjs 다시 실행(멱등)
+# 두 번째 실행: 역할·바인딩·토픽은 그대로 두고 함수 새 리비전만, 예산은 한도·알림 규칙만 갱신(예산 필터는 API가 수정을 거절해 비교만).
+
+## 3차 (05:32 KST) — Fable 재검수 반영(태평양 시간 달 비교로 서머타임 경계 정확히, 업로드 도구 IAM 정책 버전 3) 뒤 최종 함수
+2026-10-12T20:32:24 {"action":"closed","cost":10001,"budget":10000}      # 6초 뒤 닫힘, 12초 뒤 로그인 없는 요청 403
+2026-10-12T20:32:35 {"action":"reopened","cost":0,"budget":10000}        # 8초 뒤 열림·200
+2026-10-12T20:32:44 {"action":"ignored","reason":"previous period","cost":20000,"periodStart":"2026-09-01T07:00:00Z"}  # 버킷은 열린 채

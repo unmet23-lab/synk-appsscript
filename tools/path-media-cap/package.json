@@ -1,0 +1,9 @@
+{
+  "name": "path-media-cap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Closes public access to the PATH media bucket when its monthly budget is exceeded, and reopens it in the next period.",
+  "main": "index.js",
+  "engines": { "node": ">=22" },
+  "dependencies": { "@google-cloud/functions-framework": "^3.4.0" }
+}

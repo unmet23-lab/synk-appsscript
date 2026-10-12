@@ -5,7 +5,7 @@
 import { publicFiles, WHISPER_PUBLIC_FILES } from '../experiences/path-vr/server.mjs';
 import { createHash } from 'node:crypto';
 import { createReadStream, readFileSync } from 'node:fs';
-import { mediaPublicUrl } from './upload-path-media.mjs';
+import { mediaPublicUrl, modelFiles, PUBLIC_BASE, PUBLIC_PREFIX, UPLOAD_RECEIPT } from './upload-path-media.mjs';
 import { copyFile, lstat, mkdir, readFile, readdir, realpath, rmdir, stat, unlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -50,7 +50,8 @@ export function isPackageRuntime(file) {
       : /^[a-zA-Z0-9_.-]+\.(?:png|jpe?g|webp|hdr|exr)$/.test(name);
 }
 
-const PAGE_CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: https://storage.googleapis.com; font-src 'self'; connect-src 'self' blob:; frame-ancestors 'none'; object-src 'none'; base-uri 'none'";
+// The PATH media bucket path (films, speech model) is the only other source; the page probes it with HEAD.
+const PAGE_CSP = `default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob: ${PUBLIC_PREFIX}; font-src 'self'; connect-src 'self' blob: ${PUBLIC_PREFIX}; frame-ancestors 'none'; object-src 'none'; base-uri 'none'`;
 // Pages does not interpret _headers. Meta CSP cannot enforce frame-ancestors;
 // omit that directive rather than reporting a protection the browser ignores.
 export const PAGES_CSP = PAGE_CSP.replace("; frame-ancestors 'none'", '');
@@ -93,7 +94,7 @@ export function pagesRuntimeFile(file, source) {
     return { data: Buffer.from(pagesDocument(text)), transform: 'public-rehearsal-navigation-disclosure-and-csp-v3' };
   }
   if (file === 'interview/film/strict-manifest.json') {
-    const original = JSON.parse(source.toString('utf8'));
+    const original = JSON.parse(source.toString('utf8')), receipt = uploadReceipt();
     if (original.source?.status !== 'verified') throw new Error('Public video source must already be verified');
     const fields = ['schemaVersion', 'id', 'status', 'title', 'projection', 'stereo', 'notice', 'clips'];
     const result = Object.fromEntries(fields.map((key) => [key, original[key]]));
@@ -109,17 +110,33 @@ export function pagesRuntimeFile(file, source) {
       const variants = Object.fromEntries(Object.entries(clip.variants).map(([quality, media]) => [quality, Object.fromEntries(mediaKeys.map((key) => [key, media[key]]))]));
       // Films come from the PATH media bucket (tools/upload-path-media.mjs): Pages empties its cache on
       // every site deploy and 4K files then arrived at about 200KB/s. The object path carries the file
-      // hash, so check the local file still has that hash before pointing at it.
+      // hash, so check the local file still has that hash and the upload receipt has that object.
+      // fallbackSrc keeps the published copy for when the monthly cap closes the bucket.
       const hosted = (media) => {
         const bytes = readFileSync(path.join(SOURCE, 'interview', media.src));
         if (createHash('sha256').update(bytes).digest('hex') !== media.sha256) throw new Error('Video hash does not match its file: ' + media.src);
-        return { ...media, src: mediaPublicUrl(path.posix.basename(media.src), media.sha256) };
+        const src = mediaPublicUrl(path.posix.basename(media.src), media.sha256);
+        uploaded(receipt, src, media.sha256);
+        return { ...media, src, fallbackSrc: media.src };
       };
       return { ...hosted(runtime), transition, variants: Object.fromEntries(Object.entries(variants).map(([quality, media]) => [quality, hosted(media)])) };
     });
-    return { data: Buffer.from(JSON.stringify(result, null, 2) + '\n'), transform: 'public-runtime-video-manifest-v2' };
+    return { data: Buffer.from(JSON.stringify(result, null, 2) + '\n'), transform: 'public-runtime-video-manifest-v3' };
+  }
+  if (file === 'interview/media-hosting.json') {
+    // The worker tries the bucket copy of the speech model first, then this site's models/.
+    const model = modelFiles(), receipt = uploadReceipt();
+    if (receipt.modelBase !== model.base) throw new Error('Speech model revision is not uploaded (run node tools/upload-path-media.mjs)');
+    for (const item of model.files) uploaded(receipt, PUBLIC_BASE + item.object, item.sha256);
+    return { data: Buffer.from(JSON.stringify({ schemaVersion: 1, model: { base: model.base } }, null, 2) + '\n'), transform: 'public-media-hosting-v1' };
   }
   return { data: source, transform: 'byte-copy' };
+}
+
+const uploadReceipt = () => JSON.parse(readFileSync(UPLOAD_RECEIPT, 'utf8'));
+function uploaded(receipt, url, sha256) {
+  const row = receipt.objects.find((item) => item.url === url);
+  if (!row || row.sha256 !== sha256 || row.head !== 200 || row.range !== 206) throw new Error('Not in the PATH media upload receipt (run node tools/upload-path-media.mjs): ' + url);
 }
 
 /** Build a deterministic Pages overlay. Copy ONLY public/ into the site.

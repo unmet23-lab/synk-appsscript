@@ -123,20 +123,24 @@
  ],
  "걸린 것": [
   {
-   "무엇": "PATH 면접실 영상 버킷 (Google Cloud Storage)",
-   "어디": "구글 클라우드 · unmet27 결제(01864D-0E650C-40F3CB) · 프로젝트 `synk-bake-unmet27` · 버킷 `synk-public-media`(ASIA-NORTHEAST3 서울, 공개 읽기)",
-   "값": "보관 67.6MB는 월 몇 원 수준. 돈은 보는 사람이 영상을 받을 때 나가는 전송료다: 아시아 기준 GB당 약 USD0.12(첫 1TB, 공식 요금표 기준 어림 · 크레딧·세금 전). 4K 면접 한 번 약 40~50MB ≈ USD0.005~0.006, 720p 한 번 약 10MB ≈ USD0.0012 → 4K 1,000회 ≈ USD5~6. 실제 청구는 Cloud Billing 보고서로 본다.",
-   "상태": "✅ 10-13 03:10 KST 세웠다 · 영상 14개(67,588,230바이트) 올림 · synk.im PATH 면접실이 여기서 영상을 받는다(synk-policy 79814fc)",
+   "무엇": "PATH 면접실 영상·음성 모델 버킷 (Google Cloud Storage) · 월 한도 ₩10,000 자동 차단",
+   "어디": "구글 클라우드 · unmet27 결제(01864D-0E650C-40F3CB) · 전용 프로젝트 `synk-path-media` · 버킷 `synk-path-media`(ASIA-NORTHEAST3 서울, 공개 읽기) · 예산 「PATH 공개 미디어 월 한도」(budgets/f60fc1b6-5fd1-4175-8bdd-f741737700ba) · 토픽 `path-media-budget` · 함수 `path-media-cap`(Cloud Functions 2세대, 서울)",
+   "값": "월 한도 ₩10,000(이 프로젝트 전체 비용, 크레딧 빼기 전). 보관 147MB는 월 몇 원 수준이고 돈은 보는 사람이 받을 때 나가는 전송료다: 아시아 기준 GB당 약 USD0.12(첫 1TB, 공식 요금표 기준 어림 · 세금 전). 4K 면접 한 번 약 40~50MB ≈ USD0.005~0.006, 720p 한 번 약 10MB ≈ USD0.0012, 음성 모델은 브라우저마다 처음 한 번 약 80MB ≈ USD0.01 → 한도 안에서 4K 면접 약 500~1,300회. 차단 함수·토픽·함수 이미지 보관은 무료 사용량 안. 실제 청구는 Cloud Billing 보고서로 본다.",
+   "상태": "✅ 10-13 04:06 KST 한도·자동 차단 세움 · 실제 시험 통과(가짜 초과 알림 → 6초 뒤 닫힘·로그인 없는 요청 403, 가짜 새 달 알림 → 6초 뒤 다시 열림, 지난달 알림은 무시) · 영상 14개 + 음성 모델 12파일(147,260,779바이트, path/v2/) · synk.im 반영 synk-policy 2484a0a",
    "지금 나가는 돈": null,
    "세운 것": {
-    "세우는 자": "node tools/upload-path-media.mjs (여러 번 돌려도 같다 · --check는 올리지 않고 공개 주소·CORS만 확인)",
-    "경로 규칙": "path/interview/film/<sha256 앞 16자>/<파일 이름> · Cache-Control public, max-age=31536000, immutable",
+    "세우는 자": "node tools/upload-path-media.mjs (버킷·객체, 여러 번 돌려도 같다 · --check는 올리지 않고 공개 주소·CORS만 확인 · 한도로 닫힌 버킷은 열지 않는다) · node tools/path-media-cap/deploy.mjs (서비스 계정·토픽·함수·예산, 여러 번 돌려도 같다 · --amount 숫자로 한도 변경)",
+    "한도에 닿으면": "예산 알림(하루 여러 번)을 받은 함수가 이번 달 비용 ≥ 한도이면 라벨 budget-capped=yes를 달고 버킷의 공개 읽기(allUsers)를 뺀다(실행 계정은 이 버킷 설정·권한만 바꾸는 사용자 역할 pathMediaCap). 면접실은 시작 때 HEAD 한 번으로 알아채고 synk.im에 함께 올린 같은 영상·모델로 받는다(공개 직후면 느릴 수 있지만 멈추지 않는다). 다음 달 첫 알림(비용 < 한도)이나 한도를 올리면 다시 연다. 라벨 없이 닫힌 버킷(손으로 닫은 것)은 열지 않는다.",
+    "알림 메일": "50%·90%·100%(실제)와 100%(예상)에 결제 관리자에게",
+    "경로 규칙": "영상 path/v2/interview/film/<sha256 앞 16자>/<파일> · 모델 path/v2/models/<모델 묶음 해시 16자>/whisper-base/<파일> · Cache-Control private, max-age=31536000, immutable(브라우저만 저장 — public이면 구글 가장자리 캐시가 닫은 뒤에도 내줘서 한도가 새는 것을 10-13에 확인)",
     "CORS": "https://synk.im · https://www.synk.im (GET·HEAD)",
     "영수증": "experiences/path-vr/qa/media-hosting-20261013/receipt.json"
    },
-   "근거": "유호 10-13 「웅 영상 호스팅해줘」(GCS 추천안 승인). 이유: synk.im(GitHub Pages)은 공개할 때마다 캐시를 비워 직후 4K 영상이 초당 약 200KB로 와 면접 준비가 60초를 넘겼다(10-12·10-13 재현).",
-   "바꿀 때": "이용이 늘어 전송료가 부담되면 Cloudflare R2(전송료 0, 보관 10GB·읽기 월 1,000만 회 무료)로 옮긴다 — 계정 가입(유호님)·결제 수단 등록·synk.im DNS를 Cloudflare로 옮기기가 필요하다. 코드는 tools/upload-path-media.mjs의 PUBLIC_BASE와 experiences/path-vr/interview/film-player.mjs의 TRUSTED_FILM_PREFIXES만 바꾼다.",
-   "끄는 법": "공개 묶음의 영상 목록을 같은 출처 주소로 되돌려 공개한 뒤(tools/package-path-interview.mjs) 버킷을 지운다. 같은 영상이 synk.im에도 그대로 있다."
+   "주의": "Google Cloud 예산은 결제를 막지 않고 알림만 보낸다. 비용 집계가 몇 시간 늦게 오므로 그 사이 쓴 만큼 한도를 조금 넘을 수 있다. 차단은 이 버킷의 공개만 닫는다(이 프로젝트에는 다른 서비스가 없다). 처음 public 캐시로 올린 path/interview·path/models 객체 26개는 쓰이지 않지만 버킷에 남아 있다(지워도 된다).",
+   "옛 버킷": "synk-public-media(프로젝트 synk-bake-unmet27, 영상 14개 67,588,230바이트, 10-13 03:10~05:39 KST, 공개 synk-policy 2484a0a로 전환) — 사이트가 쓰지 않게 되어 공개 읽기를 닫았다. 지우지 않았다(보관료 월 몇 원). 지울지는 유호님이 정한다.",
+   "근거": "유호 10-13 「웅 영상 호스팅해줘」(GCS 추천안 승인) · 「웅 이어서 해. 그리고 그 구글 돈 나가는거 한도 설정해줘 무한으로 나갈수도있는거니까」. 이유: synk.im(GitHub Pages)은 공개할 때마다 캐시를 비워 직후 4K 영상이 초당 약 200KB로 와 면접 준비가 60초를 넘겼다(10-12·10-13 재현). 회사 운영 서버가 있는 synk-bake-unmet27과 떼어 한도가 이 미디어 비용만 보게 했다.",
+   "바꿀 때": "이용이 늘어 전송료가 부담되면 Cloudflare R2(전송료 0, 보관 10GB·읽기 월 1,000만 회 무료)로 옮긴다 — 계정 가입(유호님)·결제 수단 등록·synk.im DNS를 Cloudflare로 옮기기가 필요하다. 코드는 tools/upload-path-media.mjs의 PUBLIC_BASE, experiences/path-vr/interview/film-player.mjs의 TRUSTED_FILM_PREFIXES, interview/whisper-worker.mjs의 HOSTED_MODELS를 바꾼다.",
+   "끄는 법": "공개 묶음의 영상 목록·media-hosting.json을 같은 출처로 되돌려 공개한 뒤(tools/package-path-interview.mjs) 함수·예산·버킷을 지운다. 같은 영상·모델이 synk.im에도 그대로 있다."
   },
   {
    "무엇": "라디오24 송출 서버",

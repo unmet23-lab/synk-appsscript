@@ -1,0 +1,266 @@
+{
+ "expect": "closed",
+ "quality": "720p",
+ "probe": [
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 403
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  }
+ ],
+ "startToQuestionMs": 15131,
+ "playingFrom": [
+  "synk.im"
+ ],
+ "model": {
+  "ok": true,
+  "files": [
+   "tokenizer.json",
+   "tokenizer_config.json",
+   "config.json",
+   "preprocessor_config.json",
+   "onnx/encoder_model_quantized.onnx",
+   "onnx/decoder_model_merged_quantized.onnx",
+   "generation_config.json"
+  ],
+  "ms": 11571
+ },
+ "ok": true,
+ "network": {
+  "page HEAD storage.googleapis.com 403": 2,
+  "failed HEAD storage.googleapis.com net::ERR_ABORTED": 2,
+  "page GET synk.im 206": 12,
+  "failed GET synk.im net::ERR_ABORTED": 7,
+  "page GET synk.im 200": 7
+ },
+ "modelHosts": [
+  "storage.googleapis.com 403",
+  "storage.googleapis.com net::ERR_ABORTED",
+  "synk.im 200"
+ ],
+ "filmHosts": [
+  "synk.im 206",
+  "synk.im net::ERR_ABORTED"
+ ],
+ "net": [
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 403
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-experience-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-experience-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-plan-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-experience-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-plan-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-followup-plan-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-question-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-question-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-listening-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-listening-720p.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": 403
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/preprocessor_config.json",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "film/strict-listening-720p.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "onnx/encoder_model_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "onnx/decoder_model_merged_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "synk.im",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  }
+ ]
+}

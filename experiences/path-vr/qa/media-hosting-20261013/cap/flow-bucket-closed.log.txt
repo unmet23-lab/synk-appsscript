@@ -1,0 +1,6 @@
+4.1s console error: Failed to load resource: the server responded with a status of 403 ()
+5.6s probe [{"from":"page","method":"HEAD","host":"storage.googleapis.com","file":"8e8db2f4a5e98ff1/strict-question-4k.mp4","status":403},{"from":"failed","method":"HEAD","host":"storage.googleapis.com","file":"8e8db2f4a5e98ff1/strict-question-4k.mp4","status":"net::ERR_ABORTED"}]
+9.2s start clicked
+21.4s question playing after 15131ms from synk.im
+22.2s worker whisper-worker.mjs
+33.4s model {"ok":true,"files":["tokenizer.json","tokenizer_config.json","config.json","preprocessor_config.json","onnx/encoder_model_quantized.onnx","onnx/decoder_model_merged_quantized.onnx","generation_config.json"],"ms":11571}

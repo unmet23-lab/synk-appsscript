@@ -1,0 +1,5 @@
+4.2s probe [{"from":"page","method":"HEAD","host":"storage.googleapis.com","file":"8e8db2f4a5e98ff1/strict-question-4k.mp4","status":200},{"from":"failed","method":"HEAD","host":"storage.googleapis.com","file":"8e8db2f4a5e98ff1/strict-question-4k.mp4","status":"net::ERR_ABORTED"}]
+4.6s start clicked
+16.1s question playing after 11568ms from storage.googleapis.com
+16.6s worker whisper-worker.mjs
+85.0s model {"ok":true,"localOnly":false,"files":["tokenizer_config.json","tokenizer.json","preprocessor_config.json","config.json","generation_config.json","onnx/decoder_model_merged_quantized.onnx","onnx/encoder_model_quantized.onnx"],"ms":68692}

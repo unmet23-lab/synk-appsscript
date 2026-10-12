@@ -11,7 +11,7 @@ const INTERVIEW_PUBLIC=['index.html','style.css','room.mjs','app.mjs','dialogue.
 // Explicit model assets only: a benchmark file placed beside a model must never
 // become public merely because its extension matches a runtime asset.
 export const WHISPER_PUBLIC_FILES=Object.freeze([
-  'interview/whisper-model.mjs','interview/whisper-worker.mjs','interview/film/voice-assessment.mjs',
+  'interview/whisper-model.mjs','interview/whisper-worker.mjs','interview/media-hosting.json','interview/film/voice-assessment.mjs',
   ...['transformers.min.js','ort-wasm-simd-threaded.jsep.mjs','ort-wasm-simd-threaded.jsep.wasm','LICENSE-TRANSFORMERS.txt','LICENSE-ONNXRUNTIME.txt','README.md','PROVENANCE.json'].map(n=>'vendor/transformers/'+n),
   ...['config.json','generation_config.json','preprocessor_config.json','tokenizer.json','tokenizer_config.json','revision.txt','onnx/encoder_model_quantized.onnx','onnx/decoder_model_merged_quantized.onnx','LICENSE-WHISPER.txt','UPSTREAM-MODEL-CARD.txt','README.md','PROVENANCE.json'].map(n=>'models/whisper-base/'+n),
 ]);

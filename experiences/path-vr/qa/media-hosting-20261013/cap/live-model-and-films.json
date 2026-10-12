@@ -1,0 +1,203 @@
+{
+ "expect": "open",
+ "quality": "4k",
+ "probe": [
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  }
+ ],
+ "startToQuestionMs": 11568,
+ "playingFrom": [
+  "storage.googleapis.com"
+ ],
+ "model": {
+  "ok": true,
+  "localOnly": false,
+  "files": [
+   "tokenizer_config.json",
+   "tokenizer.json",
+   "preprocessor_config.json",
+   "config.json",
+   "generation_config.json",
+   "onnx/decoder_model_merged_quantized.onnx",
+   "onnx/encoder_model_quantized.onnx"
+  ],
+  "ms": 68692
+ },
+ "ok": true,
+ "network": {
+  "page HEAD storage.googleapis.com 200": 2,
+  "failed HEAD storage.googleapis.com net::ERR_ABORTED": 2,
+  "page GET storage.googleapis.com 206": 5,
+  "failed GET storage.googleapis.com net::ERR_ABORTED": 3,
+  "page GET storage.googleapis.com 200": 9
+ },
+ "modelHosts": [
+  "storage.googleapis.com 200",
+  "storage.googleapis.com net::ERR_ABORTED"
+ ],
+ "filmHosts": [
+  "storage.googleapis.com 206",
+  "storage.googleapis.com net::ERR_ABORTED"
+ ],
+ "net": [
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7263aa2df8deefab/strict-followup-experience-4k.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7895ac41e0f093a4/strict-followup-plan-4k.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7263aa2df8deefab/strict-followup-experience-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "8e8db2f4a5e98ff1/strict-question-4k.mp4",
+   "status": 206
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7895ac41e0f093a4/strict-followup-plan-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7cd356db7b0806d7/strict-listening-4k.mp4",
+   "status": 206
+  },
+  {
+   "from": "page",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "HEAD",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/preprocessor_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/tokenizer_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "whisper-base/generation_config.json",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "onnx/decoder_model_merged_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "onnx/encoder_model_quantized.onnx",
+   "status": 200
+  },
+  {
+   "from": "failed",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "7cd356db7b0806d7/strict-listening-4k.mp4",
+   "status": "net::ERR_ABORTED"
+  },
+  {
+   "from": "page",
+   "method": "GET",
+   "host": "storage.googleapis.com",
+   "file": "4280315d1a7d7861/strict-listen-plan-tail-4k.mp4",
+   "status": 206
+  }
+ ]
+}
