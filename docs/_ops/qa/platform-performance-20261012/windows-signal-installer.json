@@ -1,0 +1,336 @@
+{
+  "checkedAt": "2026-10-12T10:59:52.932Z",
+  "status": "published-and-verified",
+  "appVersion": "0.4.3",
+  "installerRevision": "signal.1",
+  "installer": {
+    "file": "SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+    "bytes": 398876672,
+    "sha256": "3487178559cdfc925c803d31f520a32635bd77f485d6b5e7ba75c5fadbb7313e"
+  },
+  "backend": {
+    "bytes": 397406287,
+    "sha256": "6eeecb83d6b1151785b031d5e0f7b5f0693caceba2e9d1cbf2ea2bc596df4afa"
+  },
+  "baseline": {
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-20261012/SYNK-Platform-Preview-0.4.3-win-x64.exe",
+    "bytes": 397415047,
+    "sha256": "7bdd0b7d88f64b239b4b4eab51839313745835f7411ddfe2285ef67eb7b840c3",
+    "asarSHA256": "f0d912f1db50af31f0b8b8cb4d0ff0aeab4a328ee5f8296709aca0935ce74103"
+  },
+  "appPayloadUnchanged": true,
+  "payloadFiles": 76,
+  "sourceCommit": "df0ca97ac",
+  "source": "desktop/installer",
+  "userConfirmedInstallerLaunch": true,
+  "userApprovedHomepagePublication": true,
+  "ui": {
+    "states": 6,
+    "scales": [
+      1,
+      1.5,
+      2
+    ],
+    "fontFallbacks": 0,
+    "renderEvidence": ".tmp/platform-signal-20261012/ui-render",
+    "results": ".tmp/platform-signal-20261012/ui-check-results.txt"
+  },
+  "integration": {
+    "ok": true,
+    "checkedAt": "2026-10-12T10:55:24.7862827Z",
+    "checks": [
+      {
+        "name": "read-only preflight",
+        "ok": true
+      },
+      {
+        "name": "incorrect backend digest is rejected before install",
+        "ok": true
+      },
+      {
+        "name": "manifest traversal is rejected",
+        "ok": true
+      },
+      {
+        "name": "impossible disk requirement is rejected",
+        "ok": true
+      },
+      {
+        "name": "real NSIS install through production engine",
+        "ok": true
+      },
+      {
+        "name": "launch uses the verified installed executable",
+        "ok": true
+      },
+      {
+        "name": "installed archive tampering is detected",
+        "ok": true
+      },
+      {
+        "name": "engine blocks a running application without stopping it",
+        "ok": true
+      },
+      {
+        "name": "NSIS race guard returns 20 and preserves the running process",
+        "ok": true
+      },
+      {
+        "name": "real reinstall preserves external synthetic account data",
+        "ok": true
+      },
+      {
+        "name": "fixture uninstall preserves external data and removes its registration",
+        "ok": true
+      },
+      {
+        "name": "real SYNK Platform registration remains unchanged",
+        "ok": true
+      }
+    ],
+    "error": null,
+    "realPlatformInstallationAttempted": false,
+    "productionRegistryFields": 10,
+    "installWorkerApartment": "MTA"
+  },
+  "integrationScope": "Unique tiny NSIS fixture using production engine and process guard; does not reinstall the real Platform or exercise a real account.",
+  "unsignedPreview": true,
+  "publicDownloadVerified": true,
+  "publicHomepageVerified": true,
+  "publicCommit": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+  "homepageSourceCommit": "18b64aa2d160180d63544cff47a8cb0adc14cd50",
+  "releaseTag": "platform-preview-0.4.3-signal.1-20261012",
+  "publicDownload": {
+    "ok": true,
+    "checkedAt": "2026-10-12T11:02:22.037Z",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+    "status": 200,
+    "bytes": 398876672,
+    "sha256": "3487178559cdfc925c803d31f520a32635bd77f485d6b5e7ba75c5fadbb7313e",
+    "matchesLocal": true,
+    "authenticationUsed": false
+  },
+  "publicHomepage": {
+    "ok": true,
+    "checkedAt": "2026-10-12T11:03:22.607Z",
+    "pages": [
+      {
+        "url": "https://synk.im/",
+        "status": 200,
+        "sha256": "79c688bf99fe1766530fc952ceb97024c5dcd87a16f0d121db249eab600ac6b4",
+        "matchesCandidate": true,
+        "windowsUrl": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "macReleaseUnchanged": true
+      },
+      {
+        "url": "https://synk.im/en/",
+        "status": 200,
+        "sha256": "7de665e21754512f0f7bc3ca8b899e2b5a75d1bc6e538303c2a65bdb89ddbc9b",
+        "matchesCandidate": true,
+        "windowsUrl": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "macReleaseUnchanged": true
+      },
+      {
+        "url": "https://synk.im/llms.txt",
+        "status": 200,
+        "sha256": "6c87664bdbbc292c5ed989b7fb146efef28896acff27f16e286148b768808eea",
+        "matchesCandidate": true,
+        "windowsUrl": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "macReleaseUnchanged": true
+      }
+    ]
+  },
+  "browser": {
+    "url": "https://synk.im/",
+    "windowsLinkEnabled": true,
+    "windowsLinkMatchesNewRelease": true,
+    "macButtonVisible": true
+  },
+  "pages": {
+    "run": 38239915159,
+    "conclusion": "success"
+  },
+  "siteCheck": {
+    "run": 38239915659,
+    "conclusion": "cancelled",
+    "reason": "Superseded by a concurrent unrelated founder-page deployment; no failed check was reported. Platform section and download links preserved in successor and current public HTML."
+  },
+  "completedAt": "2026-10-12T11:09:30.722Z",
+  "release": {
+    "checkedAt": "2026-10-12T11:08:31.245Z",
+    "websiteSourceCommit": "18b64aa2d160180d63544cff47a8cb0adc14cd50",
+    "publicSourceCommit": "e57b24f3843769d8205e6cbcb795af1effab3378",
+    "publicHomepageCommit": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+    "release": {
+      "assets": [
+        {
+          "name": "public-release-manifest.json",
+          "size": 4386,
+          "state": "uploaded",
+          "digest": "sha256:28c95cf91a80ece9aa7217fe5a78820ba11ea0f4b9a2f7178e8644e922f539a5",
+          "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/public-release-manifest.json"
+        },
+        {
+          "name": "SHA256SUMS-signal-win-x64.txt",
+          "size": 113,
+          "state": "uploaded",
+          "digest": "sha256:6e759d468db530c3772b08f39642e2f9020628c78ce09d29cd32b02aeea7b0c7",
+          "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SHA256SUMS-signal-win-x64.txt"
+        },
+        {
+          "name": "SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+          "size": 398876672,
+          "state": "uploaded",
+          "digest": "sha256:3487178559cdfc925c803d31f520a32635bd77f485d6b5e7ba75c5fadbb7313e",
+          "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe"
+        }
+      ],
+      "isDraft": false,
+      "isPrerelease": true,
+      "publishedAt": "2026-10-12T11:00:09Z",
+      "tagName": "platform-preview-0.4.3-signal.1-20261012",
+      "targetCommitish": "e57b24f3843769d8205e6cbcb795af1effab3378",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-signal.1-20261012"
+    },
+    "pagesRun": 38239915159,
+    "siteCheckRun": 38239915659,
+    "pages": {
+      "conclusion": "success",
+      "databaseId": 38239915159,
+      "headSha": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38239915159"
+    },
+    "siteCheck": {
+      "conclusion": "cancelled",
+      "databaseId": 38239915659,
+      "headSha": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+      "name": "synk.im 배포 점검",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38239915659",
+      "cancellationReason": "A later founder-copy main commit triggered a higher-priority site-check in the same concurrency group; no test failure was reported."
+    },
+    "followingPages": {
+      "conclusion": "success",
+      "databaseId": 38240436466,
+      "headSha": "4d11178155971a27a38fd03994b342ab8eb8a9d0",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38240436466"
+    },
+    "followingSiteCheck": {
+      "conclusion": "",
+      "databaseId": 38240438129,
+      "headSha": "4d11178155971a27a38fd03994b342ab8eb8a9d0",
+      "name": "synk.im 배포 점검",
+      "status": "in_progress",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38240438129"
+    },
+    "concurrentMain": {
+      "checkedAt": "2026-10-12T11:07:59.120Z",
+      "ourCommit": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+      "currentMain": "4d11178155971a27a38fd03994b342ab8eb8a9d0",
+      "ancestorConfirmed": true,
+      "aheadBy": 1,
+      "rows": [
+        {
+          "path": "index.html",
+          "status": 200,
+          "wholeFileUnchanged": false,
+          "platformSectionUnchanged": true,
+          "newWindowsLinkCount": 1,
+          "macLinksPreserved": true,
+          "sha256": "26101e71ac2faa505ccff3588ca763e42c6aad189c22a2dc7cee17ecd74093c2"
+        },
+        {
+          "path": "en/index.html",
+          "status": 200,
+          "wholeFileUnchanged": false,
+          "platformSectionUnchanged": true,
+          "newWindowsLinkCount": 1,
+          "macLinksPreserved": true,
+          "sha256": "57fc647e7ec25c752fd842452ba8179e4cd8cf3afdfe8acc103eecd85f2c0203"
+        },
+        {
+          "path": "llms.txt",
+          "status": 200,
+          "wholeFileUnchanged": true,
+          "platformSectionUnchanged": null,
+          "newWindowsLinkCount": 1,
+          "macLinksPreserved": true,
+          "sha256": "6c87664bdbbc292c5ed989b7fb146efef28896acff27f16e286148b768808eea"
+        }
+      ]
+    },
+    "taskValidation": {
+      "homepageContractPassed": 22,
+      "homepageContractFailed": 0,
+      "newDownloadAssetPublished": true,
+      "assetGitHubDigestMatchesFinal": true,
+      "publicSourceFiles": 19,
+      "homepageChangedPaths": [
+        "index.html",
+        "en/index.html",
+        "llms.txt"
+      ],
+      "newerMainPreservesPlatformSectionAndDownloads": true
+    }
+  },
+  "afterConcurrentChange": {
+    "ok": true,
+    "checkedAt": "2026-10-12T11:09:30.717Z",
+    "pages": [
+      {
+        "url": "https://synk.im/",
+        "status": 200,
+        "platformSectionMatches": true,
+        "windowsUrl": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "platformSectionSHA256": "7c69ea3216ef41aee536587ad8c4aa3d19a2c18f3f75c0bc327b0ac7333847fb"
+      },
+      {
+        "url": "https://synk.im/en/",
+        "status": 200,
+        "platformSectionMatches": true,
+        "windowsUrl": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.3-signal.1-20261012/SYNK-Platform-Preview-0.4.3-Signal-win-x64.exe",
+        "platformSectionSHA256": "8e42ed51cca091a048873f085503be63bade37495e405d51cddbdeb15ec53618"
+      }
+    ]
+  },
+  "concurrentMainPreservation": {
+    "checkedAt": "2026-10-12T11:07:59.120Z",
+    "ourCommit": "3d92968ae45b601c8cdd1d92b2655512e0390023",
+    "currentMain": "4d11178155971a27a38fd03994b342ab8eb8a9d0",
+    "ancestorConfirmed": true,
+    "aheadBy": 1,
+    "rows": [
+      {
+        "path": "index.html",
+        "status": 200,
+        "wholeFileUnchanged": false,
+        "platformSectionUnchanged": true,
+        "newWindowsLinkCount": 1,
+        "macLinksPreserved": true,
+        "sha256": "26101e71ac2faa505ccff3588ca763e42c6aad189c22a2dc7cee17ecd74093c2"
+      },
+      {
+        "path": "en/index.html",
+        "status": 200,
+        "wholeFileUnchanged": false,
+        "platformSectionUnchanged": true,
+        "newWindowsLinkCount": 1,
+        "macLinksPreserved": true,
+        "sha256": "57fc647e7ec25c752fd842452ba8179e4cd8cf3afdfe8acc103eecd85f2c0203"
+      },
+      {
+        "path": "llms.txt",
+        "status": 200,
+        "wholeFileUnchanged": true,
+        "platformSectionUnchanged": null,
+        "newWindowsLinkCount": 1,
+        "macLinksPreserved": true,
+        "sha256": "6c87664bdbbc292c5ed989b7fb146efef28896acff27f16e286148b768808eea"
+      }
+    ]
+  }
+}
