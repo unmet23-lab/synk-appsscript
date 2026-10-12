@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101716"><title>SYNK PATH · Seedance 기준 이미지 비교</title><link rel="icon" href="../../assets/logo-path.webp"><link rel="stylesheet" href="./compare.css"></head>
+<body>
+  <header><a href="./" aria-label="장면 시안으로"><img src="../../assets/logo-path.webp" alt="SYNK PATH"></a><span>FIRST INTERVIEW / IMAGE STUDY</span><b>Seedance 기준 이미지 비교</b></header>
+  <main>
+    <p class="eyebrow">SAME MODEL. A NEW STARTING IMAGE.</p>
+    <h1>기준 이미지를 바꾸면,<br>면접 장면은 어떻게 달라질까요?</h1>
+    <p class="intro">기준 이미지를 달리한 Seedance 2.5 영상 비교입니다.<br>기존 이미지와 Gemini 자동 모드 시안에서 시작한 장면을 번갈아 보세요.</p>
+    <p><a class="download" href="./rehearsal.html">새 테스트 · 질문과 답변이 이어지는 면접실 열기 →</a></p>
+    <section class="grid" aria-label="기준 이미지에 따른 Seedance 영상 비교">
+      <article>
+        <div class="label"><h2>기존 기준 이미지</h2><span>SEEDANCE 2.5</span></div>
+        <video id="original-seedance" controls playsinline preload="metadata" aria-label="기존 기준 이미지로 만든 Seedance 2.5 면접 영상" src="../../assets/interview/film/seedance-sample.mp4"></video>
+        <p class="media-status" id="original-seedance-status" role="status">영상 원본 확인 중</p>
+        <button data-play="original-seedance" disabled>기존 영상 처음부터 재생</button>
+        <a class="download" href="../../assets/interview/film/seedance-sample.mp4" download>원본 저장</a>
+        <details open><summary>기존 기준 이미지 보기</summary><a href="../../assets/interview/film/room-reference.png" target="_blank" rel="noopener"><img src="../../assets/interview/film/room-reference.png" alt="기존 Seedance 영상에 사용한 세 면접관과 면접실의 AI 기준 이미지"></a></details>
+      </article>
+      <article>
+        <div class="label"><h2>Gemini 자동 모드 시안</h2><span>SEEDANCE 2.5</span></div>
+        <video id="nanobanana-seedance" controls playsinline preload="metadata" aria-label="Gemini 자동 모드 기준 이미지로 만든 Seedance 2.5 면접 영상" src="../../assets/interview/film/seedance-nanobanana-sample.mp4"></video>
+        <p class="media-status" id="nanobanana-seedance-status" role="status">새 영상 원본 확인 중 · 파일이 준비되면 재생할 수 있습니다.</p>
+        <button data-play="nanobanana-seedance" disabled>새 영상 처음부터 재생</button>
+        <a class="download" href="../../assets/interview/film/seedance-nanobanana-sample.mp4" download>원본 저장</a>
+        <details open><summary>Gemini 자동 모드 기준 이미지 보기</summary><a href="../../assets/interview/film/room-reference-nanobanana.jpg" target="_blank" rel="noopener"><img src="../../assets/interview/film/room-reference-nanobanana.jpg" alt="새 Seedance 영상에 사용한 Gemini 자동 모드의 세 면접관과 면접실 기준 이미지"></a></details>
+      </article>
+    </section>
+    <section class="brief">
+      <div><p class="eyebrow">SAME VIDEO SETTINGS</p><h2>Seedance 2.5 · 480p · 10초</h2><p>두 샘플의 요청 조건입니다. 실제 해상도와 길이는 각 영상 아래에 원본 정보로 표시됩니다.</p><p class="muted">자동으로 재생하지 않습니다. 한쪽을 재생하면 다른 영상은 멈춥니다. 기준 이미지는 아래에 별도로 표시하며, 이미지 자체는 영상이 아닙니다.</p></div>
+      <div><p class="eyebrow">LOOK AT THE CHANGE</p><h2>구도와 손 자세부터 비교해 보세요.</h2><p>세 사람의 간격과 얼굴 크기, 책상 위 손·펜의 위치가 어떻게 달라졌는지 살펴보세요. 질문할 때의 입 모양과 질문 뒤 경청 동작도 기준 이미지와 함께 확인할 수 있습니다.</p><p class="muted">이전 “나노바나나” 표기를 정정합니다. Gemini 자동 모드 결과이며 정확한 이미지 모델은 확인되지 않았습니다. Nano Banana Pro 사용을 검증한 비교가 아닙니다. 확보한 이미지도 1024×572 미리보기입니다.</p></div>
+    </section>
+    <section class="review"><h2>두 샘플에서 함께 확인할 것</h2><p>처음과 끝의 얼굴 유지 · 한국어 발음과 입 모양 · 질문을 마친 뒤의 표정 · 옆 면접관의 경청 · 손과 펜의 일관성</p><p class="muted">일반 단안 영상 비교입니다. 전체 면접의 질문 분기, 경청 루프 연결, 입체 VR과 Quest 착용감은 이 샘플만으로 확인되지 않습니다.</p></section>
+  </main>
+  <footer><span>SYNK PATH · 실제 면접을 준비하는 첫 연습</span><a href="./compare.html">이전 Seedance · Wan 비교 보기</a><a href="./">장면 시안과 제작 원고 보기</a></footer>
+  <script type="module" src="./compare.mjs"></script>
+</body></html>

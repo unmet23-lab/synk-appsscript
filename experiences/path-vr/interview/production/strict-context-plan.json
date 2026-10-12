@@ -1,0 +1,265 @@
+{
+  "createdOn": "2026-10-12",
+  "status": "generation-deferred-by-user",
+  "decision": "User explicitly chose to defer new video generation on 2026-10-12. These eight scripts are planned only. No paid submissions or new spoken-question assets are authorized in this pass.",
+  "scope": "Existing original cast, serious atmosphere, stationary camera and same start/end reference. Eight finite native-spoken follow-ups selected from explicit answer evidence; no unrestricted generated dialogue.",
+  "provider": "Higgsfield MCP",
+  "model": "seedance_2_5",
+  "quote": {
+    "readOnlyChecked": true,
+    "resolution": "720p",
+    "durationSeconds": 10,
+    "creditsPerClip": 70,
+    "clips": 8,
+    "estimatedCeilingCredits": 560,
+    "additionalRetriesAuthorized": false
+  },
+  "listening": {
+    "costCredits": 0,
+    "method": "Re-edit existing silent performance tails into varied sequential listening; no new paid listening performance."
+  },
+  "questions": [
+    {
+      "id": "strict-followup-meal",
+      "dialogue": "식사 보조에서 무엇을 확인하고 어떻게 도왔습니까?",
+      "trigger": "본인이 실제로 식사 보조를 했다는 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"식사 보조에서 무엇을 확인하고 어떻게 도왔습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"식사 보조에서 무엇을 확인하고 어떻게 도왔습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-mobility",
+      "dialogue": "이동을 도울 때, 먼저 확인해야 할 것은 무엇입니까?",
+      "trigger": "이동·보행·휠체어 보조를 언급한 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"이동을 도울 때, 먼저 확인해야 할 것은 무엇입니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"이동을 도울 때, 먼저 확인해야 할 것은 무엇입니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-refusal",
+      "dialogue": "어르신이 돌봄을 거부하면 어떻게 대응하시겠습니까?",
+      "trigger": "치매·거부·감정 대응을 언급한 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"어르신이 돌봄을 거부하면 어떻게 대응하시겠습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"어르신이 돌봄을 거부하면 어떻게 대응하시겠습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-family",
+      "dialogue": "가족을 돌보면서 가장 어려웠던 점과 대응을 말씀해 주세요.",
+      "trigger": "본인의 가족 돌봄 경험",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"가족을 돌보면서 가장 어려웠던 점과 대응을 말씀해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"가족을 돌보면서 가장 어려웠던 점과 대응을 말씀해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-handoff",
+      "dialogue": "동료에게 무엇을 언제 보고해야 한다고 생각하십니까?",
+      "trigger": "보고·인계·팀 협업을 언급한 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"동료에게 무엇을 언제 보고해야 한다고 생각하십니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"동료에게 무엇을 언제 보고해야 한다고 생각하십니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-learning",
+      "dialogue": "배운 내용 중 현장에서 적용할 한 가지를 설명해 주세요.",
+      "trigger": "교육·자격 준비·실습을 언급한 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"배운 내용 중 현장에서 적용할 한 가지를 설명해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"배운 내용 중 현장에서 적용할 한 가지를 설명해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-evidence",
+      "dialogue": "방금 말씀하신 결과는 무엇을 근거로 확인하셨습니까?",
+      "trigger": "성과나 개선 결과를 이미 설명한 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"방금 말씀하신 결과는 무엇을 근거로 확인하셨습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"방금 말씀하신 결과는 무엇을 근거로 확인하셨습니까?\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    },
+    {
+      "id": "strict-followup-role",
+      "dialogue": "그중 본인이 직접 했거나 준비한 일을 구분해서 말씀해 주세요.",
+      "trigger": "타인의 경험과 본인의 역할이 구분되지 않은 답변",
+      "attempts": 0,
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"그중 본인이 직접 했거나 준비한 일을 구분해서 말씀해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+      "params": {
+        "model": "seedance_2_5",
+        "mode": "omni_reference",
+        "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: exact neutral reference posture, silent serious eye contact. 0.8-6.9: CENTER man alone asks exactly once, using the same low, measured, formal Korean male voice as the original interview, no praise or fillers: \"그중 본인이 직접 했거나 준비한 일을 구분해서 말씀해 주세요.\" Native Korean pronunciation and precise visible lip sync. Left and right mouths stay closed. No nods, no smiles. The side evaluators silently monitor the applicant with tiny independent blinks; right man keeps the existing pen in hand and makes at most one small note without changing his shoulder position. Finish all speech by7.2seconds. 7.2-9.2: mouths closed, eyes and hands naturally settle to the exact reference posture. 9.2-10.0: same neutral reference pose, tiny natural breathing. Never freeze, reverse motion, cut, morph, shift viewpoint or move the camera. Quiet office room tone, only the exact specified question; no applicant voice, music or other speech.",
+        "count": 1,
+        "aspect_ratio": "16:9",
+        "duration": 10,
+        "resolution": "720p",
+        "generate_audio": true,
+        "draft": false,
+        "medias": [
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "start_image"
+          },
+          {
+            "value": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+            "role": "end_image"
+          }
+        ],
+        "declined_preset_id": "24bae836-2c4a-48e0-89b6-49fcc0b21612",
+        "bitrate_mode": "high"
+      }
+    }
+  ],
+  "referenceImage": "assets/interview/film/room-reference.png",
+  "connection": "Existing user-authorized Claude Higgsfield MCP connection; no credentials copied into production records."
+}

@@ -1,0 +1,80 @@
+{
+  "scope": "local synthetic QA after successful full voice run, before second-run audio opened",
+  "state": {
+    "phase": "연결 확인",
+    "qa": {
+      "ended": 3,
+      "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+      "lastStatus": "ready",
+      "live": 0,
+      "physicalMicrophoneUsed": false,
+      "sessions": [
+        {
+          "audioContextTime": 6.264,
+          "fixture": "study",
+          "fixtureEnded": false,
+          "fixtureSeconds": 10.6874375,
+          "id": 1,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 4.764,
+          "readyState": "ended",
+          "startedAtMs": 30122,
+          "stoppedAtMs": 36697,
+          "streamId": "3b942152-0ae9-4078-bf2a-f66fdc474596",
+          "trackId": "6f5bbcd0-d6f2-4142-b6b0-70420b81f6b1"
+        },
+        {
+          "audioContextTime": 17.48,
+          "fixture": "study",
+          "fixtureEnded": true,
+          "fixtureSeconds": 10.6874375,
+          "id": 2,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 10.687,
+          "readyState": "ended",
+          "startedAtMs": 56545,
+          "stoppedAtMs": 73983,
+          "streamId": "35b88454-5cd3-4e33-99e8-830defd824a0",
+          "trackId": "0a640fc3-e762-4914-b1c6-d279d843087c"
+        },
+        {
+          "audioContextTime": 17.392,
+          "fixture": "study",
+          "fixtureEnded": true,
+          "fixtureSeconds": 10.6874375,
+          "id": 3,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 10.687,
+          "readyState": "ended",
+          "startedAtMs": 81905,
+          "stoppedAtMs": 99269,
+          "streamId": "b25ea848-8707-4290-bd79-8b2e424bd6a9",
+          "trackId": "a8181444-fd1c-4c0a-a955-723598e3e574"
+        }
+      ],
+      "starts": 3,
+      "stops": 3,
+      "synthetic": true,
+      "total": 3
+    },
+    "status": "시작 여유 프레임을 지나 영상 전환을 중단했습니다.",
+    "videos": [
+      {
+        "paused": true,
+        "ready": 4,
+        "src": "http://127.0.0.1:52670/assets/interview/film/strict-question-4k.mp4",
+        "time": 0.253471
+      },
+      {
+        "paused": true,
+        "ready": 4,
+        "src": "http://127.0.0.1:52670/assets/interview/film/strict-listening-4k.mp4",
+        "time": 0
+      }
+    ]
+  },
+  "console": []
+}

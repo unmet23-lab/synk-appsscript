@@ -1,0 +1,102 @@
+{
+  "verifiedOn": "2026-10-12",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Applied locally. Existing-media listening variation and bounded answer routing verified; new paid generation deferred by user.",
+  "authorization": {
+    "newVideos": "deferred-by-user",
+    "paidGenerationSubmissions": 0,
+    "extraProviderCredits": 0,
+    "preparedScripts": 8,
+    "unapprovedQuoteCredits": 560
+  },
+  "media": {
+    "originalPerformances": 4,
+    "originalFacesAndSpeedPreserved": true,
+    "additionalSilentCuts": 3,
+    "derivativeFiles": 6,
+    "checksumsVerified": 14,
+    "qualities": [
+      "720p",
+      "4k"
+    ],
+    "upscale": "Existing 720p footage and derivatives enlarged locally to 4K. No native 4K or AI super-resolution.",
+    "listeningCycleSeconds": 22.08,
+    "sourceRecord": "../../interview/production/listening-tail-variants.json"
+  },
+  "routing": {
+    "actualSpokenFollowups": 2,
+    "newScriptsActive": false,
+    "exactOriginalEvidenceOffsets": true,
+    "negationHypotheticalThirdPartyCases": true,
+    "mixedFacilityDenialAndFamilyExperience": true,
+    "arbitraryDialogueGeneration": false,
+    "answerStorageOrUpload": false
+  },
+  "runtime": {
+    "physicalVideoElements": 2,
+    "pausedQueueRetained": true,
+    "cancelledHandoffCannotBlockRepair": true,
+    "safeNoteExitPreserved": true,
+    "transitionMs": 150,
+    "controlsUnchanged": true,
+    "comfort": {
+      "defaultSnapDegrees": 30,
+      "noInertia": true,
+      "dragOptIn": true,
+      "headTracking": "Existing 1:1 unfiltered WebXR pose"
+    }
+  },
+  "browser": {
+    "method": "CUA in-app browser, real local video playback with synthetic typed answers.",
+    "fourKExperienceBranchCompleted": true,
+    "sevenTwentyPlanBranchCompleted": true,
+    "emptyAnswerRepair": true,
+    "repeatQuestion": true,
+    "pauseResumeRetainsAnswerAndFrame": true,
+    "roomPreviewVideoAndRight30Front": true,
+    "repairedDuringQA": "New HUD text variable shadowed canvas context, causing blank room. Renamed; room rendering and playback rechecked.",
+    "screenshots": [
+      "listening-context-followup.png",
+      "listening-context-complete.png",
+      "listening-context-plan.png",
+      "listening-context-room.png",
+      "listening-context-right30.png",
+      "listening-context-room-followup.png"
+    ],
+    "sampledDOMMedia": "listening-context-browser.json",
+    "consoleWarningsOrErrorsAfterFix": 0,
+    "stopClearsAnswersAndMedia": true
+  },
+  "tests": {
+    "passed": 112,
+    "failed": 0,
+    "log": "listening-context-tests.txt",
+    "suites": [
+      "interview-answer-followup",
+      "interview-film",
+      "interview-listening-sequence",
+      "interview-rehearsal",
+      "interview-room-space",
+      "interview-strict-vr",
+      "interview-speech-turn",
+      "interview-server-package"
+    ]
+  },
+  "package": {
+    "directory": ".tmp/path-interview-quest",
+    "files": 128,
+    "bytes": 206714998,
+    "checksumFiles": 127,
+    "sourceCompared": 124,
+    "creditFilesPresent": 13,
+    "licenses": 11,
+    "excludedArtifacts": 0,
+    "deployed": false
+  },
+  "notVerified": [
+    "Physical Quest microphone, headset frame rate and motion-sickness improvement.",
+    "User approval of seamless faces/postures or continuous human listening. Small posture differences remain between the original clips.",
+    "Specific spoken followups for meal, mobility, refusal, family, handoff, learning, evidence or role: generation was deferred.",
+    "General natural-language understanding: this remains a bounded Korean phrase router, not a model assessing experience or hiring."
+  ]
+}

@@ -1,0 +1,231 @@
+{
+  "verifiedOn": "2026-10-12",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Historical 480p baseline and seam work; latest local HD verification is quest-hd-verification.json",
+  "userScope": "User has no Quest yet and requested a runnable build. No deployment or hardware validation claimed.",
+  "timing": {
+    "answerLimitsSeconds": [
+      30,
+      25
+    ],
+    "leadInSeconds": 2,
+    "closingSeconds": 1.5,
+    "computedBudgetSeconds": [
+      67.35,
+      77.5
+    ],
+    "targetSeconds": [
+      60,
+      90
+    ],
+    "pcRun": {
+      "input": "Typed answers; both full timers elapsed without manual submission",
+      "branch": "experience",
+      "completedObservedBySeconds": 81.837,
+      "measurement": "Upper bound from Start click to observing completed UI, not exact event timestamp",
+      "result": "Both answer stages and completion reached"
+    },
+    "exceptions": "Early submission may finish sooner. Pausing, repeating, loading and recognition repair are outside the normal duration budget."
+  },
+  "tests": {
+    "passed": 74,
+    "failed": 0,
+    "suites": {
+      "film": 20,
+      "rehearsalSession": 15,
+      "strictVR": 13,
+      "roomSpace": 5,
+      "voice": 9,
+      "speechTurn": 4,
+      "serverAndPackage": 8
+    }
+  },
+  "browser": {
+    "localKoreanModelPrepared": true,
+    "actualHumanMicrophoneTest": false,
+    "frontRoomRendered": true,
+    "rearRoomRendered": true,
+    "mouseHeadLook": true,
+    "previewExitRestoresScrolling": true,
+    "listeningVideoDuringRoomPreview": {
+      "source": "strict-listening.mp4",
+      "observedCurrentTime": 9.365227,
+      "paused": false,
+      "opacity": 1,
+      "sharedVideoElementCount": 2
+    },
+    "consoleErrorsObserved": 0,
+    "screenshots": [
+      "quest-room-front.png",
+      "quest-room-rear.png",
+      "quest-room-playing.png",
+      "quest-voice-ready.png",
+      "quest-complete.png"
+    ],
+    "rejectedInitialScreenshot": "quest-room-first.png: desk too red, controls obscured hands; corrected before final capture"
+  },
+  "voice": {
+    "processing": "Local Vosk model and AudioWorklet; no cloud transcription",
+    "modelPreparationSeparateFromMicrophonePermission": true,
+    "calibrationRequiresRecognizedTextAndInputLevel": true,
+    "silenceEndSeconds": 5.5,
+    "earliestAutomaticEndSeconds": 10,
+    "realHeadsetRecognition": "Not tested",
+    "lifecycleReview": "Tab hiding/Esc/cancel closes microphone calibration; retry waits for previous recognizer stop. Both issues found in independent code review and fixed."
+  },
+  "visuals": {
+    "existingSeedanceClipsReused": 4,
+    "newVideoGenerations": 0,
+    "roomReference": "Original three-person reference remains unchanged",
+    "rearPhoto": "../../assets/interview/room/back-wall-photo.png",
+    "rearPhotoProvenance": "../../interview/production/back-wall-photo.json",
+    "imageTool": "Built-in image_gen; exact backend model not exposed",
+    "rejectedPanorama": "room-space-reference.png was not a valid spherical projection and is not loaded by the runtime",
+    "remainingLimits": [
+      "480p mono people, no stereo or side-view parallax",
+      "Photo-to-geometry boundaries may remain visible",
+      "Seated view only; no free walking or scanned real building",
+      "Neutral listening actions are prerecorded, not generated live from emotion",
+      "Two rule-based follow-up branches, not open-ended AI conversation"
+    ]
+  },
+  "delivery": {
+    "directory": "../../../../.tmp/path-interview-quest",
+    "entrypoint": "/interview/film/rehearsal.html",
+    "instructions": "../../../../.tmp/path-interview-quest/HOSTING.txt",
+    "packageManifest": "../../../../.tmp/path-interview-quest/_package-manifest.json",
+    "checksumVerification": "package-path-interview.mjs verifies all packaged runtime files against source",
+    "packageVerification": {
+      "filesIncludingManifest": 98,
+      "totalBytes": 128680615,
+      "checksummedFiles": 97,
+      "sourceCompared": 94,
+      "creditReferencesPresent": 12,
+      "excludedArtifactViolations": 0
+    },
+    "deployed": false,
+    "adbAvailable": true,
+    "connectedDevices": 0
+  },
+  "notVerified": [
+    "Quest microphone permission and real human Korean speech",
+    "Quest rendering performance, heat and decode stability",
+    "Physical scale, comfort, immersion and perceived transition continuity while wearing a headset"
+  ],
+  "newPaidApiCalls": 0,
+  "seamRefinement": {
+    "verifiedOn": "2026-10-12",
+    "changes": [
+      "Single seated-camera projection across walls and desk",
+      "Removed duplicate window/door geometry",
+      "Registered ceiling and right wall independently",
+      "Matched outer video background to original reference while preserving live people",
+      "Desk join below cups, documents and hands",
+      "Continued photo border colors into periphery"
+    ],
+    "originalClips": {
+      "count": 4,
+      "resolution": [
+        854,
+        480
+      ],
+      "sha256MatchedExistingManifest": 4,
+      "regenerated": 0,
+      "upscaled": 0
+    },
+    "tests": {
+      "passed": 28,
+      "failed": 0,
+      "suites": {
+        "roomSpace": 7,
+        "strictVR": 13,
+        "serverAndPackage": 8
+      },
+      "scope": "Affected suites; earlier full 74-test baseline is retained separately above"
+    },
+    "browser": {
+      "viewport": [
+        1280,
+        720
+      ],
+      "gpuShaderRendered": true,
+      "experienceFollowupConfirmed": "Typed care experience selected the follow-up asking for specific responsibilities and results; question was replayed through the UI",
+      "consoleErrorsObserved": 0,
+      "frontAndMouseYawVerified": true,
+      "liveListening": {
+        "source": "strict-listening.mp4",
+        "observedCurrentTime": 1.705973,
+        "paused": false,
+        "opacity": 1,
+        "sharedVideoElements": 2
+      },
+      "screenshots": [
+        "quest-room-seam-front.png",
+        "quest-room-seam-playing.png",
+        "quest-room-seam-turn.png"
+      ]
+    },
+    "assets": [
+      "../../assets/interview/room/front-room-extension.png",
+      "../../assets/interview/room/front-room-wide.png"
+    ],
+    "provenance": "../../interview/production/front-room-extension.json",
+    "remainingLimits": [
+      "Mono interviewer depth and position-parallax unchanged",
+      "Far peripheral photo stretching and local architectural alignment differences remain",
+      "Quest hardware, headset microphone, comfort and frame rate untested"
+    ],
+    "deployed": false,
+    "newPaidVideoGenerations": 0
+  },
+  "sideWallRefinement": {
+    "recordedAt": "2026-10-11T16:49:54.394Z",
+    "status": "implemented-awaiting-visual-review",
+    "changes": [
+      "Physical wall UVs for both sides beyond the front photograph; no forward projector at side/rear head directions",
+      "Room corners calibrated to width 4.53m, front distance 4.12m",
+      "Orthographic window and door wall photographs registered at upright seams",
+      "Rectified ceiling and fixed carpet plane UVs"
+    ],
+    "tests": {
+      "passed": 31,
+      "failed": 0,
+      "roomSpace": 10,
+      "strictVR": 13,
+      "serverAndPackage": 8
+    },
+    "browser": {
+      "canvasSize": [
+        1280,
+        720
+      ],
+      "previewDOMOpened": true,
+      "consoleErrorsObserved": 0,
+      "visualReviewVerified": false,
+      "reason": "Cua screenshot capture failed in existing and fresh IAB tabs; CDP screenshot also timed out. Chrome UI input timed out. No substitute browser automation used.",
+      "screenshots": []
+    },
+    "originalClips": {
+      "matched": 4,
+      "regenerated": 0,
+      "upscaled": 0
+    },
+    "videoUpgrade": {
+      "status": "awaiting-user-cost-choice",
+      "quoted720pCredits": 280,
+      "clips": 4,
+      "perClipCredits": 70,
+      "local4kUpscale": "Prepared Lanczos resize, not AI detail reconstruction",
+      "paid4kUpscalePrice": "not-confirmed",
+      "submittedPaidJobs": 0
+    },
+    "provenance": "../../interview/production/side-wall-photographs.json",
+    "remainingLimits": [
+      "Actual left/right 90-degree seam and color continuity still need visual review",
+      "Interviewer mono video has no translated-head parallax",
+      "Quest hardware, microphone and performance unverified"
+    ],
+    "deployed": false
+  },
+  "currentVerification": "quest-hd-verification.json"
+}

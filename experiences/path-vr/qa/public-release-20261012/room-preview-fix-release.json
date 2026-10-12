@@ -1,0 +1,37 @@
+{
+  "verifiedAt": "2026-10-11T20:37:21.701Z",
+  "commit": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+  "parent": "ee2b7890f3a56956693cfe37427292ed96256ecd",
+  "changedFiles": [
+    "path/interview/film/room-space.mjs"
+  ],
+  "homepageUpdatesPreserved": true,
+  "pushed": true,
+  "pages": {
+    "conclusion": "success",
+    "databaseId": 38172750493,
+    "headSha": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38172750493"
+  },
+  "ci": {
+    "conclusion": "",
+    "databaseId": 38172750343,
+    "headSha": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+    "name": "synk.im 배포 점검",
+    "status": "in_progress",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38172750343"
+  },
+  "public": {
+    "url": "https://synk.im/path/interview/film/room-space.mjs",
+    "http": 200,
+    "bytes": 31809,
+    "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+    "matchesPackage": true
+  },
+  "packageFilesChecked": 54,
+  "packageUnchangedFiles": 53,
+  "filmPlayerSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+  "finalBrowserVerification": "parent-task"
+}

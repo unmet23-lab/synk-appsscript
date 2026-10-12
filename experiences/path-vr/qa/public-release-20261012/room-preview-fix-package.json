@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-11T20:32:46.893Z",
+  "files": 54,
+  "exactChangedFiles": [
+    "path/interview/film/room-space.mjs"
+  ],
+  "unchangedFiles": 53,
+  "comparedAllOriginBlobs": true,
+  "filmPlayerPreserved": {
+    "file": "path/interview/film-player.mjs",
+    "source": "experiences/path-vr/interview/film-player.mjs",
+    "sourceBytes": 26255,
+    "sourceSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+    "bytes": 26255,
+    "sha256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+    "transform": "byte-copy"
+  },
+  "room": {
+    "file": "path/interview/film/room-space.mjs",
+    "source": "experiences/path-vr/interview/film/room-space.mjs",
+    "sourceBytes": 31809,
+    "sourceSHA256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+    "bytes": 31809,
+    "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+    "transform": "byte-copy"
+  },
+  "publicUploaded": false
+}

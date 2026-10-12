@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-11T20:54:24.734Z",
+  "HEAD": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+  "originMain": "908098c0be3045e473a22f40a11f463c48c5aa5c",
+  "clean": true,
+  "files": 54,
+  "unchangedFiles": 53,
+  "changes": [
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "beforeBytes": 29068,
+      "beforeSHA256": "a1b518b5aa2e0cf19547f1c0da236415e10543807117ee7bd58260f6d9529a0b",
+      "afterBytes": 29334,
+      "afterSHA256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3"
+    }
+  ],
+  "originAheadOnlyHomepageFiles": [
+    "assets/v10/site.css",
+    "assets/v10/site.js",
+    "en/index.html",
+    "index.html"
+  ],
+  "sourceAndPackageAgree": true,
+  "previousRoomFixAndFilmPlayerPreserved": true,
+  "staged": false,
+  "committed": false,
+  "pushed": false
+}

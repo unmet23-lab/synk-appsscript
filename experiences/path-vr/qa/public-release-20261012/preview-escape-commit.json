@@ -1,0 +1,11 @@
+{
+  "committedAt": "2026-10-11T20:55:25.512Z",
+  "commit": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+  "parent": "908098c0be3045e473a22f40a11f463c48c5aa5c",
+  "changedFiles": [
+    "path/interview/film/rehearsal.mjs"
+  ],
+  "rehearsalSHA256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+  "homepageUpdatesPreserved": true,
+  "pushed": false
+}

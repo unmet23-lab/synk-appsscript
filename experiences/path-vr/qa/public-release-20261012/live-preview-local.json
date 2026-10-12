@@ -1,0 +1,89 @@
+{
+  "samples": [
+    {
+      "at": 1791752064938,
+      "videos": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 1.114645,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 1,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 0.75,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "at": 1791752075694,
+      "phase": "후속 질문",
+      "timer": "",
+      "videos": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-followup-plan-4k.mp4",
+          "time": 0.112,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 2.516671,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "at": 1791752094720,
+      "phase": "답변 중",
+      "timer": "18초",
+      "videos": [
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 0.5,
+          "width": 3840
+        },
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 2.891868,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "at": 1791752119375,
+      "phase": "면접 종료",
+      "timer": "",
+      "videos": [
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 0.75,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 3,
+          "width": 3840
+        }
+      ]
+    }
+  ],
+  "normalEscapePauses": true,
+  "previewEscapeContinues": true,
+  "warnings": []
+}

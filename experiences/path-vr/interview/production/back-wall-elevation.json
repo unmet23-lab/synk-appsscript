@@ -1,0 +1,9 @@
+{
+  "date": "2026-10-12",
+  "mode": "built-in image_gen",
+  "exactModel": "Not exposed",
+  "path": "assets/interview/room/back-wall-elevation.png",
+  "reference": "assets/interview/room/right-wall-photo.png",
+  "prompt": "Create a single photorealistic ORTHOGRAPHIC BACK WALL ELEVATION texture matching the supplied image's pale gray/greige finely woven acoustic wall panels exactly in material, color, understated office daylight and thin charcoal skirting. Output aspect ratio 1.69:1, physically 4.53m wide by 2.68m high. This is the wall behind an applicant seated in the same serious Korean institutional interview room. It fills the entire image, perfectly straight horizontal and vertical lines without perspective. No other wall, no corners, no visible floor or ceiling, no door, no window, no furniture, no person, no plant, no sign, no writing. Only same gray acoustic panels with discreet seams every about 0.9m, a small quiet flush rectangular ventilation grille near the TOP CENTER occupying roughly 9% of width, and thin charcoal gray skirting occupying the bottom 2.5% of image. Natural fine fabric weave, slightly imperfect painted metal grille and restrained real wear. Light arrives diffusely from the image's right-hand direction, matching an adjacent left-window wall when turning around. Avoid dramatic shadows, no spotlight, no vignette, no illustrative/CGI/game look. Flat frontal real architectural photograph, utilitarian quiet austere workplace. Match the provided reference's exposure and brightness; no new contrasting color blocks.",
+  "purpose": "Rear wall orthographic texture, not a room panorama or scanned scene."
+}

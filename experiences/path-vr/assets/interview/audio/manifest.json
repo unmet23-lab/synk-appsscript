@@ -1,0 +1,420 @@
+{
+  "version": 1,
+  "engine": "Supertonic 3 ONNX CPU",
+  "generatedAt": "2026-10-11T21:01:48.240384+09:00",
+  "language": "ko",
+  "voices": {
+    "lead": "M1",
+    "specialist": "F1",
+    "observer": "M2"
+  },
+  "machineGenerated": true,
+  "paidApiCalls": 0,
+  "synthesisNetworkRequests": 0,
+  "reviewStatus": "Local ASR comparison complete; human listening and headset playback review required",
+  "clips": [
+    {
+      "id": "intro",
+      "speakerId": "lead",
+      "text": "안녕하세요. 편하게 앉으세요. 저희 세 명과 짧게 면접을 진행하겠습니다.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/intro.mp3",
+      "duration": 6.802,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 109966,
+      "sha256": "7b9816c82cbc5736ad76bf71db5b3f6b800555a93ad64a8fe083bfc993f676cd",
+      "wavSha256": "cfccc6dd5421527a04fbeb6e3b36fa400cec57b5a9feebe10bc1ee69c3e23d41",
+      "seed": 20261011,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.37951,
+      "waveformRms": 0.0471,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "안녕하세요? 편하게 앉으세요. 저희 3명과 짧게 면접을 진행하겠습니다.",
+        "normalizedTextSimilarity": 0.9655,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "question-motivation",
+      "speakerId": "lead",
+      "text": "요양보호사로 일하고 싶은 이유를 말씀해 주세요. 계기나 관심 있는 돌봄 활동을 하나 이야기해 주세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/question-motivation.mp3",
+      "duration": 8.526,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 137551,
+      "sha256": "a232f29e3ec66c50c5dcb4c769a4f68932d19f523384ef0078e14a02db917670",
+      "wavSha256": "a1b711a571e01839f8c1d939ae5f7f22f8b1e1ec8e1a80dccfa02e8514e7b7d3",
+      "seed": 20261012,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.40478,
+      "waveformRms": 0.05044,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "요양보호사로 일하고 싶은 이유를 말씀해 주세요. 계기나 관심 있는 돌봄 활동을 하나 이야기해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "closing",
+      "speakerId": "lead",
+      "text": "말씀 감사합니다. 오늘 면접 연습은 여기까지입니다. 다음에는 방금 답변에 구체적인 행동 한 가지를 더해 보세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/closing.mp3",
+      "duration": 9.525,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 153434,
+      "sha256": "1b28b1b2b2f8c1858b828026c8b3844af22aad9f5e355bd400b86acfd5493b74",
+      "wavSha256": "d769b472af4a83b4ba40feefacb81cac6cd2d89193f2a82e4a67c3211201e7cb",
+      "seed": 20261013,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.39469,
+      "waveformRms": 0.0449,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "말씀 감사합니다. 오늘 면접 연습은 여기까지입니다. 다음에는 방금 답변해 구체적인 행동 한 가지를 더해 보세요.",
+        "normalizedTextSimilarity": 0.9778,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "followup-experience",
+      "speakerId": "specialist",
+      "text": "말씀하신 경험에서 직접 하신 일은 무엇인가요? 기억나는 상황 한 가지와 본인의 역할을 말씀해 주세요.",
+      "voice": "F1",
+      "src": "/assets/interview/audio/followup-experience.mp3",
+      "duration": 9.026,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 145492,
+      "sha256": "e9797783cca537c1933c6e8a25eae315d14f5e5c051c3d1a3be6b196f2dc607f",
+      "wavSha256": "595ee8f82017249c39878ff07405b4552aba2ddff9d4e0677628b0acf90006ba",
+      "seed": 20261014,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.32581,
+      "waveformRms": 0.05195,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "말씀하신 경험에서 직접 하신 일은 무엇인가요? 기억나는 상황, 한 가지와 본인의 역할을 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "followup-preparation",
+      "speakerId": "observer",
+      "text": "처음 일하기 전에 어떤 준비를 하고 싶으신가요? 배우거나 확인할 것을 한 가지 말씀해 주세요.",
+      "voice": "M2",
+      "src": "/assets/interview/audio/followup-preparation.mp3",
+      "duration": 7.76,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 125430,
+      "sha256": "b5efbbc12409d8f6fb41131b235fd70023ac96cb9179788bbe9733137955ed01",
+      "wavSha256": "ac9e3613badb6db48eb0e47ab4f72cf808d446c56385dbe1773b2399317c11aa",
+      "seed": 20261015,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.54657,
+      "waveformRms": 0.05893,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "처음 일하기 전에 어떤 준비를 하고 싶으신가요? 배우거나 확인할 것을 한 가지 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "followup-motivation",
+      "speakerId": "specialist",
+      "text": "그 이유가 실제 일과 어떻게 연결될까요? 어르신을 도울 때 본인이 하고 싶은 행동을 하나 말씀해 주세요.",
+      "voice": "F1",
+      "src": "/assets/interview/audio/followup-motivation.mp3",
+      "duration": 8.743,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 140895,
+      "sha256": "b9dfbe482c4a74dcfa5ae5910176b5ca0cc06f8425abd84fd2570e76c75faf13",
+      "wavSha256": "a440a018d59853ad5d45f9ad18d5d765d3543d19fedd7a0fc9b4f7353429117a",
+      "seed": 20261016,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.31632,
+      "waveformRms": 0.05467,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "그 이유가 실제 일과 어떻게 연결될까요? 어르신을 도울 때 본인이 하고 싶은 행동을 하나 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "followup-clarify",
+      "speakerId": "observer",
+      "text": "지원하신 계기를 조금 더 듣고 싶습니다. 관심을 갖게 된 일이나 해 보고 싶은 돌봄 활동을 하나 말씀해 주세요.",
+      "voice": "M2",
+      "src": "/assets/interview/audio/followup-clarify.mp3",
+      "duration": 9.007,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 145074,
+      "sha256": "edacf8952affd02aeca69d6414ed6f1223a5f1fbca97bb0bfaffd46ab94a1433",
+      "wavSha256": "866b8ad2d91c543dce8edcc31f76b5fcb96a9b1324fec412eb6ca0cde11ac4ca",
+      "seed": 20261017,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.54733,
+      "waveformRms": 0.06086,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "지원하신 계기를 조금 더 듣고 싶습니다. 관심을 갖게 된 일이나 해보고 싶은 돌봄 활동을 하나 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "followup-return",
+      "speakerId": "observer",
+      "text": "지원하신 이유로 돌아가 보겠습니다. 요양보호사 일에 관심을 갖게 된 계기를 하나 말씀해 주세요.",
+      "voice": "M2",
+      "src": "/assets/interview/audio/followup-return.mp3",
+      "duration": 7.851,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 126684,
+      "sha256": "fa43782b1f785a01c05d35269198f9dea53d2dd907a9f488607c71624c69ea0d",
+      "wavSha256": "45a4520bd561304991172eee30058fa05f5601fac0a3f1d66e1258be45d1e19e",
+      "seed": 20261018,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.44524,
+      "waveformRms": 0.05021,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "지원하신 이유로 돌아가 보겠습니다. 요양보호사 1회에 관심을 갖게 된 계기를 하나 말씀해 주세요.",
+        "normalizedTextSimilarity": 0.962,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-empty",
+      "speakerId": "lead",
+      "text": "아직 답변을 듣지 못했습니다. 천천히 생각하시고 준비되면 말씀해 주세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-empty.mp3",
+      "duration": 6.521,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 105368,
+      "sha256": "4da1b373da6ae847c17fc80ff652beafcd78fda5ad39078b87d77c08da858097",
+      "wavSha256": "038785c05eeaf8c27f443ca8b884f3130a05c8f263b4009f3b3c7a02b9b433bf",
+      "seed": 20261019,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.4814,
+      "waveformRms": 0.04683,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "아직 답변을 듣지 못했습니다. 천천히 생각하시고 준비되면 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-uncertain",
+      "speakerId": "lead",
+      "text": "잠깐 생각하셔도 괜찮습니다. 작은 계기나 관심 있는 활동부터 말씀해 주세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-uncertain.mp3",
+      "duration": 6.977,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 112892,
+      "sha256": "7faafc97724fa54fef65c06cfe4d7268ed79a4372bc77497742a9dd85968e498",
+      "wavSha256": "1d3b9d9a68bce262409cb6af3531bace7b6ea0334f47ea17923d96a328567f98",
+      "seed": 20261020,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.48183,
+      "waveformRms": 0.04551,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "잠깐 생각하셔도 괜찮습니다. 작은 계기나 관심 있는 활동부터 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-recognition",
+      "speakerId": "lead",
+      "text": "음성을 또렷하게 확인하지 못했습니다. 다시 말씀하시거나 화면에서 직접 입력해 주세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-recognition.mp3",
+      "duration": 7.588,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 122505,
+      "sha256": "104af84b522a07f6fce55e88082ffb64efb5502868c37400d4c968988efeba65",
+      "wavSha256": "117e2017a7c7f3ea0d89b84da1832ff12c8be5f3d6a7c4a0afaad73e359c3fec",
+      "seed": 20261021,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.40198,
+      "waveformRms": 0.04634,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "음성을 또렷하게 확인하지 못했습니다. 다시 말씀하시거나 화면에서 직접 입력해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-repeat",
+      "speakerId": "lead",
+      "text": "질문을 다시 들려드리겠습니다.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-repeat.mp3",
+      "duration": 2.45,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 40167,
+      "sha256": "5c742fd23f6153da72d941b60ab9d36afaebb6af38e06a38c1898f59c3b44b24",
+      "wavSha256": "7845a01d59b57fd6672e6d6f3f94102372881dd46b9947ebce332b29fe6a1467",
+      "seed": 20261022,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.4182,
+      "waveformRms": 0.04062,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "질문을 다시 들려드리겠습니다.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-timeout",
+      "speakerId": "lead",
+      "text": "생각할 시간이 더 필요하시면 계속 말씀해 주세요. 질문을 다시 들어도 괜찮습니다.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-timeout.mp3",
+      "duration": 7.109,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 114981,
+      "sha256": "2f6f27372f0557763ce1d3966267734cf55cff0052eadd013de09f42437b571a",
+      "wavSha256": "209acd1a2c74f9881bb1baa0c7469299bdd814a54ae8283643ccd5bedcaf424f",
+      "seed": 20261023,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.44714,
+      "waveformRms": 0.04327,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "생각할 시간이 더 필요하시면 계속 말씀해 주세요. 질문을 다시 들어도 괜찮습니다.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    },
+    {
+      "id": "repair-length",
+      "speakerId": "lead",
+      "text": "이번에는 한 가지 계기나 상황을 짧게 말씀해 주세요.",
+      "voice": "M1",
+      "src": "/assets/interview/audio/repair-length.mp3",
+      "duration": 4.728,
+      "sampleRate": 44100,
+      "channels": 1,
+      "bytes": 76947,
+      "sha256": "2026ebf196c88c24bede307094266778a1fe6935d944fc2952c205320e5f5482",
+      "wavSha256": "0866aadeef02b7efd9245b38ed46568991ed7c6cf2dc4f9bfcb85e6160fc44e6",
+      "seed": 20261024,
+      "speed": 1.03,
+      "steps": 12,
+      "waveformPeak": 0.41383,
+      "waveformRms": 0.0477,
+      "asrCheck": {
+        "engine": "faster-whisper-small local CPU int8",
+        "transcript": "이번에는 한 가지 계기나 상황을 짧게 말씀해 주세요.",
+        "normalizedTextSimilarity": 1.0,
+        "humanListeningVerified": false
+      }
+    }
+  ],
+  "model": {
+    "modelRepository": "supertone-oss-archive/supertonic-3",
+    "modelRevision": "aafc6e32416a594460b32413efc49d7fe4ce6d46",
+    "codeRevision": "1e9799e964ea4c0dad7cde993b65c3c813a7b373",
+    "files": [
+      {
+        "path": "onnx/duration_predictor.onnx",
+        "bytes": 3700147,
+        "sha256": "c3eb91414d5ff8a7a239b7fe9e34e7e2bf8a8140d8375ffb14718b1c639325db"
+      },
+      {
+        "path": "onnx/text_encoder.onnx",
+        "bytes": 36416150,
+        "sha256": "c7befd5ea8c3119769e8a6c1486c4edc6a3bc8365c67621c881bbb774b9902ff"
+      },
+      {
+        "path": "onnx/vector_estimator.onnx",
+        "bytes": 256534781,
+        "sha256": "883ac868ea0275ef0e991524dc64f16b3c0376efd7c320af6b53f5b780d7c61c"
+      },
+      {
+        "path": "onnx/vocoder.onnx",
+        "bytes": 101424195,
+        "sha256": "085de76dd8e8d5836d6ca66826601f615939218f90e519f70ee8a36ed2a4c4ba"
+      },
+      {
+        "path": "onnx/tts.json",
+        "bytes": 8253,
+        "sha256": "42078d3aef1cd43ab43021f3c54f47d2d75ceb4e75f627f118890128b06a0d09"
+      },
+      {
+        "path": "onnx/unicode_indexer.json",
+        "bytes": 277676,
+        "sha256": "9bf7346e43883a81f8645c81224f786d43c5b57f3641f6e7671a7d6c493cb24f"
+      },
+      {
+        "path": "voice_styles/M1.json",
+        "bytes": 291748,
+        "sha256": "e35604687f5d23694b8e91593a93eec0e4eca6c0b02bb8ed69139ab2ea6b0a5b"
+      },
+      {
+        "path": "voice_styles/M2.json",
+        "bytes": 292055,
+        "sha256": "b76cbf62bac707c710cf0ae5aba5e31eea1a6339a9734bfae33ab98499534a50"
+      },
+      {
+        "path": "voice_styles/F1.json",
+        "bytes": 292046,
+        "sha256": "bbdec6ee00231c2c742ad05483df5334cab3b52fda3ba38e6a07059c4563dbc2"
+      },
+      {
+        "path": "LICENSE",
+        "bytes": 15007,
+        "sha256": "0d944a9110fed9a9602d60e0423a272903e7bd21ab060490774efc77c2275e9f"
+      }
+    ],
+    "helperSha256": "b14b1da8a018aa4db6ca8cbb927c32590bfc889b49116ea344c56e8351d94279"
+  },
+  "modelLicense": "OpenRAIL-M",
+  "inferenceCodeLicense": "MIT",
+  "sourceUrl": "https://huggingface.co/supertone-oss-archive/supertonic-3/tree/aafc6e32416a594460b32413efc49d7fe4ce6d46",
+  "notice": "면접관 음성은 AI로 생성했습니다. 가상 인물이며 실존 인물의 음성을 모사하지 않았습니다.",
+  "localAsrModel": {
+    "snapshot": "536b0662742c02347bc0e980a01041f333bce120",
+    "downloads": 0
+  },
+  "modelDownloadPerformedThisRun": false
+}

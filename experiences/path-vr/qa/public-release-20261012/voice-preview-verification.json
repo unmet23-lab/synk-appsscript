@@ -1,0 +1,341 @@
+{
+  "checkedAt": "2026-10-11T21:19:52.729Z",
+  "scope": "Recorded synthetic-PCM voice continuity and follow-up evidence; no browser or microphone operation",
+  "voiceProofAllPass": true,
+  "overallReleaseSuccess": true,
+  "physicalMicrophoneValidated": false,
+  "questHardwareValidated": false,
+  "artifacts": [
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-study.json",
+      "bytes": 11346,
+      "sha256": "180c914ea32e555f069fd0f23cd33cc0f3b11eb34b0f7103942d846d594c53eb"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-experience.json",
+      "bytes": 21002,
+      "sha256": "9dac64cd88bd387ed9bd8de49604d28c5fee6a92f2cb8a42ea603a0f63d2c983"
+    },
+    {
+      "file": ".tmp/path-public-20261012/voice-preview-ui-regression.log",
+      "bytes": 5830,
+      "sha256": "619dccaf296bf4441aace346add64f8e1503ab73eec5c65930d34b09e8542b28"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-source-match.json",
+      "bytes": 7634,
+      "sha256": "d81367f1c1572cef7bfe082fba0b4b7f7075a38d7b53c5d376c7698cf7469547"
+    },
+    {
+      "file": ".tmp/path-public-20261012/voice-preview-qa/README.md",
+      "bytes": 2619,
+      "sha256": "0120176d413f9fe55bf3d4b48c2d822d0cc22a3452a58ba0625ea66fa7f4de53"
+    },
+    {
+      "file": ".tmp/path-public-20261012/voice-preview-qa/make-experience.ps1",
+      "bytes": 759,
+      "sha256": "a78075b12d7606b80eec1a054d3139f0020d955995d8dbbd530f2be47e398b5d"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-study.json",
+      "bytes": 11346,
+      "sha256": "180c914ea32e555f069fd0f23cd33cc0f3b11eb34b0f7103942d846d594c53eb"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-experience.json",
+      "bytes": 21002,
+      "sha256": "9dac64cd88bd387ed9bd8de49604d28c5fee6a92f2cb8a42ea603a0f63d2c983"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-study-room.png",
+      "bytes": 92539,
+      "sha256": "7e388ce72ed929545c8acfbcfbf3f07f0bc4f89e496ccc63632c290306d8ab6e"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-experience-complete.png",
+      "bytes": 88017,
+      "sha256": "a0fb0a11143cca762b7da5f9c05e2cbe7e60481008142031fc2d3d1e5c82db69"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-restart-error.json",
+      "bytes": 2383,
+      "sha256": "7804b62f320e6205708f3ee37ced4b417082ee2b19f7cb1d81ba72cc3c300597"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-candidate.json",
+      "bytes": 7867,
+      "sha256": "63b6a591f85d4cbd656bfba0572c96dfc0ce3de40b98f78f36d55df2f9c80c3d"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-candidate-loaded-source.json",
+      "bytes": 467,
+      "sha256": "097b1f660a930a1231061cd08420a3f2ab045067965267ace88022cccf872985"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-candidate-restart.json",
+      "bytes": 2649,
+      "sha256": "04420701335fd518f9416549edb76c8abd997790b3a91d71c16110ddbab47907"
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-candidate-restart-stopped.json",
+      "bytes": 2243,
+      "sha256": "79e9d8bf4e0937c46506b24d77bf7ded4b5d4bc0641aedde331a8810c120c2a1"
+    }
+  ],
+  "branches": [
+    {
+      "fixture": "study",
+      "passed": true,
+      "pairs": [
+        {
+          "labels": [
+            "before preview",
+            "after preview Escape"
+          ],
+          "streamId": "35b88454-5cd3-4e33-99e8-830defd824a0",
+          "trackId": "0a640fc3-e762-4914-b1c6-d279d843087c",
+          "starts": 2,
+          "stops": 1,
+          "sameStream": true,
+          "sameTrack": true,
+          "countersUnchanged": true,
+          "transcriptPreserved": true,
+          "transcriptGrew": true,
+          "captureAdvancedSeconds": 6.76
+        },
+        {
+          "labels": [
+            "second answer before toggles",
+            "second answer after toggles"
+          ],
+          "streamId": "b25ea848-8707-4290-bd79-8b2e424bd6a9",
+          "trackId": "a8181444-fd1c-4c0a-a955-723598e3e574",
+          "starts": 3,
+          "stops": 2,
+          "sameStream": true,
+          "sameTrack": true,
+          "countersUnchanged": true,
+          "transcriptPreserved": true,
+          "transcriptGrew": false,
+          "captureAdvancedSeconds": 1.496
+        }
+      ],
+      "question": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.",
+      "automaticTransitionLabel": "close button then automatic followup",
+      "automaticTriggerHasFullInputEventTrace": false,
+      "completedAnswers": [
+        {
+          "id": 2,
+          "completePCM": true,
+          "ended": true,
+          "trailingSilenceSeconds": 5.293
+        },
+        {
+          "id": 3,
+          "completePCM": true,
+          "ended": true,
+          "trailingSilenceSeconds": 5.205
+        }
+      ],
+      "finalLive": 0,
+      "finalStarts": 3,
+      "finalStops": 3,
+      "omittedContinuityPair": null
+    },
+    {
+      "fixture": "experience",
+      "passed": true,
+      "pairs": [
+        {
+          "labels": [
+            "before preview",
+            "after preview Escape"
+          ],
+          "streamId": "23d474dc-680a-4148-8d43-998194b44143",
+          "trackId": "8bd006ec-b8bd-4917-8626-37d29ced3255",
+          "starts": 4,
+          "stops": 3,
+          "sameStream": true,
+          "sameTrack": true,
+          "countersUnchanged": true,
+          "transcriptPreserved": true,
+          "transcriptGrew": true,
+          "captureAdvancedSeconds": 0.752
+        },
+        {
+          "labels": [
+            "second answer before preview",
+            "second answer after preview"
+          ],
+          "streamId": "a4b9812a-547b-4a72-8d23-0e64c08f75fc",
+          "trackId": "97d79be1-7222-4463-88ca-4c9af122a8d5",
+          "starts": 5,
+          "stops": 4,
+          "sameStream": true,
+          "sameTrack": true,
+          "countersUnchanged": true,
+          "transcriptPreserved": true,
+          "transcriptGrew": false,
+          "captureAdvancedSeconds": 1.256
+        }
+      ],
+      "question": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "automaticTransitionLabel": "automatic followup",
+      "automaticTriggerHasFullInputEventTrace": false,
+      "completedAnswers": [
+        {
+          "id": 4,
+          "completePCM": true,
+          "ended": true,
+          "trailingSilenceSeconds": 5.161
+        },
+        {
+          "id": 5,
+          "completePCM": true,
+          "ended": true,
+          "trailingSilenceSeconds": 5.225
+        }
+      ],
+      "finalLive": 0,
+      "finalStarts": 5,
+      "finalStops": 5,
+      "omittedContinuityPair": "after reopen rotate close overlaps final processing; not used to assert uninterrupted capture"
+    }
+  ],
+  "limitations": [
+    "These snapshots record synthetic PCM through the real ASR path; they do not measure human speech or physical microphone accuracy.",
+    "Some ASR words were misrecognized. Passing continuity and branching does not establish verbatim transcription accuracy.",
+    "Automatic submission is reported by the capture labels and QA harness; the snapshots independently show completed PCM, trailing silence, subsequent answer capture and completion, not a full input-event trace.",
+    "Screenshots are checked for file presence and actual PNG/JPEG format, not re-reviewed visually by this script.",
+    "The earlier video restart failure is preserved. A local candidate is checked separately for a completed voice interview and restart into live capture; its public deployment and the whole release are not established here."
+  ],
+  "regression": {
+    "file": ".tmp/path-public-20261012/voice-preview-ui-regression.log",
+    "tests": 59,
+    "pass": 59,
+    "fail": 0,
+    "recognizerEventsAreTestDoubles": true
+  },
+  "recordedSourceMatch": {
+    "checkedAt": "2026-10-11T21:08:10.150Z",
+    "files": 8,
+    "allMatched": true,
+    "newNetworkCheckPerformed": false
+  },
+  "asrAccuracy": {
+    "verbatimAccuracyPassed": false,
+    "observedExamples": [
+      {
+        "fixture": "study",
+        "source": "저는 한국어를",
+        "recognized": "차린 한국어 를"
+      },
+      {
+        "fixture": "experience",
+        "source": "가족에게 전달했습니다",
+        "recognized": "가입고객 에 전달 했습니다"
+      }
+    ]
+  },
+  "screenshots": [
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-study-room.png",
+      "actualFormat": "JPEG",
+      "visuallyReviewedByVerifier": false
+    },
+    {
+      "file": "experiences/path-vr/qa/public-release-20261012/voice-preview-experience-complete.png",
+      "actualFormat": "JPEG",
+      "visuallyReviewedByVerifier": false
+    }
+  ],
+  "separateVideoIssue": {
+    "artifact": "experiences/path-vr/qa/public-release-20261012/voice-preview-restart-error.json",
+    "scope": "local synthetic QA after successful full voice run, before second-run audio opened",
+    "status": "시작 여유 프레임을 지나 영상 전환을 중단했습니다.",
+    "audioLiveAtFailure": 0,
+    "historicalFailurePreserved": true,
+    "candidateRestartRecoveryObserved": true,
+    "candidatePublicDeploymentStatus": "verified"
+  },
+  "candidate": {
+    "passed": true,
+    "environment": "local browser with synthetic PCM",
+    "fixture": "study",
+    "playerSha256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06",
+    "loadedSources": [
+      {
+        "url": "http://127.0.0.1:52670/interview/film/rehearsal.mjs",
+        "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3"
+      },
+      {
+        "url": "http://127.0.0.1:52670/interview/film/strict-vr.mjs",
+        "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde"
+      },
+      {
+        "url": "http://127.0.0.1:52670/interview/film-player.mjs",
+        "sha256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06"
+      }
+    ],
+    "previewPair": {
+      "labels": [
+        "before preview",
+        "after repeat preview toggles"
+      ],
+      "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+      "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce",
+      "starts": 2,
+      "stops": 1,
+      "sameStream": true,
+      "sameTrack": true,
+      "countersUnchanged": true,
+      "transcriptPreserved": true,
+      "transcriptGrew": true,
+      "captureAdvancedSeconds": 7.744
+    },
+    "fullVoiceInterviewCompleted": true,
+    "finalLive": 0,
+    "restart": {
+      "reachedAnswerPhase": true,
+      "receivedPCM": true,
+      "streamId": "adac53f4-4aa6-4795-8490-de2022e73b9d",
+      "playing4KQuestionObserved": true,
+      "stopReturnedToIdle": true,
+      "allStreamsEndedAfterStop": true,
+      "secondFullInterviewCompleted": false
+    },
+    "experienceBranchRevalidatedOnCandidate": false,
+    "publicDeploymentVerified": true,
+    "publicDeploymentStatus": "verified",
+    "physicalMicrophoneValidated": false,
+    "questHardwareValidated": false
+  },
+  "releaseScope": "Synthetic PCM continuity locally with matched runtime, candidate full run/restart, Pages and public text-mode full run/restart. Not physical mic or Quest validation.",
+  "finalRelease": {
+    "commit": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+    "pages": {
+      "conclusion": "success",
+      "databaseId": 38175978551,
+      "headSha": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38175978551"
+    },
+    "public": {
+      "url": "https://synk.im/path/interview/film-player.mjs",
+      "status": 200,
+      "bytes": 26305,
+      "sha256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesSourceAndPackage": true
+    },
+    "publicBrowserEvidence": "voice-preview-final-public.json",
+    "loadedSourceEvidence": "voice-preview-final-loaded-source.json",
+    "uiFullInterviewCompleted": true,
+    "restartSucceeded": true,
+    "previewContinues": true,
+    "consoleWarningsOrErrors": 0,
+    "physicalMicrophoneValidated": false,
+    "questHardwareValidated": false
+  }
+}

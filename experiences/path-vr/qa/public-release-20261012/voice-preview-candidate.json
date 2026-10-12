@@ -1,0 +1,232 @@
+{
+  "synthetic": true,
+  "physicalMic": false,
+  "playerSha256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06",
+  "samples": [
+    {
+      "label": "before preview",
+      "partial": "안녕하세요 차린 한국어 를 공부 하고 있습니다 차린",
+      "phase": "답변 중",
+      "qa": {
+        "ended": 1,
+        "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+        "lastStatus": "listening",
+        "live": 1,
+        "physicalMicrophoneUsed": false,
+        "sessions": [
+          {
+            "audioContextTime": 7.944,
+            "fixture": "study",
+            "fixtureEnded": false,
+            "fixtureSeconds": 10.6874375,
+            "id": 1,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 5.788,
+            "readyState": "ended",
+            "startedAtMs": 42094,
+            "stoppedAtMs": 49360,
+            "streamId": "734e851d-a301-41eb-a108-1b441e7bae19",
+            "trackId": "0540cab1-0e64-494f-8149-2825c743387d"
+          },
+          {
+            "audioContextTime": 8.472,
+            "fixture": "study",
+            "fixtureEnded": false,
+            "fixtureSeconds": 10.6874375,
+            "id": 2,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 6.908,
+            "readyState": "live",
+            "startedAtMs": 80578,
+            "stoppedAtMs": null,
+            "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+            "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce"
+          }
+        ],
+        "starts": 2,
+        "stops": 1,
+        "synthetic": true,
+        "total": 2
+      }
+    },
+    {
+      "label": "after repeat preview toggles",
+      "partial": "안녕하세요 차린 한국어 를 공부 하고 있습니다 차린 회사에서 일 하고 싶습니다 감사합니다",
+      "phase": "답변 중",
+      "qa": {
+        "ended": 1,
+        "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+        "lastStatus": "listening",
+        "live": 1,
+        "physicalMicrophoneUsed": false,
+        "sessions": [
+          {
+            "audioContextTime": 7.944,
+            "fixture": "study",
+            "fixtureEnded": false,
+            "fixtureSeconds": 10.6874375,
+            "id": 1,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 5.788,
+            "readyState": "ended",
+            "startedAtMs": 42094,
+            "stoppedAtMs": 49360,
+            "streamId": "734e851d-a301-41eb-a108-1b441e7bae19",
+            "trackId": "0540cab1-0e64-494f-8149-2825c743387d"
+          },
+          {
+            "audioContextTime": 16.216,
+            "fixture": "study",
+            "fixtureEnded": true,
+            "fixtureSeconds": 10.6874375,
+            "id": 2,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 10.687,
+            "readyState": "live",
+            "startedAtMs": 80578,
+            "stoppedAtMs": null,
+            "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+            "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce"
+          }
+        ],
+        "starts": 2,
+        "stops": 1,
+        "synthetic": true,
+        "total": 2
+      }
+    },
+    {
+      "label": "after automatic followup",
+      "partial": "안녕하세요 차린 한국어 를 공부 하고 있습니다 차린 회사에서 일 하고 싶습니다 감사합니다",
+      "phase": "면접 종료",
+      "qa": {
+        "ended": 3,
+        "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+        "lastStatus": "ready",
+        "live": 0,
+        "physicalMicrophoneUsed": false,
+        "sessions": [
+          {
+            "audioContextTime": 7.944,
+            "fixture": "study",
+            "fixtureEnded": false,
+            "fixtureSeconds": 10.6874375,
+            "id": 1,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 5.788,
+            "readyState": "ended",
+            "startedAtMs": 42094,
+            "stoppedAtMs": 49360,
+            "streamId": "734e851d-a301-41eb-a108-1b441e7bae19",
+            "trackId": "0540cab1-0e64-494f-8149-2825c743387d"
+          },
+          {
+            "audioContextTime": 17.88,
+            "fixture": "study",
+            "fixtureEnded": true,
+            "fixtureSeconds": 10.6874375,
+            "id": 2,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 10.687,
+            "readyState": "ended",
+            "startedAtMs": 80578,
+            "stoppedAtMs": 98346,
+            "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+            "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce"
+          },
+          {
+            "audioContextTime": 17.376,
+            "fixture": "study",
+            "fixtureEnded": true,
+            "fixtureSeconds": 10.6874375,
+            "id": 3,
+            "leadInSeconds": 1.5,
+            "mode": "once",
+            "pcmSeconds": 10.687,
+            "readyState": "ended",
+            "startedAtMs": 105583,
+            "stoppedAtMs": 122939,
+            "streamId": "64e102d6-3363-481d-9881-49208a563a57",
+            "trackId": "c63a6422-1f3b-4e74-ad8d-54a05a6061e8"
+          }
+        ],
+        "starts": 3,
+        "stops": 3,
+        "synthetic": true,
+        "total": 3
+      },
+      "turn": "2 QUESTIONS"
+    }
+  ],
+  "final": {
+    "branch": "답변: “안녕하세요 차린 한국어 를 공부 하고 있습니다 차린 회사에서 일 하고 싶습니다 감사합니다”\n본인의 실제 경험으로 단정할 근거가 없어 앞으로의 준비를 묻습니다.\n후속 질문: “현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.”",
+    "partial": "안녕하세요 차린 한국어 를 공부 하고 있습니다 차린 회사에서 일 하고 싶습니다 감사합니다",
+    "phase": "면접 종료",
+    "qa": {
+      "ended": 3,
+      "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+      "lastStatus": "ready",
+      "live": 0,
+      "physicalMicrophoneUsed": false,
+      "sessions": [
+        {
+          "audioContextTime": 7.944,
+          "fixture": "study",
+          "fixtureEnded": false,
+          "fixtureSeconds": 10.6874375,
+          "id": 1,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 5.788,
+          "readyState": "ended",
+          "startedAtMs": 42094,
+          "stoppedAtMs": 49360,
+          "streamId": "734e851d-a301-41eb-a108-1b441e7bae19",
+          "trackId": "0540cab1-0e64-494f-8149-2825c743387d"
+        },
+        {
+          "audioContextTime": 17.88,
+          "fixture": "study",
+          "fixtureEnded": true,
+          "fixtureSeconds": 10.6874375,
+          "id": 2,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 10.687,
+          "readyState": "ended",
+          "startedAtMs": 80578,
+          "stoppedAtMs": 98346,
+          "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+          "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce"
+        },
+        {
+          "audioContextTime": 17.376,
+          "fixture": "study",
+          "fixtureEnded": true,
+          "fixtureSeconds": 10.6874375,
+          "id": 3,
+          "leadInSeconds": 1.5,
+          "mode": "once",
+          "pcmSeconds": 10.687,
+          "readyState": "ended",
+          "startedAtMs": 105583,
+          "stoppedAtMs": 122939,
+          "streamId": "64e102d6-3363-481d-9881-49208a563a57",
+          "trackId": "c63a6422-1f3b-4e74-ad8d-54a05a6061e8"
+        }
+      ],
+      "starts": 3,
+      "stops": 3,
+      "synthetic": true,
+      "total": 3
+    },
+    "status": "면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다."
+  },
+  "console": []
+}

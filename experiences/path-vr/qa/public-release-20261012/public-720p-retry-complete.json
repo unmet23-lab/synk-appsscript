@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-11T20:09:41.559Z",
+  "release": "558709386f054e6cd1f086caebaea7ffa284f8e1",
+  "scenario": "negative first answer -> plan followup -> empty second answer timeout -> retry -> typed answer -> auto complete",
+  "state": {
+    "phase": "면접 종료",
+    "quality": "720p",
+    "result": "답변: “돌봄 경험은 아직 없습니다.”\n본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.\n후속 질문: “현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.”",
+    "videos": [
+      {
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+        "time": 3,
+        "width": 1280
+      },
+      {
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+        "time": 0.5,
+        "width": 1280
+      }
+    ]
+  },
+  "console": []
+}

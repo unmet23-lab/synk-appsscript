@@ -1,0 +1,44 @@
+(node:8424) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/q1212/Documents/SYNK-appsscript/experiences/path-vr/vendor/three.module.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to \\?\C:\Users\q1212\Documents\SYNK-appsscript\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ room surrounds the seated origin at human floor, desk and ceiling heights (1.048ms)
+✔ full-depth table supports the folded film without hiding cups, notes or faces (6.7835ms)
+✔ room uses same-project photographs without claiming a panorama or cabinet geometry depth (2.1073ms)
+✔ poster and video share the same registered background, and room textures warm once before rendering (2.101ms)
+✔ same two videos feed the room; idle photo is never substituted for a failed video (1.2907ms)
+✔ disposal releases photographic textures once and removes the whole set (0.8181ms)
+✔ one projector preserves the film corners and follows the same ray across different room surfaces (1.0984ms)
+✔ missing extension reports the exact asset and keeps neutral room geometry without replacing an active film by still people (0.7508ms)
+✔ side-wall coordinates remain bounded and continuous through 90 degree and rearward head directions (0.2568ms)
+✔ dedicated ceiling covers the physical plane once with its front and window edges in the correct direction (0.8034ms)
+✔ missing ceiling detail falls back to its registered wide photograph independently of the side walls (1.582ms)
+✔ wide photograph ceiling pixels cannot paint bright triangles onto the side walls (0.7949ms)
+✔ physical room corners align with the photographed rear corner rays and side joins use the matching upright features (0.151ms)
+✔ missing side photographs degrade independently while loaded surfaces and video remain available (1.6364ms)
+✔ PC turns stay in fixed steps, keep a level horizon, and can return directly to the front (1.081ms)
+✔ optional PC dragging cannot rotate hundreds of degrees or tip the horizon vertically in one screen drag (0.1149ms)
+✔ the seated XR anchor comes from the centre viewer pose and leaves pitch and roll to headset tracking (0.1744ms)
+✔ VR requires prepared voice, not a text-only interface hidden inside a headset (0.1437ms)
+✔ controller controls expose submit only during an answer and resume while paused (0.1928ms)
+✔ an empty or unrecognized answer can be retried from inside VR (0.094ms)
+✔ unsupported desktop does not allocate a second renderer or request a session (0.4068ms)
+✔ voice gate prevents any requestSession call (0.8809ms)
+✔ actual session end hides VR, stops rendering, and closes mic through onExit once (0.6755ms)
+✔ requestSession starts synchronously on the entry gesture, without an intervening await (0.4095ms)
+✔ exit while permission is pending ends the late session and never starts rendering (0.2271ms)
+✔ renderer session attachment failure closes session and triggers mic cleanup (0.2911ms)
+✔ disposal while stage loads disposes the late stage instead of reviving VR (0.2629ms)
+✔ failed OS exit pauses the app immediately; disposal still releases textures and mic (0.1928ms)
+✔ desktop room preview does not grant XR support or microphone permission (0.2213ms)
+✔ closing a pending room preview prevents its late renderer from opening over the app (0.1206ms)
+✔ a failed renderer attachment can be retried with a fresh XR session without allocating another stage (0.1854ms)
+✔ closing an inset preview restores its previous mount styling before XR entry (0.179ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 130.2846

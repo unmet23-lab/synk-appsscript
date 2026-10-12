@@ -1,0 +1,178 @@
+{
+  "verifiedOn": "2026-10-12",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Applied locally; existing-media continuity and preparation changes tested. No deployment or new generation.",
+  "authorization": {
+    "newVideoGeneration": false,
+    "paidCalls": 0,
+    "extraProviderCredits": 0,
+    "newMediaFiles": 0
+  },
+  "media": {
+    "checksumsVerified": 14,
+    "hashes": [
+      {
+        "id": "strict-question",
+        "quality": "4k",
+        "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a"
+      },
+      {
+        "id": "strict-question",
+        "quality": "720p",
+        "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7"
+      },
+      {
+        "id": "strict-listening",
+        "quality": "4k",
+        "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5"
+      },
+      {
+        "id": "strict-listening",
+        "quality": "720p",
+        "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c"
+      },
+      {
+        "id": "strict-followup-experience",
+        "quality": "4k",
+        "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d"
+      },
+      {
+        "id": "strict-followup-experience",
+        "quality": "720p",
+        "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685"
+      },
+      {
+        "id": "strict-followup-plan",
+        "quality": "4k",
+        "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db"
+      },
+      {
+        "id": "strict-followup-plan",
+        "quality": "720p",
+        "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94"
+      },
+      {
+        "id": "strict-listen-question-tail",
+        "quality": "720p",
+        "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7"
+      },
+      {
+        "id": "strict-listen-question-tail",
+        "quality": "4k",
+        "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e"
+      },
+      {
+        "id": "strict-listen-plan-tail",
+        "quality": "720p",
+        "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc"
+      },
+      {
+        "id": "strict-listen-plan-tail",
+        "quality": "4k",
+        "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e"
+      },
+      {
+        "id": "strict-listen-experience-tail",
+        "quality": "720p",
+        "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18"
+      },
+      {
+        "id": "strict-listen-experience-tail",
+        "quality": "4k",
+        "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456"
+      }
+    ],
+    "sourceAudit": "continuity-source-audit.json",
+    "existingQualities": [
+      "720p",
+      "4k"
+    ],
+    "native4k": false
+  },
+  "continuity": {
+    "method": "Quiet listening before each added writing performance; at most one added writing clip per normal answer; keep note history across answers; do not immediately replay the first question tail.",
+    "insufficientTime": "Do not start a writing clip unless remaining answer time after the current clip accommodates its complete duration and 150ms transition.",
+    "playbackStartSeconds": {
+      "strict-listen-plan-tail": 0.5,
+      "strict-listen-experience-tail": 0.75
+    },
+    "safeExitStartsSeconds": {
+      "strict-question": 8.75,
+      "strict-listening": 9,
+      "strict-listen-question-tail": 4.75
+    },
+    "transitionMs": 150,
+    "sourcePlaybackSpeed": 1,
+    "reversePlayback": false,
+    "newFaceSynthesis": false,
+    "knownLimit": "The two short neutral performances still recur. Small differences between original faces and postures remain; this is not seamless or infinite new acting."
+  },
+  "comfort": {
+    "changes": [
+      "Upload prepared video textures and compile their shader before the first visible question in an existing 3D stage.",
+      "Keep the reference poster during preparation until the real first frame is visible.",
+      "Do not autofocus the hidden text field while the room preview or XR session is active."
+    ],
+    "cameraControlsChanged": false,
+    "defaultSnapDegrees": 30,
+    "dragOptIn": true,
+    "inertia": false,
+    "headTracking": "Existing 1:1 unfiltered WebXR pose; no forced camera animation.",
+    "physicalVideoElements": 2,
+    "measuredSicknessReduction": false
+  },
+  "browser": {
+    "method": "CUA in-app browser; actual local playback with synthetic typed answers and full 30s/25s answer timers. DOM/media samples and screenshots, not physical headset or human listening proof.",
+    "fourKExperienceBranchCompleted": true,
+    "sevenTwentyPlanBranchCompleted": true,
+    "sevenTwentyStartClickToObservedCompleteSeconds": 72.609,
+    "durationIncludes": "Initial media preparation and real-time playback; completion sampled at about 0.1s intervals near the end.",
+    "nonzeroTrimDecoded": true,
+    "preparingPosterAndFirstFrameObserved": true,
+    "previewRetainsCanvasFocus": true,
+    "left30AndFrontControls": true,
+    "errorsAndWarningsObserved": 0,
+    "samples": [
+      "continuity-comfort-4k-samples.json",
+      "continuity-comfort-720p-samples.json"
+    ],
+    "screenshots": [
+      "continuity-comfort-room.png",
+      "continuity-comfort-4k-complete.png",
+      "continuity-comfort-720p-complete.png",
+      "continuity-comfort-start-1.png",
+      "continuity-comfort-start-18.png",
+      "continuity-comfort-start-39.png",
+      "continuity-comfort-motion-0.png",
+      "continuity-comfort-motion-6.png",
+      "continuity-comfort-motion-11.png"
+    ]
+  },
+  "tests": {
+    "passed": 123,
+    "failed": 0,
+    "log": "continuity-comfort-tests.txt"
+  },
+  "package": {
+    "directory": ".tmp/path-interview-quest",
+    "files": 128,
+    "bytes": 206722668,
+    "checksumFiles": 127,
+    "sourceCompared": 124,
+    "creditFilesPresent": 13,
+    "licenses": 11,
+    "excludedArtifacts": 0,
+    "deployed": false
+  },
+  "preserved": {
+    "sternAtmosphere": true,
+    "actualSpokenFollowups": 2,
+    "additionalEightScriptsGenerated": false,
+    "answerStorageOrUpload": false
+  },
+  "notVerified": [
+    "Physical Quest frame rate, headset microphone and actual motion-sickness improvement.",
+    "User approval of seamless posture continuity and human listening to the full dialogue.",
+    "Native stereo/360 degree humans or large translational head movement."
+  ]
+}

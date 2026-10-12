@@ -1,0 +1,797 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-12T00:28:37.766Z",
+  "baseline": {
+    "commit": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+    "originMain": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+    "files": 76
+  },
+  "candidate": {
+    "files": 76,
+    "payloadBytes": 272257573,
+    "changedFiles": [
+      "path/interview/dialogue.mjs",
+      "path/interview/film/answer-followup.mjs",
+      "path/interview/film/voice-assessment.mjs"
+    ],
+    "unchangedFiles": 73,
+    "manifestSHA256": "40f4889d4ea84c4e68bc213c549bf2a845a1147f54a0bd4ef44dbf6e0a1660a3"
+  },
+  "tests": {
+    "allInterview": {
+      "passed": 252,
+      "failed": 0,
+      "log": "noise-polarity-interview-tests.log"
+    }
+  },
+  "verification": {
+    "deployed": true,
+    "staged": false,
+    "pushed": true,
+    "sourceAndPackageMatch": true,
+    "isolatedCandidateMatches": true,
+    "protectedMediaAndRoomMatch": true,
+    "protectedFiles": 33,
+    "scope": "Three runtime modules only; no audio, QA, media, model, room, VR controls, introduction or other website changes",
+    "committed": true,
+    "publicScope": {
+      "httpChangedModules": 3,
+      "preservedBaselineFiles": 73,
+      "mediaRoomVRBytePreservation": "all 76 payload files compared locally to baseline and isolated commit; only 3 routing modules changed",
+      "microphone": "not tested with user audio",
+      "quest": "not tested on device",
+      "browserFlow": "parent agent verifies separately"
+    }
+  },
+  "rows": [
+    {
+      "file": "path/assets/DMMono.woff2",
+      "source": "experiences/path-vr/assets/DMMono.woff2",
+      "sourceSHA256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "baselineSHA256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "sha256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "bytes": 5848,
+      "changed": false
+    },
+    {
+      "file": "path/assets/SUIT.woff2",
+      "source": "experiences/path-vr/assets/SUIT.woff2",
+      "sourceSHA256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "baselineSHA256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/room-poster-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-poster-4k.jpg",
+      "sourceSHA256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "baselineSHA256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "sha256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "bytes": 552234,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/room-reference-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-reference-4k.jpg",
+      "sourceSHA256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "baselineSHA256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "sha256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "bytes": 694928,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-experience-4k.mp4",
+      "sourceSHA256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "baselineSHA256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "bytes": 11078438,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-experience-720p.mp4",
+      "sourceSHA256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "baselineSHA256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "bytes": 3154743,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-plan-4k.mp4",
+      "sourceSHA256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "baselineSHA256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "bytes": 10548847,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-plan-720p.mp4",
+      "sourceSHA256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "baselineSHA256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "bytes": 3036932,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "sourceSHA256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "baselineSHA256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "bytes": 2868604,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+      "sourceSHA256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "baselineSHA256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "bytes": 555181,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "sourceSHA256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "baselineSHA256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "bytes": 2853959,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+      "sourceSHA256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "baselineSHA256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "bytes": 545391,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "sourceSHA256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "baselineSHA256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "bytes": 6057021,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-question-tail-720p.mp4",
+      "sourceSHA256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "baselineSHA256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "bytes": 1145975,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listening-4k.mp4",
+      "sourceSHA256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "baselineSHA256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "bytes": 10122866,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listening-720p.mp4",
+      "sourceSHA256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "baselineSHA256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "bytes": 2917190,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-question-4k.mp4",
+      "sourceSHA256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "baselineSHA256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "bytes": 9901952,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-question-720p.mp4",
+      "sourceSHA256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "baselineSHA256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "bytes": 2801131,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/back-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/back-wall-detail-4k.jpg",
+      "sourceSHA256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "baselineSHA256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "sha256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "bytes": 930644,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/carpet-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/carpet-4k.jpg",
+      "sourceSHA256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "baselineSHA256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "sha256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "bytes": 161270,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/ceiling-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/ceiling-detail-4k.jpg",
+      "sourceSHA256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "baselineSHA256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "sha256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "bytes": 943652,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/desk-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/desk-4k.jpg",
+      "sourceSHA256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "baselineSHA256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "sha256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "bytes": 45160,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/front-room-extension-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/front-room-extension-4k.jpg",
+      "sourceSHA256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "baselineSHA256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "sha256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "bytes": 653669,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/front-room-wide-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/front-room-wide-4k.jpg",
+      "sourceSHA256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "baselineSHA256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "sha256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "bytes": 698348,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/left-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/left-wall-detail-4k.jpg",
+      "sourceSHA256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "baselineSHA256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "sha256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "bytes": 670407,
+      "changed": false
+    },
+    {
+      "file": "path/assets/interview/room/right-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/right-wall-detail-4k.jpg",
+      "sourceSHA256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "baselineSHA256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "sha256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "bytes": 586123,
+      "changed": false
+    },
+    {
+      "file": "path/assets/licenses/DMMono-OFL.txt",
+      "source": "docs/브랜드_폰트/DM_Mono/OFL.txt",
+      "sourceSHA256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "baselineSHA256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "bytes": 4484,
+      "changed": false
+    },
+    {
+      "file": "path/assets/licenses/SUIT-OFL.txt",
+      "source": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "sourceSHA256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "baselineSHA256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "bytes": 4380,
+      "changed": false
+    },
+    {
+      "file": "path/assets/logo-path.webp",
+      "source": "experiences/path-vr/assets/logo-path.webp",
+      "sourceSHA256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "baselineSHA256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "sha256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "bytes": 118428,
+      "changed": false
+    },
+    {
+      "file": "path/interview/audio-worklet.js",
+      "source": "experiences/path-vr/interview/audio-worklet.js",
+      "sourceSHA256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "baselineSHA256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "bytes": 2265,
+      "changed": false
+    },
+    {
+      "file": "path/interview/content.mjs",
+      "source": "experiences/path-vr/interview/content.mjs",
+      "sourceSHA256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "baselineSHA256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "sha256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "bytes": 4235,
+      "changed": false
+    },
+    {
+      "file": "path/interview/dialogue.mjs",
+      "source": "experiences/path-vr/interview/dialogue.mjs",
+      "sourceSHA256": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0",
+      "baselineSHA256": "339c9f5db60255ca7244f227f31f9375443ad351bc803c9819a9871aa3421a14",
+      "sha256": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0",
+      "bytes": 10596,
+      "changed": true
+    },
+    {
+      "file": "path/interview/film-player.mjs",
+      "source": "experiences/path-vr/interview/film-player.mjs",
+      "sourceSHA256": "c5a3a4c35f39582818a926cf3a4cb75972850b87c99df69a7e558f13e5d4fded",
+      "baselineSHA256": "c5a3a4c35f39582818a926cf3a4cb75972850b87c99df69a7e558f13e5d4fded",
+      "sha256": "c5a3a4c35f39582818a926cf3a4cb75972850b87c99df69a7e558f13e5d4fded",
+      "bytes": 27335,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "source": "experiences/path-vr/interview/film/answer-followup.mjs",
+      "sourceSHA256": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a",
+      "baselineSHA256": "5413374c34337c9cb897b3cba364b1dbe9a3a81fcb48575a7f6e8ab861b8a9f4",
+      "sha256": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a",
+      "bytes": 17358,
+      "changed": true
+    },
+    {
+      "file": "path/interview/film/listening-sequence.mjs",
+      "source": "experiences/path-vr/interview/film/listening-sequence.mjs",
+      "sourceSHA256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "baselineSHA256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "sha256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "bytes": 4506,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/rehearsal-session.mjs",
+      "source": "experiences/path-vr/interview/film/rehearsal-session.mjs",
+      "sourceSHA256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "baselineSHA256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "sha256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "bytes": 13574,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/rehearsal.css",
+      "source": "experiences/path-vr/interview/film/rehearsal.css",
+      "sourceSHA256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "baselineSHA256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "sha256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "bytes": 7433,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "source": "experiences/path-vr/interview/film/rehearsal.html",
+      "sourceSHA256": "2dc3ef9ad807c4968c7e28a51db9c93b2cdb0ae57037865edba1c759f3a8ede3",
+      "baselineSHA256": "24cc9da0afe0611856cd799ecb236f9e5b3b2ab0fe1d7b5b68b4e72a398189a0",
+      "sha256": "24cc9da0afe0611856cd799ecb236f9e5b3b2ab0fe1d7b5b68b4e72a398189a0",
+      "bytes": 6639,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "source": "experiences/path-vr/interview/film/rehearsal.mjs",
+      "sourceSHA256": "f2c6136ff93fe6f3e250aebc5d39249ecbf8e979ff368e99cd1a00ebf075896b",
+      "baselineSHA256": "f2c6136ff93fe6f3e250aebc5d39249ecbf8e979ff368e99cd1a00ebf075896b",
+      "sha256": "f2c6136ff93fe6f3e250aebc5d39249ecbf8e979ff368e99cd1a00ebf075896b",
+      "bytes": 35781,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/room-space.mjs",
+      "source": "experiences/path-vr/interview/film/room-space.mjs",
+      "sourceSHA256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+      "baselineSHA256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+      "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+      "bytes": 31809,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/speech-turn.mjs",
+      "source": "experiences/path-vr/interview/film/speech-turn.mjs",
+      "sourceSHA256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "baselineSHA256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "bytes": 1432,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/strict-manifest.json",
+      "source": "experiences/path-vr/interview/film/strict-manifest.json",
+      "sourceSHA256": "70d6d6d4ad8493dd36953e5b5274c94bee5a692c9dd8df823ab57ef411fce8ea",
+      "baselineSHA256": "681a03f3028167002ac0928af81e91a0f2f2cf5e8091821cb4943a2c62fec04a",
+      "sha256": "681a03f3028167002ac0928af81e91a0f2f2cf5e8091821cb4943a2c62fec04a",
+      "bytes": 10115,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "source": "experiences/path-vr/interview/film/strict-vr.mjs",
+      "sourceSHA256": "64fc61118da18495bb265e706c00b2ac0c2cf1cfc940e55ced178c09dcd25749",
+      "baselineSHA256": "64fc61118da18495bb265e706c00b2ac0c2cf1cfc940e55ced178c09dcd25749",
+      "sha256": "64fc61118da18495bb265e706c00b2ac0c2cf1cfc940e55ced178c09dcd25749",
+      "bytes": 28893,
+      "changed": false
+    },
+    {
+      "file": "path/interview/film/voice-assessment.mjs",
+      "source": "experiences/path-vr/interview/film/voice-assessment.mjs",
+      "sourceSHA256": "c697209f2fda4c620fa4b0bbc05e09b66ba09b216b0b7a041c38e951f73fcf26",
+      "baselineSHA256": "e3c21f795581936da76f8898f2dc2122d6cad88cb145e50f2fbd4c587fb9abf0",
+      "sha256": "c697209f2fda4c620fa4b0bbc05e09b66ba09b216b0b7a041c38e951f73fcf26",
+      "bytes": 14702,
+      "changed": true
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "source": "experiences/path-vr/interview/voice.mjs",
+      "sourceSHA256": "588d66c84c582d091990c0e8333b520e716a7d1c9f385ce65eeff2b30fcbcbed",
+      "baselineSHA256": "588d66c84c582d091990c0e8333b520e716a7d1c9f385ce65eeff2b30fcbcbed",
+      "sha256": "588d66c84c582d091990c0e8333b520e716a7d1c9f385ce65eeff2b30fcbcbed",
+      "bytes": 17176,
+      "changed": false
+    },
+    {
+      "file": "path/interview/whisper-model.mjs",
+      "source": "experiences/path-vr/interview/whisper-model.mjs",
+      "sourceSHA256": "c52cde93c6455e78421507f5da3ce99f416e97884bd4a5c083a7e7d243edd6ff",
+      "baselineSHA256": "c52cde93c6455e78421507f5da3ce99f416e97884bd4a5c083a7e7d243edd6ff",
+      "sha256": "c52cde93c6455e78421507f5da3ce99f416e97884bd4a5c083a7e7d243edd6ff",
+      "bytes": 4541,
+      "changed": false
+    },
+    {
+      "file": "path/interview/whisper-worker.mjs",
+      "source": "experiences/path-vr/interview/whisper-worker.mjs",
+      "sourceSHA256": "9806a93d8dbdf614c8bf9ff4d637e01230d780e186124bb9f6c7773443266b9d",
+      "baselineSHA256": "9806a93d8dbdf614c8bf9ff4d637e01230d780e186124bb9f6c7773443266b9d",
+      "sha256": "9806a93d8dbdf614c8bf9ff4d637e01230d780e186124bb9f6c7773443266b9d",
+      "bytes": 14382,
+      "changed": false
+    },
+    {
+      "file": "path/models/LICENSE-vosk-model.txt",
+      "source": "experiences/path-vr/vendor/vosk/LICENSE.txt",
+      "sourceSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "baselineSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "bytes": 10173,
+      "changed": false
+    },
+    {
+      "file": "path/models/vosk-model-small-ko-0.22.tar.gz",
+      "source": "experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz",
+      "sourceSHA256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "baselineSHA256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "sha256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "bytes": 89103045,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/LICENSE-WHISPER.txt",
+      "source": "experiences/path-vr/models/whisper-base/LICENSE-WHISPER.txt",
+      "sourceSHA256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "baselineSHA256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "bytes": 1063,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/PROVENANCE.json",
+      "source": "experiences/path-vr/models/whisper-base/PROVENANCE.json",
+      "sourceSHA256": "9670a12d52f657feaac284ce828dac15c5fa77ef0176aeef35d11856b64d0abc",
+      "baselineSHA256": "9670a12d52f657feaac284ce828dac15c5fa77ef0176aeef35d11856b64d0abc",
+      "sha256": "9670a12d52f657feaac284ce828dac15c5fa77ef0176aeef35d11856b64d0abc",
+      "bytes": 5445,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/README.md",
+      "source": "experiences/path-vr/models/whisper-base/README.md",
+      "sourceSHA256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "baselineSHA256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "bytes": 1232,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+      "source": "experiences/path-vr/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+      "sourceSHA256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "baselineSHA256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "sha256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "bytes": 578,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/config.json",
+      "source": "experiences/path-vr/models/whisper-base/config.json",
+      "sourceSHA256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "baselineSHA256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "sha256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "bytes": 2243,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/generation_config.json",
+      "source": "experiences/path-vr/models/whisper-base/generation_config.json",
+      "sourceSHA256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "baselineSHA256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "sha256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "bytes": 3832,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "source": "experiences/path-vr/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "sourceSHA256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "baselineSHA256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "sha256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "bytes": 53693315,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "source": "experiences/path-vr/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "sourceSHA256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "baselineSHA256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "sha256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "bytes": 23201314,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/preprocessor_config.json",
+      "source": "experiences/path-vr/models/whisper-base/preprocessor_config.json",
+      "sourceSHA256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "baselineSHA256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "sha256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "bytes": 339,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/revision.txt",
+      "source": "experiences/path-vr/models/whisper-base/revision.txt",
+      "sourceSHA256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "baselineSHA256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "sha256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "bytes": 40,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer.json",
+      "source": "experiences/path-vr/models/whisper-base/tokenizer.json",
+      "sourceSHA256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "baselineSHA256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "sha256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "bytes": 2480466,
+      "changed": false
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer_config.json",
+      "source": "experiences/path-vr/models/whisper-base/tokenizer_config.json",
+      "sourceSHA256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "baselineSHA256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "sha256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "bytes": 282682,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/THREE-LICENSE.txt",
+      "source": "experiences/path-vr/vendor/THREE-LICENSE.txt",
+      "sourceSHA256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "baselineSHA256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "bytes": 1081,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/three.core.js",
+      "source": "experiences/path-vr/vendor/three.core.js",
+      "sourceSHA256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "baselineSHA256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "bytes": 1403455,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/three.module.js",
+      "source": "experiences/path-vr/vendor/three.module.js",
+      "sourceSHA256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "baselineSHA256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "bytes": 603113,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+      "source": "experiences/path-vr/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+      "sourceSHA256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "baselineSHA256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "bytes": 1073,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+      "source": "experiences/path-vr/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+      "sourceSHA256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "baselineSHA256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/PROVENANCE.json",
+      "source": "experiences/path-vr/vendor/transformers/PROVENANCE.json",
+      "sourceSHA256": "4ea0e8064c27345d57f34d1bdd3a9aabd5dd2556fb6b63c0dcddb1b25b7227d1",
+      "baselineSHA256": "4ea0e8064c27345d57f34d1bdd3a9aabd5dd2556fb6b63c0dcddb1b25b7227d1",
+      "sha256": "4ea0e8064c27345d57f34d1bdd3a9aabd5dd2556fb6b63c0dcddb1b25b7227d1",
+      "bytes": 2163,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/README.md",
+      "source": "experiences/path-vr/vendor/transformers/README.md",
+      "sourceSHA256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "baselineSHA256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "sha256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "bytes": 1094,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+      "source": "experiences/path-vr/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+      "sourceSHA256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "baselineSHA256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "sha256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "bytes": 44484,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "source": "experiences/path-vr/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "sourceSHA256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "baselineSHA256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "bytes": 21596019,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/transformers/transformers.min.js",
+      "source": "experiences/path-vr/vendor/transformers/transformers.min.js",
+      "sourceSHA256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "baselineSHA256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "sha256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "bytes": 888173,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/vosk/LICENSE.txt",
+      "source": "experiences/path-vr/vendor/vosk/LICENSE.txt",
+      "sourceSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "baselineSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "bytes": 10173,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/vosk/NOTICE.txt",
+      "source": "experiences/path-vr/vendor/vosk/NOTICE.txt",
+      "sourceSHA256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "baselineSHA256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "sha256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "bytes": 10019,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/vosk/vosk-worker.js",
+      "source": "experiences/path-vr/vendor/vosk/vosk-worker.js",
+      "sourceSHA256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "baselineSHA256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "bytes": 4330890,
+      "changed": false
+    },
+    {
+      "file": "path/vendor/vosk/vosk.mjs",
+      "source": "experiences/path-vr/vendor/vosk/vosk.mjs",
+      "sourceSHA256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "baselineSHA256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "bytes": 31367,
+      "changed": false
+    },
+    {
+      "file": "path/xr.mjs",
+      "source": "experiences/path-vr/xr.mjs",
+      "sourceSHA256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "baselineSHA256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "sha256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "bytes": 2231,
+      "changed": false
+    }
+  ],
+  "preparedAt": "2026-10-12T00:27:36.960Z",
+  "commit": "3c38cc85eb466197f2b9f743daf884e7f3812ea6",
+  "commitURL": "https://github.com/unmet23-lab/synk-policy/commit/3c38cc85eb466197f2b9f743daf884e7f3812ea6",
+  "pushedAt": "2026-10-12T00:29:01.587Z",
+  "pages": {
+    "conclusion": "success",
+    "createdAt": "2026-10-12T00:28:46Z",
+    "databaseId": 38188148338,
+    "headSha": "3c38cc85eb466197f2b9f743daf884e7f3812ea6",
+    "status": "completed",
+    "updatedAt": "2026-10-12T00:30:51Z",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38188148338",
+    "workflowName": "pages-build-deployment"
+  },
+  "ci": {
+    "conclusion": "cancelled",
+    "createdAt": "2026-10-12T00:28:46Z",
+    "databaseId": 38188148368,
+    "headSha": "3c38cc85eb466197f2b9f743daf884e7f3812ea6",
+    "status": "completed",
+    "updatedAt": "2026-10-12T00:34:57Z",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38188148368",
+    "workflowName": "synk.im 배포 점검",
+    "reason": "Superseded by the authorized follow-up commit; GitHub concurrency cancelled the older check."
+  },
+  "publicVerification": {
+    "checkedAt": "2026-10-12T00:31:27.673Z",
+    "files": [
+      {
+        "file": "path/interview/dialogue.mjs",
+        "url": "https://synk.im/path/interview/dialogue.mjs",
+        "status": 200,
+        "mime": "text/javascript; charset=utf-8",
+        "bytes": 10596,
+        "sha256": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0",
+        "expectedSHA256": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0",
+        "byteMatch": true,
+        "mimeMatch": true
+      },
+      {
+        "file": "path/interview/film/answer-followup.mjs",
+        "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+        "status": 200,
+        "mime": "text/javascript; charset=utf-8",
+        "bytes": 17358,
+        "sha256": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a",
+        "expectedSHA256": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a",
+        "byteMatch": true,
+        "mimeMatch": true
+      },
+      {
+        "file": "path/interview/film/voice-assessment.mjs",
+        "url": "https://synk.im/path/interview/film/voice-assessment.mjs",
+        "status": 200,
+        "mime": "text/javascript; charset=utf-8",
+        "bytes": 14702,
+        "sha256": "c697209f2fda4c620fa4b0bbc05e09b66ba09b216b0b7a041c38e951f73fcf26",
+        "expectedSHA256": "c697209f2fda4c620fa4b0bbc05e09b66ba09b216b0b7a041c38e951f73fcf26",
+        "byteMatch": true,
+        "mimeMatch": true
+      }
+    ]
+  },
+  "publicByteMatch": true,
+  "publicMimeMatch": true
+}

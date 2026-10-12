@@ -1,0 +1,28 @@
+{
+  "checkedAt": "2026-10-11T20:27:53.668Z",
+  "commit": "96d4c101926af8a2473f123cd4f560965737a68a",
+  "sourceSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+  "scenario": "4K start, no-experience answer, two UI pause/resume cycles, plan followup, automatic full completion",
+  "state": {
+    "phase": "면접 종료",
+    "result": "답변: “아직 요양시설 근무 경험은 없습니다.”\n본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.\n후속 질문: “현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.”",
+    "status": "면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.",
+    "videos": [
+      {
+        "height": 2160,
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      }
+    ]
+  },
+  "console": []
+}

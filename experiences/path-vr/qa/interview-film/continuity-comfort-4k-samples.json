@@ -1,0 +1,529 @@
+[
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": ""
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 1.03604,
+        "width": 3840
+      },
+      {
+        "duration": 10.08,
+        "opacity": "0",
+        "paused": true,
+        "ready": 1,
+        "src": "strict-listening-4k.mp4",
+        "time": 0,
+        "width": 3840
+      }
+    ],
+    "elapsed": 0.122
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "요양원 실습에서 식사를 거부한 어르신에게 이유를 여쭙고 담당 요양보호사에게 보고했습니다. 식사량을 기록하고 다음 근무자에게 전달했습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 0.5,
+        "width": 3840
+      },
+      {
+        "duration": 10.08,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listening-4k.mp4",
+        "time": 5.909189,
+        "width": 3840
+      }
+    ],
+    "elapsed": 8.031
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": ""
+      }
+    ],
+    "videos": [
+      {
+        "duration": 10.041667,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-followup-experience-4k.mp4",
+        "time": 6.946396,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 0.5,
+        "width": 3840
+      }
+    ],
+    "elapsed": 28.627
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 1.978291,
+        "width": 3840
+      },
+      {
+        "duration": 6,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-question-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      }
+    ],
+    "elapsed": 35.473
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.041737,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.09
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.184581,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.239
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.310628,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.357
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.400902,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.448
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.515152,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.563
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.614148,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.661
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.716374,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.765
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.832798,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.879
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 2.943925,
+        "width": 3840
+      }
+    ],
+    "elapsed": 51.992
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.795769,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      }
+    ],
+    "elapsed": 52.098
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.897275,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      }
+    ],
+    "elapsed": 52.198
+  },
+  {
+    "focus": "CANVAS",
+    "status": "답변을 입력한 뒤 완료를 누르세요.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": false,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 0.987556,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 1,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      }
+    ],
+    "elapsed": 52.289
+  },
+  {
+    "focus": "CANVAS",
+    "status": "면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.",
+    "texts": [
+      {
+        "disabled": false,
+        "value": "제가 직접 식사량을 기록하고 담당자에게 전달했습니다. 다음 근무 때 기록을 확인해 변화가 있었는지도 살폈습니다."
+      }
+    ],
+    "videos": [
+      {
+        "duration": 3,
+        "opacity": "1",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-experience-tail-4k.mp4",
+        "time": 2.678707,
+        "width": 3840
+      },
+      {
+        "duration": 3,
+        "opacity": "0",
+        "paused": true,
+        "ready": 4,
+        "src": "strict-listen-plan-tail-4k.mp4",
+        "time": 0.5,
+        "width": 3840
+      }
+    ],
+    "elapsed": 66.161
+  }
+]

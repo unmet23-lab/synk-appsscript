@@ -1,0 +1,28 @@
+✔ every published video quality and reference resolves inside root and nested deployments (63.3065ms)
+✔ room and comparison pages keep images, styles and media under the deployment mount (29.1696ms)
+✔ speech model, microphone worklet and worker retain their deployment directory (4.1123ms)
+✔ mounted headers scope worker-only eval and device permissions to the published directory (0.6075ms)
+✔ Pages meta policy precedes resource loading and does not grant parent eval (0.9493ms)
+✔ Pages transform refuses ambiguous or pre-existing policy and development pages (0.5272ms)
+✔ public manifest preserves exact continuity, clip hashes and both qualities (5.534ms)
+✔ Pages overlay is minimal, deterministic and source-audited (11235.7213ms)
+✔ Pages rebuild refuses to overwrite an unexpected PATH introduction (1555.0844ms)
+✔ published imports, stylesheet URLs and fixed room textures resolve inside the minimal overlay (27.3622ms)
+✔ Pages verification detects changed published bytes (1164.1706ms)
+✔ Range parsing bounds large media without interpreting multipart or unsafe integers (1.2187ms)
+✔ model GET and HEAD ranges return exact bytes and denied sources stay private (111.6965ms)
+✔ page and WASM worker CSP remain separate; GLB blob images and device permissions work (6.3433ms)
+✔ Whisper serves exact WASM and ONNX ranges under strict worker CSP without exposing alternate or test assets (18.2781ms)
+✔ LAN mode requires an explicit host allowlist and real TLS configuration (0.9752ms)
+✔ HTTPS serves the allowed Quest host while rejecting another host (752.5218ms)
+✔ static export selection rejects private tools, fixtures, raw WAV and configuration even if source server lists them (2.3735ms)
+✔ hosting file grants unsafe-eval to the worker only without overlapping wildcard CSP (0.3647ms)
+✔ standalone package copies current runtime exactly, keeps credit files, and excludes private artifacts (6892.3347ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 22231.041

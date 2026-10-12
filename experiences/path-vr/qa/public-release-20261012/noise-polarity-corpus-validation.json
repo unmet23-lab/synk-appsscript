@@ -1,0 +1,24 @@
+{
+  "caseCount": 32,
+  "noExperienceCaseCount": 16,
+  "conditionCounts": {
+    "clean": 8,
+    "fan-15db": 8,
+    "typing-5db": 8,
+    "mixed-0db-critical": 8
+  },
+  "totalSeconds": 152.1,
+  "durationRangeSeconds": [
+    2.765,
+    8.075
+  ],
+  "wavBytes": 4868608,
+  "rebuildByteIdentical": true,
+  "comparedFiles": 34,
+  "allPcm16kMono": true,
+  "clippedSamples": 0,
+  "maxPcmMeasuredSnrErrorDb": 3.558010797810596e-05,
+  "manifestSha256": "c0b7644d4a14160a3f01f10ca4cbd4286c196aeddba3fec7ff6061c6742ba198",
+  "syntheticOnly": true,
+  "asrBenchmarkExecuted": false
+}

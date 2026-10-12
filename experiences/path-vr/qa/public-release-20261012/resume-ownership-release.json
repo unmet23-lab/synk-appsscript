@@ -1,0 +1,45 @@
+{
+  "checkedAt": "2026-10-11T20:26:01.636Z",
+  "pathCommit": "96d4c101926af8a2473f123cd4f560965737a68a",
+  "deployedCommit": "ee2b7890f3a56956693cfe37427292ed96256ecd",
+  "public": {
+    "url": "https://synk.im/path/interview/film-player.mjs",
+    "status": 200,
+    "bytes": 26255,
+    "sha256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+    "contentType": "text/javascript; charset=utf-8"
+  },
+  "pages": {
+    "conclusion": "success",
+    "createdAt": "2026-10-11T20:24:06Z",
+    "databaseId": 38172051555,
+    "headSha": "ee2b7890f3a56956693cfe37427292ed96256ecd",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "updatedAt": "2026-10-11T20:25:48Z",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38172051555"
+  },
+  "ci": {
+    "conclusion": "",
+    "createdAt": "2026-10-11T20:24:06Z",
+    "databaseId": 38172051575,
+    "headSha": "ee2b7890f3a56956693cfe37427292ed96256ecd",
+    "name": "synk.im 배포 점검",
+    "status": "in_progress",
+    "updatedAt": "2026-10-11T20:24:21Z",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38172051575"
+  },
+  "priorRuns": {
+    "pages": 38171995747,
+    "ci": 38171995889,
+    "conclusion": "cancelled",
+    "reason": "Superseded by descendant ee2b789 with unrelated homepage download changes; runtime hash preserved."
+  },
+  "scope": "One film-player module: each play request owns a serial so a cancelled resume cannot pause a newer resume of the same decoded source.",
+  "tests": {
+    "file": "resume-ownership-tests.log",
+    "passed": 40,
+    "failed": 0
+  },
+  "browserVerification": "Parent task checks the final loaded module and pause/resume UI separately."
+}

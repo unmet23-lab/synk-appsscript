@@ -1,0 +1,35 @@
+{
+  "observedAt": "2026-10-11T20:16:45.387Z",
+  "commit": "c7282c36fd711391ac7392fee9c384a62b900ca6",
+  "publicPlayerSha256": "4a33ff26ec13ecadd1954013018eca0c5230f62abe7bf89824efde0c510b688d",
+  "notes": "First question played. Typed first answer and allowed normal timeout. Expected followup, observed stall UI.",
+  "page": {
+    "phase": "연결 확인",
+    "result": "",
+    "status": "영상 재생이 멈췄습니다. 다시 준비해 주세요.",
+    "videos": [
+      {
+        "height": 2160,
+        "paused": true,
+        "readyState": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 0.5,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "paused": true,
+        "readyState": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      }
+    ],
+    "visibility": "visible"
+  },
+  "console": [],
+  "initialCommitAttributionWasIncorrect": true,
+  "loadedPlayerSha256": "e0615fb8015fc7c4639712b07824ed22fa999c5c62786dfdbb650fb841705ed0",
+  "actualLoadedRelease": "558709386f054e6cd1f086caebaea7ffa284f8e1",
+  "correction": "HTTP fetched final code was current, but the browser retained first-fix module in cache after ordinary reload. CDP scriptParsed confirmed the older hash. This is not a test of c7282c36."
+}

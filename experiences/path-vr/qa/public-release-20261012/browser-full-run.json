@@ -1,0 +1,98 @@
+{
+  "startedAt": "2026-10-11T19:52:57.841Z",
+  "start": 1791748377847,
+  "samples": [
+    {
+      "at": 19270,
+      "dom": {
+        "phase": "답변 중",
+        "timer": "23초",
+        "turn": "1 / 2",
+        "videos": [
+          {
+            "paused": true,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+            "time": 0.75,
+            "width": 3840
+          },
+          {
+            "paused": false,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+            "time": 1.928264,
+            "width": 3840
+          }
+        ]
+      }
+    },
+    {
+      "at": 39280,
+      "dom": {
+        "context": "",
+        "phase": "답변 중",
+        "timer": "3초",
+        "turn": "1 / 2",
+        "videos": [
+          {
+            "paused": false,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+            "time": 2.322761,
+            "width": 3840
+          },
+          {
+            "paused": true,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+            "time": 0.75,
+            "width": 3840
+          }
+        ]
+      }
+    },
+    {
+      "at": 55525,
+      "dom": {
+        "context": "첫 답변에서 확인한 내용: “할머니 식사를 직접 도왔습니다.”",
+        "phase": "답변 중",
+        "timer": "23초",
+        "turn": "2 / 2",
+        "videos": [
+          {
+            "paused": false,
+            "src": "https://synk.im/path/assets/interview/film/strict-followup-experience-4k.mp4",
+            "time": 8.81766,
+            "width": 3840
+          },
+          {
+            "paused": true,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+            "time": 0.5,
+            "width": 3840
+          }
+        ]
+      }
+    },
+    {
+      "at": 100947,
+      "dom": {
+        "completeVisible": true,
+        "phase": "면접 종료",
+        "result": "답변: “할머니 식사를 직접 도왔습니다.”\n답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.\n후속 질문: “그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.”",
+        "timer": "",
+        "turn": "2 QUESTIONS",
+        "videos": [
+          {
+            "paused": true,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+            "time": 2.78523,
+            "width": 3840
+          },
+          {
+            "paused": true,
+            "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+            "time": 0.5,
+            "width": 3840
+          }
+        ]
+      }
+    }
+  ]
+}

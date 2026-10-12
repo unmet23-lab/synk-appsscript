@@ -1,0 +1,31 @@
+{
+  "preparedAt": "2026-10-11",
+  "runtime": {
+    "name": "vosk-browser",
+    "version": "0.0.8",
+    "url": "https://registry.npmjs.org/vosk-browser/-/vosk-browser-0.0.8.tgz",
+    "license": "Apache-2.0",
+    "npmIntegrity": "sha512-df9MuChirUGKxP/+4k8tBV6hJOic8IRdJXv64+ET0Ue5CddOzLZINiHOWCka765gBzHJWNtQKgaYakS0FXZIJA==",
+    "patches": [
+      "same-origin ESM and external worker",
+      "direct AudioWorklet MessagePort",
+      "download progress",
+      "final-result flush flag",
+      "hard worker disposal and worker errors",
+      "nonfatal public-model cache failure"
+    ]
+  },
+  "model": {
+    "name": "vosk-model-small-ko-0.22",
+    "url": "https://alphacephei.com/vosk/models/vosk-model-small-ko-0.22.zip",
+    "license": "Apache-2.0",
+    "catalog": "https://alphacephei.com/vosk/models",
+    "format": "USTAR gzip",
+    "zipBytes": 86914329,
+    "zipSha256": "eea36124087fed26c59996a4761519458e3bd185e8ea9d9865ad8760c4a1d989",
+    "file": "vosk-model-small-ko-0.22.tar.gz",
+    "bytes": 89103045,
+    "sha256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155"
+  },
+  "privacy": "Microphone PCM and transcripts are processed locally and never uploaded by this module. IDBFS caches public model files only."
+}

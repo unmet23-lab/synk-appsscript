@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-11T22:22:19.390Z",
+  "repository": "onnx-community/whisper-base",
+  "revision": "1846881b6b3a3024392c1eea3ad983695bc23925",
+  "baseModel": "openai/whisper-base",
+  "license": "MIT (original Whisper code and weights)",
+  "upstreamLicenseUrl": "https://raw.githubusercontent.com/openai/whisper/main/LICENSE",
+  "modelCardLicenseFieldPresent": false,
+  "precision": {
+    "encoder_model": "q8",
+    "decoder_model_merged": "q8"
+  },
+  "excludedWeights": [
+    "onnx/encoder_model.onnx",
+    "all alternate precision variants"
+  ],
+  "files": [
+    {
+      "file": "config.json",
+      "bytes": 2243,
+      "sha256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/config.json",
+      "upstreamGitOid": "ce7faf5d5e56e82d4800e55f524582a525639ff7",
+      "upstreamLfsOid": null,
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "generation_config.json",
+      "bytes": 3832,
+      "sha256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/generation_config.json",
+      "upstreamGitOid": "a57cdbf036979f80bb7ff092a0fee6256a81d329",
+      "upstreamLfsOid": null,
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "preprocessor_config.json",
+      "bytes": 339,
+      "sha256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/preprocessor_config.json",
+      "upstreamGitOid": "91876762a536a746d268353c5cba57286e76b058",
+      "upstreamLfsOid": null,
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "tokenizer.json",
+      "bytes": 2480466,
+      "sha256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/tokenizer.json",
+      "upstreamGitOid": "1e95340ff836fad1b5932e800fb7b8c5e6d78a74",
+      "upstreamLfsOid": null,
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "tokenizer_config.json",
+      "bytes": 282682,
+      "sha256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/tokenizer_config.json",
+      "upstreamGitOid": "25be523be5ac50a7671a77f55acba082459d6314",
+      "upstreamLfsOid": null,
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "onnx/encoder_model_quantized.onnx",
+      "bytes": 23201314,
+      "sha256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/onnx/encoder_model_quantized.onnx",
+      "upstreamGitOid": "176c6da9f79a5c0c49b8c662afcc7627a96173a5",
+      "upstreamLfsOid": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "onnx/decoder_model_merged_quantized.onnx",
+      "bytes": 53693315,
+      "sha256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "source": "https://huggingface.co/onnx-community/whisper-base/resolve/1846881b6b3a3024392c1eea3ad983695bc23925/onnx/decoder_model_merged_quantized.onnx",
+      "upstreamGitOid": "292f1541d8234f2343023bc5c18063d33686f5e2",
+      "upstreamLfsOid": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "upstreamChecksumVerified": true,
+      "modified": false
+    },
+    {
+      "file": "revision.txt",
+      "bytes": 40,
+      "sha256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "source": "https://huggingface.co/api/models/onnx-community/whisper-base/revision/1846881b6b3a3024392c1eea3ad983695bc23925"
+    },
+    {
+      "file": "LICENSE-WHISPER.txt",
+      "bytes": 1063,
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "source": "https://raw.githubusercontent.com/openai/whisper/main/LICENSE",
+      "modified": false
+    },
+    {
+      "file": "UPSTREAM-MODEL-CARD.txt",
+      "bytes": 578,
+      "sha256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "source": "https://huggingface.co/onnx-community/whisper-base/raw/1846881b6b3a3024392c1eea3ad983695bc23925/README.md",
+      "modified": true,
+      "originalSourceSHA256": "60a378018182c57cf382866ddfbf0fb2b4031b3895ae932aa34ecb8ff7065a13",
+      "originalSourceBytes": 531,
+      "packagingPrefixBytes": 47,
+      "packagingNote": "Prefix prevents Jekyll from treating the original YAML as page front matter. All following bytes are the unmodified upstream original."
+    },
+    {
+      "file": "README.md",
+      "bytes": 1232,
+      "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "source": "SYNK packaging notes"
+    }
+  ],
+  "allFilesBelow100MB": true,
+  "modelPayloadBytes": 79664191,
+  "productionApplicationVerified": false
+}

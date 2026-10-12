@@ -1,0 +1,130 @@
+{
+  "generatedOn": "2026-10-12",
+  "provider": "Built-in imagegen",
+  "model": "Not exposed by tool; no claim of a specific model/version or native 4K generation.",
+  "paidApiCalls": 0,
+  "reference": "assets/interview/film/room-poster-4k.jpg",
+  "purpose": "Photographic material reconstruction with preserved side-wall architecture and a dedicated orthographic ceiling, matched to the existing interview film.",
+  "limitations": [
+    "Generated materials are plausible reconstruction, not recovered photographed detail.",
+    "4K delivery assets are normalized from the native generated resolutions recorded below.",
+    "Original monocular film and actor performance are unchanged; no true stereo/parallax capture.",
+    "Actual Quest comfort, performance and seam perception remain unverified."
+  ],
+  "assets": [
+    {
+      "key": "left",
+      "generatedSource": "C:/Users/q1212/.codex/generated_images/01a12ac1-29e4-7bd0-a4bf-4fa684bad978/exec-9b851af2-e5da-43ed-b84f-017af44d7b2f.png",
+      "nativePath": "interview/production/room-details/left-wall-detail.png",
+      "runtimePath": "assets/interview/room/left-wall-detail-4k.jpg",
+      "prompt": "Use case: precise-object-edit / photorealistic-natural architectural material restoration. Image 1 is the EDIT TARGET: a flat orthographic left window wall elevation. Image 2 is ONLY the exposure, white balance and atmosphere reference, the existing interview video first frame. Return ONLY the edited wall elevation, no people or furniture. Preserve Image 1's exact overall aspect ratio 2.464:1, edge-to-edge crop, all mullion positions, sill at 67.5% image height, blind bottom at 44%, lower wall/skirting heights and wall panel seams. Do not move, recompose, duplicate or add windows, doors, switches, objects or panels. No perspective or convergence: it will be mapped to a physical flat VR wall. This is NOT a sharpen/resize job: reconstruct convincing photographic material detail, retaining architecture. Real brushed charcoal aluminum frames with fine machining, rubber gaskets and tiny joints; thin off-white venetian slats with subtle physical thickness, separate suspension cords and real soft contact shadows; restrained natural glass reflections, a few fine wipe marks near sill, intact uncluttered clean office. Replace diffuse AI mush outside with believable distant Korean low-rise office facades and muted foliage at the same depth, avoiding eye-catching crisp/bright scenery. Fine neutral warm-gray acoustic wall fibers should be visible close up but not coarse noise. Match the subdued slightly warm-gray office image 2, left-window overcast daylight, preserved luminous windows with no blown white bloom, neutral gray not blue or gold. Calm, severe institutional interview atmosphere, documentary camera realism. Uniform focus across the wall, detailed surfaces with natural optical softness; no HDR, clarity halos, oversharpening, synthetic noise, cinematic lighting, vignette, grime, text, borders. Maintain join colors and geometry at the leftmost and rightmost edges. Highest available detail; request long edge 3840 if supported.",
+      "native": {
+        "width": 1969,
+        "height": 799,
+        "bytes": 2007665,
+        "sha256": "e05a1c1cced9b44a4b88f2a3f686d95326e75918b8892ba13a757739b15ef0e5"
+      },
+      "delivery": {
+        "width": 3840,
+        "height": 1558,
+        "bytes": 670407,
+        "sha256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step."
+      },
+      "referenceInputs": [
+        "assets/interview/room/left-wall-photo.png",
+        "assets/interview/film/room-poster-4k.jpg"
+      ]
+    },
+    {
+      "key": "right",
+      "generatedSource": "C:/Users/q1212/.codex/generated_images/01a12ac1-29e4-7bd0-a4bf-4fa684bad978/exec-778ff9ac-a553-40f4-8178-57a0562a156e.png",
+      "nativePath": "interview/production/room-details/right-wall-detail.png",
+      "runtimePath": "assets/interview/room/right-wall-detail-4k.jpg",
+      "prompt": "Use case: precise-object-edit / photorealistic-natural architectural material restoration. Image 1 is the EDIT TARGET: flat orthographic right-wall elevation for an existing VR room. Image 2 is ONLY the exposure, white-balance and lighting reference from the interview film. Return ONLY the improved elevation with Image 1's exact 2.47:1 framing and all door, slit, hardware, switches, panel joints and skirting positions unchanged. No perspective, no new objects, no visible floor/ceiling. Maintain edge pixels' overall brightness for connection to other surfaces. Reconstruct plausible real materials, do not simply sharpen: closely photographed warm-neutral gray fabric-covered acoustic panels with very fine irregular fibers and subtly recessed joints, faint compression around seams, soft wall gradients from cool overcast daylight on the opposite window wall. The door has matte oak grain, believable laminate edge, tight hinge joins and fine fingerprints around existing black lever; frosted glass softly transmits light without shining white. Keep it a clean ordinary severe institutional office, not damaged, dirty, luxury or cinematic. Match image2's slightly subdued warm gray color and soft window-lit exposure, no golden tone, no blue cast, no HDR bloom, no broad decorative light bands, no vignetting, no exaggerated texture or 3D render gloss. All original vertical lines exactly straight and locations retained. Photographic microdetail with natural camera response, restrained contrasts. No people, furniture, signs or text. Highest available detail; long edge3840 if supported.",
+      "native": {
+        "width": 1969,
+        "height": 799,
+        "bytes": 2521398,
+        "sha256": "3e7b2619553c0adcfefda6a2dcf6de2a871468cd530785fdf05c659ed38337cb"
+      },
+      "delivery": {
+        "width": 3840,
+        "height": 1558,
+        "bytes": 586123,
+        "sha256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step."
+      },
+      "referenceInputs": [
+        "assets/interview/room/right-wall-photo.png",
+        "assets/interview/film/room-poster-4k.jpg"
+      ]
+    },
+    {
+      "key": "back",
+      "generatedSource": "C:/Users/q1212/.codex/generated_images/01a12ac1-29e4-7bd0-a4bf-4fa684bad978/exec-9f53cb58-ea2c-4001-9cb4-3fd22c8af75f.png",
+      "nativePath": "interview/production/room-details/back-wall-detail.png",
+      "runtimePath": "assets/interview/room/back-wall-detail-4k.jpg",
+      "prompt": "Use case: precise-object-edit / photorealistic-natural architectural material restoration. Image1 is the EDIT TARGET, a flat orthographic rear wall elevation. Image2 is ONLY the exposure, lighting, white-balance and restrained interview-office mood reference. Keep Image1's exact framing aspect ratio 1629:965, four vertical panel seams and five panels, upper center ventilation grille, bottom dark skirting position and proportions. No perspective, no furniture, no people, no new objects or panels, no text. Restore convincing photographic material specificity, not just sharpen: very fine pressed textile fibers in warm-neutral gray acoustic panels, softly recessed precise joins, minor natural tone variations, clean intact office finish. Improve grille with real metal slats, narrow soft shadow between louvers, discreet seams and screws, no CGI gloss or exaggerated dirt. Slightly stronger soft overcast window illumination toward image RIGHT because this rear wall faces forward; image left connects to the door-side wall. Neutral subdued gray light, match Image2, no cinematic color grading, sunlight stripes, yellow/blue cast, HDR, vignette or oversharpening. Maintain original edge brightness for room connections. Broad wall should remain quiet and serious; fine materials visible only at appropriate proximity. Orthographic edge-to-edge elevation, no floor or ceiling. Highest available photographic detail, request long edge3840 if supported.",
+      "native": {
+        "width": 1629,
+        "height": 966,
+        "bytes": 2824207,
+        "sha256": "44d98c908d9d06e6ef156db3539511b08de392bfbab9c8b9c9b4b4435940bbea"
+      },
+      "delivery": {
+        "width": 3840,
+        "height": 2278,
+        "bytes": 930644,
+        "sha256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step."
+      },
+      "referenceInputs": [
+        "assets/interview/room/back-wall-elevation.png",
+        "assets/interview/film/room-poster-4k.jpg"
+      ]
+    },
+    {
+      "key": "ceiling",
+      "generatedSource": "C:/Users/q1212/.codex/generated_images/01a12ac1-29e4-7bd0-a4bf-4fa684bad978/exec-52289852-3e43-4037-bc58-e144100cfd19.png",
+      "nativePath": "interview/production/room-details/ceiling-detail.png",
+      "runtimePath": "assets/interview/room/ceiling-detail-4k.jpg",
+      "prompt": "Use case: compositing / photorealistic-natural architectural ceiling texture. Image1 is the existing interview ROOM reference for ceiling construction, lighting, color and atmosphere; Image2 is the actual FILM reference for exposure and white balance. Create ONLY a high-detail orthographic photograph of this room's entire ceiling as a flat rectangle for VR physical-plane mapping. NOT a perspective interior, NOT a panorama, NOT a camera looking across the room. Output portrait ratio width:height 4.53:6.62 (about 0.6843). Image top is the front wall above interviewers, bottom is the wall behind applicant; image left is window side, right is door side. Fill edge to edge with ceiling; no walls, people, window, furniture, floor, border, labels or text. Preserve the restrained utilitarian pale gray/off-white suspended acoustic ceiling of Image1. A precise regular grid, approximately8columns and11rows of near600mm panels, all parallel orthogonal lines without perspective convergence. Actual fine pressed mineral fibers and scattered tiny shallow pores, softly worn matte paint, very narrow recessed T-grid joints with delicate contact shadow and fitted corners, subtle realistic panel-to-panel differences. Four ordinary square recessed opal office lights located at normalized image centers (.25,.48),(.80,.48),(.25,.91),(.80,.91), each around .13width by .09height; true slim off-white metal frame and subtly granular diffuser, restrained pale light without bloom or hard halo. Two small unobtrusive white circular ceiling sensors along middle u=.5 aroundv=.30and.70, correctly scaled, no sprinklers everywhere. Diffuse cool overcast window fill is subtly stronger along LEFT edge; match the neutral slightly warm-gray film, no strong directional sunshine, yellow cast, blue cast, harsh pool of light or vignetting. Clean serious interview office, documentary architectural photography, real tactile detail, no procedural noisy texture, no render gloss or stylization. Ceiling must have photographic material specificity and not look like a sharpened low-resolution crop. Highest available resolution, request3840long edge if supported.",
+      "native": {
+        "width": 1037,
+        "height": 1517,
+        "bytes": 2718639,
+        "sha256": "d1be8e36391d4e95f3af1ac4ecdf04f164b183a34f7976ffbfd50fdcec45d3ee"
+      },
+      "delivery": {
+        "width": 2630,
+        "height": 3840,
+        "bytes": 943652,
+        "sha256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step."
+      },
+      "referenceInputs": [
+        "assets/interview/room/front-room-wide.png",
+        "assets/interview/film/room-poster-4k.jpg"
+      ]
+    }
+  ],
+  "runtime": {
+    "module": "interview/film/room-space.mjs",
+    "staticTextures": 10,
+    "projection": "Fixed physical UV per wall/ceiling; no viewpoint-dependent stretching.",
+    "ceilingMapping": "u=x/4.53+0.5, v=1-(z+4.12)/6.62; image top=interviewer front, left=window side.",
+    "ceilingFallback": "Previous registered wide photograph, only when dedicated ceiling asset fails.",
+    "originalFilmAndReferenceUnchanged": true,
+    "comfortControlsUnchanged": true,
+    "wallBalanceLinearRgb": [0.98, 0.97, 0.93],
+    "wallBalanceScope": "New right and rear fabric only; video, people, window and ceiling unchanged.",
+    "ceilingJoinFix": "Side-wall wide-photo coverage excludes photographed ceiling pixels above the calibrated ceiling/wall boundary, preventing the old bright triangular patch."
+  },
+  "artDirectionReview": {
+    "left": "Original mullions, sill, blind drop and skirting retained; reconstructed metal, glass, blind cords and exterior.",
+    "right": "Original door, switches and acoustic panel locations retained; fine fabric and matte oak material reconstructed.",
+    "back": "Five panels and central grille retained; diffuse window-side illumination on image right.",
+    "ceiling": "Dedicated orthographic pale acoustic panels and four soft recessed fixtures; generated fixture/grid positions are approximate, not an exact survey of the previous wide reference."
+  }
+}

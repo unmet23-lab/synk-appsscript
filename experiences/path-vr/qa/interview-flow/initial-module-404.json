@@ -1,0 +1,20 @@
+{
+  "at": "2026-10-11T12:13:58.262Z",
+  "base": "http://127.0.0.1:4293",
+  "checks": [],
+  "failures": [
+    {
+      "name": "setup",
+      "error": "page.waitForFunction: Timeout 120000ms exceeded."
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 404 (Not Found)"
+  ],
+  "external": [],
+  "audioEvents": [],
+  "hardwareVR": "not-tested",
+  "humanListening": "not-performed",
+  "scope": "Real headless Chrome WebGL and WebAudio, text entry; no synthetic headset or microphone claims."
+}

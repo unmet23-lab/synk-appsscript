@@ -1,0 +1,16 @@
+{
+  "verifiedAt": "2026-10-11T21:48:30.324Z",
+  "commit": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+  "committedFilesMatch": 54,
+  "changedFiles": [
+    "path/interview/film/answer-followup.mjs",
+    "path/interview/film/rehearsal-session.mjs",
+    "path/interview/film/rehearsal.html",
+    "path/interview/film/rehearsal.mjs",
+    "path/interview/film/strict-vr.mjs",
+    "path/interview/voice.mjs"
+  ],
+  "unchangedFiles": 48,
+  "modelAndMediaChanged": false,
+  "qaOrFixturesOrDocsUploaded": false
+}

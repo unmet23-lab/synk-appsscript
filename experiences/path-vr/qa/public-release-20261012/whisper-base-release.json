@@ -1,0 +1,1127 @@
+{
+  "verifiedAt": "2026-10-11T23:44:43.847Z",
+  "commit": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+  "parent": "03f5151542848284249ecb1060f74d89c98abd80",
+  "pushed": true,
+  "pages": {
+    "conclusion": "success",
+    "databaseId": 38185191524,
+    "headSha": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38185191524"
+  },
+  "ci": {
+    "conclusion": "success",
+    "databaseId": 38185191672,
+    "headSha": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+    "name": "synk.im 배포 점검",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38185191672"
+  },
+  "changedFiles": [
+    "path/interview/film-player.mjs",
+    "path/interview/film/answer-followup.mjs",
+    "path/interview/film/rehearsal.html",
+    "path/interview/film/rehearsal.mjs",
+    "path/interview/film/strict-vr.mjs",
+    "path/interview/film/voice-assessment.mjs",
+    "path/interview/voice.mjs",
+    "path/interview/whisper-model.mjs",
+    "path/interview/whisper-worker.mjs",
+    "path/models/whisper-base/LICENSE-WHISPER.txt",
+    "path/models/whisper-base/PROVENANCE.json",
+    "path/models/whisper-base/README.md",
+    "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+    "path/models/whisper-base/config.json",
+    "path/models/whisper-base/generation_config.json",
+    "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+    "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+    "path/models/whisper-base/preprocessor_config.json",
+    "path/models/whisper-base/revision.txt",
+    "path/models/whisper-base/tokenizer.json",
+    "path/models/whisper-base/tokenizer_config.json",
+    "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+    "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+    "path/vendor/transformers/PROVENANCE.json",
+    "path/vendor/transformers/README.md",
+    "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+    "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+    "path/vendor/transformers/transformers.min.js"
+  ],
+  "updatedRuntimeFiles": [
+    "path/interview/film-player.mjs",
+    "path/interview/film/answer-followup.mjs",
+    "path/interview/film/rehearsal.html",
+    "path/interview/film/rehearsal.mjs",
+    "path/interview/film/strict-vr.mjs",
+    "path/interview/voice.mjs"
+  ],
+  "addedFiles": [
+    "path/interview/film/voice-assessment.mjs",
+    "path/interview/whisper-model.mjs",
+    "path/interview/whisper-worker.mjs",
+    "path/models/whisper-base/LICENSE-WHISPER.txt",
+    "path/models/whisper-base/PROVENANCE.json",
+    "path/models/whisper-base/README.md",
+    "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+    "path/models/whisper-base/config.json",
+    "path/models/whisper-base/generation_config.json",
+    "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+    "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+    "path/models/whisper-base/preprocessor_config.json",
+    "path/models/whisper-base/revision.txt",
+    "path/models/whisper-base/tokenizer.json",
+    "path/models/whisper-base/tokenizer_config.json",
+    "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+    "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+    "path/vendor/transformers/PROVENANCE.json",
+    "path/vendor/transformers/README.md",
+    "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+    "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+    "path/vendor/transformers/transformers.min.js"
+  ],
+  "payload": {
+    "files": 76,
+    "bytes": 272252358,
+    "unchangedFiles": 48,
+    "priorFiles": 54,
+    "allPreviousMediaRoomBytesPreserved": true,
+    "protectedMediaRoomLegacyFiles": 37,
+    "introductionSHA256": "b2b5c3a5ea57e74758e95dbe0b97c3e40e9214b587be47ce4b045be7c4229d4a"
+  },
+  "verification": {
+    "checksumFiles": 76,
+    "transformedDocuments": 2,
+    "preservedIntroduction": true,
+    "deployed": true,
+    "publicScope": {
+      "changedFiles": 28,
+      "httpSHA256": true,
+      "mime": true,
+      "rangeFiles": 3,
+      "rangeBytesEach": 1024,
+      "publicModelPrepared": true,
+      "publicLookAround": true,
+      "physicalMicrophone": false,
+      "questHardware": false
+    }
+  },
+  "tests": {
+    "passed": 20,
+    "failed": 0,
+    "command": "node --test --test-concurrency=1 experiences/path-vr/tests/interview-server-package.test.mjs experiences/path-vr/tests/interview-pages.test.mjs experiences/path-vr/tests/interview-mount.test.mjs"
+  },
+  "rootRuntimeTests": {
+    "passed": 205,
+    "failed": 0,
+    "evidence": "experiences/path-vr/qa/public-release-20261012/voice-refinement-tests.log"
+  },
+  "browserChecks": {
+    "source": "Root-reported local final browser checks; root owns evidence",
+    "clearFlow": ".tmp/path-asr-20261012/flow-clear-final.json",
+    "syntheticAudio": true,
+    "physicalMicrophone": false,
+    "questHardware": false,
+    "publicBrowserPending": false,
+    "localEvidence": [
+      "voice-refinement-clear-flow.json",
+      "voice-refinement-partial-flow.json",
+      "voice-refinement-mic-continuity.json",
+      "voice-refinement-room.png",
+      "voice-refinement-tests.log"
+    ],
+    "publicModelPreparation": true,
+    "publicRoomLookAround": true,
+    "publicEvidence": [
+      "voice-refinement-public.json",
+      "voice-refinement-public.png",
+      "voice-refinement-public-room.png"
+    ],
+    "publicRuntimeBytesUnchangedAcrossDocumentationFixes": true
+  },
+  "publicFiles": [
+    {
+      "file": "path/interview/film-player.mjs",
+      "url": "https://synk.im/path/interview/film-player.mjs",
+      "status": 200,
+      "bytes": 27335,
+      "sha256": "c5a3a4c35f39582818a926cf3a4cb75972850b87c99df69a7e558f13e5d4fded",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+      "status": 200,
+      "bytes": 17257,
+      "sha256": "5413374c34337c9cb897b3cba364b1dbe9a3a81fcb48575a7f6e8ab861b8a9f4",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "url": "https://synk.im/path/interview/film/rehearsal.html",
+      "status": 200,
+      "bytes": 6639,
+      "sha256": "24cc9da0afe0611856cd799ecb236f9e5b3b2ab0fe1d7b5b68b4e72a398189a0",
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "url": "https://synk.im/path/interview/film/rehearsal.mjs",
+      "status": 200,
+      "bytes": 35781,
+      "sha256": "f2c6136ff93fe6f3e250aebc5d39249ecbf8e979ff368e99cd1a00ebf075896b",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "url": "https://synk.im/path/interview/film/strict-vr.mjs",
+      "status": 200,
+      "bytes": 28893,
+      "sha256": "64fc61118da18495bb265e706c00b2ac0c2cf1cfc940e55ced178c09dcd25749",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/voice-assessment.mjs",
+      "url": "https://synk.im/path/interview/film/voice-assessment.mjs",
+      "status": 200,
+      "bytes": 12831,
+      "sha256": "e3c21f795581936da76f8898f2dc2122d6cad88cb145e50f2fbd4c587fb9abf0",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "url": "https://synk.im/path/interview/voice.mjs",
+      "status": 200,
+      "bytes": 17176,
+      "sha256": "588d66c84c582d091990c0e8333b520e716a7d1c9f385ce65eeff2b30fcbcbed",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/whisper-model.mjs",
+      "url": "https://synk.im/path/interview/whisper-model.mjs",
+      "status": 200,
+      "bytes": 4541,
+      "sha256": "c52cde93c6455e78421507f5da3ce99f416e97884bd4a5c083a7e7d243edd6ff",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/whisper-worker.mjs",
+      "url": "https://synk.im/path/interview/whisper-worker.mjs",
+      "status": 200,
+      "bytes": 14382,
+      "sha256": "9806a93d8dbdf614c8bf9ff4d637e01230d780e186124bb9f6c7773443266b9d",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/config.json",
+      "url": "https://synk.im/path/models/whisper-base/config.json",
+      "status": 200,
+      "bytes": 2243,
+      "sha256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/generation_config.json",
+      "url": "https://synk.im/path/models/whisper-base/generation_config.json",
+      "status": 200,
+      "bytes": 3832,
+      "sha256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/LICENSE-WHISPER.txt",
+      "url": "https://synk.im/path/models/whisper-base/LICENSE-WHISPER.txt",
+      "status": 200,
+      "bytes": 1063,
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "contentType": "text/plain; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "url": "https://synk.im/path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "status": 200,
+      "bytes": 53693315,
+      "sha256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "contentType": "application/octet-stream",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "url": "https://synk.im/path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "status": 200,
+      "bytes": 23201314,
+      "sha256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "contentType": "application/octet-stream",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/preprocessor_config.json",
+      "url": "https://synk.im/path/models/whisper-base/preprocessor_config.json",
+      "status": 200,
+      "bytes": 339,
+      "sha256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/PROVENANCE.json",
+      "url": "https://synk.im/path/models/whisper-base/PROVENANCE.json",
+      "status": 200,
+      "bytes": 5445,
+      "sha256": "9670a12d52f657feaac284ce828dac15c5fa77ef0176aeef35d11856b64d0abc",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/README.md",
+      "url": "https://synk.im/path/models/whisper-base/README.md",
+      "status": 200,
+      "bytes": 1232,
+      "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "contentType": "text/markdown; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/revision.txt",
+      "url": "https://synk.im/path/models/whisper-base/revision.txt",
+      "status": 200,
+      "bytes": 40,
+      "sha256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "contentType": "text/plain; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": null,
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer_config.json",
+      "url": "https://synk.im/path/models/whisper-base/tokenizer_config.json",
+      "status": 200,
+      "bytes": 282682,
+      "sha256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer.json",
+      "url": "https://synk.im/path/models/whisper-base/tokenizer.json",
+      "status": 200,
+      "bytes": 2480466,
+      "sha256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+      "url": "https://synk.im/path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+      "status": 200,
+      "bytes": 578,
+      "sha256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "contentType": "text/plain; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+      "url": "https://synk.im/path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+      "status": 200,
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "contentType": "text/plain; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+      "url": "https://synk.im/path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+      "status": 200,
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "contentType": "text/plain; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+      "url": "https://synk.im/path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+      "status": 200,
+      "bytes": 44484,
+      "sha256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "contentType": "text/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "url": "https://synk.im/path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "status": 200,
+      "bytes": 21596019,
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "contentType": "application/wasm",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/PROVENANCE.json",
+      "url": "https://synk.im/path/vendor/transformers/PROVENANCE.json",
+      "status": 200,
+      "bytes": 2163,
+      "sha256": "4ea0e8064c27345d57f34d1bdd3a9aabd5dd2556fb6b63c0dcddb1b25b7227d1",
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/README.md",
+      "url": "https://synk.im/path/vendor/transformers/README.md",
+      "status": 200,
+      "bytes": 1094,
+      "sha256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "contentType": "text/markdown; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/vendor/transformers/transformers.min.js",
+      "url": "https://synk.im/path/vendor/transformers/transformers.min.js",
+      "status": 200,
+      "bytes": 888173,
+      "sha256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "contentType": "application/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "contentEncoding": "gzip",
+      "matchesPackage": true
+    }
+  ],
+  "rows": [
+    {
+      "file": "path/assets/DMMono.woff2",
+      "bytes": 5848,
+      "sha256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "beforeSHA256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/SUIT.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "beforeSHA256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/room-poster-4k.jpg",
+      "bytes": 552234,
+      "sha256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "beforeSHA256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/room-reference-4k.jpg",
+      "bytes": 694928,
+      "sha256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "beforeSHA256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-4k.mp4",
+      "bytes": 11078438,
+      "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "beforeSHA256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-720p.mp4",
+      "bytes": 3154743,
+      "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "beforeSHA256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-4k.mp4",
+      "bytes": 10548847,
+      "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "beforeSHA256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-720p.mp4",
+      "bytes": 3036932,
+      "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "beforeSHA256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "bytes": 2868604,
+      "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "beforeSHA256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+      "bytes": 555181,
+      "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "beforeSHA256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "bytes": 2853959,
+      "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "beforeSHA256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+      "bytes": 545391,
+      "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "beforeSHA256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "bytes": 6057021,
+      "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "beforeSHA256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-720p.mp4",
+      "bytes": 1145975,
+      "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "beforeSHA256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-4k.mp4",
+      "bytes": 10122866,
+      "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "beforeSHA256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-720p.mp4",
+      "bytes": 2917190,
+      "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "beforeSHA256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-4k.mp4",
+      "bytes": 9901952,
+      "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "beforeSHA256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-720p.mp4",
+      "bytes": 2801131,
+      "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "beforeSHA256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/back-wall-detail-4k.jpg",
+      "bytes": 930644,
+      "sha256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "beforeSHA256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/carpet-4k.jpg",
+      "bytes": 161270,
+      "sha256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "beforeSHA256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/ceiling-detail-4k.jpg",
+      "bytes": 943652,
+      "sha256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "beforeSHA256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/desk-4k.jpg",
+      "bytes": 45160,
+      "sha256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "beforeSHA256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/front-room-extension-4k.jpg",
+      "bytes": 653669,
+      "sha256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "beforeSHA256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/front-room-wide-4k.jpg",
+      "bytes": 698348,
+      "sha256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "beforeSHA256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/left-wall-detail-4k.jpg",
+      "bytes": 670407,
+      "sha256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "beforeSHA256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/interview/room/right-wall-detail-4k.jpg",
+      "bytes": 586123,
+      "sha256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "beforeSHA256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/licenses/DMMono-OFL.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "beforeSHA256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/licenses/SUIT-OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "beforeSHA256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/assets/logo-path.webp",
+      "bytes": 118428,
+      "sha256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "beforeSHA256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/audio-worklet.js",
+      "bytes": 2265,
+      "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "beforeSHA256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/content.mjs",
+      "bytes": 4235,
+      "sha256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "beforeSHA256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/dialogue.mjs",
+      "bytes": 7353,
+      "sha256": "339c9f5db60255ca7244f227f31f9375443ad351bc803c9819a9871aa3421a14",
+      "beforeSHA256": "339c9f5db60255ca7244f227f31f9375443ad351bc803c9819a9871aa3421a14",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film-player.mjs",
+      "bytes": 27335,
+      "sha256": "c5a3a4c35f39582818a926cf3a4cb75972850b87c99df69a7e558f13e5d4fded",
+      "beforeSHA256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "bytes": 17257,
+      "sha256": "5413374c34337c9cb897b3cba364b1dbe9a3a81fcb48575a7f6e8ab861b8a9f4",
+      "beforeSHA256": "3b70f91c835bcd23a6e0c47ad1cb260ec6d703c5fc72b7c50ed5831ddc7d2e35",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/film/listening-sequence.mjs",
+      "bytes": 4506,
+      "sha256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "beforeSHA256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/rehearsal-session.mjs",
+      "bytes": 13574,
+      "sha256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "beforeSHA256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/rehearsal.css",
+      "bytes": 7433,
+      "sha256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "beforeSHA256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "bytes": 6639,
+      "sha256": "24cc9da0afe0611856cd799ecb236f9e5b3b2ab0fe1d7b5b68b4e72a398189a0",
+      "beforeSHA256": "33be3d988519ea1804b463d7433be77de30fe138d1280ddb47bfa2e9f750400c",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "bytes": 35781,
+      "sha256": "f2c6136ff93fe6f3e250aebc5d39249ecbf8e979ff368e99cd1a00ebf075896b",
+      "beforeSHA256": "d49873c07c20fdf1208f78691a7a0fb757edc54c7e2d5a6c98fe2f6ea31a5a8b",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/film/room-space.mjs",
+      "bytes": 31809,
+      "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+      "beforeSHA256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/speech-turn.mjs",
+      "bytes": 1432,
+      "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "beforeSHA256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/strict-manifest.json",
+      "bytes": 10115,
+      "sha256": "681a03f3028167002ac0928af81e91a0f2f2cf5e8091821cb4943a2c62fec04a",
+      "beforeSHA256": "681a03f3028167002ac0928af81e91a0f2f2cf5e8091821cb4943a2c62fec04a",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "bytes": 28893,
+      "sha256": "64fc61118da18495bb265e706c00b2ac0c2cf1cfc940e55ced178c09dcd25749",
+      "beforeSHA256": "05907064f22701c0af1237353fe8ea1c41ea41f74895397a2e2483aa52e7b964",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/film/voice-assessment.mjs",
+      "bytes": 12831,
+      "sha256": "e3c21f795581936da76f8898f2dc2122d6cad88cb145e50f2fbd4c587fb9abf0",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "bytes": 17176,
+      "sha256": "588d66c84c582d091990c0e8333b520e716a7d1c9f385ce65eeff2b30fcbcbed",
+      "beforeSHA256": "6e510958f0553f4d1590f2bd7166eb83371f3aaffe1d6a5c53a0cc61338735f3",
+      "state": "changed"
+    },
+    {
+      "file": "path/interview/whisper-model.mjs",
+      "bytes": 4541,
+      "sha256": "c52cde93c6455e78421507f5da3ce99f416e97884bd4a5c083a7e7d243edd6ff",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/interview/whisper-worker.mjs",
+      "bytes": 14382,
+      "sha256": "9806a93d8dbdf614c8bf9ff4d637e01230d780e186124bb9f6c7773443266b9d",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/LICENSE-vosk-model.txt",
+      "bytes": 10173,
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "beforeSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/models/vosk-model-small-ko-0.22.tar.gz",
+      "bytes": 89103045,
+      "sha256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "beforeSHA256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/models/whisper-base/LICENSE-WHISPER.txt",
+      "bytes": 1063,
+      "sha256": "b5d65a59060e68c4ff940e1eddfa6f94b2d68fdf58ed7f4dd57721c997e35e9d",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/PROVENANCE.json",
+      "bytes": 5445,
+      "sha256": "9670a12d52f657feaac284ce828dac15c5fa77ef0176aeef35d11856b64d0abc",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/README.md",
+      "bytes": 1232,
+      "sha256": "dc5fcb3df491ba101c0c370cd2c547234765f6833ad978614c32d58240d70a19",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt",
+      "bytes": 578,
+      "sha256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/config.json",
+      "bytes": 2243,
+      "sha256": "f4d0608f7d918166da7edb3e188de5ef1bfe70d9802e785d271fd88111e9cf4b",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/generation_config.json",
+      "bytes": 3832,
+      "sha256": "61070cf8de25b1e9256e8e102ded49d8d24a8369ed36ef84fdf21549e68125a0",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "bytes": 53693315,
+      "sha256": "fa3ef9902734ce5ae6f9ef2bdb2ba9a6c4b5785b09f4f420ce036573dc9d090b",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "bytes": 23201314,
+      "sha256": "5862993336bf33acd23736071aae2b32261d3b1b2f37780194460d4ef974dd46",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/preprocessor_config.json",
+      "bytes": 339,
+      "sha256": "a6a76d28c93edb273669eb9e0b0636a2bddbb1272c3261e47b7ca6dfdbac1b8d",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/revision.txt",
+      "bytes": 40,
+      "sha256": "75f39304f4e1c30f7dbd625269d659f9b1a566dc1235f181012e7f1c7e513dce",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer.json",
+      "bytes": 2480466,
+      "sha256": "27fc476bfe7f17299480be2273fc0608e4d5a99aba2ab5dec5374b4482d1a566",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/models/whisper-base/tokenizer_config.json",
+      "bytes": 282682,
+      "sha256": "2e036e4dbacfdeb7242c7d4ec4149f4a16e86026048f94d1637e3a8ee9c6a573",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/THREE-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "beforeSHA256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/three.core.js",
+      "bytes": 1403455,
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "beforeSHA256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/three.module.js",
+      "bytes": 603113,
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "beforeSHA256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/PROVENANCE.json",
+      "bytes": 2163,
+      "sha256": "4ea0e8064c27345d57f34d1bdd3a9aabd5dd2556fb6b63c0dcddb1b25b7227d1",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/README.md",
+      "bytes": 1094,
+      "sha256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 44484,
+      "sha256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 21596019,
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/transformers/transformers.min.js",
+      "bytes": 888173,
+      "sha256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "beforeSHA256": null,
+      "state": "added"
+    },
+    {
+      "file": "path/vendor/vosk/LICENSE.txt",
+      "bytes": 10173,
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "beforeSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/vosk/NOTICE.txt",
+      "bytes": 10019,
+      "sha256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "beforeSHA256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/vosk/vosk-worker.js",
+      "bytes": 4330890,
+      "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "beforeSHA256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/vendor/vosk/vosk.mjs",
+      "bytes": 31367,
+      "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "beforeSHA256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "state": "unchanged"
+    },
+    {
+      "file": "path/xr.mjs",
+      "bytes": 2231,
+      "sha256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "beforeSHA256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "state": "unchanged"
+    }
+  ],
+  "pushedAt": "2026-10-11T23:41:05.012Z",
+  "releaseHistory": [
+    {
+      "commit": "c2d4e98cf53c49ab4bce81c084c7e39d984861f6",
+      "parent": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+      "pages": {
+        "conclusion": "success",
+        "databaseId": 38184475666,
+        "headSha": "c2d4e98cf53c49ab4bce81c084c7e39d984861f6",
+        "name": "pages build and deployment",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38184475666"
+      },
+      "ci": {
+        "conclusion": "",
+        "databaseId": 38184476322,
+        "headSha": "c2d4e98cf53c49ab4bce81c084c7e39d984861f6",
+        "name": "synk.im 배포 점검",
+        "status": "in_progress",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38184476322"
+      },
+      "changedFiles": [
+        "path/interview/film-player.mjs",
+        "path/interview/film/answer-followup.mjs",
+        "path/interview/film/rehearsal.html",
+        "path/interview/film/rehearsal.mjs",
+        "path/interview/film/strict-vr.mjs",
+        "path/interview/film/voice-assessment.mjs",
+        "path/interview/voice.mjs",
+        "path/interview/whisper-model.mjs",
+        "path/interview/whisper-worker.mjs",
+        "path/models/whisper-base/LICENSE-WHISPER.txt",
+        "path/models/whisper-base/PROVENANCE.json",
+        "path/models/whisper-base/README.md",
+        "path/models/whisper-base/UPSTREAM-MODEL-CARD.md",
+        "path/models/whisper-base/config.json",
+        "path/models/whisper-base/generation_config.json",
+        "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+        "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+        "path/models/whisper-base/preprocessor_config.json",
+        "path/models/whisper-base/revision.txt",
+        "path/models/whisper-base/tokenizer.json",
+        "path/models/whisper-base/tokenizer_config.json",
+        "path/vendor/transformers/LICENSE-ONNXRUNTIME.txt",
+        "path/vendor/transformers/LICENSE-TRANSFORMERS.txt",
+        "path/vendor/transformers/PROVENANCE.json",
+        "path/vendor/transformers/README.md",
+        "path/vendor/transformers/ort-wasm-simd-threaded.jsep.mjs",
+        "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+        "path/vendor/transformers/transformers.min.js"
+      ],
+      "publicModelCardIssue": "Jekyll processed upstream Markdown front matter, leaving the raw .md URL unavailable."
+    },
+    {
+      "commit": "03f5151542848284249ecb1060f74d89c98abd80",
+      "parent": "c2d4e98cf53c49ab4bce81c084c7e39d984861f6",
+      "pages": {
+        "conclusion": "success",
+        "databaseId": 38184872852,
+        "headSha": "03f5151542848284249ecb1060f74d89c98abd80",
+        "name": "pages build and deployment",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38184872852"
+      },
+      "ci": {
+        "conclusion": "cancelled",
+        "databaseId": 38184873164,
+        "headSha": "03f5151542848284249ecb1060f74d89c98abd80",
+        "name": "synk.im 배포 점검",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38184873164"
+      },
+      "changedFiles": [
+        "path/models/whisper-base/PROVENANCE.json",
+        "path/models/whisper-base/UPSTREAM-MODEL-CARD.md",
+        "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt"
+      ],
+      "publicModelCardIssue": "Jekyll also strips leading YAML from .txt, so a packaging preface is needed; the served file is not byte-identical to the upstream source."
+    }
+  ],
+  "initialBaseline": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+  "commitChangedFiles": [
+    "path/models/whisper-base/PROVENANCE.json",
+    "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt"
+  ],
+  "modelCardCorrection": {
+    "originalSourceBytesIncludedUnchanged": true,
+    "servedFileByteIdenticalToUpstream": false,
+    "originalSourceBytes": 531,
+    "originalSourceSHA256": "60a378018182c57cf382866ddfbf0fb2b4031b3895ae932aa34ecb8ff7065a13",
+    "packagingPrefixBytes": 47,
+    "packagedBytes": 578,
+    "packagedSHA256": "7a960ee5db1c87fda3d457caddd782e441aeb4aeff7a568393b28e3fa42cb892",
+    "note": "Prefix prevents Jekyll from treating the original YAML as page front matter. All following bytes are the unmodified upstream original.",
+    "changedFiles": [
+      "path/models/whisper-base/PROVENANCE.json",
+      "path/models/whisper-base/UPSTREAM-MODEL-CARD.txt"
+    ],
+    "testsPassed": 20
+  },
+  "publicRanges": [
+    {
+      "file": "path/models/whisper-base/onnx/decoder_model_merged_quantized.onnx",
+      "status": 206,
+      "bytes": 1024,
+      "contentRange": "bytes 0-1023/53693315",
+      "acceptRanges": "bytes",
+      "contentType": "application/octet-stream",
+      "matchesSourcePrefix": true
+    },
+    {
+      "file": "path/models/whisper-base/onnx/encoder_model_quantized.onnx",
+      "status": 206,
+      "bytes": 1024,
+      "contentRange": "bytes 0-1023/23201314",
+      "acceptRanges": "bytes",
+      "contentType": "application/octet-stream",
+      "matchesSourcePrefix": true
+    },
+    {
+      "file": "path/vendor/transformers/ort-wasm-simd-threaded.jsep.wasm",
+      "status": 206,
+      "bytes": 1024,
+      "contentRange": "bytes 0-1023/21596019",
+      "acceptRanges": "bytes",
+      "contentType": "application/wasm",
+      "matchesSourcePrefix": true
+    }
+  ],
+  "publicByteMatch": true,
+  "publicMimeMatch": true,
+  "publicRangeMatch": true,
+  "documentation": [
+    "experiences/path-vr/README.md",
+    "experiences/path-vr/qa/public-release-20261012/README.md",
+    "docs/SHIFT/VR직업체험_설계_v1.md",
+    "docs/_ops/트랙.md"
+  ],
+  "completedAt": "2026-10-11T23:51:45.706Z",
+  "documentationFinalized": true
+}

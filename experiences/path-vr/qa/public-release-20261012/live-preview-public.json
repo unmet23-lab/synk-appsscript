@@ -1,0 +1,145 @@
+{
+  "commit": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+  "fullInterviewCompleted": true,
+  "previewEscapeContinues": true,
+  "liveRotationsVisible": true,
+  "closeButtonReopenContinues": true,
+  "questionReplayVerified": true,
+  "comfortControlsUnchanged": true,
+  "questHardwareTested": false,
+  "samples": [
+    {
+      "at": 1791752276862,
+      "phase": "답변 중",
+      "timer": "29초",
+      "turn": "1 / 2",
+      "video": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-question-4k.mp4",
+          "time": 5.42606,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 0.5,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "action": "Escape closes preview",
+      "at": 1791752286548,
+      "pauseButton": "일시 정지",
+      "phase": "답변 중",
+      "timer": "20초",
+      "video": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 2.605932,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listening-4k.mp4",
+          "time": 0,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "action": "close button and reopen",
+      "at": 1791752294016,
+      "phase": "답변 중",
+      "timer": "12초",
+      "video": [
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 0.5,
+          "width": 3840
+        },
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listening-4k.mp4",
+          "time": 7.032049,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "action": "followup rotate Escape reopen",
+      "at": 1791752339233,
+      "phase": "답변 중",
+      "timer": "22초",
+      "video": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-followup-experience-4k.mp4",
+          "time": 9.224909,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 0.5,
+          "width": 3840
+        }
+      ]
+    },
+    {
+      "at": 1791752357041,
+      "phase": "답변 중",
+      "timer": "4초",
+      "turn": "2 / 2",
+      "video": [
+        {
+          "paused": false,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "time": 2.50647,
+          "width": 3840
+        },
+        {
+          "paused": true,
+          "ready": 4,
+          "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "time": 0.75,
+          "width": 3840
+        }
+      ]
+    }
+  ],
+  "final": {
+    "phase": "면접 종료",
+    "status": "면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.",
+    "timer": "",
+    "video": [
+      {
+        "paused": true,
+        "ready": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      },
+      {
+        "paused": true,
+        "ready": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      }
+    ]
+  },
+  "console": []
+}

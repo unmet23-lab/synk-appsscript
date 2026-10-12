@@ -1,0 +1,35 @@
+{
+  "commit": "fa267159bfc86c6a7ef86892b95970ed4f98566f",
+  "scripts": [
+    {
+      "url": "https://synk.im/path/interview/film/voice-assessment.mjs",
+      "scriptId": "15",
+      "hash": "474ffa7b28794f155a935d240005f4f8146bd36a2c2bde105af3e19f71357e07"
+    },
+    {
+      "url": "https://synk.im/path/interview/dialogue.mjs",
+      "scriptId": "21",
+      "hash": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0"
+    },
+    {
+      "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+      "scriptId": "22",
+      "hash": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a"
+    },
+    {
+      "url": "https://synk.im/path/interview/film/voice-assessment.mjs",
+      "scriptId": "44",
+      "hash": "474ffa7b28794f155a935d240005f4f8146bd36a2c2bde105af3e19f71357e07"
+    },
+    {
+      "url": "https://synk.im/path/interview/dialogue.mjs",
+      "scriptId": "48",
+      "hash": "475dc1ef80b3ecb6f3ec55cba998040999993d16dff08b4360aaf3dd927f0dd0"
+    },
+    {
+      "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+      "scriptId": "49",
+      "hash": "6288fa8d7bfb1903efbbf6e247d8c71ce22e25453c9f2a6ba4b1bcca4d7c538a"
+    }
+  ]
+}

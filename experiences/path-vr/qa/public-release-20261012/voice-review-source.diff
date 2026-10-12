@@ -1,0 +1,521 @@
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\answer-followup.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\answer-followup.mjs"
+index a5b74bd7a..598980fcb 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\answer-followup.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\answer-followup.mjs"
+@@ -20,16 +20,21 @@ const DEFAULT_CLIPS = Object.freeze(['strict-followup-experience', 'strict-follo
+ const TOPIC = /요양|돌봄|돌보|돌봐|돌봤|간병|어르신|노인|할머니|할아버지|부모|아버지|어머니|가족|환자|식사|식단|섭취|삼킴|수저|휠체어|이동|부축|낙상|보행|목욕|배변|청결|안전|자격증|교육|실습|봉사|경험|근무|보고|인수인계|배우|배워|공부|훈련|준비|지원|보람|돕|도왔|도와|도움|경력/u;
+ const PAST = /돌봤|돌보았|돌본|보살폈|보살핀|간병했|간병한|부축했|부축한|도왔|도운|도와드렸|모셨|근무했|근무한|일했|봉사했|봉사한|실습했|실습한|보조했|보조한|수행했|담당했|맡았|준비했|확인했|기록했|보고했|살폈|(?:보조|수행|담당|준비|확인|기록|보고|봉사|실습|근무|간병|부축|청소|수발|돌봄활동)(?:을|를)?(?:해드렸|했|하였)|한적(?:이|은)?있|해본적(?:이|은)?있|경험(?:이|은|는)?(?:조금|많이)?있/u;
+ const ACTION = /돌보|돌봐|돌봤|돌본|보살|간병|부축|돕|도왔|도운|도와|모셨|보조|준비|확인|기록|보고|관찰|담당|맡|수행|살폈/u;
+-const NEGATED = /(?:경험|경력|실습|봉사)(?:이|은|는|을|를)?(?:(?:아직|전혀|별로|거의)*)?(?:없|부족|안해|못해|하지않|해보지않)|(?:적|경험)(?:이|은|는)?(?:전혀|아직)?없|(?:경험|경력)(?:이|은|는)?(?:많지|있지)않|(?:돌보|돕|하|일하|근무하|보조하|부축하|간병하|준비하|확인하|기록하|보고하)지(?:않|못)|(?:안|못)(?:돌봤|돌보았|도왔|도와드렸|부축했|간병했|근무했|일했|봉사했|실습했|보조했|했)|하지는않|(?:돌본|도운|간병한|부축한|맡은)(?:건|것은|것이|게)(?:아니|아닙)|(?:돌봤|도왔|간병했|부축했|일했|근무했)다고(?:할수는|말할수는|할수|말할수)(?:없|없습니다)/u;
++const NEGATED = /(?:경험|경력|실습|봉사)(?:이|은|는|을|를)?(?:(?:아직|전혀|별로|거의)*)?(?:없|부족|안해|못해|하지않|해보지않)|(?:적|경험)(?:이|은|는)?(?:전혀|아직)?없|(?:경험|경력)(?:이|은|는)?(?:많지|있지)(?:는)?않|(?:돌보|돕|하|일하|근무하|보조하|부축하|간병하|준비하|확인하|기록하|보고하)지(?:않|못)|(?:안|못)(?:돌봤|돌보았|도왔|도와드렸|부축했|간병했|근무했|일했|봉사했|실습했|보조했|했)|하지는않|(?:돌본|도운|간병한|부축한|맡은|돌봤던|도왔던|간병했던|부축했던|맡았던)(?:건|것은|것이|게)(?:아니|아닙)|(?:돌봤|도왔|간병했|부축했|일했|근무했)다고(?:할수는|말할수는|할수|말할수)(?:없|없습니다)/u;
++const UNCLEAR_NEGATION = /없지(?:는)?않|(?:없|안했|못했)다고[^.!?]{0,12}(?:않|아니|아닙)/u;
+ const HYPOTHETICAL = /(?:만약|가령|가정하면)|(?:했다|돌봤다|돌보았다|도왔다|있다|없다|받았다|됐다|했더라|돌봤더라|도왔더라|라|이라)면|(?:했|돌봤|돌보았|도왔|맡았|일했|근무했)으면|(?:돌본|도운|맡은)다면|(?:돌보|돌봐|돕|하|도우|맡|일하|지원하|입사하|거부하|이동하|근무하)(?:게되)?면|(?:였|했|돌봤|도왔)을(?:것|겁)|(?:하는|할|했을|돌보는|돌볼|돕는|도울)경우/u;
+ const FUTURE = /고싶|겠습니다|하려고|(?:할|받을|배울|준비할)(?:예정|계획)|배우려고|준비하려|해야|할것|할겁|될것|될겁|한다면|하고자/u;
+ const RESULT = /(?:식사량|섭취량|체중|상태|통증|불편|안전|사고|낙상|증상|수치|만족도|참여|혈압|혈당|횟수|시간)(?:이|가|은|는|도|을|를)?[^.!?]{0,18}(?:늘|줄|개선|좋아졌|나아졌|회복|감소|증가|유지|없어졌|높아졌|낮아졌)|(?:결과|덕분에|그래서|그후|이후)[^.!?]{0,30}(?:개선|좋아졌|나아졌|회복|감소|증가|줄었|늘었|만족|편해|안정)|감사하셨|고맙다고|편해졌다고|만족하셨/u;
+ const RESULT_NEGATION = /좋아지지않|나아지지않|개선되지않|늘지않|줄지않|회복되지않|확인하지(?:않|못)|모르/u;
+ const SELF = /제가|저는|저도|나는|내가|본인은|본인이/u;
+-const OTHER = /(?:동료|친구|선배|후배|언니|누나|형|오빠|동생|어머니|아버지|엄마|아빠|가족|할머니|할아버지|어르신|환자|간호사|요양보호사|팀원|저희팀|우리팀)(?:들)?(?:이(?!동)|가(?!족)|는|은)/u;
++const OTHER = /(?:동료|친구|선배|후배|언니|누나|형|오빠|동생|어머니|아버지|엄마|아빠|남편|아내|배우자|딸|아들|가족|할머니|할아버지|어르신|환자|간호사|요양보호사|팀원|저희팀|우리팀|씨|선생님)(?:들)?(?:이(?!동)|가(?!족)|는|은)/u;
+ const REPORTED = /(?:다고|라고)(?:들었|했습니다|했어요|말했|하셨)|(?:봤|보았|읽었|들었)(?:습니다|어요)/u;
++const QUOTED = /(?:다는|라는)[^.!?]{0,30}(?:얘기|이야기|말|문장|표현)|(?:다고|라고)(?:합니다|상상|들었|말했)|(?:봤|왔|았|었|했|있)다고생각/u;
++const CORRECTED = /(?:뜻|의미)(?:은|는|이)?(?:아니|아닙)|(?:그건|그것은)?(?:제가|내가|본인이)(?:아니|아닙)|아니요|정정/u;
++const TENTATIVE = /(?:것|거|듯)(?:같|합니다)|(?:봤|았|었|했)을수도|아마|어쩌면/u;
+ const LEARNING = /공부|자격증|교육|훈련|연습|배우|배웠|배운|배워|실습/u;
+ const STUDIED = /공부(?:를)?(?:하고|중|했)|배우고|배우는|배웠|배운|배워|(?:교육|훈련)(?:을)?받(?:았|고)|수료|자격증(?:을)?취득|실습(?:을)?(?:했|하고)/u;
++const PREPARING = /준비(?:를)?(?:하고|중)|지원(?:했|하였|하고)|원했|생각했|관심(?:이|을)|보람(?:이|을)|좋아/u;
+ 
+ function repair(reason) { return { kind: 'repair', reason, category: null, evidence: null, ruleId: null }; }
+ function compact(text) { return text.normalize('NFC').replace(/\s/gu, ''); }
+@@ -59,13 +64,26 @@ function describe(text) {
+   return clauses(text).map((part) => {
+     const value = part.value;
+     const self = SELF.exec(value), other = OTHER.exec(value);
++    const pastCue = PAST.exec(value);
++    // An explicit, unrecognised subject ("김철수가", "제 딸이") is not an
++    // omitted "I". Do not guess names or add them to a claimed self-history.
++    const raw = part.quote.normalize('NFC');
++    const unknown = [...raw.matchAll(/(?:^|\s)([가-힣]{2,12})(?:이|가)(?=\s)/gu)]
++      .find((match) => pastCue && compact(raw.slice(0, match.index)).length < pastCue.index
++        && !SELF.test(match[0]) && !TOPIC.test(match[1]));
++    const unknownIndex = unknown ? compact(raw.slice(0, unknown.index)).length : -1;
+     // Explicit third-party reporting cannot become the applicant's history
+     // just because the sentence starts with "저는".
+     let subject = other && (!self || other.index > self.index) ? 'other' : self ? 'self' : previousSubject;
++    if (unknown && !other && (!self || unknownIndex > self.index)) subject = 'unknown';
+     if (REPORTED.test(value) && other) subject = 'other';
++    if (QUOTED.test(value)) subject = other ? 'other' : 'reported';
+     const negated = NEGATED.test(value);
+     const hypothetical = HYPOTHETICAL.test(value);
+-    const future = FUTURE.test(value);
++    // "돌봤고 배우고 싶다" contains an affirmed past action. "돌봤다고
++    // 생각하고 싶다" does not: only a direct verb conjunction qualifies.
++    const pastThenIntention = pastCue && /^(?:고|으며|기때문에)/u.test(value.slice(pastCue.index + pastCue[0].length));
++    const future = FUTURE.test(value) && !pastThenIntention;
+     let polarity = hypothetical ? 'hypothetical' : negated ? 'negated' : future ? 'future' : 'affirmed';
+     const result = RESULT.test(value) && !RESULT_NEGATION.test(value);
+     // "...했다면. 결과가 좋아졌을 겁니다" is not measured experience.
+@@ -90,7 +108,12 @@ function evidence(part) {
+ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...options } = {}) {
+   const meaning = classifyAnswer(text, options);
+   if (meaning.kind === 'repair') return { ...meaning, evidence: null };
++  const value = compact(text);
++  // A positive token cannot override a later correction or a tentative memory.
++  // Recognition confidence is deliberately not a shortcut around this check.
+   const parts = describe(text);
++  if (UNCLEAR_NEGATION.test(value) || PAST.test(value) && CORRECTED.test(value)
++    || parts.some((part) => PAST.test(part.value) && TENTATIVE.test(part.value) && !HYPOTHETICAL.test(part.value))) return repair('uncertain');
+   const relevant = parts.filter((part) => part.relevant);
+   if (!relevant.length && meaning.category === 'off-topic') return repair('off-topic');
+   if (!relevant.length && /^(?:네|예|아니요|음|어|그렇습니다|그렇군요|알겠습니다|열심히하겠습니다|잘하겠습니다|그냥|좋습니다|맞습니다|감사합니다|열심히|성실히)[.!?\s]*$/u.test(text.trim())) return repair('detail');
+@@ -98,12 +121,18 @@ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...
+   const directAction = relevant.find((part) => part.subject === 'self' && part.action && !part.observation);
+   const selectedResult = parts.find((part) => part.subject === 'self' && part.result && part.polarity === 'affirmed');
+   const otherExperience = relevant.find((part) => part.subject === 'other' && (part.past || part.observation));
+-  const denied = relevant.find((part) => part.polarity === 'negated');
++  const denied = relevant.find((part) => part.subject === 'self' && part.polarity === 'negated');
++  const preparation = denied || parts.find((part) => (part.relevant || ACTION.test(part.value)) && (
++    part.polarity === 'hypothetical' || part.polarity === 'future' && part.subject === 'self'
++    || part.subject === 'self' && part.polarity === 'affirmed' && (STUDIED.test(part.value) || PREPARING.test(part.value))
++    || part.subject === 'other' && !PAST.test(part.value) && /좋다고생각/u.test(part.value)
++  ));
++  if (!selfExperience && !otherExperience && !preparation) return repair(parts.some((part) => part.subject === 'reported') ? 'uncertain' : 'detail');
+   let selected = selfExperience || relevant[0] || parts[0];
+   let desiredId, reason, ruleId;
+   if (selectedResult && directAction) {
+     selected = selectedResult; desiredId = 'evidence'; reason = '답변에 명시된 행동의 결과와 확인 근거를 이어 묻습니다.'; ruleId = 'stated-result';
+-  } else if (otherExperience && !selfExperience) {
++  } else if (otherExperience && !selfExperience && !preparation) {
+     selected = otherExperience; desiredId = 'role'; reason = '타인의 경험을 본인의 경험으로 단정하지 않고 본인 역할을 확인합니다.'; ruleId = 'other-person';
+   } else {
+     const refusal = relevant.find((part) => /거부|싫어|원하지|거절/u.test(part.value) && /어르신|환자|돌봄|식사|목욕/u.test(part.value));
+@@ -119,17 +148,18 @@ export function planAnswerFollowup(text, { availableClipIds = DEFAULT_CLIPS, ...
+     else if (family) { selected = family; desiredId = 'family'; reason = '직접 했다고 말한 가족 돌봄의 어려움과 대응을 묻습니다.'; ruleId = 'family-action'; }
+     else if (learning) { selected = learning; desiredId = 'learning'; reason = '언급한 학습과 현장 적용을 연결합니다.'; ruleId = 'learning-topic'; }
+     else if (selfExperience) { selected = selfExperience; desiredId = 'experience'; reason = '본인이 경험했다고 말한 내용을 구체적으로 묻습니다.'; ruleId = 'past-action'; }
+-    else { selected = denied || relevant[0] || parts[0]; desiredId = 'plan'; reason = '본인의 실제 경험으로 단정할 근거가 없어 앞으로의 준비를 묻습니다.'; ruleId = denied ? 'no-experience' : selected.polarity === 'hypothetical' ? 'hypothetical' : 'preparation-plan'; }
++    else { selected = preparation; desiredId = 'plan'; reason = '답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.'; ruleId = denied ? 'no-experience' : selected.polarity === 'hypothetical' ? 'hypothetical' : 'preparation-plan'; }
+   }
+   const available = new Set(Array.isArray(availableClipIds) || availableClipIds instanceof Set ? availableClipIds : []);
+   const desired = FOLLOWUP_CATALOG[desiredId];
+   const fallbackId = selfExperience ? 'experience' : 'plan';
+   const chosen = available.has(desired.clip) ? desired : FOLLOWUP_CATALOG[fallbackId];
++  if (chosen.id === 'plan' && !preparation) return repair('detail');
+   if (!available.has(chosen.clip)) return repair('media');
+   const fallback = chosen.id !== desiredId;
+   // The fallback's evidence must support its actual question. Do not label an
+   // experience clip with a different person's action or an isolated outcome.
+-  if (fallback) selected = selfExperience || denied || selected;
++  if (fallback) selected = selfExperience || preparation;
+   const category = selfExperience ? 'experience' : denied || LEARNING.test(compact(text)) ? 'preparation' : meaning.category === 'experience' ? 'preparation' : meaning.category;
+   return {
+     kind: 'usable', ...chosen, category,
+
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal-session.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal-session.mjs"
+index 7b41a90a6..6e8f2fe4e 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal-session.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal-session.mjs"
+@@ -10,6 +10,12 @@ export const QUESTIONS = Object.freeze({
+   experience: '그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.',
+   plan: '현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.',
+ });
++// The desk display must expose the whole transcript before confirmation, even
++// for a long answer. Splitting never rewrites or drops a recognized character.
++export function transcriptReviewPages(text) {
++  const chars = Array.from(String(text || ''));
++  return chars.length ? Array.from({ length: Math.ceil(chars.length / 90) }, (_, index) => chars.slice(index * 90, (index + 1) * 90).join('')) : [''];
++}
+ export const SAFE_EXIT_WINDOWS = Object.freeze([[0, .35], [5.4, 5.8], [7.5, 9.95]]);
+ const MEDIA_FIELDS = ['src', 'width', 'height', 'fps', 'sha256', 'durationSeconds'];
+ export function rehearsalMediaQualities(manifest) {
+@@ -128,7 +134,7 @@ const repairMessages = Object.freeze({
+  * follow-ups; it is not a hiring score, factual verifier or unrestricted AI. */
+ export function createRehearsalSession({ durationProfile = 'quest', limits: customLimits } = {}) {
+   const { answerLimitsMs: limits } = durationOptions(durationProfile, customLimits);
+-  const initial = () => ({ phase: 'idle', turn: 1, branch: null, question: QUESTIONS.question, clip: CLIPS.question, durationProfile, answerLimitsMs: [...limits], remainingMs: limits[0], paused: false, repair: null, answers: [], pendingClip: null, error: '' });
++  const initial = () => ({ phase: 'idle', turn: 1, branch: null, question: QUESTIONS.question, clip: CLIPS.question, durationProfile, answerLimitsMs: [...limits], remainingMs: limits[0], paused: false, repair: null, answers: [], pendingClip: null, transcriptDraft: '', error: '' });
+   let state = initial();
+   const snapshot = () => structuredClone(state);
+   function start() {
+@@ -164,8 +170,21 @@ export function createRehearsalSession({ durationProfile = 'quest', limits: cust
+     if (state.turn === 2) { state.phase = 'complete'; return snapshot(); }
+     state.turn = 2; state.phase = 'followup'; state.clip = state.pendingClip; state.pendingClip = null; state.question = state.branch.question; return snapshot();
+   }
++  function reviewTranscript(text) {
++    if (state.phase !== 'listening' || state.paused) return snapshot();
++    if (!String(text || '').trim()) return submit('', { recognitionError: true });
++    state.transcriptDraft = String(text); state.phase = 'confirming';
++    return snapshot();
++  }
++  function confirmTranscript(text) {
++    if (state.phase !== 'confirming' || state.paused) return snapshot();
++    // Explicitly reviewed/edited words are the answer. ASR scores must not
++    // override the user's correction; semantic validation still runs below.
++    state.phase = 'listening'; state.transcriptDraft = '';
++    return submit(text);
++  }
+   function retry() {
+-    if (state.phase === 'repair' && !state.paused) { state.phase = 'listening'; state.repair = null; state.remainingMs = limits[state.turn - 1]; }
++    if (['repair', 'confirming'].includes(state.phase) && !state.paused) { state.phase = 'listening'; state.repair = null; state.transcriptDraft = ''; state.remainingMs = limits[state.turn - 1]; }
+     return snapshot();
+   }
+   function repeat() {
+@@ -177,5 +196,5 @@ export function createRehearsalSession({ durationProfile = 'quest', limits: cust
+   function fail(message) { state.phase = 'error'; state.error = message; state.paused = false; return snapshot(); }
+   function reset() { state = initial(); return snapshot(); }
+   function dispose() { state = initial(); state.phase = 'disposed'; }
+-  return Object.freeze({ snapshot, start, prepared, clipEnded, tick, submit, finishReview, retry, repeat, pause, resume, fail, reset, dispose });
++  return Object.freeze({ snapshot, start, prepared, clipEnded, tick, submit, reviewTranscript, confirmTranscript, finishReview, retry, repeat, pause, resume, fail, reset, dispose });
+ }
+
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.html" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal.html"
+index 4f700e7c7..f3532f46a 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.html"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal.html"
+@@ -19,14 +19,14 @@
+         <div id="quality-control" class="quality-control" hidden><label for="quality">영상 화질</label><select id="quality"><option value="4k" selected>4K · 720p 확대</option><option value="720p">720p 원본</option></select><p id="quality-note">주변 벽·창문·천장은 재질 디테일을 새로 보강한 4K 이미지로 이어집니다. 재생이 버거우면 영상은 720p로 선택할 수 있습니다.</p></div>
+         <div class="mode-row"><fieldset><legend>답변 방식</legend><label><input type="radio" name="mode" value="text" checked> 직접 입력</label><label><input type="radio" name="mode" value="voice"> 마이크로 답변</label></fieldset><button id="voice-prepare" class="subtle" hidden>1. 한국어 음성 준비</button><button id="microphone-check" class="subtle" hidden>2. 마이크 확인</button><span id="voice-status"></span><meter id="mic-meter" min="0" max="1" value="0" aria-label="마이크 음량" hidden></meter><p id="mic-check-result" role="status" hidden></p></div>
+         <p id="answer-context" class="answer-context small" hidden></p>
+-        <div id="answer-area" hidden><label for="answer">내 답변</label><textarea id="answer" rows="3" maxlength="2000" placeholder="면접관의 질문이 끝난 뒤 답변을 입력하세요."></textarea><p id="partial" class="partial" aria-live="off"></p></div>
+-        <div class="actions"><button id="start" class="primary">면접 시작</button><button id="submit" class="primary" hidden>답변 완료</button><button id="retry" hidden>다시 답변</button><button id="repeat" hidden>질문 다시 듣기</button><button id="pause" hidden>일시 정지</button><button id="stop" class="subtle" hidden>종료</button><button id="room-preview" class="subtle">방 둘러보기</button><button id="vr" class="subtle" disabled>VR 지원 확인 중</button></div>
++        <div id="answer-area" hidden><p id="recognition-note" class="answer-context small" hidden></p><label for="answer">내 답변</label><textarea id="answer" rows="3" maxlength="2000" placeholder="면접관의 질문이 끝난 뒤 답변을 입력하세요."></textarea><p id="partial" class="partial" aria-live="off"></p></div>
++        <div class="actions"><button id="start" class="primary">면접 시작</button><button id="submit" class="primary" hidden>답변 완료</button><button id="confirm" class="primary" hidden>이 내용으로 답변</button><button id="retry" hidden>다시 답변</button><button id="repeat" hidden>질문 다시 듣기</button><button id="pause" hidden>일시 정지</button><button id="stop" class="subtle" hidden>종료</button><button id="room-preview" class="subtle">방 둘러보기</button><button id="vr" class="subtle" disabled>VR 지원 확인 중</button></div>
+         <p id="vr-status" class="small">VR에서는 음성으로 답변합니다. PC 화면에서는 바로 직접 입력할 수 있습니다.</p>
+         <p class="privacy">음성 입력은 처음에 약 89MB 모델을 준비합니다. 말한 내용은 기기 안에서 처리하며, 답변과 음성을 저장하거나 서버로 보내지 않습니다.</p>
+       </div>
+     </section>
+     <section id="result" class="result" hidden><h2>이번 후속 질문</h2><p id="branch-result"></p><p class="small">이번 테스트에서는 실제 경험·준비 계획을 구분해 녹화된 두 후속 질문 중 하나를 고릅니다. 채용 점수나 합격 여부를 판단하지 않습니다.</p></section>
+-    <div class="notes"><p><b>첫 답변 30초 · 후속 답변 25초</b><br>질문과 전환을 포함해 약 60~90초를 연습합니다. 말을 일찍 마치면 더 빨리 끝나며, 잠시 멈추거나 다시 듣는 시간은 별도입니다. 답변 뒤 약 6초간 말이 없으면 다음으로 이어지고, 진행 중인 필기는 끝나는 구간까지 기다립니다.</p><p><b>앉은 자리에서 천천히 둘러보세요</b><br>PC는 좌우 30° 전환이 기본이며, 드래그는 직접 켤 수 있습니다. VR은 실제 고개 움직임을 그대로 따릅니다. 어지러우면 바로 중단하세요. <span id="media-limit">면접관은 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.</span> 착용감과 프레임 성능은 실제 Quest에서 다시 확인해야 합니다.</p></div>
++    <div class="notes"><p><b>첫 답변 30초 · 후속 답변 25초</b><br>질문과 전환을 포함해 약 60~90초를 연습합니다. 말을 일찍 마치면 더 빨리 끝나며, 잠시 멈추거나 다시 듣는 시간은 별도입니다. 답변 뒤 약 6초간 말이 없으면 마이크를 닫고 인식한 내용을 확인합니다. 잘못 들린 단어를 고치거나 다시 말한 뒤 이어가세요. 확인·수정 시간은 별도이며, 진행 중인 필기는 끝나는 구간까지 기다립니다.</p><p><b>앉은 자리에서 천천히 둘러보세요</b><br>PC는 좌우 30° 전환이 기본이며, 드래그는 직접 켤 수 있습니다. VR은 실제 고개 움직임을 그대로 따릅니다. 어지러우면 바로 중단하세요. <span id="media-limit">면접관은 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.</span> 착용감과 프레임 성능은 실제 Quest에서 다시 확인해야 합니다.</p></div>
+     <div id="vr-stage" aria-hidden="true"></div>
+   </main>
+   <footer><span>SYNK PATH · 생성 영상으로 연습하는 첫 면접</span><a href="/path/">PATH로 돌아가기</a></footer>
+
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal.mjs"
+index 6d4bb3cb2..dfae93667 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\rehearsal.mjs"
+@@ -1,6 +1,6 @@
+ import { createFilmPlayer, evaluateFilmReadiness } from '../film-player.mjs';
+-import { createVoiceInput, voiceError } from '../voice.mjs';
+-import { CLIPS, QUESTIONS, REHEARSAL_DURATION_PROFILES, createRehearsalSession, safeExitWaitMs, rehearsalMediaQualities, selectRehearsalMedia } from './rehearsal-session.mjs';
++import { createVoiceInput, voiceError, mergeVoiceResults } from '../voice.mjs';
++import { CLIPS, QUESTIONS, REHEARSAL_DURATION_PROFILES, createRehearsalSession, safeExitWaitMs, rehearsalMediaQualities, selectRehearsalMedia, transcriptReviewPages } from './rehearsal-session.mjs';
+ import { createStrictVR } from './strict-vr.mjs';
+ import { createSpeechTurn } from './speech-turn.mjs';
+ import { createListeningSequence, LISTENING_CLIP_IDS } from './listening-sequence.mjs';
+@@ -8,19 +8,21 @@ import { createListeningSequence, LISTENING_CLIP_IDS } from './listening-sequenc
+ const $ = (id) => document.getElementById(id);
+ const ui = Object.fromEntries(['film-stage', 'reference', 'phase-label', 'timer', 'pause-overlay', 'complete-overlay', 'question-caption', 'status', 'turn-label', 'voice-prepare', 'voice-status', 'microphone-check', 'mic-meter', 'mic-check-result', 'room-preview', 'answer-area', 'answer-context', 'answer', 'partial', 'start', 'submit', 'retry', 'repeat', 'pause', 'stop', 'vr', 'vr-status', 'result', 'branch-result', 'vr-stage', 'quality-control', 'quality', 'quality-note', 'media-limit'].map((id) => [id, $(id)]));
+ const session = createRehearsalSession();
++ui.confirm = $('confirm'); ui['recognition-note'] = $('recognition-note');
+ const durationProfile = REHEARSAL_DURATION_PROFILES.quest;
+ const speechTurn = createSpeechTurn();
+ let film = null, manifest = null, mode = 'text', voice = null, busy = false, preparingVoice = false, micActive = false, epoch = 0, disposed = false, lastTick = performance.now(), partial = '', voiceFailed = false, vrSupported = false, voicePrefix = '', micStopping = null, microphoneReady = false, checkingMic = false, micLevel = 0, micPeak = 0, calibrationText = '', settling = false;
+ let manifestLoad = null, playbackManifest = null, selectedQuality = '4k', filmQuality = null;
+ let listeningSequence = null, listeningRun = 0, listeningEnabled = false, scheduledListeningOwner = null;
++let voicePrefixResult = { text: '' }, voiceReview = null, reviewPage = 0;
+ const abortError = () => new DOMException('취소된 면접 작업입니다.', 'AbortError');
+ const current = (token) => !disposed && token === epoch;
+ const guard = (token) => { if (!current(token)) throw abortError(); };
+-const activePhases = ['preparing', 'question', 'listening', 'reviewing', 'followup', 'repair'];
++const activePhases = ['preparing', 'question', 'listening', 'confirming', 'reviewing', 'followup', 'repair'];
+ 
+ function getState() {
+   const state = session.snapshot();
+-  return { ...state, mode, voiceReady: !!voice?.ready && microphoneReady, micLevel, micActive, automaticEnd: mode === 'voice', settling, transcript: mode === 'voice' ? partial : ui.answer.value, remainingSeconds: Math.ceil(state.remainingMs / 1000), canSubmit: state.phase === 'listening' && !state.paused && !busy, canStart: ['idle', 'complete', 'error'].includes(state.phase) && !busy && !checkingMic && !preparingVoice && (mode === 'text' || !!voice?.ready && microphoneReady) };
++  return { ...state, mode, voiceReady: !!voice?.ready && microphoneReady, micLevel, micActive, automaticEnd: mode === 'voice', settling, transcript: state.phase === 'confirming' ? ui.answer.value : mode === 'voice' ? partial : ui.answer.value, reviewPages: transcriptReviewPages(ui.answer.value), reviewPage, canConfirm: state.phase === 'confirming' && !state.paused && !busy && !!ui.answer.value.trim(), remainingSeconds: Math.ceil(state.remainingMs / 1000), canSubmit: state.phase === 'listening' && !state.paused && !busy, canStart: ['idle', 'complete', 'error'].includes(state.phase) && !busy && !checkingMic && !preparingVoice && (mode === 'text' || !!voice?.ready && microphoneReady) };
+ }
+ function render() {
+   if (disposed) return;
+@@ -37,7 +39,7 @@ function render() {
+     ui['media-limit'].textContent = hasUpscale && selectedQuality === '4k' ? '면접관은 720p 원본을 4K로 확대한 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.' : `면접관은 ${selectedHeight || 480}p 단안 영상이라 몸을 크게 옮겨 옆모습을 볼 수는 없습니다.`;
+   }
+   document.body.classList.toggle('in-session', active || state.phase === 'complete');
+-  const labels = { idle: '면접 시작 전', preparing: '영상 준비', question: '첫 번째 질문', followup: '후속 질문', listening: '답변 중', reviewing: '답변 검토', repair: '답변 확인', complete: '면접 종료', error: '연결 확인' };
++  const labels = { idle: '면접 시작 전', preparing: '영상 준비', question: '첫 번째 질문', followup: '후속 질문', listening: '답변 중', confirming: '음성 답변 확인', reviewing: '답변 검토', repair: '답변 확인', complete: '면접 종료', error: '연결 확인' };
+   ui['phase-label'].textContent = state.paused ? '일시 정지' : labels[state.phase] || '';
+   ui['turn-label'].textContent = active ? `${state.turn} / 2` : '2 QUESTIONS';
+   ui.timer.textContent = state.phase === 'listening' && !state.paused ? `${state.remainingSeconds}초` : '';
+@@ -45,17 +47,22 @@ function render() {
+   ui['pause-overlay'].hidden = !state.paused;
+   ui['complete-overlay'].hidden = state.phase !== 'complete';
+   ui['question-caption'].textContent = ['question', 'followup'].includes(state.phase) && !state.paused ? state.question : '';
+-  ui['answer-area'].hidden = !['listening', 'repair'].includes(state.phase);
++  ui['answer-area'].hidden = !['listening', 'repair', 'confirming'].includes(state.phase);
+   const answerQuote = state.branch?.evidence?.quote || '';
+   const briefQuote = answerQuote.length > 160 ? `${answerQuote.slice(0, 160)}…` : answerQuote;
+   ui['answer-context'].hidden = !answerQuote || !['reviewing', 'followup', 'listening', 'repair'].includes(state.phase);
+   ui['answer-context'].textContent = answerQuote ? `첫 답변에서 확인한 내용: “${briefQuote}”` : '';
+-  ui.answer.disabled = state.paused || busy || mode === 'voice';
++  ui.answer.disabled = state.paused || busy || mode === 'voice' && state.phase !== 'confirming';
+   ui.answer.placeholder = mode === 'voice' ? '말한 내용이 아래에 표시됩니다. 인식이 잘 안 되면 직접 입력으로 바꿀 수 있습니다.' : '질문에 대한 답변을 입력하세요.';
+   ui.partial.textContent = partial;
++  ui.partial.hidden = state.phase === 'confirming';
++  ui.confirm.hidden = state.phase !== 'confirming'; ui.confirm.disabled = !state.canConfirm;
++  ui['recognition-note'].hidden = state.phase !== 'confirming';
++  const unclear = [...new Set((voiceReview?.words || []).filter(word => !Number.isFinite(word.conf) || word.conf < .8).map(word => word.word))].slice(0, 8);
++  ui['recognition-note'].textContent = '인식한 문장이 말한 내용과 같은지 확인해 주세요. 다르면 아래에서 고치거나 다시 말할 수 있습니다.' + (unclear.length ? ` 다시 확인할 부분: ${unclear.map(word => `“${word}”`).join(', ')}.` : ' 표시가 없어도 잘못 인식한 단어가 있을 수 있습니다.');
+   ui.start.hidden = active; ui.start.disabled = !state.canStart; ui.start.textContent = state.phase === 'idle' ? '면접 시작' : '처음부터 다시';
+   ui.submit.hidden = state.phase !== 'listening'; ui.submit.disabled = !state.canSubmit;
+-  ui.retry.hidden = state.phase !== 'repair'; ui.retry.disabled = busy || state.paused; ui.retry.textContent = mode === 'text' && ui.answer.value.trim() ? '수정한 답변 제출' : '다시 답변';
++  ui.retry.hidden = !['repair', 'confirming'].includes(state.phase); ui.retry.disabled = busy || state.paused; ui.retry.textContent = state.phase === 'confirming' ? '다시 말하기' : mode === 'text' && ui.answer.value.trim() ? '수정한 답변 제출' : '다시 답변';
+   ui.repeat.hidden = !['listening', 'repair'].includes(state.phase); ui.repeat.disabled = busy || state.paused;
+   ui.pause.hidden = !active; ui.pause.textContent = state.paused ? '이어서 진행' : '일시 정지'; ui.pause.disabled = state.phase === 'preparing';
+   ui.stop.hidden = !active;
+@@ -74,7 +81,8 @@ function render() {
+   const messages = {
+     idle: mode === 'voice' ? state.voiceReady ? '마이크 확인 완료. 앉은 상태에서 면접실에 입장하세요.' : '한국어 음성을 준비하고 마이크를 확인하세요.' : '화면에서는 직접 입력하거나 마이크로 연습할 수 있습니다.', preparing: settling ? '자리에 앉아 정면을 바라보세요. 곧 질문을 시작합니다.' : '면접 장면을 기기에서 준비하고 있습니다.',
+     question: '면접관의 질문을 들으세요.', followup: '첫 답변에 따른 후속 질문입니다.',
+-    listening: busy ? (mode === 'voice' ? '마이크를 연결하고 있습니다.' : '답변 화면을 준비하고 있습니다.') : mode === 'voice' ? '말씀하세요. 답변 후 약 6초간 말이 없으면 자동으로 이어집니다.' : '답변을 입력한 뒤 완료를 누르세요.',
++    listening: busy ? (mode === 'voice' ? voice?.state === 'processing' ? '마이크가 꺼졌습니다. 마지막 말을 확인하고 있습니다.' : '마이크를 연결하고 있습니다.' : '답변 화면을 준비하고 있습니다.') : mode === 'voice' ? '말씀하세요. 답변 후 약 6초간 말이 없으면 인식한 내용을 확인합니다.' : '답변을 입력한 뒤 완료를 누르세요.',
++    confirming: '마이크가 꺼졌습니다. 인식한 내용을 확인한 뒤 이어가세요. 확인 시간은 답변 시간에 포함되지 않습니다.',
+     reviewing: '면접관이 답변을 검토하고 있습니다.', repair: state.repair?.message,
+     complete: '면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.', error: state.error,
+   };
+@@ -206,7 +214,7 @@ async function ensureFilm(token) {
+ async function start() {
+   if (!getState().canStart) return;
+   stopListeningSequence();
+-  const token = ++epoch; busy = true; partial = ''; voiceFailed = false; speechTurn.reset(); ui.answer.value = ''; session.start(); render();
++  const token = ++epoch; busy = true; partial = ''; voicePrefix = ''; voicePrefixResult = { text: '' }; voiceReview = null; reviewPage = 0; voiceFailed = false; speechTurn.reset(); ui.answer.value = ''; session.start(); render();
+   try {
+     film?.stop(); await ensureFilm(token); guard(token);
+     listeningSequence?.resetSession();
+@@ -227,7 +235,7 @@ async function startMicrophone(token) {
+   }
+ }
+ async function beginListening(token, retainSilentTail = false) {
+-  busy = true; partial = ''; voicePrefix = ''; ui.answer.value = ''; render();
++  busy = true; partial = ''; voicePrefix = ''; voicePrefixResult = { text: '' }; voiceReview = null; reviewPage = 0; ui.answer.value = ''; render();
+   // The question's speech ends before the 10-second clip. Open input at its
+   // reviewed audio cue while the same actors continue listening in that tail.
+   stopListeningSequence();
+@@ -273,9 +281,16 @@ async function submit() {
+   if (mode === 'voice') { micActive = false; stopped = micStopping = getVoice().stop(); }
+   render();
+   try {
+-    const result = stopped ? { ...await stopped } : { text: ui.answer.value }; guard(token);
+-    if (mode === 'voice') { result.text = [voicePrefix, result.text].filter(Boolean).join(' '); partial = result.text; }
+-    const state = session.submit(result.text, { confidence: result.confidence, recognitionError: mode === 'voice' && voiceFailed });
++    let result = stopped ? { ...await stopped } : { text: ui.answer.value }; guard(token);
++    if (mode === 'voice') {
++      result = mergeVoiceResults([voicePrefixResult, result]); partial = result.text;
++      if (!voiceFailed && result.text.trim()) {
++        voiceReview = result; reviewPage = 0; ui.answer.value = result.text;
++        session.reviewTranscript(result.text); continueListeningSequence(); busy = false; render();
++        return;
++      }
++    }
++    const state = session.submit(result.text, { recognitionError: mode === 'voice' && voiceFailed });
+     if (state.phase === 'repair') { continueListeningSequence(); busy = false; render(); return; }
+     render(); await finishReview(token);
+   } catch (error) {
+@@ -284,11 +299,19 @@ async function submit() {
+     else report(error);
+   }
+ }
++async function confirm() {
++  if (!getState().canConfirm) return;
++  const token = epoch; busy = true; stopListeningSequence();
++  const state = session.confirmTranscript(ui.answer.value.trim());
++  partial = ui.answer.value.trim(); voiceReview = null; reviewPage = 0;
++  if (state.phase === 'repair') { continueListeningSequence(); busy = false; render(); return; }
++  render(); await finishReview(token);
++}
+ async function retry() {
+-  if (busy || session.snapshot().paused || session.snapshot().phase !== 'repair') return;
++  if (busy || session.snapshot().paused || !['repair', 'confirming'].includes(session.snapshot().phase)) return;
+   const token = epoch; session.retry();
+   if (mode === 'text' && ui.answer.value.trim()) { render(); return submit(); }
+-  busy = true; partial = ''; voicePrefix = ''; render();
++  busy = true; partial = ''; voicePrefix = ''; voicePrefixResult = { text: '' }; voiceReview = null; reviewPage = 0; ui.answer.value = ''; render();
+   // Keep the current silent actors moving; a recognition repair must not reset
+   // a pen halfway through a note or discard a typed correction.
+   await startMicrophone(token); guard(token); busy = false; lastTick = performance.now(); render();
+@@ -305,7 +328,7 @@ async function pause() {
+   const token = ++epoch; micActive = false; speechTurn.reset(); const stopped = micStopping = voice?.stop();
+   film?.pause(); busy = false; session.pause(); render();
+   const result = await stopped?.catch(() => null);
+-  if (current(token) && result?.text) { voicePrefix = [voicePrefix, result.text].filter(Boolean).join(' '); partial = voicePrefix; ui.answer.value = partial; render(); }
++  if (current(token) && result?.text) { voicePrefixResult = mergeVoiceResults([voicePrefixResult, result]); voicePrefix = voicePrefixResult.text; partial = voicePrefix; ui.answer.value = partial; render(); }
+ }
+ async function resume() {
+   const state = session.snapshot(); if (!state.paused || busy) return;
+@@ -318,17 +341,17 @@ async function resume() {
+ }
+ async function stop() {
+   stopListeningSequence();
+-  epoch++; busy = false; micActive = false; settling = false; checkingMic = false; speechTurn.reset(); const stopped = micStopping = voice?.stop(); film?.stop(); session.reset(); partial = ''; voicePrefix = ''; ui.answer.value = ''; render();
++  epoch++; busy = false; micActive = false; settling = false; checkingMic = false; speechTurn.reset(); const stopped = micStopping = voice?.stop(); film?.stop(); session.reset(); partial = ''; voicePrefix = ''; voicePrefixResult = { text: '' }; voiceReview = null; reviewPage = 0; ui.answer.value = ''; render();
+   await stopped?.catch(() => {});
+ }
+ async function changeMode(next) {
+-  if (next === mode || busy || vr.active) return;
++  if (next === mode || busy || vr.active || session.snapshot().phase === 'confirming') return;
+   const token = ++epoch; mode = next; micActive = false; busy = true; speechTurn.reset();
+   const stopped = voice?.stop(); render();
+   const result = await stopped?.catch(() => null); guard(token);
+   if (result?.text) ui.answer.value = [voicePrefix, result.text].filter(Boolean).join(' ');
+   const state = session.snapshot();
+-  if (next === 'voice' && ['listening', 'repair'].includes(state.phase)) { voicePrefix = ui.answer.value.trim(); partial = voicePrefix; }
++  if (next === 'voice' && ['listening', 'repair'].includes(state.phase)) { voicePrefix = ui.answer.value.trim(); voicePrefixResult = { text: voicePrefix }; partial = voicePrefix; }
+   if (next === 'voice' && state.phase === 'listening' && !state.paused) {
+     if (!voice?.ready) session.submit('', { recognitionError: true });
+     else await startMicrophone(token);
+@@ -336,11 +359,11 @@ async function changeMode(next) {
+   busy = false; render();
+ }
+ async function action(name) {
+-  const operations = { start, submit, pause, resume, stop, retry, repeat, exit: () => vr.exit() };
++  const operations = { start, submit, confirm, reviewNext: () => { if (session.snapshot().phase === 'confirming' && !session.snapshot().paused) { const pages = transcriptReviewPages(ui.answer.value); reviewPage = (reviewPage + 1) % pages.length; render(); } }, pause, resume, stop, retry, repeat, exit: () => vr.exit() };
+   try { return await operations[name]?.(); } catch (error) { report(error); }
+ }
+ const vr = createStrictVR({ mount: ui['vr-stage'], getFrameState: () => film?.getVideos() || [], getState, onAction: action, onExit: () => void pause(), onStatus(event) { ui['vr-status'].textContent = event.message; } });
+-for (const name of ['start', 'submit', 'retry', 'repeat', 'stop']) ui[name].addEventListener('click', () => void action(name));
++for (const name of ['start', 'submit', 'confirm', 'retry', 'repeat', 'stop']) ui[name].addEventListener('click', () => void action(name));
+ ui.pause.addEventListener('click', () => void action(session.snapshot().paused ? 'resume' : 'pause'));
+ ui['voice-prepare'].addEventListener('click', () => void prepareVoice());
+ ui['microphone-check'].addEventListener('click', () => void checkMicrophone());
+@@ -354,8 +377,8 @@ ui.quality.addEventListener('change', () => {
+   film?.stop(); render();
+ });
+ for (const input of document.querySelectorAll('input[name="mode"]')) input.addEventListener('change', () => { if (input.checked) void changeMode(input.value).catch(report); });
+-ui.answer.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); void action('submit'); } });
+-ui.answer.addEventListener('input', render);
++ui.answer.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); void action(session.snapshot().phase === 'confirming' ? 'confirm' : 'submit'); } });
++ui.answer.addEventListener('input', () => { reviewPage = 0; if (voiceReview?.text !== ui.answer.value) voiceReview = null; render(); });
+ document.addEventListener('visibilitychange', () => { if (document.hidden && !vr.active && !vr.pending) { cancelMicrophoneCheck(); if (preparingVoice) { epoch++; void voice?.stop().catch(() => {}); } void pause(); } });
+ document.addEventListener('keydown', (event) => {
+   if (event.key !== 'Escape' || event.repeat) return;
+
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\strict-vr.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\strict-vr.mjs"
+index a95eb00da..8f01e3cfc 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\strict-vr.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\film\\strict-vr.mjs"
+@@ -36,6 +36,8 @@ export function getStrictVRGate(state = {}) {
+ export function getStrictVRControls(state = {}) {
+   const primary = state.paused
+     ? { action: 'resume', label: '계속하기', enabled: true }
++    : state.phase === 'confirming'
++      ? { action: state.reviewPage < (state.reviewPages?.length || 1) - 1 ? 'reviewNext' : 'confirm', label: state.reviewPage < (state.reviewPages?.length || 1) - 1 ? '다음 부분 확인' : '이 내용으로 답변', enabled: !!state.canConfirm }
+     : state.phase === 'repair'
+       ? { action: 'retry', label: '다시 답변', enabled: true }
+     : state.canStart
+@@ -43,7 +45,9 @@ export function getStrictVRControls(state = {}) {
+       : { action: 'submit', label: state.canSubmit ? '답변 마침' : '질문을 듣고 답변하세요', enabled: !!state.canSubmit };
+   return [
+     { ...BUTTONS[0], ...primary },
+-    { ...BUTTONS[1], ...(state.phase === 'repair' && !state.paused
++    { ...BUTTONS[1], ...(state.phase === 'confirming' && !state.paused
++      ? { action: 'retry', label: '다시 말하기', enabled: !!state.canConfirm }
++      : state.phase === 'repair' && !state.paused
+       ? { action: 'repeat', label: '질문 다시 듣기', enabled: true }
+       : { action: state.paused ? 'resume' : 'pause', label: state.paused ? '계속하기' : '일시정지', enabled: !state.canStart }) },
+     { ...BUTTONS[2], action: 'exit', label: 'VR 나가기', enabled: true },
+@@ -193,13 +197,14 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
+     const seconds = Number.isFinite(state.remainingSeconds) ? Math.max(0, Math.ceil(state.remainingSeconds)) : null;
+     const micLevel = Math.round(Math.max(0, Math.min(1, Number(state.micLevel) || 0)) * 8) / 8;
+     const answerQuote = String(state.branch?.evidence?.quote || '');
+-    const key = JSON.stringify([state.phase, state.question, state.transcript, answerQuote, seconds, state.paused, state.canStart, state.canSubmit, state.settling, state.micActive, micLevel, state.automaticEnd]);
++    const key = JSON.stringify([state.phase, state.question, state.transcript, answerQuote, seconds, state.paused, state.canStart, state.canSubmit, state.canConfirm, state.reviewPage, state.settling, state.micActive, micLevel, state.automaticEnd]);
+     if (key === lastHUDKey) return;
+     lastHUDKey = key;
+     context.fillStyle = '#e8e7e2'; context.fillRect(0, 0, HUD_WIDTH, HUD_HEIGHT);
+     context.textAlign = 'left'; context.textBaseline = 'top';
+     context.fillStyle = '#555653'; context.font = '500 28px SUIT, sans-serif';
+     const status = state.paused ? '일시정지 · 마이크 꺼짐'
++      : state.phase === 'confirming' ? `음성 답변 확인 · ${(state.reviewPage || 0) + 1}/${state.reviewPages?.length || 1} · 마이크 꺼짐`
+       : state.phase === 'reviewing' ? '면접관이 답변을 검토하고 있습니다'
+       : state.phase === 'repair' ? '답변을 확인하지 못했습니다'
+       : state.canSubmit ? `답변 중${seconds === null ? '' : ` · ${seconds}초`}`
+@@ -211,11 +216,11 @@ async function buildStage({ mount, getFrameState, getState, onAction, onClosePre
+       context.fillStyle = '#526847'; context.fillRect(1320, 24, Math.max(4, 160 * micLevel), 15);
+     }
+     context.fillStyle = '#252a22'; context.font = '500 36px SUIT, sans-serif';
+-    lines(state.question || '세 면접관의 질문에 소리 내어 답변하세요.', 36, 70, 1460, 46, 2);
++    lines(state.phase === 'confirming' ? state.reviewPages?.[state.reviewPage || 0] || state.transcript : state.question || '세 면접관의 질문에 소리 내어 답변하세요.', 36, 70, 1460, 46, state.phase === 'confirming' ? 4 : 2);
+     context.fillStyle = '#575c51'; context.font = '400 29px SUIT, sans-serif';
+     const transcript = String(state.transcript || '');
+     const answerContext = answerQuote && ['reviewing', 'followup'].includes(state.phase) ? `첫 답변: “${answerQuote.slice(0, 100)}”` : '';
+-    lines(state.phase === 'repair' ? '다시 답변하거나 질문을 다시 들으세요.' : answerContext || (transcript ? `인식: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '답변 후 약 6초간 말이 없으면 이어집니다.' : '답변을 마치면 아래에서 완료하세요.' : '선택 버튼으로 시작합니다.'), 36, 184, 1460, 38, 2);
++    if (state.phase !== 'confirming') lines(state.phase === 'repair' ? '다시 답변하거나 질문을 다시 들으세요.' : answerContext || (transcript ? `인식: ${transcript.slice(-120)}` : state.canSubmit ? state.automaticEnd ? '답변 후 약 6초간 말이 없으면 내용을 확인합니다.' : '답변을 마치면 아래에서 완료하세요.' : '선택 버튼으로 시작합니다.'), 36, 184, 1460, 38, 2);
+     for (const control of getStrictVRControls(state)) {
+       context.fillStyle = control.enabled ? '#cecfca' : '#deded8';
+       context.fillRect(control.x, control.y, control.w, control.h);
+
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\voice.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\voice.mjs"
+index f3dc5f88f..c5454f805 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\voice.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-interview-pages\\public\\path\\interview\\voice.mjs"
+@@ -19,15 +19,46 @@ export function voiceError(error) {
+ 
+ function abortError() { return new DOMException('Voice input cancelled', 'AbortError'); }
+ 
++/** Merge capture segments without correcting their text or inferring missing
++ * confidence. Word times remain relative to their original capture, including
++ * after pause/resume. Vosk confidence is a decoder score, not accuracy proof.
++ * Text-only/edited segments have unknown words; their confidence is never
++ * borrowed from another segment or from a supplied utterance-level average. */
++export function mergeVoiceResults(results = []) {
++  const segments = results.map((result) => {
++    const text = String(result?.text || '').replace(/\s+/gu, ' ').trim();
++    const tokens = text ? text.split(' ') : [];
++    const supplied = Array.isArray(result?.words) ? result.words : [];
++    // Confidence must refer to the exact, unedited transcript. If the text and
++    // metadata no longer agree, preserve the text and mark its words unknown.
++    const aligned = supplied.length === tokens.length && supplied.every((item, index) => item?.word === tokens[index]);
++    const words = tokens.map((word, index) => {
++      const item = aligned ? supplied[index] : {};
++      return { word,
++        ...(Number.isFinite(item.conf) && item.conf >= 0 && item.conf <= 1 ? { conf: item.conf } : {}),
++        ...(Number.isFinite(item.start) && item.start >= 0 ? { start: item.start } : {}),
++        ...(Number.isFinite(item.end) && item.end >= 0 ? { end: item.end } : {}),
++      };
++    });
++    return { text, words };
++  });
++  const words = segments.flatMap((segment) => segment.words);
++  const known = words.filter((word) => Number.isFinite(word.conf));
++  return { text: segments.map((segment) => segment.text).filter(Boolean).join(' '), words,
++    ...(known.length ? { confidence: known.reduce((sum, word) => sum + word.conf, 0) / known.length } : {}),
++    confidenceCoverage: words.length ? known.length / words.length : 0,
++  };
++}
++
+ function normalize(result = {}) {
+-  const text = String(result.text || '').replace(/\s+/gu, ' ').trim();
+-  const words = Array.isArray(result.result) ? result.result.filter((item) => Number.isFinite(item.conf)) : [];
+-  return { text, ...(words.length ? { confidence: words.reduce((sum, item) => sum + item.conf, 0) / words.length } : {}) };
++  return mergeVoiceResults([{ text: result.text, words: result.result }]);
+ }
+ 
+ /**
+  * onStatus receives { state, message, code?, loaded?, total?, progress? }.
+- * onPartial receives {text}; onResult receives the complete utterance so far.
++ * onPartial receives {text}; onResult receives the complete utterance so far as
++ * {text, words: [{word, conf?, start?, end?}], confidence?, confidenceCoverage}.
++ * Missing confidence is unknown, not zero or an assumed high-confidence word.
+  * stop() resolves only after the worker acknowledges final PCM. Mic is closed
+  * immediately on stop, while only local queued PCM finishes recognition.
+  * `platform` / `modelFactory` are dependency seams for lifecycle tests.
+@@ -135,9 +166,7 @@ export function createVoiceInput({ onPartial = noop, onResult = noop, onLevel =
+   }
+ 
+   function combinedResult(active) {
+-    const segments = active.results.filter((result) => result.text);
+-    const confidence = segments.filter((result) => Number.isFinite(result.confidence));
+-    return { text: segments.map((result) => result.text).join(' ').trim(), ...(confidence.length ? { confidence: confidence.reduce((sum, result) => sum + result.confidence, 0) / confidence.length } : {}) };
++    return mergeVoiceResults(active.results);
+   }
+ 
+   async function begin(arrayBuffer) {
+@@ -221,7 +250,7 @@ export function createVoiceInput({ onPartial = noop, onResult = noop, onLevel =
+   async function stop() {
+     captureGeneration += 1;
+     const active = session;
+-    if (!active) return { text: '' };
++    if (!active) return mergeVoiceResults();
+     if (active.stopping) return active.stopping;
+     if (!active.started) {
+       active.cancelled = true;
+

@@ -1,0 +1,25 @@
+{
+  "observedAt": "2026-10-11T20:07:36.968Z",
+  "stage": "local 4k initial prepare after first recovery patch",
+  "state": {
+    "phase": "연결 확인",
+    "quality": "4k",
+    "status": "영상 시작 프레임을 확인하지 못했습니다.",
+    "videos": [
+      {
+        "height": 2160,
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-followup-experience-4k.mp4",
+        "time": 0,
+        "width": 3840
+      },
+      {
+        "height": 0,
+        "paused": true,
+        "src": "",
+        "time": 0,
+        "width": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-11T21:20:18.891Z",
+  "originHEAD": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+  "packageManifestSHA256": "101e943f2f4caddbb04b8dd44a98d890aabc45e5fc48290bc1a6c8cb0e77e12e",
+  "packageFiles": 54,
+  "unchangedFiles": 53,
+  "changes": [
+    {
+      "file": "path/interview/film-player.mjs",
+      "beforeBytes": 26255,
+      "beforeSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+      "afterBytes": 26305,
+      "afterSHA256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06"
+    }
+  ],
+  "productionChangesApplied": false,
+  "uploadedQA": false
+}

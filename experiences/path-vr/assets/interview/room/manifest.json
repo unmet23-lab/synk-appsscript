@@ -1,0 +1,55 @@
+{
+  "license": "CC0-1.0",
+  "licenseUrl": "https://polyhaven.com/license",
+  "assets": [
+    {
+      "id": "wood_table_001",
+      "file": "wood_table_001_diff_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table_001/wood_table_001_diff_1k.jpg",
+      "bytes": 215573,
+      "sha256": "460dd08d240f4a1f02982415048c3c5c200f385db212da18dc7e2df68bf4d0be"
+    },
+    {
+      "id": "wood_table_001",
+      "file": "wood_table_001_nor_gl_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table_001/wood_table_001_nor_gl_1k.jpg",
+      "bytes": 51927,
+      "sha256": "9bf7ddf5721e225c20290f1772ae37f9bdfd49658f6d458259eb794e2149d3cf"
+    },
+    {
+      "id": "wood_table_001",
+      "file": "wood_table_001_rough_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_table_001/wood_table_001_rough_1k.jpg",
+      "bytes": 237261,
+      "sha256": "a2ca9ae89dfe7b8e2e5e92f0aa43467845417de8a50205b5852ef0d57c7624f9"
+    },
+    {
+      "id": "painted_plaster_wall",
+      "file": "painted_plaster_wall_diff_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_diff_1k.jpg",
+      "bytes": 686726,
+      "sha256": "440310f05af089f2c93353167573403cbc3f805948203237b5d26431eeb9e19c"
+    },
+    {
+      "id": "painted_plaster_wall",
+      "file": "painted_plaster_wall_nor_gl_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_nor_gl_1k.jpg",
+      "bytes": 900461,
+      "sha256": "8eb01647d126eb5341e2c325821ad48c8ca11349dbef53447c95422c5d91cc9d"
+    },
+    {
+      "id": "painted_plaster_wall",
+      "file": "painted_plaster_wall_rough_1k.jpg",
+      "source": "https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/painted_plaster_wall/painted_plaster_wall_rough_1k.jpg",
+      "bytes": 354762,
+      "sha256": "e0564c297b22ab1cf4ef02a82157b84ce3b92eb4fd49d9c64b7256a8b300af82"
+    },
+    {
+      "id": "brown_photostudio_02",
+      "file": "brown_photostudio_02_1k.hdr",
+      "source": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/brown_photostudio_02_1k.hdr",
+      "bytes": 1648130,
+      "sha256": "469abc5e6035b6c450bae8adbb448f8d1fa7c51d9e384e501516c28352c91b58"
+    }
+  ]
+}

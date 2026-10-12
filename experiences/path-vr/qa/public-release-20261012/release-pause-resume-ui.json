@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-11T20:26:52.807Z",
+  "sourceSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+  "scenario": "Two ordinary UI pause/resume cycles during first 4K answer; delayed promise race is covered separately by unit tests.",
+  "state": {
+    "phase": "답변 중",
+    "videos": [
+      {
+        "height": 2160,
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 0.5,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "paused": false,
+        "src": "https://synk.im/path/assets/interview/film/strict-listening-4k.mp4",
+        "time": 1.384548,
+        "width": 3840
+      }
+    ]
+  }
+}

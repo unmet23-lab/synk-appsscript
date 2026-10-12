@@ -1,0 +1,527 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "tools/package-path-interview.mjs#preparePagesInterview",
+  "entrypoint": "/path/interview/film/rehearsal.html",
+  "mountPath": "/path/",
+  "publishDirectory": "public",
+  "deployed": false,
+  "hardwareVR": "not-tested",
+  "payloadBytes": 169987354,
+  "files": [
+    {
+      "file": "path/assets/DMMono.woff2",
+      "source": "experiences/path-vr/assets/DMMono.woff2",
+      "sourceBytes": 5848,
+      "sourceSHA256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "bytes": 5848,
+      "sha256": "a04f4ebd976dad6a5b83508bbaa6bebac082c1ebc19c3d5a923d9f12f4732504",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/SUIT.woff2",
+      "source": "experiences/path-vr/assets/SUIT.woff2",
+      "sourceBytes": 624536,
+      "sourceSHA256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/room-poster-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-poster-4k.jpg",
+      "sourceBytes": 552234,
+      "sourceSHA256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "bytes": 552234,
+      "sha256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/room-reference-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-reference-4k.jpg",
+      "sourceBytes": 694928,
+      "sourceSHA256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "bytes": 694928,
+      "sha256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-experience-4k.mp4",
+      "sourceBytes": 11078438,
+      "sourceSHA256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "bytes": 11078438,
+      "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-experience-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-experience-720p.mp4",
+      "sourceBytes": 3154743,
+      "sourceSHA256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "bytes": 3154743,
+      "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-plan-4k.mp4",
+      "sourceBytes": 10548847,
+      "sourceSHA256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "bytes": 10548847,
+      "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-followup-plan-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-followup-plan-720p.mp4",
+      "sourceBytes": 3036932,
+      "sourceSHA256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "bytes": 3036932,
+      "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "sourceBytes": 2868604,
+      "sourceSHA256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "bytes": 2868604,
+      "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+      "sourceBytes": 555181,
+      "sourceSHA256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "bytes": 555181,
+      "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "sourceBytes": 2853959,
+      "sourceSHA256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "bytes": 2853959,
+      "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+      "sourceBytes": 545391,
+      "sourceSHA256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "bytes": 545391,
+      "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "sourceBytes": 6057021,
+      "sourceSHA256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "bytes": 6057021,
+      "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listen-question-tail-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listen-question-tail-720p.mp4",
+      "sourceBytes": 1145975,
+      "sourceSHA256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "bytes": 1145975,
+      "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listening-4k.mp4",
+      "sourceBytes": 10122866,
+      "sourceSHA256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "bytes": 10122866,
+      "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-listening-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-listening-720p.mp4",
+      "sourceBytes": 2917190,
+      "sourceSHA256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "bytes": 2917190,
+      "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-4k.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-question-4k.mp4",
+      "sourceBytes": 9901952,
+      "sourceSHA256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "bytes": 9901952,
+      "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/film/strict-question-720p.mp4",
+      "source": "experiences/path-vr/assets/interview/film/strict-question-720p.mp4",
+      "sourceBytes": 2801131,
+      "sourceSHA256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "bytes": 2801131,
+      "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/back-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/back-wall-detail-4k.jpg",
+      "sourceBytes": 930644,
+      "sourceSHA256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "bytes": 930644,
+      "sha256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/carpet-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/carpet-4k.jpg",
+      "sourceBytes": 161270,
+      "sourceSHA256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "bytes": 161270,
+      "sha256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/ceiling-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/ceiling-detail-4k.jpg",
+      "sourceBytes": 943652,
+      "sourceSHA256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "bytes": 943652,
+      "sha256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/desk-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/desk-4k.jpg",
+      "sourceBytes": 45160,
+      "sourceSHA256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "bytes": 45160,
+      "sha256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/front-room-extension-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/front-room-extension-4k.jpg",
+      "sourceBytes": 653669,
+      "sourceSHA256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "bytes": 653669,
+      "sha256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/front-room-wide-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/front-room-wide-4k.jpg",
+      "sourceBytes": 698348,
+      "sourceSHA256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "bytes": 698348,
+      "sha256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/left-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/left-wall-detail-4k.jpg",
+      "sourceBytes": 670407,
+      "sourceSHA256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "bytes": 670407,
+      "sha256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/interview/room/right-wall-detail-4k.jpg",
+      "source": "experiences/path-vr/assets/interview/room/right-wall-detail-4k.jpg",
+      "sourceBytes": 586123,
+      "sourceSHA256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "bytes": 586123,
+      "sha256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/licenses/DMMono-OFL.txt",
+      "source": "docs/브랜드_폰트/DM_Mono/OFL.txt",
+      "sourceBytes": 4484,
+      "sourceSHA256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/licenses/SUIT-OFL.txt",
+      "source": "docs/브랜드_폰트/SUIT/LICENSE_OFL.txt",
+      "sourceBytes": 4380,
+      "sourceSHA256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/assets/logo-path.webp",
+      "source": "experiences/path-vr/assets/logo-path.webp",
+      "sourceBytes": 118428,
+      "sourceSHA256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "bytes": 118428,
+      "sha256": "9b36d188a5384406547e928371e4a55a081e5c63463e42ae527a47912caa604d",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/audio-worklet.js",
+      "source": "experiences/path-vr/interview/audio-worklet.js",
+      "sourceBytes": 2265,
+      "sourceSHA256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "bytes": 2265,
+      "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/content.mjs",
+      "source": "experiences/path-vr/interview/content.mjs",
+      "sourceBytes": 4235,
+      "sourceSHA256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "bytes": 4235,
+      "sha256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/dialogue.mjs",
+      "source": "experiences/path-vr/interview/dialogue.mjs",
+      "sourceBytes": 7353,
+      "sourceSHA256": "339c9f5db60255ca7244f227f31f9375443ad351bc803c9819a9871aa3421a14",
+      "bytes": 7353,
+      "sha256": "339c9f5db60255ca7244f227f31f9375443ad351bc803c9819a9871aa3421a14",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film-player.mjs",
+      "source": "experiences/path-vr/interview/film-player.mjs",
+      "sourceBytes": 26255,
+      "sourceSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+      "bytes": 26255,
+      "sha256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "source": "experiences/path-vr/interview/film/answer-followup.mjs",
+      "sourceBytes": 14337,
+      "sourceSHA256": "71171860926f4ddb48b9a1091f068fe914415257e898786035c9b9853525604f",
+      "bytes": 14337,
+      "sha256": "71171860926f4ddb48b9a1091f068fe914415257e898786035c9b9853525604f",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/listening-sequence.mjs",
+      "source": "experiences/path-vr/interview/film/listening-sequence.mjs",
+      "sourceBytes": 4506,
+      "sourceSHA256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "bytes": 4506,
+      "sha256": "9f721b8a5e383543d8b43ca70d600df68ef9aa1b7bd934452b9b76ff6f609113",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/rehearsal-session.mjs",
+      "source": "experiences/path-vr/interview/film/rehearsal-session.mjs",
+      "sourceBytes": 12421,
+      "sourceSHA256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+      "bytes": 12421,
+      "sha256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/rehearsal.css",
+      "source": "experiences/path-vr/interview/film/rehearsal.css",
+      "sourceBytes": 7433,
+      "sourceSHA256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "bytes": 7433,
+      "sha256": "dd7aa5ca0d9cab4f2fa0a7b978d8a1575b44f5019c782c887b08631bdc5dc415",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "source": "experiences/path-vr/interview/film/rehearsal.html",
+      "sourceBytes": 5669,
+      "sourceSHA256": "bf01a10b7da9792f0c18aea31379527d6b3e6c12c1ee44e0da10d84f35742a01",
+      "bytes": 5978,
+      "sha256": "e70a667e691a7204e5803c8b0fb5ca451cfead3954aa4ce86c6b5d9efaa23c47",
+      "transform": "public-rehearsal-navigation-disclosure-and-csp-v1"
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "source": "experiences/path-vr/interview/film/rehearsal.mjs",
+      "sourceBytes": 29068,
+      "sourceSHA256": "a1b518b5aa2e0cf19547f1c0da236415e10543807117ee7bd58260f6d9529a0b",
+      "bytes": 29068,
+      "sha256": "a1b518b5aa2e0cf19547f1c0da236415e10543807117ee7bd58260f6d9529a0b",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/room-space.mjs",
+      "source": "experiences/path-vr/interview/film/room-space.mjs",
+      "sourceBytes": 31256,
+      "sourceSHA256": "c063100439c61f21954b88eccf1016c6698e4172136d8d8cfca80c0ad3f20e91",
+      "bytes": 31256,
+      "sha256": "c063100439c61f21954b88eccf1016c6698e4172136d8d8cfca80c0ad3f20e91",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/speech-turn.mjs",
+      "source": "experiences/path-vr/interview/film/speech-turn.mjs",
+      "sourceBytes": 1432,
+      "sourceSHA256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "bytes": 1432,
+      "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/film/strict-manifest.json",
+      "source": "experiences/path-vr/interview/film/strict-manifest.json",
+      "sourceBytes": 15833,
+      "sourceSHA256": "70d6d6d4ad8493dd36953e5b5274c94bee5a692c9dd8df823ab57ef411fce8ea",
+      "bytes": 10115,
+      "sha256": "681a03f3028167002ac0928af81e91a0f2f2cf5e8091821cb4943a2c62fec04a",
+      "transform": "public-runtime-video-manifest-v1"
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "source": "experiences/path-vr/interview/film/strict-vr.mjs",
+      "sourceBytes": 27453,
+      "sourceSHA256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+      "bytes": 27453,
+      "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "source": "experiences/path-vr/interview/voice.mjs",
+      "sourceBytes": 15359,
+      "sourceSHA256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+      "bytes": 15359,
+      "sha256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/models/LICENSE-vosk-model.txt",
+      "source": "experiences/path-vr/vendor/vosk/LICENSE.txt",
+      "sourceBytes": 10173,
+      "sourceSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "bytes": 10173,
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/models/vosk-model-small-ko-0.22.tar.gz",
+      "source": "experiences/path-vr/models/vosk-model-small-ko-0.22.tar.gz",
+      "sourceBytes": 89103045,
+      "sourceSHA256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "bytes": 89103045,
+      "sha256": "e04a249a82e2da067337bec8c2db05f6b5d109a1edf88c6a46376cfe4dd75155",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/THREE-LICENSE.txt",
+      "source": "experiences/path-vr/vendor/THREE-LICENSE.txt",
+      "sourceBytes": 1081,
+      "sourceSHA256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "bytes": 1081,
+      "sha256": "bfe119ea4fd413f5f7ca3fcd63adb0c4a073ed39daa2fe7d3e6b769e21272601",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/three.core.js",
+      "source": "experiences/path-vr/vendor/three.core.js",
+      "sourceBytes": 1403455,
+      "sourceSHA256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "bytes": 1403455,
+      "sha256": "eb077d2417f61d3e6d9264c317cabc4ea35769ed6b0ab533067292a550784c20",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/three.module.js",
+      "source": "experiences/path-vr/vendor/three.module.js",
+      "sourceBytes": 603113,
+      "sourceSHA256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "bytes": 603113,
+      "sha256": "c8211c69345d2e9949dc7a8ac969380497aa0600a5a8ac6a459c8cd02dd9cb8a",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/vosk/LICENSE.txt",
+      "source": "experiences/path-vr/vendor/vosk/LICENSE.txt",
+      "sourceBytes": 10173,
+      "sourceSHA256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "bytes": 10173,
+      "sha256": "bb618af833c817ab01c1564bd3ec75ba4b4f9cf30910a4a2168e30a674ee8cc6",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/vosk/NOTICE.txt",
+      "source": "experiences/path-vr/vendor/vosk/NOTICE.txt",
+      "sourceBytes": 10019,
+      "sourceSHA256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "bytes": 10019,
+      "sha256": "31dac6be41950e1c649686f51a1fe1b47c9cdcd993def80bd104f85df2badd5c",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/vosk/vosk-worker.js",
+      "source": "experiences/path-vr/vendor/vosk/vosk-worker.js",
+      "sourceBytes": 4330890,
+      "sourceSHA256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "bytes": 4330890,
+      "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/vendor/vosk/vosk.mjs",
+      "source": "experiences/path-vr/vendor/vosk/vosk.mjs",
+      "sourceBytes": 31367,
+      "sourceSHA256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "bytes": 31367,
+      "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+      "transform": "byte-copy"
+    },
+    {
+      "file": "path/xr.mjs",
+      "source": "experiences/path-vr/xr.mjs",
+      "sourceBytes": 2231,
+      "sourceSHA256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "bytes": 2231,
+      "sha256": "3c9b56621a18af5a531ad459af112613b65af8cafa6cb7aa2689706c9c165c50",
+      "transform": "byte-copy"
+    }
+  ],
+  "preservedPaths": [
+    "path/index.html"
+  ],
+  "excluded": [
+    "index.html root redirect",
+    "_headers",
+    "HOSTING.txt",
+    "_package-manifest.json",
+    "server and account configuration",
+    "tools, tests and private production metadata",
+    "comparison pages and older 3D prototype",
+    "unused actors, narration and comparison media"
+  ],
+  "security": {
+    "csp": "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' blob:; object-src 'none'; base-uri 'none'",
+    "referrer": "no-referrer",
+    "cspTransport": "early-document-meta",
+    "workerPolicy": "Same-origin external Vosk worker uses its own response policy, not the parent document meta policy. Verify the live response has no inherited restrictive CSP.",
+    "limits": [
+      "Meta CSP does not enforce frame-ancestors.",
+      "Permissions-Policy and nosniff require host response headers; this build does not claim to install them.",
+      "Full published site including this overlay must remain within 1 GB."
+    ]
+  },
+  "sources": [
+    "https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits",
+    "https://docs.github.com/en/repositories/working-with-files/managing-large-files/about-large-files-on-github",
+    "https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Using_web_workers#content_security_policy"
+  ]
+}

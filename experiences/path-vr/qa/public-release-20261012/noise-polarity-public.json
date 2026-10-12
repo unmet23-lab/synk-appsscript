@@ -1,0 +1,36 @@
+{
+  "commit": "fa267159bfc86c6a7ef86892b95970ed4f98566f",
+  "url": "https://synk.im/path/interview/film/rehearsal.html",
+  "typedInput": true,
+  "physicalMicrophoneUsed": false,
+  "syntheticMicrophoneUsed": false,
+  "repair": {
+    "ax": "Browser tab: 17, Title: \"SYNK PATH · Quest 면접실\", URL: \"https://synk.im/path/interview/film/rehearsal.html\".\nThe following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.\nRemoved element IDs: 59-61, 63\n+\t\t\t67 text 답변 확인\n+\t\t68 text 답변을 이어서 준비하거나 질문을 다시 들을 수 있습니다.\n+\t\t69 text 1 / 2\n+\t\t\t70 text 내 답변\nThe focused UI element is 1 AXWebArea SYNK PATH · Quest 면접실, URL: synk.im/path/interview/film/rehearsal.html",
+    "phase": "답변 확인",
+    "typedInput": true,
+    "physicalMicrophoneUsed": false
+  },
+  "completedAx": "Browser tab: 17, Title: \"SYNK PATH · Quest 면접실\", URL: \"https://synk.im/path/interview/film/rehearsal.html\".\nThere has been no change in the accessibility tree.\nThe focused UI element is 1 AXWebArea SYNK PATH · Quest 면접실, URL: synk.im/path/interview/film/rehearsal.html",
+  "media": [
+    {
+      "height": 2160,
+      "paused": true,
+      "time": 3,
+      "width": 3840
+    },
+    {
+      "height": 2160,
+      "paused": true,
+      "time": 0.5,
+      "width": 3840
+    }
+  ],
+  "logs": [],
+  "roomControls": {
+    "left30": true,
+    "right30": true,
+    "front": true,
+    "closed": true,
+    "preservedTypedAnswer": true
+  }
+}

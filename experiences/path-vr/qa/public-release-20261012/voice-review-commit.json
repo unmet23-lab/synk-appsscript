@@ -1,0 +1,16 @@
+{
+  "preparedAt": "2026-10-11T21:46:33.183Z",
+  "commit": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+  "parent": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+  "changedFiles": [
+    "path/interview/film/answer-followup.mjs",
+    "path/interview/film/rehearsal-session.mjs",
+    "path/interview/film/rehearsal.html",
+    "path/interview/film/rehearsal.mjs",
+    "path/interview/film/strict-vr.mjs",
+    "path/interview/voice.mjs"
+  ],
+  "pushed": true,
+  "qaUploaded": false,
+  "pushedAt": "2026-10-11T21:46:36.655Z"
+}

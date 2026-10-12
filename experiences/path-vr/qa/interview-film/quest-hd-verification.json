@@ -1,0 +1,127 @@
+{
+  "verifiedOn": "2026-10-12",
+  "currentRoomAndComfortResult": "quest-surface-comfort-verification.json",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Local HD runtime applied and PC browser verified; actual Quest unavailable",
+  "production": {
+    "report": "strict-720-verification.json",
+    "record": "../../interview/production/strict-interview-hd.json",
+    "generated720pClips": 4,
+    "local4kClips": 4,
+    "quoteTotalCredits": 280,
+    "paidJobsSubmittedOnce": 4,
+    "additionalProviderUpscaleCredits": 0,
+    "native4k": false,
+    "aiDetailReconstruction": false
+  },
+  "timing": {
+    "answerLimitsSeconds": [
+      30,
+      25
+    ],
+    "experienceComputedSeconds": [
+      67.85,
+      81.95
+    ],
+    "planComputedSeconds": [
+      66.8,
+      80.9
+    ],
+    "fullTimerExperienceRunCompleted": true,
+    "exactDurationMeasured": false,
+    "exceptions": "Early completion, repeats, pauses, model loading, recognition repair and loading are separate from the timing budget."
+  },
+  "performanceReview": {
+    "method": "20 sampled frames per clip at 2fps plus full-size 0.20s head and duration-0.43s tail; browser actual media state and room screenshots",
+    "sampledPeopleAndPoseReviewed": true,
+    "observed": "Same three faces/clothes/framing; right pen notes, independent left/center gaze changes, return to resting hands; no cheerful nodding in sampled frames.",
+    "speechEndSeconds": {
+      "question": 3.21,
+      "experience": 5.08,
+      "plan": 4.05
+    },
+    "transitionWindows": "Replaced legacy480 timings with per-clip quiet settled-pose windows; retains 150ms dissolve.",
+    "humanAudioListeningVerified": false,
+    "continuousPerceptualContinuityVerified": false,
+    "limit": "Small expression and texture differences remain; sampled review does not prove invisible cuts or perceptual realism."
+  },
+  "browser": {
+    "method": "CUA in-app browser at 1280x720, actual interaction and DOM-backed video inspection",
+    "default4kDecoded": [
+      3840,
+      2160
+    ],
+    "selected720pDecoded": [
+      1280,
+      720
+    ],
+    "videoElementCount": 2,
+    "qualityLockedDuringSession": true,
+    "experienceFollowupPlayed": "strict-followup-experience-4k.mp4",
+    "planFollowupPlayed": "strict-followup-plan-720p.mp4",
+    "bothBranchesCompleted": true,
+    "listeningLoopPlayingAndMuted": true,
+    "consoleErrorsObserved": 0,
+    "humanMicrophoneTest": false,
+    "headsetVerified": false,
+    "finalStartGuardSmokePassed": true,
+    "finalStartGuardDetails": "After reload with actual-currentTime gate, 4K initial question reached listening and looped with two 3840x2160 videos."
+  },
+  "room": {
+    "widthMeters": 4.53,
+    "frontDistanceMeters": 4.12,
+    "tableDepthMeters": 1.7,
+    "yawViewsReviewedDegrees": [
+      0,
+      -45,
+      -90,
+      90,
+      180
+    ],
+    "changes": [
+      "Fixed physical UVs for left/right wall elevations; no forward-pinhole projection at side/rear",
+      "Window sill and blind heights aligned at front join",
+      "Rear orthographic wall replaces scenic perspective plate",
+      "Full desk depth with ray-preserving folded film surface",
+      "Per-fragment original-camera UV prevents cup/paper zigzag",
+      "Bare wood crop and low-edge feather avoid reflected stripes and rectangular joins",
+      "Carpet repeat preserves photograph proportions"
+    ],
+    "observed": "Window proportions remain stable at 90-degree yaw; cup/paper contours no longer zigzag, surrounding wall/desk surfaces continue through the room.",
+    "limits": [
+      "Seated mono people, no translational parallax or side view",
+      "Small photo/material joins can remain under close inspection",
+      "No room scan, stereo capture, true360 footage, or measured Quest performance"
+    ]
+  },
+  "screenshots": [
+    "room-hd-front.png",
+    "room-hd-left45.png",
+    "room-hd-left90.png",
+    "room-hd-right90.png",
+    "room-hd-rear.png",
+    "room-hd-playing.png",
+    "hd-experience-complete.png",
+    "hd-plan-complete.png",
+    "room-hd-playing-final.png"
+  ],
+  "tests": {
+    "passed": 72,
+    "failed": 0,
+    "scope": "film, rehearsal, room-space, strict-vr, server/package"
+  },
+  "delivery": {
+    "package": "../../../../.tmp/path-interview-quest/",
+    "deployed": false,
+    "headsetTested": false,
+    "packageVerification": {
+      "filesIncludingManifest": 107,
+      "totalBytes": 184641846,
+      "checksumFiles": 106,
+      "sourceCompared": 103,
+      "licenses": 11,
+      "creditFilesPresent": 13,
+      "excludedArtifacts": 0
+    }
+  }
+}

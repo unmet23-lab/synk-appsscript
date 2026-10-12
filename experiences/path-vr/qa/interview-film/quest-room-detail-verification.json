@@ -1,0 +1,94 @@
+{
+  "verifiedOn": "2026-10-12",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Locally applied generated photographic material details and calibrated joins; browser and package verified. No deployment or physical Quest verification.",
+  "assets": {
+    "record": "../../interview/production/room-detail-generation.json",
+    "newImages": 4,
+    "longEdge": 3840,
+    "jpegBytes": 3130826,
+    "native4k": false,
+    "method": "Built-in imagegen material reconstruction with existing architecture/film references; FFmpeg resolution and JPEG delivery normalization.",
+    "exactModel": "Not exposed",
+    "originalInterviewerVideosChanged": false,
+    "paidApiCalls": 0,
+    "serverNewFilesVerified": 4
+  },
+  "runtime": {
+    "staticTextures": 10,
+    "physicalSideUvsUnchanged": true,
+    "dedicatedCeilingUv": true,
+    "ceilingFallback": "Registered wide photo if dedicated texture fails.",
+    "sideCeilingJoin": "Photographed ceiling pixels masked from side-wall wide projection; bright triangular patch no longer visible in checked ceiling view.",
+    "wallBalanceLinearRgb": [
+      0.98,
+      0.97,
+      0.93
+    ],
+    "wallBalanceScope": "New right and rear walls only; fixed values independent of camera, no live-person grade.",
+    "comfortModuleChangedThisRevision": false,
+    "comfort": {
+      "defaultSnapDegrees": 30,
+      "freeDrag": "Opt in, no inertia",
+      "pitchLimitDegrees": 30,
+      "dragRadiansPerPixel": 0.0009,
+      "headTracking": "Existing unfiltered WebXR pose",
+      "textureWarmup": "Existing frame-separated uploads with sRGB mipmaps and max4 anisotropy"
+    }
+  },
+  "browser": {
+    "method": "CUA in-app browser, 1280x720 landscape room preview plus default viewport restored.",
+    "frontSideRearCeilingReviewed": true,
+    "overheadOldWhitePatchRemoved": true,
+    "posterAndVideoDecoded": [
+      3840,
+      2160
+    ],
+    "videoElements": 2,
+    "experienceAnswerToFollowupToCompleteVerified": true,
+    "syntheticTextInputs": true,
+    "humanAudioListening": false,
+    "continuousQuestView": false,
+    "consoleWarningsOrErrorsObserved": 0,
+    "screenshots": [
+      "room-detail-front.png",
+      "room-detail-left90.png",
+      "room-detail-right30.png",
+      "room-detail-right90.png",
+      "room-detail-rear.png",
+      "room-detail-ceiling.png",
+      "room-detail-playing.png",
+      "room-detail-complete.png"
+    ]
+  },
+  "tests": {
+    "passed": 85,
+    "failed": 0,
+    "suites": [
+      "interview-room-space",
+      "interview-strict-vr",
+      "interview-film",
+      "interview-rehearsal",
+      "interview-speech-turn",
+      "interview-server-package"
+    ],
+    "log": "room-detail-tests.txt"
+  },
+  "package": {
+    "directory": ".tmp/path-interview-quest",
+    "files": 120,
+    "totalBytes": 192652034,
+    "checksumsVerified": 119,
+    "sourceFilesCompared": 116,
+    "creditReferencesVerified": 13,
+    "licenses": 11,
+    "deployed": false
+  },
+  "notVerified": [
+    "Physical Quest headset performance, headset microphone or motion-sickness improvement.",
+    "Perceptually invisible boundaries at every head position; original people remain monocular video with missing translation parallax.",
+    "Native 4K generation/photography or authentic reconstruction of a surveyed building.",
+    "User approval of generated material realism."
+  ],
+  "previousEvidence": "quest-surface-comfort-verification.json"
+}

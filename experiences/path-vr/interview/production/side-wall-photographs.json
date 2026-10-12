@@ -1,0 +1,25 @@
+{
+  "createdAt": "2026-10-11T16:44:17.700Z",
+  "mode": "built-in image_gen",
+  "modelNote": "Exact model/quality not exposed by tool; not claimed as Nano Banana or a selectable model.",
+  "reference": "assets/interview/room/front-room-extension.png",
+  "purpose": "Orthographic wall elevations with fixed world UVs; prevent side walls and blinds stretching at 90-degree head turns.",
+  "coordinateContract": {
+    "leftEdge": "front interviewers",
+    "rightEdge": "rear applicant",
+    "top": "ceiling",
+    "bottom": "floor",
+    "physicalWidth": 6.62,
+    "physicalHeight": 2.68
+  },
+  "assets": [
+    {
+      "path": "assets/interview/room/left-wall-photo.png",
+      "prompt": "Create ONE photorealistic architectural wall texture from the supplied Korean job interview room reference. This is a new LEFT WINDOW WALL orthographic elevation for VR texture mapping, NOT a perspective view of a room. Output a wide flat rectangular image with aspect ratio approximately 2.47:1. It represents a wall 6.62 meters wide and 2.68 meters high. The image fills edge to edge with this wall only: top edge is wall/ceiling junction, bottom edge is floor/skirting junction, but NO visible ceiling or floor. Exact straight horizontal and vertical lines, no perspective convergence, no corner, no depth perspective. Image left edge is the FRONT interview-panel end, image right edge is the REAR applicant end. Match reference's everyday Korean institution office materials: neutral pale gray warm-griege lower wall, dark aluminum window mullions, white narrow horizontal venetian blinds, restrained overcast cool daylight, no saturated blue sky. Windows run consistently across the upper ~70 percent of wall with repeating realistically sized vertical frames and narrow slatted blinds, gray lower solid wall across bottom ~30 percent. Natural worn utilitarian textures, slight dust on sills, fine fabric paint and imperfect real blinds but restrained. No people, furniture, plants, doors, writing, signage, shadows of humans. Documentary architectural photograph, not CGI, no dramatic lighting, no game styling. Correct scale, uniform frontal elevation throughout. Maintain the quiet severe office atmosphere of the reference. Do not copy the three people or table."
+    },
+    {
+      "path": "assets/interview/room/right-wall-photo.png",
+      "prompt": "Create ONE photorealistic architectural wall texture using the supplied serious Korean job interview room as material reference. A new RIGHT WALL flat ORTHOGRAPHIC ELEVATION, not a room perspective. Wide rectangular aspect ratio about 2.47:1, representing wall 6.62 meters wide by 2.68 meters tall. Image LEFT is FRONT at interviewers, RIGHT is BACK behind applicant. Edge-to-edge exact whole wall, top wall/ceiling junction bottom dark gray thin skirting; NO visible floor or ceiling, NO perspective convergence, no corner. Match reference neutral light gray/greige fabric acoustic wall panels with discreet vertical seams, same ordinary pale oak closed door and narrow vertical frosted vision slit, black lever, in FRONT section approximately image x .12-.29. Door top at about y .16 and bottom at y .97. Closed serious institutional office atmosphere. Small realistic thermostat and double light switch on wall immediately to LEFT of door. Rest of wall is uninterrupted gray fabric panels with subtle wear, not perfectly smooth computer render. Cool diffuse flat office illumination consistent with left-window daylight; no dramatic spotlight or blue tint. No people, chair, table, plant, paintings, logos, words, exit signs, labels, horror, exaggerated grime. Real architectural documentary photograph, all verticals straight, no shadows that imply furniture. The textures and light should feel completely real and restrained."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-11T20:15:40.468Z",
+  "commit": "c7282c36fd711391ac7392fee9c384a62b900ca6",
+  "url": "https://synk.im/path/interview/film-player.mjs",
+  "status": 200,
+  "bytes": 26019,
+  "sha256": "4a33ff26ec13ecadd1954013018eca0c5230f62abe7bf89824efde0c510b688d",
+  "pagesRun": "https://github.com/unmet23-lab/synk-policy/actions/runs/38171133813",
+  "pagesConclusion": "success",
+  "unchangedAssetsEvidence": "public-bytes.json; final-runtime-copy.json"
+}

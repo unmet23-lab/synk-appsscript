@@ -1,0 +1,2707 @@
+[
+  {
+    "text": "저는 돌봄 경험이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9056440285124326
+      },
+      {
+        "word": "돌봄",
+        "conf": 0.597450134160921
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9255308551849853
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.8501117859696423
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.8196842009569953,
+    "confidenceCoverage": 1,
+    "id": "01-care-none__clean",
+    "gold": "저는 돌봄 경험이 없습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261012,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 2.825,
+    "elapsedMs": 9033.90000000596
+  },
+  {
+    "text": "저는 이 불공 경험이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8600111672763738
+      },
+      {
+        "word": "이",
+        "conf": 0.07767024718065728
+      },
+      {
+        "word": "불공",
+        "conf": 0.07842592278221146
+      },
+      {
+        "word": "경험이",
+        "conf": 0.766933598441124
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.7821168771658279
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.5130315625692389,
+    "confidenceCoverage": 1,
+    "id": "01-care-none__fan-15db",
+    "gold": "저는 돌봄 경험이 없습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261013,
+      "referenceSnrDb": 14.999999999999998,
+      "effectiveSnrDb": 14.999999999999998,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 2.825,
+    "elapsedMs": 8540.89999999851
+  },
+  {
+    "text": "저는 도입공 경험이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8003057871113707
+      },
+      {
+        "word": "도입공",
+        "conf": 0.22254914867715236
+      },
+      {
+        "word": "경험이",
+        "conf": 0.21297217140472396
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.7253864931321642
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.49030340008135276,
+    "confidenceCoverage": 1,
+    "id": "01-care-none__typing-5db",
+    "gold": "저는 돌봄 경험이 없습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261014,
+      "referenceSnrDb": 4.999999999999998,
+      "effectiveSnrDb": 4.999999999999998,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5732190410975285,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0383125
+        },
+        {
+          "startSeconds": 0.6609375,
+          "durationSeconds": 0.0461875
+        },
+        {
+          "startSeconds": 0.9035,
+          "durationSeconds": 0.0419375
+        },
+        {
+          "startSeconds": 1.17675,
+          "durationSeconds": 0.053
+        },
+        {
+          "startSeconds": 1.3783125,
+          "durationSeconds": 0.068125
+        },
+        {
+          "startSeconds": 1.8045625,
+          "durationSeconds": 0.049875
+        },
+        {
+          "startSeconds": 2.159625,
+          "durationSeconds": 0.0654375
+        },
+        {
+          "startSeconds": 2.3785625,
+          "durationSeconds": 0.0706875
+        },
+        {
+          "startSeconds": 2.71875,
+          "durationSeconds": 0.0415
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 2.825,
+    "elapsedMs": 8479.09999999404
+  },
+  {
+    "text": "자리에 두고 장면이",
+    "words": [
+      {
+        "word": "자리에",
+        "conf": 0.16328100801275064
+      },
+      {
+        "word": "두고",
+        "conf": 0.08515303569328098
+      },
+      {
+        "word": "장면이",
+        "conf": 0.04314691219064886
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.09719365196556017,
+    "confidenceCoverage": 1,
+    "id": "01-care-none__mixed-0db-critical",
+    "gold": "저는 돌봄 경험이 없습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261015,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.470577013401449,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.49582084396928555,
+      "criticalAttenuation": {
+        "word": "없습니다",
+        "startSeconds": 1.405,
+        "endSeconds": 2.825,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0745625
+        },
+        {
+          "startSeconds": 0.6835,
+          "durationSeconds": 0.0426875
+        },
+        {
+          "startSeconds": 0.9470625,
+          "durationSeconds": 0.061125
+        },
+        {
+          "startSeconds": 1.269125,
+          "durationSeconds": 0.0515
+        },
+        {
+          "startSeconds": 1.5725625,
+          "durationSeconds": 0.0636875
+        },
+        {
+          "startSeconds": 1.7963125,
+          "durationSeconds": 0.073875
+        },
+        {
+          "startSeconds": 2.1758125,
+          "durationSeconds": 0.0719375
+        },
+        {
+          "startSeconds": 2.5713125,
+          "durationSeconds": 0.0641875
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 2.825,
+    "elapsedMs": 8504.70000000298
+  },
+  {
+    "text": "저는 돌봄 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9170837164723377
+      },
+      {
+        "word": "돌봄",
+        "conf": 0.6520953241292804
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9277660026058283
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.881379266486013
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.8445810774233649,
+    "confidenceCoverage": 1,
+    "id": "02-care-present__clean",
+    "gold": "저는 돌봄 경험이 있습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261012,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 2.765,
+    "elapsedMs": 8227.29999999702
+  },
+  {
+    "text": "저는 9일범 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7974501017515992
+      },
+      {
+        "word": "9일범",
+        "conf": 0.072233594423003
+      },
+      {
+        "word": "경험이",
+        "conf": 0.8004921286706107
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.902975041281402
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6432877165316537,
+    "confidenceCoverage": 1,
+    "id": "02-care-present__fan-15db",
+    "gold": "저는 돌봄 경험이 있습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261013,
+      "referenceSnrDb": 15,
+      "effectiveSnrDb": 15,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 2.765,
+    "elapsedMs": 8170.39999999851
+  },
+  {
+    "text": "저는 구입공 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7064174089087885
+      },
+      {
+        "word": "구입공",
+        "conf": 0.13366002670878308
+      },
+      {
+        "word": "경험이",
+        "conf": 0.2322839558612734
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.8811735254458067
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.4883837292311629,
+    "confidenceCoverage": 1,
+    "id": "02-care-present__typing-5db",
+    "gold": "저는 돌봄 경험이 있습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261014,
+      "referenceSnrDb": 5.000000000000002,
+      "effectiveSnrDb": 5.000000000000002,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5501801279262134,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0539375
+        },
+        {
+          "startSeconds": 0.5764375,
+          "durationSeconds": 0.0466875
+        },
+        {
+          "startSeconds": 0.9126875,
+          "durationSeconds": 0.0390625
+        },
+        {
+          "startSeconds": 1.37175,
+          "durationSeconds": 0.0578125
+        },
+        {
+          "startSeconds": 1.7074375,
+          "durationSeconds": 0.0426875
+        },
+        {
+          "startSeconds": 2.055625,
+          "durationSeconds": 0.07225
+        },
+        {
+          "startSeconds": 2.3101875,
+          "durationSeconds": 0.07175
+        },
+        {
+          "startSeconds": 2.586375,
+          "durationSeconds": 0.0378125
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 2.765,
+    "elapsedMs": 9798
+  },
+  {
+    "text": "자리에 이곳이 정말로",
+    "words": [
+      {
+        "word": "자리에",
+        "conf": 0.23013455046522246
+      },
+      {
+        "word": "이곳이",
+        "conf": 0.0393354337630161
+      },
+      {
+        "word": "정말로",
+        "conf": 0.05961641232880432
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.10969546551901428,
+    "confidenceCoverage": 1,
+    "id": "02-care-present__mixed-0db-critical",
+    "gold": "저는 돌봄 경험이 있습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261015,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.5331000488309598,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5280208926608636,
+      "criticalAttenuation": {
+        "word": "있습니다",
+        "startSeconds": 1.405,
+        "endSeconds": 2.765,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0675625
+        },
+        {
+          "startSeconds": 0.7505,
+          "durationSeconds": 0.065375
+        },
+        {
+          "startSeconds": 0.9540625,
+          "durationSeconds": 0.0619375
+        },
+        {
+          "startSeconds": 1.249125,
+          "durationSeconds": 0.046375
+        },
+        {
+          "startSeconds": 1.675875,
+          "durationSeconds": 0.0655625
+        },
+        {
+          "startSeconds": 2.0951875,
+          "durationSeconds": 0.0486875
+        },
+        {
+          "startSeconds": 2.37625,
+          "durationSeconds": 0.0655
+        },
+        {
+          "startSeconds": 2.56125,
+          "durationSeconds": 0.059125
+        },
+        {
+          "startSeconds": 2.746125,
+          "durationSeconds": 0.018875
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 2.765,
+    "elapsedMs": 8609.80000000447
+  },
+  {
+    "text": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.878606100940159
+      },
+      {
+        "word": "어르신의",
+        "conf": 0.6206729513582068
+      },
+      {
+        "word": "식사를",
+        "conf": 0.9361383919226633
+      },
+      {
+        "word": "도운",
+        "conf": 0.6188707680905012
+      },
+      {
+        "word": "적이",
+        "conf": 0.9429808662577219
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.8550967277537196
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.808727634387162,
+    "confidenceCoverage": 1,
+    "id": "03-help-none__clean",
+    "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261112,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 3.715,
+    "elapsedMs": 9640.10000000149
+  },
+  {
+    "text": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9031948872396057
+      },
+      {
+        "word": "어르신의",
+        "conf": 0.5212800201818332
+      },
+      {
+        "word": "식사를",
+        "conf": 0.9646093208047394
+      },
+      {
+        "word": "도운",
+        "conf": 0.2831486451841869
+      },
+      {
+        "word": "적이",
+        "conf": 0.8776735005067536
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.7970603812075451
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.724494459187444,
+    "confidenceCoverage": 1,
+    "id": "03-help-none__fan-15db",
+    "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261113,
+      "referenceSnrDb": 15,
+      "effectiveSnrDb": 15,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 3.715,
+    "elapsedMs": 9355
+  },
+  {
+    "text": "저는 어르신의 식사를 좋은 적이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7722152119458194
+      },
+      {
+        "word": "어르신의",
+        "conf": 0.22298899419942145
+      },
+      {
+        "word": "식사를",
+        "conf": 0.8818754308087501
+      },
+      {
+        "word": "좋은",
+        "conf": 0.29053803357733604
+      },
+      {
+        "word": "적이",
+        "conf": 0.7993337552045715
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.7985931932665641
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6275907698337438,
+    "confidenceCoverage": 1,
+    "id": "03-help-none__typing-5db",
+    "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261114,
+      "referenceSnrDb": 5.000000000000001,
+      "effectiveSnrDb": 5.000000000000001,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.6681380326600891,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0719375
+        },
+        {
+          "startSeconds": 0.5729375,
+          "durationSeconds": 0.05675
+        },
+        {
+          "startSeconds": 0.7895,
+          "durationSeconds": 0.071
+        },
+        {
+          "startSeconds": 1.1354375,
+          "durationSeconds": 0.052875
+        },
+        {
+          "startSeconds": 1.3323125,
+          "durationSeconds": 0.061625
+        },
+        {
+          "startSeconds": 1.6245625,
+          "durationSeconds": 0.06075
+        },
+        {
+          "startSeconds": 1.8916875,
+          "durationSeconds": 0.06075
+        },
+        {
+          "startSeconds": 2.16675,
+          "durationSeconds": 0.0553125
+        },
+        {
+          "startSeconds": 2.48375,
+          "durationSeconds": 0.041125
+        },
+        {
+          "startSeconds": 2.8514375,
+          "durationSeconds": 0.041375
+        },
+        {
+          "startSeconds": 3.2518125,
+          "durationSeconds": 0.0578125
+        },
+        {
+          "startSeconds": 3.54375,
+          "durationSeconds": 0.0739375
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 3.715,
+    "elapsedMs": 10016.89999999851
+  },
+  {
+    "text": "자리에 버리신 희생님, 자리에 있는 자리",
+    "words": [
+      {
+        "word": "자리에",
+        "conf": 0.1439062017318732
+      },
+      {
+        "word": "버리신",
+        "conf": 0.11506263792238029
+      },
+      {
+        "word": "희생님,",
+        "conf": 0.06048493341501565
+      },
+      {
+        "word": "자리에",
+        "conf": 0.06115841231929486
+      },
+      {
+        "word": "있는",
+        "conf": 0.11149772369204411
+      },
+      {
+        "word": "자리",
+        "conf": 0.4289070169131017
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.15350282099895163,
+    "confidenceCoverage": 1,
+    "id": "03-help-none__mixed-0db-critical",
+    "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261115,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.3644697656100462,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5555208862625571,
+      "criticalAttenuation": {
+        "word": "없습니다",
+        "startSeconds": 2.295,
+        "endSeconds": 3.715,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0736875
+        },
+        {
+          "startSeconds": 0.7371875,
+          "durationSeconds": 0.061625
+        },
+        {
+          "startSeconds": 1.14,
+          "durationSeconds": 0.069125
+        },
+        {
+          "startSeconds": 1.4220625,
+          "durationSeconds": 0.0394375
+        },
+        {
+          "startSeconds": 1.6438125,
+          "durationSeconds": 0.041375
+        },
+        {
+          "startSeconds": 2.089375,
+          "durationSeconds": 0.039
+        },
+        {
+          "startSeconds": 2.2966875,
+          "durationSeconds": 0.044875
+        },
+        {
+          "startSeconds": 2.7238125,
+          "durationSeconds": 0.056875
+        },
+        {
+          "startSeconds": 2.9409375,
+          "durationSeconds": 0.062
+        },
+        {
+          "startSeconds": 3.286375,
+          "durationSeconds": 0.039
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 3.715,
+    "elapsedMs": 10256.60000000149
+  },
+  {
+    "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9056915309112491
+      },
+      {
+        "word": "어르신의",
+        "conf": 0.6296797525936024
+      },
+      {
+        "word": "식사를",
+        "conf": 0.9569780056851231
+      },
+      {
+        "word": "도운",
+        "conf": 0.7280000607509843
+      },
+      {
+        "word": "적이",
+        "conf": 0.6171147737191578
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.8780840830677887
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.7859247011213176,
+    "confidenceCoverage": 1,
+    "id": "04-help-present__clean",
+    "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261112,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 3.655,
+    "elapsedMs": 7432.19999999553
+  },
+  {
+    "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9204573076524726
+      },
+      {
+        "word": "어르신의",
+        "conf": 0.5194875412686567
+      },
+      {
+        "word": "식사를",
+        "conf": 0.9688007677516781
+      },
+      {
+        "word": "도운",
+        "conf": 0.3328268410978427
+      },
+      {
+        "word": "적이",
+        "conf": 0.3322704898435761
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.7830008783120851
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6428073043210519,
+    "confidenceCoverage": 1,
+    "id": "04-help-present__fan-15db",
+    "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261113,
+      "referenceSnrDb": 15,
+      "effectiveSnrDb": 15,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 3.655,
+    "elapsedMs": 12584.70000000298
+  },
+  {
+    "text": "저는 어르신에 식사를 도운 적이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8225877561675891
+      },
+      {
+        "word": "어르신에",
+        "conf": 0.17858660346474767
+      },
+      {
+        "word": "식사를",
+        "conf": 0.8666373222568889
+      },
+      {
+        "word": "도운",
+        "conf": 0.5362248901740237
+      },
+      {
+        "word": "적이",
+        "conf": 0.40864439424367244
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.8156311261811772
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6047186820813498,
+    "confidenceCoverage": 1,
+    "id": "04-help-present__typing-5db",
+    "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261114,
+      "referenceSnrDb": 4.999999999999999,
+      "effectiveSnrDb": 4.999999999999999,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.6098569113918529,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0514375
+        },
+        {
+          "startSeconds": 0.747,
+          "durationSeconds": 0.0455
+        },
+        {
+          "startSeconds": 0.97375,
+          "durationSeconds": 0.0416875
+        },
+        {
+          "startSeconds": 1.1650625,
+          "durationSeconds": 0.0470625
+        },
+        {
+          "startSeconds": 1.4123125,
+          "durationSeconds": 0.0675
+        },
+        {
+          "startSeconds": 1.8425625,
+          "durationSeconds": 0.05125
+        },
+        {
+          "startSeconds": 2.183375,
+          "durationSeconds": 0.05925
+        },
+        {
+          "startSeconds": 2.5564375,
+          "durationSeconds": 0.0669375
+        },
+        {
+          "startSeconds": 2.9495,
+          "durationSeconds": 0.0525625
+        },
+        {
+          "startSeconds": 3.4088125,
+          "durationSeconds": 0.072125
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 3.655,
+    "elapsedMs": 13553.10000000149
+  },
+  {
+    "text": "자리에 버리신 히치 자리에 버리는 자리",
+    "words": [
+      {
+        "word": "자리에",
+        "conf": 0.2980530606619539
+      },
+      {
+        "word": "버리신",
+        "conf": 0.06767908534494817
+      },
+      {
+        "word": "히치",
+        "conf": 0.09115168786913197
+      },
+      {
+        "word": "자리에",
+        "conf": 0.24772785240498543
+      },
+      {
+        "word": "버리는",
+        "conf": 0.0525857943112975
+      },
+      {
+        "word": "자리",
+        "conf": 0.9629797976236827
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.28669621303599996,
+    "confidenceCoverage": 1,
+    "id": "04-help-present__mixed-0db-critical",
+    "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261115,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.3537051120661412,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5638949577359071,
+      "criticalAttenuation": {
+        "word": "있습니다",
+        "startSeconds": 2.295,
+        "endSeconds": 3.655,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0415
+        },
+        {
+          "startSeconds": 0.6486875,
+          "durationSeconds": 0.04175
+        },
+        {
+          "startSeconds": 0.957,
+          "durationSeconds": 0.063625
+        },
+        {
+          "startSeconds": 1.1714375,
+          "durationSeconds": 0.060125
+        },
+        {
+          "startSeconds": 1.617,
+          "durationSeconds": 0.0701875
+        },
+        {
+          "startSeconds": 1.8331875,
+          "durationSeconds": 0.068875
+        },
+        {
+          "startSeconds": 2.181375,
+          "durationSeconds": 0.0579375
+        },
+        {
+          "startSeconds": 2.3849375,
+          "durationSeconds": 0.0446875
+        },
+        {
+          "startSeconds": 2.8004375,
+          "durationSeconds": 0.03675
+        },
+        {
+          "startSeconds": 3.0276875,
+          "durationSeconds": 0.0375
+        },
+        {
+          "startSeconds": 3.4209375,
+          "durationSeconds": 0.045875
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 3.655,
+    "elapsedMs": 14316.20000000298
+  },
+  {
+    "text": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7140346466700757
+      },
+      {
+        "word": "직접",
+        "conf": 0.9981576904508541
+      },
+      {
+        "word": "돌봄을",
+        "conf": 0.5963365863437119
+      },
+      {
+        "word": "해",
+        "conf": 0.8456177375993926
+      },
+      {
+        "word": "본",
+        "conf": 0.9867613165139512
+      },
+      {
+        "word": "경험이",
+        "conf": 0.969774891362088
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.7723548057458401
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.840433953526559,
+    "confidenceCoverage": 1,
+    "id": "05-tried-none__clean",
+    "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261212,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 4.585,
+    "elapsedMs": 15047.69999999553
+  },
+  {
+    "text": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8929570398526621
+      },
+      {
+        "word": "직접",
+        "conf": 0.9972655884444788
+      },
+      {
+        "word": "돌봄을",
+        "conf": 0.46026487604722455
+      },
+      {
+        "word": "해",
+        "conf": 0.4498789495039412
+      },
+      {
+        "word": "본",
+        "conf": 0.8852744448443786
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9309771950067646
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.07421331267792967
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6701187723396257,
+    "confidenceCoverage": 1,
+    "id": "05-tried-none__fan-15db",
+    "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261213,
+      "referenceSnrDb": 15.000000000000002,
+      "effectiveSnrDb": 15.000000000000002,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 4.585,
+    "elapsedMs": 14385.79999999702
+  },
+  {
+    "text": "저는 직접 브이범을 태풍 경험이 있다고 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.723736658037181
+      },
+      {
+        "word": "직접",
+        "conf": 0.9965490453993008
+      },
+      {
+        "word": "브이범을",
+        "conf": 0.4163572404375534
+      },
+      {
+        "word": "태풍",
+        "conf": 0.16297741967974716
+      },
+      {
+        "word": "경험이",
+        "conf": 0.6987720644267151
+      },
+      {
+        "word": "있다고",
+        "conf": 0.23403551066084916
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.3342024975141084
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.5095186337364935,
+    "confidenceCoverage": 1,
+    "id": "05-tried-none__typing-5db",
+    "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261214,
+      "referenceSnrDb": 4.999999999999998,
+      "effectiveSnrDb": 4.999999999999998,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5150097090035562,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.059625
+        },
+        {
+          "startSeconds": 0.6465625,
+          "durationSeconds": 0.074
+        },
+        {
+          "startSeconds": 0.9705625,
+          "durationSeconds": 0.0354375
+        },
+        {
+          "startSeconds": 1.3881875,
+          "durationSeconds": 0.035875
+        },
+        {
+          "startSeconds": 1.7818125,
+          "durationSeconds": 0.0355
+        },
+        {
+          "startSeconds": 1.9801875,
+          "durationSeconds": 0.0503125
+        },
+        {
+          "startSeconds": 2.28475,
+          "durationSeconds": 0.05975
+        },
+        {
+          "startSeconds": 2.5103125,
+          "durationSeconds": 0.0501875
+        },
+        {
+          "startSeconds": 2.828875,
+          "durationSeconds": 0.03825
+        },
+        {
+          "startSeconds": 3.233,
+          "durationSeconds": 0.06175
+        },
+        {
+          "startSeconds": 3.6768125,
+          "durationSeconds": 0.0680625
+        },
+        {
+          "startSeconds": 3.9235625,
+          "durationSeconds": 0.0695625
+        },
+        {
+          "startSeconds": 4.1378125,
+          "durationSeconds": 0.0565
+        },
+        {
+          "startSeconds": 4.334375,
+          "durationSeconds": 0.0735625
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 4.585,
+    "elapsedMs": 14708
+  },
+  {
+    "text": "자랑은 직접 그분이 쉽게 사용하는 거에요",
+    "words": [
+      {
+        "word": "자랑은",
+        "conf": 0.13304756350662436
+      },
+      {
+        "word": "직접",
+        "conf": 0.22329535669737735
+      },
+      {
+        "word": "그분이",
+        "conf": 0.03843381494239863
+      },
+      {
+        "word": "쉽게",
+        "conf": 0.13360825614408
+      },
+      {
+        "word": "사용하는",
+        "conf": 0.01439613705855915
+      },
+      {
+        "word": "거에요",
+        "conf": 0.043563149260703676
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.09772404626829052,
+    "confidenceCoverage": 1,
+    "id": "05-tried-none__mixed-0db-critical",
+    "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261215,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.3484399964954017,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.4695931735310726,
+      "criticalAttenuation": {
+        "word": "없습니다",
+        "startSeconds": 3.165,
+        "endSeconds": 4.585,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.046
+        },
+        {
+          "startSeconds": 0.7098125,
+          "durationSeconds": 0.0703125
+        },
+        {
+          "startSeconds": 1.065125,
+          "durationSeconds": 0.0615
+        },
+        {
+          "startSeconds": 1.397375,
+          "durationSeconds": 0.051875
+        },
+        {
+          "startSeconds": 1.6049375,
+          "durationSeconds": 0.0404375
+        },
+        {
+          "startSeconds": 1.8290625,
+          "durationSeconds": 0.0573125
+        },
+        {
+          "startSeconds": 2.173625,
+          "durationSeconds": 0.043375
+        },
+        {
+          "startSeconds": 2.6253125,
+          "durationSeconds": 0.05275
+        },
+        {
+          "startSeconds": 2.954625,
+          "durationSeconds": 0.042375
+        },
+        {
+          "startSeconds": 3.2676875,
+          "durationSeconds": 0.057125
+        },
+        {
+          "startSeconds": 3.59775,
+          "durationSeconds": 0.0575625
+        },
+        {
+          "startSeconds": 4.0198125,
+          "durationSeconds": 0.06525
+        },
+        {
+          "startSeconds": 4.2635625,
+          "durationSeconds": 0.0355625
+        },
+        {
+          "startSeconds": 4.47025,
+          "durationSeconds": 0.0594375
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience",
+    "forbidAutoExperience": true,
+    "audioSeconds": 4.585,
+    "elapsedMs": 15056.79999999702
+  },
+  {
+    "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8118057507877711
+      },
+      {
+        "word": "직접",
+        "conf": 0.9983375422455144
+      },
+      {
+        "word": "돌봄을",
+        "conf": 0.6079345028489226
+      },
+      {
+        "word": "해",
+        "conf": 0.8587551702642513
+      },
+      {
+        "word": "본",
+        "conf": 0.9833946063988427
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9339385601586838
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.9210954162651444
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.8736087927098757,
+    "confidenceCoverage": 1,
+    "id": "06-tried-present__clean",
+    "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261212,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 4.525,
+    "elapsedMs": 15181.20000000298
+  },
+  {
+    "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.9036884137941009
+      },
+      {
+        "word": "직접",
+        "conf": 0.9970681975274212
+      },
+      {
+        "word": "돌봄을",
+        "conf": 0.24413193028234967
+      },
+      {
+        "word": "해",
+        "conf": 0.5584488903557425
+      },
+      {
+        "word": "본",
+        "conf": 0.8728509632385247
+      },
+      {
+        "word": "경험이",
+        "conf": 0.8632760663995256
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.7699935135120428
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.7442082821585296,
+    "confidenceCoverage": 1,
+    "id": "06-tried-present__fan-15db",
+    "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261213,
+      "referenceSnrDb": 14.999999999999998,
+      "effectiveSnrDb": 14.999999999999998,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 4.525,
+    "elapsedMs": 15223.89999999851
+  },
+  {
+    "text": "저는 직접 불범해 본 경험이 있습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7998039054492888
+      },
+      {
+        "word": "직접",
+        "conf": 0.9935835627943492
+      },
+      {
+        "word": "불범해",
+        "conf": 0.15541820048802749
+      },
+      {
+        "word": "본",
+        "conf": 0.6596104041755512
+      },
+      {
+        "word": "경험이",
+        "conf": 0.4194353243312176
+      },
+      {
+        "word": "있습니다.",
+        "conf": 0.8524295770085524
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6467134957078311,
+    "confidenceCoverage": 1,
+    "id": "06-tried-present__typing-5db",
+    "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261214,
+      "referenceSnrDb": 5.000000000000001,
+      "effectiveSnrDb": 5.000000000000001,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5946477311020751,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.059875
+        },
+        {
+          "startSeconds": 0.707,
+          "durationSeconds": 0.059625
+        },
+        {
+          "startSeconds": 1.0035625,
+          "durationSeconds": 0.074
+        },
+        {
+          "startSeconds": 1.3275625,
+          "durationSeconds": 0.0354375
+        },
+        {
+          "startSeconds": 1.7451875,
+          "durationSeconds": 0.035875
+        },
+        {
+          "startSeconds": 2.1388125,
+          "durationSeconds": 0.0355
+        },
+        {
+          "startSeconds": 2.3371875,
+          "durationSeconds": 0.0503125
+        },
+        {
+          "startSeconds": 2.64175,
+          "durationSeconds": 0.05975
+        },
+        {
+          "startSeconds": 2.8673125,
+          "durationSeconds": 0.0501875
+        },
+        {
+          "startSeconds": 3.185875,
+          "durationSeconds": 0.03825
+        },
+        {
+          "startSeconds": 3.59,
+          "durationSeconds": 0.06175
+        },
+        {
+          "startSeconds": 4.0338125,
+          "durationSeconds": 0.0680625
+        },
+        {
+          "startSeconds": 4.2805625,
+          "durationSeconds": 0.0695625
+        },
+        {
+          "startSeconds": 4.4948125,
+          "durationSeconds": 0.0301875
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 4.525,
+    "elapsedMs": 14998.70000000298
+  },
+  {
+    "text": "자리에 직접 드릴게요.",
+    "words": [
+      {
+        "word": "자리에",
+        "conf": 0.16798762194615952
+      },
+      {
+        "word": "직접",
+        "conf": 0.6955886515612169
+      },
+      {
+        "word": "드릴게요.",
+        "conf": 0.047197887500333775
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.3035913870025701,
+    "confidenceCoverage": 1,
+    "id": "06-tried-present__mixed-0db-critical",
+    "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261215,
+      "referenceSnrDb": 0,
+      "effectiveSnrDb": -0.3964204911450001,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5253204569721425,
+      "criticalAttenuation": {
+        "word": "있습니다",
+        "startSeconds": 3.165,
+        "endSeconds": 4.525,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.072625
+        },
+        {
+          "startSeconds": 0.590625,
+          "durationSeconds": 0.0544375
+        },
+        {
+          "startSeconds": 1.03625,
+          "durationSeconds": 0.069125
+        },
+        {
+          "startSeconds": 1.43025,
+          "durationSeconds": 0.0605625
+        },
+        {
+          "startSeconds": 1.88275,
+          "durationSeconds": 0.045
+        },
+        {
+          "startSeconds": 2.1284375,
+          "durationSeconds": 0.051625
+        },
+        {
+          "startSeconds": 2.562375,
+          "durationSeconds": 0.05175
+        },
+        {
+          "startSeconds": 3.018875,
+          "durationSeconds": 0.0385625
+        },
+        {
+          "startSeconds": 3.368375,
+          "durationSeconds": 0.0749375
+        },
+        {
+          "startSeconds": 3.6040625,
+          "durationSeconds": 0.037125
+        },
+        {
+          "startSeconds": 3.980125,
+          "durationSeconds": 0.054125
+        },
+        {
+          "startSeconds": 4.3503125,
+          "durationSeconds": 0.0668125
+        }
+      ]
+    },
+    "semanticPolarity": "experience-present",
+    "forbidAutoExperience": false,
+    "audioSeconds": 4.525,
+    "elapsedMs": 13832.80000000447
+  },
+  {
+    "text": "음 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+    "words": [
+      {
+        "word": "음",
+        "conf": 0.3991719360682148
+      },
+      {
+        "word": "저는",
+        "conf": 0.34520831967757226
+      },
+      {
+        "word": "아직",
+        "conf": 0.9921614070110056
+      },
+      {
+        "word": "돌봄",
+        "conf": 0.584605790983706
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9473594353753059
+      },
+      {
+        "word": "없습니다.",
+        "conf": 0.6033183500453857
+      },
+      {
+        "word": "앞으로",
+        "conf": 0.9962377919129055
+      },
+      {
+        "word": "이동",
+        "conf": 0.9091874868558919
+      },
+      {
+        "word": "보조와",
+        "conf": 0.5844977115191877
+      },
+      {
+        "word": "보고",
+        "conf": 0.9687142681243041
+      },
+      {
+        "word": "절차를",
+        "conf": 0.5098389018742585
+      },
+      {
+        "word": "배우겠습니다.",
+        "conf": 0.7157226902313528
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.7130020074732575,
+    "confidenceCoverage": 1,
+    "id": "07-none-future__clean",
+    "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261612,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience-explicit-future",
+    "forbidAutoExperience": true,
+    "audioSeconds": 7.88,
+    "elapsedMs": 18938.79999999702
+  },
+  {
+    "text": "그 다음은 저는 아직 2번 경험이 없습니다 앞으로 이동 구조와 보고 철차를 배우겠습니다",
+    "words": [
+      {
+        "word": "그",
+        "conf": 0.035039042524341216
+      },
+      {
+        "word": "다음은",
+        "conf": 0.08140571778949188
+      },
+      {
+        "word": "저는",
+        "conf": 0.048746468422152585
+      },
+      {
+        "word": "아직",
+        "conf": 0.7067218983174728
+      },
+      {
+        "word": "2번",
+        "conf": 0.28428467431566634
+      },
+      {
+        "word": "경험이",
+        "conf": 0.9751741135830281
+      },
+      {
+        "word": "없습니다",
+        "conf": 0.9798354159280389
+      },
+      {
+        "word": "앞으로",
+        "conf": 0.5793737505224578
+      },
+      {
+        "word": "이동",
+        "conf": 0.9202517827787592
+      },
+      {
+        "word": "구조와",
+        "conf": 0.5353491304074237
+      },
+      {
+        "word": "보고",
+        "conf": 0.8251740738823892
+      },
+      {
+        "word": "철차를",
+        "conf": 0.47240566605999346
+      },
+      {
+        "word": "배우겠습니다",
+        "conf": 0.7021454077658664
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.5496851647920832,
+    "confidenceCoverage": 1,
+    "id": "07-none-future__fan-15db",
+    "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261613,
+      "referenceSnrDb": 15.000000000000002,
+      "effectiveSnrDb": 15.000000000000002,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "no-experience-explicit-future",
+    "forbidAutoExperience": true,
+    "audioSeconds": 7.88,
+    "elapsedMs": 13239.60000000149
+  },
+  {
+    "text": "저는 아직 불봉 경험이 없습니다 앞으로 이동 구조와 구조 설치를 배우도록 하겠습니다",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.03394646903940068
+      },
+      {
+        "word": "아직",
+        "conf": 0.909564260670334
+      },
+      {
+        "word": "불봉",
+        "conf": 0.11656756055833804
+      },
+      {
+        "word": "경험이",
+        "conf": 0.8610740630322923
+      },
+      {
+        "word": "없습니다",
+        "conf": 0.7691598657483674
+      },
+      {
+        "word": "앞으로",
+        "conf": 0.5173686822472231
+      },
+      {
+        "word": "이동",
+        "conf": 0.8373877744829517
+      },
+      {
+        "word": "구조와",
+        "conf": 0.6055487862821244
+      },
+      {
+        "word": "구조",
+        "conf": 0.29424137799052724
+      },
+      {
+        "word": "설치를",
+        "conf": 0.09439403013446294
+      },
+      {
+        "word": "배우도록",
+        "conf": 0.11925701300133303
+      },
+      {
+        "word": "하겠습니다",
+        "conf": 0.7895747823576502
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.49567372212875044,
+    "confidenceCoverage": 1,
+    "id": "07-none-future__typing-5db",
+    "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261614,
+      "referenceSnrDb": 5,
+      "effectiveSnrDb": 5,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.7308794494504094,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0515
+        },
+        {
+          "startSeconds": 0.70575,
+          "durationSeconds": 0.0585625
+        },
+        {
+          "startSeconds": 1.004875,
+          "durationSeconds": 0.041125
+        },
+        {
+          "startSeconds": 1.26825,
+          "durationSeconds": 0.0723125
+        },
+        {
+          "startSeconds": 1.567125,
+          "durationSeconds": 0.0448125
+        },
+        {
+          "startSeconds": 1.913125,
+          "durationSeconds": 0.0721875
+        },
+        {
+          "startSeconds": 2.2849375,
+          "durationSeconds": 0.0385
+        },
+        {
+          "startSeconds": 2.4729375,
+          "durationSeconds": 0.0403125
+        },
+        {
+          "startSeconds": 2.87,
+          "durationSeconds": 0.062
+        },
+        {
+          "startSeconds": 3.056375,
+          "durationSeconds": 0.0465
+        },
+        {
+          "startSeconds": 3.40275,
+          "durationSeconds": 0.044375
+        },
+        {
+          "startSeconds": 3.6613125,
+          "durationSeconds": 0.0535
+        },
+        {
+          "startSeconds": 4.074125,
+          "durationSeconds": 0.071125
+        },
+        {
+          "startSeconds": 4.335875,
+          "durationSeconds": 0.06875
+        },
+        {
+          "startSeconds": 4.5274375,
+          "durationSeconds": 0.06175
+        },
+        {
+          "startSeconds": 4.925875,
+          "durationSeconds": 0.0716875
+        },
+        {
+          "startSeconds": 5.123375,
+          "durationSeconds": 0.061
+        },
+        {
+          "startSeconds": 5.4996875,
+          "durationSeconds": 0.0446875
+        },
+        {
+          "startSeconds": 5.9236875,
+          "durationSeconds": 0.06125
+        },
+        {
+          "startSeconds": 6.24175,
+          "durationSeconds": 0.069875
+        },
+        {
+          "startSeconds": 6.5413125,
+          "durationSeconds": 0.0435
+        },
+        {
+          "startSeconds": 6.973,
+          "durationSeconds": 0.04475
+        },
+        {
+          "startSeconds": 7.2385625,
+          "durationSeconds": 0.0646875
+        },
+        {
+          "startSeconds": 7.659,
+          "durationSeconds": 0.040125
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience-explicit-future",
+    "forbidAutoExperience": true,
+    "audioSeconds": 7.88,
+    "elapsedMs": 10627.10000000149
+  },
+  {
+    "text": "아프로 이 정도가 더 잘 들으셔도 됩니다.",
+    "words": [
+      {
+        "word": "아프로",
+        "conf": 0.06621938431180505
+      },
+      {
+        "word": "이",
+        "conf": 0.2920369662597034
+      },
+      {
+        "word": "정도가",
+        "conf": 0.32602925758871126
+      },
+      {
+        "word": "더",
+        "conf": 0.061171255827770096
+      },
+      {
+        "word": "잘",
+        "conf": 0.4140025827946189
+      },
+      {
+        "word": "들으셔도",
+        "conf": 0.08207780477457284
+      },
+      {
+        "word": "됩니다.",
+        "conf": 0.47908583169460545
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.24580329760739814,
+    "confidenceCoverage": 1,
+    "id": "07-none-future__mixed-0db-critical",
+    "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261615,
+      "referenceSnrDb": 1.928654933106574e-15,
+      "effectiveSnrDb": -0.17506697811979965,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.665703803253829,
+      "criticalAttenuation": {
+        "word": "없습니다",
+        "startSeconds": 2.505,
+        "endSeconds": 4.0249999999999995,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+        "gainDb": -18,
+        "edgeFadeMs": 15
+      },
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0659375
+        },
+        {
+          "startSeconds": 0.5300625,
+          "durationSeconds": 0.0694375
+        },
+        {
+          "startSeconds": 0.9788125,
+          "durationSeconds": 0.0655625
+        },
+        {
+          "startSeconds": 1.4030625,
+          "durationSeconds": 0.0736875
+        },
+        {
+          "startSeconds": 1.6278125,
+          "durationSeconds": 0.0393125
+        },
+        {
+          "startSeconds": 1.923625,
+          "durationSeconds": 0.0635
+        },
+        {
+          "startSeconds": 2.3599375,
+          "durationSeconds": 0.042
+        },
+        {
+          "startSeconds": 2.7366875,
+          "durationSeconds": 0.05075
+        },
+        {
+          "startSeconds": 2.9259375,
+          "durationSeconds": 0.072125
+        },
+        {
+          "startSeconds": 3.267,
+          "durationSeconds": 0.0510625
+        },
+        {
+          "startSeconds": 3.6195,
+          "durationSeconds": 0.0465
+        },
+        {
+          "startSeconds": 3.93175,
+          "durationSeconds": 0.0543125
+        },
+        {
+          "startSeconds": 4.2136875,
+          "durationSeconds": 0.0734375
+        },
+        {
+          "startSeconds": 4.564,
+          "durationSeconds": 0.0423125
+        },
+        {
+          "startSeconds": 4.753625,
+          "durationSeconds": 0.06725
+        },
+        {
+          "startSeconds": 5.17725,
+          "durationSeconds": 0.0580625
+        },
+        {
+          "startSeconds": 5.6199375,
+          "durationSeconds": 0.0479375
+        },
+        {
+          "startSeconds": 6.0706875,
+          "durationSeconds": 0.0553125
+        },
+        {
+          "startSeconds": 6.4548125,
+          "durationSeconds": 0.066875
+        },
+        {
+          "startSeconds": 6.7003125,
+          "durationSeconds": 0.0543125
+        },
+        {
+          "startSeconds": 6.888875,
+          "durationSeconds": 0.0448125
+        },
+        {
+          "startSeconds": 7.3120625,
+          "durationSeconds": 0.0545
+        },
+        {
+          "startSeconds": 7.703375,
+          "durationSeconds": 0.05
+        }
+      ]
+    },
+    "semanticPolarity": "no-experience-explicit-future",
+    "forbidAutoExperience": true,
+    "audioSeconds": 7.88,
+    "elapsedMs": 10349.5
+  },
+  {
+    "text": "저는 요양원에서 어르신에 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.7833437462464108
+      },
+      {
+        "word": "요양원에서",
+        "conf": 0.4784867444943882
+      },
+      {
+        "word": "어르신에",
+        "conf": 0.5479259290156697
+      },
+      {
+        "word": "식사를",
+        "conf": 0.7594529117644195
+      },
+      {
+        "word": "도왔습니다.",
+        "conf": 0.7027621537567756
+      },
+      {
+        "word": "식사량을",
+        "conf": 0.7092055524571163
+      },
+      {
+        "word": "확인한",
+        "conf": 0.9648220401273103
+      },
+      {
+        "word": "뒤",
+        "conf": 0.9527148761848879
+      },
+      {
+        "word": "담당자에게",
+        "conf": 0.8903784159231619
+      },
+      {
+        "word": "보고했습니다.",
+        "conf": 0.6986164646537544
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.7487708834623894,
+    "confidenceCoverage": 1,
+    "id": "08-past-action__clean",
+    "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+    "condition": {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0,
+      "seed": 20261712,
+      "referenceSnrDb": null,
+      "effectiveSnrDb": null,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "self-past-action",
+    "forbidAutoExperience": false,
+    "audioSeconds": 8.075,
+    "elapsedMs": 11108.60000000149
+  },
+  {
+    "text": "저는 유양원에서 어르신에 식사를 도왔습니다 식사량을 확인한 뒤 담당자에게 보고했습니다",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.8542768653281536
+      },
+      {
+        "word": "유양원에서",
+        "conf": 0.3919881954038676
+      },
+      {
+        "word": "어르신에",
+        "conf": 0.5391714156366422
+      },
+      {
+        "word": "식사를",
+        "conf": 0.695854299647666
+      },
+      {
+        "word": "도왔습니다",
+        "conf": 0.828353415943582
+      },
+      {
+        "word": "식사량을",
+        "conf": 0.5031107514212078
+      },
+      {
+        "word": "확인한",
+        "conf": 0.8150644574353622
+      },
+      {
+        "word": "뒤",
+        "conf": 0.7934474240569477
+      },
+      {
+        "word": "담당자에게",
+        "conf": 0.8095593349162922
+      },
+      {
+        "word": "보고했습니다",
+        "conf": 0.6741118327148271
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6904937992504548,
+    "confidenceCoverage": 1,
+    "id": "08-past-action__fan-15db",
+    "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+    "condition": {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0,
+      "seed": 20261713,
+      "referenceSnrDb": 15.000000000000002,
+      "effectiveSnrDb": 15.000000000000002,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 1,
+      "criticalAttenuation": null,
+      "typingBursts": []
+    },
+    "semanticPolarity": "self-past-action",
+    "forbidAutoExperience": false,
+    "audioSeconds": 8.075,
+    "elapsedMs": 14419.20000000298
+  },
+  {
+    "text": "저는 유양원에서 어두신의 식사를 도왔습니다. 식사량을 확인한 등 담당자에게 보고했습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.6925085139027993
+      },
+      {
+        "word": "유양원에서",
+        "conf": 0.3876279748782432
+      },
+      {
+        "word": "어두신의",
+        "conf": 0.3425445950610774
+      },
+      {
+        "word": "식사를",
+        "conf": 0.8786843863993188
+      },
+      {
+        "word": "도왔습니다.",
+        "conf": 0.638858348647993
+      },
+      {
+        "word": "식사량을",
+        "conf": 0.8516077954333502
+      },
+      {
+        "word": "확인한",
+        "conf": 0.7247808583004357
+      },
+      {
+        "word": "등",
+        "conf": 0.44877747650630645
+      },
+      {
+        "word": "담당자에게",
+        "conf": 0.7148291870824648
+      },
+      {
+        "word": "보고했습니다.",
+        "conf": 0.6115144075131094
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.6291733543725098,
+    "confidenceCoverage": 1,
+    "id": "08-past-action__typing-5db",
+    "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+    "condition": {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0,
+      "seed": 20261714,
+      "referenceSnrDb": 5.000000000000001,
+      "effectiveSnrDb": 5.000000000000001,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5832615776673457,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0464375
+        },
+        {
+          "startSeconds": 0.533625,
+          "durationSeconds": 0.0414375
+        },
+        {
+          "startSeconds": 0.971625,
+          "durationSeconds": 0.05075
+        },
+        {
+          "startSeconds": 1.16925,
+          "durationSeconds": 0.0605625
+        },
+        {
+          "startSeconds": 1.5678125,
+          "durationSeconds": 0.0631875
+        },
+        {
+          "startSeconds": 2.0236875,
+          "durationSeconds": 0.0489375
+        },
+        {
+          "startSeconds": 2.2864375,
+          "durationSeconds": 0.047125
+        },
+        {
+          "startSeconds": 2.6304375,
+          "durationSeconds": 0.0473125
+        },
+        {
+          "startSeconds": 2.9615625,
+          "durationSeconds": 0.0426875
+        },
+        {
+          "startSeconds": 3.3846875,
+          "durationSeconds": 0.039875
+        },
+        {
+          "startSeconds": 3.6233125,
+          "durationSeconds": 0.0615625
+        },
+        {
+          "startSeconds": 3.96175,
+          "durationSeconds": 0.043125
+        },
+        {
+          "startSeconds": 4.2605625,
+          "durationSeconds": 0.057375
+        },
+        {
+          "startSeconds": 4.658375,
+          "durationSeconds": 0.068125
+        },
+        {
+          "startSeconds": 4.9319375,
+          "durationSeconds": 0.0489375
+        },
+        {
+          "startSeconds": 5.297125,
+          "durationSeconds": 0.0395625
+        },
+        {
+          "startSeconds": 5.4821875,
+          "durationSeconds": 0.0618125
+        },
+        {
+          "startSeconds": 5.8863125,
+          "durationSeconds": 0.070125
+        },
+        {
+          "startSeconds": 6.268875,
+          "durationSeconds": 0.0428125
+        },
+        {
+          "startSeconds": 6.6649375,
+          "durationSeconds": 0.057375
+        },
+        {
+          "startSeconds": 6.9293125,
+          "durationSeconds": 0.040625
+        },
+        {
+          "startSeconds": 7.28425,
+          "durationSeconds": 0.0533125
+        },
+        {
+          "startSeconds": 7.62625,
+          "durationSeconds": 0.06775
+        },
+        {
+          "startSeconds": 7.894375,
+          "durationSeconds": 0.0594375
+        }
+      ]
+    },
+    "semanticPolarity": "self-past-action",
+    "forbidAutoExperience": false,
+    "audioSeconds": 8.075,
+    "elapsedMs": 14306.20000000298
+  },
+  {
+    "text": "저는 위험원에서 어두운의 집사를 주었습니다. 식다량을 받은 한 등 당단되기 위해 주기로 했습니다.",
+    "words": [
+      {
+        "word": "저는",
+        "conf": 0.6326793106900351
+      },
+      {
+        "word": "위험원에서",
+        "conf": 0.1658011823287028
+      },
+      {
+        "word": "어두운의",
+        "conf": 0.12813473543672924
+      },
+      {
+        "word": "집사를",
+        "conf": 0.20847561557456343
+      },
+      {
+        "word": "주었습니다.",
+        "conf": 0.3971615332296676
+      },
+      {
+        "word": "식다량을",
+        "conf": 0.27152627376762223
+      },
+      {
+        "word": "받은",
+        "conf": 0.11464318020528216
+      },
+      {
+        "word": "한",
+        "conf": 0.2761833071660259
+      },
+      {
+        "word": "등",
+        "conf": 0.20749909416790802
+      },
+      {
+        "word": "당단되기",
+        "conf": 0.13908172996779616
+      },
+      {
+        "word": "위해",
+        "conf": 0.11011668492181588
+      },
+      {
+        "word": "주기로",
+        "conf": 0.04007540616249682
+      },
+      {
+        "word": "했습니다.",
+        "conf": 0.9123611542639075
+      }
+    ],
+    "engine": "whisper-base",
+    "confidence": 0.2772107082986579,
+    "confidenceCoverage": 1,
+    "id": "08-past-action__mixed-0db-critical",
+    "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+    "condition": {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18,
+      "seed": 20261715,
+      "referenceSnrDb": -1.9286549331065743e-15,
+      "effectiveSnrDb": -1.9286549331065743e-15,
+      "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+      "postMixScale": 0.5867455050364482,
+      "criticalAttenuation": null,
+      "typingBursts": [
+        {
+          "startSeconds": 0.35,
+          "durationSeconds": 0.0385625
+        },
+        {
+          "startSeconds": 0.5785625,
+          "durationSeconds": 0.040125
+        },
+        {
+          "startSeconds": 0.8023125,
+          "durationSeconds": 0.0608125
+        },
+        {
+          "startSeconds": 1.249875,
+          "durationSeconds": 0.0370625
+        },
+        {
+          "startSeconds": 1.5816875,
+          "durationSeconds": 0.0403125
+        },
+        {
+          "startSeconds": 1.9339375,
+          "durationSeconds": 0.0355625
+        },
+        {
+          "startSeconds": 2.1318125,
+          "durationSeconds": 0.054
+        },
+        {
+          "startSeconds": 2.4895,
+          "durationSeconds": 0.037875
+        },
+        {
+          "startSeconds": 2.8953125,
+          "durationSeconds": 0.036
+        },
+        {
+          "startSeconds": 3.1079375,
+          "durationSeconds": 0.0385625
+        },
+        {
+          "startSeconds": 3.435625,
+          "durationSeconds": 0.0656875
+        },
+        {
+          "startSeconds": 3.72675,
+          "durationSeconds": 0.0454375
+        },
+        {
+          "startSeconds": 4.0605,
+          "durationSeconds": 0.0395625
+        },
+        {
+          "startSeconds": 4.313125,
+          "durationSeconds": 0.06
+        },
+        {
+          "startSeconds": 4.4943125,
+          "durationSeconds": 0.043
+        },
+        {
+          "startSeconds": 4.69625,
+          "durationSeconds": 0.045125
+        },
+        {
+          "startSeconds": 5.1338125,
+          "durationSeconds": 0.0605625
+        },
+        {
+          "startSeconds": 5.5763125,
+          "durationSeconds": 0.0480625
+        },
+        {
+          "startSeconds": 6.0241875,
+          "durationSeconds": 0.071
+        },
+        {
+          "startSeconds": 6.4181875,
+          "durationSeconds": 0.0429375
+        },
+        {
+          "startSeconds": 6.7304375,
+          "durationSeconds": 0.071125
+        },
+        {
+          "startSeconds": 6.9720625,
+          "durationSeconds": 0.0644375
+        },
+        {
+          "startSeconds": 7.3885,
+          "durationSeconds": 0.041875
+        },
+        {
+          "startSeconds": 7.57025,
+          "durationSeconds": 0.0426875
+        },
+        {
+          "startSeconds": 7.8838125,
+          "durationSeconds": 0.04625
+        },
+        {
+          "startSeconds": 8.0705,
+          "durationSeconds": 0.0045
+        }
+      ]
+    },
+    "semanticPolarity": "self-past-action",
+    "forbidAutoExperience": false,
+    "audioSeconds": 8.075,
+    "elapsedMs": 14163.5
+  }
+]

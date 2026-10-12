@@ -1,0 +1,499 @@
+{
+  "start": 1791746809708,
+  "samples": [
+    {
+      "focus": "CANVAS",
+      "status": "답변을 입력한 뒤 완료를 누르세요.",
+      "text": "답변 중\n16초\n\n답변을 입력한 뒤 완료를 누르세요.\n\n1 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n내 답변\n\n답변 완료\n질문 다시 듣기\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 0.5,
+          "width": 1280
+        },
+        {
+          "duration": 10.08,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listening-720p.mp4",
+          "time": 0.342228,
+          "width": 1280
+        }
+      ],
+      "elapsed": 25.746
+    },
+    {
+      "focus": "CANVAS",
+      "status": "답변을 입력한 뒤 완료를 누르세요.",
+      "text": "답변 중\n1초\n\n답변을 입력한 뒤 완료를 누르세요.\n\n1 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n내 답변\n\n답변 완료\n질문 다시 듣기\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 0.768489,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 40.445
+    },
+    {
+      "focus": "CANVAS",
+      "status": "답변을 입력한 뒤 완료를 누르세요.",
+      "text": "답변 중\n15초\n\n답변을 입력한 뒤 완료를 누르세요.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n내 답변\n\n답변 완료\n질문 다시 듣기\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 6,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-question-tail-720p.mp4",
+          "time": 0.778884,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 57
+    },
+    {
+      "focus": "CANVAS",
+      "status": "답변을 입력한 뒤 완료를 누르세요.",
+      "text": "답변 중\n9초\n\n답변을 입력한 뒤 완료를 누르세요.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n내 답변\n\n답변 완료\n질문 다시 듣기\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 6,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-question-tail-720p.mp4",
+          "time": 6,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.824092,
+          "width": 1280
+        }
+      ],
+      "elapsed": 62.293
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.531555,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.261
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.638402,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.367
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.716599,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.446
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.807055,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.536
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.887813,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.617
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": false,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 2.979821,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.71
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.803
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 71.898
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.002
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.101
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.197
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.319
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.41
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접관이 답변을 검토하고 있습니다.",
+      "text": "답변 검토\n\n면접관이 답변을 검토하고 있습니다.\n\n2 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n\n첫 답변에서 확인한 내용: “아직 돌봄 실무 경험은 없습니다.”\n\n일시 정지\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.506
+    },
+    {
+      "focus": "CANVAS",
+      "status": "면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.",
+      "text": "면접 종료\n\n면접을 마쳤습니다.\n\n두 질문에 대한 답변을 마쳤습니다.\n\n면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.\n\n2 QUESTIONS\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n처음부터 다시\n방 둘러보기\nQuest에서 VR 입장\n\n좌우 버튼으로 30도씩 둘러보세요. 정면으로 바로 돌아올 수 있습니다.\n\n이번 후속 질문\n\n답변: “아직 돌봄 실무 경험은 없습니다.”\n본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.\n후속 질문: “현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.”\n\n이번 테스트에서는 실제 경험·준비 계획을 구분해 녹화된 두 후속 질문 중 하나를 고릅니다. 추가 질문 영상 제작은 보류 중입니다. 채용 점수나 합격 여부를 판단하지 않습니다.\n\n화면 연습으로 돌아가기\n\n좌우 30°씩 · Home 정면 · Esc 닫기\n\n왼쪽 30°\n정면\n오른쪽 30°\n드래그 켜기",
+      "videos": [
+        {
+          "duration": 3,
+          "opacity": "1",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-plan-tail-720p.mp4",
+          "time": 3,
+          "width": 1280
+        },
+        {
+          "duration": 3,
+          "opacity": "0",
+          "paused": true,
+          "ready": 4,
+          "src": "strict-listen-experience-tail-720p.mp4",
+          "time": 0.75,
+          "width": 1280
+        }
+      ],
+      "elapsed": 72.609
+    }
+  ]
+}

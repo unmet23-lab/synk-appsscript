@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-11T22:12:41.939Z",
+  "package": "@huggingface/transformers",
+  "version": "3.8.1",
+  "npmTarball": "https://registry.npmjs.org/@huggingface/transformers/-/transformers-3.8.1.tgz",
+  "repository": "https://github.com/huggingface/transformers.js",
+  "onnxRuntime": {
+    "version": "1.22.0-dev.20250409-89f8206ba4",
+    "commit": "89f8206ba4f1c22c39e0297fb55272e8ce8cd7d0"
+  },
+  "files": [
+    {
+      "file": "transformers.min.js",
+      "bytes": 888173,
+      "sha256": "aa5002b70e789798da263f5f99c62bd3e8fcd0c119258a493c40c180648365fa",
+      "source": "@huggingface/transformers@3.8.1/dist/transformers.min.js",
+      "modified": false
+    },
+    {
+      "file": "ort-wasm-simd-threaded.jsep.mjs",
+      "bytes": 44484,
+      "sha256": "08fb86ec433c78bfb032c5d84a68b8e8e5a8d81268fa39e24314179a5767a5b9",
+      "source": "@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.mjs",
+      "modified": false
+    },
+    {
+      "file": "ort-wasm-simd-threaded.jsep.wasm",
+      "bytes": 21596019,
+      "sha256": "c46655e8a94afc45338d4cb2b840475f88e5012d524509916e505079c00bfa39",
+      "source": "@huggingface/transformers@3.8.1/dist/ort-wasm-simd-threaded.jsep.wasm",
+      "modified": false
+    },
+    {
+      "file": "LICENSE-TRANSFORMERS.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "license": "Apache-2.0",
+      "source": "https://raw.githubusercontent.com/huggingface/transformers.js/3.8.1/LICENSE",
+      "modified": false
+    },
+    {
+      "file": "LICENSE-ONNXRUNTIME.txt",
+      "bytes": 1073,
+      "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c",
+      "license": "MIT",
+      "source": "https://raw.githubusercontent.com/microsoft/onnxruntime/89f8206ba4f1c22c39e0297fb55272e8ce8cd7d0/LICENSE",
+      "modified": false
+    },
+    {
+      "file": "README.md",
+      "bytes": 1094,
+      "sha256": "b0f63e42e38f7010b05eb8967a444020dd9458163ecb3420c65c23aa9648e0aa",
+      "source": "SYNK packaging notes"
+    }
+  ],
+  "allFilesBelow100MB": true,
+  "productionApplicationVerified": false
+}

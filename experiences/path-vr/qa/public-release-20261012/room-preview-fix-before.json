@@ -1,0 +1,27 @@
+{
+  "observedAt": "2026-10-11T20:32:17.519Z",
+  "scenario": "Public unchanged build: complete two questions without opening room; then first room preview shows flat gray front while decoded video is paused.",
+  "state": {
+    "phase": "면접 종료",
+    "quality": "4k",
+    "videos": [
+      {
+        "height": 2160,
+        "paused": true,
+        "readyState": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+        "time": 0.75,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "paused": true,
+        "readyState": 4,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 3,
+        "width": 3840
+      }
+    ]
+  },
+  "console": []
+}

@@ -1,0 +1,17 @@
+Create one continuous 10-second photorealistic image-to-video shot, 16:9, 480p, with native synchronized audio enabled. Use the supplied room-reference-nanobanana.jpg as the exact visual reference. This is the seated applicant's fixed point of view in a Korean care-facility job interview.
+
+Preserve the same three faces, hairstyles, ages, clothes, hands, seating positions, desk, papers, pens, water glasses, blinds, plants, door, background, daylight direction, exposure and color throughout. Center: the man in a navy suit, white shirt and dark patterned tie. Left: the woman in a taupe blazer and ivory blouse. Right: the man with glasses, a dark jacket and a pale blue-gray shirt. Keep all three people visible in the original composition for the entire shot.
+
+0.0-0.8 seconds: All three sit naturally with their mouths closed, looking attentively toward the applicant at the camera. Subtle breathing and unsynchronized natural blinks only.
+
+0.8-4.5 seconds: Only the CENTER man speaks, with a calm, clear, natural Korean male voice and accurately synchronized lips. He looks directly toward the applicant and says exactly this single sentence once:
+"요양보호사로 지원한 이유를 말씀해 주세요."
+Do not add a greeting, a second question, a translation or any other words. Finish the entire sentence by approximately 4.5 seconds without rushing. The woman on the left makes one very small, restrained nod near the end of his question. Both side interviewers keep their mouths closed.
+
+4.5-5.0 seconds: The center man finishes speaking and gently settles into a closed-mouth, attentive listening expression. His hands stay close to their original positions. The change from speaking to listening is continuous, with no cut or frozen frame.
+
+5.0-10.0 seconds: All three silently listen to the unseen applicant. The center man and the woman keep attentive, neutral eye contact with the applicant. Around 6.0-7.0 seconds, the man on the right briefly looks down and makes one small note with his existing pen, then returns his gaze to the applicant by 8.0 seconds. Keep the writing gesture minimal and anatomically natural. By 9.2 seconds, all three are looking toward the applicant in a calm neutral pose close to the opening pose, mouths closed, maintaining subtle natural breathing through the final frame. Nobody reacts as if they have heard or judged a specific answer.
+
+The camera is completely locked to the reference image: no zoom, pan, tilt, dolly, shake, reframing, cuts or focus pull. Preserve realistic skin texture, eye details, fabric and stable lighting. No exaggerated gestures, broad smiles, repeated nodding, synchronized blinking, identity changes, face morphing, hand distortions or moving props. No additional people or visible applicant. No subtitles, generated text, graphics or logos.
+
+Audio contains only the center man's exact Korean question and extremely quiet, consistent room tone. No speech from either side interviewer, no applicant voice, no narrator, no repeated or overlapping dialogue, no music, no coughs and no added sound effects. From 5.0 seconds onward there is no speech.

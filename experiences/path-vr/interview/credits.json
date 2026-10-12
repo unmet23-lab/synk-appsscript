@@ -1,0 +1,422 @@
+{
+  "title": "SYNK PATH · 첫 면접실",
+  "updated": "2026-10-12",
+  "scope": "Quest-targeted seated interview combining four Seedance 720p clips with local 4K enlargement, nine long-edge-3840 static room assets, local speech recognition and fixed room photo surfaces. Original 480p pilot, 3D prototype and comparison samples retained separately. No real company scan; revised headset comfort, performance and human listening validation pending.",
+  "questRoom": {
+    "entrypoint": "/interview/film/rehearsal.html",
+    "interviewFootage": "film/strict-manifest.json",
+    "interviewerAudio": "Native generated audio in the new 720p Seedance 2.5 clips, copied into the local 4K enlargements; not the legacy Supertonic voices below. Listening playback is muted.",
+    "surfaces": "Nine long-edge-3840 JPEG assets retain the existing room registration. The pre-start poster is frame zero of the actual default 4K question video and uses the video background blend; the registration reference remains separate. Left/right wall photographs use fixed physical wall UVs; ceiling uses the wide front plate with fixed plane UVs. Floor and desk use dedicated crops from their original plates; rear wall uses an orthographic elevation. The 1.7-metre-deep tabletop and fragment-level video reprojection are retained. Assets are Lanczos enlargements, not native-4K photography or AI detail reconstruction.",
+    "surfaceProduction": {
+      "record": "production/room-surfaces-4k.json",
+      "generator": "../../../tools/build-path-room-surfaces.mjs",
+      "generatedOn": "2026-10-12",
+      "assets": 9,
+      "files": [
+        {
+          "id": "room-reference",
+          "path": "../assets/interview/film/room-reference-4k.jpg",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 694928,
+          "sha256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d"
+        },
+        {
+          "id": "front-room-extension",
+          "path": "../assets/interview/room/front-room-extension-4k.jpg",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 653669,
+          "sha256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf"
+        },
+        {
+          "id": "front-room-wide",
+          "path": "../assets/interview/room/front-room-wide-4k.jpg",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 698348,
+          "sha256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206"
+        },
+        {
+          "id": "left-wall",
+          "path": "../assets/interview/room/left-wall-photo-4k.jpg",
+          "width": 3840,
+          "height": 1558,
+          "bytes": 784788,
+          "sha256": "bb018be868fcf3c600ffd72f866ac3d63acf95031dd34985b083b39cefa3ce4f"
+        },
+        {
+          "id": "right-wall",
+          "path": "../assets/interview/room/right-wall-photo-4k.jpg",
+          "width": 3840,
+          "height": 1554,
+          "bytes": 541716,
+          "sha256": "b6452e42c7ba2ca9beb829b53a01ebbf2c8f9ee3d07211633607c42b9b88d703"
+        },
+        {
+          "id": "back-wall",
+          "path": "../assets/interview/room/back-wall-elevation-4k.jpg",
+          "width": 3840,
+          "height": 2274,
+          "bytes": 724484,
+          "sha256": "22bf009f9f600f1ef37c32a7d8761eefd924eb54ceedfec149fc46daccf6afa8"
+        },
+        {
+          "id": "room-poster",
+          "path": "../assets/interview/film/room-poster-4k.jpg",
+          "width": 3840,
+          "height": 2160,
+          "bytes": 552234,
+          "sha256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc"
+        },
+        {
+          "id": "carpet",
+          "path": "../assets/interview/room/carpet-4k.jpg",
+          "width": 3840,
+          "height": 392,
+          "bytes": 161270,
+          "sha256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a"
+        },
+        {
+          "id": "desk",
+          "path": "../assets/interview/room/desk-4k.jpg",
+          "width": 3840,
+          "height": 568,
+          "bytes": 45160,
+          "sha256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a"
+        }
+      ],
+      "longEdgePixels": 3840,
+      "method": "Existing pixels only: optional UV crop or video first-frame extraction, local FFmpeg Lanczos enlargement and JPEG encoding.",
+      "sourceFilesPreserved": true,
+      "aiSuperResolution": false,
+      "native4kPhotography": false,
+      "newImageGenerations": 0,
+      "paidCalls": 0,
+      "extraProviderCredits": 0,
+      "rightsScope": "Derived from the retained generated room photographs and Seedance footage; not covered by legacy CC0 or MIT asset licenses. Individual source/output paths, dimensions and hashes are in the production record."
+    },
+    "comfortRevision": {
+      "userReport": "The user reported severe discomfort in both desktop look-around and headset use.",
+      "desktop": "Default 30-degree button and arrow-key turns, front reset, opt-in low-sensitivity drag with pitch limits and no inertia, inside a stable outer frame.",
+      "headset": "Initial room anchor uses the first valid viewer pose at the centre of both eyes. Physical head tracking stays 1:1. Static textures are uploaded in stages before entry.",
+      "verification": "../qa/interview-film/quest-surface-comfort-verification.json",
+      "reference": "https://developers.meta.com/vr/design/locomotion-user-preferences/",
+      "referenceCheckedOn": "2026-10-12",
+      "limits": "Code and desktop checks do not establish headset frame rate, improved motion comfort, presence or visual seamlessness. Those require renewed physical-headset and user checks."
+    },
+    "videoProduction": {
+      "provider": "Higgsfield MCP",
+      "model": "Seedance 2.5",
+      "generatedOn": "2026-10-12",
+      "fictionalPeople": true,
+      "nativeResolution": "1280x720",
+      "frameRate": "24/1",
+      "durationSecondsRange": [
+        10.041667,
+        10.08
+      ],
+      "defaultPlayback": "4k",
+      "optionalPlayback": "720p",
+      "manifest": "film/strict-manifest.json",
+      "productionRecord": "production/strict-interview-hd.json",
+      "legacy480pManifest": "production/strict-manifest-480p.json",
+      "authorizedBudgetCredits": 280,
+      "submittedJobs": 4,
+      "quotedCreditsPerJob": 70,
+      "costScope": "Four completed jobs submitted once at the approved 70-credit quote; shared-account balance changes are not attributed as the job cost.",
+      "newSubscriptionsOrTopups": 0,
+      "upscale": {
+        "method": "Local FFmpeg Lanczos 1280x720 to 3840x2160",
+        "aiSuperResolution": false,
+        "native4k": false,
+        "extraProviderCredits": 0
+      },
+      "rightsScope": "Provider-generated fictional people and native audio; not covered by the legacy 3D assets MIT or CC0 licenses. Media paths, hashes and both quality variants are in the current manifest."
+    },
+    "frontRoomExtensions": {
+      "tool": "Built-in image_gen; exact backend model not exposed",
+      "generatedOn": "2026-10-12",
+      "purpose": "Photographic set extension, not new interviewer footage or 360/stereo capture",
+      "files": [
+        {
+          "path": "../assets/interview/room/front-room-extension.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1904510,
+          "sha256": "29c5b32965990779444db6c084e003e503d3b8aabd9c415e6e7f54584986e8ac"
+        },
+        {
+          "path": "../assets/interview/room/front-room-wide.png",
+          "width": 1672,
+          "height": 941,
+          "bytes": 1935054,
+          "sha256": "df76a59c05c6bbe7883a5774eb882370805052ee10f4e169b49c46c7d16fa75d"
+        }
+      ],
+      "rightsScope": "Generated assets; not covered by the Poly Haven CC0 or Rocketbox MIT asset licenses."
+    },
+    "rearWallPhoto": {
+      "path": "../assets/interview/room/back-wall-photo.png",
+      "tool": "Built-in image_gen",
+      "exactModel": "Not exposed by the tool; no claim of Nano Banana or a specific GPT Image version.",
+      "generatedOn": "2026-10-12",
+      "width": 1774,
+      "height": 887,
+      "bytes": 2401257,
+      "sha256": "86278c99a38a6d7d7df4ca3dfa35d7b4d9d71d1ad8912170a2e8ecf1fe6b2d87",
+      "usage": "Earlier rear-wall plate retained for history and its carpet crop. Current rear wall uses backWallElevation below; neither asset is a panoramic or stereo capture.",
+      "rightsScope": "Generated asset; not covered by the Poly Haven CC0 or Rocketbox MIT asset licenses."
+    },
+    "limits": "People remain mono video generated at 720p and optionally enlarged to 4K, with no translated-view parallax or synthesized side view. Two prepared follow-ups are selected by keyword rules, not unrestricted AI conversation or hiring assessment. Room scenery is a seated prototype, not a reconstruction of a real building. Headset presence, performance, real microphone recognition and full human listening are unverified.",
+    "newPaidVideoGenerations": 4,
+    "sideWallPhotographs": {
+      "tool": "Built-in image_gen; exact model not exposed",
+      "generatedOn": "2026-10-12",
+      "purpose": "Orthographic elevations mapped to fixed wall coordinates; not a photographed or scanned real room.",
+      "rightsScope": "Generated assets; not covered by the Poly Haven CC0 or Rocketbox MIT licenses.",
+      "files": [
+        {
+          "path": "../assets/interview/room/left-wall-photo.png",
+          "width": 1969,
+          "height": 799,
+          "bytes": 1991122,
+          "sha256": "24133bc43b53a8d3497731b13581ee4a3e7c28b255db28d8bbfd83b1c79e915e"
+        },
+        {
+          "path": "../assets/interview/room/right-wall-photo.png",
+          "width": 1971,
+          "height": 798,
+          "bytes": 2339978,
+          "sha256": "9817fce57daa4228e023f772a99fd1be4b3133c301c73367ae0d32f00e4c44ce"
+        }
+      ]
+    },
+    "backWallElevation": {
+      "path": "../assets/interview/room/back-wall-elevation.png",
+      "tool": "Built-in image_gen; exact model not exposed",
+      "generatedOn": "2026-10-12",
+      "purpose": "Orthographic rear wall surface; removes duplicated perspective windows and furniture at room corners",
+      "width": 1629,
+      "height": 965,
+      "bytes": 2377155,
+      "sha256": "6548a5068e005a0ee9b799ccd941b0c258036c30076cb4e193035998310fe7d0",
+      "rightsScope": "Generated asset; not part of the CC0 or MIT model licenses."
+    },
+    "listeningVariation": {
+      "record": "production/listening-tail-variants.json",
+      "method": "Local FFmpeg silent cuts from existing Seedance 2.5 720p source performances; 4K delivery is Lanczos enlargement of each 720p derivative.",
+      "credits": 0,
+      "originalFacesAndCameraPreserved": true,
+      "files": [
+        {
+          "path": "../assets/interview/film/strict-listen-question-tail-720p.mp4",
+          "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7"
+        },
+        {
+          "path": "../assets/interview/film/strict-listen-question-tail-4k.mp4",
+          "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e"
+        },
+        {
+          "path": "../assets/interview/film/strict-listen-plan-tail-720p.mp4",
+          "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc"
+        },
+        {
+          "path": "../assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e"
+        },
+        {
+          "path": "../assets/interview/film/strict-listen-experience-tail-720p.mp4",
+          "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18"
+        },
+        {
+          "path": "../assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456"
+        }
+      ]
+    }
+  },
+  "filmReference": {
+    "title": "Three fictional interviewers in an original office",
+    "path": "../assets/interview/film/room-reference.png",
+    "tool": "Built-in imagegen; exact backend model and quality setting not exposed",
+    "generatedOn": "2026-10-11",
+    "width": 1672,
+    "height": 941,
+    "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+    "status": "AI still reference shared by the original comparison videos and the 480p/720p interview performances. No VR180, stereo or Quest validation."
+  },
+  "actors": {
+    "name": "Microsoft Rocketbox",
+    "source": "https://github.com/microsoft/Microsoft-Rocketbox",
+    "license": "MIT",
+    "manifest": "../assets/interview/actors/manifest.json",
+    "licenseFile": "../assets/interview/actors/LICENSE-Microsoft-Rocketbox.txt"
+  },
+  "room": {
+    "name": "Poly Haven wood, plaster and indoor HDR illumination",
+    "license": "CC0-1.0",
+    "source": "https://polyhaven.com/license",
+    "manifest": "../assets/interview/room/manifest.json"
+  },
+  "speechRecognition": {
+    "name": "vosk-browser 0.0.8 / vosk-model-small-ko-0.22",
+    "license": "Apache-2.0",
+    "source": "https://alphacephei.com/vosk/models",
+    "licenseFile": "../vendor/vosk/LICENSE.txt",
+    "noticeFile": "../vendor/vosk/NOTICE.txt",
+    "processing": "Local AudioWorklet and WASM. Public model cached in IndexedDB; microphone audio and answers are not persisted or uploaded."
+  },
+  "interviewerVoices": {
+    "scope": "Legacy realtime 3D prototype at /interview/ only.",
+    "name": "Supertonic 3 / M1, F1, M2",
+    "machineGenerated": true,
+    "source": "https://huggingface.co/supertone-oss-archive/supertonic-3/tree/aafc6e32416a594460b32413efc49d7fe4ce6d46",
+    "modelLicense": "OpenRAIL-M",
+    "licenseFile": "../assets/interview/audio/MODEL-LICENSE.txt",
+    "codeLicenseFile": "../assets/interview/audio/INFERENCE-CODE-LICENSE.txt",
+    "manifest": "../assets/interview/audio/manifest.json",
+    "paidApiCalls": 0,
+    "humanListeningAndHeadsetReview": "Pending"
+  },
+  "engine": {
+    "name": "Three.js r180",
+    "source": "https://github.com/mrdoob/three.js/tree/r180",
+    "license": "MIT",
+    "licenseFile": "../vendor/THREE-LICENSE.txt",
+    "modifications": "Examples module import paths localized for GLTFLoader, HDRLoader and BufferGeometryUtils."
+  },
+  "fonts": [
+    {
+      "name": "SUIT",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "../assets/licenses/SUIT-OFL.txt"
+    },
+    {
+      "name": "Inter Tight",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "../assets/licenses/InterTight-OFL.txt"
+    },
+    {
+      "name": "DM Mono",
+      "license": "SIL Open Font License 1.1",
+      "licenseFile": "../assets/licenses/DMMono-OFL.txt"
+    }
+  ],
+  "brand": "Approved SYNK PATH logo reused from the existing PATH assets.",
+  "filmSamples": {
+    "provider": "Higgsfield MCP",
+    "generatedOn": "2026-10-11",
+    "fictionalPeople": true,
+    "nativeGeneratedAudio": true,
+    "request": "Same reference and prompt, 480p 16:9 10 seconds, one job per model",
+    "samples": [
+      {
+        "model": "Seedance 2.5",
+        "path": "../assets/interview/film/seedance-sample.mp4",
+        "sha256": "96496580955345a07dc908dfa358b18ed3430a82944b157b18288db2266c38a4",
+        "bytes": 377052,
+        "width": 854,
+        "height": 480,
+        "durationSeconds": 10.041667,
+        "videoCodec": "h264",
+        "frameRate": "24/1",
+        "audioCodec": "aac",
+        "audioChannels": 2
+      },
+      {
+        "model": "Wan 3.0",
+        "path": "../assets/interview/film/wan-sample.mp4",
+        "sha256": "cbf9d7a585e0a26a3d0528517d2939f9c3b36e71b479354f748fa68d411a8eed",
+        "bytes": 3502744,
+        "width": 854,
+        "height": 480,
+        "durationSeconds": 10.030998,
+        "videoCodec": "h264",
+        "frameRate": "30/1",
+        "audioCodec": "aac",
+        "audioChannels": 2
+      },
+      {
+        "model": "Seedance 2.5",
+        "path": "../assets/interview/film/seedance-nanobanana-sample.mp4",
+        "reference": "nanoBananaReference",
+        "sha256": "cdb07fd4a189fc925179515b98a3876f4a71cc00b4a1ea09c7467a4b29ecd4b0",
+        "width": 854,
+        "height": 480,
+        "durationSeconds": 10.08,
+        "bytes": 443526,
+        "fps": "24/1",
+        "videoCodec": "h264",
+        "audioCodec": "aac",
+        "audioChannels": 2
+      }
+    ],
+    "status": "Original comparison samples, not approved production clips. No looping, question branching, stereo or headset verification. Provider-generated assets are not covered by the 3D assets MIT or CC0 licenses."
+  },
+  "nanoBananaReference": {
+    "path": "../assets/interview/film/room-reference-nanobanana.jpg",
+    "provider": "Gemini Apps image generation, Nano Banana family per official documentation",
+    "exactVersion": "not exposed in Gemini automatic-mode UI; not claiming Pro",
+    "width": 1024,
+    "height": 572,
+    "sha256": "234004b504cb9946a5dacd597f8b9e920a301acaa65b28a7823c45fd2a6e4edc",
+    "sourceImage": "filmReference",
+    "generatedOn": "2026-10-11",
+    "retrieval": "downloadMedia from rendered generated image; full-size download event timed out",
+    "fictionalPeople": true,
+    "officialReference": "https://support.google.com/gemini/answer/14286560?hl=en"
+  },
+  "roomMaterialDetails": {
+    "generatedOn": "2026-10-12",
+    "provider": "Built-in imagegen",
+    "model": "Not exposed by tool; no claim of a specific model/version or native 4K generation.",
+    "method": "Photographic material reconstruction with preserved side-wall architecture and a dedicated orthographic ceiling, matched to the existing interview film.",
+    "record": "production/room-detail-generation.json",
+    "native4K": false,
+    "paidApiCalls": 0,
+    "status": "AI-generated photographic detail, normalized to 4K delivery; original people/video preserved; physical-plane mapping; actual Quest verification pending.",
+    "assets": [
+      {
+        "surface": "left",
+        "path": "../assets/interview/room/left-wall-detail-4k.jpg",
+        "width": 3840,
+        "height": 1558,
+        "bytes": 670407,
+        "sha256": "74b84603a95847595cc48a76392cdd86e914c35796d54cafb7589ba82d39d0c6",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step.",
+        "nativeResolution": "1969x799"
+      },
+      {
+        "surface": "right",
+        "path": "../assets/interview/room/right-wall-detail-4k.jpg",
+        "width": 3840,
+        "height": 1558,
+        "bytes": 586123,
+        "sha256": "d51e98e5ad83ab9bf9df38230b0291b7697d76247c1aba2b29add213834763ed",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step.",
+        "nativeResolution": "1969x799"
+      },
+      {
+        "surface": "back",
+        "path": "../assets/interview/room/back-wall-detail-4k.jpg",
+        "width": 3840,
+        "height": 2278,
+        "bytes": 930644,
+        "sha256": "259bf23ce541e3f76f2f20132c1be2015e77b20e1a5788cd0a49937c9c8a5fc1",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step.",
+        "nativeResolution": "1629x966"
+      },
+      {
+        "surface": "ceiling",
+        "path": "../assets/interview/room/ceiling-detail-4k.jpg",
+        "width": 2630,
+        "height": 3840,
+        "bytes": 943652,
+        "sha256": "70f7150290dbafea665fa82846874fbd8c7d54397778cb0f560859d40b9a18f2",
+        "process": "FFmpeg Lanczos format/resolution normalization after material generation; no additional detail generation in this step.",
+        "nativeResolution": "1037x1517"
+      }
+    ]
+  }
+}

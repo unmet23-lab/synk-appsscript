@@ -1,0 +1,99 @@
+{
+  "ax": "Browser tab: 16, Title: \"SYNK PATH · Quest 면접실\", URL: \"http://127.0.0.1:52672/interview/film/rehearsal.html\".\nThe following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.\nRemoved element IDs: 67-69, 82-83, 94\n+\t\t\t94 text 애매한 부분 확인\n+\t\t95 text 마이크가 꺼졌습니다. 아래 부분만 확인해 주세요. 확인 시간은 답변 시간에 포함되지 않습니다.\n+\t\t96 text 1 / 2\n+\t\t\t97 text 본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\n+\t\t\t98 text 확인할 부분\n+\t\t99 text {\n  \"synthetic\": true,\n  \"physicalMicrophoneUsed\": false,\n  \"fixture\": \"Microsoft Heami Desktop; interview-ko.wav; not user audio\",\n  \"total\": 2,\n  \"live\": 0,\n  \"ended\": 2,\n  \"starts\": 2,\n  \"stops\": 2,\n  \"lastStatus\": \"ready\",\n  \"phaseHistory\": [\n    {\n      \"phase\": \"면접 시작 전\",\n      \"at\": 270,\n      \"caption\": \"\",\n      \"note\": \"이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\"\n    },\n    {\n      \"phase\": \"영상 준비\",\n      \"at\": 169670,\n      \"caption\": \"\",\n      \"note\": \"이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\"\n    },\n    {\n      \"phase\": \"첫 번째 질문\",\n      \"at\": 176367,\n      \"caption\": \"요양보호사로 지원한 이유를 말씀해 주세요.\",\n      \"note\": \"이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\"\n    },\n    {\n      \"phase\": \"답변 중\",\n      \"at\": 180513,\n      \"caption\": \"\",\n      \"note\": \"이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\"\n    },\n    {\n      \"phase\": \"애매한 부분 확인\",\n      \"at\": 199869,\n      \"caption\": \"\",\n      \"note\": \"본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다.\"\n    }\n  ],\n  \"frameSummary\": {\n    \"frames\": 12000,\n    \"over50\": 103,\n    \"max\": 499.8000000000029\n  },\n  \"videos\": [\n    {\n      \"width\": 3840,\n      \"time\": 0,\n      \"paused\": true,\n      \"quality\": {}\n    },\n    {\n      \"width\": 3840,\n      \"time\": 0.97501,\n      \"paused\": false,\n      \"quality\": {}\n    }\n  ],\n  \"sessions\": [\n    {\n      \"id\": 1,\n      \"streamId\": \"494c5ba8-ca34-4848-8915-1818de21aa47\",\n      \"trackId\": \"94c9dfe8-c231-4613-92d5-fc78d8ac509c\",\n      \"mode\": \"once\",\n      \"fixture\": \"none-noisy\",\n      \"readyState\": \"ended\",\n      \"startedAtMs\": 126393,\n      \"stoppedAtMs\": 132963,\n      \"fixtureSeconds\": 2.825,\n      \"leadInSeconds\": 1.5,\n      \"audioContextTime\": 6.736,\n      \"pcmSeconds\": 2.825,\n      \"fixtureEnded\": true\n    },\n    {\n      \"id\": 2,\n      \"streamId\": \"be6c7653-f0b9-4efd-a5a9-7d6352572ca4\",\n      \"trackId\": \"69db0ea0-7464-4b5e-95d3-0f5c2ae6e5c9\",\n      \"mode\": \"once\",\n      \"fixture\": \"present-clean\",\n      \"readyState\": \"ended\",\n      \"startedAtMs\": 180562,\n      \"stoppedAtMs\": 199770,\n      \"fixtureSeconds\": 2.765,\n      \"leadInSeconds\": 1.5,\n      \"audioContextTime\": 19.28,\n      \"pcmSeconds\": 2.765,\n      \"fixtureEnded\": true\n    }\n  ]\n}\nThe focused UI element is 91 button 방 둘러보기, ID: room-preview",
+  "facts": {
+    "synthetic": true,
+    "physicalMicrophoneUsed": false,
+    "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+    "total": 2,
+    "live": 0,
+    "ended": 2,
+    "starts": 2,
+    "stops": 2,
+    "lastStatus": "ready",
+    "phaseHistory": [
+      {
+        "phase": "면접 시작 전",
+        "at": 270,
+        "caption": "",
+        "note": "이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다."
+      },
+      {
+        "phase": "영상 준비",
+        "at": 169670,
+        "caption": "",
+        "note": "이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다."
+      },
+      {
+        "phase": "첫 번째 질문",
+        "at": 176367,
+        "caption": "요양보호사로 지원한 이유를 말씀해 주세요.",
+        "note": "이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다."
+      },
+      {
+        "phase": "답변 중",
+        "at": 180513,
+        "caption": "",
+        "note": "이 부분을 정확히 들었는지 확인해 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다."
+      },
+      {
+        "phase": "애매한 부분 확인",
+        "at": 199869,
+        "caption": "",
+        "note": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요. 맞으면 확인하고, 다르면 고치거나 이 부분만 다시 말해 주세요. 나머지 답변은 유지됩니다."
+      }
+    ],
+    "frameSummary": {
+      "frames": 12000,
+      "over50": 104,
+      "max": 499.8000000000029
+    },
+    "videos": [
+      {
+        "width": 3840,
+        "time": 0.5,
+        "paused": true,
+        "quality": {}
+      },
+      {
+        "width": 3840,
+        "time": 1.220734,
+        "paused": false,
+        "quality": {}
+      }
+    ],
+    "sessions": [
+      {
+        "id": 1,
+        "streamId": "494c5ba8-ca34-4848-8915-1818de21aa47",
+        "trackId": "94c9dfe8-c231-4613-92d5-fc78d8ac509c",
+        "mode": "once",
+        "fixture": "none-noisy",
+        "readyState": "ended",
+        "startedAtMs": 126393,
+        "stoppedAtMs": 132963,
+        "fixtureSeconds": 2.825,
+        "leadInSeconds": 1.5,
+        "audioContextTime": 6.736,
+        "pcmSeconds": 2.825,
+        "fixtureEnded": true
+      },
+      {
+        "id": 2,
+        "streamId": "be6c7653-f0b9-4efd-a5a9-7d6352572ca4",
+        "trackId": "69db0ea0-7464-4b5e-95d3-0f5c2ae6e5c9",
+        "mode": "once",
+        "fixture": "present-clean",
+        "readyState": "ended",
+        "startedAtMs": 180562,
+        "stoppedAtMs": 199770,
+        "fixtureSeconds": 2.765,
+        "leadInSeconds": 1.5,
+        "audioContextTime": 19.28,
+        "pcmSeconds": 2.765,
+        "fixtureEnded": true
+      }
+    ]
+  },
+  "phase": "애매한 부분 확인",
+  "span": "경험이 있습니다."
+}

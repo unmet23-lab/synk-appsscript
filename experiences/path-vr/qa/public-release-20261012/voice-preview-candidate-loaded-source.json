@@ -1,0 +1,14 @@
+[
+  {
+    "url": "http://127.0.0.1:52670/interview/film/rehearsal.mjs",
+    "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3"
+  },
+  {
+    "url": "http://127.0.0.1:52670/interview/film/strict-vr.mjs",
+    "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde"
+  },
+  {
+    "url": "http://127.0.0.1:52670/interview/film-player.mjs",
+    "sha256": "bd8dacf565bc7617af08de819508c65693f2b52bd3fef4f0ce43138bcf7e0d06"
+  }
+]

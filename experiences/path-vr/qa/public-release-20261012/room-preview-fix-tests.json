@@ -1,0 +1,9 @@
+{
+  "checkedAt": "2026-10-11T20:33:11.320Z",
+  "command": "node --test experiences/path-vr/tests/interview-room-space.test.mjs experiences/path-vr/tests/interview-strict-vr.test.mjs",
+  "passed": 39,
+  "failed": 0,
+  "newRegressions": 2,
+  "regressionsFailedBeforeFix": true,
+  "notes": "Pause/completion texture first upload, no per-frame repeated upload, complete after quality-clear poster, unchanged error-state behavior and comfort controls."
+}

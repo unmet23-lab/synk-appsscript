@@ -1,0 +1,20 @@
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.mjs" b/experiences/path-vr/interview/film/rehearsal.mjs
+index 64c47f6e3..6d4bb3cb2 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film\\rehearsal.mjs"
++++ b/experiences/path-vr/interview/film/rehearsal.mjs
+@@ -357,7 +357,14 @@ for (const input of document.querySelectorAll('input[name="mode"]')) input.addEv
+ ui.answer.addEventListener('keydown', (event) => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); void action('submit'); } });
+ ui.answer.addEventListener('input', render);
+ document.addEventListener('visibilitychange', () => { if (document.hidden && !vr.active && !vr.pending) { cancelMicrophoneCheck(); if (preparingVoice) { epoch++; void voice?.stop().catch(() => {}); } void pause(); } });
+-document.addEventListener('keydown', (event) => { if (event.key === 'Escape') { cancelMicrophoneCheck(); void pause(); } });
++document.addEventListener('keydown', (event) => {
++  if (event.key !== 'Escape' || event.repeat) return;
++  cancelMicrophoneCheck();
++  // This document handler runs before the preview's window listener. Closing
++  // the room keeps the current answer running; holding Esc must not pause it.
++  if (vr.previewing) { event.preventDefault(); vr.closePreview(); return; }
++  void pause();
++});
+ const timer = setInterval(() => {
+   const now = performance.now(), delta = now - lastTick; lastTick = now;
+   const snapshot = session.snapshot(), activeClip = film?.current;

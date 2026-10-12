@@ -1,0 +1,96 @@
+{
+  "verifiedOn": "2026-10-12",
+  "entrypoint": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+  "status": "Local 4K room assets and comfort controls applied; desktop browser verified; changed headset behavior and symptom improvement not hardware-tested",
+  "userFeedback": "Both PC dragging and headset viewing caused discomfort. Do not infer current device ownership from earlier no-device preparation feedback.",
+  "assets": {
+    "record": "../../interview/production/room-surfaces-4k.json",
+    "count": 9,
+    "longEdgePixels": 3840,
+    "jpegBytes": 4856597,
+    "poster": "Actual strict-question-4k.mp4 frame at 0 seconds, 3840x2160",
+    "room": "Original registered reference, front extension, wide/ceiling photograph, left windows, right wall, rear elevation, dedicated desk/carpet crops",
+    "method": "Local FFmpeg Lanczos enlargement; existing pixels and scene geometry preserved",
+    "native4k": false,
+    "aiSuperResolution": false,
+    "paidCalls": 0,
+    "limits": "Upscaling does not reconstruct missing detail. Ceiling and small wood/carpet crops remain limited by source resolution. 4K textures do not prove equal perceived sharpness or invisible joins.",
+    "originalInterviewerClipsChanged": false,
+    "serverAndPackageFilesChecked": 9
+  },
+  "runtime": {
+    "posterAndLiveBackgroundShaderShared": true,
+    "staticImagesUseSrgbMipmaps": true,
+    "maxAnisotropy": 4,
+    "preEntryTextureUpload": "One static upload per animation frame, then shader preparation",
+    "fixedPhysicalSideWallUvsPreserved": true,
+    "previewClosedVideoTexturesReleased": true,
+    "videoDecoderCount": 2,
+    "pc": {
+      "defaultTurnDegrees": 30,
+      "freeDragOptIn": true,
+      "dragRadiansPerPixel": 0.0009,
+      "pitchLimitDegrees": 30,
+      "inertia": false,
+      "verticalFovDegrees": 60,
+      "stableOutsideBorder": true,
+      "keyboard": "Left/Right, Home, Escape",
+      "aspectUsesContentBox": true
+    },
+    "xr": {
+      "initialAnchor": "First valid XRViewerPose center transform, not stale or single-eye camera pose",
+      "headTracking": "Unfiltered physical headset pose; no smoothing, gain or artificial rotation",
+      "worldHiddenUntilValidPose": true,
+      "foveation": "Existing Three/WebXR default preserved; no unverified refresh-rate override"
+    }
+  },
+  "browser": {
+    "method": "CUA in-app browser, 1280x720, real controls and DOM video dimensions",
+    "posterNaturalSize": [3840, 2160],
+    "questionAndFollowupDecodedSize": [3840, 2160],
+    "questionToExperienceFollowupToComplete": true,
+    "testInput": "Synthetic caregiving work experience followed by a specific responsibility; local text mode",
+    "listeningPenMotionVisible": true,
+    "previewReopenedDuringPlayback": true,
+    "homeAndEscapeVerified": true,
+    "freeDragAndPitchLimitVisuallyChecked": true,
+    "frontSideRearCeilingReviewed": true,
+    "consoleErrorsOrWarningsObserved": 0,
+    "screenshots": [
+      "room-4k-comfort-front.png",
+      "room-4k-comfort-left90.png",
+      "room-4k-comfort-right90.png",
+      "room-4k-comfort-rear.png",
+      "room-4k-comfort-ceiling.png",
+      "room-4k-comfort-playing.png",
+      "room-4k-comfort-complete.png"
+    ]
+  },
+  "tests": {
+    "passed": 82,
+    "failed": 0,
+    "suites": ["interview-room-space", "interview-strict-vr", "interview-film", "interview-rehearsal", "interview-speech-turn", "interview-server-package"],
+    "log": "surface-comfort-tests.txt"
+  },
+  "package": {
+    "directory": ".tmp/path-interview-quest",
+    "files": 116,
+    "totalBytes": 189514010,
+    "checksumsVerified": 115,
+    "filesComparedWithSource": 112,
+    "licenseFiles": 11,
+    "creditReferencesVerified": 13,
+    "deployed": false
+  },
+  "notVerified": [
+    "Changed code in a physical Quest headset, real headset microphone, sustained XR FPS or GPU memory",
+    "User motion-sickness reduction or perceptual comfort",
+    "Continuous human audio listening or invisible video transitions",
+    "Stereoscopic people or large head-translation parallax; the source remains rectilinear mono"
+  ],
+  "designReferences": [
+    "https://developers.meta.com/vr/design/locomotion-user-preferences/",
+    "https://www.w3.org/TR/webxr/#dom-xrframe-getviewerpose"
+  ],
+  "previousVideoEvidence": "quest-hd-verification.json"
+}

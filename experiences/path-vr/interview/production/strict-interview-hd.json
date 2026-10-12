@@ -1,0 +1,168 @@
+{
+  "createdAt": "2026-10-11T17:16:55.058Z",
+  "provider": "Higgsfield MCP",
+  "model": "Seedance 2.5",
+  "reference": "../assets/interview/film/room-reference.png",
+  "authorizedBudgetCredits": 280,
+  "submittedJobs": 4,
+  "quoteCreditsPerClip": 70,
+  "quoteTotalCredits": 280,
+  "additionalSubscriptionsOrTopups": 0,
+  "costScope": "Four jobs submitted once at verified 70-credit quote; no shared-account balance attribution.",
+  "upscale": {
+    "method": "FFmpeg Lanczos 1280x720 to 3840x2160",
+    "aiSuperResolution": false,
+    "native4k": false,
+    "extraProviderCredits": 0
+  },
+  "clips": [
+    {
+      "id": "strict-question",
+      "jobId": "1e39a902-0b3f-4530-b832-53f7ea10e681",
+      "attempts": 1,
+      "submittedAt": "2026-10-11T17:03:20.835273+00:00",
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-0.8: silent serious eye contact. 0.8-4.6: CENTER man alone asks exactly once in a low, measured, formal Korean male voice: \"요양보호사로 지원한 이유를 말씀해 주세요.\" Accurate natural Korean lip sync. Neither side interviewer speaks or nods. 4.6-7.4: a weighted silence while center continues evaluating. At 5.0 right man lowers gaze to existing paper, writes one brief note with his existing pen, and looks back up at 7.4; left woman briefly checks the paper with her eyes only at 6.3 and returns her gaze independently. 7.4-9.2: all quietly return hands and gaze to reference resting pose. 9.2-10: neutral breathing, mouths closed. Quiet consistent office room tone, only the exact specified question, faint natural pen-on-paper sound.",
+      "generation": {
+        "model": "seedance_2_5",
+        "resolution": "720p",
+        "duration": 10,
+        "generate_audio": true
+      },
+      "actual720": {
+        "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+        "bytes": 2801131,
+        "width": 1280,
+        "height": 720,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.08,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      },
+      "actual4k": {
+        "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+        "bytes": 9901952,
+        "width": 3840,
+        "height": 2160,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.08,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      }
+    },
+    {
+      "id": "strict-listening",
+      "jobId": "0509039a-6a98-482f-b793-a72cb4c40e34",
+      "attempts": 1,
+      "submittedAt": "2026-10-11T17:03:23.427794+00:00",
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\nAbsolutely NO SPEECH for the entire 10 seconds. Mouths remain closed. 0.0-0.7: the exact neutral reference pose. 0.8-3.8: RIGHT bespectacled man glances down and writes two short uneven notes on the existing paper using his existing pen; actual small wrist and finger writing motions, no large arm gesture. His gaze returns to the applicant at 4.1, pen settles. 3.3-5.5: LEFT woman independently lowers only her gaze to read one detail on her existing document, then looks back steadily, lips neutrally pressed, no nod. CENTER man keeps restrained evaluative eye contact most of the time, looks briefly at his existing page at 6.0-6.7, then looks back without smiling. 7.0-9.2: subtle unsynchronized breathing; every hand and head naturally settles to its original reference position. 9.2-10: maintain the exact neutral start/end pose with tiny breathing. The applicant is answering off camera but do not generate the applicant voice or any other voice. Only extremely quiet office room tone and small realistic pen sound. No repeated or synchronized gestures.",
+      "generation": {
+        "model": "seedance_2_5",
+        "resolution": "720p",
+        "duration": 10,
+        "generate_audio": true
+      },
+      "actual720": {
+        "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+        "bytes": 2917190,
+        "width": 1280,
+        "height": 720,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.08,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      },
+      "actual4k": {
+        "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+        "bytes": 10122866,
+        "width": 3840,
+        "height": 2160,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.08,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      }
+    },
+    {
+      "id": "strict-followup-experience",
+      "jobId": "0c45ab6b-075d-4f50-be6b-26dfe42dfe39",
+      "attempts": 1,
+      "submittedAt": "2026-10-11T17:03:25.736072+00:00",
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-1.0: center maintains an appraising silence. 1.0-6.8: CENTER man alone asks exactly once in a low, measured, formal Korean male voice: \"그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.\" No praise or agreement before the question. Natural Korean lip sync, same matter-of-fact voice as the initial question. RIGHT man independently writes a short note at 2.8-4.2 and then returns his gaze. LEFT woman briefly checks her document at 5.1, then returns her gaze, never nodding. 6.8-9.2: all silently evaluate, hands and heads naturally settle to the original pose. 9.2-10: neutral reference posture, mouths closed. Only the exact question, consistent quiet office tone and minimal real pen sound.",
+      "generation": {
+        "model": "seedance_2_5",
+        "resolution": "720p",
+        "duration": 10,
+        "generate_audio": true
+      },
+      "actual720": {
+        "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+        "bytes": 3154743,
+        "width": 1280,
+        "height": 720,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.041667,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      },
+      "actual4k": {
+        "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+        "bytes": 11078438,
+        "width": 3840,
+        "height": 2160,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.041667,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      }
+    },
+    {
+      "id": "strict-followup-plan",
+      "jobId": "124de919-aafb-49e3-914f-1f8618d449cd",
+      "attempts": 1,
+      "submittedAt": "2026-10-11T17:03:27.838460+00:00",
+      "prompt": "One locked-off 10-second live-action observational shot of a serious Korean care-facility recruitment interview, viewed from the seated applicant's eyes. Preserve exactly the three fictional adults, faces, apparent ages, hairstyle, clothing, glasses, pens, desk, papers, room, daylight direction, exposure and camera crop in the supplied original room-reference image. Left: woman in taupe blazer and ivory blouse; center: man in navy suit and tie; right: man with glasses, dark jacket, pale blue-gray shirt. All three remain visible throughout. Natural understated documentary realism: real skin pores, modest imperfections, ordinary office lighting. No cosmetic skin smoothing, glamour lighting, advertising cheerfulness, exaggerated anger or theatrical intimidation.\n\nThey are professional evaluators with limited time. They do not reassure or encourage the applicant. No smile, no friendly nod, no sympathetic head tilt, no repeated nodding. Mouths closed except the one specified speaker. Independent natural blinks, breathing and tiny eye movements, no synchronized motion. The center interviewer observes steadily; the left interviewer checks information; the right interviewer makes a short factual written note. Their attention feels consequential, not hostile. Hands stay anatomically plausible and pens keep the same shape.\n\nCONTINUITY IS CRITICAL: The first 0.6 second and final 0.8 second return to the exact neutral posture, hand positions and camera framing of the supplied start/end image. This is one continuous physically plausible movement back to the resting pose, not a cut, morph or freeze. No camera movement, zoom, reframing, shake, focus pull, scene cut, new props or extra people. No visible applicant. No text, captions, logos, music, narration or off-camera speech.\n\nSHOT ACTION:\n0.0-1.0: center maintains an appraising silence. 1.0-6.2: CENTER man alone asks exactly once in a low, measured, formal Korean male voice: \"현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.\" No praise or agreement before the question. Natural Korean lip sync, same matter-of-fact voice as the initial question. RIGHT man independently checks his document and writes a short note at 3.4-5.0, then returns his gaze. LEFT woman looks steadily at the applicant, blinks once independently, never nods. 6.2-9.2: all silently evaluate, hands and heads naturally settle to the original pose. 9.2-10: neutral reference posture, mouths closed. Only the exact question, consistent quiet office tone and minimal real pen sound.",
+      "generation": {
+        "model": "seedance_2_5",
+        "resolution": "720p",
+        "duration": 10,
+        "generate_audio": true
+      },
+      "actual720": {
+        "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+        "bytes": 3036932,
+        "width": 1280,
+        "height": 720,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.041667,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      },
+      "actual4k": {
+        "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+        "bytes": 10548847,
+        "width": 3840,
+        "height": 2160,
+        "fps": "24/1",
+        "codec": "h264",
+        "pixFmt": "yuv420p",
+        "duration": 10.041667,
+        "audioCodec": "aac",
+        "audioSampleRate": "32000"
+      }
+    }
+  ]
+}

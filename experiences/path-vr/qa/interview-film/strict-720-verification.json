@@ -1,0 +1,328 @@
+{
+  "createdAt": "2026-10-11T17:13:23.154698+00:00",
+  "method": "ffprobe; local full-clip Korean ASR; sampled frames and transition endpoints",
+  "humanListeningVerified": false,
+  "headsetVerified": false,
+  "visualContinuityVerified": false,
+  "pendingClipIds": [],
+  "clips": [
+    {
+      "id": "strict-question",
+      "jobId": "1e39a902-0b3f-4530-b832-53f7ea10e681",
+      "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+      "bytes": 2801131,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "duration": 10.08,
+      "audioCodec": "aac",
+      "audioSampleRate": "32000",
+      "asrText": "요양보호사로 지원한 이유를 말씀해 주세요.",
+      "expectedDialogue": "요양보호사로 지원한 이유를 말씀해 주세요.",
+      "asrMatchesExpected": true,
+      "lastSpeechEnd": 3.21,
+      "segments": [
+        {
+          "start": 0.91,
+          "end": 3.21,
+          "text": " 요양보호사로 지원한 이유를 말씀해 주세요.",
+          "words": [
+            {
+              "word": " 요양보호사로",
+              "start": 0.91,
+              "end": 1.97
+            },
+            {
+              "word": " 지원한",
+              "start": 1.97,
+              "end": 2.35
+            },
+            {
+              "word": " 이유를",
+              "start": 2.35,
+              "end": 2.65
+            },
+            {
+              "word": " 말씀해",
+              "start": 2.65,
+              "end": 3.01
+            },
+            {
+              "word": " 주세요.",
+              "start": 3.01,
+              "end": 3.21
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strict-listening",
+      "jobId": "0509039a-6a98-482f-b793-a72cb4c40e34",
+      "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+      "bytes": 2917190,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "duration": 10.08,
+      "audioCodec": "aac",
+      "audioSampleRate": "32000",
+      "asrText": "",
+      "expectedDialogue": "",
+      "asrMatchesExpected": true,
+      "lastSpeechEnd": null,
+      "segments": []
+    },
+    {
+      "id": "strict-followup-experience",
+      "jobId": "0c45ab6b-075d-4f50-be6b-26dfe42dfe39",
+      "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+      "bytes": 3154743,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "duration": 10.041667,
+      "audioCodec": "aac",
+      "audioSampleRate": "32000",
+      "asrText": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "expectedDialogue": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "asrMatchesExpected": true,
+      "lastSpeechEnd": 5.08,
+      "segments": [
+        {
+          "start": 0.94,
+          "end": 5.08,
+          "text": " 그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+          "words": [
+            {
+              "word": " 그",
+              "start": 0.94,
+              "end": 1.38
+            },
+            {
+              "word": " 경험에서",
+              "start": 1.38,
+              "end": 1.86
+            },
+            {
+              "word": " 직접",
+              "start": 1.86,
+              "end": 2.08
+            },
+            {
+              "word": " 맡았던",
+              "start": 2.08,
+              "end": 2.66
+            },
+            {
+              "word": " 일과",
+              "start": 2.66,
+              "end": 3
+            },
+            {
+              "word": " 그",
+              "start": 3,
+              "end": 3.34
+            },
+            {
+              "word": " 결과를",
+              "start": 3.34,
+              "end": 3.96
+            },
+            {
+              "word": " 구체적으로",
+              "start": 3.96,
+              "end": 4.56
+            },
+            {
+              "word": " 말씀해",
+              "start": 4.56,
+              "end": 4.92
+            },
+            {
+              "word": " 주세요.",
+              "start": 4.92,
+              "end": 5.08
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strict-followup-plan",
+      "jobId": "124de919-aafb-49e3-914f-1f8618d449cd",
+      "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+      "bytes": 3036932,
+      "width": 1280,
+      "height": 720,
+      "fps": "24/1",
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "duration": 10.041667,
+      "audioCodec": "aac",
+      "audioSampleRate": "32000",
+      "asrText": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까?",
+      "expectedDialogue": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.",
+      "asrMatchesExpected": true,
+      "lastSpeechEnd": 4.05,
+      "segments": [
+        {
+          "start": 0.43,
+          "end": 4.05,
+          "text": " 현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까?",
+          "words": [
+            {
+              "word": " 현장에",
+              "start": 0.43,
+              "end": 1.17
+            },
+            {
+              "word": " 투입되기",
+              "start": 1.17,
+              "end": 1.63
+            },
+            {
+              "word": " 전에",
+              "start": 1.63,
+              "end": 1.81
+            },
+            {
+              "word": " 무엇을",
+              "start": 1.81,
+              "end": 2.95
+            },
+            {
+              "word": " 어떻게",
+              "start": 2.95,
+              "end": 3.19
+            },
+            {
+              "word": " 준비하실",
+              "start": 3.19,
+              "end": 3.67
+            },
+            {
+              "word": " 겁니까?",
+              "start": 3.67,
+              "end": 4.05
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "deliveryVerification": {
+    "verifiedAt": "2026-10-11T17:17:11.850463+00:00",
+    "method": "Local ffmpeg Lanczos enlargement, not AI detail restoration",
+    "additionalCredits": 0,
+    "generationQuoteCredits": 280,
+    "paidAttempts": 4,
+    "clips": [
+      {
+        "id": "strict-question",
+        "source720File": "assets/interview/film/strict-question-720p.mp4",
+        "delivery4kFile": "assets/interview/film/strict-question-4k.mp4",
+        "actual4k": {
+          "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+          "bytes": 9901952,
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "codec": "h264",
+          "pixFmt": "yuv420p",
+          "duration": 10.08,
+          "audioCodec": "aac",
+          "audioSampleRate": "32000"
+        },
+        "source720HashMatches": true,
+        "delivery4kHashMatches": true,
+        "original480Preserved": true,
+        "audioPacketHashMatches": true,
+        "full4kDecodePassed": true
+      },
+      {
+        "id": "strict-listening",
+        "source720File": "assets/interview/film/strict-listening-720p.mp4",
+        "delivery4kFile": "assets/interview/film/strict-listening-4k.mp4",
+        "actual4k": {
+          "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+          "bytes": 10122866,
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "codec": "h264",
+          "pixFmt": "yuv420p",
+          "duration": 10.08,
+          "audioCodec": "aac",
+          "audioSampleRate": "32000"
+        },
+        "source720HashMatches": true,
+        "delivery4kHashMatches": true,
+        "original480Preserved": true,
+        "audioPacketHashMatches": true,
+        "full4kDecodePassed": true
+      },
+      {
+        "id": "strict-followup-experience",
+        "source720File": "assets/interview/film/strict-followup-experience-720p.mp4",
+        "delivery4kFile": "assets/interview/film/strict-followup-experience-4k.mp4",
+        "actual4k": {
+          "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+          "bytes": 11078438,
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "codec": "h264",
+          "pixFmt": "yuv420p",
+          "duration": 10.041667,
+          "audioCodec": "aac",
+          "audioSampleRate": "32000"
+        },
+        "source720HashMatches": true,
+        "delivery4kHashMatches": true,
+        "original480Preserved": true,
+        "audioPacketHashMatches": true,
+        "full4kDecodePassed": true
+      },
+      {
+        "id": "strict-followup-plan",
+        "source720File": "assets/interview/film/strict-followup-plan-720p.mp4",
+        "delivery4kFile": "assets/interview/film/strict-followup-plan-4k.mp4",
+        "actual4k": {
+          "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+          "bytes": 10548847,
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "codec": "h264",
+          "pixFmt": "yuv420p",
+          "duration": 10.041667,
+          "audioCodec": "aac",
+          "audioSampleRate": "32000"
+        },
+        "source720HashMatches": true,
+        "delivery4kHashMatches": true,
+        "original480Preserved": true,
+        "audioPacketHashMatches": true,
+        "full4kDecodePassed": true
+      }
+    ]
+  },
+  "sampledVisualReview": {
+    "reviewedOn": "2026-10-12",
+    "scope": "2fps contact sheets and full-size head/tail images of all four clips",
+    "sameFictionalPeopleAndSettledPose": true,
+    "continuousPerceptualReview": false,
+    "transitionConfiguration": "../../interview/film/strict-manifest.json",
+    "browserReport": "quest-hd-verification.json"
+  },
+  "safeExitVisualReviewComplete": true,
+  "humanListeningReviewPending": true,
+  "safeExitReviewScope": "Sampled visual/ASR review completed; human listening and headset review remain pending."
+}

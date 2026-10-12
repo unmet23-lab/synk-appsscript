@@ -1,0 +1,97 @@
+{
+  "verifiedAt": "2026-10-11T21:48:45.527Z",
+  "commit": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+  "parent": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+  "pushed": true,
+  "changedFiles": [
+    "path/interview/film/answer-followup.mjs",
+    "path/interview/film/rehearsal-session.mjs",
+    "path/interview/film/rehearsal.html",
+    "path/interview/film/rehearsal.mjs",
+    "path/interview/film/strict-vr.mjs",
+    "path/interview/voice.mjs"
+  ],
+  "pages": {
+    "conclusion": "success",
+    "databaseId": 38177757468,
+    "headSha": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38177757468"
+  },
+  "ci": {
+    "conclusion": "",
+    "databaseId": 38177758662,
+    "headSha": "26baad2e3fbc9ef0b7de4bce592addba03de2662",
+    "name": "synk.im 배포 점검",
+    "status": "in_progress",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38177758662"
+  },
+  "publicFiles": [
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+      "status": 200,
+      "bytes": 17250,
+      "sha256": "3b70f91c835bcd23a6e0c47ad1cb260ec6d703c5fc72b7c50ed5831ddc7d2e35",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/rehearsal-session.mjs",
+      "url": "https://synk.im/path/interview/film/rehearsal-session.mjs",
+      "status": 200,
+      "bytes": 13574,
+      "sha256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "url": "https://synk.im/path/interview/film/rehearsal.html",
+      "status": 200,
+      "bytes": 6260,
+      "sha256": "33be3d988519ea1804b463d7433be77de30fe138d1280ddb47bfa2e9f750400c",
+      "contentType": "text/html; charset=utf-8",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "url": "https://synk.im/path/interview/film/rehearsal.mjs",
+      "status": 200,
+      "bytes": 32398,
+      "sha256": "d49873c07c20fdf1208f78691a7a0fb757edc54c7e2d5a6c98fe2f6ea31a5a8b",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "url": "https://synk.im/path/interview/film/strict-vr.mjs",
+      "status": 200,
+      "bytes": 28236,
+      "sha256": "05907064f22701c0af1237353fe8ea1c41ea41f74895397a2e2483aa52e7b964",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesPackage": true
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "url": "https://synk.im/path/interview/voice.mjs",
+      "status": 200,
+      "bytes": 16794,
+      "sha256": "6e510958f0553f4d1590f2bd7166eb83371f3aaffe1d6a5c53a0cc61338735f3",
+      "contentType": "text/javascript; charset=utf-8",
+      "matchesPackage": true
+    }
+  ],
+  "publicFilesVerified": 6,
+  "package": {
+    "files": 54,
+    "changedFiles": 6,
+    "unchangedFiles": 48,
+    "committedFilesMatch": 54,
+    "manifestSHA256": "52bd5561dc54b08968d45e81842fa2d9251b36b4224913015720e6d7af0f6f75"
+  },
+  "newMediaOrModelUploaded": false,
+  "qaOrFixturesOrDocsUploaded": false,
+  "browserValidation": "Parent agent owns actual public browser verification."
+}

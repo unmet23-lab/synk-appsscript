@@ -1,0 +1,99 @@
+{
+  "createdOn": "2026-10-12",
+  "tool": "built-in image_gen",
+  "exactModel": "Not exposed by tool",
+  "purpose": "Match photographic room surroundings to unchanged 480p interview video",
+  "reference": "assets/interview/film/room-reference.png",
+  "prompts": [
+    {
+      "output": "assets/interview/room/front-room-extension.png",
+      "prompt": "Use case: compositing / photographic set extension.\nEdit target: the supplied image of three fictional interviewers. Make a wider photographic set-extension plate for this exact shot. Output landscape 16:9.\nCRITICAL REGISTRATION: keep the ENTIRE input photograph unaltered as a centered rectangle occupying exactly 60% of the final image width and 60% of its height (left/top 20%, right/bottom 80%). Do not reframe, move, redraw, change faces, change gaze, change poses, clothing, hands, papers, glasses, the existing window, door, table, wall seams, shadows, or colors inside that central rectangle. Only outpaint beyond its four original boundaries. Do NOT zoom the original people larger to fill the final image.\nExtend the real room naturally OUTSIDE that rectangle: left is a continuation of the SAME existing daylight window with thin Venetian blinds, right is the continuation of the neutral acoustic panel wall beyond the EXISTING single oak door (do not add another door), top is more neutral panel wall and a plain low office ceiling with soft diffuse illumination, bottom is a continuous light oak interview tabletop toward the applicant, with a consistent wood grain and perspective. Keep the table empty in the near foreground. The tabletop may fill the lower quarter and reach both sides; no seam, no separate table, no decorative objects. Rectilinear wide-angle architecture, one continuous room, eye at the same seated camera position, no fisheye, no equirectangular distortion.\nPreserve subdued neutral daylight with light from left. Ordinary functional Korean office, serious atmosphere, no dramatic lighting or polish. This must look like one unretouched photograph, not a screen floating in a room and not a video game. No extra people, no duplicate windows/doors, no words, no watermark.\nThe center is the locked original still used for matching existing video; the newly generated content is ONLY its surrounding context.",
+      "registration": {
+        "method": "SIFT + estimateAffinePartial2D RANSAC, threshold 4px",
+        "matches": 960,
+        "inliers": 879,
+        "affine": [
+          [
+            0.7804045582,
+            -0.000631307,
+            185.102379
+          ],
+          [
+            0.000631307,
+            0.7804045582,
+            102.780713
+          ]
+        ]
+      }
+    },
+    {
+      "output": "assets/interview/room/front-room-wide.png",
+      "prompt": "Use case: compositing / photographic set extension. Edit target: the supplied wide photograph. Extend the canvas outward on ALL FOUR SIDES. Keep the entire supplied photograph absolutely unchanged as the CENTRAL 70% of the new image WIDTH and 70% of the HEIGHT. Final aspect ratio 16:9. The central three people must become distinctly SMALLER within the new full image, exactly 70% of their present image-relative size. The newly exposed frame shows more of this SAME room. Preserve the original image as a locked inner region, not a redrawn or re-framed version. Do not move the camera or change original perspective.\nOnly generate outside that inner region. Continue the SAME left-wall windows and thin blinds; show the near end of this single window wall at left, not a new detached window. Continue the same pale gray acoustic panel walls, same plain ceiling, and large continuous oak tabletop toward the viewer. Continue the tabletop seamlessly across the lower foreground, no second tabletop, no table edge seam. On the far right, simply extend pale gray wall beyond the existing ONE oak door; no additional door. Ordinary serious Korean office daylight, photoreal materials, neutral matching exposure, NO CGI geometry look. No new objects, people, text, logo, no vignette. Preserve center pixels, faces, clothes, hands, cups, documents, original window/door and all their lighting. This is an exact outpainting for a video set extension, not a new artistic interpretation.",
+      "registration": {
+        "method": "Approximate wide-periphery match; not used directly at the original video boundary",
+        "sourceRectTopLeft": [
+          0.243174,
+          0.301457,
+          0.497463,
+          0.497463
+        ],
+        "matches": 391,
+        "inliers": 99
+      }
+    }
+  ],
+  "constraints": {
+    "videoRegenerated": false,
+    "videoUpscaled": false,
+    "originalResolution": [
+      854,
+      480
+    ],
+    "real360Capture": false,
+    "exactOriginalPixelPreservation": "Not guaranteed by generator; existing source reference/video retained at the inner join"
+  },
+  "runtimeProjection": {
+    "firstPlate": "Original reference registered with measured 0.780405 scale; shared seated camera ray on walls, ceiling and desk",
+    "peripheralPlate": "Approximate people fit, with separate right-wall offset and whole-ceiling registration against structural corners",
+    "ceilingAnchorsPixels": {
+      "first": [
+        [
+          393,
+          111
+        ],
+        [
+          1304,
+          96
+        ]
+      ],
+      "wide": [
+        [
+          447,
+          261
+        ],
+        [
+          1167,
+          249
+        ]
+      ]
+    },
+    "ceilingUV": {
+      "origin": "lower-left",
+      "x": [
+        0.79034,
+        0.08193
+      ],
+      "y": [
+        0.8,
+        0.01664
+      ]
+    },
+    "rightWallUVOffset": [
+      0.043,
+      0.041
+    ],
+    "transition": "Ceiling uses its actual wall-junction silhouette; the door remains owned by the inner plate. Empty image-border colors continue outside photo coverage.",
+    "liveVideoMask": "Soft shoulder-to-elbow envelope keeps people and writing live; empty outer window/door/table bands use the original reference.",
+    "limits": "Approximate 2.5D seated projection; peripheral texture stretching and local registration differences remain. Not a scanned room or stereo video."
+  }
+}

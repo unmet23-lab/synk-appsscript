@@ -1,0 +1,25 @@
+{
+  "ok": true,
+  "installedAt": "2026-10-11T19:52:18.932Z",
+  "version": "0.4.3",
+  "privatePCUpdate": true,
+  "publicInstallerChanged": false,
+  "installedArchiveSHA256": "a5cb55fe334d317a7d17848eb44a1defb72e141e5c0e3bb6a3ff1796c2bc4161",
+  "installedSourceHash": "fc2b27bb898d71e633a2f34823b23453ff4cb91c4490c4419a6f9080a3d9fa84",
+  "exactChangedMembers": [
+    "renderer/launcher.mjs",
+    "renderer/state.mjs",
+    "src/preload.cjs",
+    "src/public-apps.cjs"
+  ],
+  "unchangedMembers": 113,
+  "perFileAtomicReplace": true,
+  "rollbackOnFailure": true,
+  "backupDirectory": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-platform-entry-20261012\\asar-update\\transaction-before",
+  "runtimeBytesUnchanged": true,
+  "executableAndChildInstallersUnchanged": true,
+  "userProfileRead": false,
+  "userProfileChangedByUpdater": false,
+  "appLaunched": false,
+  "nativeUIValidated": false
+}

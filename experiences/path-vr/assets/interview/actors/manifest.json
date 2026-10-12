@@ -1,0 +1,190 @@
+{
+  "source": "https://github.com/microsoft/Microsoft-Rocketbox",
+  "revision": "0943055db6ec570bcef9f2c8b41c9e5467c808f9",
+  "checkedAt": "2026-10-11",
+  "license": "MIT",
+  "copyright": "Copyright (c) 2020 Microsoft",
+  "pipeline": "FBX facial rig + seated animation pose; retained 11 face morphs; JPEG color/normal and alpha PNG; GLB, no animation clips",
+  "qualityScope": "Textured rigged realistic-style game characters; not scanned people, photoreal video, or proven headset quality.",
+  "loader": {
+    "package": "three",
+    "version": "0.180.0",
+    "license": "MIT",
+    "licenseFile": "../../../vendor/THREE-LICENSE.txt",
+    "sources": ["https://github.com/mrdoob/three.js/blob/r180/examples/jsm/loaders/GLTFLoader.js", "https://github.com/mrdoob/three.js/blob/r180/examples/jsm/utils/BufferGeometryUtils.js"],
+    "modification": "Module import paths changed to local vendored Three modules"
+  },
+  "models": [
+    {
+      "id": "Business_Male_02",
+      "file": "Business_Male_02.glb",
+      "bytes": 2095040,
+      "sha256": "fef5008d6871eb394fa27ede84630db3d2d9f56197c520a3f93151883619108e",
+      "landmarks": {
+        "head": [
+          -0.00798,
+          1.26283,
+          -0.02423
+        ],
+        "eye": [
+          -0.04156,
+          1.3546,
+          0.0687
+        ],
+        "hip": [
+          -0.00026,
+          0.59148,
+          -0.00043
+        ],
+        "hand": [
+          -0.17832,
+          0.633,
+          0.11445
+        ],
+        "foot": [
+          -0.12686,
+          0.10349,
+          0.32107
+        ]
+      },
+      "sourceFiles": [
+        "Assets/Avatars/Professions/Business_Male_02/Export/Business_Male_02_facial.fbx",
+        "Assets/Avatars/Professions/Business_Male_02/Textures/m008_body_color.tga",
+        "Assets/Avatars/Professions/Business_Male_02/Textures/m008_body_normal.tga",
+        "Assets/Avatars/Professions/Business_Male_02/Textures/m008_head_color.tga",
+        "Assets/Avatars/Professions/Business_Male_02/Textures/m008_head_normal.tga",
+        "Assets/Avatars/Professions/Business_Male_02/Textures/m008_opacity_color.tga",
+        "Assets/Animations/all_animations_max_motextr_static/m_sit_chair_idle_neutral_01.max.fbx"
+      ],
+      "vertices": 3863,
+      "morphTargets": [
+        "AA_VI_01_PP",
+        "AA_VI_10_aa",
+        "AA_VI_11_E",
+        "AA_VI_13_O",
+        "AA_VI_14_U",
+        "AK_03_BrowInnerUp",
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "Business_Female_03",
+      "file": "Business_Female_03.glb",
+      "bytes": 2762540,
+      "sha256": "9c4fb01eead35b66d84224bded8627f716bdb9ac1738bc46a10077474eeea6dc",
+      "landmarks": {
+        "head": [
+          0.01292,
+          1.19043,
+          -0.06992
+        ],
+        "eye": [
+          -0.01283,
+          1.2701,
+          0.02624
+        ],
+        "hip": [
+          0.00147,
+          0.61099,
+          0.00052
+        ],
+        "hand": [
+          -0.14779,
+          0.64793,
+          0.03567
+        ],
+        "foot": [
+          0.00178,
+          0.11595,
+          0.44835
+        ]
+      },
+      "sourceFiles": [
+        "Assets/Avatars/Professions/Business_Female_03/Export/Business_Female_03_facial.fbx",
+        "Assets/Avatars/Professions/Business_Female_03/Textures/f016_body_color.tga",
+        "Assets/Avatars/Professions/Business_Female_03/Textures/f016_body_normal.tga",
+        "Assets/Avatars/Professions/Business_Female_03/Textures/f016_head_color.tga",
+        "Assets/Avatars/Professions/Business_Female_03/Textures/f016_head_normal.tga",
+        "Assets/Avatars/Professions/Business_Female_03/Textures/f016_opacity_color.tga",
+        "Assets/Animations/all_animations_max_motextr_static/f_sit_chair_idle_neutral_01.max.fbx"
+      ],
+      "vertices": 4525,
+      "morphTargets": [
+        "AA_VI_01_PP",
+        "AA_VI_10_aa",
+        "AA_VI_11_E",
+        "AA_VI_13_O",
+        "AA_VI_14_U",
+        "AK_03_BrowInnerUp",
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "Business_Male_03",
+      "file": "Business_Male_03.glb",
+      "bytes": 2629040,
+      "sha256": "1ad089fc286bb29fac2ff5bfd3799a71db7791850a3735ee5cb910b0e4b326be",
+      "landmarks": {
+        "head": [
+          -0.00798,
+          1.26283,
+          -0.02423
+        ],
+        "eye": [
+          -0.04156,
+          1.3546,
+          0.0687
+        ],
+        "hip": [
+          -0.00026,
+          0.59148,
+          -0.00043
+        ],
+        "hand": [
+          -0.17832,
+          0.633,
+          0.11445
+        ],
+        "foot": [
+          -0.12686,
+          0.10349,
+          0.32107
+        ]
+      },
+      "sourceFiles": [
+        "Assets/Avatars/Professions/Business_Male_03/Export/Business_Male_03_facial.fbx",
+        "Assets/Avatars/Professions/Business_Male_03/Textures/m020_body_color.tga",
+        "Assets/Avatars/Professions/Business_Male_03/Textures/m020_body_normal.tga",
+        "Assets/Avatars/Professions/Business_Male_03/Textures/m020_head_color.tga",
+        "Assets/Avatars/Professions/Business_Male_03/Textures/m020_head_normal.tga",
+        "Assets/Avatars/Professions/Business_Male_03/Textures/m020_opacity_color.tga",
+        "Assets/Animations/all_animations_max_motextr_static/m_sit_chair_idle_neutral_01.max.fbx"
+      ],
+      "vertices": 4163,
+      "morphTargets": [
+        "AA_VI_01_PP",
+        "AA_VI_10_aa",
+        "AA_VI_11_E",
+        "AA_VI_13_O",
+        "AA_VI_14_U",
+        "AK_03_BrowInnerUp",
+        "AK_09_EyeBlinkLeft",
+        "AK_10_EyeBlinkRight",
+        "AK_25_JawOpen",
+        "AK_44_MouthSmileLeft",
+        "AK_45_MouthSmileRight"
+      ],
+      "license": "MIT"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-11T20:58:02.981Z",
+  "commit": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+  "parent": "908098c0be3045e473a22f40a11f463c48c5aa5c",
+  "changedFiles": [
+    "path/interview/film/rehearsal.mjs"
+  ],
+  "pushed": true,
+  "homepageChangesPreserved": true,
+  "pages": {
+    "conclusion": "success",
+    "databaseId": 38174234495,
+    "headSha": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+    "name": "pages build and deployment",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38174234495"
+  },
+  "ci": {
+    "conclusion": "",
+    "databaseId": 38174234427,
+    "headSha": "328895304cf1298e0f5ba21bf43d9318df9cc1a3",
+    "name": "synk.im 배포 점검",
+    "status": "in_progress",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38174234427"
+  },
+  "public": {
+    "url": "https://synk.im/path/interview/film/rehearsal.mjs",
+    "http": 200,
+    "contentType": "text/javascript; charset=utf-8",
+    "bytes": 29334,
+    "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+    "matches": true
+  },
+  "packageFiles": 54,
+  "unchangedPackageFiles": 53,
+  "previousFilmAndRoomFixesPreserved": true,
+  "publicBrowserReview": "parent-task"
+}

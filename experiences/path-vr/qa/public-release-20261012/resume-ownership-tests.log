@@ -1,0 +1,48 @@
+✔ only reviewed, verified same-origin mono video with validated silent transition handles is ready (30.7478ms)
+✔ the actual ungenerated manifest is blocked, even though it has a reference still and plannedSrc (23.0099ms)
+✔ metadata without decoded data times out instead of reporting ready (109.758ms)
+✔ loadeddata without a submitted video frame also times out (96.6791ms)
+✔ preparation verifies requested actual frames with only two muted video elements (21.8315ms)
+✔ preparation ignores a stale submitted frame after seeking and waits for the verified head (26.2669ms)
+✔ changing quality between sessions reloads sources in the same two video elements (6.4744ms)
+✔ only finite nonnegative listening offsets can trim the beginning; native dialogue cannot be skipped (0.8985ms)
+✔ listening begins at its decoded trim position while snapshots and pause/resume keep original timestamps (2.9356ms)
+✔ trimmed listening starts tolerate at most one source frame of seek rounding (90.9405ms)
+✔ a trim must leave room for both verified handles within the actual decoded duration (7.3331ms)
+✔ queued trims and quality changes preserve the chosen starting pose with two decoders (14.728ms)
+✔ one delayed listening start rewinds while hidden and keeps the same reviewed head gate (13.9644ms)
+✔ two delayed listening starts still fail without exposing the advanced second pose (22.9067ms)
+✔ a delayed frame callback recovers a hidden listening head without extending its 250ms gate (64.2139ms)
+✔ cancel during the hidden listening rewind cannot expose or restart cancelled playback (48.3062ms)
+✔ dissolve retains an opaque outgoing frame until the new frame covers it and delays slot reuse (106.5496ms)
+✔ speaking uses native audio; listening forces mute and uses managed, non-native looping (13.194ms)
+✔ queued question waits for the listening loop boundary, then changes to native speech (14.3685ms)
+✔ a listening clip automatically repeats through the other decoded slot without losing ended boundaries (33.5057ms)
+✔ each performance has its own owner ID while queue readiness and pause/resume preserve it (16.3511ms)
+✔ cancelling a ready successor leaves current actors moving and never changes clips at ended (42.9576ms)
+✔ cancelling a pending decoder or a paused successor cannot revive it later (63.6528ms)
+✔ recognition repair can immediately requeue after cancelling a delayed handoff (51.0838ms)
+✔ repair requeue of the same trimmed clip does not reuse a consumed priming proof (63.4641ms)
+✔ late decoding of a replaced queue cannot win over the newest queued clip (55.9847ms)
+✔ an ended clip remains visible while the next decoder is loading (18.6794ms)
+✔ stop cancels a pending play and suppresses a late play promise without resuming media (23.2993ms)
+✔ a delayed play promise cannot unmute after speech starts even when its first submitted frame was early (5.3648ms)
+✔ a cancelled old play promise does not pause a newer film that reused the same element (26.4651ms)
+✔ a cancelled resume cannot pause a newer resume of the same source and decoder version (17.7528ms)
+✔ a cancelled resume with no newer request cannot revive its paused source (14.6932ms)
+✔ pause/resume retains the current timestamp and re-establishes the queued boundary (6.213ms)
+✔ pause during preparation cancels work without a late hidden playback (27.2482ms)
+✔ media errors and rejected play requests are explicit failures and close pending frame callbacks (8.6875ms)
+✔ a playback stall has a finite watchdog and does not pretend the frozen frame is playing (33.0759ms)
+✔ neutral handles longer than the real media duration are rejected after decoding metadata (3.0707ms)
+✔ a submitted frame remains valid when seek temporarily lowers readyState (0.6864ms)
+✔ manifest-relative sources use the module directory even from the nested film review page (0.751ms)
+✔ same-origin film URLs retain a mounted path without weakening media validation (0.4254ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1977.9655

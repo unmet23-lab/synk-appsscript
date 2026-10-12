@@ -1,0 +1,26 @@
+{
+  "observedAt": "2026-10-11T19:59:39.697Z",
+  "scenario": "720p, first answer denies personal experience, submit, second answer timer expires empty, retry",
+  "state": {
+    "phase": "연결 확인",
+    "quality": "720p",
+    "status": "시작 여유 프레임을 지나 영상 전환을 중단했습니다.",
+    "videos": [
+      {
+        "height": 720,
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-experience-tail-720p.mp4",
+        "time": 3,
+        "width": 1280
+      },
+      {
+        "height": 720,
+        "paused": true,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+        "time": 1.033606,
+        "width": 1280
+      }
+    ]
+  },
+  "console": []
+}

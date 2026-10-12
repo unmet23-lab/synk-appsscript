@@ -1,0 +1,2656 @@
+{
+  "date": "2026-10-12",
+  "synthetic": true,
+  "physicalMic": false,
+  "questTested": false,
+  "baselineCommit": "dcd3cfb3d3d26790d72490379300a3fe1e299577",
+  "method": "Production createVoiceInput.transcribeWav / AudioWorklet PCM / Whisper Base q8; actual decoder output; same output assessed by baseline and current application rules.",
+  "limitations": [
+    "One TTS voice; not a real non-native speaker, physical microphone, room, or Quest benchmark.",
+    "Inserted pauses, written hesitation and attenuated critical words are artificial acoustic stress, not a modeled nationality/accent.",
+    "Noise is procedurally synthesized, not recorded ventilation/keyboard audio. SNR is a controlled signal ratio, not a measured real-room sound level.",
+    "Critical intervals use TTS word onsets, not manually verified phoneme alignment. Both positive and negative minimal-pair words receive the same attenuation rule.",
+    "0dB mixed noise and critical-word attenuation are combined, so effects cannot be attributed to either one independently.",
+    "Gold is the known synthesis input even when audio becomes unintelligible. The safety target is clarify/retry rather than inferring missing meaning.",
+    "These 32 fixtures do not establish general Korean ASR accuracy or human learner outcomes."
+  ],
+  "totals": {
+    "count": 32,
+    "errors": 0,
+    "negative": 16,
+    "unsafeBefore": 0,
+    "unsafeAfter": 0,
+    "afterDecisions": {
+      "auto": 3,
+      "clarify": 29,
+      "retry": 0
+    }
+  },
+  "cases": [
+    {
+      "id": "01-care-none__clean",
+      "gold": "저는 돌봄 경험이 없습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261012,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 돌봄 경험이 없습니다.",
+      "elapsedMs": 9033.90000000596,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 6,
+          "end": 15,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "01-care-none__fan-15db",
+      "gold": "저는 돌봄 경험이 없습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261013,
+        "referenceSnrDb": 14.999999999999998,
+        "effectiveSnrDb": 14.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 이 불공 경험이 없습니다.",
+      "elapsedMs": 8540.89999999851,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 8,
+          "end": 17,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "01-care-none__typing-5db",
+      "gold": "저는 돌봄 경험이 없습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261014,
+        "referenceSnrDb": 4.999999999999998,
+        "effectiveSnrDb": 4.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5732190410975285,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0383125
+          },
+          {
+            "startSeconds": 0.6609375,
+            "durationSeconds": 0.0461875
+          },
+          {
+            "startSeconds": 0.9035,
+            "durationSeconds": 0.0419375
+          },
+          {
+            "startSeconds": 1.17675,
+            "durationSeconds": 0.053
+          },
+          {
+            "startSeconds": 1.3783125,
+            "durationSeconds": 0.068125
+          },
+          {
+            "startSeconds": 1.8045625,
+            "durationSeconds": 0.049875
+          },
+          {
+            "startSeconds": 2.159625,
+            "durationSeconds": 0.0654375
+          },
+          {
+            "startSeconds": 2.3785625,
+            "durationSeconds": 0.0706875
+          },
+          {
+            "startSeconds": 2.71875,
+            "durationSeconds": 0.0415
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 도입공 경험이 없습니다.",
+      "elapsedMs": 8479.09999999404,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 7,
+          "end": 10,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "경험이",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 7,
+          "end": 16,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "01-care-none__mixed-0db-critical",
+      "gold": "저는 돌봄 경험이 없습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261015,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.470577013401449,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.49582084396928555,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 1.405,
+          "endSeconds": 2.825,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0745625
+          },
+          {
+            "startSeconds": 0.6835,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 0.9470625,
+            "durationSeconds": 0.061125
+          },
+          {
+            "startSeconds": 1.269125,
+            "durationSeconds": 0.0515
+          },
+          {
+            "startSeconds": 1.5725625,
+            "durationSeconds": 0.0636875
+          },
+          {
+            "startSeconds": 1.7963125,
+            "durationSeconds": 0.073875
+          },
+          {
+            "startSeconds": 2.1758125,
+            "durationSeconds": 0.0719375
+          },
+          {
+            "startSeconds": 2.5713125,
+            "durationSeconds": 0.0641875
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "자리에 두고 장면이",
+      "elapsedMs": 8504.70000000298,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 10,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 두고 장면이",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 10,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 두고 장면이",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "02-care-present__clean",
+      "gold": "저는 돌봄 경험이 있습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261012,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 돌봄 경험이 있습니다.",
+      "elapsedMs": 8227.29999999702,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 6,
+          "end": 15,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "02-care-present__fan-15db",
+      "gold": "저는 돌봄 경험이 있습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261013,
+        "referenceSnrDb": 15,
+        "effectiveSnrDb": 15,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 9일범 경험이 있습니다.",
+      "elapsedMs": 8170.39999999851,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 7,
+          "end": 16,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "02-care-present__typing-5db",
+      "gold": "저는 돌봄 경험이 있습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261014,
+        "referenceSnrDb": 5.000000000000002,
+        "effectiveSnrDb": 5.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5501801279262134,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0539375
+          },
+          {
+            "startSeconds": 0.5764375,
+            "durationSeconds": 0.0466875
+          },
+          {
+            "startSeconds": 0.9126875,
+            "durationSeconds": 0.0390625
+          },
+          {
+            "startSeconds": 1.37175,
+            "durationSeconds": 0.0578125
+          },
+          {
+            "startSeconds": 1.7074375,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 2.055625,
+            "durationSeconds": 0.07225
+          },
+          {
+            "startSeconds": 2.3101875,
+            "durationSeconds": 0.07175
+          },
+          {
+            "startSeconds": 2.586375,
+            "durationSeconds": 0.0378125
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 구입공 경험이 있습니다.",
+      "elapsedMs": 9798,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 7,
+          "end": 10,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "경험이",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 7,
+          "end": 16,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "02-care-present__mixed-0db-critical",
+      "gold": "저는 돌봄 경험이 있습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261015,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.5331000488309598,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5280208926608636,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 1.405,
+          "endSeconds": 2.765,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0675625
+          },
+          {
+            "startSeconds": 0.7505,
+            "durationSeconds": 0.065375
+          },
+          {
+            "startSeconds": 0.9540625,
+            "durationSeconds": 0.0619375
+          },
+          {
+            "startSeconds": 1.249125,
+            "durationSeconds": 0.046375
+          },
+          {
+            "startSeconds": 1.675875,
+            "durationSeconds": 0.0655625
+          },
+          {
+            "startSeconds": 2.0951875,
+            "durationSeconds": 0.0486875
+          },
+          {
+            "startSeconds": 2.37625,
+            "durationSeconds": 0.0655
+          },
+          {
+            "startSeconds": 2.56125,
+            "durationSeconds": 0.059125
+          },
+          {
+            "startSeconds": 2.746125,
+            "durationSeconds": 0.018875
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "자리에 이곳이 정말로",
+      "elapsedMs": 8609.80000000447,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 11,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 이곳이 정말로",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 11,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 이곳이 정말로",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "03-help-none__clean",
+      "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261112,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "elapsedMs": 9640.10000000149,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "03-help-none__fan-15db",
+      "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261113,
+        "referenceSnrDb": 15,
+        "effectiveSnrDb": 15,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "elapsedMs": 9355,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 12,
+          "end": 14,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "도운",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "03-help-none__typing-5db",
+      "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261114,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.6681380326600891,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0719375
+          },
+          {
+            "startSeconds": 0.5729375,
+            "durationSeconds": 0.05675
+          },
+          {
+            "startSeconds": 0.7895,
+            "durationSeconds": 0.071
+          },
+          {
+            "startSeconds": 1.1354375,
+            "durationSeconds": 0.052875
+          },
+          {
+            "startSeconds": 1.3323125,
+            "durationSeconds": 0.061625
+          },
+          {
+            "startSeconds": 1.6245625,
+            "durationSeconds": 0.06075
+          },
+          {
+            "startSeconds": 1.8916875,
+            "durationSeconds": 0.06075
+          },
+          {
+            "startSeconds": 2.16675,
+            "durationSeconds": 0.0553125
+          },
+          {
+            "startSeconds": 2.48375,
+            "durationSeconds": 0.041125
+          },
+          {
+            "startSeconds": 2.8514375,
+            "durationSeconds": 0.041375
+          },
+          {
+            "startSeconds": 3.2518125,
+            "durationSeconds": 0.0578125
+          },
+          {
+            "startSeconds": 3.54375,
+            "durationSeconds": 0.0739375
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 어르신의 식사를 좋은 적이 없습니다.",
+      "elapsedMs": 10016.89999999851,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "detail",
+          "start": 0,
+          "end": 23,
+          "prompt": "직접 한 일이나 준비한 내용을 이 부분에 구체적으로 말씀해 주세요."
+        },
+        "excerpt": "저는 어르신의 식사를 좋은 적이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "detail",
+          "start": 0,
+          "end": 23,
+          "prompt": "직접 한 일이나 준비한 내용을 이 부분에 구체적으로 말씀해 주세요."
+        },
+        "excerpt": "저는 어르신의 식사를 좋은 적이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "03-help-none__mixed-0db-critical",
+      "gold": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261115,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.3644697656100462,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5555208862625571,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 2.295,
+          "endSeconds": 3.715,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0736875
+          },
+          {
+            "startSeconds": 0.7371875,
+            "durationSeconds": 0.061625
+          },
+          {
+            "startSeconds": 1.14,
+            "durationSeconds": 0.069125
+          },
+          {
+            "startSeconds": 1.4220625,
+            "durationSeconds": 0.0394375
+          },
+          {
+            "startSeconds": 1.6438125,
+            "durationSeconds": 0.041375
+          },
+          {
+            "startSeconds": 2.089375,
+            "durationSeconds": 0.039
+          },
+          {
+            "startSeconds": 2.2966875,
+            "durationSeconds": 0.044875
+          },
+          {
+            "startSeconds": 2.7238125,
+            "durationSeconds": 0.056875
+          },
+          {
+            "startSeconds": 2.9409375,
+            "durationSeconds": 0.062
+          },
+          {
+            "startSeconds": 3.286375,
+            "durationSeconds": 0.039
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "자리에 버리신 희생님, 자리에 있는 자리",
+      "elapsedMs": 10256.60000000149,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 22,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 버리신 희생님, 자리에 있는 자리",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 22,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 버리신 희생님, 자리에 있는 자리",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "04-help-present__clean",
+      "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261112,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "elapsedMs": 7432.19999999553,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "04-help-present__fan-15db",
+      "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261113,
+        "referenceSnrDb": 15,
+        "effectiveSnrDb": 15,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "elapsedMs": 12584.70000000298,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 12,
+          "end": 14,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "도운",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "04-help-present__typing-5db",
+      "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261114,
+        "referenceSnrDb": 4.999999999999999,
+        "effectiveSnrDb": 4.999999999999999,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.6098569113918529,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0514375
+          },
+          {
+            "startSeconds": 0.747,
+            "durationSeconds": 0.0455
+          },
+          {
+            "startSeconds": 0.97375,
+            "durationSeconds": 0.0416875
+          },
+          {
+            "startSeconds": 1.1650625,
+            "durationSeconds": 0.0470625
+          },
+          {
+            "startSeconds": 1.4123125,
+            "durationSeconds": 0.0675
+          },
+          {
+            "startSeconds": 1.8425625,
+            "durationSeconds": 0.05125
+          },
+          {
+            "startSeconds": 2.183375,
+            "durationSeconds": 0.05925
+          },
+          {
+            "startSeconds": 2.5564375,
+            "durationSeconds": 0.0669375
+          },
+          {
+            "startSeconds": 2.9495,
+            "durationSeconds": 0.0525625
+          },
+          {
+            "startSeconds": 3.4088125,
+            "durationSeconds": 0.072125
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 어르신에 식사를 도운 적이 있습니다.",
+      "elapsedMs": 13553.10000000149,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 12,
+          "end": 14,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "도운",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "04-help-present__mixed-0db-critical",
+      "gold": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261115,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.3537051120661412,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5638949577359071,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 2.295,
+          "endSeconds": 3.655,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0415
+          },
+          {
+            "startSeconds": 0.6486875,
+            "durationSeconds": 0.04175
+          },
+          {
+            "startSeconds": 0.957,
+            "durationSeconds": 0.063625
+          },
+          {
+            "startSeconds": 1.1714375,
+            "durationSeconds": 0.060125
+          },
+          {
+            "startSeconds": 1.617,
+            "durationSeconds": 0.0701875
+          },
+          {
+            "startSeconds": 1.8331875,
+            "durationSeconds": 0.068875
+          },
+          {
+            "startSeconds": 2.181375,
+            "durationSeconds": 0.0579375
+          },
+          {
+            "startSeconds": 2.3849375,
+            "durationSeconds": 0.0446875
+          },
+          {
+            "startSeconds": 2.8004375,
+            "durationSeconds": 0.03675
+          },
+          {
+            "startSeconds": 3.0276875,
+            "durationSeconds": 0.0375
+          },
+          {
+            "startSeconds": 3.4209375,
+            "durationSeconds": 0.045875
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "자리에 버리신 히치 자리에 버리는 자리",
+      "elapsedMs": 14316.20000000298,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 21,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 버리신 히치 자리에 버리는 자리",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 21,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 버리신 히치 자리에 버리는 자리",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "05-tried-none__clean",
+      "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261212,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "elapsedMs": 15047.69999999553,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "05-tried-none__fan-15db",
+      "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261213,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "elapsedMs": 14385.79999999702,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 6,
+          "end": 9,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "돌봄을",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "답변에서 밝힌 준비나 앞으로의 행동을 구체적으로 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "05-tried-none__typing-5db",
+      "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261214,
+        "referenceSnrDb": 4.999999999999998,
+        "effectiveSnrDb": 4.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5150097090035562,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.059625
+          },
+          {
+            "startSeconds": 0.6465625,
+            "durationSeconds": 0.074
+          },
+          {
+            "startSeconds": 0.9705625,
+            "durationSeconds": 0.0354375
+          },
+          {
+            "startSeconds": 1.3881875,
+            "durationSeconds": 0.035875
+          },
+          {
+            "startSeconds": 1.7818125,
+            "durationSeconds": 0.0355
+          },
+          {
+            "startSeconds": 1.9801875,
+            "durationSeconds": 0.0503125
+          },
+          {
+            "startSeconds": 2.28475,
+            "durationSeconds": 0.05975
+          },
+          {
+            "startSeconds": 2.5103125,
+            "durationSeconds": 0.0501875
+          },
+          {
+            "startSeconds": 2.828875,
+            "durationSeconds": 0.03825
+          },
+          {
+            "startSeconds": 3.233,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 3.6768125,
+            "durationSeconds": 0.0680625
+          },
+          {
+            "startSeconds": 3.9235625,
+            "durationSeconds": 0.0695625
+          },
+          {
+            "startSeconds": 4.1378125,
+            "durationSeconds": 0.0565
+          },
+          {
+            "startSeconds": 4.334375,
+            "durationSeconds": 0.0735625
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "저는 직접 브이범을 태풍 경험이 있다고 있습니다.",
+      "elapsedMs": 14708,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 22,
+          "end": 27,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 27,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있다고 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "05-tried-none__mixed-0db-critical",
+      "gold": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261215,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.3484399964954017,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.4695931735310726,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 3.165,
+          "endSeconds": 4.585,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.046
+          },
+          {
+            "startSeconds": 0.7098125,
+            "durationSeconds": 0.0703125
+          },
+          {
+            "startSeconds": 1.065125,
+            "durationSeconds": 0.0615
+          },
+          {
+            "startSeconds": 1.397375,
+            "durationSeconds": 0.051875
+          },
+          {
+            "startSeconds": 1.6049375,
+            "durationSeconds": 0.0404375
+          },
+          {
+            "startSeconds": 1.8290625,
+            "durationSeconds": 0.0573125
+          },
+          {
+            "startSeconds": 2.173625,
+            "durationSeconds": 0.043375
+          },
+          {
+            "startSeconds": 2.6253125,
+            "durationSeconds": 0.05275
+          },
+          {
+            "startSeconds": 2.954625,
+            "durationSeconds": 0.042375
+          },
+          {
+            "startSeconds": 3.2676875,
+            "durationSeconds": 0.057125
+          },
+          {
+            "startSeconds": 3.59775,
+            "durationSeconds": 0.0575625
+          },
+          {
+            "startSeconds": 4.0198125,
+            "durationSeconds": 0.06525
+          },
+          {
+            "startSeconds": 4.2635625,
+            "durationSeconds": 0.0355625
+          },
+          {
+            "startSeconds": 4.47025,
+            "durationSeconds": 0.0594375
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience",
+      "forbidAutoExperience": true,
+      "text": "자랑은 직접 그분이 쉽게 사용하는 거에요",
+      "elapsedMs": 15056.79999999702,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 22,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자랑은 직접 그분이 쉽게 사용하는 거에요",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 22,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자랑은 직접 그분이 쉽게 사용하는 거에요",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "06-tried-present__clean",
+      "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261212,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "elapsedMs": 15181.20000000298,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "06-tried-present__fan-15db",
+      "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261213,
+        "referenceSnrDb": 14.999999999999998,
+        "effectiveSnrDb": 14.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "elapsedMs": 15223.89999999851,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 6,
+          "end": 9,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "돌봄을",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "06-tried-present__typing-5db",
+      "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261214,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5946477311020751,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.059875
+          },
+          {
+            "startSeconds": 0.707,
+            "durationSeconds": 0.059625
+          },
+          {
+            "startSeconds": 1.0035625,
+            "durationSeconds": 0.074
+          },
+          {
+            "startSeconds": 1.3275625,
+            "durationSeconds": 0.0354375
+          },
+          {
+            "startSeconds": 1.7451875,
+            "durationSeconds": 0.035875
+          },
+          {
+            "startSeconds": 2.1388125,
+            "durationSeconds": 0.0355
+          },
+          {
+            "startSeconds": 2.3371875,
+            "durationSeconds": 0.0503125
+          },
+          {
+            "startSeconds": 2.64175,
+            "durationSeconds": 0.05975
+          },
+          {
+            "startSeconds": 2.8673125,
+            "durationSeconds": 0.0501875
+          },
+          {
+            "startSeconds": 3.185875,
+            "durationSeconds": 0.03825
+          },
+          {
+            "startSeconds": 3.59,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 4.0338125,
+            "durationSeconds": 0.0680625
+          },
+          {
+            "startSeconds": 4.2805625,
+            "durationSeconds": 0.0695625
+          },
+          {
+            "startSeconds": 4.4948125,
+            "durationSeconds": 0.0301875
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "저는 직접 불범해 본 경험이 있습니다.",
+      "elapsedMs": 14998.70000000298,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 12,
+          "end": 15,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "경험이",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 21,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "06-tried-present__mixed-0db-critical",
+      "gold": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261215,
+        "referenceSnrDb": 0,
+        "effectiveSnrDb": -0.3964204911450001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5253204569721425,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 3.165,
+          "endSeconds": 4.525,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.072625
+          },
+          {
+            "startSeconds": 0.590625,
+            "durationSeconds": 0.0544375
+          },
+          {
+            "startSeconds": 1.03625,
+            "durationSeconds": 0.069125
+          },
+          {
+            "startSeconds": 1.43025,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 1.88275,
+            "durationSeconds": 0.045
+          },
+          {
+            "startSeconds": 2.1284375,
+            "durationSeconds": 0.051625
+          },
+          {
+            "startSeconds": 2.562375,
+            "durationSeconds": 0.05175
+          },
+          {
+            "startSeconds": 3.018875,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 3.368375,
+            "durationSeconds": 0.0749375
+          },
+          {
+            "startSeconds": 3.6040625,
+            "durationSeconds": 0.037125
+          },
+          {
+            "startSeconds": 3.980125,
+            "durationSeconds": 0.054125
+          },
+          {
+            "startSeconds": 4.3503125,
+            "durationSeconds": 0.0668125
+          }
+        ]
+      },
+      "semanticPolarity": "experience-present",
+      "forbidAutoExperience": false,
+      "text": "자리에 직접 드릴게요.",
+      "elapsedMs": 13832.80000000447,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 12,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 직접 드릴게요.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 12,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "자리에 직접 드릴게요.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "07-none-future__clean",
+      "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261612,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience-explicit-future",
+      "forbidAutoExperience": true,
+      "text": "음 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "elapsedMs": 18938.79999999702,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 2,
+          "end": 4,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "저는",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 11,
+          "end": 20,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다.",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "07-none-future__fan-15db",
+      "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261613,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "no-experience-explicit-future",
+      "forbidAutoExperience": true,
+      "text": "그 다음은 저는 아직 2번 경험이 없습니다 앞으로 이동 구조와 보고 철차를 배우겠습니다",
+      "elapsedMs": 13239.60000000149,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 6,
+          "end": 8,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "저는",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 15,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "07-none-future__typing-5db",
+      "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261614,
+        "referenceSnrDb": 5,
+        "effectiveSnrDb": 5,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.7308794494504094,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0515
+          },
+          {
+            "startSeconds": 0.70575,
+            "durationSeconds": 0.0585625
+          },
+          {
+            "startSeconds": 1.004875,
+            "durationSeconds": 0.041125
+          },
+          {
+            "startSeconds": 1.26825,
+            "durationSeconds": 0.0723125
+          },
+          {
+            "startSeconds": 1.567125,
+            "durationSeconds": 0.0448125
+          },
+          {
+            "startSeconds": 1.913125,
+            "durationSeconds": 0.0721875
+          },
+          {
+            "startSeconds": 2.2849375,
+            "durationSeconds": 0.0385
+          },
+          {
+            "startSeconds": 2.4729375,
+            "durationSeconds": 0.0403125
+          },
+          {
+            "startSeconds": 2.87,
+            "durationSeconds": 0.062
+          },
+          {
+            "startSeconds": 3.056375,
+            "durationSeconds": 0.0465
+          },
+          {
+            "startSeconds": 3.40275,
+            "durationSeconds": 0.044375
+          },
+          {
+            "startSeconds": 3.6613125,
+            "durationSeconds": 0.0535
+          },
+          {
+            "startSeconds": 4.074125,
+            "durationSeconds": 0.071125
+          },
+          {
+            "startSeconds": 4.335875,
+            "durationSeconds": 0.06875
+          },
+          {
+            "startSeconds": 4.5274375,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 4.925875,
+            "durationSeconds": 0.0716875
+          },
+          {
+            "startSeconds": 5.123375,
+            "durationSeconds": 0.061
+          },
+          {
+            "startSeconds": 5.4996875,
+            "durationSeconds": 0.0446875
+          },
+          {
+            "startSeconds": 5.9236875,
+            "durationSeconds": 0.06125
+          },
+          {
+            "startSeconds": 6.24175,
+            "durationSeconds": 0.069875
+          },
+          {
+            "startSeconds": 6.5413125,
+            "durationSeconds": 0.0435
+          },
+          {
+            "startSeconds": 6.973,
+            "durationSeconds": 0.04475
+          },
+          {
+            "startSeconds": 7.2385625,
+            "durationSeconds": 0.0646875
+          },
+          {
+            "startSeconds": 7.659,
+            "durationSeconds": 0.040125
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience-explicit-future",
+      "forbidAutoExperience": true,
+      "text": "저는 아직 불봉 경험이 없습니다 앞으로 이동 구조와 구조 설치를 배우도록 하겠습니다",
+      "elapsedMs": 10627.10000000149,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "confidence",
+          "start": 0,
+          "end": 2,
+          "prompt": "다음 질문에 영향을 주는 이 부분이 맞는지 확인해 주세요. 다르면 이 부분만 고쳐 주세요."
+        },
+        "excerpt": "저는",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 9,
+          "end": 17,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 없습니다",
+        "branch": "plan",
+        "kind": "usable",
+        "reason": "본인의 실제 경험으로 단정하지 않고 현장 투입 전 준비를 묻습니다.",
+        "negatedExperience": true
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "07-none-future__mixed-0db-critical",
+      "gold": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261615,
+        "referenceSnrDb": 1.928654933106574e-15,
+        "effectiveSnrDb": -0.17506697811979965,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.665703803253829,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 2.505,
+          "endSeconds": 4.0249999999999995,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0659375
+          },
+          {
+            "startSeconds": 0.5300625,
+            "durationSeconds": 0.0694375
+          },
+          {
+            "startSeconds": 0.9788125,
+            "durationSeconds": 0.0655625
+          },
+          {
+            "startSeconds": 1.4030625,
+            "durationSeconds": 0.0736875
+          },
+          {
+            "startSeconds": 1.6278125,
+            "durationSeconds": 0.0393125
+          },
+          {
+            "startSeconds": 1.923625,
+            "durationSeconds": 0.0635
+          },
+          {
+            "startSeconds": 2.3599375,
+            "durationSeconds": 0.042
+          },
+          {
+            "startSeconds": 2.7366875,
+            "durationSeconds": 0.05075
+          },
+          {
+            "startSeconds": 2.9259375,
+            "durationSeconds": 0.072125
+          },
+          {
+            "startSeconds": 3.267,
+            "durationSeconds": 0.0510625
+          },
+          {
+            "startSeconds": 3.6195,
+            "durationSeconds": 0.0465
+          },
+          {
+            "startSeconds": 3.93175,
+            "durationSeconds": 0.0543125
+          },
+          {
+            "startSeconds": 4.2136875,
+            "durationSeconds": 0.0734375
+          },
+          {
+            "startSeconds": 4.564,
+            "durationSeconds": 0.0423125
+          },
+          {
+            "startSeconds": 4.753625,
+            "durationSeconds": 0.06725
+          },
+          {
+            "startSeconds": 5.17725,
+            "durationSeconds": 0.0580625
+          },
+          {
+            "startSeconds": 5.6199375,
+            "durationSeconds": 0.0479375
+          },
+          {
+            "startSeconds": 6.0706875,
+            "durationSeconds": 0.0553125
+          },
+          {
+            "startSeconds": 6.4548125,
+            "durationSeconds": 0.066875
+          },
+          {
+            "startSeconds": 6.7003125,
+            "durationSeconds": 0.0543125
+          },
+          {
+            "startSeconds": 6.888875,
+            "durationSeconds": 0.0448125
+          },
+          {
+            "startSeconds": 7.3120625,
+            "durationSeconds": 0.0545
+          },
+          {
+            "startSeconds": 7.703375,
+            "durationSeconds": 0.05
+          }
+        ]
+      },
+      "semanticPolarity": "no-experience-explicit-future",
+      "forbidAutoExperience": true,
+      "text": "아프로 이 정도가 더 잘 들으셔도 됩니다.",
+      "elapsedMs": 10349.5,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 23,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "아프로 이 정도가 더 잘 들으셔도 됩니다.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 23,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "아프로 이 정도가 더 잘 들으셔도 됩니다.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "08-past-action__clean",
+      "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261712,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "self-past-action",
+      "forbidAutoExperience": false,
+      "text": "저는 요양원에서 어르신에 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "elapsedMs": 11108.60000000149,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "08-past-action__fan-15db",
+      "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261713,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "semanticPolarity": "self-past-action",
+      "forbidAutoExperience": false,
+      "text": "저는 유양원에서 어르신에 식사를 도왔습니다 식사량을 확인한 뒤 담당자에게 보고했습니다",
+      "elapsedMs": 14419.20000000298,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "08-past-action__typing-5db",
+      "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261714,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5832615776673457,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0464375
+          },
+          {
+            "startSeconds": 0.533625,
+            "durationSeconds": 0.0414375
+          },
+          {
+            "startSeconds": 0.971625,
+            "durationSeconds": 0.05075
+          },
+          {
+            "startSeconds": 1.16925,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 1.5678125,
+            "durationSeconds": 0.0631875
+          },
+          {
+            "startSeconds": 2.0236875,
+            "durationSeconds": 0.0489375
+          },
+          {
+            "startSeconds": 2.2864375,
+            "durationSeconds": 0.047125
+          },
+          {
+            "startSeconds": 2.6304375,
+            "durationSeconds": 0.0473125
+          },
+          {
+            "startSeconds": 2.9615625,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 3.3846875,
+            "durationSeconds": 0.039875
+          },
+          {
+            "startSeconds": 3.6233125,
+            "durationSeconds": 0.0615625
+          },
+          {
+            "startSeconds": 3.96175,
+            "durationSeconds": 0.043125
+          },
+          {
+            "startSeconds": 4.2605625,
+            "durationSeconds": 0.057375
+          },
+          {
+            "startSeconds": 4.658375,
+            "durationSeconds": 0.068125
+          },
+          {
+            "startSeconds": 4.9319375,
+            "durationSeconds": 0.0489375
+          },
+          {
+            "startSeconds": 5.297125,
+            "durationSeconds": 0.0395625
+          },
+          {
+            "startSeconds": 5.4821875,
+            "durationSeconds": 0.0618125
+          },
+          {
+            "startSeconds": 5.8863125,
+            "durationSeconds": 0.070125
+          },
+          {
+            "startSeconds": 6.268875,
+            "durationSeconds": 0.0428125
+          },
+          {
+            "startSeconds": 6.6649375,
+            "durationSeconds": 0.057375
+          },
+          {
+            "startSeconds": 6.9293125,
+            "durationSeconds": 0.040625
+          },
+          {
+            "startSeconds": 7.28425,
+            "durationSeconds": 0.0533125
+          },
+          {
+            "startSeconds": 7.62625,
+            "durationSeconds": 0.06775
+          },
+          {
+            "startSeconds": 7.894375,
+            "durationSeconds": 0.0594375
+          }
+        ]
+      },
+      "semanticPolarity": "self-past-action",
+      "forbidAutoExperience": false,
+      "text": "저는 유양원에서 어두신의 식사를 도왔습니다. 식사량을 확인한 등 담당자에게 보고했습니다.",
+      "elapsedMs": 14306.20000000298,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    },
+    {
+      "id": "08-past-action__mixed-0db-critical",
+      "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261715,
+        "referenceSnrDb": -1.9286549331065743e-15,
+        "effectiveSnrDb": -1.9286549331065743e-15,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5867455050364482,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 0.5785625,
+            "durationSeconds": 0.040125
+          },
+          {
+            "startSeconds": 0.8023125,
+            "durationSeconds": 0.0608125
+          },
+          {
+            "startSeconds": 1.249875,
+            "durationSeconds": 0.0370625
+          },
+          {
+            "startSeconds": 1.5816875,
+            "durationSeconds": 0.0403125
+          },
+          {
+            "startSeconds": 1.9339375,
+            "durationSeconds": 0.0355625
+          },
+          {
+            "startSeconds": 2.1318125,
+            "durationSeconds": 0.054
+          },
+          {
+            "startSeconds": 2.4895,
+            "durationSeconds": 0.037875
+          },
+          {
+            "startSeconds": 2.8953125,
+            "durationSeconds": 0.036
+          },
+          {
+            "startSeconds": 3.1079375,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 3.435625,
+            "durationSeconds": 0.0656875
+          },
+          {
+            "startSeconds": 3.72675,
+            "durationSeconds": 0.0454375
+          },
+          {
+            "startSeconds": 4.0605,
+            "durationSeconds": 0.0395625
+          },
+          {
+            "startSeconds": 4.313125,
+            "durationSeconds": 0.06
+          },
+          {
+            "startSeconds": 4.4943125,
+            "durationSeconds": 0.043
+          },
+          {
+            "startSeconds": 4.69625,
+            "durationSeconds": 0.045125
+          },
+          {
+            "startSeconds": 5.1338125,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 5.5763125,
+            "durationSeconds": 0.0480625
+          },
+          {
+            "startSeconds": 6.0241875,
+            "durationSeconds": 0.071
+          },
+          {
+            "startSeconds": 6.4181875,
+            "durationSeconds": 0.0429375
+          },
+          {
+            "startSeconds": 6.7304375,
+            "durationSeconds": 0.071125
+          },
+          {
+            "startSeconds": 6.9720625,
+            "durationSeconds": 0.0644375
+          },
+          {
+            "startSeconds": 7.3885,
+            "durationSeconds": 0.041875
+          },
+          {
+            "startSeconds": 7.57025,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 7.8838125,
+            "durationSeconds": 0.04625
+          },
+          {
+            "startSeconds": 8.0705,
+            "durationSeconds": 0.0045
+          }
+        ]
+      },
+      "semanticPolarity": "self-past-action",
+      "forbidAutoExperience": false,
+      "text": "저는 위험원에서 어두운의 집사를 주었습니다. 식다량을 받은 한 등 당단되기 위해 주기로 했습니다.",
+      "elapsedMs": 14163.5,
+      "before": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 24,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "저는 위험원에서 어두운의 집사를 주었습니다.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "semantic",
+          "start": 0,
+          "end": 24,
+          "prompt": "본인이 직접 한 일이나 준비에 관한 답변인지 확인하고, 다르면 고쳐 주세요."
+        },
+        "excerpt": "저는 위험원에서 어두운의 집사를 주었습니다.",
+        "branch": null,
+        "kind": "repair",
+        "reason": "detail",
+        "negatedExperience": null
+      },
+      "unsafeBefore": false,
+      "unsafeAfter": false
+    }
+  ],
+  "highConfidenceChallenge": [
+    {
+      "text": "저는 돌봄 경험이 있습니다.",
+      "syntheticResultInjection": true,
+      "notActualDecoderConfidence": true,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 6,
+          "end": 15,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      }
+    },
+    {
+      "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "syntheticResultInjection": true,
+      "notActualDecoderConfidence": true,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 12,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "도운 적이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다.",
+        "negatedExperience": false
+      }
+    },
+    {
+      "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "syntheticResultInjection": true,
+      "notActualDecoderConfidence": true,
+      "before": {
+        "decision": "auto",
+        "issue": null,
+        "excerpt": null,
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      },
+      "after": {
+        "decision": "clarify",
+        "issue": {
+          "kind": "experience-polarity",
+          "start": 14,
+          "end": 23,
+          "prompt": "본인의 경험이 있는지 없는지를 이 부분만 확인해 주세요. 반대로 들렸다면 고쳐 주세요."
+        },
+        "excerpt": "경험이 있습니다.",
+        "branch": "experience",
+        "kind": "usable",
+        "reason": "본인이 경험했다고 말한 내용을 구체적으로 묻습니다.",
+        "negatedExperience": false
+      }
+    }
+  ]
+}

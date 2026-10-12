@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-11T20:38:26.052Z",
+  "commit": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+  "loadedRoomSHA256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+  "completedRoomVisible": true,
+  "reopenedRoomVisible": true,
+  "qualityClearRoomVisible": true,
+  "verification": "Actual CUA browser: two questions completed without opening preview, then first preview; close and reopen; quality changed from 4K to 720p clearing both video buffers, then preview. Screenshots visually show all three interviewers.",
+  "screenshots": [
+    "room-preview-fix-public-after.png",
+    "room-preview-fix-public-reopen.png",
+    "room-preview-fix-public-quality-clear.png"
+  ],
+  "state": {
+    "phase": "면접 종료",
+    "quality": "720p",
+    "videos": [
+      {
+        "paused": true,
+        "readyState": 0,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-question-tail-4k.mp4"
+      },
+      {
+        "paused": true,
+        "readyState": 0,
+        "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4"
+      }
+    ]
+  },
+  "console": [],
+  "questHardwareVerified": false
+}

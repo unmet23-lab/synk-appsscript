@@ -1,0 +1,314 @@
+{
+  "createdAt": "2026-10-11T17:33:35.001Z",
+  "generator": "tools/build-path-room-surfaces.mjs",
+  "method": "Existing pixels only: optional UV crop or video first-frame extraction, FFmpeg Lanczos resizing, JPEG q=2 / yuvj444p. No generative reconstruction.",
+  "ffmpegVersion": "ffmpeg version 9.0.2-full_build-www.gyan.dev Copyright (c) 2000-2026 the FFmpeg developers",
+  "longEdgePixels": 3840,
+  "paidCalls": 0,
+  "aiSuperResolution": false,
+  "native4kPhotography": false,
+  "coordinateConvention": "UV rectangles use lower-left origin. Pixel crops use upper-left origin with nearest integer source pixels. Output heights are rounded to the nearest even pixel; near-16:9 1672x941 sources are normalized to3840x2160.",
+  "assets": [
+    {
+      "id": "room-reference",
+      "usage": "Registration reference for room architecture; not the pre-start poster.",
+      "source": {
+        "path": "assets/interview/film/room-reference.png",
+        "bytes": 2010284,
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "codec_name": "png",
+        "width": 1672,
+        "height": 941,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 1.7777777777777777,
+      "filter": "format=rgb24,scale=3840:2160:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/film/room-reference-4k.jpg",
+        "bytes": 694928,
+        "sha256": "c5b6e85e2072387ccc2ab04707b6614d096046aaa851978b6d832a325f790e8d",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 2160,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "front-room-extension",
+      "usage": "Existing room photograph resized without scene changes.",
+      "source": {
+        "path": "assets/interview/room/front-room-extension.png",
+        "bytes": 1904510,
+        "sha256": "29c5b32965990779444db6c084e003e503d3b8aabd9c415e6e7f54584986e8ac",
+        "codec_name": "png",
+        "width": 1672,
+        "height": 941,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 1.7777777777777777,
+      "filter": "format=rgb24,scale=3840:2160:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/front-room-extension-4k.jpg",
+        "bytes": 653669,
+        "sha256": "9f99731fbc065d4e018b23a75fc5b4dd95a0a902ae55fc2afa09990e08aa8abf",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 2160,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "front-room-wide",
+      "usage": "Existing room photograph resized without scene changes.",
+      "source": {
+        "path": "assets/interview/room/front-room-wide.png",
+        "bytes": 1935054,
+        "sha256": "df76a59c05c6bbe7883a5774eb882370805052ee10f4e169b49c46c7d16fa75d",
+        "codec_name": "png",
+        "width": 1672,
+        "height": 941,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 1.7777777777777777,
+      "filter": "format=rgb24,scale=3840:2160:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/front-room-wide-4k.jpg",
+        "bytes": 698348,
+        "sha256": "9982f83f547f6fd5d3e5411638fdf8ca2d3d9fa0b97f513fcf9863c3534bd206",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 2160,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "left-wall",
+      "usage": "Existing room photograph resized without scene changes.",
+      "source": {
+        "path": "assets/interview/room/left-wall-photo.png",
+        "bytes": 1991122,
+        "sha256": "24133bc43b53a8d3497731b13581ee4a3e7c28b255db28d8bbfd83b1c79e915e",
+        "codec_name": "png",
+        "width": 1969,
+        "height": 799,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 2.4643304130162704,
+      "filter": "format=rgb24,scale=3840:1558:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/left-wall-photo-4k.jpg",
+        "bytes": 784788,
+        "sha256": "bb018be868fcf3c600ffd72f866ac3d63acf95031dd34985b083b39cefa3ce4f",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 1558,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "right-wall",
+      "usage": "Existing room photograph resized without scene changes.",
+      "source": {
+        "path": "assets/interview/room/right-wall-photo.png",
+        "bytes": 2339978,
+        "sha256": "9817fce57daa4228e023f772a99fd1be4b3133c301c73367ae0d32f00e4c44ce",
+        "codec_name": "png",
+        "width": 1971,
+        "height": 798,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 2.469924812030075,
+      "filter": "format=rgb24,scale=3840:1554:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/right-wall-photo-4k.jpg",
+        "bytes": 541716,
+        "sha256": "b6452e42c7ba2ca9beb829b53a01ebbf2c8f9ee3d07211633607c42b9b88d703",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 1554,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "back-wall",
+      "usage": "Existing room photograph resized without scene changes.",
+      "source": {
+        "path": "assets/interview/room/back-wall-elevation.png",
+        "bytes": 2377155,
+        "sha256": "6548a5068e005a0ee9b799ccd941b0c258036c30076cb4e193035998310fe7d0",
+        "codec_name": "png",
+        "width": 1629,
+        "height": 965,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": null,
+      "targetAspectRatio": 1.688082901554404,
+      "filter": "format=rgb24,scale=3840:2274:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/back-wall-elevation-4k.jpg",
+        "bytes": 724484,
+        "sha256": "22bf009f9f600f1ef37c32a7d8761eefd924eb54ceedfec149fc46daccf6afa8",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 2274,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "room-poster",
+      "usage": "First decoded frame of the actual default question video; do not substitute the generation reference.",
+      "source": {
+        "path": "assets/interview/film/strict-question-4k.mp4",
+        "bytes": 9901952,
+        "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+        "codec_name": "h264",
+        "width": 3840,
+        "height": 2160,
+        "pix_fmt": "yuv420p"
+      },
+      "cropUv": null,
+      "cropPixelsUpperLeft": null,
+      "frameSeconds": 0,
+      "targetAspectRatio": 1.7777777777777777,
+      "filter": "format=rgb24,scale=3840:2160:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/film/room-poster-4k.jpg",
+        "bytes": 552234,
+        "sha256": "241bea1da5c3b48ba1c085aa3db6bc0ec7bada2678a23079a12b5b0b95858fcc",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 2160,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "carpet",
+      "usage": "Existing carpet strip only. Texture UV=(planeUv.x,carpetV); repeat/mirror at the recorded physical aspect.",
+      "source": {
+        "path": "assets/interview/room/back-wall-photo.png",
+        "bytes": 2401257,
+        "sha256": "86278c99a38a6d7d7df4ca3dfa35d7b4d9d71d1ad8912170a2e8ecf1fe6b2d87",
+        "codec_name": "png",
+        "width": 1774,
+        "height": 887,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": {
+        "u": 0.07,
+        "v": 0.006,
+        "width": 0.49,
+        "height": 0.1
+      },
+      "cropPixelsUpperLeft": {
+        "x": 124,
+        "y": 793,
+        "width": 869,
+        "height": 89
+      },
+      "frameSeconds": null,
+      "targetAspectRatio": 9.8,
+      "filter": "format=rgb24,crop=869:89:124:793:exact=1,scale=3840:392:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/carpet-4k.jpg",
+        "bytes": 161270,
+        "sha256": "446eeca6ca7d3e5d6a672503b71516d6f7aabc9901f91bd6746a121b9599139a",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 392,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    },
+    {
+      "id": "desk",
+      "usage": "Existing empty wood strip only. Texture UV=(planeUv.x,1-planeUv.y) matches the original room shader.",
+      "source": {
+        "path": "assets/interview/film/room-reference.png",
+        "bytes": 2010284,
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "codec_name": "png",
+        "width": 1672,
+        "height": 941,
+        "pix_fmt": "rgb24",
+        "color_range": "pc"
+      },
+      "cropUv": {
+        "u": 0.45,
+        "v": 0.16,
+        "width": 0.19,
+        "height": 0.05
+      },
+      "cropPixelsUpperLeft": {
+        "x": 752,
+        "y": 743,
+        "width": 318,
+        "height": 47
+      },
+      "frameSeconds": null,
+      "targetAspectRatio": 6.76595744680851,
+      "filter": "format=rgb24,crop=318:47:752:743:exact=1,scale=3840:568:flags=lanczos,setsar=1,format=yuvj444p",
+      "output": {
+        "path": "assets/interview/room/desk-4k.jpg",
+        "bytes": 45160,
+        "sha256": "ef5685f11a39bd476de2bc638c6cce5e52117473410a465eb082e2e0edd8fc9a",
+        "codec_name": "mjpeg",
+        "width": 3840,
+        "height": 568,
+        "sample_aspect_ratio": "1:1",
+        "pix_fmt": "yuvj444p",
+        "color_range": "pc"
+      }
+    }
+  ],
+  "verification": {
+    "verifiedAt": "2026-10-11T17:33:48.560Z",
+    "sourceFilesUnchanged": true,
+    "freshMetadataAndHashesMatched": true,
+    "allJpegsDecoded": true,
+    "assets": 9,
+    "totalOutputBytes": 4856597,
+    "browserRendered": false,
+    "headsetVerified": false,
+    "newImageGeneration": false,
+    "paidCalls": 0
+  }
+}

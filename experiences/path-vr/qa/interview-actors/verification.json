@@ -1,0 +1,97 @@
+{
+  "checkedAt": "2026-10-11",
+  "checks": [
+    {
+      "name": "three separate skinned humans loaded",
+      "passed": true
+    },
+    {
+      "name": "skin, suit and hair textures really loaded",
+      "passed": true
+    },
+    {
+      "name": "head height fits seated interview",
+      "passed": true
+    },
+    {
+      "name": "speaking mouth opens while other actors stay silent",
+      "passed": true
+    },
+    {
+      "name": "eyelid morph closes",
+      "passed": true
+    },
+    {
+      "name": "no browser errors",
+      "passed": true
+    },
+    {
+      "name": "no external runtime requests",
+      "passed": true
+    }
+  ],
+  "loaded": {
+    "actors": [
+      {
+        "id": "lead",
+        "morphMeshes": 3,
+        "texturedMeshes": 3,
+        "head": [
+          -0.007500445424364305,
+          1.1870608131348472,
+          -1.3727746723493632
+        ],
+        "root": [
+          0,
+          0,
+          -1.35
+        ]
+      },
+      {
+        "id": "specialist",
+        "morphMeshes": 3,
+        "texturedMeshes": 3,
+        "head": [
+          -1.3868683385344187,
+          1.1903787880058552,
+          -1.4192485551292788
+        ],
+        "root": [
+          -1.4,
+          0,
+          -1.35
+        ]
+      },
+      {
+        "id": "observer",
+        "morphMeshes": 3,
+        "texturedMeshes": 3,
+        "head": [
+          1.3923384354461206,
+          1.1872940433125683,
+          -1.3737688551001124
+        ],
+        "root": [
+          1.4,
+          0,
+          -1.35
+        ]
+      }
+    ],
+    "drawCalls": 12,
+    "triangles": 23732
+  },
+  "animated": {
+    "mouth": 0.256,
+    "silent": 0,
+    "yaw": 0.3524437839512462
+  },
+  "errors": [],
+  "external": [],
+  "hardwareVR": "not-tested",
+  "limitations": [
+    "Realistic-style 3D game characters, not photoreal video",
+    "Procedural speech envelope is not phoneme lip sync",
+    "Browser visual QA only, headset presence unverified"
+  ]
+}

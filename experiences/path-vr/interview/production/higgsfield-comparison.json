@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "checkedDate": "2026-10-11",
+  "status": "generated-awaiting-user-review",
+  "provider": "Claude-configured Higgsfield MCP",
+  "authorization": {
+    "userRequest": "힉스필드로 480p 샘플, 시댄스와 완3.0 각각 한번씩 제작",
+    "maxJobsPerModel": 1,
+    "automaticRetries": false,
+    "newSubscriptionOrTopUpAuthorized": false,
+    "scope": "This two-video comparison supersedes earlier free-only preparation for these samples only; no larger batch or new purchase authorized."
+  },
+  "reference": {
+    "path": "assets/interview/film/room-reference.png",
+    "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+    "uploadId": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+    "uploadStatus": "imported-and-confirmed-in-MCP-account",
+    "description": "Original AI-generated reference with three fictional adults.",
+    "previousCliUploadId": "085fd2ee-5832-4394-bf4e-794bde3eed0a"
+  },
+  "promptFile": "higgsfield-comparison-prompt.txt",
+  "promptSha256": "eacddd0b3889621880a71f041fe9fab81ecd066ef0a0b54b66a9cd520de97091",
+  "commonParams": {
+    "start_image_upload_id": "b5fe38c5-48f0-4ed0-87ce-3bbe5ac51c19",
+    "duration": 10,
+    "resolution": "480p",
+    "aspect_ratio": "16:9",
+    "generate_audio": true
+  },
+  "samples": [
+    {
+      "model": "Seedance 2.5",
+      "job_type": "seedance_2_5",
+      "params": {
+        "mode": "omni_reference",
+        "draft": false
+      },
+      "quotedCredits": 30,
+      "generationAttempts": 1,
+      "jobId": "2bd9769e-b90d-45e8-9a0f-35179d1ac50a",
+      "outputFile": "assets/interview/film/seedance-sample.mp4",
+      "status": "completed",
+      "submittedAt": "2026-10-11T13:03:52.170069+00:00",
+      "sha256": "96496580955345a07dc908dfa358b18ed3430a82944b157b18288db2266c38a4",
+      "actual": {
+        "bytes": 377052,
+        "width": 854,
+        "height": 480,
+        "durationSeconds": 10.041667,
+        "videoCodec": "h264",
+        "frameRate": "24/1",
+        "audioCodec": "aac",
+        "audioChannels": 2
+      }
+    },
+    {
+      "model": "Wan 3.0",
+      "job_type": "wan3_0",
+      "params": {
+        "enable_thinking": false
+      },
+      "quotedCredits": 10,
+      "generationAttempts": 1,
+      "jobId": "c7f57cff-1a3b-4ca3-9fea-be419df60169",
+      "outputFile": "assets/interview/film/wan-sample.mp4",
+      "status": "completed",
+      "submittedAt": "2026-10-11T13:03:54.817940+00:00",
+      "sha256": "cbf9d7a585e0a26a3d0528517d2939f9c3b36e71b479354f748fa68d411a8eed",
+      "actual": {
+        "bytes": 3502744,
+        "width": 854,
+        "height": 480,
+        "durationSeconds": 10.030998,
+        "videoCodec": "h264",
+        "frameRate": "30/1",
+        "audioCodec": "aac",
+        "audioChannels": 2
+      }
+    }
+  ],
+  "quoteEvidence": {
+    "method": "Higgsfield MCP generate_video get_cost with actual reference and prompt",
+    "totalCredits": 40,
+    "activeWorkspacePlan": "ultra",
+    "shortfallCredits": 0,
+    "recheckBeforeExecution": true,
+    "availableCreditsBefore": 6891.16,
+    "availableCreditsAfterSubmission": 6851.16,
+    "creditsDebited": 40
+  },
+  "webUnlimited": {
+    "cliEligible": false,
+    "accountWebEligibility": "unknown; in-app browser attachment timed out twice",
+    "source": "https://higgsfield.ai/creator-hub/help-center/integrations/how-do-i-access-higgsfield-via-cli"
+  },
+  "review": {
+    "status": "technical-and-sampled-frame-check-complete",
+    "criteria": [
+      "same three faces throughout",
+      "exact Korean sentence and synchronized mouth",
+      "side interviewers remain silent",
+      "continuous speaking-to-listening transition",
+      "natural independent blinks and restrained gestures",
+      "stable camera, lighting, hands and props"
+    ],
+    "questVerified": false,
+    "stereoVR": false,
+    "asr": {
+      "method": "Local cached faster-whisper-small, Korean, no external ASR calls",
+      "bothMatchRequestedSentence": true,
+      "humanListeningVerified": false
+    },
+    "visual": {
+      "method": "One sampled frame per second from each original video",
+      "observations": "Both retain the three identities and fixed composition; center speech settles into closed-mouth listening; right interviewer looks down and returns. Side reactions remain restrained.",
+      "limitations": "Sampled frames do not verify continuous lip sync or guarantee naturalness. Separate-clip loop continuity and headset presence are unverified."
+    },
+    "comparisonPage": "interview/film/compare.html",
+    "browserPlaybackVerified": true,
+    "evidence": "qa/interview-film/verification.json",
+    "userPreference": {
+      "selectedModel": "Seedance 2.5",
+      "quote": "시댄스가 확실히 자연스럽네",
+      "scope": "Preference on the first samples, not approval of later clips or Quest readiness"
+    }
+  },
+  "connection": {
+    "source": "Existing Claude Code MCP configuration for this project",
+    "endpoint": "https://mcp.higgsfield.ai/mcp",
+    "workspaceId": "ff780df7-d680-4ac7-8191-c9b2eb746be5",
+    "workspaceType": "private",
+    "plan": "ultra",
+    "email": "not-returned-by-MCP; identity endpoint returned 403",
+    "persistentCliAuthChanged": false,
+    "credentialsCopied": false
+  }
+}

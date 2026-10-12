@@ -1,0 +1,9 @@
+{
+  "tests": 63,
+  "passed": 63,
+  "failed": 0,
+  "newRegressionTests": 2,
+  "newTestsFailedBeforeFix": true,
+  "command": "node --test experiences/path-vr/tests/interview-rehearsal-ui.test.mjs experiences/path-vr/tests/interview-rehearsal.test.mjs experiences/path-vr/tests/interview-strict-vr.test.mjs experiences/path-vr/tests/interview-room-space.test.mjs",
+  "note": "Existing Node vendored Three module-type warning; no test failure."
+}

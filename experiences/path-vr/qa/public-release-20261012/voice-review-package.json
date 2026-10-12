@@ -1,0 +1,55 @@
+{
+  "checkedAt": "2026-10-11T21:46:11.126Z",
+  "originHEAD": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+  "packageManifestSHA256": "52bd5561dc54b08968d45e81842fa2d9251b36b4224913015720e6d7af0f6f75",
+  "packageFiles": 54,
+  "changedFileCount": 6,
+  "unchangedFiles": 48,
+  "changes": [
+    {
+      "file": "path/interview/film/answer-followup.mjs",
+      "beforeBytes": 14337,
+      "beforeSHA256": "71171860926f4ddb48b9a1091f068fe914415257e898786035c9b9853525604f",
+      "afterBytes": 17250,
+      "afterSHA256": "3b70f91c835bcd23a6e0c47ad1cb260ec6d703c5fc72b7c50ed5831ddc7d2e35"
+    },
+    {
+      "file": "path/interview/film/rehearsal-session.mjs",
+      "beforeBytes": 12421,
+      "beforeSHA256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+      "afterBytes": 13574,
+      "afterSHA256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d"
+    },
+    {
+      "file": "path/interview/film/rehearsal.html",
+      "beforeBytes": 5978,
+      "beforeSHA256": "e70a667e691a7204e5803c8b0fb5ca451cfead3954aa4ce86c6b5d9efaa23c47",
+      "afterBytes": 6260,
+      "afterSHA256": "33be3d988519ea1804b463d7433be77de30fe138d1280ddb47bfa2e9f750400c"
+    },
+    {
+      "file": "path/interview/film/rehearsal.mjs",
+      "beforeBytes": 29334,
+      "beforeSHA256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+      "afterBytes": 32398,
+      "afterSHA256": "d49873c07c20fdf1208f78691a7a0fb757edc54c7e2d5a6c98fe2f6ea31a5a8b"
+    },
+    {
+      "file": "path/interview/film/strict-vr.mjs",
+      "beforeBytes": 27453,
+      "beforeSHA256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+      "afterBytes": 28236,
+      "afterSHA256": "05907064f22701c0af1237353fe8ea1c41ea41f74895397a2e2483aa52e7b964"
+    },
+    {
+      "file": "path/interview/voice.mjs",
+      "beforeBytes": 15359,
+      "beforeSHA256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+      "afterBytes": 16794,
+      "afterSHA256": "6e510958f0553f4d1590f2bd7166eb83371f3aaffe1d6a5c53a0cc61338735f3"
+    }
+  ],
+  "sourceLocked": true,
+  "productionChangesApplied": false,
+  "uploadedQA": false
+}

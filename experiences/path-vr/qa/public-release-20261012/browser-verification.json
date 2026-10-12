@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-11T19:56:58.669Z",
+  "publicURL": "https://synk.im/path/interview/film/rehearsal.html",
+  "pathIntroductionLinkVerified": true,
+  "webPlatformDiscoverToPathDetailToNewRoomTabVerified": true,
+  "publicVoiceModelPrepared": true,
+  "actualMicrophoneRecognitionVerified": false,
+  "physicalQuestVerified": false,
+  "comfortEffectVerified": false,
+  "public4kExperienceFullRunCompleted": true,
+  "answerTimersFilled": true,
+  "playbackWidth": 3840,
+  "playbackHeight": 2160,
+  "consoleWarningsOrErrors": [],
+  "roomControls": {
+    "left30": true,
+    "returnFront": true,
+    "close": true,
+    "dragInitiallyOff": true
+  },
+  "nativeUIVerified": false,
+  "fullRun": "browser-full-run.json"
+}

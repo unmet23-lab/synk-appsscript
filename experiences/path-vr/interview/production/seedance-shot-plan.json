@@ -1,0 +1,1356 @@
+{
+  "schemaVersion": 1,
+  "kind": "seedance-production-shot-plan",
+  "id": "care-interview-seedance-v1",
+  "language": "ko-KR",
+  "createdDate": "2026-10-11",
+  "status": "preproduction-only-no-generated-mp4",
+  "runtimeReady": false,
+  "scope": "같은 가상 면접실에 세 명이 함께 등장하는 실사풍 사전 생성 영상. 기존 한국어 14개 대사와 무음 경청 2개를 준비하는 제작 원고 및 자산 계약이다.",
+  "sources": {
+    "contentPath": "interview/content.mjs",
+    "contentSha256": "5b556db1bf474cf9e626bd078b7e3d41bf48a78c4edb882795e282263b8ef0a4",
+    "audioManifestPath": "assets/interview/audio/manifest.json",
+    "currentDialogueModule": "interview/dialogue.mjs"
+  },
+  "authorization": {
+    "generationStarted": false,
+    "paidCallsMade": 0,
+    "costEstimate": null,
+    "spendApproval": null,
+    "requirement": "서비스·모델·실제 제공 옵션·크레딧 단가·재생성 상한을 확인하여 4shot 예상 비용을 제시하고 유료 생성 실행 전에 승인받는다. 이 원고는 비용 승인이나 생성 완료를 뜻하지 않는다.",
+    "freeGenerationPolicy": "본편 16숏 제작은 아직 시작하지 않았다. 후속 요청의 Higgsfield 480p Seedance/Wan 3.0 각 1편 비교는 별도 생성 완료했으며 higgsfield-comparison.json에 기록했다. 해당 두 생성 외 추가 생성·신규 구독·충전은 승인되지 않았다."
+  },
+  "providerSelection": {
+    "provider": null,
+    "model": null,
+    "modelVersion": null,
+    "mode": null,
+    "resolution": null,
+    "fps": null,
+    "audioMode": null,
+    "referenceLimits": null,
+    "price": null,
+    "status": "not-selected",
+    "recommendation": {
+      "resolution": [
+        1920,
+        1080
+      ],
+      "aspectRatio": "16:9",
+      "fpsCandidates": [
+        24,
+        25,
+        30
+      ],
+      "chooseOneFpsForEveryClip": true,
+      "workflow": "승인된 동일 기준 이미지 + 인물 참조 + 정확한 대사 + 숏별 작은 행동. 사용 서비스에서 실제 지원하는 참조·길이·음성 옵션만 사용한다.",
+      "qualification": "1920×1080은 제작 권장안이며 25/30fps는 서비스가 지원할 때의 선택 후보다. BytePlus 연구 결과의 출력 24fps를 25/30으로 억지 변환하지 않는다. 선택 서비스가 실제 제공하는 원본 fps 한 가지를 모든 숏에 맞춘다. 실기기 VR 화질 검증은 별도다."
+    },
+    "modeConstraints": {
+      "status": "BytePlus-official-input-contract-reviewed",
+      "firstLastFrameAndOmniReference": "첫 프레임/첫끝프레임 모드와 이미지·영상·음성 omni-reference 모드를 한 요청에 섞지 않는다.",
+      "recommendedListeningMode": "같은 기준 이미지를 첫·끝 프레임에 지정하는 모드를 우선 비교하되 실제 루프 이음매를 검수한다.",
+      "recommendedSpeakingMode": "목소리 참조가 필요하면 omni-reference, 엄밀한 양끝프레임 제약이 우선이면 first/last 모드를 별도로 검토한다. 두 장점을 한 호출에서 보장하지 않는다.",
+      "camera": "고정 카메라는 프롬프트와 결과 검수 조건이다. Seedance 2.5에서 camera_fixed 옵션 지원을 추정하지 않는다."
+    }
+  },
+  "masterSceneLock": {
+    "id": "master-neutral-01",
+    "status": "reference-image-exists-pending-user-quality-review",
+    "referenceAsset": "assets/interview/film/room-reference.png",
+    "referenceSha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+    "setting": {
+      "institution": "가상의 요양기관",
+      "actualBuildingReplica": false,
+      "layout": "지원자가 면접 책상 맞은편에 앉아 세 명 전원을 정면으로 본다. 중앙 lead, 지원자 기준 왼쪽 specialist, 오른쪽 observer.",
+      "materialsRecommendation": "실제 기준 이미지의 밝은 벽, 나무 책상, 검은 의자, 서류철·검은 펜·투명 물잔·휴대전화, 왼쪽 블라인드와 식물, 오른쪽 문과 뒤쪽 책장을 그대로 유지한다. 소품을 새로 추가하거나 제거하지 않는다.",
+      "lightingRecommendation": "지원자 기준 왼쪽 창의 부드러운 낮빛과 일정한 천장 보조광. 샷 사이 노출·색온도·그림자 방향 변화 없음.",
+      "branding": "생성 영상에 읽기 어려운 가짜 로고·명패·텍스트를 만들지 않는다. 필요한 이름/역할은 앱 UI에서 제공한다."
+    },
+    "camera": {
+      "eyeHeightMeters": 1.23,
+      "positionLocked": true,
+      "headOrientationAtCapture": "수평 정면",
+      "movement": "none",
+      "cuts": "none",
+      "zoom": "none",
+      "focusPull": "none",
+      "recommendation": {
+        "distanceToInterviewersMeters": 2.3,
+        "horizontalFovDegrees": 60,
+        "orientation": "landscape",
+        "composition": "세 사람의 머리부터 책상 위 손까지 모두 보이고, 양끝 인물의 팔이 잘리지 않게 여백을 둔다."
+      },
+      "calibrationStatus": "planned-not-measured",
+      "warning": "생성 프롬프트의 눈높이 숫자는 공간 정확도 증명이 아니다. 승인 기준 이미지 또는 실제 촬영/렌더 카메라의 기하로 확인해야 한다."
+    },
+    "cast": [
+      {
+        "id": "lead",
+        "name": "김지현",
+        "role": "채용 담당자",
+        "seat": 0,
+        "screenPosition": "center",
+        "voiceRecommendation": "차분한 한국어 남성 중음, 질문은 분명하고 정중하게",
+        "baseline": "기준 이미지에서 이 인물의 펜을 잡은 두 손·팔꿈치·얼굴 자세를 유지한다.",
+        "identityReference": "assets/interview/film/room-reference.png",
+        "wardrobeReference": "assets/interview/film/room-reference.png",
+        "approved": false,
+        "fictitious": true,
+        "appearanceFromReference": "기준 이미지 중앙의 가상 한국인 남성: 단정한 검은 머리, 남색 정장, 흰 셔츠, 점무늬 짙은 넥타이, 왼손목 시계"
+      },
+      {
+        "id": "specialist",
+        "name": "이서윤",
+        "role": "돌봄 실무 담당자",
+        "seat": 1,
+        "screenPosition": "left",
+        "voiceRecommendation": "명료한 한국어 여성 중음, 실무 상황을 확인하는 담담한 말투",
+        "baseline": "기준 이미지에서 이 인물의 펜을 잡은 두 손·팔꿈치·얼굴 자세를 유지한다.",
+        "identityReference": "assets/interview/film/room-reference.png",
+        "wardrobeReference": "assets/interview/film/room-reference.png",
+        "approved": false,
+        "fictitious": true,
+        "appearanceFromReference": "기준 이미지 왼쪽의 가상 한국인 여성: 어깨 가까이 오는 자연스러운 짙은 머리, 회갈색 재킷, 아이보리 블라우스"
+      },
+      {
+        "id": "observer",
+        "name": "박민준",
+        "role": "교육 담당자",
+        "seat": 2,
+        "screenPosition": "right",
+        "voiceRecommendation": "차분한 한국어 남성 저음, 재촉하지 않는 확인 말투",
+        "baseline": "기준 이미지에서 이 인물의 펜을 잡은 두 손·팔꿈치·얼굴 자세를 유지한다.",
+        "identityReference": "assets/interview/film/room-reference.png",
+        "wardrobeReference": "assets/interview/film/room-reference.png",
+        "approved": false,
+        "fictitious": true,
+        "appearanceFromReference": "기준 이미지 오른쪽의 가상 한국인 남성: 새치 섞인 짙은 머리, 얇은 테 안경, 짙은 재킷, 연한 회청색 셔츠"
+      }
+    ],
+    "baselinePose": "실제 room-reference.png의 표정과 손 위치를 기준으로 삼는다. 세 사람 모두 서류 위에서 펜을 잡고 입을 다문 채 지원자를 바라본다. 눈은 열려 있고 양손·팔꿈치·물잔·서류철의 위치를 유지한다.",
+    "continuityRules": [
+      "모든 숏은 같은 승인 기준 이미지와 동일한 인물 참조를 사용한다. 생성 결과를 다시 기준으로 삼아 얼굴이 점차 바뀌게 하지 않는다.",
+      "머리카락·나이·얼굴형·정장·셔츠·펜·서류·창문·벽·책상의 위치를 고정한다.",
+      "다른 면접관은 정지 사진처럼 얼지 않고 비동기 눈깜박임·호흡·짧은 시선만 움직인다.",
+      "누가 말하는지는 대사와 입 움직임 한 명으로 분명해야 한다. 다른 두 사람의 입은 닫힌 상태다.",
+      "지원자의 시점은 장면 내내 고정한다. 세 얼굴 중 하나를 클로즈업하지 않는다."
+    ],
+    "masterPromptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.",
+    "referenceImage": {
+      "width": 1672,
+      "height": 941,
+      "bytes": 2010284,
+      "visuallyInspected": true,
+      "userApproved": false,
+      "providerUploadEligibility": "not-verified"
+    }
+  },
+  "referencePackage": {
+    "status": "master-image-available-not-user-approved",
+    "required": [
+      {
+        "id": "master-neutral-01",
+        "purpose": "전체 구도·의상·조명·책상·중립 시작/종료 자세",
+        "asset": "assets/interview/film/room-reference.png",
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "status": "shared-master-reference-pending-quality-and-provider-input-review"
+      },
+      {
+        "id": "lead-identity",
+        "purpose": "동일 가상 인물 얼굴과 의상 유지",
+        "asset": "assets/interview/film/room-reference.png",
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "status": "shared-master-reference-pending-quality-and-provider-input-review"
+      },
+      {
+        "id": "specialist-identity",
+        "purpose": "동일 가상 인물 얼굴과 의상 유지",
+        "asset": "assets/interview/film/room-reference.png",
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "status": "shared-master-reference-pending-quality-and-provider-input-review"
+      },
+      {
+        "id": "observer-identity",
+        "purpose": "동일 가상 인물 얼굴과 의상 유지",
+        "asset": "assets/interview/film/room-reference.png",
+        "sha256": "03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85",
+        "status": "shared-master-reference-pending-quality-and-provider-input-review"
+      }
+    ],
+    "reuseExisting3D": "현재 3D실의 캡처는 배치 참고로만 선택 가능하다. 기존 3D 인물의 얼굴이나 품질을 실사 기준 승인으로 간주하지 않는다.",
+    "voiceReference": "기존 WAV는 참고 자산이며 최종 음성 승인 전이다. 특정 실존인의 얼굴/음성 모사 참조는 없다.",
+    "inputEligibility": "BytePlus 공식 인물 가이드는 실사 얼굴 참조의 직접 업로드 제한과 별도 신뢰 자산 경로를 안내한다. 이 외부 생성 이미지가 선택 서비스에서 허용된다고 가정하지 않는다. 실제 무료 경로에서 입력 허용 여부를 먼저 확인한다."
+  },
+  "projectionContract": {
+    "sourceProjection": "rectilinear-mono",
+    "stereo": false,
+    "leftEyeSource": null,
+    "rightEyeSource": null,
+    "sourceHorizontalFovDegrees": null,
+    "targetVRProjection": null,
+    "status": "immersive-projection-unverified",
+    "meaning": "이 16:9 제작안은 실사 인물·연결 품질 파일럿이다. 평면 영상을 헤드셋에서 본다고 VR180/360 또는 양안 입체 영상이 되지 않는다.",
+    "allowedBeforeVRQualification": "일반 화면에서 고정 구도의 영상과 분기를 검수한다. 헤드셋 내 개발 검수에서 쓰는 경우에도 평면 단안 영상임을 표시한다.",
+    "forbidden": [
+      "16:9를 구면 전체나 180도에 늘려 붙이고 VR180 완성으로 표시",
+      "좌우 눈 영상을 독립 생성하여 입체 일치가 검증됐다고 표시",
+      "메타데이터 추가나 업스케일만으로 없는 시야·시차를 확보했다고 표시"
+    ],
+    "immersiveDeliveryRequires": [
+      "실제 캡처/렌더 또는 검증된 변환 결과의 투영 형식, 유효 시야각, 눈별 배치, 해상도 확인",
+      "앉은 위치에서 고개를 돌렸을 때 보이는 범위와 영상 바깥 영역을 실제 헤드셋으로 확인",
+      "양안 소스일 경우 좌우 동기·수직시차·얼굴 깊이·자막 편안함 확인",
+      "해당 소스가 제공하지 않는 몸 이동 시차를 지원한다고 표시하지 않음"
+    ],
+    "tradeoff": "일반 16:9 영상만으로 사용자가 원하는 방 전체의 실재감이 충족되는지는 미확정이다. 공간형 원본 확보는 별도 제작 결정이다."
+  },
+  "deliveryContract": {
+    "status": "proposed-no-delivery",
+    "mediaRecommendation": {
+      "container": "mp4",
+      "videoCodec": "H.264",
+      "pixelFormat": "yuv420p",
+      "color": "SDR BT.709",
+      "constantFrameRate": true,
+      "fastStart": true,
+      "webServerRangeRequests": true,
+      "audioCodec": "AAC-LC",
+      "audioSampleRateHz": 48000,
+      "audioTrackCount": 1,
+      "subtitle": "앱 별도 표시; 영상에 자막을 굽지 않음"
+    },
+    "nativeExportRule": "서비스 원본과 웹 재생용 파생본을 구분한다. 25/30fps 중 선택한 실제 기준을 모든 숏에 맞추되 반복 프레임 변환으로 품질 향상을 주장하지 않는다.",
+    "perAcceptedAssetRequiredFields": [
+      "id",
+      "src",
+      "sha256",
+      "bytes",
+      "durationSeconds",
+      "width",
+      "height",
+      "fps",
+      "projection",
+      "stereo",
+      "audioTrackCount",
+      "audioSource",
+      "speechStartSeconds",
+      "speechEndSeconds",
+      "entrySeconds",
+      "exitSeconds",
+      "reviewedBy",
+      "reviewedAt",
+      "reviewStatus"
+    ],
+    "listeningExtraFields": [
+      "loopStartSeconds",
+      "loopEndSeconds",
+      "safeExitSeconds"
+    ],
+    "unavailableFields": "실제 파일이 없거나 측정 전이면 null. 추정치를 검증된 미디어 메타데이터로 채우지 않는다.",
+    "rejectedAssetPolicy": "자막·대사 누락, 손/얼굴 변형, 화자 교체, 카메라 이동, 프레임 경계 얼굴 튐이 남으면 해당 숏은 accepted로 승격하지 않는다."
+  },
+  "transitionContract": {
+    "anchor": "master-neutral-01",
+    "handlesRecommendation": {
+      "preSpeechSeconds": 0.5,
+      "postSpeechSeconds": 0.8
+    },
+    "audioPolicy": "발화는 영상과 승인된 한 트랙만 재생한다. Seedance 포함 음성과 기존 TTS를 겹쳐 틀지 않는다. 별도 더빙을 선택한다면 편집 단계에서 입싱크를 검수하고 최종 MP4에 결합한다.",
+    "listeningPolicy": "두 경청 변형을 A → B → A로 교대한다. 끝을 처음에 연결한 것과 A/B 전환을 각각 최소 4회 검수한다. 내용과 무관한 동의·걱정 표정, 규칙적인 고개 끄덕임은 넣지 않는다.",
+    "exitPolicy": "답변 완료 시 현재 경청 영상의 검수된 가까운 low-motion safeExit 지점에서 다음 장면으로 전환한다. 실제 safeExit 타임코드가 없으면 자연 연결이 준비된 것으로 간주하지 않는다.",
+    "exitDelayRecommendationMs": 1000,
+    "crossfadePolicy": "얼굴이 겹치는 일반 디졸브는 기본으로 사용하지 않는다. 기준 자세가 맞는 지점의 연결을 우선한다. 짧은 전환도 실제 얼굴 이중상과 표정 튐이 없을 때만 승인한다.",
+    "headMotion": "앱이 카메라를 자동 움직여 연결을 감추지 않는다.",
+    "bufferingPolicy": "다음 영상 첫 프레임이 준비될 때까지 현재 무음 경청 상태를 유지한다. 준비 실패 때 질문·답변 타이머와 마이크를 멈추고 재시도/끝내기를 제공한다. 검은 프레임이나 오래된 질문 음성을 자동 재생하지 않는다."
+  },
+  "pilot": {
+    "id": "four-shot-continuity-pilot",
+    "status": "not-generated",
+    "shotIds": [
+      "question-motivation",
+      "listening-neutral-a",
+      "followup-experience",
+      "listening-neutral-b"
+    ],
+    "sequence": [
+      {
+        "id": "question-motivation",
+        "action": "lead 질문 전체 재생"
+      },
+      {
+        "id": "listening-neutral-a",
+        "action": "최소 한 번 온전히 재생, 사용자 답변 5초·25초·무응답을 각각 모의한다."
+      },
+      {
+        "id": "followup-experience",
+        "action": "specialist 질문 전체 재생; 중앙 화자에서 왼쪽 화자로 자연스럽게 관심이 바뀌는지 확인"
+      },
+      {
+        "id": "listening-neutral-b",
+        "action": "반복과 A/B 전환을 각각 확인"
+      }
+    ],
+    "purpose": "전량 생성 전에 동일 3인·입싱크·다인 반응·질문→경청→다른 화자 질문 연결의 실제 품질 확인",
+    "excludedFromPilot": [
+      "모든 분기의 완주 가능성",
+      "observer 발화 품질",
+      "intro/closing 품질",
+      "VR180/360 입체 완성",
+      "실제 Quest 성능"
+    ],
+    "allFourMustPass": [
+      "세 얼굴·정장·방·조명이 네 영상에서 같은가",
+      "말하는 한 명의 입만 한국어 발화와 맞는가",
+      "다른 두 명이 사진처럼 멈추지 않으면서 과하게 움직이지 않는가",
+      "질문→A, A→후속, 후속→B, A→A, B→B, A→B, B→A 연결에서 얼굴·손·책상이 튀지 않는가",
+      "한국어 대사가 누락·추가·화자 교체 없이 들리는가",
+      "마이크 입력 중 다른 면접관 음성이 끼어들지 않는가"
+    ],
+    "beforeFullProduction": "4shot 실제 영상과 연결 재생을 사용자가 검토하고 품질 방향을 확정한 뒤 나머지 12개를 생성한다. observer 첫 발화는 followup-preparation을 먼저 확인해 세 번째 음색과 얼굴을 고정한다."
+  },
+  "runtimeIntegrationReview": {
+    "basis": "2026-10-11 확인한 app.mjs/audio.mjs/room.mjs/dialogue.mjs. 구현 지시가 아니라 부모 담당 코드 변경의 검토 근거다.",
+    "ownedCodeChangesMade": false,
+    "stateMapping": {
+      "idle": "사용자 시작 전 영상 재생 안 함; 실제 자산이 없으면 준비 중 상태",
+      "intro": "intro",
+      "question": "question-motivation",
+      "followup": "stage.prompt.id",
+      "repair": "stage.prompt.id",
+      "listening": "listening-neutral-a/b",
+      "closing": "closing",
+      "reflection": "영상 정지; 답변 원문·다음 연습 안내"
+    },
+    "completedTransitionOwner": "현재 audio.speak 완료 콜백 대신 검수된 video ended/exit 완료가 session.advance를 단 한 번 호출. 오디오·영상 두 콜백이 모두 전이시키지 않음.",
+    "clock": "25초 답변 시간은 경청 영상 첫 프레임이 표시되고 음성 인식 준비가 끝난 다음 시작. 버퍼링·일시정지는 시간에 포함하지 않음.",
+    "preload": {
+      "strategy": "초기 intro·첫 질문·경청 A/B는 파일/메타데이터/첫 프레임 준비 확인. 첫 답변 중 후속 질문 5개는 필요에 맞게 압축 데이터만 미리 가져오고, 결정된 한 숏을 우선 디코드한다.",
+      "decoderRecommendation": "현재와 다음 영상 두 개 이내를 우선 검증한다. 16개 video 동시재생/전부 디코드 가정 금지.",
+      "firstFrame": "loadedmetadata만으로 화면 교체하지 않는다. loadeddata와 실제 첫 영상 프레임 준비를 확인; requestVideoFrameCallback 지원시 사용하고 미지원시 검증된 fallback 사용.",
+      "playFailure": "video.play() 거부·디코드 오류·404는 사용자에게 준비 실패로 알리고 타이머/마이크를 멈춘다."
+    },
+    "audioExclusivity": [
+      "영상모드 진입 시 기존 audio.speak와 procedural roomTone을 중단한다.",
+      "새 비디오를 화면에 보이기 전 background preloader는 무음이며 사용자에게 소리가 나지 않게 한다.",
+      "재생권을 받은 활성 비디오 한 개만 소리 낸다. 이전 것을 pause·mute하고 이벤트 권한을 무효화한 뒤 교체한다.",
+      "사용자 답변 중 경청 영상은 오디오 트랙 없음; 마이크 입력을 서버로 보내거나 계정에 저장하지 않는다."
+    ],
+    "lifecycle": [
+      "operation/generation 토큰으로 ended·canplay·첫 프레임·play Promise의 오래된 콜백을 무효화한다.",
+      "일시정지는 현재 영상 currentTime, 경청 변형, 답변 남은 시간, 부분 인식문을 유지한다. 재개에서 대사가 처음부터 반복되는 정책은 UI로 명확히 선택한다.",
+      "reset/dispose/visibilitychange/XR 종료는 마이크와 모든 영상·기존 TTS를 일관되게 중지한다.",
+      "일반 repeat()는 현재 질문으로 직접 돌아간다. 사용자의 다시요를 repair로 처리하면 repair-repeat 후 현재 질문을 재생한다."
+    ],
+    "threeDimensionalRoom": "room.mjs는 가구·벽·HDR·인물을 scene에 직접 붙인다. 영상모드에서는 배우만 숨기는 것으로 부족하다. renderer/XR/UI 판만 남긴 영상용 shell을 쓰거나 모든 월드 요소를 worldGroup으로 묶어 함께 숨기고 그리기·애니메이션·기존 카메라 드래그를 끈다.",
+    "ui": "영상 얼굴을 큰 입력 카드나 XR 판으로 덮지 않도록 자막·답변 상태·버튼을 시야 하단에 둔다. 현재 캠퍼스/3D로 돌아가는 링크가 영상 경험의 기본 화면으로 노출되지 않도록 제품 흐름을 정리한다.",
+    "missingAssets": "실제 accepted MP4가 없으면 준비 중으로 표시하고 시작을 막는다. 정지 이미지·기존 3D·빈 검정 영상으로 실사 완성처럼 대신하지 않는다.",
+    "repairCaveat": "repair-recognition의 화면에서 직접 입력 안내는 현재 대사를 그대로 보존했다. VR에 실제 입력 수단이 없는 경우, 화면 모드 전환 안내가 필요하다. 대사를 수정하면 content.mjs 원문과 관련 영상 원고를 함께 갱신한다."
+  },
+  "fullProduction": {
+    "spokenShotCount": 14,
+    "listeningShotCount": 2,
+    "totalShotCount": 16,
+    "pilotShotCount": 4,
+    "remainingAfterPilot": 12,
+    "roughGeneratedSeconds": 137.9,
+    "quantityQualification": "각 숏 한 번 성공 기준의 원고 총량. 실패·재생성·입싱크 교정·입체 제작 비용은 아직 산정하지 않았다.",
+    "runtimeDuration": "기존 두 답변과 발화 길이 기준 약 60~90초 목표. 영상 핸들·생성 음성 길이·경청 전환으로 달라지므로 실제 클립으로 다시 측정한다."
+  },
+  "qualityReview": {
+    "status": "not-performed",
+    "evidenceNeeded": [
+      "선택 서비스의 실제 모델·모드·참조 제한·해상도·fps·비용 화면",
+      "생성된 room-reference.png의 사용자 품질 확정과 선택 서비스의 참조 입력 허용 확인",
+      "원본 16개와 웹 재생본의 메타데이터 및 SHA256",
+      "4shot 연결 재생 영상과 모든 경청 루프 경계 프레임",
+      "한국어 대사 사람 청취와 입싱크 검수",
+      "Quest 실제 헤드셋의 재생/음성입력/흑화/멈춤/메모리/편안함 검수"
+    ],
+    "automatableBeforeGeneration": [
+      "14개 prompt ID·한국어 대사가 content.mjs와 정확히 같은지 확인",
+      "모든 참조 경로·expected ID·분기 목적지 일관성 확인",
+      "없는 자산에서 시작이 차단되는지 확인",
+      "순수 상태 전이의 중복 ended/reset/timeout/분기 검증"
+    ],
+    "notProven": [
+      "실사 결과 품질",
+      "실제 사람처럼 느끼는 현존감",
+      "VR180/360/입체 지원",
+      "입싱크 정확도",
+      "반복 경청의 자연스러움",
+      "실제 헤드셋 성능"
+    ]
+  },
+  "references": [
+    {
+      "url": "https://seed.bytedance.com/en/blog/one-take-creation-flexible-referencing-introducing-seedance-2-5",
+      "checkedDate": "2026-10-11",
+      "claim": "공식 발표는 이미지·영상·음성 참조와 생성 편집을 소개하며 다인 상호작용 안정성의 개선 여지를 명시한다. 실제 사용하는 서비스의 노출 옵션 및 네이티브 VR 투영은 따로 확인한다."
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/HTMLVideoElement/requestVideoFrameCallback",
+      "checkedDate": "2026-10-11",
+      "claim": "첫 영상 프레임 확인에 쓸 브라우저 API 참고. 지원 브라우저에서만 사용하고 실제 디코드/헤드셋 검증을 대체하지 않는다."
+    },
+    {
+      "url": "https://threejs.org/docs/#api/en/textures/VideoTexture",
+      "checkedDate": "2026-10-11",
+      "claim": "Three.js 영상 텍스처 통합 참고. 텍스처 생성은 입체 소스 제작이나 투영 정확성을 보장하지 않는다."
+    },
+    {
+      "url": "https://docs.byteplus.com/en/docs/modelark/create-video-generation-task-api",
+      "checkedDate": "2026-10-11",
+      "access": "공식 문서 검색 색인 본문; 직접 열람 오류",
+      "claim": "첫끝프레임과 omni-reference 모드는 상호배타다. 같은 이미지를 첫끝프레임에 지정할 수 있어도 실제 루프 품질은 결과 검수가 필요하다."
+    },
+    {
+      "url": "https://docs.byteplus.com/en/docs/modelark/seedance-portrait-asset-guide",
+      "checkedDate": "2026-10-11",
+      "access": "공식 문서 검색 색인 본문",
+      "claim": "실사 얼굴 참조의 직접 업로드에는 제한이 있으며 신뢰 생성물·디지털 캐릭터·승인 인물 자산 경로가 있다. 외부 생성 참조 이미지의 입력 가능 여부를 추정하지 않는다."
+    }
+  ],
+  "shots": [
+    {
+      "id": "intro",
+      "promptId": "intro",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/intro.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "안녕하세요. 편하게 앉으세요. 저희 세 명과 짧게 면접을 진행하겠습니다.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/intro.wav",
+        "sha256": "cfccc6dd5421527a04fbeb6e3b36fa400cec57b5a9feebe10bc1ee69c3e23d41",
+        "durationSeconds": 6.802,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 6.802,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 8.2,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "착석한 지원자에게 세 사람이 함께 주의를 기울이는 첫 인사",
+        "lead": "짧게 눈을 맞추고 과장 없는 인사를 한다. 편하게 앉으세요에서 작은 손바닥 제스처 후 제자리로 돌아온다.",
+        "specialist": "지원자를 바라보다 인사가 끝날 무렵 한 번만 작게 고개를 끄덕인다.",
+        "observer": "서류를 잠깐 확인한 후 지원자를 본다. 인사하는 동안 말하지 않는다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 착석한 지원자에게 세 사람이 함께 주의를 기울이는 첫 인사.\n발화자: lead. 정확한 대사: “안녕하세요. 편하게 앉으세요. 저희 세 명과 짧게 면접을 진행하겠습니다.”\nlead: 짧게 눈을 맞추고 과장 없는 인사를 한다. 편하게 앉으세요에서 작은 손바닥 제스처 후 제자리로 돌아온다.\nspecialist: 지원자를 바라보다 인사가 끝날 무렵 한 번만 작게 고개를 끄덕인다.\nobserver: 서류를 잠깐 확인한 후 지원자를 본다. 인사하는 동안 말하지 않는다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "question-motivation",
+      "promptId": "question-motivation",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/question-motivation.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "요양보호사로 일하고 싶은 이유를 말씀해 주세요. 계기나 관심 있는 돌봄 활동을 하나 이야기해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/question-motivation.wav",
+        "sha256": "a1b711a571e01839f8c1d939ae5f7f22f8b1e1ec8e1a80dccfa02e8514e7b7d3",
+        "durationSeconds": 8.526,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 8.526,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 9.9,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "지원 동기 첫 질문",
+        "lead": "지원자를 보고 두 문장을 자연스럽게 말한다. 두 문장 사이 0.2~0.4초 호흡한다. 마지막에 입을 다물고 답을 기다린다.",
+        "specialist": "질문 시작에 lead를 짧게 보고 곧 지원자로 시선을 옮긴다. 입은 다문다.",
+        "observer": "첫 문장에서 서류 한 줄을 확인하고 두 번째 문장에는 지원자를 바라본다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 지원 동기 첫 질문.\n발화자: lead. 정확한 대사: “요양보호사로 일하고 싶은 이유를 말씀해 주세요. 계기나 관심 있는 돌봄 활동을 하나 이야기해 주세요.”\nlead: 지원자를 보고 두 문장을 자연스럽게 말한다. 두 문장 사이 0.2~0.4초 호흡한다. 마지막에 입을 다물고 답을 기다린다.\nspecialist: 질문 시작에 lead를 짧게 보고 곧 지원자로 시선을 옮긴다. 입은 다문다.\nobserver: 첫 문장에서 서류 한 줄을 확인하고 두 번째 문장에는 지원자를 바라본다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "closing",
+      "promptId": "closing",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/closing.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "말씀 감사합니다. 오늘 면접 연습은 여기까지입니다. 다음에는 방금 답변에 구체적인 행동 한 가지를 더해 보세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/closing.wav",
+        "sha256": "d769b472af4a83b4ba40feefacb81cac6cd2d89193f2a82e4a67c3211201e7cb",
+        "durationSeconds": 9.525,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 9.525,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 10.9,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "면접 종료와 다음 연습 행동 안내",
+        "lead": "과한 미소 없이 감사 인사를 하고 구체적인 행동 한 가지라는 말에 작은 손동작을 한 뒤 중립 자세로 돌아온다.",
+        "specialist": "지원자를 보며 마지막 문장 뒤에 작게 고개를 끄덕인다.",
+        "observer": "펜을 잡은 기준 손 위치를 유지한 채 지원자를 본다. 박수나 축하 표정은 없다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 면접 종료와 다음 연습 행동 안내.\n발화자: lead. 정확한 대사: “말씀 감사합니다. 오늘 면접 연습은 여기까지입니다. 다음에는 방금 답변에 구체적인 행동 한 가지를 더해 보세요.”\nlead: 과한 미소 없이 감사 인사를 하고 구체적인 행동 한 가지라는 말에 작은 손동작을 한 뒤 중립 자세로 돌아온다.\nspecialist: 지원자를 보며 마지막 문장 뒤에 작게 고개를 끄덕인다.\nobserver: 펜을 잡은 기준 손 위치를 유지한 채 지원자를 본다. 박수나 축하 표정은 없다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "followup-experience",
+      "promptId": "followup-experience",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/followup-experience.mp4",
+      "speakerId": "specialist",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "말씀하신 경험에서 직접 하신 일은 무엇인가요? 기억나는 상황 한 가지와 본인의 역할을 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/followup-experience.wav",
+        "sha256": "595ee8f82017249c39878ff07405b4552aba2ddff9d4e0677628b0acf90006ba",
+        "durationSeconds": 9.026,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 9.026,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 10.4,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "말한 경험의 직접 행동과 역할 확인",
+        "specialist": "지원자를 보고 구체적인 상황과 역할을 묻는다. 본인의 역할에서 손을 조금 펴고 다시 기준 위치로 내린다.",
+        "lead": "specialist 쪽으로 잠깐 시선을 옮긴 후 지원자를 바라본다. 끼어들지 않는다.",
+        "observer": "specialist가 말하는 앞부분에 짧게 메모하는 듯한 작은 펜 움직임 한 번, 후반에는 지원자를 본다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 말한 경험의 직접 행동과 역할 확인.\n발화자: specialist. 정확한 대사: “말씀하신 경험에서 직접 하신 일은 무엇인가요? 기억나는 상황 한 가지와 본인의 역할을 말씀해 주세요.”\nlead: specialist 쪽으로 잠깐 시선을 옮긴 후 지원자를 바라본다. 끼어들지 않는다.\nspecialist: 지원자를 보고 구체적인 상황과 역할을 묻는다. 본인의 역할에서 손을 조금 펴고 다시 기준 위치로 내린다.\nobserver: specialist가 말하는 앞부분에 짧게 메모하는 듯한 작은 펜 움직임 한 번, 후반에는 지원자를 본다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "followup-preparation",
+      "promptId": "followup-preparation",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/followup-preparation.mp4",
+      "speakerId": "observer",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "처음 일하기 전에 어떤 준비를 하고 싶으신가요? 배우거나 확인할 것을 한 가지 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/followup-preparation.wav",
+        "sha256": "ac9e3613badb6db48eb0e47ab4f72cf808d446c56385dbe1773b2399317c11aa",
+        "durationSeconds": 7.76,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 7.76,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 9.1,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "경험이 없거나 준비를 말한 답변에 준비 행동 질문",
+        "observer": "펜을 움직이지 않고 지원자를 보며 준비할 것을 묻는다. 부족하다는 표정이나 심사하듯 찡그림은 없다.",
+        "lead": "지원자에게 시선을 유지하며 한 번 자연스럽게 눈을 깜박인다.",
+        "specialist": "observer를 잠깐 본 뒤 지원자를 본다. 답을 유도하는 끄덕임은 하지 않는다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 경험이 없거나 준비를 말한 답변에 준비 행동 질문.\n발화자: observer. 정확한 대사: “처음 일하기 전에 어떤 준비를 하고 싶으신가요? 배우거나 확인할 것을 한 가지 말씀해 주세요.”\nlead: 지원자에게 시선을 유지하며 한 번 자연스럽게 눈을 깜박인다.\nspecialist: observer를 잠깐 본 뒤 지원자를 본다. 답을 유도하는 끄덕임은 하지 않는다.\nobserver: 펜을 움직이지 않고 지원자를 보며 준비할 것을 묻는다. 부족하다는 표정이나 심사하듯 찡그림은 없다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "followup-motivation",
+      "promptId": "followup-motivation",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/followup-motivation.mp4",
+      "speakerId": "specialist",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "그 이유가 실제 일과 어떻게 연결될까요? 어르신을 도울 때 본인이 하고 싶은 행동을 하나 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/followup-motivation.wav",
+        "sha256": "a440a018d59853ad5d45f9ad18d5d765d3543d19fedd7a0fc9b4f7353429117a",
+        "durationSeconds": 8.743,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 8.743,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 10.1,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "동기를 실제 돌봄 행동으로 연결",
+        "specialist": "실제 일과 어떻게 연결될까요에서 짧게 호흡하고 두 번째 문장을 이어간다. 한 가지 행동을 차분히 묻는다.",
+        "lead": "지원자를 바라보며 상체를 아주 조금 정돈한다.",
+        "observer": "서류를 잠깐 확인한 뒤 지원자를 본다. 말하거나 큰 움직임을 하지 않는다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 동기를 실제 돌봄 행동으로 연결.\n발화자: specialist. 정확한 대사: “그 이유가 실제 일과 어떻게 연결될까요? 어르신을 도울 때 본인이 하고 싶은 행동을 하나 말씀해 주세요.”\nlead: 지원자를 바라보며 상체를 아주 조금 정돈한다.\nspecialist: 실제 일과 어떻게 연결될까요에서 짧게 호흡하고 두 번째 문장을 이어간다. 한 가지 행동을 차분히 묻는다.\nobserver: 서류를 잠깐 확인한 뒤 지원자를 본다. 말하거나 큰 움직임을 하지 않는다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "followup-clarify",
+      "promptId": "followup-clarify",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/followup-clarify.mp4",
+      "speakerId": "observer",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "지원하신 계기를 조금 더 듣고 싶습니다. 관심을 갖게 된 일이나 해 보고 싶은 돌봄 활동을 하나 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/followup-clarify.wav",
+        "sha256": "866b8ad2d91c543dce8edcc31f76b5fcb96a9b1324fec412eb6ca0cde11ac4ca",
+        "durationSeconds": 9.007,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 9.007,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 10.4,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "계기가 분명하지 않은 답변을 구체화",
+        "observer": "지원자를 편안하게 바라보며 계기나 활동을 한 가지 묻는다. 압박하는 억양 없이 질문한다.",
+        "lead": "지원자에게 시선을 유지한다. 웃거나 고개를 젓지 않는다.",
+        "specialist": "후반 문장에서 지원자를 보고 자연스럽게 눈을 깜박인다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 계기가 분명하지 않은 답변을 구체화.\n발화자: observer. 정확한 대사: “지원하신 계기를 조금 더 듣고 싶습니다. 관심을 갖게 된 일이나 해 보고 싶은 돌봄 활동을 하나 말씀해 주세요.”\nlead: 지원자에게 시선을 유지한다. 웃거나 고개를 젓지 않는다.\nspecialist: 후반 문장에서 지원자를 보고 자연스럽게 눈을 깜박인다.\nobserver: 지원자를 편안하게 바라보며 계기나 활동을 한 가지 묻는다. 압박하는 억양 없이 질문한다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "followup-return",
+      "promptId": "followup-return",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/followup-return.mp4",
+      "speakerId": "observer",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "지원하신 이유로 돌아가 보겠습니다. 요양보호사 일에 관심을 갖게 된 계기를 하나 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/followup-return.wav",
+        "sha256": "45a4520bd561304991172eee30058fa05f5601fac0a3f1d66e1258be45d1e19e",
+        "durationSeconds": 7.851,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 7.851,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 9.2,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "다른 주제로 흐른 답변을 지원 동기로 되돌림",
+        "observer": "지원하신 이유로 돌아가 보겠습니다를 담담하게 말하고 계기를 묻는다. 비난하는 표정은 없다.",
+        "lead": "서류를 아주 잠깐 내려다본 뒤 지원자를 본다.",
+        "specialist": "지원자를 바라보며 작은 호흡 움직임만 보인다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 다른 주제로 흐른 답변을 지원 동기로 되돌림.\n발화자: observer. 정확한 대사: “지원하신 이유로 돌아가 보겠습니다. 요양보호사 일에 관심을 갖게 된 계기를 하나 말씀해 주세요.”\nlead: 서류를 아주 잠깐 내려다본 뒤 지원자를 본다.\nspecialist: 지원자를 바라보며 작은 호흡 움직임만 보인다.\nobserver: 지원하신 이유로 돌아가 보겠습니다를 담담하게 말하고 계기를 묻는다. 비난하는 표정은 없다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-empty",
+      "promptId": "repair-empty",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-empty.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "아직 답변을 듣지 못했습니다. 천천히 생각하시고 준비되면 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-empty.wav",
+        "sha256": "038785c05eeaf8c27f443ca8b884f3130a05c8f263b4009f3b3c7a02b9b433bf",
+        "durationSeconds": 6.521,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 6.521,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 7.9,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "무응답 뒤 같은 답변 기회 유지",
+        "lead": "재촉하지 않고 아직 답변을 듣지 못했다고 알린다. 천천히에서 속도를 조금 낮춘다.",
+        "specialist": "지원자를 보며 중립 표정과 입을 다문 자세를 유지한다.",
+        "observer": "메모하지 않고 지원자를 바라본다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 무응답 뒤 같은 답변 기회 유지.\n발화자: lead. 정확한 대사: “아직 답변을 듣지 못했습니다. 천천히 생각하시고 준비되면 말씀해 주세요.”\nlead: 재촉하지 않고 아직 답변을 듣지 못했다고 알린다. 천천히에서 속도를 조금 낮춘다.\nspecialist: 지원자를 보며 중립 표정과 입을 다문 자세를 유지한다.\nobserver: 메모하지 않고 지원자를 바라본다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-uncertain",
+      "promptId": "repair-uncertain",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-uncertain.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "잠깐 생각하셔도 괜찮습니다. 작은 계기나 관심 있는 활동부터 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-uncertain.wav",
+        "sha256": "1d3b9d9a68bce262409cb6af3531bace7b6ea0334f47ea17923d96a328567f98",
+        "durationSeconds": 6.977,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 6.977,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 8.3,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "모르겠다는 말 뒤 생각할 시간 제공",
+        "lead": "잠깐 생각하셔도 괜찮습니다를 편안하게 말하고 작은 계기부터 답하도록 안내한다.",
+        "specialist": "중립 표정으로 지원자를 바라본다. 정답을 알았다는 반응은 없다.",
+        "observer": "서류에서 눈을 들어 지원자를 본다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 모르겠다는 말 뒤 생각할 시간 제공.\n발화자: lead. 정확한 대사: “잠깐 생각하셔도 괜찮습니다. 작은 계기나 관심 있는 활동부터 말씀해 주세요.”\nlead: 잠깐 생각하셔도 괜찮습니다를 편안하게 말하고 작은 계기부터 답하도록 안내한다.\nspecialist: 중립 표정으로 지원자를 바라본다. 정답을 알았다는 반응은 없다.\nobserver: 서류에서 눈을 들어 지원자를 본다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-recognition",
+      "promptId": "repair-recognition",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-recognition.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "음성을 또렷하게 확인하지 못했습니다. 다시 말씀하시거나 화면에서 직접 입력해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-recognition.wav",
+        "sha256": "117e2017a7c7f3ea0d89b84da1832ff12c8be5f3d6a7c4a0afaad73e359c3fec",
+        "durationSeconds": 7.588,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 7.588,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 8.9,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "인식 실패를 사용자 능력과 구분하여 안내",
+        "lead": "음성을 확인하지 못했다는 사실을 차분히 알린다. 사용자를 탓하지 않고 다시 말하거나 입력하도록 안내한다.",
+        "specialist": "지원자를 바라본다. 음성을 이해한 것처럼 반응하지 않는다.",
+        "observer": "지원자를 바라보며 펜을 기준 위치에 둔다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 인식 실패를 사용자 능력과 구분하여 안내.\n발화자: lead. 정확한 대사: “음성을 또렷하게 확인하지 못했습니다. 다시 말씀하시거나 화면에서 직접 입력해 주세요.”\nlead: 음성을 확인하지 못했다는 사실을 차분히 알린다. 사용자를 탓하지 않고 다시 말하거나 입력하도록 안내한다.\nspecialist: 지원자를 바라본다. 음성을 이해한 것처럼 반응하지 않는다.\nobserver: 지원자를 바라보며 펜을 기준 위치에 둔다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-repeat",
+      "promptId": "repair-repeat",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-repeat.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "질문을 다시 들려드리겠습니다.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-repeat.wav",
+        "sha256": "7845a01d59b57fd6672e6d6f3f94102372881dd46b9947ebce332b29fe6a1467",
+        "durationSeconds": 2.45,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 2.45,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 4,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "다시 요청한 질문을 재생하기 전 짧은 안내",
+        "lead": "질문을 다시 들려드리겠습니다 한 문장만 또렷하게 말한 후 입을 다문다.",
+        "specialist": "지원자를 보며 조용히 기다린다.",
+        "observer": "지원자를 보며 조용히 기다린다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 다시 요청한 질문을 재생하기 전 짧은 안내.\n발화자: lead. 정확한 대사: “질문을 다시 들려드리겠습니다.”\nlead: 질문을 다시 들려드리겠습니다 한 문장만 또렷하게 말한 후 입을 다문다.\nspecialist: 지원자를 보며 조용히 기다린다.\nobserver: 지원자를 보며 조용히 기다린다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-timeout",
+      "promptId": "repair-timeout",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-timeout.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "생각할 시간이 더 필요하시면 계속 말씀해 주세요. 질문을 다시 들어도 괜찮습니다.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-timeout.wav",
+        "sha256": "209acd1a2c74f9881bb1baa0c7469299bdd814a54ae8283643ccd5bedcaf424f",
+        "durationSeconds": 7.109,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 7.109,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 8.5,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "시간이 더 필요한 경우 같은 답변 기회 안내",
+        "lead": "계속 말씀해도 된다고 알린다. 타이머에 맞춰 재촉하거나 시계를 보지 않는다.",
+        "specialist": "지원자를 보며 중립 자세를 유지한다.",
+        "observer": "지원자를 보며 작은 호흡 움직임만 보인다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 시간이 더 필요한 경우 같은 답변 기회 안내.\n발화자: lead. 정확한 대사: “생각할 시간이 더 필요하시면 계속 말씀해 주세요. 질문을 다시 들어도 괜찮습니다.”\nlead: 계속 말씀해도 된다고 알린다. 타이머에 맞춰 재촉하거나 시계를 보지 않는다.\nspecialist: 지원자를 보며 중립 자세를 유지한다.\nobserver: 지원자를 보며 작은 호흡 움직임만 보인다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "repair-length",
+      "promptId": "repair-length",
+      "kind": "spoken",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/repair-length.mp4",
+      "speakerId": "lead",
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": "ko-KR",
+        "text": "이번에는 한 가지 계기나 상황을 짧게 말씀해 주세요.",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "sourceAudioReference": {
+        "path": "assets/interview/audio/repair-length.wav",
+        "sha256": "0866aadeef02b7efd9245b38ed46568991ed7c6cf2dc4f9bfcb85e6160fc44e6",
+        "durationSeconds": 4.728,
+        "status": "existing-scratch-reference-not-final-video-audio",
+        "humanListeningVerified": false,
+        "usage": "기존 로컬 TTS는 대사와 길이 참고용이다. 실제 선택한 Seedance 서비스의 음성 참조 지원·업로드 권한 확인 뒤에만 입력한다. 최종 음성은 얼굴·입모양과 함께 검수하며 이 WAV를 영상과 동시에 별도 재생하지 않는다."
+      },
+      "timingRecommendation": {
+        "preSpeechNeutralSeconds": 0.5,
+        "speechSecondsReference": 4.728,
+        "postSpeechNeutralSeconds": 0.8,
+        "requestedDurationSeconds": 6.1,
+        "actualDurationSeconds": null,
+        "speechStartSeconds": null,
+        "speechEndSeconds": null,
+        "entrySeconds": null,
+        "exitSeconds": null,
+        "explanation": "길이는 기존 음성 기준 예상값이다. 생성된 영상의 실제 타임코드와 프레임 경계로 인·아웃을 다시 지정한다. 길이를 맞추려고 발화 구간을 자르지 않는다.",
+        "minimumDurationQualification": "4초 최솟값은 조사한 BytePlus 2.5 출력 조건을 고려한 제작안이다. 실제 선택 서비스의 허용 길이에 맞추며 추가 여유는 입을 다문 구간에 둔다."
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "너무 긴 답변을 한 가지 상황으로 줄이도록 안내",
+        "lead": "한 가지 계기나 상황을 짧게 말해 달라고 정중하게 부탁한다.",
+        "specialist": "지원자를 바라보며 입을 다문다.",
+        "observer": "지원자를 바라보며 펜을 움직이지 않는다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n현재 숏의 목적: 너무 긴 답변을 한 가지 상황으로 줄이도록 안내.\n발화자: lead. 정확한 대사: “이번에는 한 가지 계기나 상황을 짧게 말씀해 주세요.”\nlead: 한 가지 계기나 상황을 짧게 말해 달라고 정중하게 부탁한다.\nspecialist: 지원자를 바라보며 입을 다문다.\nobserver: 지원자를 바라보며 펜을 움직이지 않는다.\n시작 약 0.5초는 입을 다문 기준 중립 자세, 마지막 약 0.8초는 모든 입을 다물고 같은 기준 자세로 돌아와 다음 영상을 연결할 여유를 남긴다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "onlyDesignatedMouthSpeaks": true,
+        "exactKoreanDialogue": true,
+        "neutralEntryAndExit": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true,
+        "lipSyncHumanReviewRequired": true
+      }
+    },
+    {
+      "id": "listening-neutral-a",
+      "promptId": null,
+      "kind": "listening",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/listening-neutral-a.mp4",
+      "speakerId": null,
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": null,
+        "text": "",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "audio": {
+        "policy": "no-audio-track",
+        "reason": "사용자 발화 인식을 방해하지 않도록 대사·한숨·헛기침·펜 소리를 넣지 않는다. 승인된 연속 room tone을 쓰더라도 별도 단일 트랙으로만 관리한다."
+      },
+      "timingRecommendation": {
+        "requestedDurationSeconds": 8,
+        "actualDurationSeconds": null,
+        "loopStartSeconds": null,
+        "loopEndSeconds": null,
+        "safeExitSeconds": null
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "첫 답변 경청: 지원자가 말하기 시작하는 부담과 세 명의 주의를 유지",
+        "lead": "지원자를 바라보며 작은 호흡과 한 번의 자연스러운 눈깜박임. 상체는 고정하고 입을 다문다.",
+        "specialist": "전반에는 지원자를 보고 중반에 메모지로 0.7초 정도 시선을 내렸다가 지원자로 돌아온다. 손 위치는 유지한다.",
+        "observer": "지원자를 보다가 후반에 눈을 한 번 깜박인다. 펜 끝은 종이에 둔 채 움직이지 않는다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n세 명 모두 8초 동안 한마디도 하지 않는다. 모든 입을 다물고 지원자의 답변을 주의 깊게 기다린다. 답변 내용에 동의하거나 평가하는 반응은 하지 않는다.\nlead: 지원자를 바라보며 작은 호흡과 한 번의 자연스러운 눈깜박임. 상체는 고정하고 입을 다문다.\nspecialist: 전반에는 지원자를 보고 중반에 메모지로 0.7초 정도 시선을 내렸다가 지원자로 돌아온다. 손 위치는 유지한다.\nobserver: 지원자를 보다가 후반에 눈을 한 번 깜박인다. 펜 끝은 종이에 둔 채 움직이지 않는다.\n첫 프레임과 마지막 프레임에서 기준 중립 자세, 눈이 열린 상태, 손 위치, 어깨 위치가 맞아야 한다. 루프 경계에서 얼굴이 순간이동하거나 표정이 바뀌지 않도록 끝 0.8초에 원래 자세로 돌아온다. 시작과 끝의 매끄러운 연결은 결과를 직접 확인한다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "noLipMovementOrSpeech": true,
+        "noAnswerDependentReaction": true,
+        "loopSeamHumanReviewRequired": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true
+      }
+    },
+    {
+      "id": "listening-neutral-b",
+      "promptId": null,
+      "kind": "listening",
+      "status": "planned-not-generated",
+      "asset": null,
+      "approved": false,
+      "plannedDeliveryPath": "assets/interview/film/listening-neutral-b.mp4",
+      "speakerId": null,
+      "visibleCast": [
+        "specialist",
+        "lead",
+        "observer"
+      ],
+      "dialogue": {
+        "language": null,
+        "text": "",
+        "exactTextRequired": true,
+        "otherVoicesAllowed": false
+      },
+      "audio": {
+        "policy": "no-audio-track",
+        "reason": "사용자 발화 인식을 방해하지 않도록 대사·한숨·헛기침·펜 소리를 넣지 않는다. 승인된 연속 room tone을 쓰더라도 별도 단일 트랙으로만 관리한다."
+      },
+      "timingRecommendation": {
+        "requestedDurationSeconds": 8,
+        "actualDurationSeconds": null,
+        "loopStartSeconds": null,
+        "loopEndSeconds": null,
+        "safeExitSeconds": null
+      },
+      "entryState": "master-neutral-01",
+      "exitState": "master-neutral-01",
+      "acting": {
+        "purpose": "두 번째 답변 경청: 눈깜박임과 서류 확인의 순서를 바꿔 반복을 덜 보이게 함",
+        "lead": "전반에는 지원자를 보고 중반에 서류로 0.6초 정도 시선을 내렸다가 지원자로 돌아온다.",
+        "specialist": "지원자를 계속 바라보며 작은 호흡과 한 번의 눈깜박임. 입은 다문다.",
+        "observer": "지원자를 바라보고 중반에 눈을 깜박인다. 어깨를 아주 조금 정돈한 뒤 기준 자세로 돌아온다."
+      },
+      "promptKo": "이 영상은 착석한 지원자의 눈으로 보는 가상 요양기관 지원 면접이다. 승인된 master-neutral-01 기준 이미지와 얼굴·의상·방·가구·빛·카메라를 그대로 유지한다. 영상 내내 세 명 전원이 같은 자리에서 화면 안에 보인다. 카메라 눈높이는 바닥에서 1.23m, 수평 시선, 고정 삼각대 시점이다. 줌, 이동, 흔들림, 초점 이동, 컷, 리프레이밍 없이 한 번의 고정 숏으로 만든다. 실제 촬영처럼 자연스러운 피부 결, 눈동자, 손과 정장 천, 일정한 실내 조명이다. 말하는 한 사람만 정확한 한국어 대사를 발화한다. 나머지 두 사람은 서로 다른 타이밍으로 조용히 듣고, 지원자를 바라보거나 짧게 서류를 확인한다. 세 사람이 동시에 고개를 끄덕이거나 반복 동작하지 않는다. 긴장감은 가까운 시선과 잠깐의 침묵에서 나오며 위협, 비웃음, 고함은 없다. 자막, 로고 생성, 음악, 내레이션, 지원자의 몸이나 목소리를 추가하지 않는다.\n세 명 모두 8초 동안 한마디도 하지 않는다. 모든 입을 다물고 지원자의 답변을 주의 깊게 기다린다. 답변 내용에 동의하거나 평가하는 반응은 하지 않는다.\nlead: 전반에는 지원자를 보고 중반에 서류로 0.6초 정도 시선을 내렸다가 지원자로 돌아온다.\nspecialist: 지원자를 계속 바라보며 작은 호흡과 한 번의 눈깜박임. 입은 다문다.\nobserver: 지원자를 바라보고 중반에 눈을 깜박인다. 어깨를 아주 조금 정돈한 뒤 기준 자세로 돌아온다.\n첫 프레임과 마지막 프레임에서 기준 중립 자세, 눈이 열린 상태, 손 위치, 어깨 위치가 맞아야 한다. 루프 경계에서 얼굴이 순간이동하거나 표정이 바뀌지 않도록 끝 0.8초에 원래 자세로 돌아온다. 시작과 끝의 매끄러운 연결은 결과를 직접 확인한다.\n기준 이미지는 room-reference.png이다. 중앙 lead의 남색 정장·넥타이·시계, 왼쪽 specialist의 회갈색 재킷·아이보리 블라우스, 오른쪽 observer의 안경·짙은 재킷을 그대로 유지한다. 각자의 펜·물잔·서류철과 손 위치를 변경하지 않는다.",
+      "acceptance": {
+        "allThreeVisible": true,
+        "noLipMovementOrSpeech": true,
+        "noAnswerDependentReaction": true,
+        "loopSeamHumanReviewRequired": true,
+        "faceWardrobeRoomUnchanged": true,
+        "noCameraMotion": true
+      }
+    }
+  ],
+  "pathBase": "experiences/path-vr"
+}

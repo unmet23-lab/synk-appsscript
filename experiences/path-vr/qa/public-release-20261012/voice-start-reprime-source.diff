@@ -1,0 +1,20 @@
+diff --git "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film-player.mjs" "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\path-vr\\interview\\film-player.mjs"
+index eef8201b0..8ab1d9280 100644
+--- "a/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\path-public-20261012\\site\\path\\interview\\film-player.mjs"
++++ "b/C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\path-vr\\interview\\film-player.mjs"
+@@ -245,11 +245,12 @@ export function createFilmPlayer({ mount, manifest, onState = () => {}, onEnded
+         const rendered = frame(slot, job);
+         const [, metadata] = await Promise.all([started(slot, job), rendered]); guard(job);
+         if (inHead(video, clip, metadata)) break;
+-        if (attempt || clip.kind !== 'listening') throw filmError('start-hold-missed', '시작 여유 프레임을 지나 영상 전환을 중단했습니다.');
++        if (attempt) throw filmError('start-hold-missed', '시작 여유 프레임을 지나 영상 전환을 중단했습니다.');
+         // A delayed callback/play promise can consume a short neutral handle.
+-        // Rewind a still-hidden, silent listener once within the SAME timeout.
++        // Neither kind has become visible or audible yet. Rewind once within
++        // the SAME timeout, then require a fresh decoded head before replay.
+         // The outgoing frame stays visible; the 250ms/one-frame gates do not
+-        // change. Native dialogue keeps its strict no-late-unmute failure.
++        // change. Native dialogue restarts at zero and can never unmute late.
+         video.pause();
+         const rewound = frame(slot, job, (metadata) => inHead(video, clip, metadata)); video.currentTime = start;
+         const resetFrame = await rewound; guard(job);

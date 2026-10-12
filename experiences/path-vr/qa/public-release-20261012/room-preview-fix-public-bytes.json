@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-11T20:36:00.759Z",
+  "commit": "aa0af0e87cc5b2eb58967d41cf5969536d23fe25",
+  "url": "https://synk.im/path/interview/film/room-space.mjs",
+  "http": 200,
+  "contentType": "text/javascript; charset=utf-8",
+  "bytes": 31809,
+  "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+  "expected": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53",
+  "matches": true
+}

@@ -1,0 +1,47 @@
+Refreshing run status every 60 seconds. Press Ctrl+C to quit.
+
+* main pages-build-deployment · 38188148338
+Triggered via dynamic about 1 minute ago
+
+JOBS
+* build (ID 114614891583)
+  ✓ Set up job
+  ✓ Pull ghcr.io/actions/jekyll-build-pages:v1.0.13
+  ✓ Checkout
+  ✓ Build with Jekyll
+  * Upload artifact
+  * Post Checkout
+✓ main pages-build-deployment · 38188148338
+Triggered via dynamic about 2 minutes ago
+
+JOBS
+✓ build in 1m25s (ID 114614891583)
+  ✓ Set up job
+  ✓ Pull ghcr.io/actions/jekyll-build-pages:v1.0.13
+  ✓ Checkout
+  ✓ Build with Jekyll
+  ✓ Upload artifact
+  ✓ Post Checkout
+  ✓ Complete job
+✓ deploy in 32s (ID 114615179893)
+  ✓ Set up job
+  ✓ Deploy to GitHub Pages
+  ✓ Complete job
+✓ report-build-status in 3s (ID 114615179993)
+  ✓ Set up job
+  ✓ Report Build Status
+  ✓ Complete job
+
+ANNOTATIONS
+! Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+build: .github#2
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+build: .github#1
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+deploy: .github#1
+
+- "The ubuntu-latest label will migrate to Ubuntu 26 beginning October 19, 2026. For more information, see https://github.com/actions/runner-images/issues/14748"
+report-build-status: .github#1
+

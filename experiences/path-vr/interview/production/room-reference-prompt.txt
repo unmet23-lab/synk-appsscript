@@ -1,0 +1,15 @@
+SYNK PATH — 실사 기준 이미지 재현용 프롬프트
+2026-10-11 / 원본은 assets/interview/film/room-reference.png
+
+Create an original ultra-photorealistic natural photographic master reference frame for a three-person Korean job interview. The viewer is the seated applicant: eye height 1.23 m, locked level rectilinear 28 mm full-frame view, no fisheye, no camera movement. The desk is approximately 1.5 m away and the interviewers approximately 2.3 m away. Landscape 16:9, target 3840 x 2160. This is a modest, believable employer's interview room, photographed in daylight, not a video game or CGI render.
+
+Exactly three fictional ordinary Korean adults sit together behind the same wooden desk. Center: a man in his forties in a navy/charcoal suit, white shirt and dark tie. Applicant's left: a woman in her late forties in a taupe blazer and cream blouse. Applicant's right: a man in his fifties with slightly gray temples, glasses and a dark olive jacket. All mouths are closed in a neutral attentive listening pose; each person looks toward the applicant. Preserve natural pores, subtle wrinkles, realistic hair and anatomically plausible hands resting near papers and pens. No beauty smoothing or exaggerated expressions.
+
+Soft daylight enters from blinds on the left. Include restrained everyday office details, papers and clear water glasses; the door is on the right. Keep all three faces and their hands visible with room around the outer figures. No logos, text, subtitles, UI, artificial cinematic blur, glamour styling or synthetic plastic materials. This one frame establishes the shared camera, cast, clothing, lighting and neutral start/end pose for later video shots.
+
+Provenance / 실제 결과
+- Built-in imagegen으로 생성한 정지 이미지. 도구가 정확한 모델명·품질 설정을 노출하지 않아 특정 모델/max를 보장하지 않는다.
+- 위 내용은 제작 방향을 보존한 재현용 프롬프트다. 카메라 수치와 4K는 목표이지 생성 결과의 측정치가 아니다.
+- 실제 PNG: 1672 x 941. SHA-256: 03ab56d121c49789193ecdc389676714f5b0693615e18ab98dc24ad6045dcf85
+- 실제 건물 복제나 실존 인물 촬영이 아니다. 사용자 시각 검토 대기.
+- Seedance 동영상, 좌우 입체 영상, VR180/360 또는 Quest 실행 증거가 아니다.

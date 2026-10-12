@@ -1,0 +1,10 @@
+{
+  "url": "https://synk.im/path/interview/film/rehearsal.html",
+  "observed": {
+    "micCheck": "2. 마이크 확인",
+    "micCheckVisible": true,
+    "voiceStatus": "음성 입력 준비 완료 · 기기 안에서 처리"
+  },
+  "physicalMicrophoneRequested": false,
+  "console": []
+}

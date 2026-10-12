@@ -1,0 +1,223 @@
+{
+  "checkedAt": "2026-10-11T21:08:10.150Z",
+  "purpose": "Verify source equivalence for the parent task synthetic-PCM ASR interview test",
+  "localBase": "http://127.0.0.1:4293/",
+  "publicBase": "https://synk.im/path/",
+  "filesChecked": 8,
+  "allMatched": true,
+  "results": [
+    {
+      "file": "interview/film/rehearsal.mjs",
+      "disk": {
+        "bytes": 29334,
+        "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/film/rehearsal.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 29334,
+        "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/film/rehearsal.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 29334,
+        "sha256": "bb33aa521c305cb545c41c052ef410ecde6e3f9567894b18bd8771c80f23b8d3",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "interview/film/strict-vr.mjs",
+      "disk": {
+        "bytes": 27453,
+        "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/film/strict-vr.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 27453,
+        "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/film/strict-vr.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 27453,
+        "sha256": "e298dd8f3d42aa68581f4d0577c193f2bc9bba7a2345ebe85c85d532feeb6dde",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "interview/film/rehearsal-session.mjs",
+      "disk": {
+        "bytes": 12421,
+        "sha256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/film/rehearsal-session.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 12421,
+        "sha256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/film/rehearsal-session.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 12421,
+        "sha256": "0e56592c3bfe262710ba5e39907aaf70efee6e0f6adf145474c9ba2079054221",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "interview/film/speech-turn.mjs",
+      "disk": {
+        "bytes": 1432,
+        "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/film/speech-turn.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 1432,
+        "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/film/speech-turn.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 1432,
+        "sha256": "4a5f4103d1a2fa604cc5ebc0bc9bed2ff3c71e358daa28163c3ec1f7e949cd24",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "interview/voice.mjs",
+      "disk": {
+        "bytes": 15359,
+        "sha256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/voice.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 15359,
+        "sha256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/voice.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 15359,
+        "sha256": "f550e7c216df793f61e114939ded934036bce27f8a0b1401d880ea31de5803b7",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "interview/audio-worklet.js",
+      "disk": {
+        "bytes": 2265,
+        "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/interview/audio-worklet.js",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 2265,
+        "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/interview/audio-worklet.js",
+        "http": 200,
+        "contentType": "application/javascript; charset=utf-8",
+        "bytes": 2265,
+        "sha256": "937280f5789dc58c8d248fe91c15dfc2009da6e3ca95a90daf46d71dd7631993",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "vendor/vosk/vosk.mjs",
+      "disk": {
+        "bytes": 31367,
+        "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/vendor/vosk/vosk.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 31367,
+        "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/vendor/vosk/vosk.mjs",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 31367,
+        "sha256": "c4bb25d5c2c12d97add46905e7cf571c49f460f9b0b1fda2f4c5fa5ff1162381",
+        "ok": true
+      },
+      "match": true
+    },
+    {
+      "file": "vendor/vosk/vosk-worker.js",
+      "disk": {
+        "bytes": 4330890,
+        "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+        "stableDuringCheck": true
+      },
+      "local": {
+        "url": "http://127.0.0.1:4293/vendor/vosk/vosk-worker.js",
+        "http": 200,
+        "contentType": "text/javascript; charset=utf-8",
+        "bytes": 4330890,
+        "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+        "ok": true
+      },
+      "public": {
+        "url": "https://synk.im/path/vendor/vosk/vosk-worker.js",
+        "http": 200,
+        "contentType": "application/javascript; charset=utf-8",
+        "bytes": 4330890,
+        "sha256": "d30f4792f51d7ef5f2f5268159f8e1cb95c67a3fc72453af4bb33662c88349a7",
+        "ok": true
+      },
+      "match": true
+    }
+  ],
+  "scope": {
+    "productionFilesChanged": false,
+    "publicDeploymentPerformed": false,
+    "microphoneUsed": false,
+    "userProfileRead": false,
+    "validates": "On-disk source equals local HTTP response and public HTTPS response for the eight requested runtime modules",
+    "doesNotValidate": [
+      "Real microphone capture or acoustic recognition",
+      "Quest hardware behavior",
+      "The parent browser tab module cache or actual loaded-source hashes",
+      "Server origin, CSP, permission or device-environment equivalence"
+    ]
+  }
+}

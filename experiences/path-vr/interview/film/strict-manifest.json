@@ -1,0 +1,420 @@
+{
+  "schemaVersion": 1,
+  "id": "strict-interview-seated-continuity-v4",
+  "status": "ready",
+  "title": "3인 면접 · 착석형 음성 연습",
+  "projection": "rectilinear-mono",
+  "stereo": false,
+  "source": {
+    "status": "verified",
+    "provider": "Higgsfield MCP",
+    "model": "Seedance 2.5",
+    "generationDate": "2026-10-12",
+    "reviewScope": "Four completed 720p jobs, media hashes/probes, full local ASR, sampled performance and head/tail review; 4K is local Lanczos enlargement. Headset/human listening pending.",
+    "upscale": {
+      "method": "FFmpeg Lanczos 1280x720 to 3840x2160",
+      "aiSuperResolution": false,
+      "native4k": false,
+      "extraProviderCredits": 0
+    }
+  },
+  "reference": "../assets/interview/film/room-reference.png",
+  "notice": "720p 원본을 로컬에서 4K로 확대한 단안 영상입니다. 좌석 주변은 고정된 방 표면이며, VR180·360 촬영이나 입체 인물이 아닙니다.",
+  "clips": [
+    {
+      "id": "strict-question",
+      "src": "../assets/interview/film/strict-question-4k.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "요양보호사로 지원한 이유를 말씀해 주세요.",
+      "loop": false,
+      "durationSeconds": 10.08,
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "720p 2fps contact sheets and full-size 0.20s/head and duration-0.43s/tail reviewed; same reference posture, minor facial motion remains. 150ms dissolve; native audio checked by full local ASR, human listening pending. 2026-10-12 full-flow refinement: runtime entry and safe-exit offsets selected from enlarged face/hand review; source file unchanged. See qa/interview-film/continuity-source-audit.json."
+      },
+      "answerStartSeconds": 3.6,
+      "speechEndSeconds": 3.21,
+      "variants": {
+        "4k": {
+          "src": "../assets/interview/film/strict-question-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "8e8db2f4a5e98ff1cba79a072889bfe214493c466944a0e80b7ea8b02ab9f21a",
+          "durationSeconds": 10.08
+        },
+        "720p": {
+          "src": "../assets/interview/film/strict-question-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+          "durationSeconds": 10.08
+        }
+      },
+      "safeExitWindowsSeconds": [
+        [
+          8.75,
+          9.98
+        ]
+      ]
+    },
+    {
+      "id": "strict-listening",
+      "src": "../assets/interview/film/strict-listening-4k.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "loop": false,
+      "durationSeconds": 10.08,
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "720p 2fps contact sheets and full-size 0.20s/head and duration-0.43s/tail reviewed; same reference posture, minor facial motion remains. 150ms dissolve; native audio checked by full local ASR, human listening pending. 2026-10-12 full-flow refinement: runtime entry and safe-exit offsets selected from enlarged face/hand review; source file unchanged. See qa/interview-film/continuity-source-audit.json."
+      },
+      "safeExitWindowsSeconds": [
+        [
+          0,
+          0.25
+        ],
+        [
+          9,
+          9.98
+        ]
+      ],
+      "variants": {
+        "4k": {
+          "src": "../assets/interview/film/strict-listening-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "7cd356db7b0806d7b91e4266503df0153db60a3937a48a0171110713a160ade5",
+          "durationSeconds": 10.08
+        },
+        "720p": {
+          "src": "../assets/interview/film/strict-listening-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+          "durationSeconds": 10.08
+        }
+      }
+    },
+    {
+      "id": "strict-followup-experience",
+      "src": "../assets/interview/film/strict-followup-experience-4k.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "loop": false,
+      "durationSeconds": 10.041667,
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "720p 2fps contact sheets and full-size 0.20s/head and duration-0.43s/tail reviewed; same reference posture, minor facial motion remains. 150ms dissolve; native audio checked by full local ASR, human listening pending."
+      },
+      "answerStartSeconds": 5.45,
+      "speechEndSeconds": 5.08,
+      "variants": {
+        "4k": {
+          "src": "../assets/interview/film/strict-followup-experience-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "7263aa2df8deefabe3851d6796bc02876835977576a8fd7ed7e53d5920b0509d",
+          "durationSeconds": 10.041667
+        },
+        "720p": {
+          "src": "../assets/interview/film/strict-followup-experience-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+          "durationSeconds": 10.041667
+        }
+      },
+      "safeExitWindowsSeconds": [
+        [
+          8,
+          9.942
+        ]
+      ]
+    },
+    {
+      "id": "strict-followup-plan",
+      "src": "../assets/interview/film/strict-followup-plan-4k.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.",
+      "loop": false,
+      "durationSeconds": 10.041667,
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "720p 2fps contact sheets and full-size 0.20s/head and duration-0.43s/tail reviewed; same reference posture, minor facial motion remains. 150ms dissolve; native audio checked by full local ASR, human listening pending."
+      },
+      "answerStartSeconds": 4.4,
+      "speechEndSeconds": 4.05,
+      "variants": {
+        "4k": {
+          "src": "../assets/interview/film/strict-followup-plan-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "7895ac41e0f093a48a74b3f45bc59eba8248734b6628595274d9b7e18070b3db",
+          "durationSeconds": 10.041667
+        },
+        "720p": {
+          "src": "../assets/interview/film/strict-followup-plan-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+          "durationSeconds": 10.041667
+        }
+      },
+      "safeExitWindowsSeconds": [
+        [
+          7,
+          9.942
+        ]
+      ]
+    },
+    {
+      "id": "strict-listen-question-tail",
+      "src": "../assets/interview/film/strict-listen-question-tail-4k.mp4",
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+      "durationSeconds": 6,
+      "bytes": 6057021,
+      "frames": 144,
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "audioStreams": 0,
+      "fullDecodePassed": true,
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "loop": false,
+      "sourceClipId": "strict-question",
+      "sourceRangeSeconds": [
+        4,
+        10
+      ],
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "Local 720p source range cut, native 24fps, audio stream removed. Generated derivative 2fps contact sheet and full-size 0.10s/head and duration-0.15s/tail inspected. Three settled faces/hands retained; small natural facial/eye movement remains. Continuous in-browser transition and headset review are separate. 2026-10-12 full-flow refinement: runtime entry and safe-exit offsets selected from enlarged face/hand review; source file unchanged. See qa/interview-film/continuity-source-audit.json."
+      },
+      "safeExitWindowsSeconds": [
+        [
+          0,
+          0.25
+        ],
+        [
+          4.75,
+          5.95
+        ]
+      ],
+      "variants": {
+        "720p": {
+          "src": "../assets/interview/film/strict-listen-question-tail-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+          "durationSeconds": 6
+        },
+        "4k": {
+          "src": "../assets/interview/film/strict-listen-question-tail-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "6d7ef0c846073b9d70cf314a09efefb907f0bada1b73d584f169550f9151b65e",
+          "durationSeconds": 6
+        }
+      }
+    },
+    {
+      "id": "strict-listen-plan-tail",
+      "src": "../assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+      "durationSeconds": 3,
+      "bytes": 2853959,
+      "frames": 72,
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "audioStreams": 0,
+      "fullDecodePassed": true,
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "loop": false,
+      "sourceClipId": "strict-followup-plan",
+      "sourceRangeSeconds": [
+        7,
+        10
+      ],
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "Local 720p source range cut, native 24fps, audio stream removed. Generated derivative 2fps contact sheet and full-size 0.10s/head and duration-0.15s/tail inspected. Three settled faces/hands retained; small natural facial/eye movement remains. Continuous in-browser transition and headset review are separate. 2026-10-12 full-flow refinement: runtime entry and safe-exit offsets selected from enlarged face/hand review; source file unchanged. See qa/interview-film/continuity-source-audit.json."
+      },
+      "safeExitWindowsSeconds": [
+        [
+          0.5,
+          2.95
+        ]
+      ],
+      "variants": {
+        "720p": {
+          "src": "../assets/interview/film/strict-listen-plan-tail-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+          "durationSeconds": 3
+        },
+        "4k": {
+          "src": "../assets/interview/film/strict-listen-plan-tail-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "4280315d1a7d78611e931aad451dbbc944fe50c8feef28b916298220c8ed994e",
+          "durationSeconds": 3
+        }
+      },
+      "playbackStartSeconds": 0.5
+    },
+    {
+      "id": "strict-listen-experience-tail",
+      "src": "../assets/interview/film/strict-listen-experience-tail-4k.mp4",
+      "width": 3840,
+      "height": 2160,
+      "fps": "24/1",
+      "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+      "durationSeconds": 3,
+      "bytes": 2868604,
+      "frames": 72,
+      "codec": "h264",
+      "pixFmt": "yuv420p",
+      "audioStreams": 0,
+      "fullDecodePassed": true,
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "loop": false,
+      "sourceClipId": "strict-followup-experience",
+      "sourceRangeSeconds": [
+        7,
+        10
+      ],
+      "transition": {
+        "headHoldMs": 250,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "Local 720p source range cut, native 24fps, audio stream removed. Generated derivative 2fps contact sheet and full-size 0.10s/head and duration-0.15s/tail inspected. Three settled faces/hands retained; small natural facial/eye movement remains. Continuous in-browser transition and headset review are separate. 2026-10-12 full-flow refinement: runtime entry and safe-exit offsets selected from enlarged face/hand review; source file unchanged. See qa/interview-film/continuity-source-audit.json."
+      },
+      "safeExitWindowsSeconds": [
+        [
+          0.75,
+          2.95
+        ]
+      ],
+      "variants": {
+        "720p": {
+          "src": "../assets/interview/film/strict-listen-experience-tail-720p.mp4",
+          "width": 1280,
+          "height": 720,
+          "fps": "24/1",
+          "sha256": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18",
+          "durationSeconds": 3
+        },
+        "4k": {
+          "src": "../assets/interview/film/strict-listen-experience-tail-4k.mp4",
+          "width": 3840,
+          "height": 2160,
+          "fps": "24/1",
+          "sha256": "4c09495901e4b3f12182f61ea37ae0ce394f8d3f9a37367411f4e16837e82456",
+          "durationSeconds": 3
+        }
+      },
+      "playbackStartSeconds": 0.75
+    }
+  ],
+  "listeningVariation": {
+    "source": "../production/listening-tail-variants.json",
+    "clipIds": [
+      "strict-listening",
+      "strict-listen-question-tail",
+      "strict-listen-plan-tail",
+      "strict-listen-experience-tail"
+    ],
+    "extraProviderCredits": 0,
+    "newGeneratedPerformances": 0,
+    "method": "Quiet interval first; at most one added writing clip per answer when neutral assets are ready; do not replay initial question notes in the same answer; choose a different writing action across the two answers; avoid starting a long note when time is short. Neutral existing performances may repeat."
+  },
+  "followupAvailability": {
+    "ready": [
+      "strict-followup-experience",
+      "strict-followup-plan"
+    ],
+    "newScriptsStatus": "generation-deferred-by-user",
+    "dynamicSpeechGeneration": false
+  },
+  "continuityReview": {
+    "source": "../../qa/interview-film/continuity-source-audit.json",
+    "newGeneratedVideos": 0,
+    "mediaFileChanges": 0,
+    "transitionMs": 150,
+    "neutralEntries": {
+      "strict-listen-plan-tail": 0.5,
+      "strict-listen-experience-tail": 0.75
+    },
+    "deferredNewSpokenQuestions": true
+  }
+}

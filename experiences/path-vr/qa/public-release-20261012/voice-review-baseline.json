@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-10-11T21:45:35.259Z",
+  "head": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+  "originMain": "8ea68239f3e6ab3e0dcbec9ff42ae7b35ca2408e",
+  "sourceFiles": [
+    {
+      "file": "interview/voice.mjs",
+      "bytes": 16794,
+      "sha256": "6e510958f0553f4d1590f2bd7166eb83371f3aaffe1d6a5c53a0cc61338735f3"
+    },
+    {
+      "file": "interview/film/rehearsal.mjs",
+      "bytes": 32398,
+      "sha256": "d49873c07c20fdf1208f78691a7a0fb757edc54c7e2d5a6c98fe2f6ea31a5a8b"
+    },
+    {
+      "file": "interview/film/rehearsal.html",
+      "bytes": 5951,
+      "sha256": "797e0ea704affec97c689575a74820c748aea0b2573be47c847dbb5f3a2ea598"
+    },
+    {
+      "file": "interview/film/rehearsal-session.mjs",
+      "bytes": 13574,
+      "sha256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d"
+    },
+    {
+      "file": "interview/film/strict-vr.mjs",
+      "bytes": 28236,
+      "sha256": "05907064f22701c0af1237353fe8ea1c41ea41f74895397a2e2483aa52e7b964"
+    },
+    {
+      "file": "interview/film/answer-followup.mjs",
+      "bytes": 17250,
+      "sha256": "3b70f91c835bcd23a6e0c47ad1cb260ec6d703c5fc72b7c50ed5831ddc7d2e35"
+    }
+  ]
+}

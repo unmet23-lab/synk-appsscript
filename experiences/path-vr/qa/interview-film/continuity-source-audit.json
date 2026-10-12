@@ -1,0 +1,184 @@
+{
+  "date": "2026-10-12",
+  "scope": "Read-only inspection of the four existing native 720p performances and three silent derivatives. No paid/new AI generation, no render asset edits.",
+  "method": {
+    "visual": "Sampled 0/.5/1/2/.../9/end contact sheets of all four original clips; enlarged incoming and outgoing face comparisons. This is sampled source audit, not headset or full browser playback proof.",
+    "metrics": "RGB mean absolute differences in fixed face/hand rectangles. Values support observed pose mismatches, not a validated perceptual score or motion-sickness measurement.",
+    "coordinates720p": {
+      "leftFace": [
+        195,
+        135,
+        380,
+        345
+      ],
+      "centerFace": [
+        545,
+        108,
+        702,
+        327
+      ],
+      "rightFace": [
+        895,
+        130,
+        1064,
+        338
+      ],
+      "hands": [
+        155,
+        425,
+        1125,
+        503
+      ]
+    }
+  },
+  "sourceHashes": {
+    "strict-question": "c7b71793b8c646f5a966475d19c2d599ab73e339ee672fc689fed7b7bef8cff7",
+    "strict-listening": "10a9d1ad6b07c701efd01a14961ecfec47dd31d9846ee0b5a240a1b8c53ff81c",
+    "strict-followup-experience": "5d1680de4b5c7234482c0202dea23357e4b8b135dab32ae835cc053083e4b685",
+    "strict-followup-plan": "d2853c0c84408e45222c4cd041ea4d707cb5ce2a4a7ddbf09b2972a9787aed94",
+    "strict-listen-question-tail": "fb2dbf3be0050a1cdb6247097b9bd40c40a1fbfc645e846d7fe80f53d5a854f7",
+    "strict-listen-plan-tail": "87324cbe873db3ff44b69f3b69a06bcf099083e98a881da93f57c6883eea5ccc",
+    "strict-listen-experience-tail": "971e6d030c25d03973fc0d095142726a69096574d2c3a3980d6c96e67d31de18"
+  },
+  "findings": [
+    {
+      "id": "adjacent-notation",
+      "observation": "Initial question already shows right note-taking followed by left paper attention around 4.75-8s; current first listening clip repeats the same broad action sequence immediately afterwards. Silent tail reuse of the initial question during the same answer is an especially recognizable repeat.",
+      "recommendation": "Start a neutral interval after a speaking clip; retain session-wide gesture/source recency; do not re-use that question note-taking tail in the same answer."
+    },
+    {
+      "id": "experience-neutral-head",
+      "observation": "The first .5s of the 3s experience derivative still contains a returning head pose. At derivative0s right-face MAE to initial reference was10.40 versus4.03 at.75s.",
+      "recommendation": "Play existing derivative from.75s (source7.75s), forward at1x. Retain2.25s; do not retime/morph."
+    },
+    {
+      "id": "plan-neutral-head",
+      "observation": "Right-face MAE at neutral-plan0s was5.94 versus4.86 at.5s.",
+      "recommendation": "Play existing derivative from.5s (source7.5s), forward at1x. Retain2.5s."
+    },
+    {
+      "id": "safe-exit-posture",
+      "observation": "Original listening7.3s still shows a slightly forward center head pose; it settles near9s. Question8s still has right head returning, settling by8.75s.",
+      "recommendation": "Use outgoing safe window start9.0s for original listening,8.75s for question,4.75s for question-tail. Existing experience8s may remain. Do not extend the dissolve beyond150ms to hide mismatch."
+    },
+    {
+      "id": "neutral-tradeoff",
+      "observation": "After offsets, P-to-E maximum face native-resolution MAE3.63, hands2.85; E-to-P max face5.03,hands2.79. Those transitions are lower-amplitude than original incoming E0s right-face jump~10.1. Neutral alternating repeats blinks/low motion, but avoids repeating large writing actions.",
+      "recommendation": "Prefer8-10s made of alternate2.5/2.25s neutral clips where needed over another conspicuous writing cycle. This adds cuts; preserve100-150ms fixed-view dissolve and review actual playback. Neutral source reuse after a different neutral interval should remain possible in answer2; banning it all would force repeated single-neutral loops."
+    },
+    {
+      "id": "global-writing-budget",
+      "recommendation": "Track note gesture usage across both answers. Prefer the least recently used note performance, require~24s source cooldown, and avoid starting a10s note performance with<9s answer budget remaining. Existing performances can reduce repetition, not eliminate it."
+    }
+  ],
+  "exampleExperienceTimeline": {
+    "status": "Proposed editorial example, not a measured runtime trace; omits loading, actual dissolve overlap, mic finalization and pauses.",
+    "nominalDurationSeconds": 67.55,
+    "entries": [
+      [
+        0,
+        2,
+        "lead-in"
+      ],
+      [
+        2,
+        12.04,
+        "strict-question"
+      ],
+      [
+        12.04,
+        14.54,
+        "plan-neutral from .5"
+      ],
+      [
+        14.54,
+        16.79,
+        "experience-neutral from .75"
+      ],
+      [
+        16.79,
+        26.83,
+        "strict-listening"
+      ],
+      [
+        26.83,
+        29.08,
+        "experience-neutral from .75"
+      ],
+      [
+        29.08,
+        31.58,
+        "plan-neutral from .5"
+      ],
+      [
+        31.58,
+        33.83,
+        "experience-neutral from .75"
+      ],
+      [
+        33.83,
+        35.6,
+        "plan-neutral partial"
+      ],
+      [
+        35.6,
+        45.64,
+        "strict-followup-experience"
+      ],
+      [
+        45.64,
+        48.14,
+        "plan-neutral from .5"
+      ],
+      [
+        48.14,
+        54.14,
+        "strict-listen-question-tail"
+      ],
+      [
+        54.14,
+        56.64,
+        "plan-neutral from .5"
+      ],
+      [
+        56.64,
+        58.89,
+        "experience-neutral from .75"
+      ],
+      [
+        58.89,
+        61.39,
+        "plan-neutral from .5"
+      ],
+      [
+        61.39,
+        63.64,
+        "experience-neutral from .75"
+      ],
+      [
+        63.64,
+        66.05,
+        "plan-neutral partial"
+      ],
+      [
+        66.05,
+        67.55,
+        "closing"
+      ]
+    ],
+    "distinctWritingBouts": 4,
+    "writingBreakdown": "Two embedded in spoken questions; original listening used once; initial-question writing tail reused once only in answer2, around42s after its first writing action."
+  },
+  "evidence": {
+    "incomingComparison": "../../../../.tmp/continuity-audit-20261012/incoming-pose-comparison.jpg",
+    "outgoingComparison": "../../../../.tmp/continuity-audit-20261012/outgoing-pose-comparison.jpg",
+    "roiSamples": "../../../../.tmp/continuity-audit-20261012/roi-transition-audit.json"
+  },
+  "limitations": [
+    "No Quest headset or human nausea validation.",
+    "No continuous browser observation by this audit agent.",
+    "Native materials still contain repeated performances.",
+    "Mono film on room surfaces cannot supply true binocular person depth or tracked positional parallax.",
+    "720p to4K is existing local enlargement, not newly generated fine detail."
+  ]
+}

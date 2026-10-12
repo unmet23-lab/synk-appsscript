@@ -1,0 +1,328 @@
+{
+  "method": "ffprobe metadata; complete local ASR; 2fps sampled frame sheets plus endpoint sheet; browser review recorded separately",
+  "clips": [
+    {
+      "id": "strict-question",
+      "sha256": "39897d5b513f243c97b75afcfa831e25468bd7ed1e1edd3f67e876a49e061fe7",
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "duration": 10.08,
+      "bytes": 428167,
+      "codec": "h264",
+      "asrText": "요양보호사로 지원한 이유를 말씀해 주세요.",
+      "asrMatchesExpected": true,
+      "segments": [
+        {
+          "start": 0.72,
+          "end": 3.4,
+          "text": " 요양보호사로 지원한 이유를 말씀해 주세요.",
+          "words": [
+            {
+              "word": " 요양보호사로",
+              "start": 0.72,
+              "end": 1.8
+            },
+            {
+              "word": " 지원한",
+              "start": 1.8,
+              "end": 2.22
+            },
+            {
+              "word": " 이유를",
+              "start": 2.22,
+              "end": 2.64
+            },
+            {
+              "word": " 말씀해",
+              "start": 2.64,
+              "end": 3.22
+            },
+            {
+              "word": " 주세요.",
+              "start": 3.22,
+              "end": 3.4
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strict-listening",
+      "sha256": "9f72ccda4fa98dfa95d306f63ad49a7ea58f1d68ca9779d8b2a7c1304c19cbcc",
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "duration": 10.08,
+      "bytes": 425197,
+      "codec": "h264",
+      "asrText": "",
+      "asrMatchesExpected": true,
+      "segments": []
+    },
+    {
+      "id": "strict-followup-experience",
+      "sha256": "6e7908b18784298a140e443836ba921f7dfde76cb61e27312d3729855967d423",
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "duration": 10.08,
+      "bytes": 427082,
+      "codec": "h264",
+      "asrText": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "asrMatchesExpected": true,
+      "segments": [
+        {
+          "start": 0.59,
+          "end": 4.53,
+          "text": " 그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+          "words": [
+            {
+              "word": " 그",
+              "start": 0.59,
+              "end": 1.05
+            },
+            {
+              "word": " 경험에서",
+              "start": 1.05,
+              "end": 1.53
+            },
+            {
+              "word": " 직접",
+              "start": 1.53,
+              "end": 1.79
+            },
+            {
+              "word": " 맡았던",
+              "start": 1.79,
+              "end": 2.33
+            },
+            {
+              "word": " 일과",
+              "start": 2.33,
+              "end": 2.67
+            },
+            {
+              "word": " 그",
+              "start": 2.67,
+              "end": 2.91
+            },
+            {
+              "word": " 결과를",
+              "start": 2.91,
+              "end": 3.45
+            },
+            {
+              "word": " 구체적으로",
+              "start": 3.45,
+              "end": 4.03
+            },
+            {
+              "word": " 말씀해",
+              "start": 4.03,
+              "end": 4.37
+            },
+            {
+              "word": " 주세요.",
+              "start": 4.37,
+              "end": 4.53
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "strict-followup-plan",
+      "sha256": "1ad4e1f160f86701845735f269b1cfe5d4afa352c44fcd5efb493c8483244501",
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "duration": 10.041667,
+      "bytes": 367254,
+      "codec": "h264",
+      "asrText": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까?",
+      "asrMatchesExpected": true,
+      "segments": [
+        {
+          "start": 1.01,
+          "end": 4.47,
+          "text": " 현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까?",
+          "words": [
+            {
+              "word": " 현장에",
+              "start": 1.01,
+              "end": 1.71
+            },
+            {
+              "word": " 투입되기",
+              "start": 1.71,
+              "end": 2.15
+            },
+            {
+              "word": " 전에",
+              "start": 2.15,
+              "end": 2.33
+            },
+            {
+              "word": " 무엇을",
+              "start": 2.33,
+              "end": 3.43
+            },
+            {
+              "word": " 어떻게",
+              "start": 3.43,
+              "end": 3.65
+            },
+            {
+              "word": " 준비하실",
+              "start": 3.65,
+              "end": 4.13
+            },
+            {
+              "word": " 겁니까?",
+              "start": 4.13,
+              "end": 4.47
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "humanListeningVerified": false,
+  "headsetVerified": false,
+  "frameReview": {
+    "sampleRateFps": 2,
+    "endpointReviewSeconds": [
+      0.2,
+      9.65
+    ],
+    "additionalReview": "experience first 12 frames inspected at original 24fps",
+    "observations": [
+      "All three recurring faces, wardrobe and locked room framing retained across sampled frames.",
+      "Listening: right interviewer writes at about 0.5-4s; left reads at about 3-4.5s; center looks down at about 6-6.7s, then returns.",
+      "No broad smiles or repeated reassuring nods visible in sampled sequence; restrained neutral evaluation rather than overt anger.",
+      "Heads, hands and props return close to the common pose at clip endings. Small facial/eye and texture changes remain; not pixel-identical or a guarantee of imperceptible cuts."
+    ],
+    "limitations": [
+      "Sampled-frame review is not continuous human lip-sync or listening review.",
+      "Source remains a generated 480p rectilinear mono film, not a captured room or stereo VR."
+    ]
+  },
+  "browserPlaybackVerified": true,
+  "browser": {
+    "engine": "Codex in-app browser",
+    "url": "http://127.0.0.1:4293/interview/film/rehearsal.html",
+    "checks": [
+      {
+        "check": "Input opens during the question clip silent tail",
+        "passed": true,
+        "evidence": {
+          "video": "strict-question.mp4",
+          "currentTime": 5.579622,
+          "state": "답변 중",
+          "remaining": "19초",
+          "decoded": [
+            854,
+            480
+          ]
+        }
+      },
+      {
+        "check": "Experience answer selects and actually plays the experience follow-up",
+        "passed": true,
+        "evidence": {
+          "answer": "요양원에서 봉사하면서 어르신을 도와드렸습니다. 그 경험을 바탕으로 지원했습니다.",
+          "video": "strict-followup-experience.mp4",
+          "currentTime": 8.800405,
+          "turn": "2 / 2"
+        }
+      },
+      {
+        "check": "Second submitted answer completes the interview and shows chosen follow-up",
+        "passed": true
+      },
+      {
+        "check": "No browser console warnings or errors during this path",
+        "passed": true
+      },
+      {
+        "check": "Negated experience answer plays the preparation-plan follow-up",
+        "passed": true,
+        "evidence": {
+          "answer": "현장 경험은 아직 없습니다. 교육을 받고 자격증을 준비했습니다.",
+          "video": "strict-followup-plan.mp4",
+          "currentTime": 4.719423,
+          "turn": "2 / 2"
+        }
+      },
+      {
+        "check": "Pause freezes both video elements and resume continues",
+        "passed": true,
+        "evidence": {
+          "pausedVideos": 2,
+          "currentTime": 2.723995
+        }
+      },
+      {
+        "check": "Empty answer enters repair without selecting a follow-up; typed correction is retained and submitted",
+        "passed": true
+      },
+      {
+        "check": "Question repeat retains the selected preparation-plan question",
+        "passed": true
+      },
+      {
+        "check": "Second answer can be corrected after timeout and completes with the selected follow-up shown",
+        "passed": true
+      },
+      {
+        "check": "Mobile viewport has no horizontal overflow and shows usable answer controls",
+        "passed": true,
+        "evidence": {
+          "viewport": [
+            390,
+            844
+          ],
+          "clientWidth": 390,
+          "scrollWidth": 390,
+          "screenshot": "strict-mobile.png"
+        }
+      },
+      {
+        "check": "Resumed local server plays listening video with decoded frames after interruption",
+        "passed": true,
+        "evidence": {
+          "video": "strict-listening.mp4",
+          "currentTime": 5.789434,
+          "paused": false,
+          "opacity": 1,
+          "screenshot": "strict-playback.png"
+        }
+      },
+      {
+        "check": "Latest browser console contains no warnings or errors; page restored to start button",
+        "passed": true
+      }
+    ],
+    "microphoneIntegration": "adapter and lifecycle automated tests passed; live human microphone not tested",
+    "hardwareXR": "not-tested",
+    "scope": "Desktop in-app browser playback with typed answers; 390x844 responsive layout. Not a live microphone or hardware Quest validation.",
+    "screenshots": [
+      "qa/interview-film/strict-mobile.png",
+      "qa/interview-film/strict-playback.png"
+    ]
+  },
+  "verifiedAt": "2026-10-11T15:15:57.812Z",
+  "tests": {
+    "total": 58,
+    "passed": 58,
+    "failed": 0,
+    "groups": {
+      "filmAndSession": 30,
+      "vrAndVoice": 20,
+      "serverAndPackage": 8
+    },
+    "package": "Rebuilt after finding one stale voice-prefix source line; current runtime checksums and package exclusions pass.",
+    "note": "Film/session 30 and server/package 8 rerun on 2026-10-12. VR/voice 20 passed during preceding implementation; hardware validation remains separate."
+  }
+}

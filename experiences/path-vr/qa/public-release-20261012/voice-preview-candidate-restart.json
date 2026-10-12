@@ -1,0 +1,94 @@
+{
+  "partial": "",
+  "phase": "답변 중",
+  "qa": {
+    "ended": 3,
+    "fixture": "Microsoft Heami Desktop; interview-ko.wav; not user audio",
+    "lastStatus": "listening",
+    "live": 1,
+    "physicalMicrophoneUsed": false,
+    "sessions": [
+      {
+        "audioContextTime": 7.944,
+        "fixture": "study",
+        "fixtureEnded": false,
+        "fixtureSeconds": 10.6874375,
+        "id": 1,
+        "leadInSeconds": 1.5,
+        "mode": "once",
+        "pcmSeconds": 5.788,
+        "readyState": "ended",
+        "startedAtMs": 42094,
+        "stoppedAtMs": 49360,
+        "streamId": "734e851d-a301-41eb-a108-1b441e7bae19",
+        "trackId": "0540cab1-0e64-494f-8149-2825c743387d"
+      },
+      {
+        "audioContextTime": 17.88,
+        "fixture": "study",
+        "fixtureEnded": true,
+        "fixtureSeconds": 10.6874375,
+        "id": 2,
+        "leadInSeconds": 1.5,
+        "mode": "once",
+        "pcmSeconds": 10.687,
+        "readyState": "ended",
+        "startedAtMs": 80578,
+        "stoppedAtMs": 98346,
+        "streamId": "eb02fb1f-a1d3-4272-a81a-8fed68be6c11",
+        "trackId": "56d8bc69-d3b7-4c73-9909-1970019d11ce"
+      },
+      {
+        "audioContextTime": 17.376,
+        "fixture": "study",
+        "fixtureEnded": true,
+        "fixtureSeconds": 10.6874375,
+        "id": 3,
+        "leadInSeconds": 1.5,
+        "mode": "once",
+        "pcmSeconds": 10.687,
+        "readyState": "ended",
+        "startedAtMs": 105583,
+        "stoppedAtMs": 122939,
+        "streamId": "64e102d6-3363-481d-9881-49208a563a57",
+        "trackId": "c63a6422-1f3b-4e74-ad8d-54a05a6061e8"
+      },
+      {
+        "audioContextTime": 4.536,
+        "fixture": "study",
+        "fixtureEnded": false,
+        "fixtureSeconds": 10.6874375,
+        "id": 4,
+        "leadInSeconds": 1.5,
+        "mode": "once",
+        "pcmSeconds": 2.812,
+        "readyState": "live",
+        "startedAtMs": 276429,
+        "stoppedAtMs": null,
+        "streamId": "adac53f4-4aa6-4795-8490-de2022e73b9d",
+        "trackId": "cc0e1092-9aac-4148-a44a-88a81cb50530"
+      }
+    ],
+    "starts": 4,
+    "stops": 3,
+    "synthetic": true,
+    "total": 4
+  },
+  "status": "말씀하세요. 답변 후 약 6초간 말이 없으면 자동으로 이어집니다.",
+  "videos": [
+    {
+      "paused": false,
+      "ready": 4,
+      "src": "http://127.0.0.1:52670/assets/interview/film/strict-question-4k.mp4",
+      "time": 8.429643,
+      "width": 3840
+    },
+    {
+      "paused": true,
+      "ready": 4,
+      "src": "http://127.0.0.1:52670/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "time": 0.5,
+      "width": 3840
+    }
+  ]
+}

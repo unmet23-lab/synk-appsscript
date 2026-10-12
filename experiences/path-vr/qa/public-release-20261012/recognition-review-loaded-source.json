@@ -1,0 +1,22 @@
+[
+  {
+    "url": "https://synk.im/path/interview/film/rehearsal.mjs",
+    "sha256": "d49873c07c20fdf1208f78691a7a0fb757edc54c7e2d5a6c98fe2f6ea31a5a8b"
+  },
+  {
+    "url": "https://synk.im/path/interview/film/rehearsal-session.mjs",
+    "sha256": "c47340bd29b1ad5b82eed32fc359f81ed38d364ca0c810d4cc5ae959a145635d"
+  },
+  {
+    "url": "https://synk.im/path/interview/film/strict-vr.mjs",
+    "sha256": "05907064f22701c0af1237353fe8ea1c41ea41f74895397a2e2483aa52e7b964"
+  },
+  {
+    "url": "https://synk.im/path/interview/voice.mjs",
+    "sha256": "6e510958f0553f4d1590f2bd7166eb83371f3aaffe1d6a5c53a0cc61338735f3"
+  },
+  {
+    "url": "https://synk.im/path/interview/film/answer-followup.mjs",
+    "sha256": "3b70f91c835bcd23a6e0c47ad1cb260ec6d703c5fc72b7c50ed5831ddc7d2e35"
+  }
+]

@@ -1,0 +1,149 @@
+{
+  "method": "CUA read-only DOM media samples and actual UI interactions; synthetic answers only.",
+  "samples": [
+    [
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listening-4k.mp4",
+        "time": 10.055399,
+        "width": 3840
+      }
+    ],
+    [
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-experience-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-question-tail-4k.mp4",
+        "time": 4.345398,
+        "width": 3840
+      }
+    ],
+    [
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listening-4k.mp4",
+        "time": 3.745642,
+        "width": 3840
+      }
+    ],
+    [
+      {
+        "height": 720,
+        "muted": true,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listening-720p.mp4",
+        "time": 0.972504,
+        "width": 1280
+      },
+      {
+        "height": 720,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-720p.mp4",
+        "time": 0,
+        "width": 1280
+      }
+    ],
+    [
+      {
+        "height": 720,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listening-720p.mp4",
+        "time": 0,
+        "width": 1280
+      },
+      {
+        "height": 720,
+        "muted": false,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-followup-plan-720p.mp4",
+        "time": 8.560536,
+        "width": 1280
+      }
+    ],
+    [
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "0",
+        "paused": true,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+        "time": 0,
+        "width": 3840
+      },
+      {
+        "height": 2160,
+        "muted": true,
+        "opacity": "1",
+        "paused": false,
+        "src": "http://127.0.0.1:4293/assets/interview/film/strict-listening-4k.mp4",
+        "time": 4.80393,
+        "width": 3840
+      }
+    ]
+  ],
+  "reset": {
+    "answer": "",
+    "context": "",
+    "result": "",
+    "videos": [
+      {
+        "paused": true,
+        "src": null
+      },
+      {
+        "paused": true,
+        "src": null
+      }
+    ]
+  },
+  "knownCorrectedError": "HUD context variable shadowing fixed and reloaded; no later warnings/errors observed.",
+  "errors": [
+    {
+      "level": "error",
+      "message": "ReferenceError: Cannot access 'context' before initialization\n    at drawHUD (http://127.0.0.1:4293/interview/film/strict-vr.mjs:199:5)\n    at frame (http://127.0.0.1:4293/interview/film/strict-vr.mjs:240:5)\n    at onAnimationFrame (http://127.0.0.1:4293/vendor/three.module.js:16314:36)\n    at onAnimationFrame (http://127.0.0.1:4293/vendor/three.module.js:18:3)",
+      "timestamp": "2026-10-11T19:08:12.338Z",
+      "url": "http://127.0.0.1:4293/interview/film/strict-vr.mjs"
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "id": "strict-interview-pilot-v1",
+  "status": "ready",
+  "title": "3인 면접 · 짧은 연결 테스트",
+  "projection": "rectilinear-mono",
+  "stereo": false,
+  "source": {
+    "status": "verified",
+    "provider": "Higgsfield MCP",
+    "model": "Seedance 2.5",
+    "generationDate": "2026-10-11",
+    "reviewScope": "Verified job IDs, local media metadata, complete ASR and sampled frames/endpoints. Hardware and human naturalness review pending."
+  },
+  "reference": "../assets/interview/film/room-reference.png",
+  "notice": "480p 일반 단안 영상의 짧은 연결 테스트입니다. VR180·360·입체 공간이 아닙니다.",
+  "clips": [
+    {
+      "id": "strict-question",
+      "src": "/assets/interview/film/strict-question.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "요양보호사로 지원한 이유를 말씀해 주세요.",
+      "loop": false,
+      "durationSeconds": 10.08,
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "sha256": "39897d5b513f243c97b75afcfa831e25468bd7ed1e1edd3f67e876a49e061fe7",
+      "transition": {
+        "headHoldMs": 100,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "sampled neutral head/tail pose and native audio onset; prototype dissolve, not exact pose identity"
+      },
+      "answerStartSeconds": 3.75,
+      "speechEndSeconds": 3.4
+    },
+    {
+      "id": "strict-listening",
+      "src": "/assets/interview/film/strict-listening.mp4",
+      "status": "ready",
+      "kind": "listening",
+      "audio": "silent",
+      "reviewed": true,
+      "dialogue": "",
+      "loop": true,
+      "durationSeconds": 10.08,
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "sha256": "9f72ccda4fa98dfa95d306f63ad49a7ea58f1d68ca9779d8b2a7c1304c19cbcc",
+      "transition": {
+        "headHoldMs": 100,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "sampled neutral head/tail pose and native audio onset; prototype dissolve, not exact pose identity"
+      },
+      "safeExitWindowsSeconds": [
+        [
+          0,
+          0.35
+        ],
+        [
+          5.4,
+          5.8
+        ],
+        [
+          7.5,
+          9.95
+        ]
+      ]
+    },
+    {
+      "id": "strict-followup-experience",
+      "src": "/assets/interview/film/strict-followup-experience.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.",
+      "loop": false,
+      "durationSeconds": 10.08,
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "sha256": "6e7908b18784298a140e443836ba921f7dfde76cb61e27312d3729855967d423",
+      "transition": {
+        "headHoldMs": 100,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "sampled neutral head/tail pose and native audio onset; prototype dissolve, not exact pose identity"
+      },
+      "answerStartSeconds": 4.85,
+      "speechEndSeconds": 4.53
+    },
+    {
+      "id": "strict-followup-plan",
+      "src": "/assets/interview/film/strict-followup-plan.mp4",
+      "status": "ready",
+      "kind": "speaking",
+      "audio": "native",
+      "reviewed": true,
+      "dialogue": "현장에 투입되기 전에 무엇을 어떻게 준비하실 겁니까.",
+      "loop": false,
+      "durationSeconds": 10.041667,
+      "width": 854,
+      "height": 480,
+      "fps": "24/1",
+      "sha256": "1ad4e1f160f86701845735f269b1cfe5d4afa352c44fcd5efb493c8483244501",
+      "transition": {
+        "headHoldMs": 100,
+        "tailHoldMs": 350,
+        "validated": true,
+        "validationScope": "sampled neutral head/tail pose and native audio onset; prototype dissolve, not exact pose identity"
+      },
+      "answerStartSeconds": 4.8,
+      "speechEndSeconds": 4.47
+    }
+  ]
+}

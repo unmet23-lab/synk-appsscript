@@ -1,0 +1,133 @@
+{
+  "scope": "Ten synthetic Heami recordings, real browser ASR results, current selective policy. Gold planner agreement is not independent semantic or human microphone accuracy.",
+  "summary": {
+    "count": 10,
+    "auto": 3,
+    "clarify": 7,
+    "retry": 0,
+    "autoBranchMismatch": 0
+  },
+  "report": [
+    {
+      "id": "01-self-past-meal",
+      "text": "저는 요양원에서 어르신에 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "gold": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "decision": "auto",
+      "issue": null,
+      "branch": "experience",
+      "goldBranch": "experience",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "02-preparation-no-experience",
+      "text": "돌봄 경험은 아직 없습니다. 요양보보사 교육을 받으며 이동 보조와 보고 절차를 배우고 있습니다.",
+      "gold": "돌봄 경험은 아직 없습니다. 요양보호사 교육을 받으며 이동 보조와 보고 절차를 배우고 있습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "actor",
+        "text": "돌봄 경험은 아직 없습니다."
+      },
+      "branch": "plan",
+      "goldBranch": "plan",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "03-negation-meal",
+      "text": "식사를 도와드린 경험은 없습니다. 어르신에 이동을 도울 때 지킬 안전 수칙을 배우고 있습니다.",
+      "gold": "식사를 도와드린 경험은 없습니다. 어르신의 이동을 도울 때 지킬 안전 수칙을 배우고 있습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "actor",
+        "text": "식사를 도와드린 경험은 없습니다."
+      },
+      "branch": "plan",
+      "goldBranch": "plan",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "04-other-person",
+      "text": "제 친구가 요양원에서 어르신에 식사를 도왔습니다. 저는 직접 돌본 경험이 없습니다.",
+      "gold": "제 친구가 요양원에서 어르신의 식사를 도왔습니다. 저는 직접 돌본 경험이 없습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "actor",
+        "text": "친구가"
+      },
+      "branch": "plan",
+      "goldBranch": "plan",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "05-correction-to-other",
+      "text": "제가 식사를 도왔다고 했지만 잘못 말했습니다. 제가 아니라 친구의 경험입니다.",
+      "gold": "제가 식사를 도왔다고 했지만 잘못 말했습니다. 제가 아니라 친구의 경험입니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "meaning",
+        "text": "제가 아니라"
+      },
+      "branch": "repair",
+      "goldBranch": "repair",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "06-correction-topic",
+      "text": "제가 식사를 도왔습니다. 아니요. 식사가 아니라 어르신의 이동을 도왔습니다.",
+      "gold": "제가 식사를 도왔습니다. 아니요, 식사가 아니라 어르신의 이동을 도왔습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "meaning",
+        "text": "아니요."
+      },
+      "branch": "repair",
+      "goldBranch": "repair",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "07-self-past-transfer",
+      "text": "저는 어르신이 침대에서 필체로 이동할 때 도왔습니다. 이동 전에 바퀴가 잠겼는지 확인했습니다.",
+      "gold": "저는 어르신이 침대에서 휠체어로 이동할 때 도왔습니다. 이동 전에 바퀴가 잠겼는지 확인했습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "semantic",
+        "text": "저는 어르신이 침대에서 필체로 이동할 때 도왔습니다."
+      },
+      "branch": "repair",
+      "goldBranch": "repair",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "08-observation-report",
+      "text": "저는 어르신의 식사량이 줄어든 것을 확인했습니다. 담당 요양보호사에게 바로 보고했습니다.",
+      "gold": "저는 어르신의 식사량이 줄어든 것을 확인했습니다. 담당 요양보호사에게 바로 보고했습니다.",
+      "decision": "auto",
+      "issue": null,
+      "branch": "experience",
+      "goldBranch": "experience",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "09-care-refusal",
+      "text": "어르신이 식사를 거부해서 이 유를 먼저 여쭀습니다. 억지로 권하지 않고 담당자에게 알렸습니다.",
+      "gold": "어르신이 식사를 거부해서 이유를 먼저 여쭈었습니다. 억지로 권하지 않고 담당자에게 알렸습니다.",
+      "decision": "clarify",
+      "issue": {
+        "kind": "semantic",
+        "text": "어르신이 식사를 거부해서 이 유를 먼저 여쭀습니다."
+      },
+      "branch": "repair",
+      "goldBranch": "repair",
+      "autoDiffersFromGold": false
+    },
+    {
+      "id": "10-family-care",
+      "text": "저는 가족을 돌보면서 식사와 이동을 도왔습니다. 이상이 있으면 가족과 담당자에게 전달했습니다.",
+      "gold": "저는 가족을 돌보면서 식사와 이동을 도왔습니다. 이상이 있으면 가족과 담당자에게 전달했습니다.",
+      "decision": "auto",
+      "issue": null,
+      "branch": "experience",
+      "goldBranch": "experience",
+      "autoDiffersFromGold": false
+    }
+  ]
+}

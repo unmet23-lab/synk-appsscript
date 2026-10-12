@@ -1,0 +1,341 @@
+{
+  "at": "2026-10-11T12:16:49.364Z",
+  "base": "http://127.0.0.1:4293",
+  "checks": [
+    {
+      "name": "scene and all dialogue audio prepared",
+      "ok": true,
+      "detail": {
+        "ready": true,
+        "phase": "idle",
+        "turn": 0,
+        "branch": null,
+        "mode": "text",
+        "paused": false,
+        "voiceReady": false,
+        "microphonePrepared": false,
+        "stats": {
+          "drawCalls": 72,
+          "triangles": 31148,
+          "textures": 42,
+          "desktopAverageFrameMs": 60.30238095238096,
+          "headsetTested": false
+        },
+        "audioReady": true
+      }
+    },
+    {
+      "name": "one actual WebGL canvas",
+      "ok": true
+    },
+    {
+      "name": "double start reaches the first listening turn",
+      "ok": true
+    },
+    {
+      "name": "intro and first question actually played to ended events",
+      "ok": true,
+      "detail": [
+        {
+          "duration": 6.80175,
+          "loop": false,
+          "contextState": "running",
+          "startedAt": 4990.29999999702,
+          "endedAt": 11797.79999999702
+        },
+        {
+          "duration": 8.525708333333334,
+          "loop": false,
+          "contextState": "running",
+          "startedAt": 11797.70000000298,
+          "endedAt": 20333.60000000149
+        }
+      ]
+    },
+    {
+      "name": "pause opens a real pause dialog",
+      "ok": true
+    },
+    {
+      "name": "pause freezes elapsed time",
+      "ok": true
+    },
+    {
+      "name": "typed answer survives pause and resume",
+      "ok": true
+    },
+    {
+      "name": "experience evidence selects experience follow-up",
+      "ok": true,
+      "detail": {
+        "ready": true,
+        "phase": "followup",
+        "turn": 2,
+        "branch": "experience",
+        "mode": "text",
+        "paused": false,
+        "voiceReady": false,
+        "microphonePrepared": false,
+        "stats": {
+          "drawCalls": 72,
+          "triangles": 31148,
+          "textures": 42,
+          "desktopAverageFrameMs": 18.93253012048193,
+          "headsetTested": false
+        },
+        "audioReady": true
+      }
+    },
+    {
+      "name": "exactly two submitted answers appear in reflection",
+      "ok": true
+    },
+    {
+      "name": "reflection preserves first answer",
+      "ok": true
+    },
+    {
+      "name": "spaced negative experience routes to preparation",
+      "ok": true,
+      "detail": {
+        "ready": true,
+        "phase": "followup",
+        "turn": 2,
+        "branch": "preparation",
+        "mode": "text",
+        "paused": false,
+        "voiceReady": false,
+        "microphonePrepared": false,
+        "stats": {
+          "drawCalls": 72,
+          "triangles": 31148,
+          "textures": 42,
+          "desktopAverageFrameMs": 17.48582777248173,
+          "headsetTested": false
+        },
+        "audioReady": true
+      }
+    },
+    {
+      "name": "negative experience remains visible as entered",
+      "ok": true
+    },
+    {
+      "name": "uncertainty asks a repair without classifying",
+      "ok": true
+    },
+    {
+      "name": "valid answer after repair uses motivation",
+      "ok": true
+    },
+    {
+      "name": "repair utterance does not appear as an evaluated answer",
+      "ok": true
+    },
+    {
+      "name": "pause during spoken intro enters paused state",
+      "ok": true
+    },
+    {
+      "name": "resume restarts current spoken intro",
+      "ok": true
+    },
+    {
+      "name": "reset cannot be revived by an old speech completion",
+      "ok": true
+    },
+    {
+      "name": "no horizontal document overflow 390x844",
+      "ok": true
+    },
+    {
+      "name": "primary action remains inside viewport 390x844",
+      "ok": true,
+      "detail": {
+        "x": 41,
+        "y": 623.5,
+        "width": 305,
+        "height": 48
+      }
+    },
+    {
+      "name": "entire welcome card is reachable 390x844",
+      "ok": true,
+      "detail": {
+        "x": 16,
+        "y": 318.75,
+        "width": 355,
+        "height": 477.25
+      }
+    },
+    {
+      "name": "no horizontal document overflow 390x640",
+      "ok": true
+    },
+    {
+      "name": "primary action remains inside viewport 390x640",
+      "ok": true,
+      "detail": {
+        "x": 41,
+        "y": 419.5,
+        "width": 305,
+        "height": 48
+      }
+    },
+    {
+      "name": "entire welcome card is reachable 390x640",
+      "ok": true,
+      "detail": {
+        "x": 16,
+        "y": 114.75,
+        "width": 355,
+        "height": 477.25
+      }
+    },
+    {
+      "name": "raw answers were not written to browser storage",
+      "ok": true
+    },
+    {
+      "name": "no uncaught page errors",
+      "ok": true,
+      "detail": []
+    },
+    {
+      "name": "no external network requests in the text rehearsal",
+      "ok": true,
+      "detail": []
+    }
+  ],
+  "failures": [],
+  "errors": [],
+  "consoleErrors": [],
+  "failedRequests": [
+    {
+      "url": "http://127.0.0.1:4293/assets/interview/room/brown_photostudio_02_1k.hdr",
+      "error": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://127.0.0.1:4293/assets/interview/actors/Business_Female_03.glb",
+      "error": "net::ERR_ABORTED"
+    }
+  ],
+  "external": [],
+  "audioEvents": [
+    {
+      "duration": 3,
+      "loop": true,
+      "contextState": "running",
+      "startedAt": 4990.10000000149,
+      "endedAt": null
+    },
+    {
+      "duration": 6.80175,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 4990.29999999702,
+      "endedAt": 11797.79999999702
+    },
+    {
+      "duration": 8.525708333333334,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 11797.70000000298,
+      "endedAt": 20333.60000000149
+    },
+    {
+      "duration": 9.0259375,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 21660.20000000298,
+      "endedAt": 30687.10000000149
+    },
+    {
+      "duration": 9.525,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 30975.10000000149,
+      "endedAt": 40506.70000000298
+    },
+    {
+      "duration": 6.80175,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 40897,
+      "endedAt": 47705.89999999851
+    },
+    {
+      "duration": 8.525708333333334,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 47705.79999999702,
+      "endedAt": 56235.70000000298
+    },
+    {
+      "duration": 7.760416666666667,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 56275.70000000298,
+      "endedAt": 64045.89999999851
+    },
+    {
+      "duration": 9.525,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 64089.20000000298,
+      "endedAt": 73616
+    },
+    {
+      "duration": 6.80175,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 73688.20000000298,
+      "endedAt": 80495.5
+    },
+    {
+      "duration": 8.525708333333334,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 80495.39999999851,
+      "endedAt": 89026
+    },
+    {
+      "duration": 6.9773958333333335,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 89066.89999999851,
+      "endedAt": 96046.79999999702
+    },
+    {
+      "duration": 8.743,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 96100.10000000149,
+      "endedAt": 104846.20000000298
+    },
+    {
+      "duration": 9.525,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 104888,
+      "endedAt": 114416.20000000298
+    },
+    {
+      "duration": 6.80175,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 114544.79999999702,
+      "endedAt": 114599.39999999851
+    },
+    {
+      "duration": 6.80175,
+      "loop": false,
+      "contextState": "running",
+      "startedAt": 115385.79999999702,
+      "endedAt": 115433.79999999702
+    }
+  ],
+  "hardwareVR": "not-tested",
+  "humanListening": "not-performed",
+  "scope": "Real headless Chrome WebGL and WebAudio, text entry; no synthetic headset or microphone claims."
+}

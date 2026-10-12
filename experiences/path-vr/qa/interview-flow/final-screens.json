@@ -1,0 +1,87 @@
+{
+  "at": "2026-10-11T12:20:29.343Z",
+  "roomSha256": "0111b6edd346380807136fe46a2a01a06355b91b80c6d4a958d858c9b7e280d4",
+  "checks": [
+    {
+      "name": "listening controls within 390x844",
+      "ok": true,
+      "boxes": [
+        {
+          "id": "caption",
+          "x": 31,
+          "y": 417.046875,
+          "width": 328,
+          "height": 81.5625,
+          "inside": true
+        },
+        {
+          "id": "text-answer-form",
+          "x": 31,
+          "y": 592,
+          "width": 328,
+          "height": 123,
+          "inside": true
+        },
+        {
+          "id": "end",
+          "x": 281.796875,
+          "y": 730.5,
+          "width": 77.203125,
+          "height": 35,
+          "inside": true
+        }
+      ]
+    },
+    {
+      "name": "listening controls within 390x640",
+      "ok": true,
+      "boxes": [
+        {
+          "id": "caption",
+          "x": 31,
+          "y": 213.046875,
+          "width": 328,
+          "height": 81.5625,
+          "inside": true
+        },
+        {
+          "id": "text-answer-form",
+          "x": 31,
+          "y": 388,
+          "width": 328,
+          "height": 123,
+          "inside": true
+        },
+        {
+          "id": "end",
+          "x": 281.796875,
+          "y": 526.5,
+          "width": 77.203125,
+          "height": 35,
+          "inside": true
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "failedRequests": [],
+  "stats": {
+    "ready": true,
+    "phase": "idle",
+    "turn": 0,
+    "branch": null,
+    "mode": "text",
+    "paused": false,
+    "voiceReady": false,
+    "microphonePrepared": false,
+    "stats": {
+      "drawCalls": 34,
+      "triangles": 26168,
+      "textures": 42,
+      "desktopAverageFrameMs": 18.58314151827554,
+      "headsetTested": false
+    },
+    "audioReady": true
+  }
+}

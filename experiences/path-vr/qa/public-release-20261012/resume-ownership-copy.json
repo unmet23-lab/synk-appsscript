@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-11T20:22:50.496Z",
+  "changes": [
+    {
+      "file": "path/interview/film-player.mjs",
+      "source": "experiences/path-vr/interview/film-player.mjs",
+      "sourceBytes": 26255,
+      "sourceSHA256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+      "bytes": 26255,
+      "sha256": "2c46fdb25c71bfc01e32bd4a3b01ecbe75ee3ee92a6a99882dc168410e5da39c",
+      "transform": "byte-copy"
+    }
+  ]
+}

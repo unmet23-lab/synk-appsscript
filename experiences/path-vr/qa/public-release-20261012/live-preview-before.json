@@ -1,0 +1,17 @@
+{
+  "text": "QUEST / SEATED INTERVIEW\nPATH로 돌아가기\n일시 정지\n\n일시 정지\n\n마이크가 닫혔습니다.\n\n진행을 멈췄습니다. 이어서 진행하면 마이크를 다시 엽니다.\n\n1 / 2\n영상 화질\n4K · 720p 확대\n720p 원본\n답변 방식\n직접 입력\n마이크로 답변\n내 답변\n\n답변 완료\n질문 다시 듣기\n이어서 진행\n종료\n방 둘러보기\nQuest에서 VR 입장\n\n화면에서 면접을 계속할 수 있습니다.\n\nSYNK PATH · 생성 영상으로 연습하는 첫 면접\nPATH로 돌아가기",
+  "videos": [
+    {
+      "paused": true,
+      "ready": 4,
+      "src": "https://synk.im/path/assets/interview/film/strict-listen-plan-tail-4k.mp4",
+      "time": 0.5
+    },
+    {
+      "paused": true,
+      "ready": 4,
+      "src": "https://synk.im/path/assets/interview/film/strict-listening-4k.mp4",
+      "time": 1.13198
+    }
+  ]
+}

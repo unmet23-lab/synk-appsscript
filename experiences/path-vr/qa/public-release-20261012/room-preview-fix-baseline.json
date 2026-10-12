@@ -1,0 +1,30 @@
+{
+  "checkedAt": "2026-10-11T20:32:21.316Z",
+  "localHEAD": "96d4c101926af8a2473f123cd4f560965737a68a",
+  "originMain": "ee2b7890f3a56956693cfe37427292ed96256ecd",
+  "unrelatedOriginFiles": [
+    "assets/v10/site.css",
+    "assets/v10/site.js",
+    "en/index.html",
+    "index.html"
+  ],
+  "roomBefore": {
+    "bytes": 31256,
+    "sha256": "c063100439c61f21954b88eccf1016c6698e4172136d8d8cfca80c0ad3f20e91"
+  },
+  "sourceCandidate": {
+    "bytes": 31809,
+    "sha256": "0d318e35350e508aaebe0989102012b1dc01f3832602d04309de876e97973e53"
+  },
+  "readOnlyReview": {
+    "changes": [
+      "Upload an already-decoded VideoTexture when preview opens after pause/completion",
+      "Show the reference only in complete state when no active decoded film exists"
+    ],
+    "cameraAndMotionControlsChanged": false,
+    "errorFallbackAdded": false,
+    "reviewResult": "No issue found in the two runtime changes"
+  },
+  "publicBeforeHTTP": 200,
+  "publicBeforeMatchesHEAD": true
+}

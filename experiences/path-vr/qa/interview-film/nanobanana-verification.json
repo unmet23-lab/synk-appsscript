@@ -1,0 +1,76 @@
+{
+  "file": "assets/interview/film/seedance-nanobanana-sample.mp4",
+  "sha256": "cdb07fd4a189fc925179515b98a3876f4a71cc00b4a1ea09c7467a4b29ecd4b0",
+  "actual": {
+    "width": 854,
+    "height": 480,
+    "durationSeconds": 10.08,
+    "bytes": 443526,
+    "fps": "24/1",
+    "videoCodec": "h264",
+    "audioCodec": "aac",
+    "audioChannels": 2
+  },
+  "asr": {
+    "model": "local faster-whisper-small",
+    "segments": [
+      {
+        "start": 1.8599999999999999,
+        "end": 3.98,
+        "text": " 요양보호사로 지원한 이유를 말씀해 주세요.",
+        "words": [
+          {
+            "start": 1.8599999999999999,
+            "end": 2.66,
+            "word": " 요양보호사로"
+          },
+          {
+            "start": 2.66,
+            "end": 3.06,
+            "word": " 지원한"
+          },
+          {
+            "start": 3.06,
+            "end": 3.34,
+            "word": " 이유를"
+          },
+          {
+            "start": 3.34,
+            "end": 3.74,
+            "word": " 말씀해"
+          },
+          {
+            "start": 3.74,
+            "end": 3.98,
+            "word": " 주세요."
+          }
+        ]
+      }
+    ],
+    "humanListeningVerified": false
+  },
+  "questVerified": false,
+  "stereoVR": false,
+  "userQualityApproval": false,
+  "frameReview": {
+    "method": "1 frame per second, contact sheet, original unedited video",
+    "observations": "Three faces and fixed framing retained across sampled frames. Center speech changes to closed-mouth listening. Right interviewer looks down around 6-7 seconds and returns by 8 seconds. Center hands stay separated; left hands stay resting.",
+    "limits": "Sampled frames are not continuous lip-sync verification or human listening assessment."
+  },
+  "browser": {
+    "surface": "Codex in-app browser",
+    "url": "http://127.0.0.1:4293/interview/film/nanobanana.html",
+    "newVideoPlayedToEnd": true,
+    "observedEndTime": 10.08,
+    "switchPausesOtherVideo": true,
+    "metadataAndBothReferenceImagesLoaded": true,
+    "consoleWarningsOrErrors": [],
+    "screenshot": "qa/interview-film/nanobanana-comparison.png"
+  },
+  "tests": {
+    "command": "node --test experiences/path-vr/tests/interview-film.test.mjs experiences/path-vr/tests/interview-server-package.test.mjs",
+    "passed": 27,
+    "failed": 0,
+    "newCoverage": "New comparison route, JPEG reference delivery, new MP4 byte range, runtime package inclusion"
+  }
+}

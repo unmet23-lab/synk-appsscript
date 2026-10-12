@@ -1,0 +1,2310 @@
+{
+  "schemaVersion": 1,
+  "corpusDate": "2026-10-12",
+  "purpose": "Local synthetic polarity/noise stress corpus; prevent no-experience becoming automatic experience follow-up",
+  "privacy": {
+    "synthetic": true,
+    "humanRecording": false,
+    "learnerRecording": false,
+    "userRecording": false,
+    "paidCalls": 0,
+    "networkTtsCalls": 0
+  },
+  "generation": {
+    "voice": "Microsoft Heami Desktop",
+    "engine": "Windows System.Speech",
+    "rate": 0,
+    "sampleRate": 16000,
+    "scripts": [
+      "generate.ps1",
+      "build.py"
+    ],
+    "numpyVersion": "2.5.2",
+    "randomAlgorithm": "numpy default_rng PCG64",
+    "baseSeed": 20261012
+  },
+  "limitations": [
+    "One TTS voice; not a real non-native speaker, physical microphone, room, or Quest benchmark.",
+    "Inserted pauses, written hesitation and attenuated critical words are artificial acoustic stress, not a modeled nationality/accent.",
+    "Noise is procedurally synthesized, not recorded ventilation/keyboard audio. SNR is a controlled signal ratio, not a measured real-room sound level.",
+    "Critical intervals use TTS word onsets, not manually verified phoneme alignment. Both positive and negative minimal-pair words receive the same attenuation rule.",
+    "0dB mixed noise and critical-word attenuation are combined, so effects cannot be attributed to either one independently.",
+    "Gold is the known synthesis input even when audio becomes unintelligible. The safety target is clarify/retry rather than inferring missing meaning.",
+    "These 32 fixtures do not establish general Korean ASR accuracy or human learner outcomes."
+  ],
+  "evaluation": {
+    "primaryFailure": "forbidAutoExperience=true but application takes an automatic experience follow-up",
+    "reviewAction": "For ambiguous/noisy critical polarity, clarify or retry is safer than unsupported automatic branching.",
+    "secondaryMeasures": [
+      "raw transcript and word confidence",
+      "no/yes polarity preservation",
+      "application assessment action and branch",
+      "latency separately from correctness"
+    ]
+  },
+  "sources": [
+    {
+      "id": "01-care-none",
+      "text": "저는 돌봄 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "care-experience",
+      "criticalWord": "없습니다",
+      "delivery": "normal",
+      "forbidAutoExperience": true,
+      "file": "source/01-care-none.wav",
+      "sha256": "1ba692b80e1fa8bdec9c6e28c23a1eb6bb7cca0dff57a341e78d17297835dcd1",
+      "ttsTimingFile": "source/01-care-none.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "없습니다",
+        "startSeconds": 1.405,
+        "endSeconds": 2.825,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "02-care-present",
+      "text": "저는 돌봄 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "care-experience",
+      "criticalWord": "있습니다",
+      "delivery": "normal",
+      "forbidAutoExperience": false,
+      "file": "source/02-care-present.wav",
+      "sha256": "483e91e33bc338732c7c4e4d82aa9401e3aafc321ea1bad1a5b4b19d64807e4f",
+      "ttsTimingFile": "source/02-care-present.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "있습니다",
+        "startSeconds": 1.405,
+        "endSeconds": 2.765,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "03-help-none",
+      "text": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "helped-before",
+      "criticalWord": "없습니다",
+      "delivery": "normal",
+      "forbidAutoExperience": true,
+      "file": "source/03-help-none.wav",
+      "sha256": "a4c07e33d5dac75691ad76903c5c2ed02a60b63f6414f423112453791e1375dd",
+      "ttsTimingFile": "source/03-help-none.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "없습니다",
+        "startSeconds": 2.295,
+        "endSeconds": 3.715,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "04-help-present",
+      "text": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "helped-before",
+      "criticalWord": "있습니다",
+      "delivery": "normal",
+      "forbidAutoExperience": false,
+      "file": "source/04-help-present.wav",
+      "sha256": "5ff4c05e969b2e8f31597642a51712c3f4979dc0a78f14a09a8e82002e9a0a4a",
+      "ttsTimingFile": "source/04-help-present.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "있습니다",
+        "startSeconds": 2.295,
+        "endSeconds": 3.655,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "05-tried-none",
+      "text": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "tried-care",
+      "criticalWord": "없습니다",
+      "delivery": "synthetic-word-pauses-120ms",
+      "forbidAutoExperience": true,
+      "file": "source/05-tried-none.wav",
+      "sha256": "d19fbe59c6abf373f91e8dc9a934c65d28b70f0247fc20cd468005aa291bb9a7",
+      "ttsTimingFile": "source/05-tried-none.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "없습니다",
+        "startSeconds": 3.165,
+        "endSeconds": 4.585,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "06-tried-present",
+      "text": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "tried-care",
+      "criticalWord": "있습니다",
+      "delivery": "synthetic-word-pauses-120ms",
+      "forbidAutoExperience": false,
+      "file": "source/06-tried-present.wav",
+      "sha256": "81923f90405a6315bb33725206ae820b0ee36572d360a93fc12cef254ac02f62",
+      "ttsTimingFile": "source/06-tried-present.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "있습니다",
+        "startSeconds": 3.165,
+        "endSeconds": 4.525,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "07-none-future",
+      "text": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "semanticPolarity": "no-experience-explicit-future",
+      "criticalWord": "없습니다",
+      "delivery": "written-hesitation",
+      "forbidAutoExperience": true,
+      "file": "source/07-none-future.wav",
+      "sha256": "20cde39651c696c0ce2987254c0e9e1f5635dba41099e963a69d7ed2c286bfaa",
+      "ttsTimingFile": "source/07-none-future.timing.json",
+      "criticalIntervalAfterDeliveryTransform": {
+        "word": "없습니다",
+        "startSeconds": 2.505,
+        "endSeconds": 4.0249999999999995,
+        "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval"
+      }
+    },
+    {
+      "id": "08-past-action",
+      "text": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "semanticPolarity": "self-past-action",
+      "delivery": "normal",
+      "forbidAutoExperience": false,
+      "sourceWav": "../path-asr-20261012/corpus/01-self-past-meal.wav",
+      "file": "source/08-past-action.wav",
+      "sha256": "71c275f17442ea50c81b4a2ead2e4a0d84aa983e943f595cffbebb57de5d5f4c",
+      "ttsTimingFile": "source/08-past-action.timing.json",
+      "criticalIntervalAfterDeliveryTransform": null
+    }
+  ],
+  "conditions": [
+    {
+      "id": "clean",
+      "snrDb": null,
+      "noise": "none",
+      "criticalAttenuationDb": 0
+    },
+    {
+      "id": "fan-15db",
+      "snrDb": 15,
+      "noise": "fan-hum-broadband",
+      "criticalAttenuationDb": 0
+    },
+    {
+      "id": "typing-5db",
+      "snrDb": 5,
+      "noise": "typing-bursts-with-fan",
+      "criticalAttenuationDb": 0
+    },
+    {
+      "id": "mixed-0db-critical",
+      "snrDb": 0,
+      "noise": "fan-hum-broadband-and-typing",
+      "criticalAttenuationDb": -18
+    }
+  ],
+  "cases": [
+    {
+      "id": "01-care-none__clean",
+      "baseId": "01-care-none",
+      "file": "wav/01-care-none__clean.wav",
+      "goldTranscript": "저는 돌봄 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "care-experience",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261012,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 2.825,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.825,
+        "samples": 45200,
+        "bytes": 90444,
+        "sha256": "707e43ec28be0bc4c16be3299ab7898d916df032ae9d56e53b4aeb3b082d55cf",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "01-care-none__fan-15db",
+      "baseId": "01-care-none",
+      "file": "wav/01-care-none__fan-15db.wav",
+      "goldTranscript": "저는 돌봄 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "care-experience",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261013,
+        "referenceSnrDb": 14.999999999999998,
+        "effectiveSnrDb": 14.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 2.825,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.825,
+        "samples": 45200,
+        "bytes": 90444,
+        "sha256": "f0057090d96db2bb1097eb1fd77d5e71fed71b8b32a6ece9b7c409e4308ed93d",
+        "peak": 0.715850830078125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "01-care-none__typing-5db",
+      "baseId": "01-care-none",
+      "file": "wav/01-care-none__typing-5db.wav",
+      "goldTranscript": "저는 돌봄 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "care-experience",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261014,
+        "referenceSnrDb": 4.999999999999998,
+        "effectiveSnrDb": 4.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5732190410975285,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0383125
+          },
+          {
+            "startSeconds": 0.6609375,
+            "durationSeconds": 0.0461875
+          },
+          {
+            "startSeconds": 0.9035,
+            "durationSeconds": 0.0419375
+          },
+          {
+            "startSeconds": 1.17675,
+            "durationSeconds": 0.053
+          },
+          {
+            "startSeconds": 1.3783125,
+            "durationSeconds": 0.068125
+          },
+          {
+            "startSeconds": 1.8045625,
+            "durationSeconds": 0.049875
+          },
+          {
+            "startSeconds": 2.159625,
+            "durationSeconds": 0.0654375
+          },
+          {
+            "startSeconds": 2.3785625,
+            "durationSeconds": 0.0706875
+          },
+          {
+            "startSeconds": 2.71875,
+            "durationSeconds": 0.0415
+          }
+        ]
+      },
+      "durationSeconds": 2.825,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.825,
+        "samples": 45200,
+        "bytes": 90444,
+        "sha256": "6a1d70ef122e7ad8557310cd9f507841c23bf4e62168ec371f8a7a3791be13b0",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "01-care-none__mixed-0db-critical",
+      "baseId": "01-care-none",
+      "file": "wav/01-care-none__mixed-0db-critical.wav",
+      "goldTranscript": "저는 돌봄 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "care-experience",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261015,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.470577013401449,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.49582084396928555,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 1.405,
+          "endSeconds": 2.825,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0745625
+          },
+          {
+            "startSeconds": 0.6835,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 0.9470625,
+            "durationSeconds": 0.061125
+          },
+          {
+            "startSeconds": 1.269125,
+            "durationSeconds": 0.0515
+          },
+          {
+            "startSeconds": 1.5725625,
+            "durationSeconds": 0.0636875
+          },
+          {
+            "startSeconds": 1.7963125,
+            "durationSeconds": 0.073875
+          },
+          {
+            "startSeconds": 2.1758125,
+            "durationSeconds": 0.0719375
+          },
+          {
+            "startSeconds": 2.5713125,
+            "durationSeconds": 0.0641875
+          }
+        ]
+      },
+      "durationSeconds": 2.825,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.825,
+        "samples": 45200,
+        "bytes": 90444,
+        "sha256": "84d794ad3cf7549df893ba855c8137173966a9393d5e93e723368df365c09692",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "02-care-present__clean",
+      "baseId": "02-care-present",
+      "file": "wav/02-care-present__clean.wav",
+      "goldTranscript": "저는 돌봄 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "care-experience",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261012,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 2.765,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.765,
+        "samples": 44240,
+        "bytes": 88524,
+        "sha256": "81fe1e39661409fe3690d10a72f5c415ff54e8d0acc5a845d69374c9cd786740",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "02-care-present__fan-15db",
+      "baseId": "02-care-present",
+      "file": "wav/02-care-present__fan-15db.wav",
+      "goldTranscript": "저는 돌봄 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "care-experience",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261013,
+        "referenceSnrDb": 15.0,
+        "effectiveSnrDb": 15.0,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 2.765,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.765,
+        "samples": 44240,
+        "bytes": 88524,
+        "sha256": "48c7fcb45ebb1e274b24b39d0a9cfd65523d3828a09b9de2096e3ab91d43a586",
+        "peak": 0.716583251953125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "02-care-present__typing-5db",
+      "baseId": "02-care-present",
+      "file": "wav/02-care-present__typing-5db.wav",
+      "goldTranscript": "저는 돌봄 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "care-experience",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261014,
+        "referenceSnrDb": 5.000000000000002,
+        "effectiveSnrDb": 5.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5501801279262134,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0539375
+          },
+          {
+            "startSeconds": 0.5764375,
+            "durationSeconds": 0.0466875
+          },
+          {
+            "startSeconds": 0.9126875,
+            "durationSeconds": 0.0390625
+          },
+          {
+            "startSeconds": 1.37175,
+            "durationSeconds": 0.0578125
+          },
+          {
+            "startSeconds": 1.7074375,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 2.055625,
+            "durationSeconds": 0.07225
+          },
+          {
+            "startSeconds": 2.3101875,
+            "durationSeconds": 0.07175
+          },
+          {
+            "startSeconds": 2.586375,
+            "durationSeconds": 0.0378125
+          }
+        ]
+      },
+      "durationSeconds": 2.765,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.765,
+        "samples": 44240,
+        "bytes": 88524,
+        "sha256": "4ef5f59cf7d78f05ee93900547f21d9cb7eec1a38cf715b87c5b059f2afdff2d",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "02-care-present__mixed-0db-critical",
+      "baseId": "02-care-present",
+      "file": "wav/02-care-present__mixed-0db-critical.wav",
+      "goldTranscript": "저는 돌봄 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "care-experience",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261015,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.5331000488309598,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5280208926608636,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 1.405,
+          "endSeconds": 2.765,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0675625
+          },
+          {
+            "startSeconds": 0.7505,
+            "durationSeconds": 0.065375
+          },
+          {
+            "startSeconds": 0.9540625,
+            "durationSeconds": 0.0619375
+          },
+          {
+            "startSeconds": 1.249125,
+            "durationSeconds": 0.046375
+          },
+          {
+            "startSeconds": 1.675875,
+            "durationSeconds": 0.0655625
+          },
+          {
+            "startSeconds": 2.0951875,
+            "durationSeconds": 0.0486875
+          },
+          {
+            "startSeconds": 2.37625,
+            "durationSeconds": 0.0655
+          },
+          {
+            "startSeconds": 2.56125,
+            "durationSeconds": 0.059125
+          },
+          {
+            "startSeconds": 2.746125,
+            "durationSeconds": 0.018875
+          }
+        ]
+      },
+      "durationSeconds": 2.765,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 2.765,
+        "samples": 44240,
+        "bytes": 88524,
+        "sha256": "6e9d915db0b852a3317862dc79b79e8aa40153ecd1932f0a01b1d76895d6fbda",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "03-help-none__clean",
+      "baseId": "03-help-none",
+      "file": "wav/03-help-none__clean.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "helped-before",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261112,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 3.715,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.715,
+        "samples": 59440,
+        "bytes": 118924,
+        "sha256": "3c9ce100c58bbc73b674c5375253988d92946ef323326b3fea848f45b651c744",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "03-help-none__fan-15db",
+      "baseId": "03-help-none",
+      "file": "wav/03-help-none__fan-15db.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "helped-before",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261113,
+        "referenceSnrDb": 15.0,
+        "effectiveSnrDb": 15.0,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 3.715,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.715,
+        "samples": 59440,
+        "bytes": 118924,
+        "sha256": "faf18804279163745f5f6c7712fe5d17bdfbeaff9348962e6b774a70526bd122",
+        "peak": 0.704345703125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "03-help-none__typing-5db",
+      "baseId": "03-help-none",
+      "file": "wav/03-help-none__typing-5db.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "helped-before",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261114,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.6681380326600891,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0719375
+          },
+          {
+            "startSeconds": 0.5729375,
+            "durationSeconds": 0.05675
+          },
+          {
+            "startSeconds": 0.7895,
+            "durationSeconds": 0.071
+          },
+          {
+            "startSeconds": 1.1354375,
+            "durationSeconds": 0.052875
+          },
+          {
+            "startSeconds": 1.3323125,
+            "durationSeconds": 0.061625
+          },
+          {
+            "startSeconds": 1.6245625,
+            "durationSeconds": 0.06075
+          },
+          {
+            "startSeconds": 1.8916875,
+            "durationSeconds": 0.06075
+          },
+          {
+            "startSeconds": 2.16675,
+            "durationSeconds": 0.0553125
+          },
+          {
+            "startSeconds": 2.48375,
+            "durationSeconds": 0.041125
+          },
+          {
+            "startSeconds": 2.8514375,
+            "durationSeconds": 0.041375
+          },
+          {
+            "startSeconds": 3.2518125,
+            "durationSeconds": 0.0578125
+          },
+          {
+            "startSeconds": 3.54375,
+            "durationSeconds": 0.0739375
+          }
+        ]
+      },
+      "durationSeconds": 3.715,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.715,
+        "samples": 59440,
+        "bytes": 118924,
+        "sha256": "1883004c797bd496963f8e2aab4ed138178735564bca35308ce44afa41b2d380",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "03-help-none__mixed-0db-critical",
+      "baseId": "03-help-none",
+      "file": "wav/03-help-none__mixed-0db-critical.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "helped-before",
+      "forbidAutoExperience": true,
+      "delivery": "normal",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261115,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.3644697656100462,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5555208862625571,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 2.295,
+          "endSeconds": 3.715,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0736875
+          },
+          {
+            "startSeconds": 0.7371875,
+            "durationSeconds": 0.061625
+          },
+          {
+            "startSeconds": 1.14,
+            "durationSeconds": 0.069125
+          },
+          {
+            "startSeconds": 1.4220625,
+            "durationSeconds": 0.0394375
+          },
+          {
+            "startSeconds": 1.6438125,
+            "durationSeconds": 0.041375
+          },
+          {
+            "startSeconds": 2.089375,
+            "durationSeconds": 0.039
+          },
+          {
+            "startSeconds": 2.2966875,
+            "durationSeconds": 0.044875
+          },
+          {
+            "startSeconds": 2.7238125,
+            "durationSeconds": 0.056875
+          },
+          {
+            "startSeconds": 2.9409375,
+            "durationSeconds": 0.062
+          },
+          {
+            "startSeconds": 3.286375,
+            "durationSeconds": 0.039
+          }
+        ]
+      },
+      "durationSeconds": 3.715,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.715,
+        "samples": 59440,
+        "bytes": 118924,
+        "sha256": "f34d3fc7dc1405d8bd5af7f480b45b5968b8110ae99a7d581be0ac38eb8abb73",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "04-help-present__clean",
+      "baseId": "04-help-present",
+      "file": "wav/04-help-present__clean.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "helped-before",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261112,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 3.655,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.655,
+        "samples": 58480,
+        "bytes": 117004,
+        "sha256": "719643ce7fcaa4e5c04841beca442714f3a7b88b004b0b3e6c0c62ee579366f5",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "04-help-present__fan-15db",
+      "baseId": "04-help-present",
+      "file": "wav/04-help-present__fan-15db.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "helped-before",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261113,
+        "referenceSnrDb": 15.0,
+        "effectiveSnrDb": 15.0,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 3.655,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.655,
+        "samples": 58480,
+        "bytes": 117004,
+        "sha256": "8e51b32c6dcd60194d1b93c254c07aff298ddaf6657967b13207bdbb96e7940b",
+        "peak": 0.704437255859375,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "04-help-present__typing-5db",
+      "baseId": "04-help-present",
+      "file": "wav/04-help-present__typing-5db.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "helped-before",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261114,
+        "referenceSnrDb": 4.999999999999999,
+        "effectiveSnrDb": 4.999999999999999,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.6098569113918529,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0514375
+          },
+          {
+            "startSeconds": 0.747,
+            "durationSeconds": 0.0455
+          },
+          {
+            "startSeconds": 0.97375,
+            "durationSeconds": 0.0416875
+          },
+          {
+            "startSeconds": 1.1650625,
+            "durationSeconds": 0.0470625
+          },
+          {
+            "startSeconds": 1.4123125,
+            "durationSeconds": 0.0675
+          },
+          {
+            "startSeconds": 1.8425625,
+            "durationSeconds": 0.05125
+          },
+          {
+            "startSeconds": 2.183375,
+            "durationSeconds": 0.05925
+          },
+          {
+            "startSeconds": 2.5564375,
+            "durationSeconds": 0.0669375
+          },
+          {
+            "startSeconds": 2.9495,
+            "durationSeconds": 0.0525625
+          },
+          {
+            "startSeconds": 3.4088125,
+            "durationSeconds": 0.072125
+          }
+        ]
+      },
+      "durationSeconds": 3.655,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.655,
+        "samples": 58480,
+        "bytes": 117004,
+        "sha256": "4ff0169c6aa809008523e86d9342073d7f73d0900c274d5eb6f704ed09092f6d",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "04-help-present__mixed-0db-critical",
+      "baseId": "04-help-present",
+      "file": "wav/04-help-present__mixed-0db-critical.wav",
+      "goldTranscript": "저는 어르신의 식사를 도운 적이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "helped-before",
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261115,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.3537051120661412,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5638949577359071,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 2.295,
+          "endSeconds": 3.655,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0415
+          },
+          {
+            "startSeconds": 0.6486875,
+            "durationSeconds": 0.04175
+          },
+          {
+            "startSeconds": 0.957,
+            "durationSeconds": 0.063625
+          },
+          {
+            "startSeconds": 1.1714375,
+            "durationSeconds": 0.060125
+          },
+          {
+            "startSeconds": 1.617,
+            "durationSeconds": 0.0701875
+          },
+          {
+            "startSeconds": 1.8331875,
+            "durationSeconds": 0.068875
+          },
+          {
+            "startSeconds": 2.181375,
+            "durationSeconds": 0.0579375
+          },
+          {
+            "startSeconds": 2.3849375,
+            "durationSeconds": 0.0446875
+          },
+          {
+            "startSeconds": 2.8004375,
+            "durationSeconds": 0.03675
+          },
+          {
+            "startSeconds": 3.0276875,
+            "durationSeconds": 0.0375
+          },
+          {
+            "startSeconds": 3.4209375,
+            "durationSeconds": 0.045875
+          }
+        ]
+      },
+      "durationSeconds": 3.655,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 3.655,
+        "samples": 58480,
+        "bytes": 117004,
+        "sha256": "9ae7c40f5c36b2647396bcc35e622fedd43092bbd5cb892f168c0252aa55b7f4",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "05-tried-none__clean",
+      "baseId": "05-tried-none",
+      "file": "wav/05-tried-none__clean.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "tried-care",
+      "forbidAutoExperience": true,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261212,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 4.585,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.585,
+        "samples": 73360,
+        "bytes": 146764,
+        "sha256": "5924fe46b973b72782a0e3d91412b11e5537aec087a12438071a18e6de910a88",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "05-tried-none__fan-15db",
+      "baseId": "05-tried-none",
+      "file": "wav/05-tried-none__fan-15db.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "tried-care",
+      "forbidAutoExperience": true,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261213,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 4.585,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.585,
+        "samples": 73360,
+        "bytes": 146764,
+        "sha256": "1417077cba701f8e8086237ec6e684d63083b7da0967e8a41f520d18146c8991",
+        "peak": 0.717437744140625,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "05-tried-none__typing-5db",
+      "baseId": "05-tried-none",
+      "file": "wav/05-tried-none__typing-5db.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "tried-care",
+      "forbidAutoExperience": true,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261214,
+        "referenceSnrDb": 4.999999999999998,
+        "effectiveSnrDb": 4.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5150097090035562,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.059625
+          },
+          {
+            "startSeconds": 0.6465625,
+            "durationSeconds": 0.074
+          },
+          {
+            "startSeconds": 0.9705625,
+            "durationSeconds": 0.0354375
+          },
+          {
+            "startSeconds": 1.3881875,
+            "durationSeconds": 0.035875
+          },
+          {
+            "startSeconds": 1.7818125,
+            "durationSeconds": 0.0355
+          },
+          {
+            "startSeconds": 1.9801875,
+            "durationSeconds": 0.0503125
+          },
+          {
+            "startSeconds": 2.28475,
+            "durationSeconds": 0.05975
+          },
+          {
+            "startSeconds": 2.5103125,
+            "durationSeconds": 0.0501875
+          },
+          {
+            "startSeconds": 2.828875,
+            "durationSeconds": 0.03825
+          },
+          {
+            "startSeconds": 3.233,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 3.6768125,
+            "durationSeconds": 0.0680625
+          },
+          {
+            "startSeconds": 3.9235625,
+            "durationSeconds": 0.0695625
+          },
+          {
+            "startSeconds": 4.1378125,
+            "durationSeconds": 0.0565
+          },
+          {
+            "startSeconds": 4.334375,
+            "durationSeconds": 0.0735625
+          }
+        ]
+      },
+      "durationSeconds": 4.585,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.585,
+        "samples": 73360,
+        "bytes": 146764,
+        "sha256": "9d4d848ffef8af5b6f2e3101a2af84b9c7d17bbc181d577b57efc58820cf1e97",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "05-tried-none__mixed-0db-critical",
+      "baseId": "05-tried-none",
+      "file": "wav/05-tried-none__mixed-0db-critical.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 없습니다.",
+      "semanticPolarity": "no-experience",
+      "pair": "tried-care",
+      "forbidAutoExperience": true,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261215,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.3484399964954017,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.4695931735310726,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 3.165,
+          "endSeconds": 4.585,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.046
+          },
+          {
+            "startSeconds": 0.7098125,
+            "durationSeconds": 0.0703125
+          },
+          {
+            "startSeconds": 1.065125,
+            "durationSeconds": 0.0615
+          },
+          {
+            "startSeconds": 1.397375,
+            "durationSeconds": 0.051875
+          },
+          {
+            "startSeconds": 1.6049375,
+            "durationSeconds": 0.0404375
+          },
+          {
+            "startSeconds": 1.8290625,
+            "durationSeconds": 0.0573125
+          },
+          {
+            "startSeconds": 2.173625,
+            "durationSeconds": 0.043375
+          },
+          {
+            "startSeconds": 2.6253125,
+            "durationSeconds": 0.05275
+          },
+          {
+            "startSeconds": 2.954625,
+            "durationSeconds": 0.042375
+          },
+          {
+            "startSeconds": 3.2676875,
+            "durationSeconds": 0.057125
+          },
+          {
+            "startSeconds": 3.59775,
+            "durationSeconds": 0.0575625
+          },
+          {
+            "startSeconds": 4.0198125,
+            "durationSeconds": 0.06525
+          },
+          {
+            "startSeconds": 4.2635625,
+            "durationSeconds": 0.0355625
+          },
+          {
+            "startSeconds": 4.47025,
+            "durationSeconds": 0.0594375
+          }
+        ]
+      },
+      "durationSeconds": 4.585,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.585,
+        "samples": 73360,
+        "bytes": 146764,
+        "sha256": "29b2c244815d0a2691e4b3e2dd451eee1a7ea34ae1baf4ec7c5e1feb8bfbd580",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "06-tried-present__clean",
+      "baseId": "06-tried-present",
+      "file": "wav/06-tried-present__clean.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "tried-care",
+      "forbidAutoExperience": false,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261212,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 4.525,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.525,
+        "samples": 72400,
+        "bytes": 144844,
+        "sha256": "4a8d9d9c1919dd5352bec862605c593c4a662d42a1d7dcf7f38682a1c05e74b6",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "06-tried-present__fan-15db",
+      "baseId": "06-tried-present",
+      "file": "wav/06-tried-present__fan-15db.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "tried-care",
+      "forbidAutoExperience": false,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261213,
+        "referenceSnrDb": 14.999999999999998,
+        "effectiveSnrDb": 14.999999999999998,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 4.525,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.525,
+        "samples": 72400,
+        "bytes": 144844,
+        "sha256": "387de8a17555ba55054e186165839ba815ccf4ba468172cd6ed70344841b8c89",
+        "peak": 0.71759033203125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "06-tried-present__typing-5db",
+      "baseId": "06-tried-present",
+      "file": "wav/06-tried-present__typing-5db.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "tried-care",
+      "forbidAutoExperience": false,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261214,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5946477311020751,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.059875
+          },
+          {
+            "startSeconds": 0.707,
+            "durationSeconds": 0.059625
+          },
+          {
+            "startSeconds": 1.0035625,
+            "durationSeconds": 0.074
+          },
+          {
+            "startSeconds": 1.3275625,
+            "durationSeconds": 0.0354375
+          },
+          {
+            "startSeconds": 1.7451875,
+            "durationSeconds": 0.035875
+          },
+          {
+            "startSeconds": 2.1388125,
+            "durationSeconds": 0.0355
+          },
+          {
+            "startSeconds": 2.3371875,
+            "durationSeconds": 0.0503125
+          },
+          {
+            "startSeconds": 2.64175,
+            "durationSeconds": 0.05975
+          },
+          {
+            "startSeconds": 2.8673125,
+            "durationSeconds": 0.0501875
+          },
+          {
+            "startSeconds": 3.185875,
+            "durationSeconds": 0.03825
+          },
+          {
+            "startSeconds": 3.59,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 4.0338125,
+            "durationSeconds": 0.0680625
+          },
+          {
+            "startSeconds": 4.2805625,
+            "durationSeconds": 0.0695625
+          },
+          {
+            "startSeconds": 4.4948125,
+            "durationSeconds": 0.0301875
+          }
+        ]
+      },
+      "durationSeconds": 4.525,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.525,
+        "samples": 72400,
+        "bytes": 144844,
+        "sha256": "bfe602e8f76e2742a03edc3c907cb9c8bb933372418ea46bab738b4e8af2e89b",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "06-tried-present__mixed-0db-critical",
+      "baseId": "06-tried-present",
+      "file": "wav/06-tried-present__mixed-0db-critical.wav",
+      "goldTranscript": "저는 직접 돌봄을 해 본 경험이 있습니다.",
+      "semanticPolarity": "experience-present",
+      "pair": "tried-care",
+      "forbidAutoExperience": false,
+      "delivery": "synthetic-word-pauses-120ms",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261215,
+        "referenceSnrDb": 0.0,
+        "effectiveSnrDb": -0.3964204911450001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5253204569721425,
+        "criticalAttenuation": {
+          "word": "있습니다",
+          "startSeconds": 3.165,
+          "endSeconds": 4.525,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.072625
+          },
+          {
+            "startSeconds": 0.590625,
+            "durationSeconds": 0.0544375
+          },
+          {
+            "startSeconds": 1.03625,
+            "durationSeconds": 0.069125
+          },
+          {
+            "startSeconds": 1.43025,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 1.88275,
+            "durationSeconds": 0.045
+          },
+          {
+            "startSeconds": 2.1284375,
+            "durationSeconds": 0.051625
+          },
+          {
+            "startSeconds": 2.562375,
+            "durationSeconds": 0.05175
+          },
+          {
+            "startSeconds": 3.018875,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 3.368375,
+            "durationSeconds": 0.0749375
+          },
+          {
+            "startSeconds": 3.6040625,
+            "durationSeconds": 0.037125
+          },
+          {
+            "startSeconds": 3.980125,
+            "durationSeconds": 0.054125
+          },
+          {
+            "startSeconds": 4.3503125,
+            "durationSeconds": 0.0668125
+          }
+        ]
+      },
+      "durationSeconds": 4.525,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 4.525,
+        "samples": 72400,
+        "bytes": 144844,
+        "sha256": "747be09062f859f36f18945b829519104d76e139d021d6ca115cd43a59d25f73",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "07-none-future__clean",
+      "baseId": "07-none-future",
+      "file": "wav/07-none-future__clean.wav",
+      "goldTranscript": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "semanticPolarity": "no-experience-explicit-future",
+      "pair": null,
+      "forbidAutoExperience": true,
+      "delivery": "written-hesitation",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261612,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 7.88,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 7.88,
+        "samples": 126080,
+        "bytes": 252204,
+        "sha256": "f9c319a4b4a135534a041f8b7aef270271b4a5d5cacf48a0e49885db2c475c66",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "07-none-future__fan-15db",
+      "baseId": "07-none-future",
+      "file": "wav/07-none-future__fan-15db.wav",
+      "goldTranscript": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "semanticPolarity": "no-experience-explicit-future",
+      "pair": null,
+      "forbidAutoExperience": true,
+      "delivery": "written-hesitation",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261613,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 7.88,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 7.88,
+        "samples": 126080,
+        "bytes": 252204,
+        "sha256": "3b846107c10d6b8a684a2d5450a62579e527640b4bb628736cfd9ac10feacaef",
+        "peak": 0.73004150390625,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "07-none-future__typing-5db",
+      "baseId": "07-none-future",
+      "file": "wav/07-none-future__typing-5db.wav",
+      "goldTranscript": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "semanticPolarity": "no-experience-explicit-future",
+      "pair": null,
+      "forbidAutoExperience": true,
+      "delivery": "written-hesitation",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261614,
+        "referenceSnrDb": 5.0,
+        "effectiveSnrDb": 5.0,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.7308794494504094,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0515
+          },
+          {
+            "startSeconds": 0.70575,
+            "durationSeconds": 0.0585625
+          },
+          {
+            "startSeconds": 1.004875,
+            "durationSeconds": 0.041125
+          },
+          {
+            "startSeconds": 1.26825,
+            "durationSeconds": 0.0723125
+          },
+          {
+            "startSeconds": 1.567125,
+            "durationSeconds": 0.0448125
+          },
+          {
+            "startSeconds": 1.913125,
+            "durationSeconds": 0.0721875
+          },
+          {
+            "startSeconds": 2.2849375,
+            "durationSeconds": 0.0385
+          },
+          {
+            "startSeconds": 2.4729375,
+            "durationSeconds": 0.0403125
+          },
+          {
+            "startSeconds": 2.87,
+            "durationSeconds": 0.062
+          },
+          {
+            "startSeconds": 3.056375,
+            "durationSeconds": 0.0465
+          },
+          {
+            "startSeconds": 3.40275,
+            "durationSeconds": 0.044375
+          },
+          {
+            "startSeconds": 3.6613125,
+            "durationSeconds": 0.0535
+          },
+          {
+            "startSeconds": 4.074125,
+            "durationSeconds": 0.071125
+          },
+          {
+            "startSeconds": 4.335875,
+            "durationSeconds": 0.06875
+          },
+          {
+            "startSeconds": 4.5274375,
+            "durationSeconds": 0.06175
+          },
+          {
+            "startSeconds": 4.925875,
+            "durationSeconds": 0.0716875
+          },
+          {
+            "startSeconds": 5.123375,
+            "durationSeconds": 0.061
+          },
+          {
+            "startSeconds": 5.4996875,
+            "durationSeconds": 0.0446875
+          },
+          {
+            "startSeconds": 5.9236875,
+            "durationSeconds": 0.06125
+          },
+          {
+            "startSeconds": 6.24175,
+            "durationSeconds": 0.069875
+          },
+          {
+            "startSeconds": 6.5413125,
+            "durationSeconds": 0.0435
+          },
+          {
+            "startSeconds": 6.973,
+            "durationSeconds": 0.04475
+          },
+          {
+            "startSeconds": 7.2385625,
+            "durationSeconds": 0.0646875
+          },
+          {
+            "startSeconds": 7.659,
+            "durationSeconds": 0.040125
+          }
+        ]
+      },
+      "durationSeconds": 7.88,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 7.88,
+        "samples": 126080,
+        "bytes": 252204,
+        "sha256": "4f9839f523760acd2432f049a9a0beb987172f7f2452da3633087cc18b721ba8",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "07-none-future__mixed-0db-critical",
+      "baseId": "07-none-future",
+      "file": "wav/07-none-future__mixed-0db-critical.wav",
+      "goldTranscript": "음, 저는 아직 돌봄 경험이 없습니다. 앞으로 이동 보조와 보고 절차를 배우겠습니다.",
+      "semanticPolarity": "no-experience-explicit-future",
+      "pair": null,
+      "forbidAutoExperience": true,
+      "delivery": "written-hesitation",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261615,
+        "referenceSnrDb": 1.928654933106574e-15,
+        "effectiveSnrDb": -0.17506697811979965,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.665703803253829,
+        "criticalAttenuation": {
+          "word": "없습니다",
+          "startSeconds": 2.505,
+          "endSeconds": 4.0249999999999995,
+          "method": "System.Speech SpeakProgress onset to next onset or file end; approximate TTS word interval",
+          "gainDb": -18,
+          "edgeFadeMs": 15
+        },
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0659375
+          },
+          {
+            "startSeconds": 0.5300625,
+            "durationSeconds": 0.0694375
+          },
+          {
+            "startSeconds": 0.9788125,
+            "durationSeconds": 0.0655625
+          },
+          {
+            "startSeconds": 1.4030625,
+            "durationSeconds": 0.0736875
+          },
+          {
+            "startSeconds": 1.6278125,
+            "durationSeconds": 0.0393125
+          },
+          {
+            "startSeconds": 1.923625,
+            "durationSeconds": 0.0635
+          },
+          {
+            "startSeconds": 2.3599375,
+            "durationSeconds": 0.042
+          },
+          {
+            "startSeconds": 2.7366875,
+            "durationSeconds": 0.05075
+          },
+          {
+            "startSeconds": 2.9259375,
+            "durationSeconds": 0.072125
+          },
+          {
+            "startSeconds": 3.267,
+            "durationSeconds": 0.0510625
+          },
+          {
+            "startSeconds": 3.6195,
+            "durationSeconds": 0.0465
+          },
+          {
+            "startSeconds": 3.93175,
+            "durationSeconds": 0.0543125
+          },
+          {
+            "startSeconds": 4.2136875,
+            "durationSeconds": 0.0734375
+          },
+          {
+            "startSeconds": 4.564,
+            "durationSeconds": 0.0423125
+          },
+          {
+            "startSeconds": 4.753625,
+            "durationSeconds": 0.06725
+          },
+          {
+            "startSeconds": 5.17725,
+            "durationSeconds": 0.0580625
+          },
+          {
+            "startSeconds": 5.6199375,
+            "durationSeconds": 0.0479375
+          },
+          {
+            "startSeconds": 6.0706875,
+            "durationSeconds": 0.0553125
+          },
+          {
+            "startSeconds": 6.4548125,
+            "durationSeconds": 0.066875
+          },
+          {
+            "startSeconds": 6.7003125,
+            "durationSeconds": 0.0543125
+          },
+          {
+            "startSeconds": 6.888875,
+            "durationSeconds": 0.0448125
+          },
+          {
+            "startSeconds": 7.3120625,
+            "durationSeconds": 0.0545
+          },
+          {
+            "startSeconds": 7.703375,
+            "durationSeconds": 0.05
+          }
+        ]
+      },
+      "durationSeconds": 7.88,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 7.88,
+        "samples": 126080,
+        "bytes": 252204,
+        "sha256": "b699c01ebba28764f75c757499596219ff2295c6e102fd690944d493381d51fd",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "08-past-action__clean",
+      "baseId": "08-past-action",
+      "file": "wav/08-past-action__clean.wav",
+      "goldTranscript": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "semanticPolarity": "self-past-action",
+      "pair": null,
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "clean",
+        "snrDb": null,
+        "noise": "none",
+        "criticalAttenuationDb": 0,
+        "seed": 20261712,
+        "referenceSnrDb": null,
+        "effectiveSnrDb": null,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 8.075,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 8.075,
+        "samples": 129200,
+        "bytes": 258444,
+        "sha256": "b611006db92c1fef217546a9cb8f21d0602ad33a50143cbf778b03e4c5988469",
+        "peak": 0.699981689453125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "08-past-action__fan-15db",
+      "baseId": "08-past-action",
+      "file": "wav/08-past-action__fan-15db.wav",
+      "goldTranscript": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "semanticPolarity": "self-past-action",
+      "pair": null,
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "fan-15db",
+        "snrDb": 15,
+        "noise": "fan-hum-broadband",
+        "criticalAttenuationDb": 0,
+        "seed": 20261713,
+        "referenceSnrDb": 15.000000000000002,
+        "effectiveSnrDb": 15.000000000000002,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 1,
+        "criticalAttenuation": null,
+        "typingBursts": []
+      },
+      "durationSeconds": 8.075,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 8.075,
+        "samples": 129200,
+        "bytes": 258444,
+        "sha256": "59621899bd34449c815847aad87dcd340c6b11ee2c67c3899952626b3d46d837",
+        "peak": 0.71026611328125,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "08-past-action__typing-5db",
+      "baseId": "08-past-action",
+      "file": "wav/08-past-action__typing-5db.wav",
+      "goldTranscript": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "semanticPolarity": "self-past-action",
+      "pair": null,
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "typing-5db",
+        "snrDb": 5,
+        "noise": "typing-bursts-with-fan",
+        "criticalAttenuationDb": 0,
+        "seed": 20261714,
+        "referenceSnrDb": 5.000000000000001,
+        "effectiveSnrDb": 5.000000000000001,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5832615776673457,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0464375
+          },
+          {
+            "startSeconds": 0.533625,
+            "durationSeconds": 0.0414375
+          },
+          {
+            "startSeconds": 0.971625,
+            "durationSeconds": 0.05075
+          },
+          {
+            "startSeconds": 1.16925,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 1.5678125,
+            "durationSeconds": 0.0631875
+          },
+          {
+            "startSeconds": 2.0236875,
+            "durationSeconds": 0.0489375
+          },
+          {
+            "startSeconds": 2.2864375,
+            "durationSeconds": 0.047125
+          },
+          {
+            "startSeconds": 2.6304375,
+            "durationSeconds": 0.0473125
+          },
+          {
+            "startSeconds": 2.9615625,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 3.3846875,
+            "durationSeconds": 0.039875
+          },
+          {
+            "startSeconds": 3.6233125,
+            "durationSeconds": 0.0615625
+          },
+          {
+            "startSeconds": 3.96175,
+            "durationSeconds": 0.043125
+          },
+          {
+            "startSeconds": 4.2605625,
+            "durationSeconds": 0.057375
+          },
+          {
+            "startSeconds": 4.658375,
+            "durationSeconds": 0.068125
+          },
+          {
+            "startSeconds": 4.9319375,
+            "durationSeconds": 0.0489375
+          },
+          {
+            "startSeconds": 5.297125,
+            "durationSeconds": 0.0395625
+          },
+          {
+            "startSeconds": 5.4821875,
+            "durationSeconds": 0.0618125
+          },
+          {
+            "startSeconds": 5.8863125,
+            "durationSeconds": 0.070125
+          },
+          {
+            "startSeconds": 6.268875,
+            "durationSeconds": 0.0428125
+          },
+          {
+            "startSeconds": 6.6649375,
+            "durationSeconds": 0.057375
+          },
+          {
+            "startSeconds": 6.9293125,
+            "durationSeconds": 0.040625
+          },
+          {
+            "startSeconds": 7.28425,
+            "durationSeconds": 0.0533125
+          },
+          {
+            "startSeconds": 7.62625,
+            "durationSeconds": 0.06775
+          },
+          {
+            "startSeconds": 7.894375,
+            "durationSeconds": 0.0594375
+          }
+        ]
+      },
+      "durationSeconds": 8.075,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 8.075,
+        "samples": 129200,
+        "bytes": 258444,
+        "sha256": "3683b7b10faa72ecd3921e2c41d879ff67fef2d4ba343fb8823cedae0bdb6427",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    },
+    {
+      "id": "08-past-action__mixed-0db-critical",
+      "baseId": "08-past-action",
+      "file": "wav/08-past-action__mixed-0db-critical.wav",
+      "goldTranscript": "저는 요양원에서 어르신의 식사를 도왔습니다. 식사량을 확인한 뒤 담당자에게 보고했습니다.",
+      "semanticPolarity": "self-past-action",
+      "pair": null,
+      "forbidAutoExperience": false,
+      "delivery": "normal",
+      "condition": {
+        "id": "mixed-0db-critical",
+        "snrDb": 0,
+        "noise": "fan-hum-broadband-and-typing",
+        "criticalAttenuationDb": -18,
+        "seed": 20261715,
+        "referenceSnrDb": -1.9286549331065743e-15,
+        "effectiveSnrDb": -1.9286549331065743e-15,
+        "snrDefinition": "RMS over 20ms clean speech frames >=0.008; common normalization after mixing",
+        "postMixScale": 0.5867455050364482,
+        "criticalAttenuation": null,
+        "typingBursts": [
+          {
+            "startSeconds": 0.35,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 0.5785625,
+            "durationSeconds": 0.040125
+          },
+          {
+            "startSeconds": 0.8023125,
+            "durationSeconds": 0.0608125
+          },
+          {
+            "startSeconds": 1.249875,
+            "durationSeconds": 0.0370625
+          },
+          {
+            "startSeconds": 1.5816875,
+            "durationSeconds": 0.0403125
+          },
+          {
+            "startSeconds": 1.9339375,
+            "durationSeconds": 0.0355625
+          },
+          {
+            "startSeconds": 2.1318125,
+            "durationSeconds": 0.054
+          },
+          {
+            "startSeconds": 2.4895,
+            "durationSeconds": 0.037875
+          },
+          {
+            "startSeconds": 2.8953125,
+            "durationSeconds": 0.036
+          },
+          {
+            "startSeconds": 3.1079375,
+            "durationSeconds": 0.0385625
+          },
+          {
+            "startSeconds": 3.435625,
+            "durationSeconds": 0.0656875
+          },
+          {
+            "startSeconds": 3.72675,
+            "durationSeconds": 0.0454375
+          },
+          {
+            "startSeconds": 4.0605,
+            "durationSeconds": 0.0395625
+          },
+          {
+            "startSeconds": 4.313125,
+            "durationSeconds": 0.06
+          },
+          {
+            "startSeconds": 4.4943125,
+            "durationSeconds": 0.043
+          },
+          {
+            "startSeconds": 4.69625,
+            "durationSeconds": 0.045125
+          },
+          {
+            "startSeconds": 5.1338125,
+            "durationSeconds": 0.0605625
+          },
+          {
+            "startSeconds": 5.5763125,
+            "durationSeconds": 0.0480625
+          },
+          {
+            "startSeconds": 6.0241875,
+            "durationSeconds": 0.071
+          },
+          {
+            "startSeconds": 6.4181875,
+            "durationSeconds": 0.0429375
+          },
+          {
+            "startSeconds": 6.7304375,
+            "durationSeconds": 0.071125
+          },
+          {
+            "startSeconds": 6.9720625,
+            "durationSeconds": 0.0644375
+          },
+          {
+            "startSeconds": 7.3885,
+            "durationSeconds": 0.041875
+          },
+          {
+            "startSeconds": 7.57025,
+            "durationSeconds": 0.0426875
+          },
+          {
+            "startSeconds": 7.8838125,
+            "durationSeconds": 0.04625
+          },
+          {
+            "startSeconds": 8.0705,
+            "durationSeconds": 0.0045
+          }
+        ]
+      },
+      "durationSeconds": 8.075,
+      "audio": {
+        "sampleRate": 16000,
+        "channels": 1,
+        "bitsPerSample": 16,
+        "durationSeconds": 8.075,
+        "samples": 129200,
+        "bytes": 258444,
+        "sha256": "2c03a992c5086f4eb13d5d2d42d69374d6998e11cf9874796fc5bde436f694be",
+        "peak": 0.97998046875,
+        "clippedSamples": 0
+      }
+    }
+  ],
+  "references": []
+}
