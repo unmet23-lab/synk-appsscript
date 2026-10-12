@@ -190,6 +190,10 @@
   mask:linear-gradient(#000 0 0) 0 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 0/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 0 100%/var(--corner) var(--corner) no-repeat,linear-gradient(#000 0 0) 100% 100%/var(--corner) var(--corner) no-repeat}
 .k-field.k-corners::after,.k-field .k-corners::after{border-image-source:var(--thread-field)}
 .k-stitch-box{position:relative;border:1px solid transparent;border-image:var(--thread-paper) 250 / 30px / 0 round}
+/* 실땀 와이프(motion.js M.seam)의 실 한 줄. 위치·크기는 motion.js가 정하고 실 무늬는 여기서 그린다.
+   그림 경로가 든 변수는 이 파일 안의 규칙에서 써야 경로가 kit.css 기준으로 풀린다(README §8) */
+.k-seam{border:0;border-left:30px solid transparent;border-image:var(--thread-paper) 250 / 0 0 0 40px / 0 round;
+  filter:drop-shadow(0 6px 8px rgba(0,0,0,.25))}
 
 /* ── 콜라주 ── 승인 펠트 스티커·실제 사진·종이테이프. 기울이는 건 스티커와 사진뿐 */
 .k-sticker{position:absolute;display:block;width:var(--s,180px);height:auto;transform:rotate(var(--r,-7deg));pointer-events:none;
