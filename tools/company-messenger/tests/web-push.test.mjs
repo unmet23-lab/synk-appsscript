@@ -69,6 +69,19 @@ test('endpoint allowlist rejects SSRF destinations and misleading vendor names',
   for (const address of ['142.250.1.1', '17.1.2.3', '2607:f8b0:4005:805::200e']) assert.equal(isPublicPushAddress(address), true, address);
 });
 
+test('Chromium staging compatibility accepts only its exact Google host and nonempty FCM send route', () => {
+  for (const url of ['https://jmt17.google.com/fcm/send/offline-test', 'https://jmt17.google.com/fcm/send/opaque-token?version=1']) assert.equal(validatePushEndpoint(url), url);
+  for (const url of [
+    'https://jmt17.google.com/', 'https://jmt17.google.com/fcm/send/', 'https://jmt17.google.com/fcm/send',
+    'https://jmt17.google.com/other/token', 'https://jmt17.google.com/fcm/send/token/extra',
+    'https://jmt17.google.com/fcm/send/../token', 'https://jmt17.google.com/fcm/send/%2e%2e/token',
+    'https://jmt17.google.com.evil.test/fcm/send/token', 'https://sub.jmt17.google.com/fcm/send/token',
+    'https://jmt18.google.com/fcm/send/token', 'https://google.com/fcm/send/token',
+    'http://jmt17.google.com/fcm/send/token', 'https://user@jmt17.google.com/fcm/send/token',
+    'https://jmt17.google.com:8443/fcm/send/token', 'https://jmt17.google.com/fcm/send/token#fragment',
+  ]) assert.throws(() => validatePushEndpoint(url), status(400), url);
+});
+
 test('sender pins public DNS, sends no payload, does not follow redirects and checks permission after DNS', async () => {
   const keys = generateVapidKeys(), calls = [];
   const sender = createPayloadlessPushSender({ lookup: async () => [{ address: '142.250.1.1', family: 4 }], request(url, options, callback) {
@@ -88,6 +101,25 @@ test('sender pins public DNS, sends no payload, does not follow redirects and ch
   assert.equal(calls.length, 1, 'identity uncertainty after DNS must never begin a provider HTTP request');
   const privateDns = createPayloadlessPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private destination contacted'); } });
   await assert.rejects(() => privateDns({ endpoint: endpoint(1), ...keys, subject: 'mailto:workspace@example.test', ttl: 100 }), status(400));
+});
+
+test('Chromium staging sender keeps public DNS pinning, zero payload and redirect rejection', async () => {
+  const endpoint = 'https://jmt17.google.com/fcm/send/offline-test', keys = generateVapidKeys(), calls = [];
+  const sender = createPayloadlessPushSender({ lookup: async host => {
+    assert.equal(host, 'jmt17.google.com'); return [{ address: '142.250.1.1', family: 4 }];
+  }, request(url, options, callback) {
+    calls.push({ url, options }); const req = new EventEmitter();
+    req.end = (...args) => { assert.deepEqual(args, []); callback({ statusCode: 302, headers: { location: 'https://127.0.0.1/secret' }, destroy() {} }); };
+    return req;
+  } });
+  const result = await sender({ endpoint, ...keys, subject: 'mailto:workspace@example.test', ttl: 100 });
+  assert.equal(result.statusCode, 302); assert.equal(calls.length, 1);
+  assert.equal(calls[0].url.href, endpoint); assert.equal(calls[0].options.headers['Content-Length'], '0');
+  const token = /^vapid t=([^,]+)/.exec(calls[0].options.headers.Authorization)[1];
+  assert.equal(JSON.parse(Buffer.from(token.split('.')[1], 'base64url')).aud, 'https://jmt17.google.com');
+  calls[0].options.lookup('jmt17.google.com', { all: true }, (error, addresses) => { assert.equal(error, null); assert.deepEqual(addresses, [{ address: '142.250.1.1', family: 4 }]); });
+  const privateDns = createPayloadlessPushSender({ lookup: async () => [{ address: '127.0.0.1', family: 4 }], request() { assert.fail('private staging destination contacted'); } });
+  await assert.rejects(() => privateDns({ endpoint, ...keys, subject: 'mailto:workspace@example.test', ttl: 100 }), status(400));
 });
 
 test('device notifications default off, opt-in establishes an exact baseline and combines new sources', async t => {

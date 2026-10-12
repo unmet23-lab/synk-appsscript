@@ -1,0 +1,24 @@
+{
+  "schema": "workroom-production-zip-readonly/v1",
+  "sourceReceipt": ".tmp\\pulse-workspace-integration-20261013\\rootqa\\production-final-zip-download.json",
+  "downloadedAt": "2026-10-12T21:05:58.584Z",
+  "bytes": 26846600,
+  "entries": [
+    {
+      "name": "최종 파일/video.mp4",
+      "bytes": 26845451,
+      "sha256": "fa027c0e3c4faa10265f4e3d303604d7969c3c6a2932fd63f66c58a00d65cd75",
+      "matchesOriginalVideo": true
+    },
+    {
+      "name": "납품 안내.txt",
+      "bytes": 863,
+      "sha256": "221464f34e00ad50b189e7a30b44842713e40cf0831734a4155b9f9e42eabb61",
+      "matchesOriginalVideo": false
+    }
+  ],
+  "crcPassed": true,
+  "exactOriginalVideoCount": 1,
+  "passed": true,
+  "productionMutationCalls": 0
+}

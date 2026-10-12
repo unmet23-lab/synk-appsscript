@@ -1,6 +1,10 @@
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const titles={customer_feedback:'고객이 시안 수정을 요청했어요',customer_support:'고객 문의가 도착했어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'수정본 검토를 요청했어요',changes_requested:'수정본에 보완 의견이 있어요',review_accepted:'수정본 내부 검토를 마쳤어요',work_started:'고객 요청 처리를 시작했어요',work_completed:'고객 요청 처리를 마쳤어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당이 배정됐어요',reviewer_assigned:'고객 프로젝트 검토자로 배정됐어요'};
 const unique=values=>[...new Set(values.filter(Boolean))];
+titles.customer_delivery_receipt='고객이 최종본 수령을 확인했어요';
+titles.customer_feedback_round='고객이 모은 수정 의견을 전달했어요';
+Object.assign(titles,{customer_preferences:'고객이 취향을 전달했어요',customer_reference:'고객이 참고자료 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 작성했어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 선택했어요',customer_scene:'고객이 장면 검토를 남겼어요',customer_comment:'고객이 기획 의견을 남겼어요',preview_ready:'새 시안이 도착했어요',final_ready:'최종 파일이 도착했어요',staff_reply:'제작자의 답변이 도착했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 업데이트됐어요',scene_ready:'장면 구성이 업데이트됐어요',reference_ready:'참고자료가 업데이트됐어요'});
+const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE 원문에서 확인해 주세요.',customer_reference:'고객이 남긴 참고자료 의견을 PULSE 원문에서 확인해 주세요.',customer_strategy:'고객이 작성한 제작 설계를 PULSE 원문에서 확인해 주세요.',customer_strategy_confirmed:'고객의 제작 설계 확인 내용을 PULSE 원문에서 확인해 주세요.',customer_concept:'고객이 선택한 콘셉트를 PULSE 원문에서 확인해 주세요.',customer_scene:'고객이 남긴 장면 검토를 PULSE 원문에서 확인해 주세요.',customer_comment:'고객이 남긴 기획 의견을 PULSE 원문에서 확인해 주세요.'};
 
 // Immutable, content-free event pointers live in the same SQLite document as the
 // project mutation. There is no independent write that can commit only half of it.
@@ -15,9 +19,21 @@ export function appendClientNotificationEvents(previous,row){
   if(row.ownerId!==previous?.ownerId)add('assigned',row.ownerId,['owner'],{assigneeId:row.ownerId});
   if(row.reviewerId&&row.reviewerId!==previous?.reviewerId)add('reviewer_assigned',row.reviewerId,['reviewer'],{assigneeId:row.reviewerId});
   const older=new Map((previous?.messages||[]).map(message=>[message.id,message]));
+  const feedbackRounds=new Map((row.studio?.feedbackRounds?.rounds||[]).map(round=>[round.id,round]));
+  const submittedRounds=new Set();
   for(const message of row.messages||[]){
     const old=older.get(message.id);
+    if(message.author==='staff'&&!old&&message.visibility==='customer')add('staff_reply',message.id,['customer'],{messageId:message.id,tab:'history'});
     if(message.author==='customer'&&!old){
+      const round=message.action==='feedback'&&message.feedbackRoundId&&feedbackRounds.get(message.feedbackRoundId);
+      const anchor=round&&row.messages.find(item=>item.id===round.items?.[0]?.messageId&&item.author==='customer'&&item.action==='feedback'&&item.feedbackRoundId===round.id&&item.versionId===round.versionId);
+      if(anchor&&round.items.some(item=>item.messageId===message.id)){
+        if(!submittedRounds.has(round.id)){
+          submittedRounds.add(round.id);
+          add('customer_feedback_round',round.id,['owner'],{messageId:anchor.id,versionId:anchor.versionId,feedbackRoundId:round.id,tab:'review',actorId:'customer'});
+        }
+        continue;
+      }
       const type=message.action==='approve'?'customer_approval':message.action==='feedback'?'customer_feedback':'customer_support';
       add(type,message.id,type==='customer_approval'?['owner','reviewer']:['owner'],{messageId:message.id,versionId:message.versionId||null,actorId:'customer'});
       continue;
@@ -31,6 +47,30 @@ export function appendClientNotificationEvents(previous,row){
     const type=after==='review'?'review_requested':after==='changes_requested'?'changes_requested':after==='waiting_customer'?'review_accepted':after==='done'?'work_completed':after==='in_progress'?'work_started':'work_reopened';
     const historyEntry=message.workflow?.history?.at(-1);
     add(type,message.id,type==='review_requested'?['reviewer']:type==='changes_requested'||type==='review_accepted'?['owner']:['owner','reviewer'],{messageId:message.id,versionId:message.workflow?.resultVersionId||message.versionId||null,workflowAt:historyEntry?.at||null,workflowAction:historyEntry?.action||null});
+  }
+  const oldVersions=new Set((previous?.versions||[]).map(version=>version.id));
+  for(const version of row.versions||[])if(!oldVersions.has(version.id))add(version.kind==='final'?'final_ready':'preview_ready',version.id,['customer'],{versionId:version.id,tab:version.kind==='final'?'history':'review'});
+  const oldReceipts=new Set((previous?.deliveryReceipts||[]).map(receipt=>receipt.id));
+  for(const receipt of row.deliveryReceipts||[])if(!oldReceipts.has(receipt.id))add('customer_delivery_receipt',receipt.id,['owner','reviewer'],{deliveryReceiptId:receipt.id,deliveryKey:receipt.deliveryKey,actorId:'customer'});
+  const history=row.history?.at(-1),action=history?.action?.replace(/^PULSE 기획 /,'');
+  // Only the committed studio action creates its alert; reading or importing
+  // an unchanged document must not replay old notifications.
+  if(history?.id&&history.id!==previous?.history?.at(-1)?.id&&history.action?.startsWith('PULSE 기획 ')){
+    const studio=row.studio||{},before=previous?.studio||{};
+    const customerActions={save_preferences:['customer_preferences','direction'],save_reference:['customer_reference','direction'],remove_reference:['customer_reference','direction'],save_strategy:['customer_strategy','strategy'],confirm_strategy:['customer_strategy_confirmed','strategy'],select_concept:['customer_concept','concepts'],review_scene:['customer_scene','storyboard'],comment:['customer_comment','history']};
+    if(actorId==='customer'&&customerActions[action]){const [type,tab]=customerActions[action];add(type,String(row.revision),['owner','reviewer'],{tab});}
+    if(actorId!=='customer'){
+      if(action==='request_strategy_review')add('strategy_ready',String(studio.strategy?.revision),['customer'],{tab:'strategy'});
+      if(action==='save_concept'||action==='save_scene'){
+        const key=action==='save_concept'?'concepts':'scenes',old=new Map((before[key]||[]).map(card=>[card.id,card]));
+        for(const card of studio[key]||[])if(card.visibility==='customer'&&old.get(card.id)?.revision!==card.revision)add(key==='concepts'?'concept_ready':'scene_ready',card.id,['customer'],{tab:key==='concepts'?'concepts':'storyboard'});
+      }
+      if(action==='save_reference')add('reference_ready',String(row.revision),['customer'],{tab:'direction'});
+      if(action==='comment'){
+        const comment=studio.comments?.at(-1);
+        if(comment?.visibility==='customer')add('staff_reply',comment.id,['customer'],{tab:comment.targetType==='scene'?'storyboard':comment.targetType==='concept'?'concepts':'history',commentId:comment.id});
+      }
+    }
   }
   return {...row,notificationEvents:events};
 }
@@ -48,22 +88,30 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     return true;
   }
   function receiptId(userId,eventId){return userId+'|'+eventId;}
-  function projected(user){
+  function projected(user,projectId=null){
     const result=[];
     // Re-read the actual user and current project ACL on every list/count/read.
-    for(const project of clientProjects.workspace(user).projects){
+    const projects=projectId?[clientProjects.project(user,projectId)]:clientProjects.workspace(user).projects;
+    for(const project of projects){
       const source=store.get('clientProjects',project.id);if(!source)continue;
       const messages=new Map(source.messages.map(message=>[message.id,message])),versions=new Map(source.versions.map(version=>[version.id,version]));
       for(const event of source.notificationEvents||[]){
         if(!eligible(user,source,event))continue;
         const message=event.messageId&&messages.get(event.messageId),version=event.versionId&&versions.get(event.versionId);
         if(event.messageId&&!message||event.versionId&&!version)continue;
+        const feedbackRound=event.feedbackRoundId&&(source.studio?.feedbackRounds?.rounds||[]).find(round=>round.id===event.feedbackRoundId&&round.items?.[0]?.messageId===event.messageId);
+        if(event.type==='customer_feedback_round'&&!feedbackRound)continue;
         const query=new URLSearchParams({tab:'workroom',section:'clients',project:source.id});
+        if(event.type==='customer_delivery_receipt')query.set('closeout','1');
         if(event.versionId)query.set('version',event.versionId);if(event.messageId)query.set('message',event.messageId);if(Number.isFinite(message?.seconds))query.set('seconds',String(message.seconds));
+        const studioEvent=['customer_preferences','customer_reference','customer_strategy','customer_strategy_confirmed','customer_concept','customer_scene','customer_comment'].includes(event.type)&&['direction','strategy','concepts','storyboard','history'].includes(event.tab);
+        // The existing messenger consumes workroom links only. Project news has
+        // its own source opener, so use the exact PULSE tab for this projection.
+        const href=projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
         const readAt=store.get('clientNotificationReads',receiptId(user.id,event.id))?.readAt||null;
         const reviewNote=message?.workflow?.history?.findLast(entry=>entry.at===event.workflowAt&&entry.action===event.workflowAction&&entry.actor===event.actorId)?.note;
-        const text=event.type==='customer_approval'?`${version?.label||'최근 시안'}의 고객 승인을 확인해 주세요.`:event.type==='changes_requested'?reviewNote||'수정할 내용을 확인해 주세요.':event.type==='review_requested'?`${version?.label||'수정본'}을 확인해 주세요.`:message?.text||source.nextStep||'프로젝트의 요청과 다음 할 일을 확인해 주세요.';
-        result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 변경됐어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href:'/?'+query,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null});
+        const text=projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 전달했습니다. 영상 확인에서 취합 내용을 확인해 주세요.`:event.type==='customer_delivery_receipt'?'고객이 전달 파일과 사용 안내를 확인했습니다. 남은 업무와 프로젝트 마감 여부를 확인해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}의 고객 승인을 확인해 주세요.`:event.type==='changes_requested'?reviewNote||'수정할 내용을 확인해 주세요.':event.type==='review_requested'?`${version?.label||'수정본'}을 확인해 주세요.`:message?.text||source.nextStep||'프로젝트의 요청과 다음 할 일을 확인해 주세요.';
+        result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 변경됐어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null,tab:event.tab||(event.versionId?'review':'history')});
       }
     }
     return result.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
@@ -76,6 +124,17 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     return {notifications,total:filtered.length,unreadCount:all.filter(item=>item.unread).length};
   }
   function unreadCount(user){return list(user).unreadCount;}
+  function projectNews(user,projectId){
+    user=current(user);const items=projected(user,projectId).filter(item=>item.unread);
+    return {projectId,revision:clientProjects.project(user,projectId).revision,items,unreadCount:items.length};
+  }
+  function readProjectNews(user,projectId,input){
+    user=current(user);
+    if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||typeof input.id!=='string'||!input.id||input.id.length>1000)throw fail('확인한 소식 한 건을 선택해 주세요.');
+    const item=projected(user,projectId).find(item=>item.id===input.id);if(!item)throw fail('소식을 찾을 수 없습니다.',404);
+    if(!item.readAt){store.put('clientNotificationReads',receiptId(user.id,item.id),{id:receiptId(user.id,item.id),userId:user.id,eventId:item.id,readAt:clock()});notify([user.id]);}
+    return projectNews(user,projectId);
+  }
   function read(user,id){
     user=current(user);const item=projected(user).find(item=>item.id===id);if(!item)throw fail('알림을 찾을 수 없습니다.',404);
     if(!item.readAt){store.put('clientNotificationReads',receiptId(user.id,id),{id:receiptId(user.id,id),userId:user.id,eventId:id,readAt:clock()});notify([user.id]);}
@@ -86,5 +145,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     if(unread.length){store.transaction(()=>{for(const item of unread)store.put('clientNotificationReads',receiptId(user.id,item.id),{id:receiptId(user.id,item.id),userId:user.id,eventId:item.id,readAt:at});});notify([user.id]);}
     return {ok:true,count:unread.length,unreadCount:unreadCount(user)};
   }
-  return {list,unreadCount,read,readAll,close:()=>unsubscribe?.()};
+  return {list,unreadCount,read,readAll,projectNews,readProjectNews,close:()=>unsubscribe?.()};
 }
+
+export function clientNotificationTitle(type){return titles[type]||'프로젝트가 업데이트됐어요';}

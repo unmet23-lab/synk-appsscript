@@ -1,0 +1,19 @@
+{
+  "verifiedAt": "2026-10-12T22:56:50.948Z",
+  "sourceTreeBeforeReport": "0bf7ab317d5dbac0327d6c7e807af5c6e53c42e1",
+  "scope": "Selected workroom automation and required PULSE/messenger integration only; independent staged snapshot",
+  "uniqueTests": 184,
+  "passed": 184,
+  "failed": 0,
+  "skipped": 0,
+  "initialPass": 183,
+  "initialFail": 1,
+  "repair": "Preserve publication query cleanup before history.replaceState in selected workspace navigation",
+  "targetedRerun": {
+    "passed": 39,
+    "failed": 0,
+    "overlapsInitial": true
+  },
+  "sourceReport": ".tmp/workroom-close-20261013/staged-test-result.json",
+  "productionAcceptance": "production-ha-acceptance.json"
+}

@@ -12,6 +12,28 @@ import {promisify} from 'node:util';
 const run=promisify(execFile),here=dirname(fileURLToPath(import.meta.url)),root=resolve(here,'../../../../..');
 const companyPath=relative(root,here).replaceAll('\\','/');
 const unsafe=path=>/(?:^|\/)(?:data|node_modules|\.git|\.env(?:\.[^/]*)?)(?:\/|$)|\.(?:sqlite(?:-(?:wal|shm))?|key)$|(?:^|\/)(?:workspace-integration|drive-storage)\.json$/.test(path);
+const dependencyCopies=[
+  {stage:'synk-ffmpeg-build',sources:['/opt/synk-ffmpeg/bin/ffmpeg'],destination:'/usr/local/bin/ffmpeg'},
+  {stage:'synk-ffmpeg-build',sources:['/opt/synk-ffmpeg/bin/ffprobe'],destination:'/usr/local/bin/ffprobe'},
+  {stage:'synk-ffmpeg-build',sources:['/opt/synk-ffmpeg/share/'],destination:'/usr/local/share/synk-ffmpeg/'}
+];
+function sourceCopies(docker){
+  const sources=[],dependencies=[];
+  for(const line of docker.split(/\r?\n/).map(value=>value.trim()).filter(value=>/^COPY\s/.test(value))){
+    const text=line.replace(/^COPY\s+/,''),stage=/^--from=([^\s]+)\s+(.+)$/.exec(text);
+    const value=stage?stage[2]:text;
+    assert.ok(stage||value.startsWith('['),'Application COPY must use the JSON allowlist');
+    const args=value.startsWith('[')?JSON.parse(value):value.split(/\s+/);
+    assert.ok(Array.isArray(args)&&args.length>=2&&args.every(arg=>typeof arg==='string'&&arg.length),'COPY requires source paths and a destination');
+    const destination=args.at(-1),row={sources:args.slice(0,-1),destination};
+    if(stage){dependencies.push({stage:stage[1],...row});continue;}
+    assert.ok(destination.startsWith('/workspace/')&&posix.normalize(destination).startsWith('/workspace/'),'All source paths stay in the workspace');
+    assert.ok(row.sources.every(source=>!posix.isAbsolute(source)&&!source.split('/').includes('..')&&!unsafe(source)),'Private or escaping COPY source');
+    sources.push(row);
+  }
+  assert.deepEqual(dependencies,dependencyCopies,'Only the three reviewed FFmpeg dependency copies are allowed');
+  return sources;
+}
 function globPattern(pattern){
   let regex='';
   for(let i=0;i<pattern.length;i++){
@@ -31,9 +53,7 @@ async function stageCopy(directory){
     return keep;
   };
   const copied=[];
-  for(const line of docker.split(/\r?\n/).filter(line=>line.startsWith('COPY '))){
-    const text=line.slice(5),args=text.startsWith('[')?JSON.parse(text):text.trim().split(/\s+/),destination=args.pop();
-    assert.ok(destination.startsWith('/workspace/'),'All source paths stay in the workspace');
+  for(const {sources:args,destination} of sourceCopies(docker)){
     const dest=destination.slice('/workspace/'.length);
     for(const source of args){
       const matches=[...globSync(source,{cwd:root})];assert.ok(matches.length,'Missing COPY source: '+source);
@@ -54,13 +74,30 @@ async function stageCopy(directory){
   return {docker,dockerignore,copied};
 }
 
+test('Docker COPY parser validates exact build-stage dependencies and retains source boundaries',()=>{
+  const dependencies=dependencyCopies.map(row=>'COPY --from='+row.stage+' '+[...row.sources,row.destination].join(' '));
+  const application='COPY ["app/server.mjs","/workspace/app/server.mjs"]',docker=[...dependencies,application].join('\n');
+  assert.deepEqual(sourceCopies(docker),[{sources:['app/server.mjs'],destination:'/workspace/app/server.mjs'}]);
+  for(const changed of [
+    dependencies.slice(1).join('\n')+'\n'+application,
+    docker+'\n'+dependencies[0],
+    docker.replace('--from=synk-ffmpeg-build','--from=unreviewed-image'),
+    docker.replace('/opt/synk-ffmpeg/bin/ffmpeg','/opt/synk-ffmpeg/bin/other'),
+    docker.replace('/usr/local/bin/ffmpeg','/usr/local/bin/other'),
+    docker.replace('COPY --from=','COPY --chown=0:0 --from='),
+    docker.replace('/workspace/app/server.mjs','/data/server.mjs'),
+    docker.replace('/workspace/app/server.mjs','/workspace/../data/server.mjs'),
+    docker.replace('app/server.mjs','../server.mjs'),
+    docker.replace('app/server.mjs','data/company.sqlite')
+  ])assert.throws(()=>sourceCopies(changed));
+});
+
 test('Docker static COPY allowlist contains the complete local server import graph',async t=>{
   const docker=await readFile(join(here,'Dockerfile'),'utf8'),ignore=await readFile(join(here,'Dockerfile.dockerignore'),'utf8');
   const rules=ignore.split(/\r?\n/).map(value=>value.trim()).filter(value=>value&&!value.startsWith('#')).map(value=>({include:value.startsWith('!'),pattern:globPattern((value.startsWith('!')?value.slice(1):value).replace(/\/$/,''))}));
   const included=path=>{let keep=true;for(const rule of rules)if(rule.pattern.test(path))keep=rule.include;return keep;};
   const payload=new Map();
-  for(const line of docker.split(/\r?\n/).filter(value=>value.startsWith('COPY '))){
-    const args=JSON.parse(line.slice(5)),destination=args.pop();assert.ok(destination.startsWith('/workspace/'));
+  for(const {sources:args,destination} of sourceCopies(docker)){
     for(const source of args){const matches=[...globSync(source,{cwd:root})];assert.ok(matches.length,'Missing COPY source: '+source);for(const match of matches){
       const sourcePath=match.replaceAll('\\','/'),entry=join(root,match),info=await lstat(entry),target=posix.join(destination.slice('/workspace/'.length),destination.endsWith('/')?posix.basename(sourcePath):'');
       if(info.isFile()){if(included(sourcePath))payload.set(target,sourcePath);continue;}
@@ -90,8 +127,9 @@ test('Docker static COPY allowlist contains the complete local server import gra
   assert.deepEqual(missing,[],'Docker COPY or dockerignore omitted a runtime dependency');
   assert.ok(visited.has('tools/company-messenger/productivity-service.mjs'),'Productivity service must be reached through the real messenger import');
   assert.ok(visited.has('tools/company-messenger/web-push-service.mjs'),'Web push must be reached through the real company import');
-  for(const name of ['client-workflow.mjs','client-notifications.mjs','assistant-productivity.mjs'])assert.ok(visited.has(companyPath+'/'+name),name+' must be reached through the real company import');
-  for(const name of ['device-notifications.js','device-notifications.css','notification-sw.js'])assert.ok(payload.has(companyPath+'/public/'+name),name+' must be present in the copied browser payload');
+  for(const name of ['client-workflow.mjs','client-notifications.mjs','assistant-productivity.mjs','publication-link-check.mjs','client-delivery-check.mjs','client-completion-records-render.mjs','client-delivery-archive.mjs','client-rights-reminders.mjs','client-material-usage.mjs'])assert.ok(visited.has(companyPath+'/'+name),name+' must be reached through the real company import');
+  for(const name of ['pdfkit.cjs','SUIT-Regular.otf','SUIT-OFL.txt','THIRD-PARTY-LICENSES.txt'])assert.ok(payload.has(companyPath+'/vendor/completion-pdf/'+name),name+' must be present in the PDF runtime payload');
+  for(const name of ['device-notifications.js','device-notifications.css','notification-sw.js','client-delivery-archive.js','client-delivery-archive.css','client-material-usage.js','client-material-usage.css','client-rights.js','automation-health.js'])assert.ok(payload.has(companyPath+'/public/'+name),name+' must be present in the copied browser payload');
   t.diagnostic(`Pure file-read verification: ${payload.size} image files, ${visited.size} transitive runtime imports; no image build, server or database was started.`);
 });
 
@@ -101,7 +139,7 @@ test('Docker COPY payload starts the company host and delivers SHIFT, messenger 
     const payload=join(directory,'workspace');
     const {copied,docker,dockerignore}=await stageCopy(payload);
     assert.ok(copied.length>50);assert.ok(copied.every(path=>!unsafe(path)));
-    assert.ok(copied.every(path=>!/(?:^|\/)preview-[^/]+\.mjs$/.test(path)),'Local preview launchers must not enter the runtime image');
+    assert.ok(copied.every(path=>posix.dirname(path)!==companyPath||!/^preview-[^/]+\.mjs$/.test(posix.basename(path))),'Company-root local preview launchers must not enter the runtime image');
     const runner=join(directory,'verify.mjs');
     await writeFile(runner,`
 import assert from 'node:assert/strict';
@@ -164,7 +202,7 @@ try{
   const adminLogin=await fetch(base+'/api/login',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({email:admin.email,password:'packaging-fixture-password'})});
   const adminCookie=adminLogin.headers.get('set-cookie').split(';')[0];
   for(const path of ['/api/content-benchmarks/research-prompt','/api/content-benchmarks/template']){const r=await fetch(base+path,{headers:{Cookie:adminCookie}});check('admin source '+path,r.ok);}
-  for(const path of ['/client-projects.js','/client-projects.css','/brand-quality.js','/brand-quality.css','/pulse/','/pulse/lounge.js','/pulse/lounge.css']){const r=await fetch(base+path);check('brand experience packaged asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);}
+  for(const path of ['/client-projects.js','/client-projects.css','/client-delivery-archive.js','/client-delivery-archive.css','/client-material-usage.js','/client-material-usage.css','/client-rights.js','/automation-health.js','/brand-quality.js','/brand-quality.css','/pulse/','/pulse/lounge.js','/pulse/lounge.css']){const r=await fetch(base+path);check('brand experience packaged asset '+path,r.ok&&(await r.arrayBuffer()).byteLength>0);}
   const brand=await fetch(base+'/api/brand-quality',{headers:{Cookie:cookie}}),brandData=await brand.json();
   check('packaged brand workspace includes approved source links and six checks',brand.ok&&brandData.sources.length===15&&brandData.checks.length===6);
   const jsonHeaders={Cookie:cookie,Origin:app.origin,'X-CSRF-Token':body.csrfToken,'Content-Type':'application/json'};
@@ -178,6 +216,12 @@ try{
   check('packaged customer invitation',invitation.ok&&invited.invite);
   const lounge=await fetch(base+'/pulse/api/open',{method:'POST',headers:{Origin:app.origin,'Content-Type':'application/json'},body:JSON.stringify({invite:invited.invite})}),loungeData=await lounge.json();
   check('packaged isolated customer view omits internal project fields',lounge.ok&&loungeData.project.title==='Container client project'&&!Object.hasOwn(loungeData.project,'internalNotes'));
+  const recordsPath='/api/client-projects/'+project.project.id+'/completion-records',recordPreview=await fetch(base+recordsPath,{headers:{Cookie:cookie}}),recordReport=await recordPreview.json();
+  check('packaged completion record preview omits private project memo',recordPreview.ok&&recordReport.schema===1&&!JSON.stringify(recordReport).includes('PRIVATE PACKAGING NOTE'));
+  for(const format of ['pdf','csv']){
+    const output=await fetch(base+recordsPath,{method:'POST',headers:jsonHeaders,body:JSON.stringify({format,fingerprint:recordReport.fingerprint})}),bytes=Buffer.from(await output.arrayBuffer());
+    check('packaged completion '+format+' download',output.ok&&/attachment/.test(output.headers.get('content-disposition'))&&(format==='pdf'?bytes.subarray(0,5).toString()==='%PDF-':bytes.subarray(0,3).equals(Buffer.from([239,187,191]))));
+  }
   check('packaged verified intake receiver dependency',existsSync(join(root,'docs/마케팅/클라이언트_발주서_20260930/receiver/sync.cjs')));
   console.log(JSON.stringify({passed:checks.length,checks}));
 }finally{await app.stop();}

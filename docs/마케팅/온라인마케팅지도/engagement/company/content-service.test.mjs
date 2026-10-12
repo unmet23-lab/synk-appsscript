@@ -32,6 +32,20 @@ test('content API requires authentication, same origin and CSRF; viewers are rea
   assert.equal(f.app.store.all('contentDrafts').length,0);
 });
 
+test('editorial experiment notes save and export separately from viewer content with existing private draft permissions',async t=>{
+  const f=await fixture(t),editorialNote='제작자 전용 실험표식\n72시간 완주율 40% · 출처: 직접 확인\n바꿀 요소: 중간 설명만 줄이기\n한계: 통계적 유의성 미확인',baseline=(await f.call('/api/content-generate',valid)).data.draft;
+  const created=await f.call('/api/content-generate',{...valid,editorialNote});assert.equal(created.status,201);const draft=created.data.draft;
+  assert.equal(draft.input.editorialNote,editorialNote);assert.equal(draft.plan.input.editorialNote,editorialNote);assert.deepEqual(draft.plan.ideas,baseline.plan.ideas);assert.equal(draft.input.proof,valid.proof);assert.deepEqual(draft.input.authenticity,valid.authenticity);
+  const read=await f.call('/api/content-drafts/'+draft.id);assert.equal(read.data.draft.input.editorialNote,editorialNote);assert.equal((await f.call('/api/content-drafts/'+draft.id,undefined,'bob')).status,404);
+  const exported=await f.call('/api/content-drafts/'+draft.id+'/export');assert.equal(exported.status,200);assert.match(exported.data,/## 이번 편 제작 실험/);assert.ok(exported.data.includes(editorialNote));assert.doesNotMatch(exported.data.slice(exported.data.indexOf('## 안 1.')),/제작자 전용 실험표식|72시간 완주율/);
+  assert.equal(f.app.store.get('contentDrafts',draft.id).input.editorialNote,editorialNote);
+});
+
+test('editorial notes reject malformed or oversized content before a draft is saved',async t=>{
+  const f=await fixture(t);for(const editorialNote of ['x'.repeat(3001),{},[],1,'bad\u0000note'])assert.equal((await f.call('/api/content-generate',{...valid,editorialNote})).status,400);assert.equal(f.app.store.all('contentDrafts').length,0);
+  const accepted=await f.call('/api/content-generate',{...valid,editorialNote:'x'.repeat(3000)});assert.equal(accepted.status,201);assert.equal(accepted.data.draft.input.editorialNote.length,3000);
+});
+
 test('review targets expose only title and link, reject unreadable team rooms and suggest permitted reviewers',async t=>{
   const f=await fixture(t);f.app.store.put('teams','a',{id:'a',name:'마케팅팀',active:true});
   const draft=(await f.call('/api/content-generate',{...valid,channelId:'alice'})).data.draft;

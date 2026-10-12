@@ -1,0 +1,35 @@
+{
+  "at": "2026-10-12T21:39:30.400636+00:00",
+  "windowUTC": [
+    "2026-10-12T21:32:00Z",
+    "2026-10-12T21:36:59Z"
+  ],
+  "journalExit": 0,
+  "rowsRead": 2,
+  "events": [
+    {
+      "atUsec": "1791840797484654",
+      "unit": "synk-ha-node.service",
+      "event": "SYNK_HA_NODE",
+      "reason": 23,
+      "stopFailed": false
+    },
+    {
+      "atUsec": "1791840843912952",
+      "unit": "synk-ha-node.service",
+      "event": "SYNK_HA_NODE",
+      "reason": "READY",
+      "stopFailed": false
+    }
+  ],
+  "unit": {
+    "Result": "success",
+    "NRestarts": "0",
+    "ExecMainStatus": "0",
+    "ActiveState": "active",
+    "SubState": "running",
+    "ActiveEnterTimestamp": "Mon 2026-10-12 20:51:18 UTC",
+    "InactiveEnterTimestamp": "Mon 2026-10-12 20:48:13 UTC"
+  },
+  "remoteMutationCalls": 0
+}

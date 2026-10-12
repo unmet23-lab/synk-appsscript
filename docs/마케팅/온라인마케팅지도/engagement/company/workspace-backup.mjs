@@ -40,7 +40,7 @@ export async function backupWorkspace({ destination, companyDataDir, messengerDa
       if (name === 'company') {
         await copyFile(join(directory, 'encryption.key'), join(target, name, 'encryption.key'));
         for (const diskName of workspaceMediaNames(snapshot)) {
-          if (!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|intake)$/i.test(diskName)) throw new Error('검토 파일의 이름이 올바르지 않습니다.');
+          if (!/^[0-9a-f-]{36}\.(mp4|webm|png|jpg|mp3|wav|srt|vtt|intake)$/i.test(diskName)) throw new Error('검토 파일의 이름이 올바르지 않습니다.');
           await mkdir(join(target, name, 'studio-media'), { recursive: true, mode: 0o700 });
           await copyFile(join(directory, 'studio-media', diskName), join(target, name, 'studio-media', diskName));
           mediaCount++;

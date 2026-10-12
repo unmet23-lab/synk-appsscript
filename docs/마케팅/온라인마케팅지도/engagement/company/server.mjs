@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { pipeline } from 'node:stream/promises';
 import { readFile } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
@@ -16,15 +17,43 @@ import { buildHypeFeed } from './hype.mjs';
 import { createContentService } from './content-service.mjs';
 import { createDailyTrendsService } from './daily-trends-service.mjs';
 import { createCreativeResearchService } from './creative-research.mjs';
+import {createCreativeResearchEvents} from './creative-research-events.mjs';
 import { createCreatorReviewsService } from './creator-reviews.mjs';
 import { createCreatorSourcesService } from './creator-sources.mjs';
 import { createClientProjectsService } from './client-projects.mjs';
+import { createClientStartupService } from './client-startup.mjs';
+import { createClientStartupTemplatesService } from './client-startup-templates.mjs';
+import { createClientReplyTemplatesService } from './client-reply-templates.mjs';
+import { createClientRightsService } from './client-rights.mjs';
+import { createClientMaterialUsageService } from './client-material-usage.mjs';
+import { createClientCompletionRecordsService } from './client-completion-records.mjs';
+import { createClientDeliveryArchiveService } from './client-delivery-archive.mjs';
+import { renderCompletionPdf,renderCompletionCsv } from './client-completion-records-render.mjs';
+import { createClientSearchService } from './client-search.mjs';
+import { createClientProgressUpdateService } from './client-progress-update.mjs';
+import { createClientMaterialsService } from './client-materials.mjs';
+import { createClientDraftsService } from './client-drafts.mjs';
+import { createClientDeliveryService } from './client-delivery.mjs';
+import { createDeliveryFileInspector } from './delivery-file-inspection.mjs';
+import {receiveDeliveryMedia,commitDeliveryMedia,discardDeliveryMedia,serveDeliveryMedia} from './client-delivery-media.mjs';
+import { createPulseStudioService } from './pulse-studio.mjs';
 import { createClientIntake,discardIntakeFiles,serveIntakeFile } from './client-intake.mjs';
 import { createBrandQualityService } from './brand-quality-service.mjs';
 import { createStaticResponder } from './static-response.mjs';
 import { workroomGuide,workroomSource } from './workroom-guide.mjs';
 import { companyGuide } from './company-guide.mjs';
 import { createStudioService } from './studio-service.mjs';
+import { createPublicationPackageService } from './publication-package.mjs';
+import { createPublicationInboxService } from './publication-inbox.mjs';
+import { createPostPerformanceService } from './post-performance.mjs';
+import { createPublicationWorkflowService } from './publication-workflow.mjs';
+import { createPublicationLearningService } from './publication-learning.mjs';
+import { createPublicationReviewService } from './publication-review.mjs';
+import { createPublicationLinkCheckService } from './publication-link-check.mjs';
+import { createWeeklySummaryService } from './weekly-summary.mjs';
+import { createAutomationHealthService } from './automation-health.mjs';
+import { createAutomationNotificationsService } from './automation-notifications.mjs';
+import { createSynchronousReadScope } from './synchronous-read-scope.mjs';
 import { createDemoService } from './demo-service.mjs';
 import { buildGrowthSummary } from './growth-summary.mjs';
 import { buildGrowthHistory } from './growth-history.mjs';
@@ -33,6 +62,7 @@ import { buildContentLeaders } from './content-leaders.mjs';
 import { createAssistantService } from './assistant-service.mjs';
 import { createClientWorkflowService } from './client-workflow.mjs';
 import { createClientNotificationsService } from './client-notifications.mjs';
+import { createPulseLiveService } from './pulse-live.mjs';
 import { createCrewProfileService } from './crew-profile-service.mjs';
 import { createComputerInterpretationService } from './computer-interpretation-service.mjs';
 import { receiveStudioMedia,commitStudioMedia,discardStudioMedia,serveStudioMedia } from './studio-media.mjs';
@@ -60,9 +90,14 @@ const count=value=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=
 const isLocalHost=host=>['127.0.0.1','localhost','::1'].includes(host);
 
 export function createCompanyApp(options={}) {
+  const deliveryCheckSchedule=options.deliveryCheckSchedule??(options.schedule!==false);
+  if(typeof deliveryCheckSchedule!=='boolean')throw httpError('납품 파일 점검 자동 실행 설정을 확인해 주세요.');
   const backgroundJobsSetting=process.env.SYNK_COMPANY_BACKGROUND_JOBS_ENABLED??'1';
   if(!['0','1'].includes(backgroundJobsSetting))throw new Error('SYNK_COMPANY_BACKGROUND_JOBS_ENABLED는 0 또는 1이어야 합니다.');
   const backgroundJobsEnabled=backgroundJobsSetting==='1';
+  const workroomScheduleSetting=process.env.SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED;
+  if(workroomScheduleSetting!==undefined&&!['0','1'].includes(workroomScheduleSetting))throw new Error('SYNK_COMPANY_WORKROOM_SCHEDULE_ENABLED는 0 또는 1이어야 합니다.');
+  const workroomScheduleEnabled=workroomScheduleSetting===undefined?backgroundJobsEnabled:workroomScheduleSetting==='1';
   if(options.workNotificationsEnabled!==undefined&&typeof options.workNotificationsEnabled!=='boolean')throw new Error('workNotificationsEnabled는 boolean이어야 합니다.');
   const workNotificationsSetting=options.workNotificationsEnabled??process.env.SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED??backgroundJobsSetting;
   if(![true,false,'0','1'].includes(workNotificationsSetting))throw new Error('SYNK_COMPANY_WORK_NOTIFICATIONS_ENABLED는 0 또는 1이어야 합니다.');
@@ -90,7 +125,7 @@ export function createCompanyApp(options={}) {
     try{integrationConfig=JSON.parse(readFileSync(integrationFile,'utf8'));}catch{throw new Error('사내 앱 통합 설정을 읽을 수 없습니다.');}
   }
   const messengerDataDir=options.messengerDataDir??integrationConfig.messengerDataDir??process.env.MESSENGER_DATA_DIR??((options.dataDir||options.store)?join(store.directory,'messenger'):resolve(here,'../../../../../tools/company-messenger/data'));
-  let messenger,clientNotifications;
+  let messenger,clientNotifications,automationNotifications;
   const synkIdentity=createSynkIdentity({store,origin,config:options.synkIdentityConfig===undefined?synkIdentityConfig():options.synkIdentityConfig,fetch:options.synkIdentityFetch,verifyIdentity:options.synkIdentityVerifier,now:options.synkIdentityNow,onRevoked:()=>messenger?.disconnectRevoked(),clientAddress});
   const teaching=createTeachingService({store,origin,config:options.teachingConfig===undefined?teachingServiceConfig():options.teachingConfig,fetch:options.teachingFetch,now:options.teachingNow,clientAddress});
   const customerIdentity=createCustomerIdentity({origin,config:options.synkCustomerIdentityConfig===undefined?customerIdentityConfig():options.synkCustomerIdentityConfig,fetch:options.synkCustomerIdentityFetch,now:options.synkCustomerIdentityNow,clientAddress});
@@ -98,9 +133,9 @@ export function createCompanyApp(options={}) {
     origin,identityLinks:options.messengerIdentityLinks??integrationConfig.identityLinks??[],
     listUsers:()=>store.all('users'),listTeams:()=>store.all('teams'),workspaceName:()=>store.get('settings','company')?.companyName||'SYNK',
     notifications:{
-      list:companyUserId=>clientNotifications?.list(store.get('users',companyUserId)).notifications||[],
-      read:(companyUserId,id)=>clientNotifications.read(store.get('users',companyUserId),id),
-      readAll:companyUserId=>clientNotifications.readAll(store.get('users',companyUserId)),
+      list:companyUserId=>[...(clientNotifications?.list(store.get('users',companyUserId)).notifications||[]),...(automationNotifications?.list(store.get('users',companyUserId)).notifications||[])],
+      read:(companyUserId,id)=>id.startsWith('automation:')?automationNotifications.read(store.get('users',companyUserId),id):clientNotifications.read(store.get('users',companyUserId),id),
+      readAll:companyUserId=>{const user=store.get('users',companyUserId);clientNotifications.readAll(user);automationNotifications?.readAll(user);},
     },
     authenticate(req){const auth=session(req);if(!auth)return null;return {companyUserId:auth.user.id,role:auth.user.role,canWrite:auth.user.role!=='viewer',canManage:auth.user.role==='admin',csrfToken:auth.body.csrfToken,token:auth.hash,parentOrigin:origin};},
     resolveWorkspaceLink({companyUserId,recipientCompanyUserIds,workspaceLink,purpose}){
@@ -118,7 +153,7 @@ export function createCompanyApp(options={}) {
     res.writeHead(302,{'Location':origin+'/?tab=messenger','Cache-Control':'no-store'});res.end();
   });
   const collector=options.collector??collectChannel;
-  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer;
+  const inflight=new Set();let queue=Promise.resolve();let timer,pushTimer,publicationTimer,publicationInboxTimer,publicationLinkTimer,weeklySummaryTimer,automationHealthTimer,deliveryCheckTimer;
   let ready=false,startTask=null,shutdownTask=null,stopRequested=false;
   const loginNow=options.loginNow??(()=>Date.now()),loginWork=createConcurrencyGuard(4);
   const loginPair=createAttemptLimiter({limit:8,windowMs:15*60000,now:loginNow});
@@ -132,9 +167,53 @@ export function createCompanyApp(options={}) {
   const creativeResearch=createCreativeResearchService({store,clock,fetchImpl:options.creativeResearchFetch});
   const creatorReviews=createCreatorReviewsService({store,clock});
   const creatorSources=createCreatorSourcesService({store});
-  const clientProjects=createClientProjectsService({store,clock});
-  const clientWorkflow=createClientWorkflowService({store,clientProjects,clock});
-  clientNotifications=createClientNotificationsService({store,clientProjects,clientWorkflow,clock,onChange:ids=>messenger.notifyCompanyUsers(ids)});
+  const automationReadScope=createSynchronousReadScope();
+  const clientProjects=automationReadScope.service(createClientProjectsService({store,clock}),['workspace']);
+  const deliveryFileInspector=options.deliveryFileInspector??createDeliveryFileInspector({directory:store.directory,ffprobe:options.deliveryFfprobe});
+  const clientDelivery=automationReadScope.service(createClientDeliveryService({store,clientProjects,clock,fileInspector:deliveryFileInspector}),['get']);
+  let deliveryCheckTick=null;
+  function scanDeliveryChecks(){
+    if(stopRequested||deliveryCheckTick)return deliveryCheckTick;
+    beginRuntime(deliveryCheckRuntime);const seen=new Set();
+    const onProject=({projectId,status,at,fingerprint})=>{
+      if(status==='skipped'){seen.delete(projectId);delete deliveryCheckRuntime.projects[projectId];return;}
+      seen.add(projectId);let project=deliveryCheckRuntime.projects[projectId];
+      if(!project||project.fingerprint!==fingerprint)project=deliveryCheckRuntime.projects[projectId]={fingerprint,lastAttemptAt:null,lastSuccessAt:null,lastErrorAt:null,running:false};
+      if(status==='running'){project.running=true;project.lastAttemptAt=at;}
+      else{project.running=false;if(status==='success'){project.lastSuccessAt=at;project.lastErrorAt=null;}else project.lastErrorAt=at;}
+    };
+    deliveryCheckTick=Promise.resolve().then(()=>clientDelivery.scanChecks({onProject})).then(result=>{
+      for(const projectId of Object.keys(deliveryCheckRuntime.projects))if(!seen.has(projectId))delete deliveryCheckRuntime.projects[projectId];
+      deliveryCheckRuntime.lastScanErrorAt=null;finishRuntime(deliveryCheckRuntime,result.failed===0);return result;
+    },()=>{deliveryCheckRuntime.lastScanErrorAt=clock();finishRuntime(deliveryCheckRuntime,false);return {failed:true};}).finally(()=>{deliveryCheckTick=null;});
+    return deliveryCheckTick;
+  }
+  const pulseStudio=createPulseStudioService({store,clientProjects,clock});
+  const clientStartupTemplates=createClientStartupTemplatesService({store,clientProjects,clock});
+  const clientSearch=createClientSearchService({store,clientProjects});
+  const clientStartup=createClientStartupService({store,clientProjects,templates:clientStartupTemplates,clock});
+  const clientProgressUpdate=createClientProgressUpdateService({store,clientProjects,clock});
+  const clientMaterials=automationReadScope.service(createClientMaterialsService({store,clientProjects,clock}),['workspace']);
+  const clientReplyTemplates=createClientReplyTemplatesService({store,clientProjects,clock});
+  const clientMaterialUsage=automationReadScope.service(createClientMaterialUsageService({store,clientProjects,clientMaterials,clock}),['workspace','reminderExclusions']);
+  const clientRights=automationReadScope.service(createClientRightsService({store,clientProjects,clientMaterials,clientMaterialUsage,clock}),['workspace','reminders']);
+  const clientDeliveryArchive=createClientDeliveryArchiveService({store,clientProjects,clock});
+  const deliveryArchiveActive=new Set();
+  const clientCompletionRecords=createClientCompletionRecordsService({store,clientProjects,clientMaterials,clientRights,clock});
+  const completionRecordsRenderer=options.completionRecordsRenderer||{pdf:renderCompletionPdf,csv:renderCompletionCsv};
+  const completionRecordsActive=new Set();
+  const clientDrafts=createClientDraftsService({store,clientProjects,clock});
+  const clientWorkflow=automationReadScope.service(createClientWorkflowService({store,clientProjects,clientDelivery,clientRights,clock}),['workspace']);
+  let pulseLiveEvents,notifyPulseDevices=()=>{};
+  const pulseEventAuth=new WeakMap();
+  clientNotifications=createClientNotificationsService({store,clientProjects,clientWorkflow,clock,onChange:ids=>{messenger.notifyCompanyUsers(ids);pulseLiveEvents?.changed();notifyPulseDevices();}});
+  const pulseLive=createPulseLiveService({store,clientProjects,clientNotifications,clock,onChange:()=>{pulseLiveEvents?.changed();notifyPulseDevices();}});
+  pulseLiveEvents=createCreativeResearchEvents({resolveAccess(req){
+    const original=pulseEventAuth.get(req);if(stopRequested||!original)return null;
+    if(original.customerToken){const current=clientProjects.session(original.customerToken);if(current.auth.hash!==original.hash)return null;return {revision:pulseLive.customerState(original.customerToken).revision};}
+    const latest=session(req);if(!latest||latest.hash!==original.hash||latest.user.id!==original.userId)return null;
+    return {revision:pulseLive.staffState(latest.user).revision};
+  },heartbeatMs:options.pulseHeartbeatMs??15000,maxConnections:options.pulseMaxConnections??128});
   let webPushKeys=null;
   if(webPushEnabled){
     webPushKeys=store.secret('device-web-push-vapid');
@@ -142,19 +221,81 @@ export function createCompanyApp(options={}) {
   }
   // Explicit device opt-in is independent of restored collection/deletion/reminder queues.
   const deviceNotifications=createWebPushService({db:store.db,enabled:webPushEnabled,...webPushKeys,subject:origin,now:clock,
-    notificationsForUser:userId=>messenger.notificationsForCompanyUser(userId),
+    notificationsForUser:userId=>userId.startsWith('pulse:')?pulseLive.customerPushNotifications(userId):userId.startsWith('pulse-staff:')?clientNotifications.list(store.get('users',userId.slice('pulse-staff:'.length))).notifications:messenger.notificationsForCompanyUser(userId).filter(row=>row.kind!=='automation_health'),
     currentSession:currentPushSession,...(options.webPushSend?{send:options.webPushSend}:{}),
   });
+  let pulsePushScheduled=false;
+  notifyPulseDevices=()=>{if(!webPushEnabled||pulsePushScheduled||stopRequested)return;pulsePushScheduled=true;queueMicrotask(()=>{pulsePushScheduled=false;if(!stopRequested)void deviceNotifications.tick().catch(()=>{});});};
   const clientIntake=createClientIntake({directory:options.clientIntakeDir??process.env.SYNK_PULSE_INBOX??(process.env.LOCALAPPDATA?join(process.env.LOCALAPPDATA,'SYNK','PULSE-Intake','inbox'):null)});
   const brandQuality=createBrandQualityService({store,clock});
-  const studio=createStudioService({store,clock});
+  const studio=automationReadScope.service(createStudioService({store,clock}),['production']);
+  const publicationPackages=automationReadScope.service(createPublicationPackageService({store,studio,clock,...options.publicationPackageOptions}),['get']);
+  const publicationInboxLocal=isLocalHost(host)&&isLocalHost(originUrl.hostname);
+  const publicationInbox=automationReadScope.service(createPublicationInboxService({store,studio,clock,enabled:publicationInboxLocal&&options.publicationInboxEnabled!==false}),['state']);
+  const automationRuntimeStart=clock(),automationRuntime={};
+  function runtimeJob(id,enabled,intervalMs){return automationRuntime[id]??(automationRuntime[id]={enabled:!!enabled,running:false,intervalMs,startAt:automationRuntimeStart,lastAttemptAt:null,lastSuccessAt:null,lastErrorAt:null});}
+  const deliveryCheckRuntime=Object.assign(runtimeJob('deliveryCheck',deliveryCheckSchedule,60000),{projects:{},lastScanErrorAt:null});
+  const inboxRuntime=runtimeJob('inbox',publicationInboxLocal&&(options.publicationInboxSchedule??(options.schedule!==false)),5000);
+  function beginRuntime(job){job.running=true;job.lastAttemptAt=clock();}
+  function finishRuntime(job,ok){job.running=false;if(ok){job.lastSuccessAt=clock();job.lastErrorAt=null;}else job.lastErrorAt=clock();}
+  let publicationInboxTick=Promise.resolve();
+  function scanPublicationInbox(){
+    if(stopRequested||inboxRuntime.running)return publicationInboxTick;
+    beginRuntime(inboxRuntime);
+    publicationInboxTick=Promise.resolve().then(()=>publicationInbox.scan()).then(result=>{finishRuntime(inboxRuntime,true);return result;},()=>{finishRuntime(inboxRuntime,false);});
+    return publicationInboxTick;
+  }
+  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list']);
+  const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
+  const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  const publicationPerformanceSchedule=backgroundJobsEnabled&&options.schedule!==false;
+  const linksRuntime=runtimeJob('links',publicationLinkSchedule,60000),performanceRuntime=runtimeJob('performance',publicationPerformanceSchedule,60000);
+  const publicationReview=createPublicationReviewService({store,studio,publicationPackages,publicationLinks,clock});
+  const publicationWorkflow=automationReadScope.service(createPublicationWorkflowService({store,studio,publicationInbox,publicationPackages,publicationReview,postPerformance,publicationLinks,clock}),['workspace']);
+  const publicationLearning=automationReadScope.service(createPublicationLearningService({store,studio,publicationPackages,postPerformance,clock}),['workspace']);
+  const weeklySummarySchedule=options.weeklySummarySchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  if(typeof weeklySummarySchedule!=='boolean')throw httpError('주간 정리 자동 실행 설정을 확인해 주세요.');
+  const weeklyRuntime=runtimeJob('weekly',weeklySummarySchedule,60000);
+  const weeklySummary=createWeeklySummaryService({store,studio,postPerformance,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,contentService:content,clock,taskSummary:(user,period)=>messenger.weeklySummaryForCompanyUser(user.id,{...period,today:new Date(Date.parse(clock())+9*3600000).toISOString().slice(0,10)})});
+  let weeklySummaryError=false;
+  function scanWeeklySummary(){if(stopRequested)return;beginRuntime(weeklyRuntime);try{const result=weeklySummary.scanDue();weeklySummaryError=false;finishRuntime(weeklyRuntime,true);return result;}catch{weeklySummaryError=true;finishRuntime(weeklyRuntime,false);}}
+  function readWeeklySummary(user,options={}){const result=weeklySummary.get(user,options);return {...result,schedule:{...result.schedule,enabled:weeklySummarySchedule,serverMustStayRunning:true,status:weeklySummaryError?'error':weeklySummarySchedule?'enabled':'disabled'}};}
+  const publicationAbort=new AbortController();
+  let publicationLinkTick=Promise.resolve();
+  function scanPublicationLinks(){
+    if(stopRequested||linksRuntime.running)return publicationLinkTick;
+    beginRuntime(linksRuntime);
+    publicationLinkTick=Promise.resolve().then(()=>publicationLinks.scanDue({signal:publicationAbort.signal})).then(result=>{finishRuntime(linksRuntime,true);return result;},()=>{finishRuntime(linksRuntime,false);});
+    return publicationLinkTick;
+  }
+  let publicationTick=Promise.resolve();
+  function collectPublicationPerformance(){
+    if(stopRequested||performanceRuntime.running)return publicationTick;
+    beginRuntime(performanceRuntime);
+    publicationTick=Promise.resolve().then(()=>postPerformance.collectDue({signal:publicationAbort.signal})).then(result=>{finishRuntime(performanceRuntime,true);return result;},()=>{finishRuntime(performanceRuntime,false);});
+    return publicationTick;
+  }
+  const automationHealthSchedule=options.automationHealthSchedule??(workroomScheduleEnabled&&options.schedule!==false);
+  if(typeof automationHealthSchedule!=='boolean')throw httpError('자동화 상태 확인 설정을 확인해 주세요.');
+  const automationHealthSource=createAutomationHealthService({store,studio,publicationPackages,publicationInbox,postPerformance,publicationLinks,publicationWorkflow,publicationLearning,clientProjects,clientWorkflow,clientDelivery,clientRights,weeklySummary,clock,runtime:()=>Object.fromEntries(Object.entries(automationRuntime).map(([id,row])=>[id,{...row,...(row.projects?{projects:Object.fromEntries(Object.entries(row.projects).map(([projectId,project])=>[projectId,{...project}]))}:{})}]))});
+  const automationHealth={get:user=>automationReadScope.run(()=>automationHealthSource.get(user))};
+  automationNotifications=createAutomationNotificationsService({store,automationHealth,clock,onChange:ids=>messenger.notifyCompanyUsers(ids)});
+  const automationMonitor={enabled:automationHealthSchedule,lastScanAt:null,status:automationHealthSchedule?'pending':'disabled',intervalMs:60000};
+  function scanAutomationHealth(){if(stopRequested)return;try{const result=automationNotifications.scan();automationMonitor.lastScanAt=clock();automationMonitor.status=result.failedUsers?'error':automationHealthSchedule?'enabled':'disabled';return result;}catch{automationMonitor.status='error';}}
+  let automationHealthTick=null;
+  function scanAutomationHealthScheduled(){
+    if(stopRequested||automationHealthTick)return automationHealthTick;
+    automationHealthTick=automationNotifications.scanAsync({shouldStop:()=>stopRequested}).then(result=>{if(!result.cancelled){automationMonitor.lastScanAt=clock();automationMonitor.status=result.failedUsers?'error':automationHealthSchedule?'enabled':'disabled';}return result;},()=>{automationMonitor.status='error';}).finally(()=>{automationHealthTick=null;});
+    return automationHealthTick;
+  }
+  function readAutomationHealth(user){return {...automationHealth.get(user),monitor:{...automationMonitor,serverMustStayRunning:true,inAppOnly:true}};}
   const crewProfiles=createCrewProfileService({store,clock});
   const practiceSync=createPracticeSyncService({store,clock});
   const computerInterpretation=createComputerInterpretationService({store,clock,getEnv:options.computerAIEnv,fetchImpl:options.computerAIFetch,customerAuthorized:user=>customerIdentity.isCurrentUser(user)});
   const customerDrafts=createCustomerComputerDraft({store,clock,authorized:user=>customerIdentity.isCurrentUser(user)});
   const customerRoutes=createCustomerRoutes({identity:customerIdentity,interpretation:computerInterpretation,drafts:customerDrafts,origin,send,body,stopping:()=>stopRequested});
   const demo=createDemoService({directory:options.demoDataDir??join(store.directory,'demo')});
-  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user)});
+  const assistant=createAssistantService({today:()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(clock())),performance:assistantPerformance,directory:(req,query)=>messenger.assistantDirectory(req,query),productivity:(req,kind,query)=>messenger.productivityOverview(req,kind,query),clientWorkday:user=>clientWorkflow.workspace(user),publicationWorkday:user=>publicationWorkflow.workspace(user),weeklySummary:user=>readWeeklySummary(user),automationHealth:user=>readAutomationHealth(user)});
   const migrationAt=clock();
   store.transaction(()=>{for(const c of store.all('channels'))seedOwnership(store,c,migrationAt);});
   for(const run of store.all('runs').filter(x=>['queued','running'].includes(x.status)))store.put('runs',run.id,{...run,status:'interrupted',finishedAt:now(),message:'서버가 다시 시작됐습니다. 수집을 다시 실행해 주세요.'});
@@ -207,6 +348,15 @@ export function createCompanyApp(options={}) {
   function session(req){const row=rawSession(req);return row&&synkIdentity.sessionAllowed(row)?row:null;}
   async function currentPushSession(userId,sessionHash){
     if(stopRequested)return null;
+    if(userId.startsWith('pulse:')){
+      const remembered=clientProjects.devices.current(sessionHash);
+      if(remembered)return userId===`pulse:${remembered.row.id}:${remembered.row.inviteRevision}`;
+      const stored=store.db.prepare("SELECT * FROM tokens WHERE hash=? AND purpose='pulse-session' AND expiresAt>?").get(sessionHash,now());
+      if(!stored)return false;
+      const body=JSON.parse(stored.body),row=store.get('clientProjects',body.projectId);
+      return !!row&&row.stage!=='archived'&&!!row.inviteHash&&row.inviteRevision===body.inviteRevision&&Date.parse(row.inviteExpiresAt)>Date.parse(clock())&&userId===`pulse:${row.id}:${row.inviteRevision}`;
+    }
+    if(userId.startsWith('pulse-staff:'))userId=userId.slice('pulse-staff:'.length);
     const read=()=>{
       const stored=store.db.prepare("SELECT * FROM tokens WHERE hash=? AND purpose='session' AND userId=? AND expiresAt>?").get(sessionHash,userId,now());
       const user=stored&&store.get('users',userId);
@@ -219,6 +369,11 @@ export function createCompanyApp(options={}) {
     const latest=read();return !!latest&&synkIdentity.sessionAllowed(latest);
   }
   function setSession(res,user,extra={}){const csrfToken=token(),value=store.mint('session',user.id,{csrfToken,...extra},7*24*60),prior=res.getHeader('Set-Cookie');res.setHeader('Set-Cookie',[...(prior?Array.isArray(prior)?prior:[prior]:[]),`synk_company_session=${value}; HttpOnly; SameSite=Lax; Path=/; Max-Age=604800${originUrl.protocol==='https:'?'; Secure':''}`]);return {user:publicUser(user),csrfToken,...(extra.synkIdentity?{sessionHash:hash(value)}:{})};}
+  function setPulseCookie(res,name,value,seconds){
+    const prior=res.getHeader('Set-Cookie'),cookie=`${name}=${value}; Path=/pulse; HttpOnly; SameSite=Strict; Max-Age=${seconds}${originUrl.protocol==='https:'?'; Secure':''}`;
+    res.setHeader('Set-Cookie',[...(prior?Array.isArray(prior)?prior:[prior]:[]),cookie]);
+  }
+  function pulseDeviceCookie(res,raw,device){setPulseCookie(res,'synk_pulse_device',raw,Math.max(0,Math.floor((Date.parse(device.auth.expiresAt)-Date.parse(clock()))/1000)));}
   function purgeExpired(at=clock()){store.transaction(()=>{for(const kind of ['snapshots','channelSnapshots','posts','hypeObservations'])for(const row of store.all(kind))if((row.expiresAt&&Date.parse(row.expiresAt)<=Date.parse(at))||(kind==='hypeObservations'&&(!Number.isFinite(Date.parse(row.checkedAt))||Date.parse(row.checkedAt)<=Date.parse(at)-HYPE_RETENTION_MS)))store.remove(kind,row.id);const postIds=new Set(store.all('posts').map(p=>p.id));for(const row of store.all('hypeObservations'))if(!postIds.has(row.postId))store.remove('hypeObservations',row.id);});}
   function records(channels,{readOnly=false}={}){if(!readOnly)purgeExpired();const at=Date.parse(clock()),retained=row=>!(row.expiresAt&&Date.parse(row.expiresAt)<=at);const ids=new Set(channels.map(c=>c.id));const posts=store.all('posts').filter(p=>ids.has(p.channelId)&&retained(p));const postIds=new Set(posts.map(p=>p.id));return{version:1,posts,snapshots:store.all('snapshots').filter(s=>postIds.has(s.postId)&&retained(s)),channelSnapshots:store.all('channelSnapshots').filter(s=>ids.has(s.channelId)&&retained(s))};}
   function assistantPerformance(user,{scope,asOf}){
@@ -417,22 +572,87 @@ export function createCompanyApp(options={}) {
     }
     // Customer capabilities never create a staff session or grant workspace access.
     if(path.startsWith('/pulse/api/')){
-      const customerToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_session=([A-Za-z0-9_-]+)/)?.[1];
+      const deviceToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_device=([A-Za-z0-9_-]+)/)?.[1];
+      let customerToken=(req.headers.cookie||'').match(/(?:^|;\s*)synk_pulse_session=([A-Za-z0-9_-]+)/)?.[1];
+      // Recover the short editing session from a separately consented device.
+      // Invalid POST origins must not refresh any capability or cookie.
+      if(path!=='/pulse/api/open'&&(method==='GET'||method==='HEAD'||req.headers.origin===origin)){
+        try{clientProjects.session(customerToken);}catch(error){
+          if(error.status!==401)throw error;
+          const recovered=clientProjects.devices.resume(deviceToken);
+          if(recovered){customerToken=recovered.raw;setPulseCookie(res,'synk_pulse_session',customerToken,43200);}
+        }
+      }
+      const renewCustomerDevice=()=>{
+        const {auth}=clientProjects.session(customerToken),device=clientProjects.devices.read(deviceToken);
+        if(device&&auth.body.deviceHash===device.auth.hash){const renewed=clientProjects.devices.touch(deviceToken);pulseDeviceCookie(res,deviceToken,renewed);}
+      };
+      if(path==='/pulse/api/device-notifications'||path.startsWith('/pulse/api/device-notifications/')){
+        if(url.search)throw httpError('고객 기기 알림 주소를 확인해 주세요.');
+        const original=clientProjects.session(customerToken),principal=`pulse:${original.row.id}:${original.row.inviteRevision}`;
+        const recheck=()=>{const current=clientProjects.session(customerToken);if(current.auth.hash!==original.auth.hash)throw httpError('고객 화면을 다시 열어 주세요.',401);return current;};
+        const device=clientProjects.devices.current(original.auth.body.deviceHash),pushHash=device?.auth.hash||original.auth.hash;
+        const provenDevice=device&&clientProjects.devices.read(deviceToken)?.auth.hash===device.auth.hash?device:null;
+        if(method==='GET'&&path==='/pulse/api/device-notifications'){const result=await deviceNotifications.state(principal,pushHash);const current=recheck();return send(res,200,{...result,deviceConnection:clientProjects.devices.describe(provenDevice),sessionExpiresAt:current.auth.expiresAt,inviteExpiresAt:current.row.inviteExpiresAt});}
+        const removeId=/^\/pulse\/api\/device-notifications\/([a-f0-9-]{36})$/.exec(path)?.[1];
+        if(!(method==='POST'&&path==='/pulse/api/device-notifications'||method==='DELETE'&&removeId))throw httpError('고객 기기 알림 요청을 확인해 주세요.',405);
+        if(req.headers.origin!==origin||req.headers['x-pulse-csrf']!==original.auth.body.csrf)throw httpError('고객 화면에서 기기 알림을 설정해 주세요.',403);
+        const input=method==='POST'?await body(req):null;recheck();
+        if(method==='POST'){
+          const remembered=clientProjects.devices.remember(original,deviceToken);
+          try{
+            const result=await deviceNotifications.register(principal,remembered.device.auth.hash,input);recheck();
+            clientProjects.devices.bind(original,remembered.device);const currentDevice=clientProjects.devices.touch(remembered.raw);
+            if(device&&device.auth.hash!==currentDevice.auth.hash){clientProjects.devices.forget(device.auth.hash);await deviceNotifications.revokeSession(device.auth.hash);}
+            pulseDeviceCookie(res,remembered.raw,currentDevice);
+            return send(res,201,{...result,deviceConnection:clientProjects.devices.describe(currentDevice)});
+          }catch(error){if(remembered.created){clientProjects.devices.forget(remembered.device.auth.hash);await deviceNotifications.revokeSession(remembered.device.auth.hash);}throw error;}
+        }
+        const removed=store.db.prepare('SELECT session_hash FROM web_push_subscriptions WHERE user_id=? AND id=?').get(principal,removeId);
+        const result=await deviceNotifications.remove(principal,removeId);recheck();
+        if(removed&&clientProjects.devices.current(removed.session_hash)){
+          clientProjects.devices.forget(removed.session_hash,{keepSessionHash:removed.session_hash===pushHash?original.auth.hash:null});
+          await deviceNotifications.revokeSession(removed.session_hash);
+          if(removed.session_hash===pushHash)setPulseCookie(res,'synk_pulse_device','',0);
+        }
+        return send(res,200,result);
+      }
       if(method==='POST'){
         if(req.headers.origin!==origin)throw httpError('고객 라운지에서 요청해 주세요.',403);
+        if(path==='/pulse/api/notifications/read'){if(url.search)throw httpError('고객 알림 주소를 확인해 주세요.');const input=await body(req,{maxBytes:150000,maxChars:100000});return send(res,200,pulseLive.customerRead(customerToken,req.headers['x-pulse-csrf'],input));}
+        if(path==='/pulse/api/studio/media'){
+          const csrf=req.headers['x-pulse-csrf'],revision=Number(req.headers['x-project-revision']);let upload;
+          try{pulseStudio.assertCustomerUpload(customerToken,csrf,revision);upload=await receiveStudioMedia(req,store.directory,{allowAudio:true});pulseStudio.assertCustomerUpload(customerToken,csrf,revision);await commitStudioMedia(upload,store.directory);const result=pulseStudio.customerUpload(customerToken,csrf,revision,upload.metadata);upload=null;renewCustomerDevice();return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+        }
         const input=await body(req,{maxBytes:40000,maxChars:12000});
         if(path==='/pulse/api/open'){
           const release=pulseAttempts.reserve(clientAddress(req));
           const result=clientProjects.open(input.invite);release();
-          res.setHeader('Set-Cookie',`synk_pulse_session=${result.session}; Path=/pulse; HttpOnly; SameSite=Strict; Max-Age=43200${originUrl.protocol==='https:'?'; Secure':''}`);
-          return send(res,200,{project:result.project,csrf:result.csrf});
+          const previous=clientProjects.devices.read(deviceToken),opened=clientProjects.session(result.session);
+          if(previous&&previous.row.id===opened.row.id&&previous.row.inviteRevision===opened.row.inviteRevision)clientProjects.devices.bind(opened,previous);
+          else if(deviceToken){if(previous){clientProjects.devices.forget(previous.auth.hash);await deviceNotifications.revokeSession(previous.auth.hash);}setPulseCookie(res,'synk_pulse_device','',0);}
+          setPulseCookie(res,'synk_pulse_session',result.session,43200);
+          return send(res,200,pulseStudio.customerState(result.session));
         }
-        if(path==='/pulse/api/action')return send(res,200,clientProjects.customerAction(customerToken,req.headers['x-pulse-csrf'],input));
-        if(path==='/pulse/api/logout'){const {auth}=clientProjects.session(customerToken);if(req.headers['x-pulse-csrf']!==auth.body.csrf)throw httpError('고객 화면을 다시 열어 주세요.',403);store.db.prepare('DELETE FROM tokens WHERE hash=?').run(auth.hash);res.setHeader('Set-Cookie','synk_pulse_session=; Path=/pulse; HttpOnly; SameSite=Strict; Max-Age=0');return send(res,200,{ok:true});}
+        if(path==='/pulse/api/action'){const result=pulseStudio.customerAction(customerToken,req.headers['x-pulse-csrf'],input);renewCustomerDevice();return send(res,200,result);}
+        if(path==='/pulse/api/studio'){const result=pulseStudio.customerMutate(customerToken,req.headers['x-pulse-csrf'],input);renewCustomerDevice();return send(res,200,result);}
+        if(path==='/pulse/api/logout'){const {auth}=clientProjects.session(customerToken);if(req.headers['x-pulse-csrf']!==auth.body.csrf)throw httpError('고객 화면을 다시 열어 주세요.',403);store.db.prepare('DELETE FROM tokens WHERE hash=?').run(auth.hash);await deviceNotifications.revokeSession(auth.hash);if(auth.body.deviceHash){clientProjects.devices.forget(auth.body.deviceHash);await deviceNotifications.revokeSession(auth.body.deviceHash);}setPulseCookie(res,'synk_pulse_session','',0);setPulseCookie(res,'synk_pulse_device','',0);return send(res,200,{ok:true});}
       }
-      if(method==='GET'&&path==='/pulse/api/project')return send(res,200,clientProjects.read(customerToken));
+      if(method==='GET'&&['/pulse/api/live','/pulse/api/events'].includes(path)){
+        if(url.search||req.headers['x-synk-demo']==='1')throw httpError('실제 고객 알림 주소를 확인해 주세요.');
+        const {auth}=clientProjects.session(customerToken);
+        if(path==='/pulse/api/live')return send(res,200,pulseLive.customerState(customerToken));
+        pulseEventAuth.set(req,{customerToken,hash:auth.hash});return pulseLiveEvents.connect(req,res);
+      }
+      if(method==='GET'&&['/pulse/api/project','/pulse/api/studio'].includes(path)){
+        const state=pulseStudio.customerState(customerToken);
+        if(req.headers['x-pulse-active']==='1')renewCustomerDevice();
+        return send(res,200,state);
+      }
+      const studioMedia=path.match(/^\/pulse\/api\/studio\/media\/([a-f0-9-]{36})$/);
+      if(['GET','HEAD'].includes(method)&&studioMedia)return await serveStudioMedia(req,res,store.directory,pulseStudio.customerMedia(customerToken,studioMedia[1]),()=>pulseStudio.customerMedia(customerToken,studioMedia[1]));
       const media=path.match(/^\/pulse\/api\/media\/([a-f0-9-]{36})$/);
-      if(['GET','HEAD'].includes(method)&&media)return await serveStudioMedia(req,res,store.directory,clientProjects.customerMedia(customerToken,media[1]),()=>clientProjects.customerMedia(customerToken,media[1]));
+      if(['GET','HEAD'].includes(method)&&media)return await serveDeliveryMedia(req,res,store.directory,clientProjects.customerMedia(customerToken,media[1]),()=>clientProjects.customerMedia(customerToken,media[1]));
       throw httpError('고객 요청을 찾을 수 없습니다.',404);
     }
     const demoRequest=path==='/api/demo'||path.startsWith('/api/demo/')||req.headers['x-synk-demo']==='1'||url.searchParams.get('demo')==='1';
@@ -445,25 +665,222 @@ export function createCompanyApp(options={}) {
       catch(error){res.writeHead(302,{Location:'/?tab=messenger&synkError='+encodeURIComponent(error.code||'SYNK_LOGIN_FAILED'),'Cache-Control':'no-store','Referrer-Policy':'no-referrer'});return res.end();}
     }
     if(path==='/messenger'){if(!['GET','HEAD'].includes(method))throw httpError('메신저 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/messenger/'});return res.end();}
+    if(path==='/pulse-app'){if(!['GET','HEAD'].includes(method))throw httpError('PULSE 주소를 확인해 주세요.',405);res.writeHead(302,{Location:'/pulse-app/'+url.search});return res.end();}
     if(path.startsWith('/messenger/'))return await messenger.handler(req,res);
     if(method==='GET'&&path==='/api/health')return send(res,ready?200:503,{ok:ready,app:'synk-company',version:1,workspaceIntegration:true,ready});
     let auth=identityControl?rawSession(req):session(req),user=auth?.user;
     if(method==='GET'&&path==='/api/synk-id/status')return send(res,200,synkIdentity.status(auth));
     if(method==='GET'&&path==='/api/me')return send(res,200,{user:publicUser(user),csrfToken:auth?.body.csrfToken,synkUserId:auth?.body.synkIdentity||null,needsSetup:store.all('users').length===0,platformUrl});
-    if(path==='/api/device-notifications'||path.startsWith('/api/device-notifications/')){
+    if(path==='/api/client-search'){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('프로젝트 검색 주소를 확인해 주세요.');
+      if(method!=='POST')throw httpError('프로젝트 검색 요청을 확인해 주세요.',405);
+      if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      const input=await body(req,{maxBytes:6000,maxChars:2500}),latest=session(req);
+      if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+      if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      return send(res,200,clientSearch.search(latest.user,input));
+    }
+    const replyTemplatesRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/reply-templates$/);
+    if(replyTemplatesRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('내 답변 양식 주소를 확인해 주세요.');
+      if(method==='GET'){if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('내 답변 양식 조회 주소를 확인해 주세요.');return send(res,200,clientReplyTemplates.workspace(user,replyTemplatesRoute[1]));}
+      if(method==='POST'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:40000,maxChars:40000}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        return send(res,200,clientReplyTemplates.mutate(latest.user,replyTemplatesRoute[1],input));
+      }
+      throw httpError('내 답변 양식 요청을 확인해 주세요.',405);
+    }
+    const materialUsageRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/material-usage$/);
+    if(materialUsageRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('자료 사용 구분 주소를 확인해 주세요.');
+      if(method==='GET'){
+        if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('자료 사용 구분 조회 주소를 확인해 주세요.');
+        return send(res,200,clientMaterialUsage.workspace(user,materialUsageRoute[1]));
+      }
+      if(method==='POST'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:2048,maxChars:1200}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const result=clientMaterialUsage.save(latest.user,materialUsageRoute[1],input);
+        messenger.notifyCompanyUsers([...new Set([latest.user.id,clientProjects.project(latest.user,materialUsageRoute[1]).ownerId].filter(Boolean))]);
+        return send(res,200,result);
+      }
+      throw httpError('자료 사용 구분 요청을 확인해 주세요.',405);
+    }
+    const clientRightsRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/rights$/);
+    if(clientRightsRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('자료 사용조건 확인 주소를 확인해 주세요.');
+      if(method==='GET'){if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('자료 사용조건 조회 주소를 확인해 주세요.');return send(res,200,clientRights.workspace(user,clientRightsRoute[1]));}
+      if(method==='POST'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:40000,maxChars:14000}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const result=clientRights.save(latest.user,clientRightsRoute[1],input);messenger.notifyCompanyUsers([...new Set([latest.user.id,clientProjects.project(latest.user,clientRightsRoute[1]).ownerId].filter(Boolean))]);return send(res,200,result);
+      }
+      throw httpError('자료 사용조건 요청을 확인해 주세요.',405);
+    }
+    const deliveryArchiveRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery-archive$/);
+    if(deliveryArchiveRoute){
+      // Native form downloads stream straight to the browser's download manager.
+      // Only this read-only endpoint accepts a bounded form CSRF token.
+      const formRequest=req.headers['content-type']?.split(';')[0]==='application/x-www-form-urlencoded';
+      try{
+        if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+        if(demoRequest||url.search)throw httpError('납품 파일 묶음 주소를 확인해 주세요.');
+        const projectId=deliveryArchiveRoute[1];
+        const authorize=()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,projectId);return latest.user;};
+        if(method==='GET'){
+          if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('납품 파일 조회 주소를 확인해 주세요.');
+          return send(res,200,await clientDeliveryArchive.prepare(authorize(),projectId,{authorize}));
+        }
+        if(method!=='POST')throw httpError('납품 파일 내려받기 요청을 확인해 주세요.',405);
+        // Native forms under no-referrer may send Origin: null. Require browser
+        // same-origin fetch metadata and the session CSRF token for that case.
+        const sameOriginForm=formRequest&&req.headers.origin==='null'&&req.headers['sec-fetch-site']==='same-origin';
+        if(req.headers.origin!==origin&&!sameOriginForm)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        let input;
+        if(formRequest){
+          const chunks=[];let bytes=0;
+          for await(const part of req.iterator({destroyOnReturn:false})){bytes+=part.length;if(bytes>1024){req.resume();throw httpError('내려받기 입력이 너무 큽니다.',413);}chunks.push(part);}
+          let raw;try{raw=new TextDecoder('utf-8',{fatal:true}).decode(Buffer.concat(chunks));}catch{throw httpError('내려받기 입력을 확인해 주세요.');}
+          const params=new URLSearchParams(raw),keys=[...params.keys()];
+          if(new Set(keys).size!==keys.length||keys.length!==2||keys.some(key=>!['fingerprint','csrfToken'].includes(key)))throw httpError('내려받기 입력을 확인해 주세요.');
+          input=Object.fromEntries(params);
+        }else input=await body(req,{maxBytes:512,maxChars:256});
+        const actor=authorize(),current=session(req);
+        if((formRequest?input.csrfToken:req.headers['x-csrf-token'])!==current.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!(formRequest?['fingerprint','csrfToken']:['fingerprint']).includes(key))||!/^[a-f0-9]{64}$/.test(input.fingerprint||''))throw httpError('내려받을 파일을 다시 확인해 주세요.');
+        if(deliveryArchiveActive.has(user.id))throw httpError('이미 납품 파일을 내려받고 있습니다. 다운로드가 끝난 뒤 다시 눌러 주세요.',429);
+        deliveryArchiveActive.add(user.id);
+        let archive;
+        const abort=()=>archive?.stream.destroy();res.once('close',abort);
+        try{
+          archive=await clientDeliveryArchive.download(actor,projectId,{fingerprint:input.fingerprint,authorize});
+          if(res.destroyed){archive.stream.destroy();return;}
+          authorize();
+          const headers={...responseHeaders('application/zip'),'Content-Length':archive.contentLength,'Content-Disposition':`attachment; filename="synk-final-delivery.zip"; filename*=UTF-8''${encodeURIComponent(archive.fileName).replace(/'/g,'%27')}`};
+          res.writeHead(200,headers);
+          await pipeline(archive.stream,res);return;
+        }finally{res.off('close',abort);archive?.stream.destroy();deliveryArchiveActive.delete(user.id);}
+      }catch(error){
+        if(!formRequest||res.headersSent)throw error;
+        const failure=publicRequestError(error,{production}),headers=responseHeaders('application/json; charset=utf-8');
+        headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");
+        res.writeHead(failure.status,headers);return res.end(JSON.stringify({error:safeError(failure.message),status:failure.status}));
+      }
+    }
+    const completionRecordsRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/completion-records$/);
+    if(completionRecordsRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('완료 기록 주소를 확인해 주세요.');
+      const projectId=completionRecordsRoute[1];
+      if(method==='GET'){
+        if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('완료 기록 조회 주소를 확인해 주세요.');
+        return send(res,200,clientCompletionRecords.prepare(user,projectId));
+      }
+      if(method!=='POST')throw httpError('완료 기록 요청을 확인해 주세요.',405);
+      if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      const input=await body(req,{maxBytes:1500,maxChars:500}),latest=session(req);
+      if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+      if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+      if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['format','fingerprint'].includes(key))||!['pdf','csv'].includes(input.format)||!/^[a-f0-9]{64}$/.test(input.fingerprint||''))throw httpError('파일 형식과 확인한 기록을 다시 선택해 주세요.');
+      if(completionRecordsActive.has(user.id))throw httpError('이미 기록 파일을 준비하고 있습니다. 잠시 뒤 다시 시도해 주세요.',429);
+      const report=clientCompletionRecords.prepare(latest.user,projectId);
+      if(report.fingerprint!==input.fingerprint)throw httpError('기록이 바뀌었습니다. 최신 기록을 다시 확인한 뒤 내려받아 주세요.',409);
+      completionRecordsActive.add(user.id);
+      const controller=new AbortController(),abort=()=>controller.abort();res.once('close',abort);
+      try{
+        const bytes=await completionRecordsRenderer[input.format](report,{signal:controller.signal});
+        if(controller.signal.aborted)return;
+        const current=session(req);
+        if(!current||current.hash!==auth.hash||current.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==current.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        if(clientCompletionRecords.prepare(current.user,projectId).fingerprint!==input.fingerprint)throw httpError('파일 준비 중 기록이 바뀌었습니다. 최신 기록을 다시 확인해 주세요.',409);
+        if(!Buffer.isBuffer(bytes)||!bytes.length||bytes.length>64*1024*1024)throw httpError('기록 파일 크기를 확인하지 못했습니다.',413);
+        const date=new Date(new Date(report.generatedAt).getTime()+9*3600000).toISOString().slice(0,10);
+        const filename='SYNK_'+report.title.replace(/[<>:"/\\|?*\u0000-\u001f\u007f]/g,'_').slice(0,70)+'_기록_'+date+'.'+input.format;
+        res.writeHead(200,{...responseHeaders(input.format==='pdf'?'application/pdf':'text/csv; charset=utf-8'),'Content-Length':bytes.length,'Content-Disposition':`attachment; filename="synk-project-records.${input.format}"; filename*=UTF-8''${encodeURIComponent(filename).replace(/'/g,'%27')}`});
+        return res.end(bytes);
+      }finally{res.off('close',abort);completionRecordsActive.delete(user.id);}
+    }
+    const startupTemplatesRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/startup-templates$/);
+    if(startupTemplatesRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('내 시작 양식 주소를 확인해 주세요.');
+      if(method==='GET'){if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('내 시작 양식 조회 주소를 확인해 주세요.');return send(res,200,clientStartupTemplates.workspace(user,startupTemplatesRoute[1]));}
+      if(method==='POST'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:220000,maxChars:80000}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        return send(res,200,clientStartupTemplates.mutate(latest.user,startupTemplatesRoute[1],input));
+      }
+      throw httpError('내 시작 양식 요청을 확인해 주세요.',405);
+    }
+    const clientDraftRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/drafts(?:\/(project|message|follow-up|progress))?$/);
+    if(clientDraftRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('개인 초안 주소를 확인해 주세요.');
+      if(method==='GET'&&!clientDraftRoute[2]){if(req.headers['transfer-encoding']||Number(req.headers['content-length']||0)>0)throw httpError('개인 초안 조회 주소를 확인해 주세요.');return send(res,200,clientDrafts.list(user,clientDraftRoute[1]));}
+      if(method==='POST'&&clientDraftRoute[2]){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:128000,maxChars:40000}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        try{return send(res,200,clientDrafts.mutate(latest.user,clientDraftRoute[1],clientDraftRoute[2],input));}
+        catch(error){if(error.status===409&&error.code==='CLIENT_DRAFT_CONFLICT')return send(res,409,{error:safeError(error.message),code:error.code,current:error.current});throw error;}
+      }
+      throw httpError('개인 초안 요청을 확인해 주세요.',405);
+    }
+    const projectNewsRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/news(?:\/(read))?$/);
+    if(projectNewsRoute){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('프로젝트 새 소식 주소를 확인해 주세요.');
+      if(method==='GET'&&!projectNewsRoute[2])return send(res,200,clientNotifications.projectNews(user,projectNewsRoute[1]));
+      if(method==='POST'&&projectNewsRoute[2]==='read'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:8000,maxChars:4000}),latest=session(req);
+        if(!latest||latest.hash!==auth.hash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        if(req.headers['x-csrf-token']!==latest.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        return send(res,200,clientNotifications.readProjectNews(latest.user,projectNewsRoute[1],input));
+      }
+      throw httpError('프로젝트 새 소식 요청을 확인해 주세요.',405);
+    }
+    if(['/api/pulse-live','/api/pulse-events','/api/pulse-notifications/read'].includes(path)){
+      if(!auth)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest||url.search)throw httpError('실제 PULSE 알림 주소를 확인해 주세요.');
+      if(method==='GET'&&path==='/api/pulse-live')return send(res,200,pulseLive.staffState(user));
+      if(method==='GET'&&path==='/api/pulse-events'){pulseEventAuth.set(req,{hash:auth.hash,userId:user.id});return pulseLiveEvents.connect(req,res);}
+      if(method==='POST'&&path==='/api/pulse-notifications/read'){
+        if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
+        const input=await body(req,{maxBytes:150000,maxChars:100000}),latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        return send(res,200,pulseLive.staffRead(latest.user,input));
+      }
+      throw httpError('PULSE 알림 요청을 확인해 주세요.',405);
+    }
+    if(['/api/device-notifications','/api/pulse-device-notifications'].some(base=>path===base||path.startsWith(base+'/'))){
       if(!auth)throw httpError('회사 계정으로 로그인해 주세요.',401);
       if(url.search)throw httpError('기기 알림 주소를 확인해 주세요.');
-      const originalHash=auth.hash,originalUserId=user.id;
+      const originalHash=auth.hash,originalUserId=user.id,deviceBase=path.startsWith('/api/pulse-device-notifications')?'/api/pulse-device-notifications':'/api/device-notifications',principal=deviceBase==='/api/pulse-device-notifications'?'pulse-staff:'+user.id:user.id;
       const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash||latest.user.id!==originalUserId)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest;};
-      if(method==='GET'&&path==='/api/device-notifications'){
-        const result=await deviceNotifications.state(user.id,auth.hash);recheck();return send(res,200,result);
+      if(method==='GET'&&path===deviceBase){
+        const result=await deviceNotifications.state(principal,auth.hash);recheck();return send(res,200,result);
       }
-      const removeId=/^\/api\/device-notifications\/([a-f0-9-]{36})$/.exec(path)?.[1];
-      if(!(method==='POST'&&path==='/api/device-notifications'||method==='DELETE'&&removeId))throw httpError('기기 알림 요청을 확인해 주세요.',405);
+      const removeId=/^\/api\/(?:pulse-)?device-notifications\/([a-f0-9-]{36})$/.exec(path)?.[1];
+      if(!(method==='POST'&&path===deviceBase||method==='DELETE'&&removeId))throw httpError('기기 알림 요청을 확인해 주세요.',405);
       if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('회사 프로그램 화면에서 요청해 주세요.',403);
       const input=method==='POST'?await body(req):null;
       auth=recheck();if(req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',403);
-      const result=method==='POST'?await deviceNotifications.register(user.id,auth.hash,input):await deviceNotifications.remove(user.id,removeId);
+      const result=method==='POST'?await deviceNotifications.register(principal,auth.hash,input):await deviceNotifications.remove(principal,removeId);
       recheck();return send(res,method==='POST'?201:200,result);
     }
     if(method==='GET'&&path==='/api/computer-interpretation'){if(url.search)throw httpError('AI 상담 상태 주소를 확인해 주세요.');return send(res,200,computerInterpretation.state(user));}
@@ -480,9 +897,22 @@ export function createCompanyApp(options={}) {
       if(!unauth.includes(path)&&(!auth||req.headers['x-csrf-token']!==auth.body.csrfToken))throw httpError('로그인 상태를 다시 확인해 주세요.',403);
       const studioUpload=path.match(/^\/api\/studio-productions\/([^/]+)\/media$/);
       const clientUpload=path.match(/^\/api\/client-projects\/([^/]+)\/media$/);
+      const pulseStudioUpload=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio\/media$/);
+      if(pulseStudioUpload){
+        const projectId=pulseStudioUpload[1],revision=Number(req.headers['x-project-revision']),originalHash=auth.hash;let upload;
+        const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);pulseStudio.assertStaffUpload(latest.user,projectId,revision);return latest.user;};
+        try{recheck();upload=await receiveStudioMedia(req,store.directory,{allowAudio:true});recheck();await commitStudioMedia(upload,store.directory);const result=pulseStudio.staffUpload(recheck(),projectId,revision,upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+      }
+      const deliveryUpload=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery\/media$/);
+      if(deliveryUpload){
+        let label;try{label=decodeURIComponent(req.headers['x-version-label']||'');}catch{throw httpError('파일 이름을 확인해 주세요.');}
+        const originalHash=auth.hash,id=deliveryUpload[1],input={projectRevision:Number(req.headers['x-project-revision']),draftRevision:Number(req.headers['x-delivery-revision']),approvedPreviewId:req.headers['x-approved-preview-id'],requirementId:req.headers['x-requirement-id'],label,...(req.headers['x-deliverable-item-id']!==undefined?{deliverableItemId:req.headers['x-deliverable-item-id']}: {})};let upload;
+        const recheck=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientDelivery.assertUpload(latest.user,id,input);return latest.user;};
+        try{recheck();upload=await receiveDeliveryMedia(req,store.directory);recheck();await commitDeliveryMedia(upload,store.directory);const actor=recheck();clientDelivery.addUpload(actor,id,{...input,label:upload.label},upload.metadata);upload=null;const authorize=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,id);};return send(res,201,await clientDelivery.refreshChecks(actor,id,{authorize}));}catch(error){await discardDeliveryMedia(upload,store.directory);throw error;}
+      }
       if(clientUpload){
         const originalHash=auth.hash;let upload;
-        try{clientProjects.project(user,clientUpload[1],true);upload=await receiveStudioMedia(req,store.directory);let latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,clientUpload[1],true);await commitStudioMedia(upload,store.directory);latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);let guide;try{guide=decodeURIComponent(req.headers['x-version-guide']||'');}catch{throw httpError('사용 안내를 확인해 주세요.');}const result=clientProjects.addVersion(latest.user,clientUpload[1],{revision:Number(req.headers['x-project-revision']),label:upload.label,kind:req.headers['x-version-kind'],guide},upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
+        try{clientProjects.project(user,clientUpload[1],true);upload=await receiveStudioMedia(req,store.directory,{maxLabelLength:120});let latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,clientUpload[1],true);await commitStudioMedia(upload,store.directory);latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);let guide;try{guide=decodeURIComponent(req.headers['x-version-guide']||'');}catch{throw httpError('사용 안내를 확인해 주세요.');}const result=clientProjects.addVersion(latest.user,clientUpload[1],{revision:Number(req.headers['x-project-revision']),label:upload.label,kind:req.headers['x-version-kind'],guide},upload.metadata);upload=null;return send(res,201,result);}catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
       if(studioUpload){
         const originalHash=auth.hash;let upload;
@@ -497,11 +927,82 @@ export function createCompanyApp(options={}) {
           upload=null;audit(latest.user,'studio-media-uploaded',studioUpload[1]);return send(res,201,result);
         }catch(error){await discardStudioMedia(upload,store.directory);throw error;}
       }
-      const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:undefined);
+      const input=await body(req,path==='/api/workroom-practice/state'?{maxBytes:3001000,maxChars:1001000}:path==='/api/publication-packages'?{maxBytes:1048576,maxChars:1048576}:undefined);
       // Receiving a request body yields control. Revalidate revoked sessions and current roles afterward.
       if(!unauth.includes(path)){auth=identityControl?rawSession(req):session(req);user=auth?.user;if(!user||req.headers['x-csrf-token']!==auth.body.csrfToken)throw httpError('로그인 상태를 다시 확인해 주세요.',401);}
+      if(path==='/api/publication-inbox/settings'||path==='/api/publication-inbox/scan'){
+        if(demoRequest||!publicationInboxLocal)throw httpError('완성본 자동 가져오기는 로컬 작업실에서 사용할 수 있습니다.',403);
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+        if(path.endsWith('/settings'))await publicationInbox.configure(user,input,{authorize});
+        else await publicationInbox.scan({user,authorize});
+        return send(res,200,publicationInbox.state(authorize()));
+      }
+      if(path==='/api/publication-packages'){
+        if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 만들어 주세요.');
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+        const result=await publicationPackages.create(user,input,{authorize});authorize();if(!result.reused)audit(user,'publication-package-created',result.package.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.reused?200:201,result);
+      }
+      const publicationLinkCheck=path.match(/^\/api\/publication-links\/(package|post)\/([^/]+)$/);
+      if(publicationLinkCheck){
+        if(demoRequest)throw httpError('링크 확인은 실제 작업실에서 이용해 주세요.');
+        if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length)throw httpError('저장된 게시·자료 링크만 확인할 수 있습니다.');
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+        const result=await publicationLinks.check(user,{kind:publicationLinkCheck[1],id:publicationLinkCheck[2]},{authorize,signal:publicationAbort.signal});authorize();return send(res,200,result);
+      }
+      const publicationReviewUpdate=path.match(/^\/api\/publication-packages\/([^/]+)\/review$/);
+      if(publicationReviewUpdate){
+        if(demoRequest)throw httpError('게시 전 점검은 실제 작업실에서 이용해 주세요.');
+        const result=publicationReview.update(user,publicationReviewUpdate[1],input);audit(user,'publication-review-updated',publicationReviewUpdate[1]);return send(res,200,result);
+      }
+      const publicationLearningPlan=path.match(/^\/api\/publication-learning\/([a-f0-9]{64})\/plan$/i);
+      if(publicationLearningPlan){
+        if(demoRequest)throw httpError('성과에서 기획하기는 실제 작업실에서 이용해 주세요.');
+        return send(res,200,publicationLearning.plan(user,publicationLearningPlan[1],input));
+      }
+      if(path==='/api/post-performance'){
+        if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 등록해 주세요.');
+        if(input.publicationPackageId){
+          const pack=publicationPackages.get(user,input.publicationPackageId).package,channel=channelFor(user,input.channelId,'write');
+          const formats=(pack.channels||[]).filter(format=>format.startsWith(channel.platform==='youtube'?'youtube-':channel.platform==='instagram'?'instagram-':'unsupported-'));
+          if(!formats.length)throw httpError('선택한 게시 묶음에는 이 계정의 플랫폼용 영상이 없습니다.');
+          if(input.publicationFormat&&!formats.includes(input.publicationFormat))throw httpError('게시 묶음과 계정에 맞는 영상 형식을 선택해 주세요.');
+          if(!input.publicationFormat&&formats.length>1)throw httpError('같은 플랫폼의 영상 형식이 여러 개입니다. 실제 게시한 영상 형식을 선택해 주세요.');
+          input.publicationFormat=input.publicationFormat||formats[0];
+        }else if(input.publicationFormat)throw httpError('영상 형식을 연결할 게시 묶음을 먼저 선택해 주세요.');
+        const result=postPerformance.register(user,input);audit(user,'post-performance-registered',result.entry.id);if(publicationLinkSchedule)void scanPublicationLinks();return send(res,result.existing?200:201,result);
+      }
+      const publicationCheckpoint=path.match(/^\/api\/post-performance\/([^/]+)\/checkpoints\/(24|72)$/);
+      if(publicationCheckpoint){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 기록해 주세요.');return send(res,200,postPerformance.manualCheckpoint(user,publicationCheckpoint[1],Number(publicationCheckpoint[2]),input));}
+      const publicationCollect=path.match(/^\/api\/post-performance\/([^/]+)\/collect$/);
+      if(publicationCollect){
+        if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 확인해 주세요.');
+        const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};await postPerformance.collectDue({user,entryId:publicationCollect[1],signal:publicationAbort.signal,authorize});return send(res,200,postPerformance.list(authorize()));
+      }
+      const publicationActive=path.match(/^\/api\/post-performance\/([^/]+)\/active$/);
+      if(publicationActive){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 변경해 주세요.');return send(res,200,postPerformance.setActive(user,publicationActive[1],input.active));}
+      const deliveryRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery$/);
+      if(deliveryRoute){const id=deliveryRoute[1],originalHash=auth.hash,authorize=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,id);};await clientDelivery.refreshChecks(user,id,{authorize});clientDelivery.mutate(user,id,input);return send(res,200,await clientDelivery.refreshChecks(user,id,{authorize}));}
+      const deliveryCheckRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery\/check$/);
+      if(deliveryCheckRoute){const id=deliveryCheckRoute[1],originalHash=auth.hash,authorize=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,id,true);};return send(res,200,await clientDelivery.check(user,id,input,{authorize}));}
+      const closeoutRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/closeout$/);
+      if(closeoutRoute)return send(res,200,clientProjects.closeout(user,closeoutRoute[1],input));
+      const kickoffRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/kickoff$/);
+      if(kickoffRoute)return send(res,200,clientProjects.kickoff(user,kickoffRoute[1],input));
+      const startupRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/startup$/);
+      if(startupRoute)return send(res,200,clientStartup.mutate(user,startupRoute[1],input));
+      const changesRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/changes$/);
+      if(changesRoute)return send(res,200,clientProjects.changes(user,changesRoute[1],input));
+      const sceneRequestsRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/scene-requests$/);
+      if(sceneRequestsRoute)return send(res,200,clientProjects.sceneRequests(user,sceneRequestsRoute[1],input));
+      const scheduleRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/schedule$/);
+      if(scheduleRoute)return send(res,200,clientProjects.schedule(user,scheduleRoute[1],input));
       if(path==='/api/client-projects')return send(res,201,clientProjects.save(user,input));
+      const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
+      if(pulseStudioRoute)return send(res,200,pulseStudio.staffMutate(user,pulseStudioRoute[1],input));
       if(path==='/api/client-workflow')return send(res,200,clientWorkflow.update(user,input));
+      if(path==='/api/client-workflow/recheck')return send(res,200,clientWorkflow.recheck(user,input));
+      const clientFollowUp=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/follow-up$/);
+      if(clientFollowUp)return send(res,200,clientProjects.completeFollowUp(user,clientFollowUp[1],input));
       const clientRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})(?:\/(invite|revoke|versions|messages|resolve))?$/);
       if(clientRoute){const [,id,action]=clientRoute;return send(res,200,action==='invite'?clientProjects.invite(user,id,input):action==='revoke'?clientProjects.revoke(user,id,input):action==='versions'?clientProjects.addVersion(user,id,input):action==='messages'?clientProjects.message(user,id,input):action==='resolve'?clientProjects.resolveMessage(user,id,input.messageId,input):clientProjects.save(user,input,id));}
       if(path==='/api/client-intake/import'){
@@ -509,6 +1010,8 @@ export function createCompanyApp(options={}) {
         try{
           const receipt=await clientIntake.read(input.receiptId);
           let latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);
+          const existing=clientProjects.findImportedReceipt(latest.user,receipt.id);
+          if(existing)return send(res,201,existing);
           prepared=await clientIntake.prepareFiles(receipt,store.directory);
           latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);
           const result=clientProjects.importReceipt(latest.user,prepared);
@@ -711,18 +1214,77 @@ export function createCompanyApp(options={}) {
       res.writeHead(200,headers);return res.end(method==='HEAD'?undefined:bytes);
     }
     const studioMediaRoute=path.match(/^\/api\/studio-media\/([^/]+)$/);
+    const publicationDownload=path.match(/^\/api\/publication-packages\/([^/]+)\/download$/);
+    if(['GET','HEAD'].includes(method)&&publicationDownload){
+      if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 확인해 주세요.');
+      const originalHash=auth.hash,authorize=()=>{const latest=session(req);if(stopRequested||!latest||latest.hash!==originalHash||latest.user.id!==user.id)throw httpError('로그인 상태를 다시 확인해 주세요.',401);return latest.user;};
+      const result=await publicationPackages.download(user,publicationDownload[1],{authorize});authorize();
+      res.writeHead(200,{...responseHeaders(result.mimeType),'Cache-Control':'private, no-store','Content-Length':result.buffer.length,'Content-Disposition':`attachment; filename="synk-publication.zip"; filename*=UTF-8''${encodeURIComponent(result.fileName).replace(/'/g,'%27')}`});return res.end(method==='HEAD'?undefined:result.buffer);
+    }
+    const deliveryMediaRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery\/media\/([a-f0-9-]{36})$/);
+    if(['GET','HEAD'].includes(method)&&deliveryMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);const [,projectId,mediaId]=deliveryMediaRoute;return await serveDeliveryMedia(req,res,store.directory,clientDelivery.mediaFor(user,projectId,mediaId),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientDelivery.mediaFor(latest.user,projectId,mediaId);});}
     const intakeFileRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/intake-files\/([a-f0-9-]{36})$/);
     if(['GET','HEAD'].includes(method)&&intakeFileRoute){
       if(!user)throw httpError('먼저 로그인해 주세요.',401);
       const getFile=actor=>{const row=clientProjects.project(actor,intakeFileRoute[1]),file=row.intake?.files?.find(f=>f.id===intakeFileRoute[2]);if(!file)throw httpError('접수 자료를 찾을 수 없습니다.',404);return file;};
       return await serveIntakeFile(req,res,store.directory,getFile(user),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);getFile(latest.user);});
     }
+    const pulseStudioMediaRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio\/media\/([a-f0-9-]{36})$/);
+    if(['GET','HEAD'].includes(method)&&pulseStudioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);const [,projectId,assetId]=pulseStudioMediaRoute;return await serveStudioMedia(req,res,store.directory,pulseStudio.staffMedia(user,projectId,assetId),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);pulseStudio.staffMedia(latest.user,projectId,assetId);});}
     const clientMediaRoute=path.match(/^\/api\/client-media\/([a-f0-9-]{36})$/);
-    if(['GET','HEAD'].includes(method)&&clientMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,clientProjects.mediaFor(user,clientMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.mediaFor(latest.user,clientMediaRoute[1]);});}
+    if(['GET','HEAD'].includes(method)&&clientMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveDeliveryMedia(req,res,store.directory,clientProjects.mediaFor(user,clientMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.mediaFor(latest.user,clientMediaRoute[1]);});}
     if(['GET','HEAD'].includes(method)&&studioMediaRoute){if(!user)throw httpError('먼저 로그인해 주세요.',401);return await serveStudioMedia(req,res,store.directory,studio.readableMedia(user,studioMediaRoute[1]),()=>{const latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);studio.readableMedia(latest.user,studioMediaRoute[1]);});}
     if(method==='GET'&&path.startsWith('/api/')){if(!user)throw httpError('먼저 로그인해 주세요.',401);
+      if(path==='/api/automation-health'){
+        if(demoRequest)throw httpError('자동화 상태는 실제 작업실에서 확인해 주세요.');
+        if(url.search)throw httpError('내 자동화 상태만 확인할 수 있습니다.');
+        return send(res,200,readAutomationHealth(user));
+      }
+      if(path==='/api/weekly-summary'){
+        if(demoRequest)throw httpError('주간 정리는 실제 작업실에서 확인해 주세요.');
+        if([...url.searchParams.keys()].some(key=>key!=='week')||url.searchParams.getAll('week').length>1)throw httpError('확인할 주만 선택해 주세요.');
+        return send(res,200,readWeeklySummary(user,{week:url.searchParams.has('week')?url.searchParams.get('week'):undefined}));
+      }
+      if(path==='/api/publication-workspace'){
+        if(demoRequest)throw httpError('게시 준비와 성과는 실제 작업실에서 확인해 주세요.');
+        const originalHash=auth.hash,catalog=await publicationPackages.catalog(user),latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);
+        return send(res,200,{studio:studio.workspace(latest.user),packages:publicationPackages.list(latest.user),catalog,performance:postPerformance.list(latest.user),inbox:publicationInbox.state(latest.user),learning:publicationLearning.workspace(latest.user)});
+      }
+      if(path==='/api/publication-learning'){
+        if(demoRequest)throw httpError('성과에서 기획하기는 실제 작업실에서 이용해 주세요.');
+        return send(res,200,publicationLearning.workspace(user));
+      }
+      if(path==='/api/publication-inbox'){
+        if(demoRequest)throw httpError('완성본 자동 가져오기는 실제 작업실에서 확인해 주세요.');
+        return send(res,200,publicationInbox.state(user));
+      }
+      const publicationInboxDraft=path.match(/^\/api\/publication-inbox\/([^/]+)\/draft$/);
+      if(publicationInboxDraft){
+        if(demoRequest||!publicationInboxLocal)throw httpError('완성본 자동 가져오기는 로컬 작업실에서 사용할 수 있습니다.',403);
+        return send(res,200,publicationInbox.readDraft(user,publicationInboxDraft[1]));
+      }
+      if(path==='/api/post-performance'){if(demoRequest)throw httpError('게시 성과는 실제 작업실에서 확인해 주세요.');return send(res,200,postPerformance.list(user));}
+      if(path==='/api/publication-packages'){if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationPackages.list(user));}
+      const publicationReviewDetail=path.match(/^\/api\/publication-packages\/([^/]+)\/review$/);
+      if(publicationReviewDetail){if(demoRequest)throw httpError('게시 전 점검은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationReview.get(user,publicationReviewDetail[1]));}
+      const publicationLinkDetail=path.match(/^\/api\/publication-links\/(package|post)\/([^/]+)$/);
+      if(publicationLinkDetail){if(demoRequest)throw httpError('링크 확인은 실제 작업실에서 이용해 주세요.');return send(res,200,publicationLinks.get(user,{kind:publicationLinkDetail[1],id:publicationLinkDetail[2]}));}
+      const publicationDetail=path.match(/^\/api\/publication-packages\/([^/]+)$/);
+      if(publicationDetail){if(demoRequest)throw httpError('게시 묶음은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationPackages.get(user,publicationDetail[1]));}
+      const deliveryRead=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/delivery$/);
+      if(deliveryRead){const id=deliveryRead[1],originalHash=auth.hash,authorize=()=>{const latest=session(req);if(!latest||latest.hash!==originalHash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);clientProjects.project(latest.user,id);};return send(res,200,await clientDelivery.refreshChecks(user,id,{authorize}));}
       if(path==='/api/client-projects')return send(res,200,clientProjects.workspace(user));
+    const startupRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/startup$/);
+    if(startupRoute)return send(res,200,clientStartup.workspace(user,startupRoute[1]));
+      const progressUpdateRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/progress-update$/);
+      if(progressUpdateRoute)return send(res,200,clientProgressUpdate.workspace(user,progressUpdateRoute[1]));
+      const materialsRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/materials$/);
+      if(materialsRoute)return send(res,200,clientMaterials.workspace(user,materialsRoute[1]));
+      const pulseStudioRoute=path.match(/^\/api\/client-projects\/([a-f0-9-]{36})\/studio$/);
+      if(pulseStudioRoute)return send(res,200,pulseStudio.staffState(user,pulseStudioRoute[1]));
       if(path==='/api/client-workflow')return send(res,200,clientWorkflow.workspace(user));
+      if(path==='/api/publication-workflow'){if(demoRequest)throw httpError('게시 할 일은 실제 작업실에서 확인해 주세요.');return send(res,200,publicationWorkflow.workspace(user));}
       if(path==='/api/client-intake'){admin(user);const result=await clientIntake.list(),latest=session(req);if(!latest||latest.hash!==auth.hash)throw httpError('로그인 상태를 다시 확인해 주세요.',401);admin(latest.user);return send(res,200,result);}
       if(path==='/api/brand-quality')return send(res,200,brandQuality.workspace(user));
       if(path==='/api/workroom-practice/state'){
@@ -795,7 +1357,7 @@ export function createCompanyApp(options={}) {
       if(path==='/api/export.csv'){res.setHeader('Content-Disposition','attachment; filename="synk-company-growth.csv"');return send(res,200,report(user,url.searchParams)._csv(),'text/csv; charset=utf-8');}
       throw httpError('요청을 찾을 수 없습니다.',404);
     }
-    const files={'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
+    const files={'/automation-health.js':['public/automation-health.js','text/javascript; charset=utf-8'],'/automation-health.css':['public/automation-health.css','text/css; charset=utf-8'],'/weekly-summary.js':['public/weekly-summary.js','text/javascript; charset=utf-8'],'/weekly-summary.css':['public/weekly-summary.css','text/css; charset=utf-8'],'/studio.js':['public/studio.js','text/javascript; charset=utf-8'],'/studio.css':['public/studio.css','text/css; charset=utf-8'],'/studio-review.js':['public/studio-review.js','text/javascript; charset=utf-8'],'/studio-review.css':['public/studio-review.css','text/css; charset=utf-8'],'/studio-board.js':['public/studio-board.js','text/javascript; charset=utf-8'],'/studio-board.css':['public/studio-board.css','text/css; charset=utf-8'],'/benchmark.js':['public/benchmark.js','text/javascript; charset=utf-8'],'/benchmark.css':['public/benchmark.css','text/css; charset=utf-8'],'/content.js':['public/content.js','text/javascript; charset=utf-8'],'/content.css':['public/content.css','text/css; charset=utf-8'],'/wordmark.svg':['public/wordmark.svg','image/svg+xml'],'/pages.css':['public/pages.css','text/css; charset=utf-8'],'/dialogs.css':['public/dialogs.css','text/css; charset=utf-8'],'/':['public/index.html','text/html; charset=utf-8'],'/app.js':['public/app.js','text/javascript; charset=utf-8'],'/style.css':['public/style.css','text/css; charset=utf-8'],'/font.woff2':['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'],'/inter.ttf':['../../../../브랜드_폰트/InterTight/InterTight-Regular.ttf','font/ttf'],'/inter-semibold.ttf':['../../../../브랜드_폰트/InterTight/InterTight-SemiBold.ttf','font/ttf'],'/mono.ttf':['../../../../브랜드_폰트/DM_Mono/DMMono-Regular.ttf','font/ttf'],'/brand-logo.svg':['../../../../홍보물/마케팅실행_20260909/브랜드킷/SYNK-Ink-정밀.svg','image/svg+xml']};
     Object.assign(files,{'/workspace.js':['public/workspace.js','text/javascript; charset=utf-8'],'/workspace.css':['public/workspace.css','text/css; charset=utf-8'],'/team-overview.js':['public/team-overview.js','text/javascript; charset=utf-8']});
     Object.assign(files,{'/teaching.js':['public/teaching.js','text/javascript; charset=utf-8'],'/teaching.css':['public/teaching.css','text/css; charset=utf-8'],'/teaching-host.js':['public/teaching-host.js','text/javascript; charset=utf-8'],'/teaching/host.js':['public/teaching-host.js','text/javascript; charset=utf-8']});
     if(path==='/teacher-world'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/teacher-world/'});return res.end();}
@@ -815,10 +1377,31 @@ export function createCompanyApp(options={}) {
     files['/consultation/assets/scrapbook.css']=['../../../../디자인/펠트스크랩북/scrapbook.css','text/css; charset=utf-8'];
     files['/consultation/assets/SUIT-Variable.woff2']=['../../../../브랜드_폰트/SUIT/SUIT-Variable.woff2','font/woff2'];
     for(const file of ['laptop-felt.webp','fb-tile-cream-long.webp','fb-tile-butter-long.webp','fb-slab-black-long.webp'])files['/consultation/assets/'+file]=['../../../맞춤도구/assets/'+file,'image/webp'];
-    for(const file of ['client-projects.js','client-projects.css','brand-quality.js','brand-quality.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['client-delivery-archive.js','client-delivery-archive.css','client-completion-records.js','client-completion-records.css','client-projects.js','client-projects.css','client-search.js','client-search.css','client-reply-templates.js','client-reply-templates.css','client-rights.js','client-rights.css','client-startup.js','client-startup.css','client-progress-update.js','client-progress-update.css','client-materials.js','client-materials.css','client-project-screen-plan.js','client-project-screen.js','client-project-screen.css','client-project-news.js','client-project-news.css','client-drafts.js','client-drafts.css','client-delivery.js','client-delivery.css','client-delivery-check.js','client-delivery-check.css','client-closeout.js','client-closeout.css','client-kickoff.js','client-kickoff.css','client-changes.js','client-changes.css','client-scene-requests.js','client-scene-requests.css','client-schedule.js','client-schedule.css','brand-quality.js','brand-quality.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['client-material-usage.js','client-material-usage.css'])files['/'+file]=['public/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
     files['/pulse/']=['public/pulse-lounge.html','text/html; charset=utf-8'];
     files['/pulse/lounge.js']=['public/pulse-lounge.js','text/javascript; charset=utf-8'];
     files['/pulse/lounge.css']=['public/client-projects.css','text/css; charset=utf-8'];
+    files['/pulse-app/']=['public/pulse-app/index.html','text/html; charset=utf-8'];
+    files['/pulse-app/index.html']=files['/pulse-app/'];
+    for(const file of ['production-ui.mjs','production-context.mjs','deliverables-view.mjs','feedback-rounds-view.mjs','preview-view.mjs','animatic-player.mjs','app.mjs','views.mjs','casting-view.mjs','casting-catalog.mjs','strategy-view.mjs','kickoff-view.mjs','changes-view.mjs','scene-requests-view.mjs','schedule-view.mjs','demo.mjs','api.mjs','live.mjs','push.mjs','install.mjs','push-sw.js','sw.js'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/javascript; charset=utf-8'];
+    for(const file of ['reference-warm.png','reference-bold.png','reference-calm.png','scene-1.png','scene-2.png','scene-3.png','scene-4.png','preview-v1.mp4','preview-v2.mp4'])files['/pulse-app/demo-assets/'+file]=['public/pulse-app/demo-assets/'+file,file.endsWith('.mp4')?'video/mp4':'image/png'];
+    for(const file of ['production.css','preview.css'])files['/pulse-app/'+file]=['public/pulse-app/'+file,'text/css; charset=utf-8'];
+    files['/pulse-app/app.css']=['public/pulse-app/app.css','text/css; charset=utf-8'];
+    files['/pulse-app/casting.css']=['public/pulse-app/casting.css','text/css; charset=utf-8'];
+    for(const id of ['m01','f01','f02','f03','m02','m03','f04'])files['/pulse-app/assets/casting/'+id+'.webp']=['public/pulse-app/assets/casting/'+id+'.webp','image/webp'];
+    for(const id of ['M01','F01','F02','F03','M02','F04','M03'])for(const sample of [1,2,3])files['/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3']=['public/pulse-app/assets/casting/voice/'+id+'-'+sample+'.mp3','audio/mpeg'];
+    for(const id of ['m01','f01','f02','f03','m02','f04','m03'])files['/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp']=['public/pulse-app/assets/casting/fullbody/'+id+'-fullbody-v1.webp','image/webp'];
+    files['/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-ad-motion-5s-v1.mp4','video/mp4'];
+    files['/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4']=['public/pulse-app/assets/casting/video/F02-runway-motion-5s-v1.mp4','video/mp4'];
+    files['/pulse-app/production-catalog.mjs']=['public/pulse-app/production-catalog.mjs','text/javascript; charset=utf-8'];
+    files['/pulse-app/production-library/']=['public/pulse-app/production-library/index.html','text/html; charset=utf-8'];
+    files['/pulse-app/production-library/index.html']=files['/pulse-app/production-library/'];
+    for(const file of ['library.js','library.css'])files['/pulse-app/production-library/'+file]=['public/pulse-app/production-library/'+file,file.endsWith('.css')?'text/css; charset=utf-8':'text/javascript; charset=utf-8'];
+    for(const file of ['01-harin-coffee-v3.webp','02-yuna-perfume.webp','03-taejun-tailoring.webp','04-runway-comparison-v2.webp','04-runway-comparison-proportion-v1.webp'])files['/pulse-app/assets/production/'+file]=['public/pulse-app/assets/production/'+file,'image/webp'];
+    files['/pulse-app/manifest.webmanifest']=['public/pulse-app/manifest.webmanifest','application/manifest+json; charset=utf-8'];
+    for(const file of ['scrapbook.css','brand-pulse.webp','thread-pulse.webp','SUIT.woff2','InterTight.woff2','DMMono.ttf','studio-camera.webp','sticker-check.webp'])files['/pulse-app/assets/'+file]=['public/pulse-app/assets/'+file,file.endsWith('.css')?'text/css; charset=utf-8':file.endsWith('.woff2')?'font/woff2':file.endsWith('.ttf')?'font/ttf':'image/webp'];
+    for(const file of ['icon-192.png','icon-512.png','synk.svg'])files['/pulse-app/icons/'+file]=['public/pulse-app/icons/'+file,file.endsWith('.svg')?'image/svg+xml':'image/png'];
     // Exact browser dependencies only: server model adapter, fixtures and data
     // directories are intentionally absent from this public asset map.
     if(path==='/atlas-lab'&&['GET','HEAD'].includes(method)){res.writeHead(302,{Location:'/atlas-lab/'});return res.end();}
@@ -838,6 +1421,8 @@ export function createCompanyApp(options={}) {
     Object.assign(files,{'/marin-home.js':['public/marin-home.js','text/javascript; charset=utf-8'],'/marin-home.css':['public/marin-home.css','text/css; charset=utf-8'],'/marin.webp':['public/marin.webp','image/webp']});
     Object.assign(files,{'/marin-work.js':['public/marin-work.js','text/javascript; charset=utf-8'],'/marin-work.css':['public/marin-work.css','text/css; charset=utf-8']});
     Object.assign(files,{'/workroom.js':['public/workroom.js','text/javascript; charset=utf-8'],'/workroom.css':['public/workroom.css','text/css; charset=utf-8']});
+    Object.assign(files,{'/publication-flow.js':['public/publication-flow.js','text/javascript; charset=utf-8'],'/publication-flow.css':['public/publication-flow.css','text/css; charset=utf-8']});
+    files['/publication-learning-plan.js']=['public/publication-learning-plan.js','text/javascript; charset=utf-8'];
     // Fictional practice assets are public. Account records use the authenticated
     // private endpoint above; the source directory is never exposed.
     Object.assign(files,{
@@ -870,10 +1455,10 @@ export function createCompanyApp(options={}) {
     });
   }
   function shutdown(){
-    ready=false;clearInterval(timer);clearInterval(pushTimer);const identityStopped=synkIdentity.close(),teachingStopped=teaching.close();customerIdentity.close();
+    ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);publicationAbort.abort();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),teachingStopped=teaching.close();customerIdentity.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([identityStopped,teachingStopped,queue,dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{synkIdentity.dispose();teaching.dispose();store.close();}
     })();
@@ -889,6 +1474,14 @@ export function createCompanyApp(options={}) {
         await listen(server,port,host);
         if(redirectServer)await listen(redirectServer,legacyPort,'127.0.0.1');
         if(backgroundJobsEnabled&&options.schedule!==false&&!stopRequested){timer=setInterval(()=>scheduledTick().catch(()=>{}),60000);timer.unref();await scheduledTick();}
+        // Registered-post observation makes external SNS requests, so automatic runs
+        // follow the background pause setting; explicit collection remains available.
+        if(publicationPerformanceSchedule&&!stopRequested){publicationTimer=setInterval(collectPublicationPerformance,60000);publicationTimer.unref();void collectPublicationPerformance();}
+        if(publicationInboxLocal&&(options.publicationInboxSchedule??(options.schedule!==false))&&!stopRequested){publicationInboxTimer=setInterval(scanPublicationInbox,5000);publicationInboxTimer.unref();void scanPublicationInbox();}
+        if(publicationLinkSchedule&&!stopRequested){publicationLinkTimer=setInterval(scanPublicationLinks,60000);publicationLinkTimer.unref();void scanPublicationLinks();}
+        if(weeklySummarySchedule&&!stopRequested){weeklySummaryTimer=setInterval(scanWeeklySummary,60000);weeklySummaryTimer.unref();scanWeeklySummary();}
+        if(automationHealthSchedule&&!stopRequested){automationHealthTimer=setInterval(scanAutomationHealthScheduled,60000);automationHealthTimer.unref();void scanAutomationHealthScheduled();}
+        if(deliveryCheckSchedule&&!stopRequested){deliveryCheckTimer=setInterval(scanDeliveryChecks,60000);deliveryCheckTimer.unref();void scanDeliveryChecks();}
         ready=!stopRequested;
         if(ready&&webPushEnabled){pushTimer=setInterval(()=>deviceNotifications.tick().catch(()=>{}),30000);pushTimer.unref();void deviceNotifications.tick().catch(()=>{});}
         return server.address();
@@ -896,8 +1489,8 @@ export function createCompanyApp(options={}) {
     })();
     return startTask;
   }
-  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,messenger,deviceNotifications,dailyTrends,creativeResearch,computerInterpretation,origin,host,port,importLegacy,scheduledTick,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
+  async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
+  return {server,store,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:()=>Promise.all([queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),computerInterpretation.waitForIdle()]),start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

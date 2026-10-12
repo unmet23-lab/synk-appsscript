@@ -47,6 +47,8 @@ function normalize(input){
   if(!catalog.series.some(series=>series.id===seriesId))throw new TypeError('목록에 있는 콘텐츠 시리즈를 선택해 주세요.');
   const values={seriesId,topic};
   for(const key of ['audience','experience','proof','takeaway','entertainment'])values[key]=text(input[key],({audience:'시청자',experience:'실제 경험',proof:'근거',takeaway:'가져갈 정보',entertainment:'재미의 장면'})[key]);
+  // Editor-only evidence stays metadata; it is not a viewer fact or action.
+  values.editorialNote=text(input.editorialNote,'이번 편 제작 실험',3000);
   values.reference=referenceOf(input.reference);
   values.benchmark=benchmarkOf(input.benchmark);
   values.channelContext=null;
@@ -245,6 +247,7 @@ export function renderBriefMarkdown(plan){
   const lines=[`# ${line(plan.topic)} · 콘텐츠 기획안`,'',`시리즈: ${line(plan.seriesName||plan.seriesId)}`,'','회사 제작 양식 기반 초안입니다. 실시간 유행 조사·사실 검증·제작·게시 완료를 뜻하지 않습니다.','', '## 입력한 소재',''];
   for(const [key,label] of [['audience','시청자'],['experience','실제 경험'],['proof','확인할 근거'],['takeaway','가져갈 정보'],['entertainment','재미의 장면']])lines.push(`- ${label}: ${line(plan.input?.[key]||'미입력')}`);
   if(plan.input?.channelContext)lines.push(`- 담당 채널: ${line(plan.input.channelContext.displayName)} · ${line(plan.input.channelContext.platform)}`);
+  if(plan.input?.editorialNote)lines.push('','## 이번 편 제작 실험','','제작자용 메모입니다. 영상의 화면·대사·시청자 행동에 자동으로 넣지 않습니다.','',markdown(plan.input.editorialNote));
   lines.push('','## 진정성 검토','',line(plan.authenticity?.summary||'경험·관점·한계·공개할 맥락은 별도로 검토해야 합니다.'),'');
   for(const item of plan.authenticity?.items||[])lines.push(`- ${line(item.label)} — ${statusLabel(item.status)}: ${line(item.detail)}`);
   lines.push('','## 개인화 방향 검토','',line(plan.personalization?.summary||'시청자의 상황·선택·다음 행동이 이어지는지 직접 검토합니다.'),'');

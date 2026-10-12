@@ -90,18 +90,21 @@ export function createCollaborationService({ db, assert, textField, now, transac
     if (!accessible(userId, message.channel_id)) return false;
     return Boolean(run('INSERT OR IGNORE INTO notifications(id,user_id,message_id,kind,dedupe_key,created_at) VALUES(?,?,?,?,?,?)', randomUUID(), userId, message.id, kind, key, now()).changes);
   }
-  function notifyMessage(message, { edit = false } = {}) {
+  function notifyMessage(message, { edit = false, atomic = false, deferPublish = null } = {}) {
     const channel = one('SELECT * FROM channels WHERE id=?', message.channel_id), mentioned = new Set(all('SELECT user_id FROM message_mentions WHERE message_id=?', message.id).map(row => row.user_id));
     const parent = message.reply_to_id ? one('SELECT user_id FROM messages WHERE id=?', message.reply_to_id) : null;
     const changed = [];
-    transaction(() => {
+    const writeNotifications = () => {
       for (const member of channelMembers(channel.id)) {
         if (member.id === message.user_id || mode(member.id, channel.id) === 'mute') continue;
         const kind = mentioned.has(member.id) ? 'mention' : edit ? null : parent?.user_id === member.id ? 'reply' : channel.kind === 'dm' ? 'dm' : mode(member.id, channel.id) === 'all' ? 'message' : null;
         if (kind && notify(member.id, message, kind, `message:${message.id}:${member.id}:${kind}`)) changed.push(member.id);
       }
-    });
-    for (const userId of changed) publish('notification', channel.id, userId);
+    };
+    if (atomic) { assert(db.isTransaction, 500, '메시지 알림 트랜잭션을 확인해 주세요.'); writeNotifications(); }
+    else transaction(writeNotifications);
+    const publishNotifications = () => { for (const userId of changed) publish('notification', channel.id, userId); };
+    if (deferPublish) deferPublish(publishNotifications); else publishNotifications();
   }
   function reminderShape(row) { return row ? { id: row.id, messageId: String(row.message_id), channelId: one('SELECT channel_id FROM messages WHERE id=?', row.message_id)?.channel_id, remindAt: row.remind_at, createdAt: row.created_at, deliveredAt: row.delivered_at } : null; }
   const productivity = createProductivityService({ db, assert, textField, now, transaction, activeUser, accessible, channelMembers, requireChannel, requireMessage, requirePosting, messageShape, publish, notify, mode, kstDate, paged, backgroundJobsEnabled, workNotificationsEnabled });
