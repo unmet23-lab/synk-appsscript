@@ -17,7 +17,7 @@ export const ENTRYPOINT = '/interview/film/rehearsal.html';
 const GENERATOR = 'tools/package-path-interview.mjs';
 const BASE_FILES = new Set([...WHISPER_PUBLIC_FILES, 'xr.mjs', 'vendor/three.module.js', 'vendor/three.core.js', 'vendor/GLTFLoader.js', 'vendor/BufferGeometryUtils.js', 'vendor/HDRLoader.js',
   'vendor/vosk/vosk.mjs', 'vendor/vosk/vosk-worker.js', 'vendor/vosk/LICENSE.txt', 'vendor/vosk/NOTICE.txt',
-  'assets/SUIT.woff2', 'assets/InterTight.woff2', 'assets/DMMono.woff2', 'assets/logo-path.webp', 'models/vosk-model-small-ko-0.22.tar.gz']);
+  'assets/SUIT.woff2', 'assets/InterTight.woff2', 'assets/DMMono.woff2', 'assets/logo-path.webp', 'assets/logo-path-320.webp', 'assets/path-vr-felt.webp', 'assets/path-vr-felt-480.webp', 'assets/PathSans-ui.woff2', 'assets/PathSans-rest.woff2', 'models/vosk-model-small-ko-0.22.tar.gz']);
 const INTERVIEW_FILES = new Set(['index.html', 'style.css', 'room.mjs', 'app.mjs', 'dialogue.mjs', 'content.mjs', 'actors.mjs', 'audio.mjs', 'voice.mjs', 'audio-worklet.js', 'credits.json', 'film-manifest.json', 'film-player.mjs', 'film/index.html', 'film/style.css', 'film/preview.mjs', 'film/compare.html', 'film/compare.css', 'film/compare.mjs', 'film/nanobanana.html', 'film/rehearsal.html', 'film/rehearsal.css', 'film/rehearsal.mjs', 'film/rehearsal-session.mjs','film/answer-followup.mjs','film/listening-sequence.mjs', 'film/strict-vr.mjs', 'film/room-space.mjs', 'film/speech-turn.mjs', 'film/strict-manifest.json'].map((name) => 'interview/' + name));
 const REQUIRED = [...BASE_FILES, ...INTERVIEW_FILES, 'assets/interview/actors/manifest.json', 'assets/interview/actors/LICENSE-Microsoft-Rocketbox.txt', 'assets/interview/audio/manifest.json', 'assets/interview/audio/MODEL-LICENSE.txt', 'assets/interview/audio/INFERENCE-CODE-LICENSE.txt', 'assets/interview/room/manifest.json', 'assets/interview/room/LICENSE.txt', 'assets/interview/room/back-wall-photo.png','assets/interview/room/back-wall-elevation.png', 'assets/interview/room/front-room-extension.png', 'assets/interview/room/front-room-wide.png','assets/interview/room/left-wall-photo.png','assets/interview/room/right-wall-photo.png',
   'assets/interview/film/room-reference-4k.jpg', 'assets/interview/film/room-poster-4k.jpg',
@@ -37,7 +37,7 @@ const LICENSES = [
 export function isPackageRuntime(file) {
   if (typeof file !== 'string' || file.includes('\\') || file.includes('..') || file.startsWith('/')) return false;
   if (BASE_FILES.has(file) || INTERVIEW_FILES.has(file)) return true;
-  if (['assets/interview/film/room-reference.png', 'assets/interview/film/room-reference-nanobanana.jpg', 'assets/interview/film/room-reference-4k.jpg', 'assets/interview/film/room-poster-4k.jpg'].includes(file)) return true;
+  if (['assets/interview/film/room-reference.png', 'assets/interview/film/room-reference-nanobanana.jpg', 'assets/interview/film/room-reference-4k.jpg', 'assets/interview/film/room-poster-4k.jpg', 'assets/interview/film/room-poster-1920.jpg', 'assets/interview/film/room-poster-1280.jpg'].includes(file)) return true;
   if (/^assets\/interview\/film\/[a-z0-9-]+\.(?:mp4|webm)$/.test(file)) return !/fixture|verification|config|secret|private|key|token/i.test(file);
   const match = /^assets\/interview\/(actors|audio|room)\/([^/]+)$/.exec(file);
   if (!match) return false;
@@ -58,12 +58,12 @@ const PAGES_GENERATOR = GENERATOR + '#preparePagesInterview';
 const PAGES_RUNTIME = new Set([
   ...WHISPER_PUBLIC_FILES,
   'xr.mjs', 'vendor/three.module.js', 'vendor/three.core.js', 'vendor/vosk/vosk.mjs', 'vendor/vosk/vosk-worker.js',
-  'vendor/vosk/LICENSE.txt', 'vendor/vosk/NOTICE.txt', 'assets/SUIT.woff2', 'assets/DMMono.woff2', 'assets/logo-path.webp',
+  'vendor/vosk/LICENSE.txt', 'vendor/vosk/NOTICE.txt', 'assets/SUIT.woff2', 'assets/DMMono.woff2', 'assets/logo-path.webp', 'assets/logo-path-320.webp', 'assets/path-vr-felt.webp', 'assets/path-vr-felt-480.webp', 'assets/PathSans-ui.woff2', 'assets/PathSans-rest.woff2',
   'models/vosk-model-small-ko-0.22.tar.gz',
   ...['film-player.mjs', 'voice.mjs', 'audio-worklet.js', 'dialogue.mjs', 'content.mjs'].map((name) => 'interview/' + name),
   ...['rehearsal.html', 'rehearsal.css', 'rehearsal.mjs', 'rehearsal-session.mjs', 'answer-followup.mjs', 'listening-sequence.mjs', 'room-space.mjs', 'strict-vr.mjs', 'speech-turn.mjs', 'strict-manifest.json'].map((name) => 'interview/film/' + name),
   ...['strict-question', 'strict-listening', 'strict-followup-experience', 'strict-followup-plan', 'strict-listen-question-tail', 'strict-listen-plan-tail', 'strict-listen-experience-tail'].flatMap((name) => ['720p', '4k'].map((quality) => `assets/interview/film/${name}-${quality}.mp4`)),
-  'assets/interview/film/room-reference-4k.jpg', 'assets/interview/film/room-poster-4k.jpg',
+  'assets/interview/film/room-reference-4k.jpg', 'assets/interview/film/room-poster-4k.jpg', 'assets/interview/film/room-poster-1920.jpg', 'assets/interview/film/room-poster-1280.jpg',
   ...['front-room-extension', 'front-room-wide', 'left-wall-detail', 'right-wall-detail', 'back-wall-detail', 'ceiling-detail', 'carpet', 'desk'].map((name) => `assets/interview/room/${name}-4k.jpg`),
 ]);
 const PAGES_LICENSES = LICENSES.filter(([, file]) => file !== 'models/speech-assets.json' && file !== 'assets/licenses/InterTight-OFL.txt');
@@ -84,12 +84,12 @@ export function pagesRuntimeFile(file, source) {
   if (!pagesFileAllowed(file)) throw new Error('Not part of the public rehearsal runtime: ' + file);
   if (file === 'interview/film/rehearsal.html') {
     let text = source.toString('utf8');
-    const header = /<header>[\s\S]*?<\/header>/g, footer = /<footer>[\s\S]*?<\/footer>/g;
+    const header = /<header\b[^>]*>[\s\S]*?<\/header>/g, footer = /<footer\b[^>]*>[\s\S]*?<\/footer>/g;
     if ((text.match(header) || []).length !== 1 || (text.match(footer) || []).length !== 1) throw new Error('Rehearsal navigation source changed');
-    text = text.replace(header, '<header><a href="/path/" aria-label="SYNK PATH로 돌아가기"><img src="../../assets/logo-path.webp" alt="SYNK PATH"></a><span>QUEST / SEATED INTERVIEW</span><a href="/path/">PATH로 돌아가기</a></header>');
+    text = text.replace(header, '<header class="topbar"><a class="brand" href="/path/" aria-label="SYNK PATH로 돌아가기"><img src="../../assets/logo-path-320.webp" alt="SYNK PATH" width="320" height="108"></a><span class="topbar-label">QUEST / SEATED INTERVIEW</span><a class="topbar-link" href="/path/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6"/></svg>PATH로 돌아가기</a></header>');
     text = text.replace(footer, '<footer><span>SYNK PATH · 생성 영상으로 연습하는 첫 면접</span><a href="/path/">PATH로 돌아가기</a></footer>');
     text = text.replace('추가 질문 영상 제작은 보류 중입니다. ', '');
-    return { data: Buffer.from(pagesDocument(text)), transform: 'public-rehearsal-navigation-disclosure-and-csp-v1' };
+    return { data: Buffer.from(pagesDocument(text)), transform: 'public-rehearsal-navigation-disclosure-and-csp-v3' };
   }
   if (file === 'interview/film/strict-manifest.json') {
     const original = JSON.parse(source.toString('utf8'));

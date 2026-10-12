@@ -86,6 +86,54 @@
       "file": "vendor/personalization.js",
       "source": "atlas/personalization.js",
       "sha256": "26821d73ca7d779aaad53cf2bbed7ced774f80ea2e3a1eec6dd985f7545e5546"
+    },
+    {
+      "file": "assets/path-vr-felt.webp",
+      "source": "../SYNK-website/dist/assets/index/path-vr-hero-cut-20260930.webp",
+      "sha256": "0f91013250a4445042f5e2b1c136d66255677ffd1e7b241ff896b0880f75eed7",
+      "note": "2026-10-12 면접실 포스터용. SYNK-website 943a307에 기록되고 synk.im PATH 첫 화면에 공개 중인 펠트 VR 고글 누끼를 그대로 복사했다."
+    },
+    {
+      "file": "assets/logo-path-320.webp",
+      "source": "experiences/path-vr/assets/logo-path.webp",
+      "sha256": "c2c3f34795e949a62e8e8f54a35f254d136b7b3ad63055d60034dd37e69990b5",
+      "note": "2026-10-12 최적화: 승인 로고를 폭 320px로 줄인 사본(Pillow Lanczos, WebP q90). 면접실 머리글·탭 아이콘용."
+    },
+    {
+      "file": "assets/path-vr-felt-480.webp",
+      "source": "experiences/path-vr/assets/path-vr-felt.webp",
+      "sha256": "79e99d21ade5020d6c44d69da08b37ba2feb73726b4d4a69ceb09cf7664252cc",
+      "note": "2026-10-12 최적화: 펠트 VR 고글을 폭 480px로 줄인 사본(WebP q86). 면접실 포스터용."
+    },
+    {
+      "file": "assets/path-vr-felt-800.webp",
+      "source": "experiences/path-vr/assets/path-vr-felt.webp",
+      "sha256": "b7a2c746e7afe59ff0cb7eeeff0b1325080246b66b94613b4bdd7f38ae5fb628",
+      "note": "2026-10-13 최적화: 펠트 VR 고글을 폭 800px로 줄인 사본(Pillow Lanczos, WebP q86). 웹 플랫폼 PATH 카드·상세용(tools/build-synk-account.js가 assets/path-vr-felt.webp 이름으로 내보낸다). 고해상도 화면 상세에서도 원본과 구별되지 않는다."
+    },
+    {
+      "file": "assets/interview/film/room-poster-1920.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-poster-4k.jpg",
+      "sha256": "f35d53bf987435ebfbf6821a92d7eeccf90fd9e631f199bbde0503ac7352999a",
+      "note": "2026-10-12 최적화: 시작 그림을 1920px로 줄인 사본(JPEG q84). 화면 크기에 맞춰 고른다(srcset)."
+    },
+    {
+      "file": "assets/interview/film/room-poster-1280.jpg",
+      "source": "experiences/path-vr/assets/interview/film/room-poster-4k.jpg",
+      "sha256": "a66f747e68e5a45608438df2877247302afbd7287fcb9086bfee32abe84b0b7a",
+      "note": "2026-10-12 최적화: 시작 그림을 1280px로 줄인 사본(JPEG q84)."
+    },
+    {
+      "file": "assets/PathSans-ui.woff2",
+      "source": "experiences/path-vr/assets/SUIT.woff2",
+      "sha256": "51abef47e1e5a9edaa7b34941d46f3069553fdc8cb90d4f3adc22a1cb046e0d3",
+      "note": "2026-10-12 최적화: SUIT Variable을 면접실 원문 글자 645자로 줄이고 내부 이름을 PATH Sans로 바꾼 수정본(SIL OFL 1.1, Reserved Font Name SUIT). tools/build-path-fonts.py."
+    },
+    {
+      "file": "assets/PathSans-rest.woff2",
+      "source": "experiences/path-vr/assets/SUIT.woff2",
+      "sha256": "37dfb32fc1cd8c2a8fa5805b609cbf369133d97c6d95a1913bf44fc8f0a02ce6",
+      "note": "2026-10-12 최적화: 같은 원본의 나머지 2,288자(사용자 입력에 나올 때만 받는다. CSS 범위는 화면판과 겹치지 않게 둔다). 내부 이름 PATH Sans."
     }
   ]
 }

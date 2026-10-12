@@ -1,0 +1,125 @@
+{
+ "quality": "4k",
+ "width": 1440,
+ "longTasks": [],
+ "meta": {
+  "idle": 8872,
+  "program": 145,
+  "gc": 2
+ },
+ "urls": [
+  {
+   "url": "(native)",
+   "ms": 9025
+  },
+  {
+   "url": "interview/film-player.mjs",
+   "ms": 5
+  },
+  {
+   "url": "film/rehearsal.mjs",
+   "ms": 4
+  },
+  {
+   "url": "film/rehearsal-session.mjs",
+   "ms": 1
+  }
+ ],
+ "top": [
+  {
+   "fn": "render @ film/rehearsal.mjs:39",
+   "ms": 3
+  },
+  {
+   "fn": "structuredClone @ :0",
+   "ms": 2
+  },
+  {
+   "fn": "next @ interview/film-player.mjs:212",
+   "ms": 1
+  },
+  {
+   "fn": "snapshot @ film/rehearsal-session.mjs:139",
+   "ms": 1
+  },
+  {
+   "fn": "(anon) @ interview/film-player.mjs:128",
+   "ms": 1
+  },
+  {
+   "fn": "ensureFilm @ film/rehearsal.mjs:221",
+   "ms": 1
+  },
+  {
+   "fn": "prime @ interview/film-player.mjs:220",
+   "ms": 1
+  },
+  {
+   "fn": "previewNode @ :7703",
+   "ms": 1
+  },
+  {
+   "fn": "raf @ :7247",
+   "ms": 1
+  },
+  {
+   "fn": "setupHitTargetInterceptor @ :7574",
+   "ms": 1
+  },
+  {
+   "fn": "prepare @ interview/film-player.mjs:342",
+   "ms": 1
+  },
+  {
+   "fn": "appendChild @ :0",
+   "ms": 1
+  },
+  {
+   "fn": "removeEventListener @ :0",
+   "ms": 1
+  },
+  {
+   "fn": "finish @ interview/film-player.mjs:111",
+   "ms": 1
+  },
+  {
+   "fn": "current @ film/rehearsal.mjs:31",
+   "ms": 1
+  },
+  {
+   "fn": "(anon) @ :0",
+   "ms": 1
+  },
+  {
+   "fn": "setTimeout @ :0",
+   "ms": 1
+  }
+ ],
+ "requests": [
+  {
+   "url": "film/strict-followup-experience-4k.mp4",
+   "type": "media",
+   "t": 41
+  },
+  {
+   "url": "film/strict-followup-plan-4k.mp4",
+   "type": "media",
+   "t": 1073
+  },
+  {
+   "url": "film/strict-question-4k.mp4",
+   "type": "media",
+   "t": 2340
+  },
+  {
+   "url": "film/strict-listening-4k.mp4",
+   "type": "media",
+   "t": 3987
+  },
+  {
+   "url": "assets/logo-path-320.webp",
+   "type": "other",
+   "t": 7170
+  }
+ ]
+}

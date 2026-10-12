@@ -1,0 +1,10 @@
+2.6s start clicked
+15.9s answer1 waiting: {"label":"영상 준비","turn":"1 / 2","status":"면접 장면을 기기에서 준비하고 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":0,"paused":true,"ready":4,"op":"0"},{"src":"strict-listening-4k.mp4","t":0,"paused":true,"ready":0,"op":"0"}]}
+22.9s answer1 reached: {"label":"답변 중","turn":"1 / 2","status":"답변 화면을 준비하고 있습니다.","videos":[{"src":"strict-question-4k.mp4","t":4.19,"paused":false,"ready":4,"op":"1"},{"src":"strict-listen-plan-tail-4k.mp4","t":0,"paused":true,"ready":0,"op":"0"}]}
+24.3s answer1 submitted
+28.4s followup reached: {"label":"후속 질문","turn":"2 / 2","status":"첫 답변에 따른 후속 질문입니다.","videos":[{"src":"strict-question-4k.mp4","t":8.77,"paused":true,"ready":4,"op":"1"},{"src":"strict-followup-experience-4k.mp4","t":0,"paused":true,"ready":1,"op":"0"}]}
+30.5s answer2 waiting: {"label":"후속 질문","turn":"2 / 2","status":"첫 답변에 따른 후속 질문입니다.","videos":[{"src":"strict-question-4k.mp4","t":8.77,"paused":true,"ready":4,"op":"1"},{"src":"strict-followup-experience-4k.mp4","t":0.74,"paused":false,"ready":3,"op":"1"}]}
+35.5s answer2 reached: {"label":"답변 중","turn":"2 / 2","status":"답변 화면을 준비하고 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0,"paused":true,"ready":0,"op":"0"},{"src":"strict-followup-experience-4k.mp4","t":6.19,"paused":false,"ready":2,"op":"1"}]}
+40.0s answer2 submitted
+42.1s complete reached: {"label":"면접 종료","turn":"2 QUESTIONS","status":"면접을 마쳤습니다. 다른 답변으로 다시 연습할 수 있습니다.","videos":[{"src":"strict-listen-plan-tail-4k.mp4","t":0.5,"paused":true,"ready":4,"op":"0"},{"src":"strict-followup-experience-4k.mp4","t":10.04,"paused":true,"ready":4,"op":"1"}]}
+43.4s result: 답변: “요양원 봉사활동에서 어르신 식사를 직접 도와드린 경험이 있습니다.” / 답변에서 본인이 경험했다고 말한 내용을 바탕으로 준비된 경험 질문을 골랐습니다. / 후속 질문: “그 경험에서 직접 맡았던 일과 그 결과를 구체적으로 말씀해 주세요.”

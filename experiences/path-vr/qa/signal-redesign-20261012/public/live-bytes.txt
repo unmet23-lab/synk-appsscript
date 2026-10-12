@@ -1,0 +1,9 @@
+same path/interview/film/rehearsal.html
+same path/interview/film/rehearsal.css
+same path/interview/film/rehearsal.mjs
+same path/interview/film/strict-vr.mjs
+same path/assets/path-vr-felt.webp
+same account/platform.css
+same account/dist/platform.js
+same account/assets/path-vr-felt.webp
+round 5: 8/8

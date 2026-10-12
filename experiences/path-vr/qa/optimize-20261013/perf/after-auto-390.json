@@ -1,0 +1,62 @@
+{
+ "url": "https://synk.im/path/interview/film/rehearsal.html",
+ "quality": "720p",
+ "width": 390,
+ "loadMs": 210,
+ "initialKB": 526,
+ "byTypeKB": {
+  "document": 9,
+  "stylesheet": 34,
+  "image": 112,
+  "script": 211,
+  "font": 137,
+  "fetch": 10,
+  "other": 13
+ },
+ "biggest": [
+  {
+   "file": "assets/PathSans-ui.woff2",
+   "kb": 131
+  },
+  {
+   "file": "film/room-poster-1280.jpg",
+   "kb": 99
+  },
+  {
+   "file": "film/rehearsal.mjs",
+   "kb": 37
+  },
+  {
+   "file": "film/rehearsal.css",
+   "kb": 34
+  },
+  {
+   "file": "film/room-space.mjs",
+   "kb": 31
+  },
+  {
+   "file": "film/strict-vr.mjs",
+   "kb": 30
+  },
+  {
+   "file": "interview/film-player.mjs",
+   "kb": 27
+  },
+  {
+   "file": "film/answer-followup.mjs",
+   "kb": 17
+  }
+ ],
+ "lcp": 388,
+ "fcp": 388,
+ "longTasks": [],
+ "startTop": 704,
+ "playback": {
+  "src": "strict-question-720p.mp4",
+  "t": 7.843356,
+  "dropped": 0,
+  "total": 198
+ },
+ "playbackLongTasks": 0,
+ "playbackLongTaskMax": 0
+}
