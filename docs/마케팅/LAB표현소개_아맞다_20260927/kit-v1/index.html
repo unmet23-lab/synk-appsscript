@@ -20,6 +20,9 @@
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #fff; font-family: 'SUIT Variable', 'Inter Tight', sans-serif; }
       .k-scene { position: absolute; inset: 0; overflow: hidden; }
       .k-scene > .k-slide { position: absolute; inset: 0; }
+      /* 2026-10-13 이 판의 키트 사본(10-01)은 M.seam이 인라인 var(--thread-paper)를 써서 렌더에서 /assets/thread-coral.webp 404로 실땀이 빠졌다(키트 README §8).
+         승인된 모습을 그대로 두려고 키트를 다시 연결하지 않고 루트 기준 경로로만 덮어쓴다. 다시 연결하면 이 줄을 지운다 */
+      body[data-acc="lab"] { --thread-paper: url("/assets/synk-kit/assets/thread-coral.webp"); --thread-field: url("/assets/synk-kit/assets/thread-coral-soft.webp"); }
       #s2, #s3, #s4, #s5, #s6 { opacity: 0; }
 
       /* 공통 — 9:16 오른쪽 160px(앱 버튼 자리)에 글자를 두지 않는다 */
