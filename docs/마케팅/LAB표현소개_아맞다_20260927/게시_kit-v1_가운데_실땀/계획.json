@@ -1,0 +1,90 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-12T18:16:18.717Z",
+  "sourceRoot": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "Forgot something? Koreans say 아 맞다! (Oh, right!) #learnkorean",
+      "text": "아 맞다! (a matda) = “Oh, right!” — what Koreans say the moment they suddenly remember something.\r\n\r\n아 맞다, 우산! — Oh right, my umbrella!\r\n…아 맞다! 숙제! — …Oh right! Homework!\r\n\r\nPronunciation: 맞다 sounds like [mat-tta]. The ㅈ closes into a short “t”, and 다 becomes a tense 따.\r\n\r\nWhat do you always forget? Comment: 아 맞다, ____!\r\nSend this to a friend who always forgets 😅\r\n\r\nSYNK LAB · Korean expressions #1 — one everyday expression at a time, with Mongle.\r\n#learnkorean #koreanlanguage #studykorean",
+      "alt": [
+        "Felt mascot Mongle on a coral cover reading 아 맞다! with the meaning “Oh, right!”"
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube",
+      "video": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/cover.jpg",
+      "document": null,
+      "subtitles": [],
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/원고.json",
+          "bytes": 1563,
+          "sha256": "1f7b339363844be796b25ccc505b0c4e2b9603cc69e28737cdce730796e8f95d",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/제목.txt",
+          "bytes": 67,
+          "sha256": "ad8728c4e42bef38ccdcd3e606409597aa440cecafffd3fe34f3611db1b45521",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/게시문안.txt",
+          "bytes": 557,
+          "sha256": "10e66071aa7a45defa632daa82487549420e40c3a52bf1f2709f8d42597713c7",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/video.mp4",
+          "bytes": 10399625,
+          "sha256": "ded92ff7736e65c7b6c56af46d8859936de8151470ab29353e75a200f0c46d14",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "thumbnail",
+          "path": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/01-lab-youtube/cover.jpg",
+          "bytes": 413832,
+          "sha256": "fe006bdde44b3a3339f97ed6cd0647b6a7ad5668d1f54237373f95bbcd762754",
+          "mime": "image/jpeg"
+        }
+      ],
+      "contentHash": "965a40aa58f01fd8bdcc46f1c31478d10433db072678883e1365cf284dacae62",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "965a40aa58f01fd8bdcc46f1c31478d10433db072678883e1365cf284dacae62",
+        "publicationHash": "db465232c84eca88c66d17c8af475b21d9a6db9a8d7f2a8135da14fb2ca068e0",
+        "approvedAt": "2026-10-12T18:16:34.022Z",
+        "note": "유호님 10-13 「예약된거 혹시 최신화할수있으면 최신화해주고」 — 예약본 9w5kFU_qfao에서 실땀 전환의 실만 되살린 판(제목·설명·표지·소리 같음). 같은 10-14 08:00 예약 뒤 9w5kFU_qfao는 비공개"
+      },
+      "errors": []
+    }
+  ]
+}

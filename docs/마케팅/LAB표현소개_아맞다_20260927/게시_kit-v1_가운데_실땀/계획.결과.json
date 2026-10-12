@@ -1,0 +1,21 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB표현소개_아맞다_20260927/게시_kit-v1_가운데_실땀/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "965a40aa58f01fd8bdcc46f1c31478d10433db072678883e1365cf284dacae62",
+      "publicationHash": "db465232c84eca88c66d17c8af475b21d9a6db9a8d7f2a8135da14fb2ca068e0",
+      "startedAt": "2026-10-12T18:16:37.080Z",
+      "state": "scheduled",
+      "id": "fMIYxAVV6Bw",
+      "url": "https://www.youtube.com/watch?v=fMIYxAVV6Bw",
+      "thumbnail": true,
+      "captions": [],
+      "finishedAt": "2026-10-12T18:16:50.520Z",
+      "publishAt": "2026-10-13T23:00:00.000Z",
+      "scheduledAt": "2026-10-12T18:17:04.813Z",
+      "publicNote": "유호님 10-13 「예약된거 혹시 최신화할수있으면 최신화해주고」 → 실땀 고친 판을 9w5kFU_qfao와 같은 10-14 08:00(한국)에 공개 예약. 사실적인 AI 내레이션이라 합성 표시(v2 §4-2)",
+      "containsSyntheticMedia": true
+    }
+  }
+}
