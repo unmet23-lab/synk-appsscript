@@ -13,13 +13,13 @@ const stamp=(value,fallback='')=>typeof value==='string'&&Number.isFinite(Date.p
 const workroom=(id,extra={})=>'/?'+new URLSearchParams({tab:'workroom',section:'clients',project:id,...extra});
 const pulse=(id,tab,extra={})=>'/pulse-app/?'+new URLSearchParams({mode:'staff',project:id,tab,...extra});
 function inputFor(input){
-  if(!object(input)||Object.keys(input).some(key=>!['query','kinds','projectId','limit','cursor'].includes(key)))throw fail('검색 조건을 확인해 주세요.');
-  if(typeof input.query!=='string'||input.query.length>160||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(input.query))throw fail('검색어는 2~160자로 입력해 주세요.');
-  const query=display(input.query);if(query.length<2||query.length>160)throw fail('검색어는 2~160자로 입력해 주세요.');
-  const kinds=input.kinds===undefined?KINDS:input.kinds;if(!Array.isArray(kinds)||!kinds.length||new Set(kinds).size!==kinds.length||kinds.some(kind=>!KINDS.includes(kind)))throw fail('검색할 종류를 확인해 주세요.');
-  const projectId=input.projectId??null;if(projectId!==null&&(typeof projectId!=='string'||!UUID.test(projectId)))throw fail('검색할 프로젝트를 확인해 주세요.');
-  const limit=input.limit??20;if(!Number.isSafeInteger(limit)||limit<1||limit>50)throw fail('검색 결과는 한 번에 1~50개까지 확인할 수 있습니다.');
-  const cursor=input.cursor??null;if(cursor!==null&&(typeof cursor!=='string'||cursor.length>1200||!cursor))throw fail('검색 결과의 다음 페이지를 확인해 주세요.');
+  if(!object(input)||Object.keys(input).some(key=>!['query','kinds','projectId','limit','cursor'].includes(key)))throw fail('찾기 조건이 이상해요.');
+  if(typeof input.query!=='string'||input.query.length>160||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u.test(input.query))throw fail('찾는 말은 2~160자로 적어 주세요.');
+  const query=display(input.query);if(query.length<2||query.length>160)throw fail('찾는 말은 2~160자로 적어 주세요.');
+  const kinds=input.kinds===undefined?KINDS:input.kinds;if(!Array.isArray(kinds)||!kinds.length||new Set(kinds).size!==kinds.length||kinds.some(kind=>!KINDS.includes(kind)))throw fail('종류 값이 이상해요.');
+  const projectId=input.projectId??null;if(projectId!==null&&(typeof projectId!=='string'||!UUID.test(projectId)))throw fail('프로젝트 값이 이상해요.');
+  const limit=input.limit??20;if(!Number.isSafeInteger(limit)||limit<1||limit>50)throw fail('한 번에 1~50개까지 볼 수 있어요.');
+  const cursor=input.cursor??null;if(cursor!==null&&(typeof cursor!=='string'||cursor.length>1200||!cursor))throw fail('다음 페이지 정보가 이상해요.');
   return {query,terms:[...new Set(query.toLowerCase().split(' '))],kinds:KINDS.filter(kind=>kinds.includes(kind)),projectId,limit,cursor};
 }
 function excerpt(fields,terms){
@@ -39,7 +39,7 @@ function* sources(project){
   for(const message of rows(project.messages)){
     if(!visible(message)||!UUID.test(message.id||'')||!['internal','customer'].includes(message.visibility)||message.versionId&&!versionIds.has(message.versionId))continue;
     const extra={message:message.id};if(message.versionId)extra.version=message.versionId;if(message.versionId&&Number.isFinite(message.seconds)&&message.seconds>=0&&message.seconds<=86400)extra.seconds=String(message.seconds);
-    const kind=message.visibility==='internal'?'note':'message',title=message.visibility==='internal'?'내부 메모':message.author==='customer'?'고객 문의·의견':'담당자 답변';
+    const kind=message.visibility==='internal'?'note':'message',title=message.visibility==='internal'?'내부 메모':message.author==='customer'?'고객이 남긴 글':'담당자 답변';
     yield source('message',message.id,kind,title,[message.text],workroom(id,extra),message.at,[]);
   }
   const scenes=rows(studio.scenes).filter(value=>visible(value)&&UUID.test(value.id||'')),concepts=rows(studio.concepts).filter(value=>visible(value)&&UUID.test(value.id||'')),sceneMap=new Map(scenes.map(value=>[value.id,value])),conceptMap=new Map(concepts.map(value=>[value.id,value]));
@@ -70,12 +70,12 @@ function* sources(project){
 export function createClientSearchService({store,clientProjects}){
   const mac=body=>createHmac('sha256',store.key).update('client-search-cursor-v1\0'+body).digest();
   function encodeCursor(value){const body=Buffer.from(JSON.stringify(value)).toString('base64url');return body+'.'+mac(body).toString('base64url');}
-  function decodeCursor(value){if(!value)return null;try{const [body,signature,...extra]=value.split('.'),bytes=Buffer.from(signature||'','base64url');if(extra.length||bytes.length!==32||!timingSafeEqual(bytes,mac(body)))throw new Error();const parsed=JSON.parse(Buffer.from(body,'base64url').toString());if(parsed.v!==1||typeof parsed.fingerprint!=='string'||!/^[a-f0-9]{64}$/.test(parsed.fingerprint)||!object(parsed.after)||!Number.isSafeInteger(parsed.after.rank)||typeof parsed.after.id!=='string')throw new Error();return parsed;}catch{throw fail('검색 결과가 변경됐거나 페이지 정보가 만료됐습니다. 처음부터 다시 검색해 주세요.',409);}}
+  function decodeCursor(value){if(!value)return null;try{const [body,signature,...extra]=value.split('.'),bytes=Buffer.from(signature||'','base64url');if(extra.length||bytes.length!==32||!timingSafeEqual(bytes,mac(body)))throw new Error();const parsed=JSON.parse(Buffer.from(body,'base64url').toString());if(parsed.v!==1||typeof parsed.fingerprint!=='string'||!/^[a-f0-9]{64}$/.test(parsed.fingerprint)||!object(parsed.after)||!Number.isSafeInteger(parsed.after.rank)||typeof parsed.after.id!=='string')throw new Error();return parsed;}catch{throw fail('결과가 바뀌었거나 페이지 정보가 오래됐어요. 처음부터 다시 찾아 주세요.',409);}}
   function search(user,input){
     const options=inputFor(input),live=typeof user?.id==='string'&&store.get('users',user.id);if(!live?.active||!['admin','manager','member','viewer'].includes(live.role))throw fail('먼저 로그인해 주세요.',401);
-    const all=clientProjects.searchSources(live);if(!Array.isArray(all))throw fail('프로젝트 원문을 불러오지 못했습니다.',503);
+    const all=clientProjects.searchSources(live);if(!Array.isArray(all))throw fail('원문을 불러오지 못했어요.',503);
     const projects=all.filter(project=>visible(project)).sort((a,b)=>a.id.localeCompare(b.id));
-    if(options.projectId&&!projects.some(project=>project.id===options.projectId))throw fail('현재 열람할 수 있는 프로젝트를 찾을 수 없습니다.',404);
+    if(options.projectId&&!projects.some(project=>project.id===options.projectId))throw fail('볼 수 있는 프로젝트가 없어요.',404);
     const cursor=decodeCursor(options.cursor),fingerprint=createHash('sha256').update(JSON.stringify({userId:live.id,role:live.role,teamId:live.teamId,query:folded(options.query),kinds:options.kinds,projectId:options.projectId,limit:options.limit})),best=[],facets=new Map();let total=0;
     for(const project of projects){
       fingerprint.update(JSON.stringify([project.id,project.revision,project.stage]));
@@ -89,7 +89,7 @@ export function createClientSearchService({store,clientProjects}){
         let index=best.findIndex(item=>compare(candidate,item)<0);if(index<0)index=best.length;if(index<=options.limit){best.splice(index,0,candidate);if(best.length>options.limit+1)best.pop();}
       }
     }
-    const currentFingerprint=fingerprint.digest('hex');if(cursor&&cursor.fingerprint!==currentFingerprint)throw fail('프로젝트 내용이나 열람 권한이 변경됐습니다. 처음부터 다시 검색해 주세요.',409);
+    const currentFingerprint=fingerprint.digest('hex');if(cursor&&cursor.fingerprint!==currentFingerprint)throw fail('내용이나 권한이 바뀌었어요. 처음부터 다시 찾아 주세요.',409);
     const hasMore=best.length>options.limit,selected=best.slice(0,options.limit),items=selected.map(({fields,primary,rank,...item})=>({...item,snippet:excerpt(fields,options.terms)})),last=selected.at(-1);
     const matchingProjectCount=facets.size;if(options.projectId&&!facets.has(options.projectId)){const project=projects.find(value=>value.id===options.projectId);facets.set(project.id,{id:project.id,title:display(project.title),count:0});}
     const projectOptions=[...facets.values()].sort((a,b)=>a.title.localeCompare(b.title,'ko')||a.id.localeCompare(b.id)),selectedOptions=projectOptions.slice(0,200);if(options.projectId&&!selectedOptions.some(project=>project.id===options.projectId)){selectedOptions[selectedOptions.length-1]=facets.get(options.projectId);}

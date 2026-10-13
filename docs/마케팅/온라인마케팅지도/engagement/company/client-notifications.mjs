@@ -1,10 +1,10 @@
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
-const titles={customer_feedback:'고객이 시안 수정을 요청했어요',customer_support:'고객 문의가 도착했어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'수정본 검토를 요청했어요',changes_requested:'수정본에 보완 의견이 있어요',review_accepted:'수정본 내부 검토를 마쳤어요',work_started:'고객 요청 처리를 시작했어요',work_completed:'고객 요청 처리를 마쳤어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당이 배정됐어요',reviewer_assigned:'고객 프로젝트 검토자로 배정됐어요'};
+const titles={customer_feedback:'고객이 시안을 고쳐 달래요',customer_support:'고객이 물어봤어요',customer_approval:'고객이 시안을 승인했어요',review_requested:'고친 시안 검토를 부탁했어요',changes_requested:'고친 시안에 더 고칠 게 있대요',review_accepted:'고친 시안 검토가 끝났어요',work_started:'고객 요청을 처리하기 시작했어요',work_completed:'고객 요청 처리를 끝냈어요',work_reopened:'고객 요청을 다시 열었어요',assigned:'고객 프로젝트 담당자가 됐어요',reviewer_assigned:'고객 프로젝트 검토자가 됐어요'};
 const unique=values=>[...new Set(values.filter(Boolean))];
-titles.customer_delivery_receipt='고객이 최종본 수령을 확인했어요';
-titles.customer_feedback_round='고객이 모은 수정 의견을 전달했어요';
-Object.assign(titles,{customer_preferences:'고객이 취향을 전달했어요',customer_reference:'고객이 참고자료 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 작성했어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 선택했어요',customer_scene:'고객이 장면 검토를 남겼어요',customer_comment:'고객이 기획 의견을 남겼어요',preview_ready:'새 시안이 도착했어요',final_ready:'최종 파일이 도착했어요',staff_reply:'제작자의 답변이 도착했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 업데이트됐어요',scene_ready:'장면 구성이 업데이트됐어요',reference_ready:'참고자료가 업데이트됐어요'});
-const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE 원문에서 확인해 주세요.',customer_reference:'고객이 남긴 참고자료 의견을 PULSE 원문에서 확인해 주세요.',customer_strategy:'고객이 작성한 제작 설계를 PULSE 원문에서 확인해 주세요.',customer_strategy_confirmed:'고객의 제작 설계 확인 내용을 PULSE 원문에서 확인해 주세요.',customer_concept:'고객이 선택한 콘셉트를 PULSE 원문에서 확인해 주세요.',customer_scene:'고객이 남긴 장면 검토를 PULSE 원문에서 확인해 주세요.',customer_comment:'고객이 남긴 기획 의견을 PULSE 원문에서 확인해 주세요.'};
+titles.customer_delivery_receipt='고객이 최종본을 받았대요';
+titles.customer_feedback_round='고객이 수정 의견을 모아 보냈어요';
+Object.assign(titles,{customer_preferences:'고객이 취향을 알려 줬어요',customer_reference:'고객이 참고 자료에 의견을 남겼어요',customer_strategy:'고객이 제작 설계를 썼어요',customer_strategy_confirmed:'고객이 제작 설계를 확인했어요',customer_concept:'고객이 콘셉트를 골랐어요',customer_scene:'고객이 장면을 보고 의견을 남겼어요',customer_comment:'고객이 기획에 의견을 남겼어요',preview_ready:'새 시안이 왔어요',final_ready:'최종본이 왔어요',staff_reply:'제작팀이 답했어요',strategy_ready:'제작 설계를 확인해 주세요',concept_ready:'콘셉트가 바뀌었어요',scene_ready:'장면 구성이 바뀌었어요',reference_ready:'참고 자료가 바뀌었어요'});
+const studioNewsBodies={customer_preferences:'고객이 남긴 취향을 PULSE에서 봐 주세요.',customer_reference:'고객이 참고 자료에 남긴 의견을 PULSE에서 봐 주세요.',customer_strategy:'고객이 쓴 제작 설계를 PULSE에서 봐 주세요.',customer_strategy_confirmed:'고객이 확인한 제작 설계를 PULSE에서 봐 주세요.',customer_concept:'고객이 고른 콘셉트를 PULSE에서 봐 주세요.',customer_scene:'고객이 장면에 남긴 의견을 PULSE에서 봐 주세요.',customer_comment:'고객이 기획에 남긴 의견을 PULSE에서 봐 주세요.'};
 
 // Immutable, content-free event pointers live in the same SQLite document as the
 // project mutation. There is no independent write that can commit only half of it.
@@ -110,8 +110,8 @@ export function createClientNotificationsService({store,clientProjects,clientWor
         const href=projectId&&studioEvent?'/pulse-app/?'+new URLSearchParams({mode:'staff',project:source.id,tab:event.tab}):'/?'+query;
         const readAt=store.get('clientNotificationReads',receiptId(user.id,event.id))?.readAt||null;
         const reviewNote=message?.workflow?.history?.findLast(entry=>entry.at===event.workflowAt&&entry.action===event.workflowAction&&entry.actor===event.actorId)?.note;
-        const text=projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 전달했습니다. 영상 확인에서 취합 내용을 확인해 주세요.`:event.type==='customer_delivery_receipt'?'고객이 전달 파일과 사용 안내를 확인했습니다. 남은 업무와 프로젝트 마감 여부를 확인해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}의 고객 승인을 확인해 주세요.`:event.type==='changes_requested'?reviewNote||'수정할 내용을 확인해 주세요.':event.type==='review_requested'?`${version?.label||'수정본'}을 확인해 주세요.`:message?.text||source.nextStep||'프로젝트의 요청과 다음 할 일을 확인해 주세요.';
-        result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 변경됐어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null,tab:event.tab||(event.versionId?'review':'history')});
+        const text=projectId&&studioNewsBodies[event.type]?studioNewsBodies[event.type]:event.type==='customer_feedback_round'?`고객이 ${feedbackRound.number}차 수정 의견 ${feedbackRound.items.length}개를 한 번에 보냈어요. 영상 확인에서 봐 주세요.`:event.type==='customer_delivery_receipt'?'고객이 파일과 사용 안내를 받았다고 했어요. 남은 일을 보고 마감해 주세요.':event.type==='customer_approval'?`${version?.label||'최근 시안'}을 고객이 승인했어요.`:event.type==='changes_requested'?reviewNote||'무엇을 더 고칠지 봐 주세요.':event.type==='review_requested'?`${version?.label||'고친 시안'}을 봐 주세요.`:message?.text||source.nextStep||'이 프로젝트의 요청과 다음 할 일을 봐 주세요.';
+        result.push({id:event.id,kind:'client_workflow',type:event.type,message:null,title:titles[event.type]||'고객 프로젝트가 바뀌었어요',text,body:text,projectTitle:source.title,createdAt:event.createdAt,readAt,unread:!readAt,href,projectId:source.id,messageId:event.messageId||null,versionId:event.versionId||null,seconds:message?.seconds??null,tab:event.tab||(event.versionId?'review':'history')});
       }
     }
     return result.sort((a,b)=>b.createdAt.localeCompare(a.createdAt)||b.id.localeCompare(a.id));
@@ -120,7 +120,7 @@ export function createClientNotificationsService({store,clientProjects,clientWor
     user=current(user);const all=projected(user),value=key=>typeof query?.get==='function'?query.get(key):query?.[key];
     const unreadOnly=[true,'true','1'].includes(value('unreadOnly')),filtered=unreadOnly?all.filter(item=>item.unread):all,rawLimit=value('limit');
     let notifications=filtered;
-    if(rawLimit!==undefined&&rawLimit!==null&&rawLimit!==''){const limit=Number(rawLimit);if(!Number.isInteger(limit)||limit<1||limit>1000)throw fail('알림 표시 개수를 확인해 주세요.');notifications=filtered.slice(0,limit);}
+    if(rawLimit!==undefined&&rawLimit!==null&&rawLimit!==''){const limit=Number(rawLimit);if(!Number.isInteger(limit)||limit<1||limit>1000)throw fail('알림 개수가 이상해요.');notifications=filtered.slice(0,limit);}
     return {notifications,total:filtered.length,unreadCount:all.filter(item=>item.unread).length};
   }
   function unreadCount(user){return list(user).unreadCount;}
@@ -130,13 +130,13 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   }
   function readProjectNews(user,projectId,input){
     user=current(user);
-    if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||typeof input.id!=='string'||!input.id||input.id.length>1000)throw fail('확인한 소식 한 건을 선택해 주세요.');
-    const item=projected(user,projectId).find(item=>item.id===input.id);if(!item)throw fail('소식을 찾을 수 없습니다.',404);
+    if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).length!==1||typeof input.id!=='string'||!input.id||input.id.length>1000)throw fail('본 소식을 하나 골라 주세요.');
+    const item=projected(user,projectId).find(item=>item.id===input.id);if(!item)throw fail('그 소식을 찾지 못했어요.',404);
     if(!item.readAt){store.put('clientNotificationReads',receiptId(user.id,item.id),{id:receiptId(user.id,item.id),userId:user.id,eventId:item.id,readAt:clock()});notify([user.id]);}
     return projectNews(user,projectId);
   }
   function read(user,id){
-    user=current(user);const item=projected(user).find(item=>item.id===id);if(!item)throw fail('알림을 찾을 수 없습니다.',404);
+    user=current(user);const item=projected(user).find(item=>item.id===id);if(!item)throw fail('그 알림을 찾지 못했어요.',404);
     if(!item.readAt){store.put('clientNotificationReads',receiptId(user.id,id),{id:receiptId(user.id,id),userId:user.id,eventId:id,readAt:clock()});notify([user.id]);}
     return {ok:true,id,unreadCount:unreadCount(user)};
   }
@@ -148,4 +148,4 @@ export function createClientNotificationsService({store,clientProjects,clientWor
   return {list,unreadCount,read,readAll,projectNews,readProjectNews,close:()=>unsubscribe?.()};
 }
 
-export function clientNotificationTitle(type){return titles[type]||'프로젝트가 업데이트됐어요';}
+export function clientNotificationTitle(type){return titles[type]||'프로젝트가 바뀌었어요';}

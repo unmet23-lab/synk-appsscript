@@ -17,7 +17,7 @@ const rejects=fn=>assert.throws(fn,error=>error.status===500);
 test('same-date deadlines from different projects are grouped without combining titles or source kinds',()=>{
   const a=scheduled({preview:'2026-10-15',delivery:'2026-10-15'},{title:'동일 제목',dueDate:'2026-10-15'}),b=scheduled({customer:'2026-10-15'},{title:'동일 제목'}),before=JSON.stringify([a,b]);
   const view=report([a,b]);assert.equal(view.days.length,1);const day=view.days[0];assert.equal(day.date,'2026-10-15');assert.equal(day.projectCount,2);assert.equal(day.milestoneCount,4);assert.equal(day.projects.length,2);
-  const pa=day.projects.find(row=>row.projectId===a.id);assert.equal(pa.milestones.find(row=>row.id==='agreed:delivery').dateType,'agreed');assert.equal(pa.milestones.find(row=>row.id==='target:delivery').dateType,'internal');assert.equal(pa.milestones.find(row=>row.id==='agreed:delivery').dateTypeLabel,'고객 합의 기한');
+  const pa=day.projects.find(row=>row.projectId===a.id);assert.equal(pa.milestones.find(row=>row.id==='agreed:delivery').dateType,'agreed');assert.equal(pa.milestones.find(row=>row.id==='target:delivery').dateType,'internal');assert.equal(pa.milestones.find(row=>row.id==='agreed:delivery').dateTypeLabel,'합의한 전달일');
   assert.equal(pa.milestones.find(row=>row.id==='target:preview').href,projection(a).schedule.milestones.find(row=>row.id==='preview').href);assert.equal(JSON.stringify([a,b]),before);
   assert.deepEqual(view.counts,{visibleProjectCount:2,eligibleProjectCount:2,rangeProjectCount:2,rangeMilestoneCount:4,overlapDayCount:1,overlapProjectCount:2,overlapMilestoneCount:4});
 });
@@ -67,7 +67,7 @@ test('actual internal review and customer waiting deadlines keep the existing cu
 });
 
 test('missing dates are explicit and never become today or a claim of spare capacity',()=>{
-  const rows=[scheduled(),scheduled({preview:'2026-10-11'},{dueDate:'2026-12-01'})],view=report(rows);assert.deepEqual(view.days,[]);assert.equal(view.observations.undated.projectCount,2);assert.equal(view.observations.undated.milestoneCount,6);assert.equal(view.observations.overdue.projectCount,1);assert.equal(view.observations.outsideWindow.projectCount,1);assert.match(view.note,/실제 작업 시간이나 과부하를 뜻하지 않습니다/);assert.ok(view.observations.undated.projects.every(project=>project.href.endsWith('&schedule=1')));
+  const rows=[scheduled(),scheduled({preview:'2026-10-11'},{dueDate:'2026-12-01'})],view=report(rows);assert.deepEqual(view.days,[]);assert.equal(view.observations.undated.projectCount,2);assert.equal(view.observations.undated.milestoneCount,6);assert.equal(view.observations.overdue.projectCount,1);assert.equal(view.observations.outsideWindow.projectCount,1);assert.match(view.note,/일이 얼마나 많은지를 뜻하지는 않아요/);assert.ok(view.observations.undated.projects.every(project=>project.href.endsWith('&schedule=1')));
 });
 
 test('the report returns only minimal permitted labels and links, never customer bodies or estimates',()=>{

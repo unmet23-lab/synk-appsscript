@@ -22,7 +22,7 @@ async function fixture(t){
   function link(url='https://example.test/final.mp4',label='외부 최종본'){projects.addVersion(users.owner,project.id,{revision:row().revision,kind:'final',label,url,guide:'고객에게 전달한 사용 안내'});return row().versions.at(-1);}
   async function file(fileName='최종 영상.mp4',content=Buffer.from('FINAL-VIDEO'),mimeType='video/mp4'){
     const id=randomUUID(),extension={'video/mp4':'mp4','image/png':'png','application/x-subrip':'srt'}[mimeType],media={id,diskName:id+'.'+extension,fileName,mimeType,byteSize:content.length};await mkdir(join(directory,'studio-media'),{recursive:true});await writeFile(join(directory,'studio-media',media.diskName),content);
-    projects.addVersion(users.owner,project.id,{revision:row().revision,kind:'final',label:fileName,guide:'최종본 사용 안내'},media);return row().versions.at(-1);
+    projects.addVersion(users.owner,project.id,{revision:row().revision,kind:'final',label:fileName,guide:'사용 안내'},media);return row().versions.at(-1);
   }
   const prepare=(name='owner',options={})=>service.prepare(users[name],project.id,options),download=async(name='owner',options={})=>{const report=await prepare(name);return service.download(users[name],project.id,{fingerprint:report.fingerprint,...options});};
   const snapshot=()=>JSON.stringify(store.db.prepare('SELECT * FROM documents ORDER BY kind,id').all());
@@ -43,7 +43,7 @@ function unzip(bytes){
 
 test('current approved final media and links form a valid Unicode ZIP without changing any source',async t=>{
   const f=await fixture(t);f.preview();const video=await f.file(),subtitle=await f.file('최종 자막.srt',Buffer.from('1\n00:00:00,000 --> 00:00:01,000\n안녕'),'application/x-subrip');f.link();const before=f.snapshot(),report=await f.prepare();assert.equal(report.schema,1);assert.deepEqual(report.counts,{files:2,links:1,entries:4});assert.equal(report.totalBytes,video.media.byteSize+subtitle.media.byteSize);assert.match(report.fingerprint,/^[a-f0-9]{64}$/);assert.doesNotMatch(JSON.stringify(report),/diskName|studio-media|PRIVATE-/);
-  const result=await f.download(),archive=unzip(await collect(result));assert.equal(result.mimeType,'application/zip');assert.match(result.fileName,/한글.*\.zip$/);assert.deepEqual([...archive.keys()],['최종 파일/최종 영상.mp4','최종 파일/최종 자막.srt','납품 안내.txt','외부 링크.txt']);assert.equal(archive.get('최종 파일/최종 영상.mp4').toString(),'FINAL-VIDEO');assert.match(archive.get('납품 안내.txt').toString(),/실제 파일: 2개/);assert.match(archive.get('외부 링크.txt').toString(),/https:\/\/example.test\/final.mp4/);assert.doesNotMatch(Buffer.concat([...archive.values()]).toString(),/PRIVATE-|preview\.mp4/);assert.equal(f.snapshot(),before);
+  const result=await f.download(),archive=unzip(await collect(result));assert.equal(result.mimeType,'application/zip');assert.match(result.fileName,/한글.*\.zip$/);assert.deepEqual([...archive.keys()],['최종 파일/최종 영상.mp4','최종 파일/최종 자막.srt','납품 안내.txt','외부 링크.txt']);assert.equal(archive.get('최종 파일/최종 영상.mp4').toString(),'FINAL-VIDEO');assert.match(archive.get('납품 안내.txt').toString(),/파일: 2개/);assert.match(archive.get('외부 링크.txt').toString(),/https:\/\/example.test\/final.mp4/);assert.doesNotMatch(Buffer.concat([...archive.values()]).toString(),/PRIVATE-|preview\.mp4/);assert.equal(f.snapshot(),before);
 });
 
 test('only current final versions are included, not previews, prior finals or draft assets',async t=>{
@@ -51,7 +51,7 @@ test('only current final versions are included, not previews, prior finals or dr
 });
 
 test('external-only delivery reports zero actual files and exports addresses without fetching anything',async t=>{
-  const f=await fixture(t);f.preview();f.link('https://127.0.0.1:1/never-fetch');const report=await f.prepare();assert.deepEqual(report.counts,{files:0,links:1,entries:2});assert.equal(report.totalBytes,0);assert.match(report.warnings.join(' '),/대상 파일은 ZIP에 포함되지/);const archive=unzip(await collect(await f.download()));assert.deepEqual([...archive.keys()],['납품 안내.txt','외부 링크.txt']);assert.match(archive.get('납품 안내.txt').toString(),/실제 파일: 0개/);
+  const f=await fixture(t);f.preview();f.link('https://127.0.0.1:1/never-fetch');const report=await f.prepare();assert.deepEqual(report.counts,{files:0,links:1,entries:2});assert.equal(report.totalBytes,0);assert.match(report.warnings.join(' '),/대상 파일은 ZIP에 안 들어가/);const archive=unzip(await collect(await f.download()));assert.deepEqual([...archive.keys()],['납품 안내.txt','외부 링크.txt']);assert.match(archive.get('납품 안내.txt').toString(),/파일: 0개/);
 });
 
 test('new unapproved preview cannot inherit an earlier final archive',async t=>{

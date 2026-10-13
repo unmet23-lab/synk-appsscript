@@ -5,12 +5,12 @@ import {projectView} from './public/pulse-app/views.mjs';
 
 globalThis.location=new URL('http://127.0.0.1:64046/pulse-app/');
 const id='01234567-89ab-cdef-0123-456789abcdef';
-const plan={enabled:true,canEdit:true,calendar:'weekdays',calendarLabel:'평일(월~금, 공휴일 미반영)',targets:{draft:'2099-08-01'},remainingWorkDays:4,customerWaitDays:3,internalReviewDays:2,checkedAt:'2026-10-12',today:'2026-10-12',status:'attention',statusLabel:'확인할 일정 있음',pendingCount:3,agreedDueDate:'2026-10-19',estimatedFinishDate:'2026-10-16',remainingDays:7,risk:{status:'at_risk',text:'내부 예상일과 확인 대기를 함께 검토해 주세요.'},milestones:[{id:'draft',label:'PRIVATE-MILESTONE',targetDate:'2099-08-01',href:'https://evil.test/milestone'}],waiting:[{id:'review',label:'PRIVATE-WAIT',since:'2099-07-01',dueDate:'2099-07-03',href:'javascript:alert(1)'}]};
+const plan={enabled:true,canEdit:true,calendar:'weekdays',calendarLabel:'평일만',targets:{draft:'2099-08-01'},remainingWorkDays:4,customerWaitDays:3,internalReviewDays:2,checkedAt:'2026-10-12',today:'2026-10-12',status:'attention',statusLabel:'확인할 일정 있음',pendingCount:3,agreedDueDate:'2026-10-19',estimatedFinishDate:'2026-10-16',remainingDays:7,risk:{status:'at_risk',text:'내부 예상일과 확인 대기를 함께 검토해 주세요.'},milestones:[{id:'draft',label:'PRIVATE-MILESTONE',targetDate:'2099-08-01',href:'https://evil.test/milestone'}],waiting:[{id:'review',label:'PRIVATE-WAIT',since:'2099-07-01',dueDate:'2099-07-03',href:'javascript:alert(1)'}]};
 const project={id,revision:9,title:'일정 시험',customerName:'합성 고객',stage:'producing',dueDate:'2026-10-19',versions:[],messages:[],studio:{preferences:{},references:[],assets:[],concepts:[],scenes:[],sceneReviews:[],comments:[]},schedule:plan};
 const state=(patch={})=>({mode:'staff',canEdit:true,project:structuredClone(project),tab:'strategy',demo:false,...patch});
 
 test('staff summary distinguishes agreed date, remaining production days and internal estimate',()=>{
-  const html=scheduleView(state());assert.match(html,/제작 일정·확인 지연/);assert.match(html,/오늘 확인 3건/);assert.match(html,/합의한 납품일/);assert.match(html,/2026-10-19/);assert.match(html,/남은 제작일로 계산한 예상일/);assert.match(html,/2026-10-16/);assert.match(html,/4일/);assert.match(html,/평일\(월~금, 공휴일 미반영\) 기준/);assert.match(html,/고객과 합의한 납품일은 자동으로 바뀌지 않습니다/);
+  const html=scheduleView(state());assert.match(html,/제작 일정·확인 지연/);assert.match(html,/오늘 확인 3건/);assert.match(html,/합의한 납품일/);assert.match(html,/2026-10-19/);assert.match(html,/남은 제작일로 계산한 예상일/);assert.match(html,/2026-10-16/);assert.match(html,/4일/);assert.match(html,/평일만 기준/);assert.match(html,/고객과 합의한 납품일은 자동으로 바뀌지 않습니다/);
 });
 
 test('customer and demo modes render no internal schedule even if the staff report is accidentally present',()=>{

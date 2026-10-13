@@ -24,20 +24,20 @@ function compareItems(a,b,today){
 }
 function reasonFor(primary,groupUrgency,counts){
   if(!primary){
-    const waiting=[counts.customerWaiting?`고객 확인 ${counts.customerWaiting}건`:'',counts.staffWaiting?`내부 처리 ${counts.staffWaiting}건`:''].filter(Boolean).join(' · ');
-    return `${waiting}을 기다리고 있습니다. 현재 내 처리 차례인 항목은 없습니다.`;
+    const waiting=[counts.customerWaiting?`고객 차례 ${counts.customerWaiting}건`:'',counts.staffWaiting?`검토자 차례 ${counts.staffWaiting}건`:''].filter(Boolean).join(' · ');
+    return `${waiting}을 기다리고 있어요. 지금 내가 할 일은 없어요.`;
   }
-  const due=validDate(primary.dueDate),turn=primary.group==='review'?'내 검토 차례':'내 처리 차례';
-  if(groupUrgency==='overdue')return `${due} 기한이 지났고 ${turn}입니다.`;
-  if(groupUrgency==='today')return `오늘(${due})이 기한이며 ${turn}입니다.`;
-  if(groupUrgency==='upcoming')return `${due} 기한이 예정돼 있고 ${turn}입니다.`;
-  return `등록된 유효 기한 없이 ${turn}입니다.`;
+  const due=validDate(primary.dueDate),turn=primary.group==='review'?'내 검토 차례':'내 차례';
+  if(groupUrgency==='overdue')return `${due} 기한이 지났고 ${turn}예요.`;
+  if(groupUrgency==='today')return `오늘(${due})이 기한이고 ${turn}예요.`;
+  if(groupUrgency==='upcoming')return `${due}까지이고 ${turn}예요.`;
+  return `기한은 없고 ${turn}예요.`;
 }
 
 // Consume only the existing permission-filtered workflow projection. This helper
 // never reads projects itself or persists another task record.
 export function buildClientProjectGroups(items,{today=new Date(Date.now()+9*60*60*1000).toISOString().slice(0,10)}={}){
-  if(!validDate(today))throw new TypeError('프로젝트 할 일의 기준일을 확인해 주세요.');
+  if(!validDate(today))throw new TypeError('기준 날짜가 이상해요.');
   const projects=new Map(),seen=new Set();
   for(const item of Array.isArray(items)?items:[]){
     if(!item||typeof item!=='object'||typeof item.id!=='string'||!item.id.trim()||typeof item.projectId!=='string'||!item.projectId.trim()||!activeGroups.has(item.group)||finishedStatuses.has(item.status)||item.resolved===true||item.stage==='archived'||seen.has(item.id))continue;

@@ -31,7 +31,7 @@ test('deadline urgency wins over task kind, timestamps and stale status labels',
   const result=groups(rows)[0];
   assert.deepEqual(result.items.map(row=>row.id),['late','now','future','undated']);
   assert.equal(result.primary.id,'late');assert.equal(result.urgency,'overdue');assert.equal(result.dueDate,'2026-10-11');
-  assert.equal(result.reason,'2026-10-11 기한이 지났고 내 처리 차례입니다.');
+  assert.equal(result.reason,'2026-10-11 기한이 지났고 내 차례예요.');
   assert.doesNotMatch(result.reason,/차단|막|실패/);
 });
 
@@ -50,8 +50,8 @@ test('customer and internal waits never become primary even when their dates are
   assert.match(result.reason,/오늘\(2026-10-12\).*내 검토 차례/);
   result=groups(rows.slice(0,2))[0];
   assert.equal(result.primary,null);assert.equal(result.urgency,'waiting');assert.equal(result.dueDate,'');
-  assert.match(result.reason,/고객 확인 1건 · 내부 처리 1건/);
-  assert.match(result.reason,/현재 내 처리 차례인 항목은 없습니다/);
+  assert.match(result.reason,/고객 차례 1건 · 검토자 차례 1건/);
+  assert.match(result.reason,/지금 내가 할 일은 없어요/);
   assert.equal(groups([item('mixed',{group:'next',status:'waiting_customer'})])[0].primary,null);
 });
 
@@ -64,10 +64,10 @@ test('closed, archived, resolved and malformed projections are absent',()=>{
 test('invalid calendar dates stay undated; valid leap dates and explicit KST date are respected',()=>{
   for(const dueDate of ['2026-02-30','2026-13-01','2026-10-12T09:00:00+09:00','2026-1-01',' 2026-10-12','not-a-date',null]){
     const result=groups([item('one',{dueDate})])[0];
-    assert.equal(result.urgency,'undated');assert.equal(result.dueDate,'');assert.match(result.reason,/유효 기한 없이/);
+    assert.equal(result.urgency,'undated');assert.equal(result.dueDate,'');assert.match(result.reason,/기한은 없고/);
   }
   assert.equal(buildClientProjectGroups([item('leap',{dueDate:'2028-02-29'})],{today:'2028-02-29'})[0].urgency,'today');
-  assert.throws(()=>buildClientProjectGroups([],{today:'2026-02-30'}),/기준일/);
+  assert.throws(()=>buildClientProjectGroups([],{today:'2026-02-30'}),/기준 날짜/);
 });
 
 test('project ordering puts actionable deadlines before undated tasks and wait-only projects',()=>{

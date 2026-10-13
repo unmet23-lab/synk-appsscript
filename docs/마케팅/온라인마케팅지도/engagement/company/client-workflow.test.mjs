@@ -49,7 +49,7 @@ test('feedback passes revision, internal reviewer, correction and customer appro
   assert.equal(f.read().versions.at(-1).approvedAt,null,'internal acceptance must never become customer approval');
   assert.equal(f.workflow.workspace(f.users.owner).items.find(x=>x.messageId===messageId).status,'waiting_customer');
   rejects(()=>f.action('approve',{versionId:v2.id}),409);f.action('approve',{versionId:v3.id});
-  assert.equal(f.read().messages.find(x=>x.id===messageId).resolved,true);assert.match(f.read().nextStep,/최종 파일과 사용 안내/);
+  assert.equal(f.read().messages.find(x=>x.id===messageId).resolved,true);assert.match(f.read().nextStep,/최종본과 사용 안내/);
   const after=f.workflow.workspace(f.users.owner).items;assert.equal(after.some(x=>x.group==='waiting'),false);assert.equal(after[0].kind,'delivery');
   f.projects.addVersion(f.users.owner,f.read().id,{revision:f.read().revision,label:'final',kind:'final',url:'https://files.example/final',guide:'최종 사용 안내'});
   assert.equal(f.workflow.workspace(f.users.owner).items.length,0);

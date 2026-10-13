@@ -22,7 +22,7 @@ test('request section follows its original scene and only appears on the storybo
 
 test('customer sees original request, request and submitted revisions while internal fields remain hidden',()=>{
   const s=state(),html=sceneRequestView(s,scene)+sceneRequestsSummary(s);assert.match(html,/화면 문구를 크게/);assert.match(html,/요청한 장면/);assert.match(html,/v1/);assert.match(html,/반영 제출한 장면/);assert.match(html,/수정된 장면 v3 확인/);assert.match(html,/data-project-revision="9"/);assert.doesNotMatch(html,/PRIVATE|내부 표시|requests=1/);
-  s.project.sceneRequests.items.push({...request,id:'private',sceneId:'private-scene',text:'PRIVATE-SCENE'});assert.doesNotMatch(sceneRequestsSummary(s),/PRIVATE-SCENE|확인할 요청 2개/);
+  s.project.sceneRequests.items.push({...request,id:'private',sceneId:'private-scene',text:'PRIVATE-SCENE'});assert.doesNotMatch(sceneRequestsSummary(s),/PRIVATE-SCENE|내 차례 2개/);
 });
 
 test('a new scene save or stale, unsubmitted and completed request does not fabricate completion or a confirmation action',()=>{

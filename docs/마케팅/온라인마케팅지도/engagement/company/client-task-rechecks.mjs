@@ -51,23 +51,23 @@ export function createClientTaskRechecksService({store}){
     return {recheckToday:today,rechecks,todayItems,todayProjectGroups:buildClientProjectGroups(todayItems,{today}),deferredItems};
   }
   function update(user,input,context){
-    if(user.role==='viewer')throw fail('담당자 또는 지정 검토자만 다시 확인 날짜를 정할 수 있습니다.',403);
-    if(!object(input)||Object.keys(input).some(key=>!['action','itemId','date','fingerprint'].includes(key))||!['defer','restore'].includes(input.action)||typeof input.itemId!=='string'||!input.itemId||input.itemId.length>300)throw fail('다시 확인 요청을 확인해 주세요.');
+    if(user.role==='viewer')throw fail('다시 볼 날짜는 담당자나 검토자만 정할 수 있어요.',403);
+    if(!object(input)||Object.keys(input).some(key=>!['action','itemId','date','fingerprint'].includes(key))||!['defer','restore'].includes(input.action)||typeof input.itemId!=='string'||!input.itemId||input.itemId.length>300)throw fail('요청 내용이 비어 있어요.');
     const item=context.items.find(value=>value.id===input.itemId),row=item&&context.projects.find(value=>value.id===item.projectId);
-    if(!item||!row)throw fail('현재 담당하는 할 일을 찾을 수 없습니다.',404);
+    if(!item||!row)throw fail('그 할 일을 찾지 못했어요.',404);
     const current=clientTaskRecheckFingerprint(item,row,context.sources?.get(item.id),context.today);
-    if(input.action==='defer'&&input.fingerprint!==current||input.action==='restore'&&input.fingerprint!==undefined&&input.fingerprint!==current)throw fail('할 일의 내용이 바뀌었습니다. 새로 확인한 뒤 날짜를 정해 주세요.',409);
+    if(input.action==='defer'&&input.fingerprint!==current||input.action==='restore'&&input.fingerprint!==undefined&&input.fingerprint!==current)throw fail('그사이 할 일이 바뀌었어요. 새로 보고 날짜를 정해 주세요.',409);
     const saved=store.get(kind,user.id),entries=object(saved?.entries)?{...saved.entries}:{};
     if(input.action==='defer'){
-      if(!validRecheckDate(input.date)||input.date<=context.today||(Date.parse(input.date+'T00:00:00Z')-Date.parse(context.today+'T00:00:00Z'))/86400000>365)throw fail('다시 확인 날짜는 내일부터 365일 이내로 정해 주세요.');
+      if(!validRecheckDate(input.date)||input.date<=context.today||(Date.parse(input.date+'T00:00:00Z')-Date.parse(context.today+'T00:00:00Z'))/86400000>365)throw fail('다시 볼 날짜는 내일부터 365일 안으로 정해 주세요.');
       if(!Object.hasOwn(entries,item.id)&&Object.keys(entries).length>=1000){
         const active=new Set(context.items.map(value=>value.id));
         for(const [id,entry]of Object.entries(entries))if(!active.has(id)||!validRecheckDate(entry?.date)||entry.date<=context.today)delete entries[id];
-        if(Object.keys(entries).length>=1000)throw fail('다시 확인할 항목이 1,000개입니다. 기존 날짜를 해제한 뒤 정해 주세요.',409);
+        if(Object.keys(entries).length>=1000)throw fail('다시 볼 항목이 1,000개예요. 기존 날짜를 풀고 정해 주세요.',409);
       }
       entries[item.id]={date:input.date,fingerprint:current,overdueDates:overdueDates(item,row,context.today)};
     }else{
-      if(input.date!==undefined)throw fail('날짜 해제 요청에는 새 날짜를 넣지 마세요.');
+      if(input.date!==undefined)throw fail('날짜를 풀 때는 새 날짜를 넣지 않아요.');
       delete entries[item.id];
     }
     if(Object.keys(entries).length)store.put(kind,user.id,{userId:user.id,entries});else store.remove(kind,user.id);

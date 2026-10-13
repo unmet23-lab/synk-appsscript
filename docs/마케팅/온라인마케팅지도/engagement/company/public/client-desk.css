@@ -492,3 +492,29 @@
 @media(prefers-reduced-motion:reduce){
   :root .synk-workspace .client-desk.cdx *{transition:none!important}
 }
+
+/* ── 11판(10-13): 구역 15 → 11. 한 구역 안의 카드(시작 설정 · 필요한 자료 · 바뀐 것 / 대화 · 진행 안내문 / 기록 · 접수 원문)는 1px 선과 작은 제목으로 잇는다 ── */
+:root .synk-workspace .client-desk.cdx .cps-section-content .cd-card>header .cd-tag{align-self:center}
+:root .synk-workspace .client-desk.cdx .cps-section-content .cd-card+.cd-card>header h2,:root .synk-workspace .client-desk.cdx .cps-section-content .cd-card .cd-card>header h2{font-size:15px}
+:root .synk-workspace .client-desk.cdx .cps-section-content .cd-card>header+p{margin-top:0}
+/* 필요한 자료: 한 줄에 이름 · 상태, 그 아래 연결 폼은 한 줄 */
+:root .synk-workspace .client-desk.cdx .ck-requirement{display:grid;gap:8px;padding:12px 0;border-top:1px solid var(--sg-line)}
+:root .synk-workspace .client-desk.cdx .ck-requirement:first-child{border-top:0;padding-top:4px}
+:root .synk-workspace .client-desk.cdx .ck-requirement>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+:root .synk-workspace .client-desk.cdx .ck-requirement>header strong{font:650 14px/1.4 var(--sg-sans)}
+:root .synk-workspace .client-desk.cdx .ck-requirement>header small{margin-left:8px;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk.cdx .ck-requirement>header>span{flex:none;padding:3px 9px;border-radius:999px;background:var(--sg-surface-1);font:650 12px/1 var(--sg-sans);color:var(--sg-ink-2);white-space:nowrap}
+:root .synk-workspace .client-desk.cdx .ck-requirement[data-kickoff-state="ready"]>header>span{background:rgba(39,160,98,.12);color:#1F7A4C}
+:root .synk-workspace .client-desk.cdx .ck-requirement[data-kickoff-state="received"]>header>span{background:var(--cx-due-wash);color:var(--cx-due)}
+:root .synk-workspace .client-desk.cdx .ck-requirement[data-kickoff-state="waived"]>header>span{color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk.cdx .ck-requirement>p{margin:0;font-size:13px;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk.cdx .ck-requirement form fieldset{display:flex;flex-wrap:wrap;align-items:end;gap:8px 10px;margin:0;padding:0;border:0}
+:root .synk-workspace .client-desk.cdx .ck-requirement .ck-link{flex:1 1 220px;margin:0}
+:root .synk-workspace .client-desk.cdx .ck-requirement .ck-link select{width:100%}
+:root .synk-workspace .client-desk.cdx .ck-requirement details{font-size:13px}
+:root .synk-workspace .client-desk.cdx .ck-requirement details summary{color:var(--sg-ink-3);cursor:pointer}
+/* 일정: 기다리는 중 목록과 접힌 목표일 */
+:root .synk-workspace .client-desk.cdx .cs-waitings h3,:root .synk-workspace .client-desk.cdx .cs-milestones h3{margin-top:14px}
+:root .synk-workspace .client-desk.cdx .cs-milestone-list>summary{margin-top:14px;font:650 13.5px/1.4 var(--sg-sans);cursor:pointer}
+:root .synk-workspace .client-desk.cdx .cs-checked{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-top:14px;font-size:12.5px;color:var(--sg-ink-3)}
+:root .synk-workspace .client-desk.cdx .cd-legend{margin:22px 0 10px;padding:0;font:650 12.5px/1.4 var(--sg-sans);letter-spacing:.02em;color:var(--sg-ink-3)}

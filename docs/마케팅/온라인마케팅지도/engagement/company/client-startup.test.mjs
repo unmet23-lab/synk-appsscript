@@ -56,7 +56,7 @@ test('all sections apply in one project revision with editable content, preservi
 
 test('existing section settings and recorded confirmations are never overwritten; other blank sections remain usable',async t=>{
   const f=await fixture(t);f.apply(f.preview(),['kickoff']);let row=f.read();row.kickoffPlan.requirements[0].review={sourceFingerprint:'old-fingerprint',actor:'old',at};f.store.put('clientProjects',row.id,row);
-  const preview=f.preview(),before=JSON.stringify(f.read());assert.equal(preview.sections.kickoff.available,false);assert.match(preview.sections.kickoff.reason,/보존/);status(()=>f.apply(preview),409);assert.equal(JSON.stringify(f.read()),before);
+  const preview=f.preview(),before=JSON.stringify(f.read());assert.equal(preview.sections.kickoff.available,false);assert.match(preview.sections.kickoff.reason,/그대로 둬요/);status(()=>f.apply(preview),409);assert.equal(JSON.stringify(f.read()),before);
   f.apply(preview,['schedule','deliverables']);assert.deepEqual(f.read().kickoffPlan,row.kickoffPlan);
   assert.ok(Object.values(f.service.workspace(f.users.owner,row.id).sections).every(section=>!section.available));
   status(()=>f.apply(f.preview(),['deliverables']),409);

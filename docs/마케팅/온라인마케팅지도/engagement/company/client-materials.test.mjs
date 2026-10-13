@@ -20,7 +20,7 @@ async function fixture(t){
   t.after(async()=>{store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));assert.ok(directory.includes('synk-client-materials-'));await rm(directory,{recursive:true,force:true});});
   const users={};for(const [name,role,teamId]of [['owner','member','a'],['reviewer','member','a'],['viewer','viewer','a'],['manager','manager','a'],['other','member','b'],['admin','admin',null]])users[name]=store.createUser({name,email:name+'@materials.test',role,teamId});
   let now=at;const clientProjects=createClientProjectsService({store,clock:()=>now}),service=createClientMaterialsService({store,clientProjects,clock:()=>now});
-  const project=clientProjects.save(users.owner,{title:'자료 모아보기 합성 프로젝트',customerName:'합성 고객',reviewerId:users.reviewer.id,internalNotes:'PRIVATE-MEMO'}).project;
+  const project=clientProjects.save(users.owner,{title:'자료 펼치기 합성 프로젝트',customerName:'합성 고객',reviewerId:users.reviewer.id,internalNotes:'PRIVATE-MEMO'}).project;
   const read=()=>store.get('clientProjects',project.id),update=fn=>{const row=read();fn(row);store.put('clientProjects',row.id,row);return row;},view=(who=users.owner)=>service.workspace(who,project.id);
   update(row=>row.studio=emptyPulseStudio());
   async function file(extra={}){const id=randomUUID(),intake=extra.kind==='attachment'||extra.kind==='document',data=Buffer.from('test bytes'),metadata={id,diskName:id+(intake?'.intake':'.png'),fileName:'자료.png',mimeType:'image/png',byteSize:data.length,sha256:createHash('sha256').update(data).digest('hex'),author:'staff',at,...extra};await mkdir(join(directory,'studio-media'),{recursive:true});await writeFile(join(directory,'studio-media',metadata.diskName),data);return metadata;}
@@ -62,7 +62,7 @@ test('shared external reference URLs collapse while references with both file an
 test('usable status requires current kickoff source fingerprints for every nonwaived linked requirement',async t=>{
   const f=await fixture(t),asset=await f.file({author:'customer'}),reference=card({label:'자료 참고',assetId:asset.id});
   f.update(row=>{row.studio.assets=[asset];row.studio.references=[reference];row.kickoffPlan={enabled:true,requirements:[{id:'one',label:'승인 로고',sourceKey:'asset:'+asset.id,required:true},{id:'two',label:'참고',sourceKey:'reference:'+reference.id,required:true}]};for(const requirement of row.kickoffPlan.requirements)requirement.review={sourceFingerprint:clientKickoffSources(row).find(source=>source.key===requirement.sourceKey).fingerprint};});
-  assert.equal(f.view().items[0].status,'ready');assert.equal(f.view().items[0].relations.filter(value=>value.label.startsWith('착수 자료:')).length,2);
+  assert.equal(f.view().items[0].status,'ready');assert.equal(f.view().items[0].relations.filter(value=>value.label.startsWith('필요한 자료:')).length,2);
   f.update(row=>row.studio.references[0].reason='참고 변경');assert.equal(f.view().items[0].status,'received');
   f.update(row=>row.kickoffPlan.requirements[1].waiver={reason:'PRIVATE-WAIVER'});assert.equal(f.view().items[0].status,'ready');assert.doesNotMatch(JSON.stringify(f.view()),/PRIVATE/);
   f.update(row=>row.studio.assets[0].fileName='새 자료.png');assert.equal(f.view().items[0].status,'received');
@@ -76,8 +76,8 @@ test('visibility matches customer assets, references, published card history and
 });
 
 test('latest approved preview defines current finals and an old approval cannot label files current',async t=>{
-  const f=await fixture(t),old=preview({approvedAt:at,label:'이전 시안'}),current=preview({approvedAt:later,label:'최신 시안'}),oldFinal={...preview(),kind:'final',approvedPreviewId:old.id,label:'이전 납품'},final={...preview(),kind:'final',approvedPreviewId:current.id,label:'현재 납품'};
-  f.update(row=>row.versions=[old,oldFinal,current,final]);let items=f.view().items;assert.equal(items.find(item=>item.label==='이전 시안').status,'previous_preview');assert.equal(items.find(item=>item.label==='최신 시안').status,'approved_preview');assert.equal(items.find(item=>item.label==='이전 납품').status,'previous_final');assert.equal(items.find(item=>item.label==='현재 납품').status,'current_final');assert.equal(items.find(item=>item.label==='현재 납품').relations[0].label,'연결된 승인 시안: 최신 시안');
+  const f=await fixture(t),old=preview({approvedAt:at,label:'이전 시안'}),current=preview({approvedAt:later,label:'최신 시안'}),oldFinal={...preview(),kind:'final',approvedPreviewId:old.id,label:'이전 최종본'},final={...preview(),kind:'final',approvedPreviewId:current.id,label:'현재 납품'};
+  f.update(row=>row.versions=[old,oldFinal,current,final]);let items=f.view().items;assert.equal(items.find(item=>item.label==='이전 시안').status,'previous_preview');assert.equal(items.find(item=>item.label==='최신 시안').status,'approved_preview');assert.equal(items.find(item=>item.label==='이전 최종본').status,'previous_final');assert.equal(items.find(item=>item.label==='현재 납품').status,'current_final');assert.equal(items.find(item=>item.label==='현재 납품').relations[0].label,'승인한 시안: 최신 시안');
   f.update(row=>row.versions.push(preview({label:'미승인 새 시안'})));items=f.view().items;assert.equal(items.filter(item=>item.status==='current_final').length,0);assert.equal(items.find(item=>item.label==='미승인 새 시안').status,'pending_preview');assert.ok(items.filter(item=>item.category==='delivery').every(item=>!item.current));
 });
 

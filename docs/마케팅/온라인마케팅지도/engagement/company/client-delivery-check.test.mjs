@@ -24,14 +24,14 @@ test('unconfigured and unconfirmed specifications preserve the existing manual d
   p.row.studio={deliverables:{revision:2,items:[p.spec],confirmation:{deliverableRevision:1}}};assert.equal(check(p).status,'waiting_confirmation');assert.equal(check(p).confirmed,false);assert.equal(check(p).canPublish,true);
 });
 test('existing direct final uploads without a delivery draft are explicitly uninspected rather than false missing files',()=>{
-  const p=pure();p.row.versions.push({id:randomUUID(),kind:'final',approvedPreviewId:p.version.id});const report=check(p);assert.equal(report.status,'existing_delivery');assert.equal(report.pendingCount,0);assert.equal(report.blockingCount,0);assert.equal(report.manualCount,0);assert.equal(report.canInspect,false);assert.equal(report.canPublish,false);assert.deepEqual(report.checks,[]);assert.match(report.inspectReason,/기존 최종 파일/);
+  const p=pure();p.row.versions.push({id:randomUUID(),kind:'final',approvedPreviewId:p.version.id});const report=check(p);assert.equal(report.status,'existing_delivery');assert.equal(report.pendingCount,0);assert.equal(report.blockingCount,0);assert.equal(report.manualCount,0);assert.equal(report.canInspect,false);assert.equal(report.canPublish,false);assert.deepEqual(report.checks,[]);assert.match(report.inspectReason,/납품 준비를 거치지 않고 올린 최종본/);
 });
 test('confirmed specifications expose exact quantity and separate-subtitle omissions',()=>{
   const p=pure({quantity:2,subtitles:'both'});add(p);const record=inspection(p),result=check(p,record);
   assert.equal(result.status,'attention');assert.match(result.checks.find(value=>value.id.startsWith('quantity:')).text,/합의 2개 · 연결 1개/);assert.equal(result.checks.find(value=>value.id.startsWith('subtitle:')).status,'missing');assert.equal(result.canPublish,false);
 });
 test('technical pass still requires current human review for content, language, sound and use',()=>{
-  const p=pure(),item=add(p),record=inspection(p);let result=check(p,record);assert.equal(result.blockingCount,0);assert.equal(result.status,'manual');assert.equal(result.canPublish,false);assert.match(result.checks.find(value=>value.id.endsWith(':content')).text,/언어·번인 자막·소리/);
+  const p=pure(),item=add(p),record=inspection(p);let result=check(p,record);assert.equal(result.blockingCount,0);assert.equal(result.status,'manual');assert.equal(result.canPublish,false);assert.match(result.checks.find(value=>value.id.endsWith(':content')).text,/언어·입힌 자막·소리/);
   confirm(p,item,record);result=check(p,record);assert.equal(result.status,'ready');assert.equal(result.canPublish,true);
 });
 test('measured length and displayed ratio use explicit tolerances and mismatch cannot be acknowledged away',()=>{
@@ -72,7 +72,7 @@ test('unmapped extra files cannot bypass a missing or corrupt local-file inspect
   const p=pure(),main=add(p),extra=add(p,{spec:null,metadata:media('image/png')}),record=inspection(p,{[extra.media.id]:{status:'unavailable',code:'missing'}});confirm(p,main,record);confirm(p,extra,record);const report=check(p,record);assert.equal(report.checks.find(value=>value.id===extra.id+':inspection').status,'missing');assert.equal(report.canPublish,false);
 });
 test('other specification kinds remain manually reviewable rather than manufacturing an unsupported kind mismatch',()=>{
-  const p=pure({kind:'other',fileFormat:'별도 파일',durationSeconds:null,aspectRatio:''}),item=add(p),record=inspection(p);assert.equal(check(p,record).blockingCount,0);assert.equal(check(p,record).status,'manual');confirm(p,item,record);assert.equal(check(p,record).status,'ready');
+  const p=pure({kind:'other',fileFormat:'따로 파일',durationSeconds:null,aspectRatio:''}),item=add(p),record=inspection(p);assert.equal(check(p,record).blockingCount,0);assert.equal(check(p,record).status,'manual');confirm(p,item,record);assert.equal(check(p,record).status,'ready');
 });
 test('specification, mapping and approved-preview changes invalidate inspection and human acknowledgement',()=>{
   const p=pure(),item=add(p),record=inspection(p);confirm(p,item,record);assert.equal(check(p,record).status,'ready');
@@ -128,6 +128,6 @@ test('background scans coalesce, omit archived projects and preserve settings re
   const f=await fixture(t);f.selected();const before=f.service.get(f.owner,f.id),first=f.service.scanChecks(),second=f.service.scanChecks();assert.equal(first,second);assert.deepEqual(await first,{checked:1,failed:0});assert.equal(f.service.get(f.owner,f.id).draftRevision,before.draftRevision);const row=f.store.get('clientProjects',f.id);f.store.put('clientProjects',f.id,{...row,stage:'archived'});assert.deepEqual(await f.service.scanChecks(),{checked:0,failed:0});
 });
 test('completed delivery retains checks and a new approval never reuses the prior draft or inspection',async t=>{
-  const f=await fixture(t);f.selected();let view=await f.service.refreshChecks(f.owner,f.id);view=f.act('update_item',{itemId:view.items[0].id,confirmed:true,confirmationToken:view.items[0].confirmationToken});view=f.act('publish',{confirmed:true});assert.equal(view.status,'delivered');assert.equal(view.deliveryCheck.status,'ready');assert.equal(view.deliveryCheck.canInspect,false);assert.match(view.deliveryCheck.inspectReason,/화면을 새로 불러오면/);assert.doesNotMatch(view.deliveryCheck.inspectReason,/다시 실행/);assert.equal((await f.service.refreshChecks(f.owner,f.id)).deliveryCheck.status,'ready');
+  const f=await fixture(t);f.selected();let view=await f.service.refreshChecks(f.owner,f.id);view=f.act('update_item',{itemId:view.items[0].id,confirmed:true,confirmationToken:view.items[0].confirmationToken});view=f.act('publish',{confirmed:true});assert.equal(view.status,'delivered');assert.equal(view.deliveryCheck.status,'ready');assert.equal(view.deliveryCheck.canInspect,false);assert.match(view.deliveryCheck.inspectReason,/새로 불러오면/);assert.doesNotMatch(view.deliveryCheck.inspectReason,/다시 실행/);assert.equal((await f.service.refreshChecks(f.owner,f.id)).deliveryCheck.status,'ready');
   let row=f.clientProjects.project(f.owner,f.id);row=f.clientProjects.addVersion(f.owner,f.id,{revision:row.revision,kind:'preview',label:'추가 작업 시안'},media()).project;f.clientProjects.customerAction(f.customer.session,f.customer.csrf,{revision:row.revision,action:'approve',versionId:row.versions.at(-1).id});view=f.service.get(f.owner,f.id);assert.equal(view.draftRevision,0);assert.equal(view.items.length,0);assert.equal(view.deliveryCheck.status,'attention');assert.equal(f.store.all('clientDeliveryChecks').length,1);
 });

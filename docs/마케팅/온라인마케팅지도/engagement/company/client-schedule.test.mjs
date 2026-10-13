@@ -14,7 +14,7 @@ import {buildClientSchedule,applyClientScheduleAction} from './client-schedule.m
 const now='2026-10-12T03:00:00.000Z';
 const config=(extra={})=>({action:'configure',enabled:true,calendar:'calendar',targets:{kickoff:'',preview:'',customer:'',revision:'',delivery:''},remainingWorkDays:null,customerWaitDays:3,internalReviewDays:2,...extra});
 const status=(fn,code)=>assert.throws(fn,error=>error.status===code);
-function raw(){return {id:randomUUID(),title:'합성 일정 프로젝트',ownerId:'owner',reviewerId:'reviewer',stage:'planning',dueDate:'2026-10-30',terms:'합성 조건',revision:1,history:[],messages:[],versions:[],kickoffPlan:{enabled:true,requirements:[],dueDate:''},studio:{schemaVersion:1,strategy:{revision:1,data:{...emptyStrategyData(),primaryPromise:'쉽게 사용',evidence1:'사용 장면',desiredAction:'직접 확인'},confirmation:{strategyRevision:1}},assets:[],references:[],concepts:[],scenes:[],history:[],comments:[],sceneReviews:[],conceptSelections:[]}};}
+function raw(){return {id:randomUUID(),title:'합성 일정 프로젝트',ownerId:'owner',reviewerId:'reviewer',stage:'planning',dueDate:'2026-10-30',terms:'합성 조건',revision:1,history:[],messages:[],versions:[],kickoffPlan:{enabled:true,requirements:[],dueDate:''},studio:{schemaVersion:1,strategy:{revision:1,data:{...emptyStrategyData(),primaryPromise:'쉽게 사용',evidence1:'사용 장면',desiredAction:'직접 볼 것'},confirmation:{strategyRevision:1}},assets:[],references:[],concepts:[],scenes:[],history:[],comments:[],sceneReviews:[],conceptSelections:[]}};}
 const configure=(row,extra={})=>({...row,schedulePlan:applyClientScheduleAction(row,config(extra),{actor:'PRIVATE-ACTOR',at:now})});
 const report=(row,extra={})=>buildClientSchedule(row,{now,canEdit:true,...extra});
 const preview=(id='preview-1',more={})=>({id,kind:'preview',label:'합성 시안',createdAt:'2026-10-09T02:00:00Z',approvedAt:null,...more});
@@ -38,7 +38,7 @@ test('KST midnight changes internal targets from upcoming to due and then overdu
 });
 
 test('weekday arithmetic excludes only weekends, including a Friday-to-Monday wait deadline',()=>{
-  let row=raw();row.versions=[preview()];row=configure(row,{calendar:'weekdays',remainingWorkDays:1,customerWaitDays:1});const friday=report(row,{now:'2026-10-09T03:00:00Z'});assert.equal(friday.estimatedFinishDate,'2026-10-12');assert.equal(friday.waiting[0].dueDate,'2026-10-12');const monday=report(row);assert.equal(monday.waiting[0].elapsedDays,1);assert.equal(monday.waiting[0].due,true);assert.match(monday.calendarLabel,/공휴일 미반영/);
+  let row=raw();row.versions=[preview()];row=configure(row,{calendar:'weekdays',remainingWorkDays:1,customerWaitDays:1});const friday=report(row,{now:'2026-10-09T03:00:00Z'});assert.equal(friday.estimatedFinishDate,'2026-10-12');assert.equal(friday.waiting[0].dueDate,'2026-10-12');const monday=report(row);assert.equal(monday.waiting[0].elapsedDays,1);assert.equal(monday.waiting[0].due,true);assert.match(monday.calendarLabel,/평일만/);
   row=configure(row,{calendar:'calendar',remainingWorkDays:1,customerWaitDays:1});assert.equal(report(row,{now:'2026-10-09T03:00:00Z'}).estimatedFinishDate,'2026-10-10');assert.equal(report(row).waiting[0].elapsedDays,3);
 });
 
@@ -86,7 +86,7 @@ test('unset wait limits remain undated and invalid or future source timestamps d
 });
 
 test('milestones derive current facts and never treat a producing or delivered stage as evidence',()=>{
-  let row=configure(raw());let view=report(row);assert.equal(milestone(view,'kickoff').status,'complete');assert.equal(milestone(view,'revision').status,'not_required');assert.equal(milestone(view,'preview').status,'undated');row.stage='delivered';assert.notEqual(milestone(report(row),'delivery').status,'complete');assert.notEqual(report(row).status,'complete');row.kickoffPlan.enabled=false;assert.notEqual(milestone(report(row),'kickoff').status,'complete');assert.match(milestone(report(row),'kickoff').reason,/설정/);
+  let row=configure(raw());let view=report(row);assert.equal(milestone(view,'kickoff').status,'complete');assert.equal(milestone(view,'revision').status,'not_required');assert.equal(milestone(view,'preview').status,'undated');row.stage='delivered';assert.notEqual(milestone(report(row),'delivery').status,'complete');assert.notEqual(report(row).status,'complete');row.kickoffPlan.enabled=false;assert.notEqual(milestone(report(row),'kickoff').status,'complete');assert.match(milestone(report(row),'kickoff').reason,/자료 챙기기를 켜/);
 });
 
 test('other current customer confirmation requests prevent customer milestone completion despite preview approval',()=>{
@@ -121,7 +121,7 @@ test('bounded history retains previous configurations and excludes actor ids fro
 });
 
 test('service checks current permissions and project revision without modifying source agreements or confirmations',async t=>{
-  const f=await fixture(t);for(const [who,code]of [['viewer',403],['reviewer',403],['other',404]])status(()=>f.call({},f.users[who]),code);const before=f.read();status(()=>f.service.schedule(f.users.owner,f.project.id,{...config(),revision:0}),409);const p=f.call({remainingWorkDays:4},f.users.manager);assert.equal(p.revision,before.revision+1);assert.equal(p.schedule.canEdit,true);assert.equal(p.dueDate,before.dueDate);assert.equal(p.stage,before.stage);assert.equal(p.terms,before.terms);assert.deepEqual(p.messages,before.messages);assert.equal(f.read().history.at(-1).action,'내부 일정 점검 설정');f.store.put('users',f.users.owner.id,{...f.users.owner,active:false});status(()=>f.call({remainingWorkDays:5}),401);f.store.put('clientProjects',p.id,{...f.read(),stage:'archived'});status(()=>f.call({remainingWorkDays:5},f.users.admin),409);
+  const f=await fixture(t);for(const [who,code]of [['viewer',403],['reviewer',403],['other',404]])status(()=>f.call({},f.users[who]),code);const before=f.read();status(()=>f.service.schedule(f.users.owner,f.project.id,{...config(),revision:0}),409);const p=f.call({remainingWorkDays:4},f.users.manager);assert.equal(p.revision,before.revision+1);assert.equal(p.schedule.canEdit,true);assert.equal(p.dueDate,before.dueDate);assert.equal(p.stage,before.stage);assert.equal(p.terms,before.terms);assert.deepEqual(p.messages,before.messages);assert.equal(f.read().history.at(-1).action,'일정 목표일 바꿈');f.store.put('users',f.users.owner.id,{...f.users.owner,active:false});status(()=>f.call({remainingWorkDays:5}),401);f.store.put('clientProjects',p.id,{...f.read(),stage:'archived'});status(()=>f.call({remainingWorkDays:5},f.users.admin),409);
 });
 
 test('customer project and PULSE responses never include internal target dates, estimates, configuration or schedule history',async t=>{

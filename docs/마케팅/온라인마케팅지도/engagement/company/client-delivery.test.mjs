@@ -21,7 +21,7 @@ async function fixture(t){
   function approve(project){const row=clientProjects.project(project.user,project.id);return clientProjects.customerAction(project.session.session,project.session.csrf,{revision:row.revision,action:'approve',versionId:row.versions.filter(version=>version.kind==='preview').at(-1).id}).project;}
   function approved(options={}){const project=create(options.user||users.owner,options.project||{});preview(project,options);approve(project);return project;}
   function act(project,action,extra={},user=project.user){return service.mutate(user,project.id,{...revisions(service.get(user,project.id)),action,...extra});}
-  function upload(project,requirementId='video',media=metadata(),label='납품 파일'){return service.addUpload(project.user,project.id,{...revisions(service.get(project.user,project.id)),requirementId,label},media);}
+  function upload(project,requirementId='video',media=metadata(),label='최종본'){return service.addUpload(project.user,project.id,{...revisions(service.get(project.user,project.id)),requirementId,label},media);}
   function ready(project){let view=act(project,'use_approved',{requirementId:'video',label:'최종 영상'});return act(project,'update_item',{itemId:view.items[0].id,confirmed:true});}
   return {directory,store,users,clientProjects,service,create,preview,approve,approved,act,upload,ready};
 }
@@ -38,7 +38,7 @@ test('preparing approved media and guidance remains internal until an explicit p
   const f=await fixture(t),project=f.approved(),before=f.store.get('clientProjects',project.id),customerBefore=f.clientProjects.read(project.session.session).project;
   let view=f.act(project,'use_approved',{requirementId:'video',label:'전달 영상'});assert.equal(view.items[0].confirmed,false);assert.equal(view.canPublish,false);assert.equal(view.checks.find(check=>check.id==='item:'+view.items[0].id).status,'manual');
   view=f.act(project,'update_item',{itemId:view.items[0].id,confirmed:true});assert.equal(view.canPublish,true);assert.equal(view.status,'ready');assert.deepEqual(f.store.get('clientProjects',project.id),before);assert.deepEqual(f.clientProjects.read(project.session.session).project,customerBefore);
-  view=f.act(project,'save_guide',{guide:'담당자가 작성한 사용 안내'});assert.equal(view.guide,'담당자가 작성한 사용 안내');view=f.upload(project,'subtitle',metadata('text/vtt'),'별도 자막');assert.equal(view.guide,'담당자가 작성한 사용 안내');assert.equal(view.canPublish,false);
+  view=f.act(project,'save_guide',{guide:'담당자가 작성한 사용 안내'});assert.equal(view.guide,'담당자가 작성한 사용 안내');view=f.upload(project,'subtitle',metadata('text/vtt'),'따로 파일');assert.equal(view.guide,'담당자가 작성한 사용 안내');assert.equal(view.canPublish,false);
   assert.doesNotMatch(JSON.stringify(view),/PRIVATE_|diskName|PUBLIC_SUMMARY|PUBLIC_TERMS/);
 });
 

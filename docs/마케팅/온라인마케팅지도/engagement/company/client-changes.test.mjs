@@ -11,7 +11,7 @@ import {emptyStrategyData,applyStrategyAction} from './pulse-strategy.mjs';
 import {buildClientChanges,customerClientChanges,applyClientChangesAction} from './client-changes.mjs';
 
 const at='2026-10-12T03:00:00.000Z';
-const data=()=>({...emptyStrategyData(),objective:'sales',product:'서비스',audience:'신규 고객',primaryPromise:'쉬운 시작',evidence1:'세 단계 사용 장면',memoryHook:'한 장면',desiredAction:'자료 확인',channels:['website'],value1:'빠름',value2:'편리함',durationSeconds:30,subtitles:'자막 원문',screenCopy:'화면 문구'});
+const data=()=>({...emptyStrategyData(),objective:'sales',product:'서비스',audience:'신규 고객',primaryPromise:'쉬운 시작',evidence1:'세 단계 사용 장면',memoryHook:'한 장면',desiredAction:'자료 다 받기',channels:['website'],value1:'빠름',value2:'편리함',durationSeconds:30,subtitles:'자막 원문',screenCopy:'화면 문구'});
 function raw(){return {id:randomUUID(),title:'합성 변경 프로젝트',stage:'producing',terms:'영상 1편',dueDate:'2026-10-22',revision:1,versions:[],messages:[],history:[],internalNotes:'PRIVATE-NOTE',intake:{files:[{id:randomUUID(),fileName:'PRIVATE-INTAKE'}]},studio:{schemaVersion:1,preferences:{},strategy:{revision:1,data:data(),confirmation:{strategyRevision:1}},assets:[],references:[],concepts:[],scenes:[],history:[],conceptSelections:[],sceneReviews:[],comments:[]}};}
 const run=(row,input)=>({...row,changeControl:applyClientChangesAction(row,input,{actor:'STAFF-ACTOR',at})});
 const capture=row=>run(row,{action:'capture',confirmed:true});
@@ -140,7 +140,7 @@ test('removed agreed conditions remain pending even after staff reviews so the w
 
 test('service checks current ACL, project revision, archived status and preserves one authoritative project',async t=>{
   const f=await fixture(t),input={action:'capture',confirmed:true};for(const [who,code]of [['viewer',403],['reviewer',403],['other',404]])status(()=>f.call(input,f.users[who]),code);status(()=>f.call({...input,revision:0}),409);status(()=>f.call({...input,baseline:{}}),400);
-  const before=f.read(),saved=f.call(input,f.users.manager);assert.equal(saved.revision,before.revision+1);assert.equal(saved.changes.canEdit,true);assert.equal(saved.stage,before.stage);assert.deepEqual(saved.messages,before.messages);assert.equal(f.read().history.at(-1).action,'제작 변경 기준 저장');status(()=>f.call(input),409);
+  const before=f.read(),saved=f.call(input,f.users.manager);assert.equal(saved.revision,before.revision+1);assert.equal(saved.changes.canEdit,true);assert.equal(saved.stage,before.stage);assert.deepEqual(saved.messages,before.messages);assert.equal(f.read().history.at(-1).action,'바뀐 것 기준 잡음');status(()=>f.call(input),409);
   f.store.put('users',f.users.owner.id,{...f.users.owner,active:false});status(()=>f.call({action:'set_enabled',enabled:false}),401);f.store.put('clientProjects',saved.id,{...f.read(),stage:'archived'});status(()=>f.call({action:'set_enabled',enabled:false},f.users.admin),409);
 });
 
