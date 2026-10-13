@@ -121,6 +121,15 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
       channels: channels.map(channel => ({ id: channel.id, platform: channel.platform, displayName: channel.displayName || channel.handle || channel.id, canEdit: canWriteChannel(user, channel), connected: isConnected(channel) })),
       canWrite: channels.some(channel => canWriteChannel(user, channel)), metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
   }
+  // Link checks need current source/permission only, not the full analytics
+  // projection (which compares every post with its channel history).
+  function linkSource(user, id) {
+    user = currentUser(user);
+    const row = store.get(KIND, id);
+    if (!row || row.active === false) throw fail('현재 확인할 수 있는 게시 기록이 없습니다.', 404);
+    const channel = channelFor(user, row.channelId);
+    return { id: row.id, url: row.url, canEdit: canWriteChannel(user, channel) };
+  }
   function register(user, input = {}) {
     const channel = channelFor(user, input.channelId, true), url = normalizePerformancePostUrl(input.url), at = stamp(), publishedAt = iso(input.publishedAt, '게시 시각');
     const publicationFormat=input.publicationFormat||null;
@@ -296,5 +305,5 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
   }
   const waitForIdle = async () => { await Promise.allSettled([...activeJobs]); };
   const stop = async () => { stopped = true; for (const controller of controllers) controller.abort(); await waitForIdle(); };
-  return { register, list, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
+  return { register, list, linkSource, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
 }

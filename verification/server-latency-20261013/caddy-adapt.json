@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "candidateSha256": "6b72365de3a16f9d823c4b7427703d0760fbe771ed5f46f79a91b5c198210fde",
+  "adaptedSha256": "da7360a195af4f654f56c21ce6865985c640c36c14283af966196dff9390e610",
+  "protocols": [
+    "h1",
+    "h2"
+  ],
+  "altSvcClearDeferred": true,
+  "bothUpstreamsPreserved": true,
+  "productionReloads": 0
+}

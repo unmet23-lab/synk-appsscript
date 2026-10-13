@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync,rmSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
-import {randomUUID} from 'node:crypto';
+import {randomUUID,createHash} from 'node:crypto';
 import {Store} from './store.mjs';
 import {createStudioService} from './studio-service.mjs';
 import {createPublicationPackageService} from './publication-package.mjs';
@@ -101,4 +101,39 @@ test('scans coalesce, process sequentially with a ten-request ceiling, and retry
 
 test('automatic scans resolve current owners instead of trusting saved assignment or the creator',async t=>{
   const f=fixture(t),p=f.pack(),entry=f.post();f.store.put('studioProductions',p.production.id,{...p.production,ownerId:f.users.other.id,assigneeId:f.users.other.id,teamId:'b'});f.store.put('channels',f.channel.id,{...f.channel,ownerIds:[f.users.other.id],teamId:'b'});f.store.put('users',f.users.owner.id,{...f.users.owner,active:false});const result=await f.service.scanDue();assert.equal(result.checked,2);assert.ok(f.store.all('publicationLinkChecks').every(row=>row.actorId===f.users.other.id));assert.equal(f.service.get(f.users.other,entry.target).check.status,'reachable');
+});
+
+function checkedPosts(f,count){
+  const original=f.post().entry;f.store.remove('postPerformanceEntries',original.id);
+  f.store.transaction(()=>{for(let i=0;i<count;i++){
+    const id='synthetic-post-'+i,url='https://www.youtube.com/watch?v='+String(i).padStart(11,'0'),fingerprint=createHash('sha256').update(url).digest('hex');
+    f.store.put('postPerformanceEntries',id,{...original,id,url});
+    f.store.put('publicationLinkChecks',`post:${id}:${fingerprint}`,{id,kind:'post',url,fingerprint,status:'reachable',nextCheckAt:'2026-10-12T09:00:00.000Z'});
+  }});
+}
+
+test('fresh post scans read the history once and never assemble analytics or decrypt channel credentials',async t=>{
+  const f=fixture(t);checkedPosts(f,100);let postReads=0;
+  const all=f.store.all.bind(f.store);f.store.all=kind=>{if(kind==='postPerformanceEntries')postReads++;return all(kind);};
+  f.store.secret=()=>{throw Error('Link checks do not need credentials');};
+  assert.deepEqual(await f.service.scanDue(),{checked:0,skipped:100,failed:0});
+  assert.equal(postReads,1);assert.equal(f.calls.length,0);
+});
+
+test('fresh-only scans yield to requests and honor cancellation before the next batch',async t=>{
+  const f=fixture(t);checkedPosts(f,60);const controller=new AbortController();
+  const turn=new Promise(resolve=>setImmediate(()=>{controller.abort();resolve();}));
+  const result=await f.service.scanDue({signal:controller.signal});await turn;
+  assert.ok(result.skipped>0&&result.skipped<60);assert.equal(result.checked,0);assert.equal(f.calls.length,0);
+  assert.equal((await f.service.scanDue()).skipped,60);
+});
+
+test('scheduled post checks recheck ownership after yielding between skipped batches',async t=>{
+  const f=fixture(t);checkedPosts(f,26);
+  const target=f.store.get('postPerformanceEntries','synthetic-post-25'),fingerprint=createHash('sha256').update(target.url).digest('hex');
+  f.store.remove('publicationLinkChecks',`post:${target.id}:${fingerprint}`);
+  const turn=new Promise(resolve=>setImmediate(()=>{f.store.put('channels',f.channel.id,{...f.channel,ownerIds:[f.users.other.id],teamId:'b'});resolve();}));
+  const result=await f.service.scanDue();await turn;
+  assert.deepEqual(result,{checked:0,skipped:26,failed:0});assert.equal(f.calls.length,0);
+  assert.equal((await f.service.scanDue()).checked,1);assert.deepEqual(f.calls,[target.url]);
 });

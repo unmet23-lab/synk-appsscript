@@ -1,0 +1,36 @@
+{
+  "timeout": {
+    "sample": 129,
+    "at": "2026-10-13T00:25:49.087Z",
+    "error": "TimeoutError",
+    "ms": 8033,
+    "endsAt": "2026-10-13T00:25:57.120Z",
+    "before": {
+      "at": "2026-10-13T00:25:44.081Z",
+      "status": 200,
+      "ready": true,
+      "ms": 324
+    },
+    "after": {
+      "at": "2026-10-13T00:25:57.235Z",
+      "status": 200,
+      "ready": true,
+      "ms": 320
+    },
+    "stage": "No HTTP status was recorded: fetch had not returned response headers before the 8-second AbortSignal deadline."
+  },
+  "serverRestartsObserved": 0,
+  "limitations": [
+    "The controller observations bracket the timeout and do not sample every instant inside it.",
+    "The client record does not expose DNS/TCP/TLS/first-byte timings, so PC/network/load-balancer/origin delay cannot be distinguished here.",
+    "No claim of zero public latency or uninterrupted availability is made."
+  ],
+  "correctedNetworkLoadBalancerLogQuery": {
+    "resourceType": "loadbalancing.googleapis.com/ExternalNetworkLoadBalancerRule",
+    "from": "2026-10-13T00:25:40Z",
+    "until": "2026-10-13T00:26:05Z",
+    "httpStatus": 200,
+    "matchingEntries": 0,
+    "interpretation": "No entries is not proof the request never reached the load balancer."
+  }
+}

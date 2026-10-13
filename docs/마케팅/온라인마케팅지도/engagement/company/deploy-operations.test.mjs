@@ -11,6 +11,34 @@ const deploy = fileURLToPath(new URL('./deploy/', import.meta.url));
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : '/bin/bash';
 const unix = value => value.replaceAll('\\', '/').replace(/^([A-Za-z]):/, (_, letter) => '/' + letter.toLowerCase());
 const skip = !existsSync(bash) ? 'Bash is unavailable; Linux runtime checks still required' : false;
+const caddy = process.env.SYNK_QA_CADDY;
+
+test('Caddy adapter advertises only reachable TCP protocols and clears cached alternatives', {
+  skip: caddy ? false : 'Set SYNK_QA_CADDY to an existing Caddy binary; no download is performed.',
+}, () => {
+  const result = spawnSync(caddy, ['adapt', '--config', join(deploy, 'Caddyfile'), '--adapter', 'caddyfile'], {
+    env: { ...process.env, SYNK_COMPANY_DOMAIN: 'workspace.example.test', SYNK_TLS_EMAIL: 'ops@example.test' },
+    encoding: 'utf8', timeout: 10000,
+  });
+  assert.equal(result.status, 0, result.error?.message || result.stderr);
+  const servers = Object.values(JSON.parse(result.stdout).apps.http.servers);
+  assert.equal(servers.length, 1);
+  assert.deepEqual(servers[0].protocols, ['h1', 'h2']);
+  const handlers = [];
+  const visit = value => {
+    if (!value || typeof value !== 'object') return;
+    if (value.handler) handlers.push(value);
+    for (const child of Object.values(value)) visit(child);
+  };
+  visit(servers[0].routes);
+  const clear = handlers.filter(value => value.handler === 'headers' && value.response?.set?.['Alt-Svc']);
+  assert.equal(clear.length, 1);
+  assert.deepEqual(clear[0].response.set['Alt-Svc'], ['clear']);
+  assert.equal(clear[0].response.deferred, true, 'clear must be applied when response headers are written');
+  assert.deepEqual(handlers.filter(value => value.handler === 'reverse_proxy').flatMap(value => value.upstreams.map(upstream => upstream.dial)).sort(),
+    ['company:4191', 'synk-spaceship:4318']);
+});
+
 async function fixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'synk-deploy-ops-'));
   t.after(async () => { assert.ok(resolve(root).startsWith(resolve(tmpdir()) + sep)); await rm(root, { recursive: true, force: true }); });

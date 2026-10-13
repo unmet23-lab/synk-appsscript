@@ -1,10 +1,27 @@
 {
     email {$SYNK_TLS_EMAIL}
+    # The production load balancer publishes TCP only, so HTTP/3 is unavailable.
+    servers {
+        protocols h1 h2
+    }
 }
 
 {$SYNK_COMPANY_DOMAIN} {
     # Preserve the public Host for company origin/session validation.
     header Strict-Transport-Security "max-age=31536000"
+    # Invalidate the earlier HTTP/3 advertisement cached by returning browsers.
+    header >Alt-Svc clear
+    # Insert this handle inside the existing workspace.synk.im site block,
+    # before the existing company reverse_proxy. Preserve every other directive.
+    @spaceship path /api/spaceship /api/spaceship/*
+    handle @spaceship {
+        reverse_proxy synk-spaceship:4318 {
+            header_up X-Forwarded-For {remote_host}
+            header_up -Cookie
+            flush_interval -1
+        }
+    }
+
     reverse_proxy company:4191 {
         # Caddy is the only public entry; discard client-supplied forwarding.
         header_up X-Forwarded-For {remote_host}

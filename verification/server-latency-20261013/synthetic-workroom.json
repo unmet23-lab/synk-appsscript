@@ -1,0 +1,38 @@
+{
+  "scope": "Canonical source fix for the two reproduced workroom latency defects; no deployment, staging or commit",
+  "sourceFiles": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/post-performance.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/automation-notifications.mjs"
+  ],
+  "changedTestFiles": [
+    "docs/마케팅/온라인마케팅지도/engagement/company/post-performance.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/automation-notifications.test.mjs"
+  ],
+  "tests": {
+    "command": "node --test company/publication-link-check.test.mjs company/post-performance.test.mjs company/automation-notifications.test.mjs company/server-publication-links.test.mjs company/server-automation-health.test.mjs company/server-workroom-schedule.test.mjs (all paths rooted at docs/마케팅/온라인마케팅지도/engagement)",
+    "passed": 82,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 29185.6454,
+    "diffCheckPassed": true,
+    "newRegressionCases": 5
+  },
+  "syntheticBefore": "workroom-load-results.json",
+  "syntheticAfter": "workroom-load-after.json",
+  "benchmarks": [
+    {"case":"future-due link scan, 100 posts", "beforeMs":1606.17, "afterMs":15.77},
+    {"case":"future-due link scan, 200 posts", "beforeMs":7157.06, "afterMs":27.99},
+    {"case":"future-due link scan, 400 posts", "beforeMs":20999.85, "afterMs":42.98, "beforeTimerDelayMs":21004.69, "afterTimerDelayMs":13.86, "beforeFullListReads":401, "afterFullListReads":1, "beforeParsedPostRows":160400, "afterParsedPostRows":400, "beforeCredentialReads":1200, "afterCredentialReads":0},
+    {"case":"notification list with no owned saved receipt, 500 projects", "beforeMs":425.19, "afterMs":0.21, "afterUserPointReads":1, "afterProjectReads":0}
+  ],
+  "preservedBehavior": [
+    "Post source and current user/channel authority are reread after every asynchronous network phase.",
+    "Scheduled scans still coalesce, have a ten-probe ceiling, honor six-hour due times, cancellation and stop.",
+    "Every 25 candidates yields even when all candidates are skipped; ownership changes during that yield cannot authorize the old owner.",
+    "Notification early exit only applies when no saved receipt belongs to the current user. Suppressed/unavailable receipts retain existing current-source validation and error behavior.",
+    "Scheduled scans still discover and create new notification metadata. List/read/readAll do not create it."
+  ],
+  "limitation": "Local synthetic measurements, not evidence that these defects caused the production HA reason 23 event. Windows timer granularity contributes to the remaining roughly 14ms zero-timer delay."
+}

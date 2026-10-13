@@ -1,0 +1,67 @@
+{
+  "schema": "synk-ha-plan/v1",
+  "status": "isolated-cloud-resources-created-not-armed",
+  "armed": false,
+  "project": "synk-bake-unmet27",
+  "region": "asia-northeast3",
+  "scope": ["workspace", "messenger", "pulse", "pulse-app", "creative-research-import", "spaceship-current-origin"],
+  "independentDependencies": ["Supabase", "GitHub Pages", "Gemini Spark", "Google Drive"],
+  "nodes": {
+    "primary": {"name": "synk-company-1", "instanceId": "6695198820229895670", "privateIp": "10.77.0.2", "zone": "asia-northeast3-a", "instanceGroupName": "synk-company-1-group", "machineType": "e2-medium", "existing": true},
+    "standby": {"name": "synk-company-2", "instanceId": "8318146427425792493", "privateIp": "10.77.0.3", "zone": "asia-northeast3-b", "instanceGroupName": "synk-company-2-group", "machineType": "e2-medium", "bootDiskGb": 20, "bootDiskType": "pd-standard", "existing": false, "applicationStartsBeforePromotion": false},
+    "controller": {"name": "synk-company-ha-control", "instanceId": "824471077742060012", "privateIp": "10.77.0.4", "zone": "asia-northeast3-c", "machineType": "e2-micro", "bootDiskGb": 10, "bootDiskType": "pd-standard", "existing": false, "aiCalls": false}
+  },
+  "trigger": {"pollSeconds": 10, "continuousFailureSeconds": 180, "externalQuorum": 2, "externalMaxAgeSeconds": 90, "maximumObservationGapSeconds": 20, "unknownObservation": "reset-window", "controllerRestart": "reset-window", "healthyObservation": "reset-window", "maintenanceMaximumSeconds": 1800},
+  "data": {
+    "name": "synk-company-data-ha", "type": "pd-balanced", "sizeGb": 50,
+    "replication": "regional-pd-synchronous", "replicaZones": ["asia-northeast3-a", "asia-northeast3-b"],
+    "singleWriter": true, "diskId": "1729270376038801899", "autoDelete": false,
+    "mount": "/srv/synk", "migration": "writer-stopped-verified-copy",
+    "preserveOldDisk": "synk-company-data", "deleteOriginalAfterMigration": false,
+    "include": ["company-and-messenger-databases-with-wal", "original-encryption-key", "identity-sessions-and-registry", "uploads-and-studio-media", "backups", "caddy-data", "caddy-config"],
+    "allUploadRpoZeroProven": false
+  },
+  "routing": {
+    "backendServiceName": "synk-company-ha-backend", "forwardingRuleName": "synk-company-ha-web", "healthCheckName": "synk-company-ha-ready",
+    "kind": "regional-external-passthrough-network-load-balancer", "backendServiceBased": true,
+    "addressName": "synk-company-ip", "existingAddress": "34.64.170.2", "networkTier": "PREMIUM",
+    "ports": [80, 443], "protocol": "TCP", "udp443": false,
+    "oneZonalGroupPerNode": true, "standbyIsFailoverBackend": true,
+    "failoverRatio": 1, "dropTrafficIfUnhealthy": true, "disableConnectionDrainOnFailover": true,
+    "healthCheck": {"protocol": "HTTP", "port": 4192, "path": "/ready", "intervalSeconds": 10, "timeoutSeconds": 5, "healthyThreshold": 2, "unhealthyThreshold": 2},
+    "healthEndpointIsPrivate": true, "publicDomainChanges": false,
+    "outbound": "one-distinct-egress-ip-per-vm-with-existing-inbound-restrictions",
+    "initialVipMoveRequiresMaintenance": true
+  },
+  "fencing": {
+    "method": "confirmed-old-vm-stop-plus-regional-disk-force-attach",
+    "oldVmStopUnknown": "hold-no-promotion",
+    "bootAndDockerMustValidateOwnership": true,
+    "standbyMustNotAttachOldZonalCopy": true,
+    "unverifiedExternalReplayContract": "hold-no-promotion",
+    "remoteExactlyOnceClaimed": false,
+    "diskForceAttachAloneProvesExternalJobsStopped": false,
+    "controlState": "private-gcs-generation-match-with-durable-operation-receipts",
+    "controlStoragePrefix": "company/ha-control/",
+    "useBackupUploaderIdentityForController": false,
+    "serviceAccountKeys": false
+  },
+  "automaticFailback": false,
+  "release": {"manifestSha256": "30a195652cd4e0b1f35bf71793059e3553776de7c8008f4bb81e1be95ca1d3d1", "refreshFromLatestProductionBeforeProvisioning": true},
+  "runtime": {
+    "bucket": "synk-company-ha-control-931078180935",
+    "stateObject": "company/ha-control/state.json",
+    "receiptPrefix": "company/ha-control/receipts/",
+    "healthPrefix": "company/ha-control/health/",
+    "operatorPermitPrefix": "company/ha-control/operator-permits/",
+    "uptimeCheckId": "synk-company-public-https-readiness-s6ISwDuKsT4",
+    "observerIds": ["usa-oregon", "eur-belgium", "apac-singapore"]
+  },
+  "failureAfterFencing": "hold-and-alert-with-current-disk-owner-no-stale-rollback",
+  "currentProductionHealthSufficientForFailover": false,
+  "runtimeAdaptersImplemented": false,
+  "recurringCostApproved": true,
+  "actualFailoverDrillPassed": false,
+  "pcRequiredAtRuntime": false,
+  "guaranteedTotalRecoverySeconds": null
+}

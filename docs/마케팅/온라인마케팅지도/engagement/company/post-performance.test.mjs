@@ -48,6 +48,18 @@ test('registration requires current channel authority and real past publication 
   assert.throws(() => f.register(), { status: 403 });
 });
 
+test('link source uses a single current post without loading analytics or credentials and rejects stale permissions',t=>{
+  const f=fixture(t),entry=f.register();
+  f.store.all=()=>{throw Error('Full history must not be read for a link source');};
+  f.store.secret=()=>{throw Error('Credentials must not be read for a link source');};
+  assert.deepEqual(f.service.linkSource(f.owner,entry.id),{id:entry.id,url:entry.url,canEdit:true});
+  assert.equal(f.service.linkSource(f.viewer,entry.id).canEdit,false);
+  f.store.put('users',f.owner.id,{...f.owner,role:'viewer'});assert.equal(f.service.linkSource({...f.owner,role:'admin'},entry.id).canEdit,false);
+  f.store.put('channels',f.channel.id,{...f.channel,ownerIds:[f.other.id],teamId:'b'});assert.throws(()=>f.service.linkSource(f.owner,entry.id),{status:404});
+  assert.equal(f.service.linkSource(f.other,entry.id).canEdit,true);
+  f.store.put('postPerformanceEntries',entry.id,{...entry,active:false});assert.throws(()=>f.service.linkSource(f.other,entry.id),{status:404});
+});
+
 test('duplicate aliases preserve original publication and survive restart; visibility follows current channel', t => {
   const f = fixture(t), entry = f.register();
   const duplicate = f.service.register(f.owner, { channelId: 'channel', url: `https://youtu.be/${ID}`, publishedAt: BASE, title: 'replacement' });

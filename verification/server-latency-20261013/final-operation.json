@@ -1,0 +1,98 @@
+{
+  "schema": "synk-server-latency-final-operation/v1",
+  "status": "passed",
+  "verifiedAt": "2026-10-13T05:23:02.120Z",
+  "releaseManifestSha256": "e6ecc48f099246125de0d750db3266a84bdcda1aab7db88a6b84e11a474f92cf",
+  "imageSha256": "84512a28d8f280d219aa23fc87f7fa0c83c71019e26b96d041dd741a65402310",
+  "releaseSourceFiles": 910,
+  "imagePayloadFiles": 531,
+  "runtimeHashes": {
+    "controller.mjs": "b0fde41f8a1eba8b7e0d1ec6258e66c976822e4d4f30dbe11ce94c60c8737daa",
+    "failover-policy.mjs": "befcba879561717676686bfc13102f17efa4b810a32ee1d4e26425e314e16e6c",
+    "node-agent.mjs": "aaf76e2cdad346fbdc1a8d7ee36ea6250b1f9abe335a80f9c8e49354707e215f",
+    "node-host.py": "9b74b24c2a4b0968babb93950011262918e6a53cbfd9c90c38a123779b8eca35"
+  },
+  "ha": {
+    "armed": true,
+    "activeEpoch": 7,
+    "singleWriter": "primary",
+    "standbyReady": false,
+    "replicaHealthy": true,
+    "controlGeneration": "1791867223426270",
+    "controllerObservedMs": 18280,
+    "restartCount": 0,
+    "recovered": true,
+    "currentReleaseOutageTested": false
+  },
+  "publicHttps": {
+    "status": 200,
+    "ready": true,
+    "tlsVerified": true,
+    "altSvc": "clear"
+  },
+  "backup": {
+    "bytes": 414305963,
+    "uploaded": true,
+    "applicationRestarts": 0,
+    "releaseManifestSha256": "e6ecc48f099246125de0d750db3266a84bdcda1aab7db88a6b84e11a474f92cf"
+  },
+  "isolatedRestore": {
+    "status": "passed",
+    "network": "none",
+    "uid": 1000,
+    "publishedPorts": 0,
+    "productionEnvFilePassed": false,
+    "cloudAuthorityRestored": false,
+    "originalKeyPreserved": true,
+    "protectedAccountTables": 9,
+    "protectedAccountRowsPreservedBeforeAndAfterStart": true,
+    "tokenRowsBefore": 7,
+    "tokenRowsAfter": 7,
+    "removedTokens": 0,
+    "qaContainersRemoved": true,
+    "realUserLoginTest": false
+  },
+  "naturalObservations": {
+    "durationMs": 1101000,
+    "samples": 18,
+    "regions": 3,
+    "errorSamples": 0
+  },
+  "linuxRearmQa": {
+    "nodeTests": 91,
+    "pythonTests": 34,
+    "deploymentTests": 126,
+    "failed": 0,
+    "skipped": 0,
+    "sourcePins": 107,
+    "protectedUnchanged": true
+  },
+  "temporaryManagementAccess": {
+    "rulesRestored": 2,
+    "sourceRemovedFromBothRules": true,
+    "publicReadyAfterRestore": true
+  },
+  "preparationHistory": {
+    "heldReadOnlyPreparations": [
+      "FRESH_SNAPSHOT_REQUIRED",
+      "CURRENT_NODE_HEALTH_REQUIRED",
+      "FRESH_CURRENT_OWNER_PROOF"
+    ],
+    "actualArmDispatches": 1,
+    "finalStrategy": "Parallel owner/natural reads; approval input pinned while reusing its fully validated value within read-only collectors; review before the last live snapshot; unmodified final preparation rechecks all approval evidence, QA source hashes, DR bindings and actual freshness. No clock or freshness-limit override."
+  },
+  "privateEvidenceSha256": {
+    "postcheck": "a3a752f89d5b80cdef586a6fa810da967eb7948ffc990b53d2fc25618cf5ce2c",
+    "restore": "bf9718caa33243c02ddb1aab46240260ba266d0855524007e3cdab6b60935189",
+    "backup": "613c55bf4958b552357b176af9b84e1b37d744fcf48c162b41cdd7ab6aa71c99",
+    "natural": "d4c31918c593a2610bd3080af095ac12f999839b7ae36389c193d25197a9ee5d",
+    "qa": "9b2e671c23d46bddac74fe358188b1b22cfc7f249c1677c822aa39094cf267a9",
+    "access": "80e9ed5914322909d073ac38a14cc5a8839d266e31ebe22991dc5b6a4897252e"
+  },
+  "limitations": [
+    "The historical 8033 ms Node fetch timeout is not reproduced and its exact cause remains unknown.",
+    "Correcting unavailable HTTP/3 advertisements is not proven to explain that historical Node timeout.",
+    "Before/after public samples do not show a latency speedup.",
+    "No new forced-outage or fresh-VM disaster recovery trial was performed."
+  ]
+}

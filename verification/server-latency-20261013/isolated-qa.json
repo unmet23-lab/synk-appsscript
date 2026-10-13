@@ -1,0 +1,68 @@
+{
+  "startedAt": "2026-10-13T04:50:14.378Z",
+  "endedAt": "2026-10-13T04:50:30.107Z",
+  "node": "v24.18.0",
+  "command": [
+    "node",
+    "--test",
+    "--test-reporter=tap",
+    "docs/마케팅/온라인마케팅지도/engagement/company/automation-notifications.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/post-performance.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/publication-link-check.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent-transport.test.mjs",
+    "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-stop-recovery.test.mjs"
+  ],
+  "status": 0,
+  "signal": null,
+  "error": null,
+  "counts": {
+    "tests": 129,
+    "suites": 0,
+    "pass": 129,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "duration_ms": 15638.6568
+  },
+  "sourceReview": {
+    "checkedAt": "2026-10-13T04:51:33.101Z",
+    "haFiles": [
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-agent.mjs",
+        "sha256": "aaf76e2cdad346fbdc1a8d7ee36ea6250b1f9abe335a80f9c8e49354707e215f",
+        "missingRelativeImports": [],
+        "credentialPatternMatches": []
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/controller.mjs",
+        "sha256": "b0fde41f8a1eba8b7e0d1ec6258e66c976822e4d4f30dbe11ce94c60c8737daa",
+        "missingRelativeImports": [],
+        "credentialPatternMatches": []
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/failover-policy.mjs",
+        "sha256": "befcba879561717676686bfc13102f17efa4b810a32ee1d4e26425e314e16e6c",
+        "missingRelativeImports": [],
+        "credentialPatternMatches": []
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/node-host.py",
+        "sha256": "9b74b24c2a4b0968babb93950011262918e6a53cbfd9c90c38a123779b8eca35",
+        "missingRelativeImports": [],
+        "credentialPatternMatches": []
+      },
+      {
+        "file": "docs/마케팅/온라인마케팅지도/engagement/company/deploy/ha/plan.json",
+        "sha256": "b82fbc279b078b3d38fb61f4ec3ed03d7ad4e08aab13e2fc7be1df169e0173d4",
+        "missingRelativeImports": [],
+        "credentialPatternMatches": []
+      }
+    ],
+    "limits": "Credential pattern checks plus manual plan/import review; not a general security audit. plan.json is the initial disabled template, not live deployment state.",
+    "appChanges": "Current user and channel authorization are re-read; link scans yield after 25 candidates and recheck after yielding; no-owned-alert reads return before expensive projections.",
+    "caddyChanges": "HTTP/1.1 and HTTP/2 only; deferred Alt-Svc clear; existing company and Spaceship routes preserved.",
+    "findings": []
+  }
+}
