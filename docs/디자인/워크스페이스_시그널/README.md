@@ -119,10 +119,11 @@ node --test tools/company-messenger/tests/*.test.mjs
 - **그림 경로**: 새 서버 경로를 만들지 않으려고 `tools/company-messenger/public/assets/signal-laptop.webp`(메신저 공용 폴더, 로그인 전에도 열림, Dockerfile이 폴더째 복사)에 두고 `/messenger/assets/signal-laptop.webp`로 부른다. 출처는 그 폴더 `SOURCES.md`에 한 줄로 적는다.
 - **바꿀 코드**: `public/app.js` `renderAuth()`의 소개 마크업 한 줄(위 막대·포스터·계기판; `#main.auth-layout`·`#auth-form`·`.auth-form-card h2`·`.auth-submit`·`#synk-id-login` 계약은 그대로), `public/signal.css` 로그인 구역. 서버·JS 동작은 바꾸지 않는다.
 - **지금 상태 — 작업본에 얹음(10-13 05:57)**: GPT의 회사 릴리스(9판 `signal.css` `7c238cee…`, `app.js` `113c1557…`)가 운영에 오른 것을 라이브 바이트로 확인한 뒤(20:53 UTC) `.tmp/workspace-login-v3-20261013/apply.py`로 얹었다 — `app.js` 소개 마크업 한 줄, `signal.css` 로그인 구역, 메신저 공용 폴더의 `signal-laptop.webp`, `SOURCES.md` 한 줄. 격리 서버(`verify-workspace-fixture.mjs`)에서 1440·1100·864·390 모두 포스터·계기판·로그인 폼이 보이고 콘솔 오류·가로 넘침 0, 로그인 관련 시험 124/124 통과. 운영(workspace.synk.im)에는 다음 회사 배포에 실린다.
+- **운영 반영 — 회사 서버 담당의 다음 릴리스로(10-13 13시)**: 운영은 아직 9판(`signal.css` `7c238cee…`)이다. 회사 운영이 세 서버 자동 장애 전환 구조(주·대기·감시, 배포마다 감시 해제 → 배포 → 백업·격리 복원 → 재무장)가 되어, 이 화면만 따로 넣지 않고 회사 서버 담당(GPT)의 다음 릴리스에 싣는다. 싣는 법은 `python -X utf8 .tmp/workspace-login-v3-20261013/apply.py --root=<릴리스 후보 폴더>` — 그 폴더의 `app.js`·`signal.css`에서 로그인 부분만 바꾸고 `signal-laptop.webp`·`SOURCES.md` 한 줄을 더하며, 이미 얹혀 있으면 그대로 둔다. 운영에서 받은 9판 파일에 얹은 결과 `signal.css`가 작업본과 같은 `7377122844901f7c…`였다. 오른 뒤 그 해시와 `/messenger/assets/signal-laptop.webp` 200을 확인한다.
 
 전후 화면: [864px 전후](화면/3판-로그인-전후.jpg) · [1440px·휴대폰](화면/3판-로그인-1440-휴대폰.jpg)
 
-**확인(10-13, 로컬):** 계정 하나만 있는 임시 DB 격리 서버에서 1440·1280·1100·864·390px, 입력 중(무지개 테)·오류·처음 만들기·초대 화면을 찍었다. 가로 넘침 0. 얹은 상태에서 `synk-id-client` 17개와 로그인 마크업을 읽는 클라이언트 시험 7묶음 103개가 모두 통과했다. **공용 작업본·운영(workspace.synk.im)에는 아직 없다.**
+**확인(10-13, 로컬):** 계정 하나만 있는 임시 DB 격리 서버에서 1440·1280·1100·864·390px, 입력 중(무지개 테)·오류·처음 만들기·초대 화면을 찍었다. 가로 넘침 0. 얹은 상태에서 `synk-id-client` 17개와 로그인 마크업을 읽는 클라이언트 시험 7묶음 103개가 모두 통과했다. 공용 작업본에는 같은 날 05:57에 얹었고(origin `ffde87dae`), **운영(workspace.synk.im)에는 아직 없다.**
 
 <a id="signal-v10-20261013"></a>
 
