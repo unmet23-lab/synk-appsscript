@@ -143,7 +143,7 @@
 :root .synk-workspace .client-desk.cdx .cps-facts>div[data-tone="late"] dd small{background:var(--cx-alert-wash);color:var(--cx-alert)}
 :root .synk-workspace .client-desk.cdx .cps-facts>div[data-tone="due"] dd small{background:var(--cx-due-wash);color:var(--cx-due)}
 
-/* ── 지금 할 일: PULSE 포스터(베리 면 + 스튜디오 빛 + 그레인 + 흰 인화지 −4° + 아주 큰 단계 글자) ── */
+/* ── 지금 할 일: PULSE 포스터(베리 면 + 스튜디오 빛 + 그레인 + 단계마다 다른 펠트 물건 누끼 −3° + 아주 큰 단계 글자) ── */
 :root .synk-workspace .client-desk.cdx .cps-next{container:cpsnext/inline-size;position:relative;display:block;margin:24px 0 0;padding:0;overflow:hidden;border:0;border-radius:24px;background:var(--sg-surface-1);box-shadow:inset 0 0 0 1px var(--sg-line);color:var(--sg-ink);isolation:isolate}
 :root .synk-workspace .client-desk.cdx .cps-next-text{position:relative;z-index:3;display:grid;justify-items:start;max-width:100%;padding:20px 24px 22px}
 :root .synk-workspace .client-desk.cdx .cps-next .cd-eyebrow{display:flex;align-items:center;gap:10px;margin:0;font:700 12px/1 var(--sg-sans);letter-spacing:.02em;color:var(--sg-ink-3)}
@@ -153,9 +153,9 @@
 :root .synk-workspace .client-desk.cdx .cps-next-text>p{margin:6px 0 0;max-width:56ch;font-size:13.5px;line-height:1.6;color:var(--sg-ink-3)}
 :root .synk-workspace .client-desk.cdx .cps-next-text>.cd-button{margin-top:16px}
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="stale"]{background:var(--cx-due-wash);box-shadow:inset 0 0 0 1px rgba(245,196,69,.45)}
-:root .synk-workspace .client-desk.cdx .cps-next[data-state="act"]{min-height:252px;background:radial-gradient(120% 85% at 22% -12%,rgba(255,255,255,.2),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(40,4,22,.3)),var(--cx-berry);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 26px 50px -34px rgba(92,20,53,.95);color:#fff}
+:root .synk-workspace .client-desk.cdx .cps-next[data-state="act"]{min-height:256px;background:radial-gradient(120% 85% at 22% -12%,rgba(255,255,255,.2),transparent 58%),linear-gradient(180deg,transparent 52%,rgba(40,4,22,.3)),var(--cx-berry);box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 26px 50px -34px rgba(92,20,53,.95);color:#fff}
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"]:after{content:'';position:absolute;inset:0;z-index:1;background:var(--cx-grain);opacity:.3;mix-blend-mode:overlay;pointer-events:none}
-:root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{max-width:min(64%,500px);padding:28px 30px 30px}
+:root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{max-width:min(calc(100% - 236px),520px);padding:28px 30px 30px}
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cd-eyebrow{color:rgba(255,255,255,.74)}
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text>strong{margin-top:16px;font:850 27px/1.24 var(--sg-sans);letter-spacing:-.045em;color:#fff}
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text>p{margin-top:10px;font-size:14px;color:rgba(255,255,255,.84)}
@@ -166,18 +166,28 @@
 :root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"] .cd-button.cd-primary{background-color:var(--sg-ink)!important;color:#fff!important}
 :root .synk-workspace .client-desk.cdx .cps-go{display:inline-block;width:34px;height:34px;border-radius:50%;background:var(--sg-ink) var(--cx-arrow) center/16px no-repeat;transition:transform .16s var(--sg-ease)}
 :root .synk-workspace .client-desk.cdx .cps-next .cd-button.cd-primary:hover .cps-go{transform:translateX(2px)}
-:root .synk-workspace .client-desk.cdx .cps-next-word{position:absolute;right:28px;bottom:-.08em;z-index:2;font:900 96px/.9 var(--sg-sans);letter-spacing:-.065em;color:#fff;pointer-events:none;user-select:none}
-:root .synk-workspace .client-desk.cdx .cps-next-art{position:absolute;top:22px;right:44px;z-index:2;display:block;width:112px;height:112px;border-radius:12px;box-shadow:0 0 0 1px rgba(0,0,0,.06),0 18px 34px rgba(40,4,22,.4),0 3px 8px rgba(40,4,22,.2);transform:rotate(-4deg);pointer-events:none}
+:root .synk-workspace .client-desk.cdx .cps-next-word{position:absolute;right:24px;bottom:-.1em;z-index:2;font:900 104px/.9 var(--sg-sans);letter-spacing:-.065em;color:#fff;pointer-events:none;user-select:none}
+/* 단계 물건(접수 우체통 · 협의 말풍선 · 제작 슬레이트 · 확인 돋보기 · 납품 트럭 · 보관 서류함): 흰 바탕을 걷은 누끼라 테두리·모서리 없이 그림자만. 큰 글자 윗선에 살짝 걸쳐 세운다(글자는 가리지 않게). */
+:root .synk-workspace .client-desk.cdx .cps-next-art{position:absolute;right:22px;bottom:74px;z-index:3;display:block;width:198px;height:158px;object-fit:contain;object-position:50% 100%;filter:drop-shadow(0 18px 18px rgba(40,4,22,.44)) drop-shadow(0 4px 5px rgba(40,4,22,.3));transform:rotate(-3deg);pointer-events:none;user-select:none}
+:root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"]{min-height:118px}
+:root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"] .cps-next-text{max-width:calc(100% - 150px)}
+:root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"] .cps-next-art{top:50%;right:26px;bottom:auto;width:112px;height:92px;margin-top:-46px;object-position:50% 50%;filter:drop-shadow(0 12px 12px rgba(8,9,12,.2)) drop-shadow(0 3px 4px rgba(8,9,12,.14))}
 @container cpsnext (max-width:620px){
-  :root .synk-workspace .client-desk.cdx .cps-next-art{display:none}
-  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{max-width:78%}
-  :root .synk-workspace .client-desk.cdx .cps-next-word{font-size:76px}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{max-width:calc(100% - 176px)}
+  :root .synk-workspace .client-desk.cdx .cps-next-word{right:18px;font-size:80px}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-art{right:14px;bottom:58px;width:160px;height:130px}
 }
 @container cpsnext (max-width:460px){
-  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"]{min-height:0}
-  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{max-width:100%;padding:22px 20px 24px}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text{display:block;max-width:100%;padding:22px 20px 24px}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text:before{content:'';float:right;width:92px;height:70px;margin:0 0 6px 12px}
   :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-text>strong{font-size:22px}
   :root .synk-workspace .client-desk.cdx .cps-next-word{display:none}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="act"] .cps-next-art{top:14px;right:14px;bottom:auto;width:96px;height:80px;object-position:50% 50%;filter:drop-shadow(0 10px 10px rgba(40,4,22,.42)) drop-shadow(0 3px 4px rgba(40,4,22,.28))}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"] .cps-next-text{max-width:calc(100% - 92px)}
+  :root .synk-workspace .client-desk.cdx .cps-next[data-state="calm"] .cps-next-art{right:16px;width:76px;height:64px;margin-top:-32px}
+}
+@container cddetail (max-width:460px){
+  :root .synk-workspace .client-desk.cdx .cps-next:is([data-state="act"],[data-state="calm"]){min-height:0}
 }
 
 /* 확인할 일: 버터 점 알약을 한 줄로 */
