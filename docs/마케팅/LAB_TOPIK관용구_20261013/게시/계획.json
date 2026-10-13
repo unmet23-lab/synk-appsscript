@@ -1,0 +1,90 @@
+{
+  "schema": "synk-sns-publish-plan/v1",
+  "createdAt": "2026-10-13T07:41:01.419Z",
+  "sourceRoot": "docs/마케팅/LAB_TOPIK관용구_20261013/게시",
+  "accountsFile": "docs/마케팅/sns-계정.json",
+  "accountsSha256": "828a00abe28e5f45a8bdbee70d0704a4aa7a4d84ed811489b12d985f43a046ed",
+  "reviewPolicy": {
+    "defaultReview": "final-review",
+    "allowUnreviewedPublicPublishing": false,
+    "credentialStore": "windows-credential-manager",
+    "results": "next-to-plan"
+  },
+  "items": [
+    {
+      "id": "01-lab-youtube",
+      "accountKey": "lab-youtube",
+      "brand": "LAB",
+      "platform": "youtube",
+      "platformName": "YouTube",
+      "account": "@synkkorean",
+      "format": "shorts",
+      "language": "en",
+      "title": "손이 크다 ≠ big hands! Guess 3 Korean idioms in 3 seconds 🧶 #learnkorean",
+      "text": "Can you guess these 3 Korean idioms in 3 seconds? 🧶\n\n손이 크다 — not “big hands”: generous (cooks way too much!)\n발이 넓다 — not “wide feet”: knows lots of people\n눈이 높다 — not “high eyes”: has high standards\n\nSay it: 손이 커요 · 발이 넓어요 · 눈이 높아요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\nGood luck on TOPIK 108! 화이팅!\n\nSYNK LAB · Korean idiom quiz with Mongle.\n#learnkorean #koreanlanguage #studykorean #TOPIK",
+      "alt": [
+        "Felt mascot Mongle hosts a Korean idiom quiz. Felt hands, feet and eyes show the literal readings of 손이 크다, 발이 넓다 and 눈이 높다, then a table piled with dumplings, a network of felt friends and an eye on a tall pedestal show the real meanings."
+      ],
+      "link": "",
+      "folder": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube",
+      "video": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/video.mp4",
+      "images": [],
+      "thumbnail": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/cover.png",
+      "document": null,
+      "subtitles": [],
+      "dependencies": [
+        {
+          "role": "metadata",
+          "path": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/원고.json",
+          "bytes": 1596,
+          "sha256": "d4410c3aaca8a178fd91a8dd36b0247f05ab8b796719c8cf2c9df587af3b565d",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "title",
+          "path": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/제목.txt",
+          "bytes": 82,
+          "sha256": "bec78adb786b5df36bd65697f5f7772053198e9a57168af5a5b53f016bdf1e1a",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "post-copy",
+          "path": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/게시문안.txt",
+          "bytes": 494,
+          "sha256": "aabfccb64a10e5e4c2f9e0efa4ad227baee34f1549cbe2f5545e2395ce0a6ae9",
+          "mime": "application/octet-stream"
+        },
+        {
+          "role": "video",
+          "path": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/video.mp4",
+          "bytes": 9777814,
+          "sha256": "c49e577cc28897ba56eb89cf4cdbf0a6ef704bca9d3c14ce335e6d3adf5bd273",
+          "mime": "video/mp4"
+        },
+        {
+          "role": "thumbnail",
+          "path": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/01-lab-youtube/cover.png",
+          "bytes": 1235986,
+          "sha256": "5a143f8f4ce040e3af083aec252426c56bc45c00fef0035cc99d3a8b90a42f37",
+          "mime": "image/png"
+        }
+      ],
+      "contentHash": "af60fb51167fffbe78651cdf4bd03385cee5e767676d0149923d9b07c719b054",
+      "publisher": "direct",
+      "connection": "connected-existing",
+      "publish": {
+        "visibility": "private",
+        "publishAt": null,
+        "notifySubscribers": false
+      },
+      "approval": {
+        "version": 2,
+        "contentHash": "af60fb51167fffbe78651cdf4bd03385cee5e767676d0149923d9b07c719b054",
+        "publicationHash": "f6405f06db204b05bc119377f0a2210865c091003766bff13409f8469d326da6",
+        "approvedAt": "2026-10-13T07:43:40.338Z",
+        "note": "유호 「이대로 세 곳에 지금 공개로 올려」 2026-10-13 16:5x (제목·설명·표지·설정 확인 뒤)"
+      },
+      "errors": []
+    }
+  ]
+}

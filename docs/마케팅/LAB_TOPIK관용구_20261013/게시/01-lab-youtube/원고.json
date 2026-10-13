@@ -1,0 +1,15 @@
+{
+ "id": "01-lab-youtube",
+ "brand": "LAB",
+ "platform": "youtube",
+ "account": "@synkkorean",
+ "format": "shorts",
+ "language": "en",
+ "title": "손이 크다 ≠ big hands! Guess 3 Korean idioms in 3 seconds 🧶 #learnkorean",
+ "caption": "Can you guess these 3 Korean idioms in 3 seconds? 🧶\n\n손이 크다 — not “big hands”: generous (cooks way too much!)\n발이 넓다 — not “wide feet”: knows lots of people\n눈이 높다 — not “high eyes”: has high standards\n\nSay it: 손이 커요 · 발이 넓어요 · 눈이 높아요\n\nHow many did you get? Comment your score 0/3 – 3/3 👇\nGood luck on TOPIK 108! 화이팅!\n\nSYNK LAB · Korean idiom quiz with Mongle.\n#learnkorean #koreanlanguage #studykorean #TOPIK",
+ "alt": [
+  "Felt mascot Mongle hosts a Korean idiom quiz. Felt hands, feet and eyes show the literal readings of 손이 크다, 발이 넓다 and 눈이 높다, then a table piled with dumplings, a network of felt friends and an eye on a tall pedestal show the real meanings."
+ ],
+ "_비고": "video.mp4 = 키즈판 재밌는 나레이션판(30.0초, −14.1 LUFS, kids-quiz-fun_final.mp4). 표지 cover.png = 1.33초(펠트 손 + big hands??). 어린이 전용(made for kids) 아님 — 시험 준비·소개팅 예문이라 주 시청자가 10대 이상이고 점수 댓글이 필요하다. 합성 표시는 「아 맞다」와 같이 필수 아님(펠트 장면·특정인이 아닌 AI 내레이터). 발행은 유호님 승인 뒤 node tools/sns-발행.js --승인 → --발행(비공개) → 확인 → --공개.",
+ "version": "kids-v1"
+}
