@@ -11,7 +11,7 @@ import {emptyStrategyData} from './pulse-strategy.mjs';
 import {buildClientKickoff,customerClientKickoff,clientKickoffSources,applyClientKickoffAction} from './client-kickoff.mjs';
 
 const at='2026-10-12T03:00:00.000Z';
-const strategyData=()=>({...emptyStrategyData(),objective:'sales',product:'서비스',audience:'신규 고객',primaryPromise:'쉬운 시작',evidence1:'직접 확인할 수 있는 사용 장면',memoryHook:'한 장면',desiredAction:'자료 확인',channels:['website'],value1:'빠름',value2:'편리함',subtitles:'자막 원문',screenCopy:'화면 문구',proposedDeadline:'2026-10-20'});
+const strategyData=()=>({...emptyStrategyData(),objective:'sales',product:'서비스',audience:'신규 고객',primaryPromise:'쉬운 시작',evidence1:'직접 확인할 수 있는 사용 장면',memoryHook:'한 장면',desiredAction:'자료 다 받기',channels:['website'],value1:'빠름',value2:'편리함',subtitles:'자막 원문',screenCopy:'화면 문구',proposedDeadline:'2026-10-20'});
 function raw(){return {id:randomUUID(),title:'합성 착수 프로젝트',stage:'planning',terms:'영상 1편',dueDate:'2026-10-22',versions:[],messages:[],history:[],studio:{schemaVersion:1,preferences:{},strategy:{revision:1,data:strategyData(),confirmation:{strategyRevision:1}},assets:[],references:[],concepts:[],scenes:[],history:[],conceptSelections:[],sceneReviews:[],comments:[]}};}
 const run=(row,input,options={})=>({...row,kickoffPlan:applyClientKickoffAction(row,input,{actor:'staff-id',at,...options})});
 const configure=(row,requirements=[],extra={})=>run(row,{action:'configure',enabled:true,dueDate:'2026-10-12',requirements,...extra});
@@ -86,7 +86,7 @@ test('configure retains unchanged review and waiver, resets changed meaning, and
 });
 
 test('request text asks only for missing sources and distinguishes received items pending staff review',()=>{
-  const row=configure(raw(),[requirement('로고'),requirement('자막','strategy:subtitles')]),report=buildClientKickoff(row);assert.match(report.requestText,/필요한 자료: 로고/);assert.match(report.requestText,/담당자 내용 확인 대기: 자막/);assert.match(report.requestText,/다시 보내지 않으셔도/);assert.doesNotMatch(report.requestText,/필요한 자료: 로고, 자막/);
+  const row=configure(raw(),[requirement('로고'),requirement('자막','strategy:subtitles')]),report=buildClientKickoff(row);assert.match(report.requestText,/보내 주실 자료: 로고/);assert.match(report.requestText,/받았고 저희가 보는 중: 자막/);assert.match(report.requestText,/다시 보내지 않으셔도/);assert.doesNotMatch(report.requestText,/필요한 자료: 로고, 자막/);
 });
 
 test('service enforces current staff permission, one project revision, strict fields and archived-write lock',async t=>{

@@ -12,21 +12,21 @@ const context=vm.createContext({Date,Map,Set});
 vm.runInContext(readFileSync(new URL('public/client-project-screen-plan.js',import.meta.url),'utf8'),context);
 const plan=context.clientProjectScreenPlan;
 const base={id:'project-one',title:'합성 프로젝트',stage:'planning',revision:4,versions:[],messages:[],dueDate:'',terms:'',nextContactDate:''};
-const item=(changes={})=>({id:'task-one',projectId:base.id,revision:base.revision,kind:'support',group:'reply',status:'open',title:'고객 문의',statusLabel:'확인할 요청',dueDate:'',...changes});
-const keys=['startup','progress','materials','kickoff','changes','requests','schedule','delivery','closeout','followup','record','intake','lounge','versions','messages'];
+const item=(changes={})=>({id:'task-one',projectId:base.id,revision:base.revision,kind:'support',group:'reply',status:'open',title:'고객 문의',statusLabel:'내 차례',dueDate:'',...changes});
+const keys=['materials','kickoff','requests','schedule','delivery','closeout','followup','record','lounge','versions','messages'];
 const section=(result,key)=>result.sections.find(entry=>entry.key===key);
 const plain=value=>JSON.parse(JSON.stringify(value));
 const freeze=value=>{if(value&&typeof value==='object'){Object.freeze(value);for(const child of Object.values(value))freeze(child);}return value;};
 
 test('every stage keeps every existing section once while its relevant panels come first',()=>{
-  const heads={received:'startup',planning:'kickoff',producing:'requests',review:'requests',delivered:'delivery',archived:'materials'};
+  const heads={received:'kickoff',planning:'kickoff',producing:'requests',review:'requests',delivered:'delivery',archived:'materials'};
   for(const [stage,first]of Object.entries(heads)){
     const result=plan({...base,stage});
     assert.equal(result.sections[0].key,first);
     assert.deepEqual([...result.sections.map(entry=>entry.key)].sort(),keys.slice().sort());
     assert.equal(result.sections.length,new Set(result.sections.map(entry=>entry.key)).size);
     assert.deepEqual([...result.defaultOpen],[...result.sections.filter(entry=>entry.open).map(entry=>entry.key)]);
-    assert.equal(result.defaultOpen.length,2);
+    assert.equal(result.defaultOpen.length,stage==='received'?1:2);
   }
   assert.equal(section(plan({...base,stage:'unknown'}),'record').open,true);
 });
@@ -47,17 +47,17 @@ test('enabled unresolved kickoff stays visible even if the registered stage is a
   const result=plan({...row,kickoff});
   assert.equal(section(result,'kickoff').attention,true);
   assert.equal(section(result,'kickoff').open,true);
-  assert.match(section(result,'kickoff').summary,/확인할 항목/);
+  assert.match(section(result,'kickoff').summary,/챙길 것/);
 });
 
 test('pending changes and reviewed changes needing a new baseline remain visible',()=>{
   for(const status of ['pending','reviewed']){
     const result=plan({...base,changes:{enabled:true,status,pendingCount:status==='pending'?2:0,statusLabel:'기존 변경 상태'}});
-    assert.equal(section(result,'changes').attention,true);
-    assert.equal(section(result,'changes').open,true);
+    assert.equal(section(result,'kickoff').attention,true);
+    assert.equal(section(result,'kickoff').open,true);
   }
-  assert.match(section(plan({...base,changes:{enabled:true,status:'reviewed'}}),'changes').summary,/새 비교 기준 저장/);
-  for(const status of ['disabled','clean','archived'])assert.equal(section(plan({...base,changes:{enabled:status!=='disabled',status,pendingCount:8}}),'changes').attention,false);
+  assert.match(section(plan({...base,changes:{enabled:true,status:'reviewed'}}),'kickoff').summary,/새 기준으로 저장/);
+  for(const status of ['disabled','clean','archived'])assert.equal(section(plan({...base,changes:{enabled:status!=='disabled',status,pendingCount:8}}),'kickoff').attention,false);
 });
 
 test('schedule warnings use existing enabled attention state without calculating a new forecast',()=>{
@@ -72,7 +72,7 @@ test('unavailable scene requests from the authoritative projection stay open for
   const result=plan({...row,sceneRequests});
   assert.equal(section(result,'requests').attention,true);
   assert.equal(section(result,'requests').open,true);
-  assert.match(section(result,'requests').summary,/미처리 1건/);
+  assert.match(section(result,'requests').summary,/아직 1건/);
 });
 
 test('only unresolved customer support and feedback produce request warnings',()=>{
@@ -143,7 +143,7 @@ test('closeout warnings apply only to a current delivery identity and never reus
   assert.equal(current.deliveryKey,null);
   assert.equal(section(result,'closeout').attention,false);
   assert.doesNotMatch(section(result,'delivery').summary,/현재 승인본 납품 파일/);
-  assert.match(section(result,'versions').summary,/새 시안.*고객 확인 대기/);
+  assert.match(section(result,'versions').summary,/새 시안.*고객 확인 기다리는 중/);
 });
 
 test('follow-up dates use the supplied valid Korean day and do not warn on absent or invalid dates',()=>{
@@ -157,12 +157,12 @@ test('archived projects retain accessible history without live task or failure i
   const project={...base,stage:'archived',nextContactDate:'2026-10-01',kickoff:{enabled:true,status:'waiting',missingCount:4},sceneRequests:{pendingCount:2,items:[{},{}]},schedule:{enabled:true,status:'attention',pendingCount:5},messages:[{author:'customer',action:'support'}]};
   const group=buildClientProjectGroups([item()],{today:'2026-10-12'})[0],result=plan(project,{group,workflowItems:[item()],today:'2026-10-12'});
   assert.deepEqual([...result.attentionSections],[]);assert.equal(result.primary,null);assert.equal(result.counts,null);
-  assert.equal(result.sections.length,15);assert.equal(result.sections.every(entry=>entry.summary.startsWith('보관 기록 · ')),true);
+  assert.equal(result.sections.length,11);assert.equal(result.sections.every(entry=>entry.summary.startsWith('보관 기록 · ')),true);
 });
 
 test('frozen project and workflow records are never mutated and calls are deterministic without browser APIs',()=>{
   const project=freeze({...base,messages:[{author:'customer',action:'support',resolved:false}],kickoff:{enabled:true,status:'waiting',missingCount:1}}),group=freeze(buildClientProjectGroups([item()],{today:'2026-10-12'})[0]),options=freeze({group,workflowItems:group.items,today:'2026-10-12'});
   const before=JSON.stringify({project,options}),a=plan(project,options),b=plan(project,options);
   assert.deepEqual(plain(a),plain(b));assert.equal(JSON.stringify({project,options}),before);
-  assert.equal(plan(null).sections.length,15);
+  assert.equal(plan(null).sections.length,11);
 });

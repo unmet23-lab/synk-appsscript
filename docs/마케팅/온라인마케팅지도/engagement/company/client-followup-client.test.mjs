@@ -20,7 +20,7 @@ test('follow-up links accept only the exact local project route and preserve the
 });
 
 test('card shows the agreed action and internal history without inserting executable content',()=>{
-  const f=fixture();f.run('project.followUpHistory=[{actor:"owner",actorName:"<img src=x>",at:"2026-10-11T00:00:00.000Z",note:"<script>private</script>",previousContactDate:"2026-10-10",nextContactDate:"2026-10-11",disposition:"schedule"}]');const html=f.run('cdFollowUpContents(project)');assert.match(html,/합의한 전달 일정 확인/);assert.match(html,/내부에만 기록/);assert.match(html,/오늘 연락/);assert.match(html,/한국 시간/);assert.match(html,/&lt;script&gt;private/);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));
+  const f=fixture();f.run('project.followUpHistory=[{actor:"owner",actorName:"<img src=x>",at:"2026-10-11T00:00:00.000Z",note:"<script>private</script>",previousContactDate:"2026-10-10",nextContactDate:"2026-10-11",disposition:"schedule"}]');const html=f.run('cdFollowUpContents(project)');assert.match(html,/합의한 전달 일정 확인/);assert.match(html,/우리만 봐요/);assert.match(html,/오늘 연락/);assert.match(html,/다음 연락일/);assert.match(html,/&lt;script&gt;private/);assert.ok(!html.includes('<script>'));assert.ok(!html.includes('<img'));
 });
 
 test('owner, same-team manager and admin can act while viewers, reviewers and other-team managers cannot',()=>{
@@ -28,7 +28,7 @@ test('owner, same-team manager and admin can act while viewers, reviewers and ot
 });
 
 test('unscheduled and archived projects retain history but hide action forms',()=>{
-  const f=fixture();f.run('project.nextContactDate=""');let html=f.run('cdFollowUpContents(project)');assert.match(html,/내부 관리에서 다음 연락일/);assert.ok(!html.includes('data-client-form="follow-up"'));f.run('project.nextContactDate="2026-10-11";project.stage="archived"');html=f.run('cdFollowUpContents(project)');assert.match(html,/보관한 프로젝트/);assert.ok(!html.includes('data-client-form="follow-up"'));
+  const f=fixture();f.run('project.nextContactDate=""');let html=f.run('cdFollowUpContents(project)');assert.match(html,/「다음 연락일」을 정하면/);assert.ok(!html.includes('data-client-form="follow-up"'));f.run('project.nextContactDate="2026-10-11";project.stage="archived"');html=f.run('cdFollowUpContents(project)');assert.match(html,/보관한 프로젝트/);assert.ok(!html.includes('data-client-form="follow-up"'));
 });
 
 test('a follow-up save carries only internal result fields, refreshes workflow and preserves unrelated drafts and DOM focus',async()=>{
@@ -36,7 +36,7 @@ test('a follow-up save carries only internal result fields, refreshes workflow a
 });
 
 test('done explicitly clears the date, and neither missing disposition nor invalid or past KST dates can be submitted',async()=>{
-  const f=fixture();for(const values of [{note:'',disposition:'done'},{note:'x'.repeat(3001),disposition:'done'},{note:'결과',disposition:''},{note:'결과',disposition:'schedule',nextContactDate:'2026-10-10'},{note:'결과',disposition:'schedule',nextContactDate:'2026-02-30'},{note:'결과',disposition:'schedule',nextContactDate:''}]){f.context.values=values;assert.equal(await f.run('cdSaveFollowUp(form,values)'),false);}assert.equal(f.requests.length,0);const pending=f.run('cdSaveFollowUp(form,{note:"후속 문의 없이 완료",disposition:"done",nextContactDate:"2026-11-01"})');assert.equal(f.requests[0].body.nextContactDate,'');f.requests[0].resolve({project:{...project,revision:4,nextContactDate:'',followUpHistory:[{disposition:'done',note:'완료',at:'2026-10-11T14:30:00Z'}]}});await pending;f.requests[1].resolve({items:[]});assert.match(f.element.innerHTML,/후속 연락 마침/);assert.ok(!f.element.innerHTML.includes('data-client-form="follow-up"'));
+  const f=fixture();for(const values of [{note:'',disposition:'done'},{note:'x'.repeat(3001),disposition:'done'},{note:'결과',disposition:''},{note:'결과',disposition:'schedule',nextContactDate:'2026-10-10'},{note:'결과',disposition:'schedule',nextContactDate:'2026-02-30'},{note:'결과',disposition:'schedule',nextContactDate:''}]){f.context.values=values;assert.equal(await f.run('cdSaveFollowUp(form,values)'),false);}assert.equal(f.requests.length,0);const pending=f.run('cdSaveFollowUp(form,{note:"후속 문의 없이 완료",disposition:"done",nextContactDate:"2026-11-01"})');assert.equal(f.requests[0].body.nextContactDate,'');f.requests[0].resolve({project:{...project,revision:4,nextContactDate:'',followUpHistory:[{disposition:'done',note:'완료',at:'2026-10-11T14:30:00Z'}]}});await pending;f.requests[1].resolve({items:[]});assert.match(f.element.innerHTML,/연락 끝/);assert.ok(!f.element.innerHTML.includes('data-client-form="follow-up"'));
 });
 
 test('a conflict refreshes the revision without clearing contact notes or another project form draft',async()=>{

@@ -58,21 +58,21 @@ test('customer action requires an explicit request for the current plan or spec;
   const f=await fixture(t);f.update(row=>row.studio={strategy:{revision:2,data:{},request:{strategyRevision:1,author:'staff',at},confirmation:{strategyRevision:1,author:'customer',at}},deliverables:{revision:2,items:[],request:null,confirmation:null,history:[]}});
   assert.doesNotMatch(section(f.view(),'customer'),/현재 제작 기획을 확인|현재 납품 규격을 확인/);assert.doesNotMatch(section(f.view(),'completed'),/고객 확인 완료/);
   f.update(row=>{row.studio.strategy.request={strategyRevision:2,author:'staff',at};row.studio.deliverables.request={deliverableRevision:2,author:'staff',at};});
-  assert.match(section(f.view(),'customer'),/현재 제작 기획을 확인/);assert.match(section(f.view(),'customer'),/현재 납품 규격을 확인/);
+  assert.match(section(f.view(),'customer'),/기획을 확인해 주세요/);assert.match(section(f.view(),'customer'),/납품 규격을 확인해 주세요/);
   f.update(row=>{row.studio.strategy.confirmation={strategyRevision:2,author:'customer',at};row.studio.deliverables.confirmation={deliverableRevision:2,author:'customer',at};});
-  assert.match(section(f.view(),'completed'),/제작 기획 고객 확인 완료/);assert.match(section(f.view(),'completed'),/납품 규격 고객 확인 완료/);assert.doesNotMatch(section(f.view(),'customer'),/현재 제작 기획을 확인|현재 납품 규격을 확인/);
+  assert.match(section(f.view(),'completed'),/기획을 확인해 주셨어요/);assert.match(section(f.view(),'completed'),/납품 규격을 확인해 주셨어요/);assert.doesNotMatch(section(f.view(),'customer'),/현재 제작 기획을 확인|현재 납품 규격을 확인/);
   f.update(row=>{row.studio.strategy.revision++;row.studio.deliverables.revision++;});assert.doesNotMatch(section(f.view(),'completed'),/기획 고객 확인 완료|규격 고객 확인 완료/);
 });
 
 test('staff-written or unstamped confirmation metadata cannot claim customer confirmation',async t=>{
   const f=await fixture(t);f.update(row=>row.studio={strategy:{revision:1,data:{},request:{strategyRevision:1,author:'staff',at},confirmation:{strategyRevision:1,author:'staff',at}},deliverables:{revision:1,items:[],request:{deliverableRevision:1,author:'staff',at},confirmation:{deliverableRevision:1,author:'customer'},history:[]}});
-  assert.doesNotMatch(section(f.view(),'completed'),/고객 확인 완료/);assert.match(section(f.view(),'customer'),/현재 제작 기획을 확인/);assert.match(section(f.view(),'customer'),/현재 납품 규격을 확인/);
+  assert.doesNotMatch(section(f.view(),'completed'),/고객 확인 완료/);assert.match(section(f.view(),'customer'),/기획을 확인해 주세요/);assert.match(section(f.view(),'customer'),/납품 규격을 확인해 주세요/);
 });
 
 test('agreement or material changes remain visible even while the current production plan is confirmed',async t=>{
   const f=await fixture(t);let row=f.update(row=>row.studio={strategy:{revision:1,data:{primaryPromise:'제품 특징',evidence1:'제품 자료',desiredAction:'사이트 방문'},request:{strategyRevision:1,author:'staff',at},confirmation:{strategyRevision:1,author:'customer',at}}});
   row.changeControl=applyClientChangesAction(row,{action:'capture',confirmed:true},{actor:f.users.owner.id,at});row.terms='변경된 합의 조건';f.store.put('clientProjects',row.id,row);
-  assert.match(section(f.view(),'completed'),/현재 제작 기획 고객 확인 완료/);assert.match(section(f.view(),'current'),/제작 기준 이후 변경된 내용/);assert.doesNotMatch(section(f.view(),'customer'),/현재 제작 기획을 확인/);
+  assert.match(section(f.view(),'completed'),/기획을 확인해 주셨어요/);assert.match(section(f.view(),'current'),/확정한 뒤에 바뀐 내용/);assert.doesNotMatch(section(f.view(),'customer'),/기획을 확인해 주세요/);
 });
 
 test('missing, received, approved and waived materials are distinguished without leaking private source names',async t=>{
@@ -88,50 +88,50 @@ test('missing, received, approved and waived materials are distinguished without
 test('pending staff revision work does not become a customer approval task; current submitted revision does',async t=>{
   const f=await fixture(t),old=preview({approvedAt:at,label:'이전 승인 시안'}),current=preview({label:'현재 수정 시안'});
   f.update(row=>{row.versions=[old,current];row.messages=[{id:'feedback',author:'customer',visibility:'customer',action:'feedback',resolved:false,versionId:old.id,workflow:{status:'review',resultVersionId:current.id,note:'PRIVATE-REVIEW'}}];});
-  assert.match(section(f.view(),'current'),/담당자가 확인·반영/);assert.doesNotMatch(section(f.view(),'customer'),/현재 시안을 확인/);assert.doesNotMatch(section(f.view(),'completed'),/승인 완료/);
-  f.update(row=>row.messages[0].workflow.status='waiting_customer');assert.match(section(f.view(),'customer'),/현재 시안을 확인.*현재 수정 시안/);
+  assert.match(section(f.view(),'current'),/반영하고 있어요/);assert.doesNotMatch(section(f.view(),'customer'),/현재 시안을 확인/);assert.doesNotMatch(section(f.view(),'completed'),/승인 완료/);
+  f.update(row=>row.messages[0].workflow.status='waiting_customer');assert.match(section(f.view(),'customer'),/시안을 보고.*현재 수정 시안/);
   f.update(row=>row.versions.push(preview({label:'새 시안'})));assert.doesNotMatch(section(f.view(),'customer'),/현재 시안을 확인/);
 });
 
 test('approved current preview only counts revision work completed for that exact preview',async t=>{
   const f=await fixture(t),old=preview({approvedAt:at}),current=preview({approvedAt:later,label:'현재 승인 시안'});
   f.update(row=>{row.versions=[old,current];row.messages=[old,current].map(version=>({id:randomUUID(),author:'customer',visibility:'customer',action:'feedback',resolved:true,workflow:{status:'done',resultVersionId:version.id}}));});
-  assert.match(section(f.view(),'completed'),/현재 시안 고객 승인 완료: 현재 승인 시안/);assert.match(section(f.view(),'completed'),/수정 요청 1건 고객 확인 완료/);
+  assert.match(section(f.view(),'completed'),/시안을 승인해 주셨어요: 현재 승인 시안/);assert.match(section(f.view(),'completed'),/수정 요청 1건을 확인해 주셨어요/);
 });
 
 test('scene status binds the public current scene, actual customer review and live reviewer authority',async t=>{
   const f=await fixture(t),sceneId=randomUUID(),requestId=randomUUID();let row=f.update(row=>{row.studio={scenes:[{id:sceneId,title:'제품 강조 장면',revision:2,visibility:'customer'}],sceneReviews:[{id:requestId,sceneId,sceneRevision:1,author:'customer',status:'changes',text:'고객 수정 의견',at}]};});
   row.sceneRequestWorkflows=applySceneRequestAction(row,{action:'submit',requestId,sceneRevision:2,confirmed:true},{actor:f.users.owner.id,at,canEdit:true,reviewerId:f.users.reviewer.id});f.store.put('clientProjects',row.id,row);
   assert.doesNotMatch(section(f.view(),'customer'),/수정 장면을 확인/);assert.match(section(f.view(),'current'),/장면 수정 요청 1건/);
-  row.sceneRequestWorkflows=applySceneRequestAction(row,{action:'accept',requestId,confirmed:true},{actor:f.users.reviewer.id,at,canReview:true,reviewerId:f.users.reviewer.id});f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'customer'),/수정 장면을 확인.*제품 강조 장면/);
-  const proof={id:randomUUID(),sceneId,sceneRevision:2,author:'customer',status:'confirmed',at:later};row.sceneRequestWorkflows=recordSceneReview(row,proof);row.studio.sceneReviews.push(proof);f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'completed'),/수정 장면 고객 확인 완료/);
-  f.store.put('users',f.users.reviewer.id,{...f.users.reviewer,active:false});assert.doesNotMatch(section(f.view(),'completed'),/수정 장면 고객 확인 완료/);
+  row.sceneRequestWorkflows=applySceneRequestAction(row,{action:'accept',requestId,confirmed:true},{actor:f.users.reviewer.id,at,canReview:true,reviewerId:f.users.reviewer.id});f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'customer'),/고친 장면을 확인.*제품 강조 장면/);
+  const proof={id:randomUUID(),sceneId,sceneRevision:2,author:'customer',status:'confirmed',at:later};row.sceneRequestWorkflows=recordSceneReview(row,proof);row.studio.sceneReviews.push(proof);f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'completed'),/고친 장면을 확인해 주셨어요/);
+  f.store.put('users',f.users.reviewer.id,{...f.users.reviewer,active:false});assert.doesNotMatch(section(f.view(),'completed'),/고친 장면을 확인해 주셨어요/);
   f.update(row=>row.studio.scenes[0].visibility='internal');assert.doesNotMatch(JSON.stringify(f.view()),/제품 강조 장면|고객 수정 의견/);
 });
 
 test('a workflow done flag alone is not evidence that a customer confirmed a scene',async t=>{
   const f=await fixture(t),sceneId=randomUUID(),requestId=randomUUID();let row=f.update(row=>{row.studio={scenes:[{id:sceneId,title:'공개 장면',revision:2,visibility:'customer'}],sceneReviews:[{id:requestId,sceneId,sceneRevision:1,author:'customer',status:'changes',at}]};});
   row.sceneRequestWorkflows=applySceneRequestAction(row,{action:'submit',requestId,sceneRevision:2,confirmed:true},{actor:f.users.owner.id,at,canEdit:true,reviewerId:f.users.reviewer.id});row.sceneRequestWorkflows[requestId].status='done';f.store.put('clientProjects',row.id,row);
-  assert.doesNotMatch(section(f.view(),'completed'),/수정 장면 고객 확인 완료/);
+  assert.doesNotMatch(section(f.view(),'completed'),/고친 장면을 확인해 주셨어요/);
 });
 
 test('delivery and receipt completion binds the latest approved preview and entire final file set',async t=>{
   const f=await fixture(t),approved=preview({approvedAt:at}),final={id:randomUUID(),kind:'final',label:'현재 최종 영상',approvedPreviewId:approved.id,url:'https://example.test/final',guide:'공개 안내',createdAt:at};
-  let row=f.update(row=>{row.stage='delivered';row.versions=[approved,final];row.nextStep='최종 파일과 사용 안내를 확인해 주세요. 추가로 궁금한 점은 후속 문의에 남겨 주세요.';});assert.match(section(f.view(),'customer'),/파일과 안내 확인했어요/);assert.match(section(f.view(),'schedule'),/프로젝트에 기록된 다음 단계/);
-  row.deliveryReceipts=[{id:randomUUID(),deliveryKey:clientDeliveryIdentity(row).deliveryKey,actor:'customer',confirmedAt:later}];f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'completed'),/고객 수령 확인 완료/);assert.doesNotMatch(section(f.view(),'customer'),/파일과 안내 확인했어요/);assert.doesNotMatch(section(f.view(),'schedule'),/최종 파일과 사용 안내를 확인해 주세요/);
-  f.update(row=>row.versions.push({...final,id:randomUUID(),label:'자막 파일'}));assert.doesNotMatch(section(f.view(),'completed'),/고객 수령 확인 완료/);assert.match(section(f.view(),'customer'),/파일과 안내 확인했어요/);
-  f.update(row=>row.versions.push(preview({label:'새 미승인 시안'})));assert.doesNotMatch(section(f.view(),'completed'),/시안 고객 승인 완료|최종 파일 등록 완료|고객 수령 확인 완료/);assert.doesNotMatch(section(f.view(),'customer'),/파일과 안내 확인했어요/);
+  let row=f.update(row=>{row.stage='delivered';row.versions=[approved,final];row.nextStep='최종본과 사용 안내를 보내 드렸어요. 궁금한 점은 대화에 남겨 주세요.';});assert.match(section(f.view(),'customer'),/파일과 안내 확인했어요/);assert.match(section(f.view(),'schedule'),/프로젝트에 기록된 다음 단계/);
+  row.deliveryReceipts=[{id:randomUUID(),deliveryKey:clientDeliveryIdentity(row).deliveryKey,actor:'customer',confirmedAt:later}];f.store.put('clientProjects',row.id,row);assert.match(section(f.view(),'completed'),/받았다고 해 주셨어요/);assert.doesNotMatch(section(f.view(),'customer'),/파일과 안내 확인했어요/);assert.doesNotMatch(section(f.view(),'schedule'),/최종 파일과 사용 안내를 확인해 주세요/);
+  f.update(row=>row.versions.push({...final,id:randomUUID(),label:'자막 파일'}));assert.doesNotMatch(section(f.view(),'completed'),/받았다고 해 주셨어요/);assert.match(section(f.view(),'customer'),/파일과 안내 확인했어요/);
+  f.update(row=>row.versions.push(preview({label:'새 미승인 시안'})));assert.doesNotMatch(section(f.view(),'completed'),/시안 고객 승인 완료|최종 파일 등록 완료|고객이 받았다고 했나 완료/);assert.doesNotMatch(section(f.view(),'customer'),/파일과 안내 확인했어요/);
 });
 
 test('staff receipt metadata, internal closure and manual delivered stage cannot manufacture customer completion',async t=>{
   const f=await fixture(t),approved=preview({approvedAt:at});let row=f.update(row=>{row.stage='delivered';row.versions=[approved,{id:randomUUID(),kind:'final',approvedPreviewId:approved.id,label:'공개 최종본',createdAt:at}];row.closureHistory=[{note:'PRIVATE-CLOSURE'}];});
-  row.deliveryReceipts=[{deliveryKey:clientDeliveryIdentity(row).deliveryKey,actor:'staff',confirmedAt:at}];f.store.put('clientProjects',row.id,row);assert.doesNotMatch(section(f.view(),'completed'),/고객 수령 확인 완료|마감 완료/);
-  f.update(row=>row.versions=[]);assert.doesNotMatch(section(f.view(),'completed'),/납품|최종 파일 등록 완료|고객 수령 확인 완료/);
+  row.deliveryReceipts=[{deliveryKey:clientDeliveryIdentity(row).deliveryKey,actor:'staff',confirmedAt:at}];f.store.put('clientProjects',row.id,row);assert.doesNotMatch(section(f.view(),'completed'),/고객이 받았다고 했나 완료|마감 완료/);
+  f.update(row=>row.versions=[]);assert.doesNotMatch(section(f.view(),'completed'),/납품|최종 파일 등록 완료|고객이 받았다고 했나 완료/);
 });
 
 test('archived projects remain readable without actionable customer requests and missing agreement stays explicit',async t=>{
   const f=await fixture(t);f.update(row=>{row.stage='archived';row.dueDate='';row.versions=[preview()];row.kickoffPlan={enabled:true,requirements:[{id:'missing',required:true,label:'브랜드 로고'}]};row.studio={strategy:{revision:1,data:{proposedDeadline:'2030-01-01'},request:{strategyRevision:1,author:'staff',at}}};});
-  assert.match(section(f.view(),'current'),/보관 중/);assert.doesNotMatch(section(f.view(),'customer'),/올리거나|확인해 주세요|승인을 남겨/);assert.match(section(f.view(),'schedule'),/아직 기록되지 않았습니다/);assert.doesNotMatch(f.view().text,/2030-01-01/);
+  assert.match(section(f.view(),'current'),/보관한 프로젝트/);assert.doesNotMatch(section(f.view(),'customer'),/올리거나|확인해 주세요|승인을 남겨/);assert.match(section(f.view(),'schedule'),/아직 정해지지 않았어요/);assert.doesNotMatch(f.view().text,/2030-01-01/);
 });
 
 test('fresh generation immediately reflects source edits without changing project revision itself',async t=>{

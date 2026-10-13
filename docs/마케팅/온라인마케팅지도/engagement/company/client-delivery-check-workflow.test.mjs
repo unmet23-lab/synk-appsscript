@@ -29,7 +29,7 @@ async function fixture(t){
 
 test('one derived owner item replaces the generic delivery item only while confirmed-spec checks are pending',async t=>{
   const f=await fixture(t);assert.equal(deliveries(f).length,1);assert.equal(related(f).length,0);f.configure(false);assert.equal(deliveries(f).length,1);assert.equal(related(f).length,0);f.configure(true);
-  const before=f.store.all('clientProjects'),first=related(f);assert.equal(first.length,1);assert.equal(first[0].group,'next');assert.match(first[0].href,/delivery=1$/);assert.match(first[0].title,/납품 규격·파일 누락 확인/);assert.equal(deliveries(f).length,0);assert.deepEqual(related(f),first);assert.deepEqual(f.store.all('clientProjects'),before);assert.equal(f.store.all('clientDeliveryChecks').length,0);
+  const before=f.store.all('clientProjects'),first=related(f);assert.equal(first.length,1);assert.equal(first[0].group,'next');assert.match(first[0].href,/delivery=1$/);assert.match(first[0].title,/납품 파일 검사에서 걸렸어요/);assert.equal(deliveries(f).length,0);assert.deepEqual(related(f),first);assert.deepEqual(f.store.all('clientProjects'),before);assert.equal(f.store.all('clientDeliveryChecks').length,0);
 });
 test('reviewers, managers, viewers and unrelated users do not receive another owner delivery-check task',async t=>{
   const f=await fixture(t);f.configure();assert.equal(related(f).length,1);for(const name of ['reviewer','manager','viewer','other','nextOwner']){assert.equal(related(f,f.users[name]).length,0);assert.equal(attention(f,f.users[name]).length,0);}

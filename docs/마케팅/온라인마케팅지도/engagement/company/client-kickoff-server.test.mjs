@@ -11,7 +11,7 @@ import {backupWorkspace} from './workspace-backup.mjs';
 
 const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aP1cAAAAASUVORK5CYII=','base64');
 const today=()=>new Date(Date.now()+9*3600000).toISOString().slice(0,10);
-const strategy={...emptyStrategyData(),objective:'brand',product:'합성 제품',audience:'합성 대상',primaryPromise:'핵심 약속',evidence1:'직접 확인할 수 있는 사용 장면',memoryHook:'기억할 장면',desiredAction:'직접 확인',value1:'이해',value2:'재미',channels:['youtube'],screenCopy:'확정할 화면 문구',proposedDeadline:'2099-12-31'};
+const strategy={...emptyStrategyData(),objective:'brand',product:'합성 제품',audience:'합성 대상',primaryPromise:'핵심 약속',evidence1:'직접 확인할 수 있는 사용 장면',memoryHook:'기억할 장면',desiredAction:'직접 볼 것',value1:'이해',value2:'재미',channels:['youtube'],screenCopy:'확정할 화면 문구',proposedDeadline:'2099-12-31'};
 async function fixture(t){
   const fixtureAt=new Date().toISOString(),clock=()=>fixtureAt;
   const directory=await mkdtemp(join(tmpdir(),'synk-kickoff-http-'));

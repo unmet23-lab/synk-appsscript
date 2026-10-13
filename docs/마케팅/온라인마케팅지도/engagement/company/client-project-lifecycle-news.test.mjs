@@ -62,7 +62,7 @@ test('one isolated customer project completes intake, kickoff, revision, approva
   await f.ok(f.path+'/startup',{body:{action:'apply',revision:preview.revision,presetId:preview.presetId,referenceDate:preview.referenceDate,calendar:preview.calendar,sections:['kickoff','schedule'],draft:{kickoff:preview.draft.kickoff,schedule:preview.draft.schedule}}});
   assert.equal((await f.project()).kickoff.enabled,true);assert.equal((await f.project()).schedule.enabled,true);
   await f.save({stage:'planning'});
-  const strategy={...emptyStrategyData(),objective:'brand',product:'합성 제품',audience:'합성 대상',primaryPromise:'핵심 약속',evidence1:'직접 확인할 수 있는 장면',memoryHook:'기억할 표지',desiredAction:'직접 확인',value1:'이해',value2:'재미',channels:['youtube'],screenCopy:'확정 화면 문구'};
+  const strategy={...emptyStrategyData(),objective:'brand',product:'합성 제품',audience:'합성 대상',primaryPromise:'핵심 약속',evidence1:'직접 확인할 수 있는 장면',memoryHook:'기억할 표지',desiredAction:'직접 볼 것',value1:'이해',value2:'재미',channels:['youtube'],screenCopy:'확정 화면 문구'};
   await f.ok(f.path+'/studio',{body:{action:'save_strategy',revision:f.raw().revision,strategy}});
   await f.ok(f.path+'/studio',{body:{action:'request_strategy_review',revision:f.raw().revision}});
   const invitation=(await f.ok(f.path+'/invite',{body:{revision:f.raw().revision}})).data;
