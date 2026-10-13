@@ -34,14 +34,14 @@ function clientProjectScreenPlan(project,{group=null,workflowItems=[],today=''}=
   const messages=rows(p.messages),pendingMessages=messages.filter(message=>message.author==='customer'&&['feedback','support'].includes(message.action)&&!message.resolved&&message.workflow?.status!=='done');
   const versions=rows(p.versions),preview=versions.filter(version=>version.kind==='preview').at(-1);
   summarize('materials','받은 자료·참고 자료·시안·최종본');
-  summarize('kickoff',changes?.enabled===true&&['pending','reviewed'].includes(changes.status)?changes.statusLabel:kickoff?.statusLabel||'유형 고르기 · 필요한 자료 · 확정 뒤 바뀐 것');
+  summarize('kickoff',changes?.enabled===true&&['pending','reviewed'].includes(changes.status)?changes.statusLabel:kickoff?.enabled===true&&kickoff.statusLabel?kickoff.statusLabel:['유형 고르기',kickoff?.statusLabel||'필요한 자료','확정 뒤 바뀐 것'].join(' · '));
   summarize('requests',sceneCount?`장면 요청 ${sceneCount}건 · 아직 ${pendingScenes}건`:'장면 수정 요청 없음');
   summarize('schedule',schedule?.statusLabel||'목표일 없음');
   summarize('delivery',closeout?.deliveryKey?`승인본 기준 납품 파일 ${rows(closeout.files).length}개`:'파일 고르기 · 자동 검사 · 고객에게 보이기');
   summarize('closeout',closeout?.statusLabel||'납품 전');
   summarize('followup',date(p.nextContactDate)?'다음 연락 '+p.nextContactDate:'잡힌 연락 없음');
   summarize('record',p.receiptId?'합의한 내용·전달일·담당자 · 접수번호 '+p.receiptId:'합의한 내용·전달일·담당자');
-  summarize('lounge',p.inviteActive?'초대 링크 살아 있음':'초대 링크 만들기');
+  summarize('lounge',p.inviteActive?'초대 링크 쓸 수 있음':'초대 링크 만들기');
   summarize('versions',preview?`시안 ${preview.label||''} · ${preview.approvedAt?'고객 승인':'고객 확인 기다리는 중'}`:versions.length?`버전 ${versions.length}개`:'아직 시안 없음');
   summarize('messages',pendingMessages.length?`답할 고객 요청 ${pendingMessages.length}건`:`주고받은 글 ${messages.length}건`);
 

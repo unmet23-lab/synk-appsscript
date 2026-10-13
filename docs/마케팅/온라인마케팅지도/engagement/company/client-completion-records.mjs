@@ -12,7 +12,7 @@ const visible=value=>value&&!value.deleted&&!value.deletedAt&&!value.hidden&&!['
 const statusLabels={no_delivery:'납품 전',waiting_receipt:'고객이 받았다고 안 함',follow_up:'더 볼 것 있음',ready:'마감 전',closed:'마감함',archived:'보관함 · 완료 판정 아님'};
 const rightsLabels={unconfirmed:'아직 안 봄',allowed:'써도 됨',denied:'안 됨',expired:'기간 지남'};
 const issueLabels={unconfirmed:'아직 안 봄',source_changed:'원본이 바뀜 · 다시 볼 것',source_unavailable:'파일·링크 볼 것',no_delivery:'최종본 올리기 전',denied:'안 됨',evidence_missing:'근거 없음',scope_missing:'범위 없음',date_missing:'확인일 없음',expiry_missing:'기간 모름',expired:'기간 지남'};
-const actions={start:'시작',submit:'고친 장면 제출',submit_review:'고친 시안 제출',accept:'검토 통과',request_changes:'더 고치기',reopen:'다시 열기',complete:'답변 끝',customer_confirm:'고객이 장면 확인',customer_changes:'고객이 더 고쳐 달라고 함'};
+const actions={start:'시작',submit:'고친 장면 제출',submit_review:'고친 시안 제출',accept:'검토 통과',request_changes:'더 고치기',reopen:'다시 열기',complete:'답변 끝냄',customer_confirm:'고객이 장면 확인',customer_changes:'고객이 더 고쳐 달라고 함'};
 const sourceStamp=row=>hash(Object.fromEntries(['id','revision','title','customerName','stage','dueDate','ownerId','reviewerId','teamId','versions','messages','studio','sceneRequestWorkflows','deliveryReceipts','closureHistory','closeoutWorkRevision','followUpHistory','nextContactDate'].map(key=>[key,row[key]])));
 
 export function createClientCompletionRecordsService({store,clientProjects,clientMaterials,clientRights,clock=()=>new Date().toISOString()}){

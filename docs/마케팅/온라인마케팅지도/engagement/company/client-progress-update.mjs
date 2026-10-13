@@ -77,7 +77,7 @@ export function createClientProgressUpdateService({store,clientProjects,clock=()
     // Only the project's agreed date is suitable for this customer message.
     // Schedule targets, intake wishes and remaining-work estimates stay private.
     dates.push(schedule.agreedDueDate?'합의한 전달일: '+schedule.agreedDueDate:'전달일은 아직 정해지지 않았어요. 담당자와 일정을 맞춰 주세요.');
-    const nextStep=label(row.nextStep),completedDefault=approved&&nextStep==='새 시안을 확인하고 수정 의견 또는 승인을 남겨 주세요.'||approved&&delivery.deliveryKey&&nextStep==='승인 감사해요. 최종본과 사용 안내를 준비하고 있어요.'||receiptConfirmed&&nextStep==='최종본과 사용 안내를 보내 드렸어요. 궁금한 점은 대화에 남겨 주세요.';
+    const nextStep=label(row.nextStep),completedDefault=approved&&nextStep==='새 시안을 확인하고 수정 의견 또는 승인을 남겨 주세요.'||approved&&delivery.deliveryKey&&nextStep==='승인 감사해요. 최종본과 사용 안내를 준비하고 있어요.'||receiptConfirmed&&nextStep==='최종본과 사용 안내를 보내 드렸어요. 궁금한 점은 후속 문의에 남겨 주세요.';
     if(nextStep&&!archived&&!completedDefault)dates.push('프로젝트에 기록된 다음 단계: '+nextStep);
     if(!completed.length)completed.push('아직 끝난 일이 없어요.');
     if(!customer.length)customer.push(archived?'보관한 프로젝트라 고객에게 부탁할 일은 넣지 않았어요.':'지금 고객에게 부탁할 일은 없어요.');

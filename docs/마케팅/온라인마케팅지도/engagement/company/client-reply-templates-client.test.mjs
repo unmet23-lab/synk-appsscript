@@ -30,7 +30,7 @@ function fixture(){
   return {run,context,requests,host,focusButtons,previewSection,events,frames,notifications,inputEvents,drafts,messageField,progressField,editorBody,editorLabel,list,status,previewHost,previewButton,open,type,prepare,click,isOpen:()=>opened};
 }
 
-test('entry is lazy and existing reply/progress forms expose personal wording without automatic requests',()=>{const f=fixture();assert.match(f.run('clientReplyTemplatesButton(id,"message")'),/내 문구 넣기/);assert.equal(f.requests.length,0);const source=readFileSync(new URL('public/client-projects.js',import.meta.url),'utf8');assert.match(source,/clientReplyTemplatesButton\(p.id,'message'\)/);assert.match(f.run('cprogressContents(project)'),/data-reply-target="progress"/);});
+test('entry is lazy and existing reply/progress forms expose personal wording without automatic requests',()=>{const f=fixture();assert.match(f.run('clientReplyTemplatesButton(id,"message")'),/자주 쓰는 답변 넣기/);assert.equal(f.requests.length,0);const source=readFileSync(new URL('public/client-projects.js',import.meta.url),'utf8');assert.match(source,/clientReplyTemplatesButton\(p.id,'message'\)/);assert.match(f.run('cprogressContents(project)'),/data-reply-target="progress"/);});
 
 test('fresh list displays personal scope, project variables and label/body search',async()=>{const f=fixture();await f.open();assert.equal(f.requests[0].method,'GET');assert.match(f.host.innerHTML,/내 계정에 저장/);assert.match(f.host.innerHTML,/합의한 전달일/);f.run('clientReplyTemplates.query="확인해"');assert.match(f.run('crtList()'),/시안 확인 요청/);f.run('clientReplyTemplates.query="없는 내용"');assert.match(f.run('crtList()'),/찾는 문구가 없어요/);});
 

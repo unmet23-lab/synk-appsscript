@@ -34,7 +34,7 @@ export function createClientDeliveryService({store,clientProjects,clock=()=>new 
   function generatedGuide(row,approved,draft){
     if(!approved)return '';
     const items=activeItems(draft),purposes=draft.requirements.filter(requirement=>items.some(item=>item.requirementId===requirement.id)).map(requirement=>`${requirement.label}: ${items.filter(item=>item.requirementId===requirement.id).length}개`).join('\n');
-    return `${row.title}\n고객이 승인한 시안: ${approved.label}\n\n${purposes?`전달 파일과 용도\n${purposes}`:'줄 파일을 고르고 사용 안내를 적어 주세요.'}\n\n전달 파일을 내려받아 내용과 재생 상태를 확인해 주세요. 추가 문의는 이 프로젝트의 후속 문의에 남겨 주세요.`;
+    return `고객이 승인한 시안: ${approved.label}\n\n${purposes?`전달 파일과 용도\n${purposes}\n\n`:''}전달 파일을 내려받아 내용과 재생 상태를 확인해 주세요. 궁금한 점은 후속 문의에 남겨 주세요.`;
   }
   function inspect(state){
     const {row,approved,draft,status,canEdit,delivered}=state,items=activeItems(draft),guide=draft.guideEdited?draft.guide:generatedGuide(row,approved,draft);
@@ -50,7 +50,7 @@ export function createClientDeliveryService({store,clientProjects,clock=()=>new 
     const ready=checks.every(check=>check.status==='ready')&&deliveryCheck.canPublish,viewStatus=status==='preparing'&&ready?'ready':status;
     const candidate=approved&&(approved.media||approved.url)?[{versionId:approved.id,label:approved.label,kind:approved.media?MIME_KINDS[approved.media.mimeType]||'unknown':'link',...(approved.media?{media:publicMedia(row.id,approved.media)}:{}),...(approved.url?{url:approved.url}:{})}]:[];
     const safeItems=items.map(item=>({id:item.id,requirementId:item.requirementId,deliverableItemId:item.deliverableItemId||'',label:item.label,kind:item.media?MIME_KINDS[item.media.mimeType]||'unknown':draft.requirements.find(requirement=>requirement.id===item.requirementId)?.kind||'unknown',confirmed:deliveryItemConfirmed(row,draft,item,inspection),confirmationToken:deliveryItemConfirmationKey(row,draft,item,inspection),source:item.source,...(item.media?{media:publicMedia(row.id,item.media)}:{}),...(item.url?{url:item.url}:{})}));
-    return {projectId:row.id,projectRevision:row.revision,draftRevision:draft.draftRevision,approvedPreview:approved?{id:approved.id,label:approved.label,approvedAt:approved.approvedAt}:null,status:viewStatus,statusLabel:STATUS[viewStatus],canEdit,requirements:draft.requirements,items:safeItems,candidates:candidate,guide,transferText:approved?`${row.title}의 최종본을 준비했습니다.\n승인 시안: ${approved.label}\n${items.map(item=>'- '+item.label).join('\n')}\n\n${guide}`:'',checks,deliveryCheck,canPublish:canEdit&&ready,deliveredVersionIds:[...new Set([...delivered,...draft.deliveredVersionIds])]};
+    return {projectId:row.id,projectRevision:row.revision,draftRevision:draft.draftRevision,approvedPreview:approved?{id:approved.id,label:approved.label,approvedAt:approved.approvedAt}:null,status:viewStatus,statusLabel:STATUS[viewStatus],canEdit,requirements:draft.requirements,items:safeItems,candidates:candidate,guide,transferText:approved?`${row.title} 최종본을 보내 드려요.\n${items.length?'보내는 파일\n'+items.map(item=>'- '+item.label).join('\n')+'\n\n':''}${guide}`:'',checks,deliveryCheck,canPublish:canEdit&&ready,deliveredVersionIds:[...new Set([...delivered,...draft.deliveredVersionIds])]};
   }
   function get(user,projectId){return inspect(readState(user,projectId));}
   function changing(user,projectId,input,fields){
