@@ -50,13 +50,13 @@ export function createClientStartupService({store,clientProjects,templates=null,
   function revision(row,value){if(!Number.isSafeInteger(value)||value!==row.revision)throw fail('그사이 프로젝트가 바뀌었어요. 새로 불러온 뒤 다시 준비해 주세요.',409);}
   function selectedPreset(user,input){
     if(typeof input.presetId==='string'&&input.presetId.startsWith('template:')){
-      if(!templates||!validDate(input.referenceDate)||!Object.hasOwn(calendarLabels,input.calendar)||!Number.isSafeInteger(input.templateRevision)||input.templateRevision<1)throw fail('내 기본 설정 버전과 시작하는 날을 다시 봐 주세요.');
+      if(!templates||!validDate(input.referenceDate)||!Object.hasOwn(calendarLabels,input.calendar)||!Number.isSafeInteger(input.templateRevision)||input.templateRevision<1)throw fail('내 기본 양식 버전과 시작하는 날을 다시 봐 주세요.');
       const template=templates.get(user,input.presetId.slice(9),input.templateRevision);return {id:input.presetId,label:template.label,templateRevision:template.revision,configuration:template.configuration};
     }
-    if(Object.hasOwn(input,'templateRevision'))throw fail('기본 유형에는 내 기본 설정 버전을 붙일 수 없어요.');return argumentsFor(input);
+    if(Object.hasOwn(input,'templateRevision'))throw fail('기본 유형에는 내 기본 양식 버전을 붙일 수 없어요.');return argumentsFor(input);
   }
   function sectionsFor(row,preset){const availability=setupSections(row);if(preset.configuration)for(const key of sections)if(!Object.hasOwn(preset.configuration.sections,key))availability[key]={available:false,reason:'이 기본 설정에 없는 항목이에요.'};return availability;}
-  function workspace(user,id){const row=currentProject(user,id),personal=templates?templates.list(user).map(template=>({id:'template:'+template.id,label:template.label,description:'내 기본 설정 · 시작하는 날에 맞춰 날짜를 다시 계산해요.',templateId:template.id,templateRevision:template.revision,calendar:template.configuration.calendar,templateSections:Object.keys(template.configuration.sections)})):[];return {projectId:row.id,revision:row.revision,presets:[...presets.map(({id,label,description})=>({id,label,description})),...personal],today:clientFollowUpToday(clock()),calendarLabels:{...calendarLabels},sections:setupSections(row)};}
+  function workspace(user,id){const row=currentProject(user,id),personal=templates?templates.list(user).map(template=>({id:'template:'+template.id,label:template.label,description:'내 기본 양식 · 시작하는 날에 맞춰 날짜를 다시 계산해요.',templateId:template.id,templateRevision:template.revision,calendar:template.configuration.calendar,templateSections:Object.keys(template.configuration.sections)})):[];return {projectId:row.id,revision:row.revision,presets:[...presets.map(({id,label,description})=>({id,label,description})),...personal],today:clientFollowUpToday(clock()),calendarLabels:{...calendarLabels},sections:setupSections(row)};}
   function preview(user,id,input){
     keys(input,['action','revision','presetId','referenceDate','calendar','templateRevision']);if(input.action!=='preview')throw fail('요청 내용이 비어 있어요.');
     const row=currentProject(user,id);revision(row,input.revision);const preset=selectedPreset(user,input);

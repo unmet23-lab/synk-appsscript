@@ -35,7 +35,7 @@ export function createClientWorkflowService({store,clientProjects,clientDelivery
       for(const entry of reminders.items){
         const id=`client:${row.id}:rights:${entry.targetId}`,portfolio=entry.kind==='portfolio';
         sources?.set(id,{recordId:entry.recordId,sourceFingerprint:entry.sourceFingerprint,expiresAt:entry.expiresAt});
-        items.push({id,kind:'client_rights_expiry',group:'next',projectId:row.id,projectTitle:row.title,revision:row.revision,messageId:null,versionId:null,seconds:null,href:clientWorkflowHref(row.id)+'&rights=1&rightsTarget='+encodeURIComponent(entry.targetId),title:(portfolio?'포트폴리오 공개 동의 기간이 끝나 가요':'자료 사용 기간이 끝나 가요')+' · '+entry.label,text:`${portfolio?'공개 동의':'사용 조건'}가 ${entry.expiresAt}까지예요. ${entry.daysRemaining<0?'이미 지났어요. 아직 쓰고 있는지, 늘릴지 봐 주세요.':'끝나기 전에 더 쓸지, 늘릴지 정해 주세요.'}${row.stage==='archived'?' 보관한 프로젝트라 보관을 풀어야 바꿀 수 있어요.':''}`,ownerId:row.ownerId,reviewerId:null,status:entry.status,statusLabel:entry.statusLabel,dueDate:entry.expiresAt,createdAt:entry.recordedAt,updatedAt:entry.recordedAt,actionLabel:'사용 조건 보기',actions:[]});
+        items.push({id,kind:'client_rights_expiry',group:'next',projectId:row.id,projectTitle:row.title,revision:row.revision,messageId:null,versionId:null,seconds:null,href:clientWorkflowHref(row.id)+'&rights=1&rightsTarget='+encodeURIComponent(entry.targetId),title:(portfolio?'포트폴리오 공개 동의 기간':'자료 사용 기간')+(entry.daysRemaining<0?'이 지났어요':'이 끝나 가요')+' · '+entry.label,text:`${portfolio?'공개 동의':'사용 조건'}가 ${entry.expiresAt}까지예요. ${entry.daysRemaining<0?'이미 지났어요. 아직 쓰고 있는지, 늘릴지 봐 주세요.':'끝나기 전에 더 쓸지, 늘릴지 정해 주세요.'}${row.stage==='archived'?' 보관한 프로젝트라 보관을 풀어야 바꿀 수 있어요.':''}`,ownerId:row.ownerId,reviewerId:null,status:entry.status,statusLabel:entry.statusLabel,dueDate:entry.expiresAt,createdAt:entry.recordedAt,updatedAt:entry.recordedAt,actionLabel:'사용 조건 보기',actions:[]});
       }
     }
     // Delivery completion and archival do not end a recorded public-use period.
@@ -48,15 +48,15 @@ export function createClientWorkflowService({store,clientProjects,clientDelivery
       if(status==='done')continue;
       if(!isOwner&&!(isReviewer&&status==='review'))continue;
       const actions=[];
-      if(isOwner&&['open','changes_requested'].includes(status))actions.push({action:'start',label:'시작'});
+      if(isOwner&&['open','changes_requested'].includes(status))actions.push({action:'start',label:message.action==='feedback'?'고치기 시작':'답하기 시작'});
       if(isOwner&&['open','in_progress','changes_requested'].includes(status)){
         if(message.action==='feedback')actions.push({action:'submit_review',label:reviewer?'고친 시안 검토 요청':'고친 시안을 고객에게'});
-        else actions.push({action:'complete',label:'답변 끝'});
+        else actions.push({action:'complete',label:'답변 끝내기'});
       }
       if(isReviewer&&status==='review')actions.push({action:'accept',label:'통과'},{action:'request_changes',label:'더 고치기'});
       if(isOwner&&['review','waiting_customer'].includes(status))actions.push({action:'reopen',label:'다시 열기'});
       const versionId=message.workflow?.resultVersionId||message.versionId||null;
-      items.push({id:`client:${row.id}:${message.id}`,kind:message.action==='feedback'?'feedback':'support',group:status==='review'?(isReviewer?'review':'waiting'):status==='waiting_customer'?'waiting':'reply',projectId:row.id,projectTitle:row.title,revision:row.revision,messageId:message.id,versionId,seconds:message.seconds??null,href:clientWorkflowHref(row.id,versionId,message.id,message.seconds),title:message.action==='feedback'?'고객이 시안을 고쳐 달래요':'고객이 물어봤어요',text:message.text,ownerId:row.ownerId,reviewerId:reviewer?.id||null,status,statusLabel:CLIENT_WORKFLOW_STATUS[status],dueDate:row.dueDate||'',createdAt:message.at,updatedAt:message.workflow?.updatedAt||message.at,note:message.workflow?.note||'',actions});
+      items.push({id:`client:${row.id}:${message.id}`,kind:message.action==='feedback'?'feedback':'support',group:status==='review'?(isReviewer?'review':'waiting'):status==='waiting_customer'?'waiting':'reply',projectId:row.id,projectTitle:row.title,revision:row.revision,messageId:message.id,versionId,seconds:message.seconds??null,href:clientWorkflowHref(row.id,versionId,message.id,message.seconds),title:message.action==='feedback'?'고객이 시안을 고쳐 달래요':'고객이 물어봤어요',text:message.text,ownerId:row.ownerId,reviewerId:reviewer?.id||null,status,statusLabel:message.action!=='feedback'&&status==='in_progress'?'답하는 중':CLIENT_WORKFLOW_STATUS[status],dueDate:row.dueDate||'',createdAt:message.at,updatedAt:message.workflow?.updatedAt||message.at,note:message.workflow?.note||'',actions});
     }
     if(isOwner&&preview&&!preview.approvedAt&&!items.some(item=>item.group==='waiting'&&item.status==='waiting_customer'))items.push({id:`client:${row.id}:approval:${preview.id}`,kind:'customer_review',group:'waiting',projectId:row.id,projectTitle:row.title,revision:row.revision,messageId:null,versionId:preview.id,seconds:null,href:clientWorkflowHref(row.id,preview.id),title:'고객이 시안을 보고 있어요',text:preview.label,ownerId:row.ownerId,reviewerId:reviewer?.id||null,status:'waiting_customer',statusLabel:'고객 차례',dueDate:row.dueDate||'',createdAt:preview.createdAt,updatedAt:preview.createdAt,actions:[]});
     const deliveryCheck=isOwner&&clientDelivery?clientDelivery.get(user,row.id).deliveryCheck:null;

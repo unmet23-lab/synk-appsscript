@@ -3,7 +3,7 @@ import {createHash} from 'node:crypto';
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 const kinds={'video/mp4':'video','video/webm':'video','image/png':'image','image/jpeg':'image','application/x-subrip':'subtitle','text/vtt':'subtitle'};
 const formats={'video/mp4':'mp4','video/webm':'webm','image/png':'png','image/jpeg':'jpg','application/x-subrip':'srt','text/vtt':'vtt'};
-const labels={not_configured:'납품 규격 없음',waiting_confirmation:'규격 고객 확인 전',needs_check:'검사 전',attention:'없거나 안 맞는 파일 있음',manual:'직접 볼 것 있음',ready:'검사 통과',archived:'보관함',existing_delivery:'전에 올린 최종본'};
+const labels={not_configured:'납품 규격 없음',waiting_confirmation:'규격 고객 확인 전',needs_check:'검사 전',attention:'없거나 안 맞는 파일 있음',manual:'직접 볼 것 있음',ready:'검사 통과',archived:'보관함',existing_delivery:'이미 보낸 최종본 있음'};
 const active=draft=>(draft?.items||[]).filter(item=>!item.removed);
 const specification=row=>row.studio?.deliverables||{revision:0,items:[]};
 const preview=row=>(row.versions||[]).filter(version=>version.kind==='preview').at(-1);

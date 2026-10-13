@@ -1,7 +1,7 @@
 'use strict';
 const clientDrafts={epoch:0,identity:null,records:new Map()};
 const cdfKinds={project:'프로젝트 기록',message:'답변이나 메모','follow-up':'다음 연락',progress:'진행 안내문'};
-const cdfFields={project:{title:'프로젝트 이름',customerName:'고객 이름',contact:'연락처',summary:'고객이 부탁한 일',terms:'합의한 범위와 수정 조건',dueDate:'합의한 전달일',nextContactDate:'다음 연락일',nextStep:'다음 할 일',internalNotes:'내부 메모'},message:{text:'답변이나 메모',visibility:'누가 보나'},'follow-up':{note:'이번 연락 결과',disposition:'그다음은',nextContactDate:'다음 연락일'},progress:{text:'보낼 안내문'}};
+const cdfFields={project:{title:'프로젝트 이름',customerName:'고객 이름',contact:'연락처',summary:'고객이 부탁한 일',terms:'합의한 범위와 수정 조건',dueDate:'합의한 전달일',nextContactDate:'다음 연락일',nextStep:'다음 할 일',internalNotes:'내부 메모'},message:{text:'답변이나 메모',visibility:'어디로'},'follow-up':{note:'이번 연락 결과',disposition:'그다음은',nextContactDate:'다음 연락일'},progress:{text:'보낼 안내문'}};
 function clientDraftsReset(){clientDrafts.epoch++;clientDrafts.identity=null;for(const row of clientDrafts.records.values())for(const form of row.forms.values())if(form.timer!==null)clearTimeout(form.timer);clientDrafts.records.clear();}
 function cdfIdentity(){const identity=JSON.stringify([state.user?.id,state.user?.role,state.user?.teamId,clientDesk.session]);if(clientDrafts.identity!==null&&clientDrafts.identity!==identity)clientDraftsReset();clientDrafts.identity=identity;return identity;}
 function cdfProject(id){return clientDesk.data?.projects?.find(project=>project.id===id);}

@@ -4,6 +4,7 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 const records=value=>Array.isArray(value)?value:[];
 const day=value=>{const at=Date.parse(value);return Number.isFinite(at)?new Date(at+9*3600000).toISOString().slice(0,10):'';};
 const nextDay=(value,days)=>new Date(Date.parse(value+'T00:00:00Z')+days*86400000).toISOString().slice(0,10);
+const when=value=>{const at=Date.parse(value);return Number.isFinite(at)?new Date(at).toLocaleString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}):'';};
 const STATUS={no_delivery:'납품 전',waiting_receipt:'고객이 받았다고 안 함',follow_up:'남은 일 있음',ready:'마감할 수 있음',closed:'마감함',archived:'보관됨'};
 const requestMessages=row=>records(row.messages).filter(message=>message.author==='customer'&&['feedback','support'].includes(message.action));
 
@@ -36,8 +37,8 @@ export function buildClientCloseout(row,{now=new Date().toISOString()}={}){
     {id:'contact',label:'다음 연락',status:nextContactDate?'missing':'ready',text:nextContactDate?`${nextContactDate}에 잡힌 연락을 먼저 정리해 주세요.`:'잡힌 연락이 없어요.'},
   ];
   const status=row.stage==='archived'?'archived':!deliveryKey?'no_delivery':closure?'closed':!receipt?'waiting_receipt':checks.some(check=>check.status!=='ready')?'follow_up':'ready';
-  const summaryText=[`${row.title} · 마감 요약`,`승인 시안: ${approvedPreview?.label||'없음'}${approvedPreview?.approvedAt?' ('+approvedPreview.approvedAt+')':''}`,`납품 파일: ${finals.length?finals.map(version=>version.label).join(', '):'없음'}`,`납품 등록: ${deliveredAt||'없음'}`,`고객이 받았다고 한 때: ${receipt?.confirmedAt||'대기'}`,`문의와 수정: ${requests.filter(message=>message.resolved).length}개 처리 · ${pendingRequests}개 남음`,`다음 연락: ${nextContactDate||'없음'}`].join('\n');
-  return {deliveryKey,approvedPreviewId,deliveredAt,files:finals.map(({id,label})=>({id,label})),receipt:receipt?{confirmedAt:receipt.confirmedAt}:null,remindAfterDays,dueDate,overdue:!!(deliveryKey&&row.stage==='delivered'&&!receipt&&dueDate&&day(now)>=dueDate),status,statusLabel:STATUS[status],pendingRequests,nextContactDate,canClose:status==='ready',checks,closure,lastClosure,summaryText,requestText:deliveryKey?`${row.title} 최종 파일과 사용 안내를 보내 드렸어요.\n파일: ${finals.map(version=>version.label).join(', ')}\n고객 화면에서 「파일과 안내 확인했어요」를 눌러 주세요. 궁금한 점은 대화에 남겨 주세요.`:''};
+  const summaryText=[`${row.title} · 마감 요약`,`승인 시안: ${approvedPreview?.label||'없음'}${approvedPreview?.approvedAt?' · 승인 '+when(approvedPreview.approvedAt):''}`,`납품 파일: ${finals.length?finals.map(version=>version.label).join(', '):'없음'}`,`납품 등록: ${when(deliveredAt)||'없음'}`,`고객이 받았다고 한 때: ${receipt?when(receipt.confirmedAt):'아직'}`,`문의와 수정: ${requests.filter(message=>message.resolved).length}개 처리 · ${pendingRequests}개 남음`,`다음 연락: ${nextContactDate||'없음'}`].join('\n');
+  return {deliveryKey,approvedPreviewId,deliveredAt,files:finals.map(({id,label})=>({id,label})),receipt:receipt?{confirmedAt:receipt.confirmedAt}:null,remindAfterDays,dueDate,overdue:!!(deliveryKey&&row.stage==='delivered'&&!receipt&&dueDate&&day(now)>=dueDate),status,statusLabel:STATUS[status],pendingRequests,nextContactDate,canClose:status==='ready',checks,closure,lastClosure,summaryText,requestText:deliveryKey?`${row.title} 최종 파일과 사용 안내를 보내 드렸어요.\n파일: ${finals.map(version=>version.label).join(', ')}\n고객 화면에서 「파일과 안내 확인했어요」를 눌러 주세요. 궁금한 점은 후속 문의에 남겨 주세요.`:''};
 }
 
 export function customerClientCloseout(row){
