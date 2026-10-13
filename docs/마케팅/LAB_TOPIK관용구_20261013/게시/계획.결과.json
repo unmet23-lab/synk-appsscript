@@ -1,0 +1,19 @@
+{
+  "schema": "synk-sns-publish-result/v1",
+  "plan": "docs/마케팅/LAB_TOPIK관용구_20261013/게시/계획.json",
+  "items": {
+    "01-lab-youtube": {
+      "contentHash": "af60fb51167fffbe78651cdf4bd03385cee5e767676d0149923d9b07c719b054",
+      "publicationHash": "f6405f06db204b05bc119377f0a2210865c091003766bff13409f8469d326da6",
+      "startedAt": "2026-10-13T07:43:47.720Z",
+      "state": "public",
+      "id": "-sLV-OAim3k",
+      "url": "https://www.youtube.com/watch?v=-sLV-OAim3k",
+      "thumbnail": true,
+      "captions": [],
+      "finishedAt": "2026-10-13T07:43:58.309Z",
+      "publicAt": "2026-10-13T07:44:39.957Z",
+      "publicNote": "유호 「이대로 세 곳에 지금 공개로 올려」 2026-10-13 — 비공개 업로드 후 제목·설명·표지·어린이용 아님·카테고리 27 확인"
+    }
+  }
+}
