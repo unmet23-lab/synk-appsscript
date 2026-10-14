@@ -114,7 +114,8 @@ const opening=path.join(root,'experiences/brand-opening');
  for(const match of openingSource.matchAll(/[\"']assets\/([a-zA-Z0-9_./-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g))openingAssets.add(match[1]);
  for(const name of fs.readdirSync(path.join(opening,'assets/home')))if(/\.(?:webp|woff2)$/.test(name)||name==='cafe-drinks-v2.png')openingAssets.add('home/'+name);
  for(const name of fs.readdirSync(path.join(opening,'assets/world-felt')))if(/^[a-z0-9-]+\.webp$/.test(name))openingAssets.add('world-felt/'+name);
-for(const name of openingAssets)copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
+// assets/tutor-photos는 위에서 폴더째 실었다(home.html 기본 계정 사진이 여기 다시 잡혀도 두 번 쓰지 않는다).
+for(const name of openingAssets)if(!name.startsWith('tutor-photos/'))copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.
  const voiceRoot=path.join(root,'experiences/hangul-stage/assets/voice');

@@ -25,6 +25,8 @@
 .tutor-detail[data-tutor] .tutor-touch,.tutor-welcome .tutor-touch{display:block;align-self:stretch;width:auto;margin:10px -16px 0;background:none;border-radius:0}
 .tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:100%;height:auto;aspect-ratio:4/3;margin:0}
 .tutor-detail[data-tutor] .tutor-portrait.large img,.tutor-welcome .tutor-portrait.large img{object-position:50% 72%}
+/* 까몽은 책 더미 위에 앉아 귀 끝이 칸 위쪽 15%에 있다 → 위를 남긴다 */
+:is(.tutor-detail,.tutor-welcome)[data-tutor=kkamong] .tutor-portrait.large img{object-position:50% 38%}
 
 /* 세 친구 카드 */
 .tutor-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;border-radius:999px;background:var(--w-s1);box-shadow:var(--w-card-edge)}
@@ -120,6 +122,7 @@
  /* 사진 카드는 가로로 낮게: 말풍선이 세 줄이어도 사진이 아래 단추 줄에 가리지 않는다(1440×900 실측) */
  .tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{aspect-ratio:16/10}
  .tutor-detail[data-tutor] .tutor-portrait.large img,.tutor-welcome .tutor-portrait.large img{object-position:50% 66%}
+ :is(.tutor-detail,.tutor-welcome)[data-tutor=kkamong] .tutor-portrait.large img{object-position:50% 22%}
  .tutor-detail[data-tutor] .tutor-stage,.tutor-welcome .tutor-stage{padding-top:12px}
  .tutor-detail[data-tutor] .tutor-touch,.tutor-welcome .tutor-touch{margin-top:6px}
  .tutor-speech p{font-size:16.5px}

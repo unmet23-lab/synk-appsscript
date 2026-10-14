@@ -1,0 +1,17 @@
+Image to generate: a stop-motion contact sheet. Landscape 3:2 image made of exactly SIX equal square frames in a precise 3 x 2 grid (3 columns, 2 rows), separated by thin straight pure-white gutter lines about 12 pixels wide. No outer border, no labels, no numbers, no text anywhere.
+
+All six frames are the SAME locked-off camera shot of the SAME miniature set, like six consecutive frames of a stop-motion film where the animator only swaps Mongle's felt face pieces. The set, the camera position, the lighting, the props and Mongle's body position, size, tilt and shadow must be identical in all six frames. Only the eyes (and blush where stated) change.
+
+The shot (same in every frame): Mongle (see MASCOTS below and REFERENCE 1) sits on a seamless peach-coloured paper photography backdrop - a soft, warm, slightly dusty peach (close to #F8C6B3) - that curves smoothly from the back down onto the floor with no visible seam, corner or horizon line, like a small tabletop photo studio. The paper has a very fine matte paper texture and gets a touch darker toward the bottom corners. Mongle is curious and loves to touch everything: just to the right of Mongle stands a tiny felt flower pot with a sage-green sprout, and a small red felt ladybug rests on one leaf. Mongle's body is turned about 15 degrees toward the pot but its face looks straight at the camera. Lighting: one large soft key light from the upper left like a big diffused window, gentle fill from the right, a soft real contact shadow on the paper under the toy and the props. No room, no wall texture, no window frame, no wooden floor, nothing else in the background but the peach paper. Eye-level camera, 50mm lens look, shallow depth of field.
+Framing inside each frame: Mongle is centred slightly left, its hem touches the floor at about 88 percent of the frame height and the top of its dome is at about 42 percent of the frame height. The upper 38 percent of each frame is calm empty peach backdrop paper (a speech bubble will be placed there later). Nothing is cropped.
+
+Mongle's face in each frame (REFERENCE 2 is an expression chart of the real Mongle toy in 4 x 2 cells; copy the exact face pieces from the named chart cell):
+1. top-left: calm default - two black glass bead eyes (chart cell 1).
+2. top-middle: eyes closed in a soft blink - two short curved stitched lines with tiny lashes (chart cell 2).
+3. top-right: surprised - the two black bead eyes slightly bigger and set a little wider apart (chart cell 4).
+4. bottom-left: very happy - stitched upward arc eyes like the chart cell 3, plus two small round rosy-pink felt blush dots under the eyes.
+5. bottom-middle: gentle smiling eyes - stitched upward arcs exactly like chart cell 3, no blush.
+6. bottom-right: a little embarrassed - copy chart cell 5 (one bead eye and one squeezed eye), plus one tiny light-blue felt sweat drop on the side of the dome.
+
+{{MASCOTS}}
+Only Mongle appears in this image. REFERENCE 1 shows Mongle's body; REFERENCE 2 shows its faces.
