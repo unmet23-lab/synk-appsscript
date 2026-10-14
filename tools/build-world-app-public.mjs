@@ -90,6 +90,8 @@ const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
 for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
+// 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
+copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
 for(const name of dayFiles)copyFile(path.join(town,name),'town/'+name);
