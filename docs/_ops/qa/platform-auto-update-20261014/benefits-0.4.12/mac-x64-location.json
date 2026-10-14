@@ -1,0 +1,488 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T10:14:10.457Z",
+  "host": {
+    "platform": "darwin",
+    "arch": "x64"
+  },
+  "helperSHA256": "861ff3c45ef7c04b4ce4012bde3642d326cf3fe7d7cf053e91500a2f1d820b98",
+  "candidateAsarSHA256": "30ee78f6ce8e02c16e402037c34ff481dce5637fdae18579bd839c1c544466e2",
+  "checks": [
+    {
+      "name": "decline real packaged API result",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "inside": false,
+        "continueStartup": true,
+        "status": "declined",
+        "packaged": true
+      }
+    },
+    {
+      "name": "decline first open is outside Applications",
+      "ok": true
+    },
+    {
+      "name": "decline initial proposal appears once",
+      "ok": true
+    },
+    {
+      "name": "decline preserves synthetic account and library bytes",
+      "ok": true
+    },
+    {
+      "name": "decline declined movement never calls native API",
+      "ok": true
+    },
+    {
+      "name": "decline opens original copy with update warning",
+      "ok": true
+    },
+    {
+      "name": "move real packaged API result",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "inside": true,
+        "continueStartup": true,
+        "status": "in-applications",
+        "packaged": true
+      }
+    },
+    {
+      "name": "move first open is outside Applications",
+      "ok": true
+    },
+    {
+      "name": "move initial proposal appears once",
+      "ok": true
+    },
+    {
+      "name": "move preserves synthetic account and library bytes",
+      "ok": true
+    },
+    {
+      "name": "move native move and automatic relaunch occurred",
+      "ok": true
+    },
+    {
+      "name": "move relaunch resolves in the real Applications directory",
+      "ok": true
+    },
+    {
+      "name": "move copied production helper stays byte exact",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline real packaged API result",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "inside": false,
+        "continueStartup": true,
+        "status": "replacement-declined",
+        "packaged": true
+      }
+    },
+    {
+      "name": "replacement-decline first open is outside Applications",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline initial proposal appears once",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline preserves synthetic account and library bytes",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline declined movement never calls native API",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline opens original copy with update warning",
+      "ok": true
+    },
+    {
+      "name": "replacement-decline asks explicitly before replacing",
+      "ok": true
+    },
+    {
+      "name": "replacement refusal preserves previous app bytes",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept real packaged API result",
+      "ok": true,
+      "detail": {
+        "ok": true,
+        "inside": true,
+        "continueStartup": true,
+        "status": "in-applications",
+        "packaged": true
+      }
+    },
+    {
+      "name": "replacement-accept first open is outside Applications",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept initial proposal appears once",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept preserves synthetic account and library bytes",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept native move and automatic relaunch occurred",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept relaunch resolves in the real Applications directory",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept copied production helper stays byte exact",
+      "ok": true
+    },
+    {
+      "name": "replacement-accept asks explicitly before replacing",
+      "ok": true
+    },
+    {
+      "name": "confirmed replacement carries the new app",
+      "ok": true
+    },
+    {
+      "name": "original candidate ASAR untouched",
+      "ok": true
+    }
+  ],
+  "results": [
+    {
+      "scenario": "decline",
+      "result": {
+        "ok": true,
+        "inside": false,
+        "continueStartup": true,
+        "status": "declined",
+        "packaged": true
+      },
+      "events": [
+        {
+          "at": "2026-10-14T10:13:55.506Z",
+          "pid": 25311,
+          "event": "started",
+          "inside": false,
+          "packaged": true,
+          "executable": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/application-location/decline/SYNKLocationQA-699e4c61372b1e77-decline.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:13:55.510Z",
+          "pid": 25311,
+          "event": "dialog",
+          "type": "question",
+          "message": "SYNK Location QA을(를) Applications 폴더로 옮길까요?",
+          "buttons": [
+            "Applications로 옮기기",
+            "현재 위치에서 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:13:55.511Z",
+          "pid": 25311,
+          "event": "dialog",
+          "type": "warning",
+          "message": "현재 사본에 업데이트가 적용되지 않을 수 있어요.",
+          "buttons": [
+            "계속 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:13:55.511Z",
+          "pid": 25311,
+          "event": "result",
+          "inside": false,
+          "continueStartup": true,
+          "status": "declined"
+        },
+        {
+          "at": "2026-10-14T10:13:55.512Z",
+          "pid": 25311,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:13:55.512Z",
+          "pid": 25311,
+          "event": "will-quit"
+        }
+      ]
+    },
+    {
+      "scenario": "move",
+      "result": {
+        "ok": true,
+        "inside": true,
+        "continueStartup": true,
+        "status": "in-applications",
+        "packaged": true
+      },
+      "events": [
+        {
+          "at": "2026-10-14T10:13:58.815Z",
+          "pid": 25329,
+          "event": "started",
+          "inside": false,
+          "packaged": true,
+          "executable": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/application-location/move/SYNKLocationQA-699e4c61372b1e77-move.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:13:58.818Z",
+          "pid": 25329,
+          "event": "dialog",
+          "type": "question",
+          "message": "SYNK Location QA을(를) Applications 폴더로 옮길까요?",
+          "buttons": [
+            "Applications로 옮기기",
+            "현재 위치에서 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:13:58.819Z",
+          "pid": 25329,
+          "event": "native-move-called"
+        },
+        {
+          "at": "2026-10-14T10:13:59.154Z",
+          "pid": 25329,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:13:59.154Z",
+          "pid": 25329,
+          "event": "will-quit"
+        },
+        {
+          "at": "2026-10-14T10:13:59.241Z",
+          "pid": 25329,
+          "event": "result",
+          "inside": false,
+          "continueStartup": false,
+          "status": "moving"
+        },
+        {
+          "at": "2026-10-14T10:14:00.709Z",
+          "pid": 25345,
+          "event": "started",
+          "inside": true,
+          "packaged": true,
+          "executable": "/Applications/SYNKLocationQA-699e4c61372b1e77-move.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:14:00.723Z",
+          "pid": 25345,
+          "event": "result",
+          "inside": true,
+          "continueStartup": true,
+          "status": "in-applications"
+        },
+        {
+          "at": "2026-10-14T10:14:00.724Z",
+          "pid": 25345,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:14:00.725Z",
+          "pid": 25345,
+          "event": "will-quit"
+        }
+      ]
+    },
+    {
+      "scenario": "replacement-decline",
+      "result": {
+        "ok": true,
+        "inside": false,
+        "continueStartup": true,
+        "status": "replacement-declined",
+        "packaged": true
+      },
+      "events": [
+        {
+          "at": "2026-10-14T10:14:04.990Z",
+          "pid": 25562,
+          "event": "started",
+          "inside": false,
+          "packaged": true,
+          "executable": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/application-location/replacement-decline/SYNKLocationQA-699e4c61372b1e77-replacement-decline.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:14:04.994Z",
+          "pid": 25562,
+          "event": "dialog",
+          "type": "question",
+          "message": "SYNK Location QA을(를) Applications 폴더로 옮길까요?",
+          "buttons": [
+            "Applications로 옮기기",
+            "현재 위치에서 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:14:04.996Z",
+          "pid": 25562,
+          "event": "replacement-confirmation",
+          "message": "Applications에 같은 이름의 앱이 있어요.",
+          "defaultId": 0,
+          "cancelId": 0
+        },
+        {
+          "at": "2026-10-14T10:14:04.997Z",
+          "pid": 25562,
+          "event": "dialog",
+          "type": "warning",
+          "message": "현재 사본에 업데이트가 적용되지 않을 수 있어요.",
+          "buttons": [
+            "계속 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:14:04.997Z",
+          "pid": 25562,
+          "event": "result",
+          "inside": false,
+          "continueStartup": true,
+          "status": "replacement-declined"
+        },
+        {
+          "at": "2026-10-14T10:14:04.998Z",
+          "pid": 25562,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:14:04.998Z",
+          "pid": 25562,
+          "event": "will-quit"
+        }
+      ]
+    },
+    {
+      "scenario": "replacement-accept",
+      "result": {
+        "ok": true,
+        "inside": true,
+        "continueStartup": true,
+        "status": "in-applications",
+        "packaged": true
+      },
+      "events": [
+        {
+          "at": "2026-10-14T10:14:08.849Z",
+          "pid": 25601,
+          "event": "started",
+          "inside": false,
+          "packaged": true,
+          "executable": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/application-location/replacement-accept/SYNKLocationQA-699e4c61372b1e77-replacement-accept.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:14:08.853Z",
+          "pid": 25601,
+          "event": "dialog",
+          "type": "question",
+          "message": "SYNK Location QA을(를) Applications 폴더로 옮길까요?",
+          "buttons": [
+            "Applications로 옮기기",
+            "현재 위치에서 열기"
+          ]
+        },
+        {
+          "at": "2026-10-14T10:14:08.854Z",
+          "pid": 25601,
+          "event": "replacement-confirmation",
+          "message": "Applications에 같은 이름의 앱이 있어요.",
+          "defaultId": 0,
+          "cancelId": 0
+        },
+        {
+          "at": "2026-10-14T10:14:08.854Z",
+          "pid": 25601,
+          "event": "native-move-called"
+        },
+        {
+          "at": "2026-10-14T10:14:08.933Z",
+          "pid": 25601,
+          "event": "native-conflict",
+          "type": "exists"
+        },
+        {
+          "at": "2026-10-14T10:14:09.222Z",
+          "pid": 25601,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:14:09.222Z",
+          "pid": 25601,
+          "event": "will-quit"
+        },
+        {
+          "at": "2026-10-14T10:14:09.222Z",
+          "pid": 25601,
+          "event": "result",
+          "inside": false,
+          "continueStartup": false,
+          "status": "moving"
+        },
+        {
+          "at": "2026-10-14T10:14:10.218Z",
+          "pid": 25614,
+          "event": "started",
+          "inside": true,
+          "packaged": true,
+          "executable": "/Applications/SYNKLocationQA-699e4c61372b1e77-replacement-accept.app/Contents/MacOS/SYNKPlatformPreview",
+          "electron": "44.5.1",
+          "arch": "x64"
+        },
+        {
+          "at": "2026-10-14T10:14:10.224Z",
+          "pid": 25614,
+          "event": "result",
+          "inside": true,
+          "continueStartup": true,
+          "status": "in-applications"
+        },
+        {
+          "at": "2026-10-14T10:14:10.225Z",
+          "pid": 25614,
+          "event": "before-quit"
+        },
+        {
+          "at": "2026-10-14T10:14:10.225Z",
+          "pid": 25614,
+          "event": "will-quit"
+        }
+      ]
+    }
+  ],
+  "failure": null,
+  "limitations": {
+    "syntheticDialogResponses": true,
+    "realNativeLocationAndMoveAPI": true,
+    "automaticNativeRelaunch": true,
+    "productionMainUIExercised": false,
+    "realAccountsAccessed": false,
+    "realInstalledSynkAppChanged": false,
+    "protectedDirectoryBranch": "unit tested; privileged native move intentionally disabled"
+  }
+}

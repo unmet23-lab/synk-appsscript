@@ -1,0 +1,46 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T10:45:55.423Z",
+  "commit": "f3e4e0ac2554a4e5717ff6c50dff3202737bd06f",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 38549495435,
+      "headSha": "f3e4e0ac2554a4e5717ff6c50dff3202737bd06f",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38549495435"
+    },
+    {
+      "conclusion": "cancelled",
+      "databaseId": 38549495219,
+      "headSha": "f3e4e0ac2554a4e5717ff6c50dff3202737bd06f",
+      "name": "synk.im 배포 점검",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38549495219"
+    }
+  ],
+  "siteCheckCoveredBy": {
+    "commit": "9c3e03798895bc234bc216376ded8f6e772421d7",
+    "containsPublication": true,
+    "runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 38550752538,
+        "headSha": "9c3e03798895bc234bc216376ded8f6e772421d7",
+        "name": "pages build and deployment",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38550752538"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 38550753352,
+        "headSha": "9c3e03798895bc234bc216376ded8f6e772421d7",
+        "name": "synk.im 배포 점검",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38550753352"
+      }
+    ]
+  },
+  "note": "공개 커밋의 사이트 점검은 바로 뒤 다른 세션의 push 두 번에 밀려 취소됐다. 공개 커밋을 포함한 후속 커밋의 점검이 성공했다."
+}
