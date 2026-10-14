@@ -215,14 +215,17 @@
 .life-sign{position:absolute;left:var(--x);top:var(--y);width:var(--w);height:var(--h);display:grid;place-items:center;overflow:visible;font-family:var(--w-sans);font-weight:700;line-height:1;letter-spacing:-.01em;white-space:nowrap;pointer-events:none}
 .life-sign[data-kind=tag]{font-size:max(13px,3.3cqw);color:#3A2A22;mix-blend-mode:multiply}
 .life-sign[data-kind=board]{font-size:max(13px,3.6cqw);color:#43260F;mix-blend-mode:multiply;filter:blur(.2px)}
-button.life-sign{pointer-events:auto;margin:0;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s var(--w-ease)}
+button.life-sign{pointer-events:auto;min-width:0;min-height:0;margin:0;padding:0;border:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s var(--w-ease)}
+/* 글자 상자는 사진 속 자리 크기 그대로 두고(44px 규칙이 키우면 글자가 아래로 밀린다), 누르는 곳만 가운데서 넓힌다. 안내판 둘은 위아래로 붙어 있어 덜 넓힌다. */
+button.life-sign::after{content:'';position:absolute;left:50%;top:50%;width:max(100%,44px);height:max(100%,44px);transform:translate(-50%,-50%)}
+button.life-sign[data-kind=board]::after{height:max(100%,28px)}
 button.life-sign:active{transform:scale(.96)}
 button.life-sign:focus-visible{outline:2px solid #FAFAF9;outline-offset:2px;border-radius:4px}
 button.life-sign:is([data-kind=tag],[data-kind=board]):hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
 .life-sign[data-kind=led]{font-size:max(13px,3.2cqw);border-radius:4px;background:rgba(18,14,10,.88);color:#FFB547;font-weight:650;letter-spacing:.02em;text-shadow:0 0 6px rgba(255,170,60,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 4px 10px rgba(0,0,0,.25)}
 /* 이 레슨에서 배우는 한국어(‘…’)는 코랄 형광펜 */
 mark.life-say{background:linear-gradient(transparent 60%,rgba(249,104,89,.5) 60%);color:inherit;font-weight:650;padding:0 .06em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.life-dialogue>small.w-name{display:inline-flex;margin-bottom:10px}
+.life-dialogue>small.w-name{display:inline-flex;margin-bottom:10px;font-weight:650;line-height:1}
 /* 사진 속 자리(왼쪽부터 몽글·까몽·마린)를 말풍선 꼬리가 가리킨다 */
 .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=mongle]::before{left:21%}
 .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=kkamong]::before{left:45%}
