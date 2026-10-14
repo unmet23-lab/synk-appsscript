@@ -169,3 +169,14 @@ test('permission revoked for an earlier row while another media preparation awai
   await assert.rejects(f.workflows.apply(f.users.writer,{previewId:preview.previewId,confirmed:true}),{status:403});
   assert.equal(f.store.get('socialPosts',first.id).category,'news');assert.equal(f.store.get('socialPosts',second.id).category,'news');
 });
+
+test('an apply that loses a race to the same apply reuses its jobs without rebuilding the publishing workspace',async t=>{
+  let gateOn=false,release,entered;const gate=new Promise(r=>release=r),ready=new Promise(r=>entered=r);
+  const f=await fixture(t,{preparePost:async(_user,input)=>{if(gateOn){gateOn=false;entered();await gate;}return input;}});
+  const post=f.approve(f.create({title:'경쟁'})),preview=await f.workflows.bulkPreview(f.users.manager,{action:'schedule',postIds:[post.id],schedule:{scheduledAt:'2026-10-20T00:00:00Z',timezone:'Asia/Seoul'}});
+  gateOn=true;const slow=f.workflows.apply(f.users.manager,{previewId:preview.previewId,confirmed:true});await ready;
+  const fast=await f.workflows.apply(f.users.manager,{previewId:preview.previewId,confirmed:true});assert.equal(fast.jobs.length,1);
+  const original=f.publishing.workspace;let builds=0;f.publishing.workspace=(...args)=>{builds++;return original(...args);};
+  try{release();const late=await slow;assert.equal(late.existing,true);assert.deepEqual(late.jobs.map(job=>job.id),fast.jobs.map(job=>job.id));}finally{f.publishing.workspace=original;}
+  assert.equal(builds,0,'no full workspace build');
+});

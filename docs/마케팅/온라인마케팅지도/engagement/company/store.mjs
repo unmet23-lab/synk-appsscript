@@ -32,6 +32,8 @@ export function publicUser(user) {
   const {passwordHash:_,...safe} = user;
   return safe;
 }
+// Kinds read by one field far more often than in full get a partial expression index per field (allWhere below).
+const INDEXED={socialPublishJobs:['postId','status','channelId']};
 export class Store {
   #statements=new Map();
   #statement(sql){let prepared=this.#statements.get(sql);if(!prepared){prepared=this.db.prepare(sql);this.#statements.set(sql,prepared);}return prepared;}
@@ -51,20 +53,33 @@ export class Store {
       CREATE TABLE IF NOT EXISTS credentials (id TEXT PRIMARY KEY, ciphertext TEXT NOT NULL);
       CREATE TABLE IF NOT EXISTS tokens (hash TEXT PRIMARY KEY, purpose TEXT NOT NULL, userId TEXT, body TEXT NOT NULL, expiresAt TEXT NOT NULL);
       CREATE INDEX IF NOT EXISTS token_expiry ON tokens(expiresAt);`);
+    for(const [kind,fields] of Object.entries(INDEXED))for(const field of fields)this.db.exec(`CREATE INDEX IF NOT EXISTS documents_${kind}_${field} ON documents(json_extract(body,'$.${field}')) WHERE kind='${kind}'`);
     if(!this.get('settings','company'))this.put('settings','company',{companyName:'SYNK',enabled:true,hourKst:9});
     this.#statement('DELETE FROM tokens WHERE expiresAt < ?').run(now());
   }
   // readScope(fn): during one synchronous build, repeated get/all of a document skip SQLite. Only the stored
   // JSON text is remembered and every read still returns a fresh object; any write or rollback forgets it all.
   #scope=null;
-  readScope(fn){if(this.#scope)return fn();this.#scope={get:new Map(),all:new Map()};try{return fn();}finally{this.#scope=null;}}
-  #forget(){if(this.#scope){this.#scope.get.clear();this.#scope.all.clear();}}
+  readScope(fn){if(this.#scope)return fn();this.#scope={get:new Map(),all:new Map(),where:new Map()};try{return fn();}finally{this.#scope=null;}}
+  #forget(){if(this.#scope){this.#scope.get.clear();this.#scope.all.clear();this.#scope.where.clear();}}
   get(kind,id) { if(id==null)return null;const scope=this.#scope,key=scope&&kind+'\u0000'+id;if(scope?.get.has(key)){const body=scope.get.get(key);return body==null?null:JSON.parse(body);}const row=this.#statement('SELECT body FROM documents WHERE kind=? AND id=?').get(kind,id);if(scope)scope.get.set(key,row?row.body:null);return row?JSON.parse(row.body):null; }
   all(kind) { const scope=this.#scope;if(scope?.all.has(kind))return scope.all.get(kind).map(body=>JSON.parse(body));const rows=this.#statement('SELECT body FROM documents WHERE kind=? ORDER BY rowid').all(kind);if(scope)scope.all.set(kind,rows.map(x=>x.body));return rows.map(x=>JSON.parse(x.body)); }
-  put(kind,id,body) { this.#forget();this.#statement('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));return body; }
+  put(kind,id,body) { this.#forget();this.#bump(kind);this.#statement('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));return body; }
+  // Documents of an indexed kind whose field equals one of the values, in insertion order like all(). present names a field that
+  // must also be set; SQLite checks it, so rows that fail are never parsed here.
+  allWhere(kind,field,values,{present}={}) {if(!INDEXED[kind]?.includes(field))throw new Error('색인이 없는 조회예요: '+kind+'.'+field);if(present!==undefined&&!/^[A-Za-z][A-Za-z0-9]*$/.test(present))throw new Error('조회 항목 이름을 확인해 주세요.');
+    const list=[...new Set((Array.isArray(values)?values:[values]).filter(v=>v!=null).map(String))];if(!list.length)return [];
+    // One indexed equality per value, merged in rowid order: SQLite plans IN (?,?) with ORDER BY rowid as a scan of the kind.
+    const sql=`SELECT rowid AS r,body FROM documents WHERE kind='${kind}' AND json_extract(body,'$.${field}') = ?${present?` AND json_extract(body,'$.${present}') IS NOT NULL`:''} ORDER BY rowid`;
+    const scope=this.#scope,key=scope&&sql+'\u0000'+list.join('\u0000');if(scope?.where.has(key))return scope.where.get(key).map(body=>JSON.parse(body));
+    const statement=this.#statement(sql),rows=list.length===1?statement.all(list[0]):list.flatMap(value=>statement.all(value)).sort((a,b)=>a.r-b.r);if(scope)scope.where.set(key,rows.map(x=>x.body));return rows.map(x=>JSON.parse(x.body));}
+  // How many times this process wrote a kind: a cheap way to tell whether anything of that kind changed.
+  #generation=new Map();
+  #bump(kind){this.#generation.set(kind,(this.#generation.get(kind)||0)+1);}
+  generation(kind){return this.#generation.get(kind)||0;}
   count(kind) { return this.#statement('SELECT COUNT(*) AS count FROM documents WHERE kind=?').get(kind).count; }
   createdBefore(kind,iso) { return this.#statement("SELECT id, json_extract(body,'$.createdAt') AS createdAt FROM documents WHERE kind=? AND json_extract(body,'$.createdAt')<?").all(kind,iso); }
-  remove(kind,id) {if(id==null)return;this.#forget();this.#statement('DELETE FROM documents WHERE kind=? AND id=?').run(kind,id);}
+  remove(kind,id) {if(id==null)return;this.#forget();this.#bump(kind);this.#statement('DELETE FROM documents WHERE kind=? AND id=?').run(kind,id);}
   transaction(fn) {this.db.exec('BEGIN IMMEDIATE');try{const result=fn();this.db.exec('COMMIT');return result;}catch(e){this.#forget();this.db.exec('ROLLBACK');throw e;}}
   encrypt(value) {const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',this.key,iv);const data=Buffer.concat([cipher.update(JSON.stringify(value)),cipher.final()]);return Buffer.concat([iv,cipher.getAuthTag(),data]).toString('base64');}
   decrypt(value) {const data=Buffer.from(value,'base64'),cipher=createDecipheriv('aes-256-gcm',this.key,data.subarray(0,12));cipher.setAuthTag(data.subarray(12,28));return JSON.parse(Buffer.concat([cipher.update(data.subarray(28)),cipher.final()]).toString());}

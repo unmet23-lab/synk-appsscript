@@ -50,3 +50,15 @@ for (const change of ['disconnect', 'deactivate']) {
     assert.equal(app.store.all('runs')[0].status,'error');
   });
 }
+
+test('credentials are held back with a reason code a publisher can show',async()=>{
+  const {credentialHoldReason}=await import('./server.mjs'),channel={connectionVersion:2};
+  assert.equal(credentialHoldReason(null,channel,undefined)[0],'CHANNEL_INACTIVE');
+  assert.equal(credentialHoldReason({active:true,collectionDisabled:true,connectionVersion:2},channel,undefined)[0],'COLLECTION_DISABLED');
+  assert.equal(credentialHoldReason({active:true,connectionVersion:3},channel,undefined)[0],'CONNECTION_CHANGED');
+  assert.equal(credentialHoldReason({active:true,connectionVersion:2},channel,{active:false})[0],'CONNECTION_OWNER_INACTIVE');
+  assert.equal(credentialHoldReason({active:true,connectionVersion:2},channel,null)[0],'CONNECTION_OWNER_INACTIVE','a connector who no longer exists');
+  assert.equal(credentialHoldReason({active:true,connectionVersion:2},channel,undefined),null,'no connector recorded');
+  assert.equal(credentialHoldReason({active:true,connectionVersion:2},channel,{active:true}),null);
+  for(const reason of [credentialHoldReason(null,channel),credentialHoldReason({active:true,connectionVersion:2},channel,{active:false})])assert.match(reason[1],/요\.$/);
+});

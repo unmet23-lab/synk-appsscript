@@ -105,7 +105,7 @@ export function createSocialWorkflowsService({store,publishing,clock=()=>new Dat
     for(const command of commands){user=live(user,context);if(command.postId&&publishing.get(user,command.postId).post.revision!==command.revision)throw fail('게시물이 바뀌었어요. 새 미리보기로 다시 확인해 주세요.',409);const before=command.operation==='save'?command.input:command.validationPost,checked=await prepared(user,before,context);if(digest(checked)!==digest(before))throw fail('원본·미디어가 바뀌었어요. 새 미리보기로 다시 확인해 주세요.',409);}
     user=live(user,context);
     return publishing.atomic(()=>{
-      const currentPlan=store.get(K.plans,plan.id);if(!currentPlan||currentPlan.ownerId!==user.id)throw fail('미리보기가 만료됐어요. 다시 확인해 주세요.',409);if(currentPlan.appliedAt)return {posts:currentPlan.postIds.map(id=>publishing.get(user,id).post),jobs:currentPlan.jobIds.map(id=>publishing.workspace(user).jobs.find(job=>job.id===id)).filter(Boolean),rows:[],existing:true};
+      const currentPlan=store.get(K.plans,plan.id);if(!currentPlan||currentPlan.ownerId!==user.id)throw fail('미리보기가 만료됐어요. 다시 확인해 주세요.',409);if(currentPlan.appliedAt)return {posts:currentPlan.postIds.map(id=>publishing.get(user,id).post),jobs:(()=>{const found=new Map(currentPlan.postIds.flatMap(id=>publishing.get(user,id).jobs).map(job=>[job.id,job]));return currentPlan.jobIds.map(id=>found.get(id)).filter(Boolean);})(),rows:[],existing:true};
       if(currentPlan.expiresAt<=now())throw fail('미리보기 유효 시간이 지났어요.',409);
       if(plan.templateId&&templateFor(user,plan.templateId).revision!==plan.templateRevision||plan.policyChannelId&&store.get(K.policies,plan.policyChannelId)?.revision!==plan.policyRevision)throw fail('미리보기 설정이 바뀌었어요. 다시 확인해 주세요.',409);
       // Later rows may await media inspection after an earlier row was prepared.

@@ -121,6 +121,13 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
       channels: channels.map(channel => ({ id: channel.id, platform: channel.platform, displayName: channel.displayName || channel.handle || channel.id, canEdit: canWriteChannel(user, channel), connected: isConnected(channel) })),
       canWrite: channels.some(channel => canWriteChannel(user, channel)), metricDefinitions: POST_PERFORMANCE_METRICS, checkpointHours: [24, 72], captureWindowHours: 6 };
   }
+  // Readers that need only the observations (SNS insights, copy comparisons) skip comparison(), which compares every post with
+  // its whole channel history (posts² work per call).
+  function observations(user) {
+    user = currentUser(user); const readable = new Set(store.all('channels').filter(channel => channel.active !== false && canReadChannel(user, channel)).map(channel => channel.id));
+    return { entries: store.all(KIND).filter(row => readable.has(row.channelId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)).map(row => ({ ...row, checkpoints: row.checkpoints.map(({ leaseToken, leaseUntil, ...safe }) => safe) })),
+      metricDefinitions: POST_PERFORMANCE_METRICS };
+  }
   // Link checks need current source/permission only, not the full analytics
   // projection (which compares every post with its channel history).
   function linkSource(user, id) {
@@ -305,5 +312,5 @@ export function createPostPerformanceService({ store, clock = () => new Date().t
   }
   const waitForIdle = async () => { await Promise.allSettled([...activeJobs]); };
   const stop = async () => { stopped = true; for (const controller of controllers) controller.abort(); await waitForIdle(); };
-  return { register, list, linkSource, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
+  return { register, list, observations, linkSource, manualCheckpoint, collectDue, setActive, waitForIdle, stop };
 }

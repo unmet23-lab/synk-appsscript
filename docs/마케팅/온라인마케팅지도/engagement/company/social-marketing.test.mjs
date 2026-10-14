@@ -19,3 +19,17 @@ test('a published post stays in notifications for a week while one that needs at
   const f=fixture(t),social={jobs:[{id:'old',channelId:'a',status:'published',publishedAt:'2026-10-01T00:00:00Z',updatedAt:'2026-10-01T00:00:00Z'},{id:'recent',channelId:'a',status:'published',publishedAt:'2026-10-12T00:00:00Z',updatedAt:'2026-10-12T00:00:00Z'},{id:'stuck',channelId:'a',status:'unknown',updatedAt:'2026-09-01T00:00:00Z'}]};
   assert.deepEqual(f.service.notifications(f.user,social).map(n=>n.id.split(':')[2]).sort(),['recent','stuck']);
 });
+
+test('insights meet their performance record across address forms and never build the full comparison list',t=>{const f=fixture(t);
+  const cp={hours:24,status:'recorded',metrics:{views:10},metricProvenance:{views:{source:'official',unit:'count',timing:'on-time'}}};
+  const entries=[{id:'e1',channelId:'a',url:'https://www.instagram.com/p/ABC123/',publishedAt:'2026-10-12T00:00:00Z',checkpoints:[cp]}];
+  const service=createSocialMarketingService({store:f.store,clock:()=>'2026-10-13T00:00:00.000Z',performance:{observations:()=>({entries,metricDefinitions:[]}),list:()=>{throw new Error('the comparison list is not needed');}}});
+  const social={jobs:[{id:'reel',channelId:'a',status:'published',publishedAt:'2026-10-12T00:00:00Z',publicationUrl:'https://www.instagram.com/reel/ABC123/?igsh=xyz'}]};
+  const record=service.insights(f.user,social).records[0];assert.equal(record.entryId,'e1');assert.equal(record.checkpoints.length,1);
+});
+
+test('an account classification saved from a stale screen is refused instead of overwriting the newer one',t=>{const f=fixture(t);
+  const first=f.service.saveAccount(f.user,'a',{brandId:'LAB',revision:0}).account;assert.equal(first.metaRevision,1);
+  assert.throws(()=>f.service.saveAccount(f.user,'a',{brandId:'PULSE',revision:0}),{status:409});assert.equal(f.store.get('channels','a').brandId,'LAB');
+  assert.equal(f.service.saveAccount(f.user,'a',{category:'교육'}).account.metaRevision,2,'a screen that sends no revision still saves');
+});

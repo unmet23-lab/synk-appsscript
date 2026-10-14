@@ -60,3 +60,23 @@ test('a read scope skips repeated SQL reads yet returns fresh objects and forget
   assert.equal(store.readScope(()=>store.readScope(()=>store.get('fixture','one').sequence)),10,'a nested scope just runs');
 });
 test('a missing identifier reads as nothing instead of a SQLite binding error',async t=>{const store=await fixture(t);assert.equal(store.get('fixture',undefined),null);assert.equal(store.get('fixture',null),null);assert.doesNotThrow(()=>store.remove('fixture',undefined));store.readScope(()=>assert.equal(store.get('fixture',undefined),null));});
+
+test('indexed look-ups find publishing jobs by post, status or account through an index and honour read scopes',async t=>{
+  const store=await fixture(t);for(let i=0;i<30;i++)store.put('socialPublishJobs','j'+i,{id:'j'+i,postId:'p'+(i%3),channelId:'c'+(i%2),status:i%5?'published':'scheduled',outcomeError:i===10?'연결 실패':null});
+  assert.deepEqual(store.allWhere('socialPublishJobs','postId','p1').map(j=>j.id),store.all('socialPublishJobs').filter(j=>j.postId==='p1').map(j=>j.id),'same rows in insertion order');
+  assert.equal(store.allWhere('socialPublishJobs','status',['scheduled','unknown']).length,6);assert.deepEqual(store.allWhere('socialPublishJobs','status','scheduled',{present:'outcomeError'}).map(j=>j.id),['j10']);
+  assert.deepEqual(store.allWhere('socialPublishJobs','postId',[]),[]);assert.throws(()=>store.allWhere('socialPublishJobs','title','x'),/색인/);assert.throws(()=>store.allWhere('socialPosts','postId','x'),/색인/);
+  for(const field of ['postId','status','channelId']){const plan=store.db.prepare(`EXPLAIN QUERY PLAN SELECT body FROM documents WHERE kind='socialPublishJobs' AND json_extract(body,'$.${field}') IN (?) ORDER BY rowid`).all('x').map(r=>r.detail).join(' ');assert.match(plan,new RegExp('documents_socialPublishJobs_'+field),field);}
+  store.readScope(()=>{const first=store.allWhere('socialPublishJobs','postId','p0');store.db.prepare("UPDATE documents SET body=json_set(body,'$.status','edited') WHERE kind='socialPublishJobs' AND id='j0'").run();assert.equal(store.allWhere('socialPublishJobs','postId','p0')[0].status,first[0].status,'a scope reuses the read');
+    store.put('socialPublishJobs','new',{id:'new',postId:'p0',status:'scheduled'});assert.equal(store.allWhere('socialPublishJobs','postId','p0').at(-1).id,'new','a write forgets it');});
+  const before=store.generation('socialPublishJobs');store.put('socialPublishJobs','x',{id:'x',postId:'p9'});store.remove('socialPublishJobs','x');assert.equal(store.generation('socialPublishJobs'),before+2);assert.equal(store.generation('socialPosts'),0);
+});
+
+test('a look-up of several statuses reads each one through its index and keeps insertion order',async t=>{
+  const store=await fixture(t);for(let i=0;i<40;i++)store.put('socialPublishJobs','j'+i,{id:'j'+i,postId:'p'+(i%4),channelId:'c'+(i%2),status:['published','scheduled','failed','unknown'][i%4],outcomeError:i%7===0?'x':null});
+  const seen=[],prepare=store.db.prepare.bind(store.db);store.db.prepare=sql=>{seen.push(sql);return prepare(sql);};const wanted=['unknown','scheduled','failed'];
+  assert.deepEqual(store.allWhere('socialPublishJobs','status',wanted).map(j=>j.id),store.all('socialPublishJobs').filter(j=>wanted.includes(j.status)).map(j=>j.id),'same rows in insertion order');
+  assert.deepEqual(store.allWhere('socialPublishJobs','status',['published','failed'],{present:'outcomeError'}).map(j=>j.id),store.all('socialPublishJobs').filter(j=>['published','failed'].includes(j.status)&&j.outcomeError!=null).map(j=>j.id));
+  store.db.prepare=prepare;const lookups=seen.filter(sql=>sql.includes("json_extract(body,'$.status')"));assert.ok(lookups.length>0);
+  for(const sql of lookups){const marks=(sql.match(/\?/g)||[]).length;const plan=store.db.prepare('EXPLAIN QUERY PLAN '+sql).all(...Array(marks).fill('x')).map(r=>r.detail).join(' ');assert.match(plan,/documents_socialPublishJobs_status/,sql);}
+});

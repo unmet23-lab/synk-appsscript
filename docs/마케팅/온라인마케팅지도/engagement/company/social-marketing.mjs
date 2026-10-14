@@ -6,6 +6,9 @@ import {promisify} from 'node:util';
 import {canReadChannel,canWriteChannel,canManageOwners,visibleMembers} from './organization.mjs';
 import {validMediaSignature,STUDIO_MEDIA_LIMIT} from './studio-media.mjs';
 import {inboxReplyState} from './social-reply-observations.mjs';
+import {normalizePerformancePostUrl} from './post-performance.mjs';
+// A post address in one canonical form (reel and /p/, youtu.be and watch, query strings) so a published job meets its record.
+const publicationKey=value=>{try{return normalizePerformancePostUrl(value).identity||value;}catch{return value;}};
 
 const run=promisify(execFile),fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const clean=(value,max=200)=>{if(value==null)return '';if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value))throw fail('입력 길이와 문자를 확인해 주세요.');return value.trim();};
@@ -27,8 +30,8 @@ const attention=new Set(['failed','blocked','unknown','missed','manual','manual_
 export function createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance,clock=()=>new Date().toISOString(),ffprobe=process.env.SYNK_FFPROBE_EXE||'ffprobe'}={}){
   function current(user,write=false){const u=store.get('users',user?.id);if(!u?.active||!['admin','manager','member','viewer'].includes(u.role))throw fail('먼저 로그인해 주세요.',401);if(write&&u.role==='viewer')throw fail('열람 계정에서는 바꿀 수 없어요.',403);return u;}
   function channel(user,id,write=false){const u=current(user,write),c=store.get('channels',id);if(!c||c.active===false||c.hidden===true||!(write?canWriteChannel:canReadChannel)(u,c))throw fail('접근할 수 있는 SNS 계정을 선택해 주세요.',403);return c;}
-  function accounts(user){user=current(user);return store.all('channels').filter(c=>c.active!==false&&c.hidden!==true&&canReadChannel(user,c)).map(c=>({id:c.id,name:c.displayName||c.handle||c.platform,displayName:c.displayName,platform:c.platform,handle:c.handle||'',canonicalUrl:c.canonicalUrl||'',ownerIds:c.ownerIds||[],teamId:c.teamId||null,brand:c.brandId||'',brandId:c.brandId||'',language:c.language||'ko',timeZone:c.timeZone||'Asia/Seoul',category:c.category||'',campaign:c.campaignId||'',campaignId:c.campaignId||'',canEdit:canWriteChannel(user,c),collectionStatus:c.status||'not-connected'}));}
-  function saveAccount(user,id,input={}){const c=channel(user,id,true);const changes={brandId:clean(input.brandId??input.brand??c.brandId,100),language:clean(input.language??c.language??'ko',30),timeZone:zone(input.timeZone??c.timeZone),category:clean(input.category??c.category,100),campaignId:clean(input.campaignId??input.campaign??c.campaignId,100)};if(changes.campaignId)readCampaign(user,changes.campaignId);store.put('channels',id,{...c,...changes});return {account:accounts(user).find(x=>x.id===id)};}
+  function accounts(user){user=current(user);return store.all('channels').filter(c=>c.active!==false&&c.hidden!==true&&canReadChannel(user,c)).map(c=>({id:c.id,name:c.displayName||c.handle||c.platform,displayName:c.displayName,platform:c.platform,handle:c.handle||'',canonicalUrl:c.canonicalUrl||'',ownerIds:c.ownerIds||[],teamId:c.teamId||null,brand:c.brandId||'',brandId:c.brandId||'',language:c.language||'ko',timeZone:c.timeZone||'Asia/Seoul',category:c.category||'',campaign:c.campaignId||'',campaignId:c.campaignId||'',metaRevision:c.metaRevision||0,canEdit:canWriteChannel(user,c),collectionStatus:c.status||'not-connected'}));}
+  function saveAccount(user,id,input={}){const c=channel(user,id,true);const changes={brandId:clean(input.brandId??input.brand??c.brandId,100),language:clean(input.language??c.language??'ko',30),timeZone:zone(input.timeZone??c.timeZone),category:clean(input.category??c.category,100),campaignId:clean(input.campaignId??input.campaign??c.campaignId,100)};if(input.revision!=null&&input.revision!==(c.metaRevision||0))throw fail('다른 창에서 계정 분류가 바뀌었어요. 새로고침한 뒤 다시 저장해 주세요.',409);if(changes.campaignId)readCampaign(user,changes.campaignId);store.put('channels',id,{...c,...changes,metaRevision:(c.metaRevision||0)+1});return {account:accounts(user).find(x=>x.id===id)};}
   function readableCampaign(user,row){return row.channelIds?.length?row.channelIds.every(id=>{const c=store.get('channels',id);return c&&c.active!==false&&c.hidden!==true&&canReadChannel(user,c);}):row.ownerId===user.id||user.role==='admin';}
   function readCampaign(user,id,write=false){user=current(user,write);const c=store.get('socialCampaigns',id);if(!c||!readableCampaign(user,c)||(write&&c.channelIds.some(id=>!canWriteChannel(user,store.get('channels',id)))))throw fail('캠페인 접근 권한을 확인해 주세요.',403);return c;}
   function campaigns(user){user=current(user);return store.all('socialCampaigns').filter(c=>readableCampaign(user,c)).map(c=>({...c,canEdit:user.role!=='viewer'&&c.channelIds.every(id=>canWriteChannel(user,store.get('channels',id)))}));}
@@ -76,7 +79,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     if(refs.some(ref=>!ref||typeof ref!=='object'||Array.isArray(ref)))throw fail('미디어 입력을 확인해 주세요.');
     return refs;
   }
-  async function bytesFor(media){const root=resolve(store.directory,'studio-media');if(!/^[a-f0-9-]{36}\.(mp4|webm|png|jpg)$/.test(media.diskName||''))throw fail('미디어 경로를 확인해 주세요.',409);const path=resolve(root,media.diskName),info=await lstat(path);if(dirname(path)!==root||info.isSymbolicLink()||!info.isFile()||info.size>STUDIO_MEDIA_LIMIT||info.size!==media.byteSize||dirname(await realpath(path))!==await realpath(root))throw fail('저장된 미디어 파일이 바뀌었어요.',409);const bytes=await readFile(path);if(!validMediaSignature(media.mimeType,bytes.subarray(0,4096)))throw fail('미디어 파일 형식을 확인해 주세요.',409);if(media.sha256&&digest(bytes)!==media.sha256)throw fail('예약에 쓴 미디어가 바뀌었어요.',409);return {bytes,fileName:media.fileName,mimeType:media.mimeType};}
+  async function bytesFor(media,{read=true}={}){const root=resolve(store.directory,'studio-media');if(!/^[a-f0-9-]{36}\.(mp4|webm|png|jpg)$/.test(media.diskName||''))throw fail('미디어 경로를 확인해 주세요.',409);const path=resolve(root,media.diskName),info=await lstat(path);if(dirname(path)!==root||info.isSymbolicLink()||!info.isFile()||info.size>STUDIO_MEDIA_LIMIT||info.size!==media.byteSize||dirname(await realpath(path))!==await realpath(root))throw fail('저장된 미디어 파일이 바뀌었어요.',409);if(!read)return {fileName:media.fileName,mimeType:media.mimeType,sha256:media.sha256||null};const bytes=await readFile(path);if(!validMediaSignature(media.mimeType,bytes.subarray(0,4096)))throw fail('미디어 파일 형식을 확인해 주세요.',409);const sum=media.sha256?digest(bytes):null;if(media.sha256&&sum!==media.sha256)throw fail('예약에 쓴 미디어가 바뀌었어요.',409);return {bytes,fileName:media.fileName,mimeType:media.mimeType,sha256:sum};}
   async function inspect(media,{signal}={}){const data=await bytesFor(media),out={sha256:digest(data.bytes)};try{const {stdout}=await run(ffprobe,['-v','error','-protocol_whitelist','file,pipe','-show_entries','stream=codec_type,width,height:stream_tags=rotate:stream_side_data=rotation:format=duration','-of','json',resolve(store.directory,'studio-media',media.diskName)],{windowsHide:true,timeout:20000,maxBuffer:1024*1024,signal});const parsed=JSON.parse(stdout),v=parsed.streams?.find(s=>s.codec_type==='video');if(!v?.width||!v?.height)throw new Error('missing');const rotate=Number(v.side_data_list?.find(x=>x.rotation!==undefined)?.rotation??v.tags?.rotate??0);out.width=Math.abs(rotate)%180===90?v.height:v.width;out.height=Math.abs(rotate)%180===90?v.width:v.height;if(media.mimeType.startsWith('video/')){out.duration=Number(parsed.format?.duration);if(!Number.isFinite(out.duration)||out.duration<=0)throw new Error('duration');}out.inspection='verified';}catch{if(signal?.aborted)throw fail('미디어 준비가 중단됐어요.',409);throw fail('영상·이미지 규격을 읽지 못했어요. 재생되는 파일인지, 서버에 FFprobe가 설치돼 있는지 확인해 주세요.',422);}return out;}
   async function addMedia(user,metadata,{authorize=()=>user}={}){user=current(user,true);const inspected=await inspect(metadata);const live=current(authorize(),true);if(live.id!==user.id)throw fail('로그인 상태를 확인해 주세요.',401);const row={...metadata,...inspected,ownerId:user.id,teamId:live.teamId||null,createdAt:clock()};store.put('socialMedia',row.id,row);return {asset:safeAsset(row)};}
   async function prepareMedia(user,ids,{authorize=()=>user,signal}={}){
@@ -156,7 +159,8 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
     validateSource(user,input);
     return input;
   }
-  async function resolveMedia(ref,{post,channel:target,job,signal}={}){
+  // read:false checks permission, the record and the file's place and size without reading it (see social-review open/respond).
+  async function resolveMedia(ref,{post,channel:target,job,signal,read=true}={}){
     const id=ref.assetId||ref.id;if(!id)throw fail('워크스페이스에 업로드한 미디어를 선택해 주세요.',422);
     function authorized(){
       if(signal?.aborted)throw fail('미디어 발행 준비가 중단됐어요.',409);
@@ -167,9 +171,9 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
       if(ref.sha256&&media.sha256&&ref.sha256!==media.sha256)throw fail('승인한 미디어 버전이 바뀌었어요.',409);
       return media;
     }
-    const media=authorized(),result=await bytesFor(media),live=authorized();
+    const media=authorized(),full=read||!media.sha256||!ref.sha256,result=await bytesFor(media,{read:full}),live=authorized();
     if(['diskName','mimeType','byteSize','sha256'].some(key=>live[key]!==media[key]))throw fail('읽는 동안 미디어가 바뀌었어요.',409);
-    if(ref.sha256&&digest(result.bytes)!==ref.sha256)throw fail('승인한 미디어 내용이 바뀌었어요.',409);
+    if(ref.sha256&&(full?(result.sha256??digest(result.bytes)):media.sha256)!==ref.sha256)throw fail('승인한 미디어 내용이 바뀌었어요.',409);
     return result;
   }
   async function downloadHandoff(user,ref,{post,channel:target,job,authorize=()=>user,signal}={}){
@@ -211,12 +215,12 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
   }
   function insights(user,social={}){
     user=current(user);
-    const raw=performance?.list(user)||{entries:[],metricDefinitions:[]},accountMap=new Map(accounts(user).map(c=>[c.id,c])),jobs=visibleJobs(user,social);
-    const entries=(raw.entries||[]).filter(entry=>accountMap.has(entry.channelId)),entryIds=new Map(entries.map(entry=>[entry.id,entry])),entryUrls=new Map(entries.map(entry=>[entry.channelId+'|'+entry.url,entry]));
+    const raw=(performance?.observations?performance.observations(user):performance?.list(user))||{entries:[],metricDefinitions:[]},accountMap=new Map(accounts(user).map(c=>[c.id,c])),jobs=visibleJobs(user,social);
+    const entries=(raw.entries||[]).filter(entry=>accountMap.has(entry.channelId)),entryIds=new Map(entries.map(entry=>[entry.id,entry])),entryUrls=new Map(entries.map(entry=>[entry.channelId+'|'+publicationKey(entry.url),entry]));
     const records=jobs.filter(job=>job.status==='published').map(job=>{
       const saved=store.get('socialPublishJobs',job.id),original=saved?.snapshot?.post||job.snapshot?.post,variant=saved?.snapshot?.variant||job.snapshot?.variant;
       const summary=original?{...original,title:variant?.title||original.title,selectedCopyId:variant?.selectedCopyId,selectedCopyIndex:variant?.selectedCopyIndex,format:variant?.format,publicationFormat:variant?.publicationFormat}:job.contentSummary||{};
-      const linked=entryIds.get(job.performanceEntryId),entry=linked?.channelId===job.channelId&&linked.url===job.publicationUrl?linked:entryUrls.get(job.channelId+'|'+job.publicationUrl);
+      const linked=entryIds.get(job.performanceEntryId),address=publicationKey(job.publicationUrl),entry=linked?.channelId===job.channelId&&publicationKey(linked.url)===address?linked:entryUrls.get(job.channelId+'|'+address);
       return {jobId:job.id,postId:job.postId,title:summary.title||'게시물',selectedCopyId:summary.selectedCopyId||job.selectedCopyId||null,selectedCopyIndex:summary.selectedCopyIndex??job.selectedCopyIndex??null,channelId:job.channelId,campaignId:summary.campaignId||'',category:summary.category||'',purpose:summary.purpose||'',language:summary.language||'',format:summary.format||'',publicationFormat:summary.publicationFormat||'',contentVersion:summary.contentVersion??job.contentVersion??null,attributionKnown:!!original||!!job.contentSummary,publishedAt:job.publishedAt,url:job.publicationUrl,checkpoints:entry?.checkpoints||[],entryId:entry?.id||null};
     });
     const summaries=campaigns(user).map(c=>{const rows=records.filter(r=>r.campaignId===c.id);return {...c,postCount:rows.length,rows,metricsNote:'계정·형식·관측 시점별로 쌓인 값이에요. 플랫폼이 다르면 도달과 조회를 더하지 않아요.'};});

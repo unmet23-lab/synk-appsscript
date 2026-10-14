@@ -161,7 +161,7 @@ export function createSocialVariantPerformanceService({store,publishing,performa
     user=current(user);const filters=normalizedFilters(input),visible=published(user),all=visible.jobs,groups=new Map(),excluded={missingSnapshot:visible.missingSnapshot,duplicatePublications:0,conflictingPublicationCopies:0};
     if(filters.channelId){const c=store.get('channels',filters.channelId);if(!c||c.hidden||c.active===false||!canReadChannel(user,c))throw fail('현재 접근할 수 있는 계정을 선택해 주세요.',404);}
     if(filters.postId)publishing.get(user,filters.postId);
-    const entries=performance.list(user).entries||[],entryMap=new Map();
+    const entries=(performance.observations?performance.observations(user):performance.list(user)).entries||[],entryMap=new Map();
     for(const entry of entries){const identity=publicationIdentity(entry.url);if(identity){const key=entry.channelId+'|'+identity,list=entryMap.get(key)||[];list.push(entry);entryMap.set(key,list);}}
     const links=tracking?.workspace(user)?.links||[],linkIndex=new Map(links.map(link=>[link.shortUrl,link])),usage=new Map();
     // Reused links remain ambiguous even when the other publication is outside the selected period.

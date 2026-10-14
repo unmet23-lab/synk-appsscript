@@ -123,7 +123,7 @@ test('source rules produce reviewable drafts, deduplicate source events and pres
 });
 
 test('publication success survives failed performance linkage and retries only that linkage',async t=>{
-  const f=await fixture(t);let links=0;const svc=createSocialPublishingService({store:f.store,clock:f.now,provider:f.provider,onPublished:async()=>{if(++links===1)throw new Error('private');return {performanceEntryId:'entry'};}}),post=f.approve(f.create());f.schedule(post);await svc.tick();assert.equal(f.store.all('socialPublishJobs')[0].status,'published');assert.ok(f.store.all('socialPublishJobs')[0].outcomeError);await svc.tick();assert.equal(f.sends.length,1);assert.equal(links,2);assert.equal(f.store.all('socialPublishJobs')[0].performanceEntryId,'entry');await svc.close();
+  const f=await fixture(t);let links=0;const svc=createSocialPublishingService({store:f.store,clock:f.now,provider:f.provider,onPublished:async()=>{if(++links===1)throw new Error('private');return {performanceEntryId:'entry'};}}),post=f.approve(f.create());f.schedule(post);await svc.tick();assert.equal(f.store.all('socialPublishJobs')[0].status,'published');assert.ok(f.store.all('socialPublishJobs')[0].outcomeError);f.setTime(new Date(Date.parse(f.now())+120000).toISOString());await svc.tick();assert.equal(f.sends.length,1);assert.equal(links,2);assert.equal(f.store.all('socialPublishJobs')[0].performanceEntryId,'entry');await svc.close();
 });
 
 test('second worker cannot duplicate a claimed job and pause during media preparation blocks send',async t=>{
@@ -289,4 +289,54 @@ test('result checks back off from 5 minutes to an hour while the provider keeps 
   const post=f.approve(f.create()),[job]=f.schedule(post);await f.service.tick();let row=f.store.get('socialPublishJobs',job.id);const gaps=[(Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/60000];
   for(let i=0;i<6;i++){f.setTime(row.nextAttemptAt);await f.service.tick();row=f.store.get('socialPublishJobs',job.id);assert.equal(row.status,'processing');gaps.push((Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/60000);}
   assert.deepEqual(gaps,[5,5,10,20,40,60,60]);
+});
+
+test('a provider can ask for the next result check sooner, within 15 seconds to 5 minutes, without growing the back-off',async t=>{
+  const hints=[30000,1000,9999999,undefined];let i=0;
+  const f=await fixture(t,{publish:async()=>({status:'processing',providerId:'container-1',message:'컨테이너를 만드는 중이에요.',checkAfterMs:hints[i++]}),status:async()=>({status:'processing',message:'처리 중이에요.',checkAfterMs:hints[i++]})});
+  const post=f.approve(f.create()),[job]=f.schedule(post);await f.service.tick();let row=f.store.get('socialPublishJobs',job.id);const gaps=[(Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/1000];
+  for(let k=0;k<3;k++){f.setTime(row.nextAttemptAt);await f.service.tick();row=f.store.get('socialPublishJobs',job.id);gaps.push((Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/1000);}
+  assert.deepEqual(gaps,[30,15,300,300],'hints are clamped; without a hint the back-off starts again at 5 minutes');
+});
+
+test('the scheduler and a post view read only the jobs they need, never the whole job table',async t=>{
+  const f=await fixture(t);for(let i=0;i<5;i++)f.schedule(f.approve(f.create({title:'지난 글 '+i})));await f.service.tick();
+  const post=f.approve(f.create({title:'다음 글'})),[job]=f.schedule(post,{scheduledAt:'2026-10-13T01:00:00Z'});
+  const original=f.store.all.bind(f.store);let full=0;f.store.all=kind=>{if(kind==='socialPublishJobs')full++;return original(kind);};
+  try{f.setTime('2026-10-13T01:00:00.000Z');await f.service.tick();assert.equal(f.store.get('socialPublishJobs',job.id).status,'published');assert.equal(f.service.get(f.users.manager,post.id).jobs.length,1);
+    assert.equal(f.service.action(f.users.manager,post.id,{revision:f.service.get(f.users.manager,post.id).post.revision,action:'cancel'}).jobs.length,1);}
+  finally{f.store.all=original;}assert.equal(full,0,'no full read of the job table');
+});
+
+test('a failed performance link is retried at growing intervals instead of every tick',async t=>{
+  const f=await fixture(t);let calls=0,fail=true;
+  const service=createSocialPublishingService({store:f.store,clock:()=>f.now(),provider:f.provider,onPublished:async()=>{calls++;if(fail)throw Error('성과 저장소 잠김');return {performanceEntryId:'entry-1'};}});t.after(()=>service.close());
+  const post=service.savePost(f.users.writer,f.input()).post,approved=service.action(f.users.manager,post.id,{revision:post.revision,action:'approve'}).post,[job]=service.action(f.users.manager,approved.id,{revision:approved.revision,action:'schedule',scheduledAt:f.now(),timezone:'Asia/Seoul'}).jobs;
+  await service.tick();assert.equal(calls,1);let row=f.store.get('socialPublishJobs',job.id);assert.equal(row.outcomeAttempts,1);assert.equal(row.outcomeRetryAt,'2026-10-13T00:02:00.000Z');
+  await service.tick();await service.tick();assert.equal(calls,1,'no retry before the interval');
+  f.setTime('2026-10-13T00:02:00.000Z');await service.tick();assert.equal(calls,2);row=f.store.get('socialPublishJobs',job.id);assert.equal(row.outcomeRetryAt,'2026-10-13T00:06:00.000Z');
+  fail=false;await service.jobAction(f.users.manager,job.id,{action:'reconcile'});assert.equal(calls,3,'a person can retry at once');row=f.store.get('socialPublishJobs',job.id);assert.equal(row.outcomeError,null);assert.equal(row.outcomeRetryAt,null);assert.equal(row.performanceEntryId,'entry-1');
+});
+
+test('scheduling the same version at the same time again only repeats a scheduled job; a failed one must be handled on the job',async t=>{
+  let mode='fail';const f=await fixture(t,{publish:async()=>mode==='fail'?{status:'failed',definitive:true,retryable:true,errorCode:'PROVIDER_REJECTED',message:'거절됐어요.'}:{status:'published',url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt:f.now()}});
+  const post=f.approve(f.create()),[job]=f.schedule(post,{scheduledAt:'2026-10-13T01:00:00Z'}),current=()=>f.service.get(f.users.manager,post.id).post;
+  assert.equal(f.schedule(current(),{scheduledAt:'2026-10-13T01:00:00Z'})[0].id,job.id,'a double click on schedule is harmless');
+  f.setTime('2026-10-13T01:00:00.000Z');await f.service.tick();assert.equal(f.store.get('socialPublishJobs',job.id).status,'failed');
+  assert.throws(()=>f.schedule(current(),{scheduledAt:'2026-10-13T01:00:00Z'}),{status:409});
+});
+
+test('a daily repeat keeps the same local time across a daylight-saving change',async t=>{
+  const f=await fixture(t);f.setTime('2026-03-07T14:00:00.000Z');
+  const post=f.approve(f.create({recurrence:{intervalDays:1,maxOccurrences:3}}));f.schedule(post,{scheduledAt:'2026-03-07T14:00:00Z',timezone:'America/New_York'});await f.service.tick();
+  const next=f.store.all('socialPublishJobs').find(j=>j.postId===post.id&&j.occurrence===2);assert.equal(next.scheduledAt,'2026-03-08T13:00:00.000Z','09:00 in New York on both days');
+  const seoul=f.approve(f.create({title:'서울',recurrence:{intervalDays:1,maxOccurrences:3}}));f.setTime('2026-03-08T00:00:00.000Z');f.schedule(seoul,{scheduledAt:'2026-03-08T00:00:00Z',timezone:'Asia/Seoul'});await f.service.tick();
+  assert.equal(f.store.all('socialPublishJobs').find(j=>j.postId===seoul.id&&j.occurrence===2).scheduledAt,'2026-03-09T00:00:00.000Z');
+});
+
+test('a slot that comes due while a long scheduler pass runs is published by the next pass, not marked missed',async t=>{
+  let f,late=null;f=await fixture(t,{publish:async()=>{if(!late){const p=f.approve(f.create({title:'바퀴 도중 잡은 예약'}));[late]=f.schedule(p,{scheduledAt:new Date(Date.parse(f.now())+60000).toISOString()});}f.setTime(new Date(Date.parse(f.now())+400000).toISOString());return {status:'published',url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt:f.now()};}});
+  const slow=f.approve(f.create({title:'오래 걸리는 게시'}));f.schedule(slow,{scheduledAt:'2026-10-13T00:00:00.000Z'});f.setTime('2026-10-13T00:00:00.000Z');
+  await f.service.tick();assert.ok(late);assert.equal(f.store.get('socialPublishJobs',late.id).status,'scheduled');
+  await f.service.tick();assert.equal(f.store.get('socialPublishJobs',late.id).status,'published','a 400 s pass is the scheduler itself, not an outage');
 });

@@ -204,3 +204,14 @@ test('legacy local media without an approved hash and external URLs cannot masqu
   const context=h.context();await assert.rejects(f.marketing.downloadHandoff(f.user,context.variant.media[0],context),/다시 저장/);
   await assert.rejects(f.marketing.downloadHandoff(f.user,{url:'https://example.test/original.png'},context),{status:422});
 });
+
+test('a metadata-only media check reads no bytes but still refuses a changed file size or record',async t=>{
+  const f=await fixture(t),owner=f.store.createUser({email:'media-check@edge.test',name:'원본 담당',role:'member',teamId:'a'}),id=randomUUID(),bytes=Buffer.from([137,80,78,71,13,10,26,10]),sha256=createHash('sha256').update(bytes).digest('hex');
+  const metadata={id,ownerId:owner.id,teamId:'a',diskName:id+'.png',fileName:'asset.png',mimeType:'image/png',byteSize:bytes.length,sha256};
+  await mkdir(join(f.directory,'studio-media'));await writeFile(join(f.directory,'studio-media',metadata.diskName),bytes);f.store.put('socialMedia',id,metadata);f.store.put('channels','ig',{...f.store.get('channels','ig'),ownerIds:[owner.id]});
+  const args={post:{ownerId:owner.id,media:[{id}]},channel:{id:'ig'},job:{publisherId:f.user.id}};
+  const light=await f.marketing.resolveMedia({id,sha256},{...args,read:false});assert.equal(light.bytes,undefined);assert.equal(light.sha256,sha256);assert.equal(light.mimeType,'image/png');
+  const full=await f.marketing.resolveMedia({id,sha256},args);assert.ok(full.bytes.equals(bytes));assert.equal(full.sha256,sha256);
+  await writeFile(join(f.directory,'studio-media',metadata.diskName),Buffer.concat([bytes,Buffer.from([0])]));await assert.rejects(f.marketing.resolveMedia({id,sha256},{...args,read:false}),{status:409},'a different size is caught without reading');
+  await writeFile(join(f.directory,'studio-media',metadata.diskName),bytes);await assert.rejects(f.marketing.resolveMedia({id,sha256:'f'.repeat(64)},{...args,read:false}),{status:409});
+});
