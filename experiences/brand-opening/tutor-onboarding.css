@@ -12,7 +12,7 @@
 .tutor-sound::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-idle)}
 .tutor-sound[aria-pressed=true]{color:var(--w-ink)}
 .tutor-sound[aria-pressed=true]::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
-.tutor-intro{font-size:15px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.tutor-intro{font-size:15.5px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
 .tutor-intro strong{color:var(--w-ink-2);font-weight:var(--wt-strong)}
 /* 무대: 말풍선이 위, 그 튜터의 방 한쪽에서 구운 사진이 아래(카드 아래를 꽉 채움). 스스로 움직이지 않는다(눈 깜빡임만). */
 [data-tutor=mongle]{--tutor-glow:rgba(249,104,89,.26)}
@@ -54,6 +54,9 @@
 .tutor-speech{position:relative;flex:1;min-width:0;padding:14px 16px;border-radius:20px 20px 20px 6px;background:#FAFAF9;color:#08090C;box-shadow:0 14px 34px rgba(0,0,0,.3)}
 .tutor-speech::before{content:'';position:absolute;left:-6px;bottom:14px;width:14px;height:14px;background:inherit;border-radius:3px;transform:rotate(45deg)}
 .tutor-speech small{display:block;margin-bottom:6px;font-size:13px;font-weight:var(--wt-label);color:rgba(8,9,12,.55)}
+/* 말풍선 머리: 그 친구 색 이름표 + 지금 무슨 말인지(자기소개 · 잘했을 때 · 어려울 때) */
+.tutor-speech .tutor-speech-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.tutor-detail[data-tutor] .tutor-speech-head,.tutor-welcome .tutor-speech-head{justify-content:center}
 .tutor-speech p{min-height:66px;font-size:15.5px;font-weight:var(--wt-strong);line-height:1.6;overflow-wrap:anywhere;text-wrap:pretty}
 .tutor-speech[data-character=marin]{border-radius:12px 12px 12px 4px}
 .tutor-speech.speak{animation:tutor-bubble-in .3s var(--w-ease)}
@@ -63,7 +66,7 @@
 .tutor-about h3 span{font-size:14px;font-weight:var(--wt-label);letter-spacing:0;color:var(--w-ink-3)}
 .tutor-traits{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
 .tutor-traits span{display:inline-flex;align-items:center;min-height:30px;padding:0 12px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:13px;font-weight:var(--wt-label);color:var(--w-ink-2)}
-.tutor-about>p{font-size:15px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
+.tutor-about>p{font-size:15.5px;line-height:1.7;color:var(--w-ink-2);text-wrap:pretty}
 .tutor-about .tutor-match{display:flex;gap:9px;align-items:baseline;margin-top:8px;color:var(--w-ink);font-weight:var(--wt-strong)}
 .tutor-about .tutor-match::before{content:'';flex-shrink:0;width:7px;height:7px;border-radius:50%;background:var(--w-face);box-shadow:0 0 8px rgba(249,104,89,.6);transform:translateY(-2px)}
 .tutor-more{margin-top:10px;border-top:1px solid var(--w-line);font-size:14px;line-height:1.75;color:var(--w-ink-2)}
@@ -86,19 +89,35 @@
 .tutor-primary:active:not(:disabled){transform:scale(.98)}
 .tutor-primary:disabled{background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:default;font-size:15.5px}
 .tutor-footer>p{font-size:13px;line-height:1.6;color:var(--w-ink-3);text-align:center}
-.tutor-back{min-height:50px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15px;font-weight:var(--wt-strong);color:var(--w-ink)}
+.tutor-back{min-height:50px;border-radius:999px;box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink)}
 .tutor-back:hover{background:var(--w-s2)}
 
 /* 둘째 단계: 함께 시작하기 */
 .tutor-welcome{display:grid;gap:18px}
 .tutor-welcome-copy{display:grid;gap:8px;margin:0}
 .tutor-welcome-copy strong{font-size:var(--t-title-l);font-weight:var(--wt-display);letter-spacing:var(--track-display);line-height:1.3}
-.tutor-welcome-copy span{font-size:15px;line-height:1.7;color:var(--w-ink-2)}
+.tutor-welcome-copy span{font-size:15.5px;line-height:1.7;color:var(--w-ink-2)}
 .tutor-how{list-style:none;padding:0;margin:0;display:grid;border-top:1px solid var(--w-line)}
 .tutor-how li{display:flex;gap:14px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--w-line)}
 .tutor-how li>span{display:grid;place-items:center;width:34px;height:34px;flex-shrink:0;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 12px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-2)}
 .tutor-how strong{display:block;font-size:16px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
-.tutor-how p{font-size:14px;line-height:1.6;color:var(--w-ink-3);margin-top:2px}
+.tutor-how p{font-size:15.5px;line-height:1.6;color:var(--w-ink-3);margin-top:2px}
+
+/* 복숭아 판(10-14 시안 ②, 유호님 「전부 진행」): 첫 화면 배경지(#F8C6B3)에서 이어지는 밝은 판. 판 색을 튜터 사진의 배경지(#F4BB9F 안팎)에 맞추고
+ * 사진 가장자리를 부드럽게 풀어, 친구가 카드 안이 아니라 판 위에 선 것처럼 보이게 한다. 글자는 첫 화면의 짙은 밤색(#2B1A14), 주 단추는 첫 화면 「시작하기」와 같은 짙은 알약.
+ * 글자 대비(판 위): 본문 .84 → 8.1 · 보조 .72 → 4.7. 동네(하늘)로 넘어가기 전까지 밝은 판이 이어진다. */
+#world-panel.tutor-panel{--w-panel:#F4BB9F;--w-bg:#F4BB9F;--w-s1:rgba(255,248,244,.42);--w-s2:rgba(255,248,244,.6);--w-s3:rgba(255,248,244,.76);--w-line:rgba(43,26,20,.1);--w-line-2:rgba(43,26,20,.2);--w-ink:#2B1A14;--w-ink-2:rgba(43,26,20,.84);--w-ink-3:rgba(43,26,20,.72);--w-ink-q:rgba(43,26,20,.5);--w-ink-4:rgba(43,26,20,.26);--w-on-ink:#FBF3EC;--w-card-edge:inset 0 0 0 1px rgba(43,26,20,.08);--w-chevron:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%2308090C' stroke-opacity='.6' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");color-scheme:light;background:#F4BB9F;color:var(--w-ink)}
+#world-panel.tutor-panel .close-button{background:rgba(255,248,244,.6);color:#2B1A14;box-shadow:inset 0 0 0 1px rgba(43,26,20,.12)}
+#world-panel.tutor-panel .tutor-detail[data-tutor] .tutor-stage,#world-panel.tutor-panel .tutor-welcome .tutor-stage{padding:4px 0 0;background:none;box-shadow:none;overflow:visible}
+#world-panel.tutor-panel .tutor-detail[data-tutor] .tutor-touch,#world-panel.tutor-panel .tutor-welcome .tutor-touch{margin:4px 0 0}
+#world-panel.tutor-panel .tutor-portrait.large{background:none}
+#world-panel.tutor-panel .tutor-portrait.large img{-webkit-mask-image:radial-gradient(closest-side at 50% 52%,#000 74%,transparent 100%);mask-image:radial-gradient(closest-side at 50% 52%,#000 74%,transparent 100%)}
+#world-panel.tutor-panel .tutor-speech{background:#FFFBF8;color:#2B1A14;box-shadow:0 10px 26px rgba(120,52,30,.16)}
+#world-panel.tutor-panel .tutor-speech-head{color:rgba(43,26,20,.66)}
+#world-panel.tutor-panel .tutor-footer{background:linear-gradient(180deg,rgba(244,187,159,0),#F4BB9F 24%)}
+#world-panel.tutor-panel .tutor-primary{background:#17110E;color:#FBF3EC;box-shadow:0 12px 26px rgba(90,36,20,.22)}
+#world-panel.tutor-panel .tutor-primary:disabled{background:transparent;color:var(--w-ink-3);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+#world-panel.tutor-panel .tutor-portrait{background:#E9AE93}
 
 /* 반응은 표정 사진만 바꾼다. 사진 카드는 몸짓으로 흔들지 않는다(멀미 기준). */
 @keyframes tutor-bubble-in{from{opacity:.4;transform:translateY(4px)}to{opacity:1;transform:none}}
@@ -108,10 +127,10 @@
 @media(max-width:359px){
  #world-panel.tutor-panel{padding-left:16px;padding-right:16px}
  .tutor-footer{margin-left:-16px;margin-right:-16px;padding-left:16px;padding-right:16px}
- .tutor-panel .panel-header h2{font-size:26px}
+ .tutor-panel .panel-header h2{font-size:24px}
  .tutor-option{padding:4px 8px 4px 4px;gap:4px}.tutor-option .tutor-portrait{width:34px;height:34px}.tutor-option strong{font-size:14px}
  .tutor-portrait.large{width:150px;height:150px}
- .tutor-speech{padding:12px 13px}.tutor-speech p{font-size:14.5px;min-height:58px}
+ .tutor-speech{padding:12px 13px}.tutor-speech p{font-size:14px;min-height:58px}
 }
 @media(max-height:700px) and (orientation:portrait){.tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{aspect-ratio:16/10}}
 /* PC: 가운데 판 */
@@ -125,7 +144,7 @@
  :is(.tutor-detail,.tutor-welcome)[data-tutor=kkamong] .tutor-portrait.large img{object-position:50% 22%}
  .tutor-detail[data-tutor] .tutor-stage,.tutor-welcome .tutor-stage{padding-top:12px}
  .tutor-detail[data-tutor] .tutor-touch,.tutor-welcome .tutor-touch{margin-top:6px}
- .tutor-speech p{font-size:16.5px}
+ .tutor-speech p{font-size:17px}
  .tutor-detail[data-tutor]{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:4px 28px;align-items:start}
  .tutor-detail[data-tutor] .tutor-stage{grid-row:1/3}
  .tutor-detail[data-tutor] .tutor-about{padding-top:4px}
@@ -139,7 +158,7 @@
  .tutor-panel .panel-header{margin-bottom:8px}.tutor-panel .panel-header h2{font-size:22px;margin-top:4px}
  .tutor-panel #panel-content{display:grid;grid-template-columns:minmax(220px,.85fr) minmax(300px,1.15fr);gap:10px 20px;align-items:start}
  .tutor-step-line{grid-column:1/-1}
- .tutor-intro{grid-column:1;font-size:13.5px;line-height:1.6}
+ .tutor-intro{grid-column:1;font-size:14px;line-height:1.6}
  .tutor-panel #panel-content:has(.tutor-detail[data-tutor])>.tutor-intro{display:block}
  .tutor-options{grid-column:1}
  .tutor-detail{grid-column:2;grid-row:2/5;max-height:calc(100dvh - 92px);overflow:auto;padding-bottom:10px}
@@ -147,10 +166,10 @@
  .tutor-detail[data-tutor] .tutor-speech,.tutor-welcome .tutor-speech{order:0;flex:1;width:auto;min-width:0;margin-bottom:14px;text-align:left}
  .tutor-detail[data-tutor] .tutor-speech::before,.tutor-welcome .tutor-speech::before{left:-6px;bottom:14px;transform:rotate(45deg)}
  .tutor-detail[data-tutor] .tutor-touch,.tutor-welcome .tutor-touch{margin:0;align-self:flex-end}.tutor-detail[data-tutor] .tutor-portrait.large,.tutor-welcome .tutor-portrait.large{width:116px;height:116px;aspect-ratio:auto;border-radius:14px 14px 0 0}
- .tutor-speech p,.tutor-detail[data-tutor] .tutor-speech p,.tutor-welcome .tutor-speech p{min-height:0;font-size:13.5px}
+ .tutor-speech p,.tutor-detail[data-tutor] .tutor-speech p,.tutor-welcome .tutor-speech p{min-height:0;font-size:14px}
  .tutor-option{min-height:46px}.tutor-option .tutor-portrait{width:32px;height:32px}.tutor-option strong{font-size:14px}
  .tutor-footer{grid-column:1;position:static;margin:0;padding:0 0 12px;background:none}
- .tutor-primary{min-height:50px;font-size:15px}
+ .tutor-primary{min-height:50px;font-size:15.5px}
  .tutor-welcome{grid-column:1/-1;grid-template-columns:1fr 1fr;gap:6px 20px}
  .tutor-welcome .tutor-stage{grid-row:1/3;align-self:start}
  .tutor-welcome-copy strong{font-size:18px}

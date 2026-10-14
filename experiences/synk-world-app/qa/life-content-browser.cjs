@@ -297,7 +297,7 @@ async function scenario() {
   check('expression completion offers its matching character story', await page.locator(`.life-actions [data-life-lesson="${story.id}"]`).count() === 1);
   await page.locator(`[data-life-lesson="${story.id}"]`).click(); await page.locator('[data-life-begin]').click(); await page.locator('[data-life-scene-next]').click();
   const sceneBefore = await page.locator('.life-dialogue p').textContent(), storyState = await metrics();
-  check('the story presents all three official friends', await page.locator('.life-story-photo img').evaluate(image => ['몽글', '까몽', '마린'].every(name => image.alt.includes(name))));
+  check('the story presents all three official friends', await page.locator('.life-story-photo>img').evaluate(image => ['몽글', '까몽', '마린'].every(name => image.alt.includes(name))));
   await rotate(740, 320, 'story-scene'); await snap('story-scene-landscape'); await rotate(390, 844, 'story-scene-portrait'); await snap('story-scene-portrait'); await closePanel();
   await page.reload({ waitUntil: 'domcontentloaded' }); await ready(); await lifeReady(); await homePlaying(); await nextHome();
   const sceneAfter = await metrics();

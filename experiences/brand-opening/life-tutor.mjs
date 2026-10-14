@@ -14,7 +14,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  const portrait=(face='기본')=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${photo()}" alt="${tutor.name}" width="288" height="288"><img class="game-tutor-face" src="${photo(face)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor life-tutor';element.dataset.tutor=tutor.id;
  element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
- element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b><span class="life-tutor-role"> · 함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
+ element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b class="w-name" data-who="${tutor.id}">${tutor.name}</b><span class="life-tutor-role">함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
  container.prepend(element);
  const helpButton=element.querySelector('.life-tutor-help'),face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),body=element.querySelector('.game-tutor-portrait');
  const motion=matchMedia('(prefers-reduced-motion:reduce)'),isReduced=()=>reduced()||motion.matches;
