@@ -3,6 +3,7 @@ import {createGameTutor} from './game-tutor.mjs';
 import {createLifeTutor} from './life-tutor.mjs';
 import {createHomeTutor} from './home-tutor.mjs';
 import {createHomeScene} from './home-scene.mjs';
+import {createHomeTown} from './home-town.mjs';
 import {createHomeMemory} from './home-memory.mjs';
 import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
@@ -24,14 +25,17 @@ let learningUI=null,learningLoader=null,education=null;
 let host=null,panelResource=null,sceneActive=false,entryPhase='restoring',toastTimer,equipment={slots:{},dyes:{}},accountOwner='guest',learningData={},photoBusy=false,panelEpoch=0;
 let orientationTask=Promise.resolve();
 let tutorUI,homeTutor;
+// 홈의 자리: 'town'(우리 동네, 첫 장면) 또는 'room'(우리 집 안 3D 방). 3D 방은 들어갔을 때만 그린다.
+let place='town';
 const living=createHomeScene({container:scene,onAction:sceneAction,onStatus:status=>{scene.dataset.status=status;}});
+const town=createHomeTown({container:$('.town-scene'),asset,onPlace:openPlace,obstacle:$('.lobby-action')});
 const memory=createHomeMemory({onChange:data=>living.setMemory(data)});
 try{manualReduced=localStorage.getItem('synk.world.maru.reduced')==='true';}catch{}
 try{const saved=localStorage.getItem('synk.world.maru.orientation');if(['auto','portrait','landscape'].includes(saved))displayPreference=saved;}catch{}
 function syncLayout(){
  const actual=landscape.matches?'landscape':'portrait';
  const next=spacious.matches&&displayPreference!=='auto'?displayPreference:actual;
- layout=next;document.documentElement.dataset.layout=layout;
+ layout=next;document.documentElement.dataset.layout=layout;town.setLayout(layout);
  document.documentElement.dataset.orientationPreference=displayPreference;
  const mismatch=!spacious.matches&&displayPreference!=='auto'&&displayPreference!==actual;
  $('.orientation-notice').hidden=!mismatch;
@@ -53,9 +57,31 @@ function chooseOrientation(value){
 }
 function syncScene(){
  const active=entryPhase==='ready'&&sceneActive&&!document.hidden&&!panel.open&&inView;
- homeTutor?.setActive(active);living.setReducedMotion(reduced.matches||manualReduced);living.setActive(active);
+ homeTutor?.setActive(active);living.setReducedMotion(reduced.matches||manualReduced);living.setActive(active&&place==='room');
+ town.setActive(entryPhase==='ready'&&!panel.open&&place==='town');
  // 시트 전환(home.css)도 앱의 「움직임 줄이기」를 따른다.
  document.documentElement.dataset.motion=reduced.matches||manualReduced?'reduced':'full';
+}
+// 동네 ↔ 우리 집(3D 방). 방에 들어갈 때만 3D를 불러 그리고, 나오면 멈춘다.
+function setPlace(next,{focus=false}={}){
+ place=next==='room'?'room':'town';
+ const shell=$('.world-shell');shell.dataset.place=place;
+ $('.place-kicker').textContent=place==='room'?'OUR ROOM':'OUR TOWN';$('.place-heading h1').textContent=place==='room'?'우리 방':'우리 동네';
+ document.title=`${place==='room'?'우리 방':'우리 동네'} · SYNK WORLD`;
+ scene.inert=place!=='room';
+ syncScene();
+ if(focus)(place==='room'?$('.room-back'):null)?.focus({preventScroll:true});
+}
+function openPlace(spot){
+ if(spot.id==='home'){play('open');setPlace('room',{focus:true});return;}
+ void openPack(spot.pack);
+}
+// 장소 하나 = 생활 팩 하나. 튜터를 고른 뒤에 그 팩의 레슨 목록을 연다.
+function openPack(id){
+ return openTutor({then:async()=>{
+  if(host){callHost('pack',id);return;}
+  try{(await loadLearning())?.pack?.(id);}catch{}
+ }});
 }
 // Kept for the opening host contract; the 3D room does not inherit a movie time.
 function setSceneTime(){}
@@ -142,11 +168,14 @@ async function callLearningReady(command){
  if(command==='learn'&&education)return education.next();
  if(command==='study'&&education)return education.open();
  if(host){callHost(command==='learn'?'learn':command);return;}
+ try{const ui=await loadLearning();ui[command==='learn'?'next':command]?.();}catch{}
+}
+function loadLearning(){
  if(!learningLoader)learningLoader=import('./content/life-standalone.mjs').then(({setupLife})=>{learningUI=setupLife(home,path=>asset('assets/'+path));return learningUI;}).catch(error=>{learningLoader=null;toast('생활 콘텐츠를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.');throw error;});
- try{const ui=await learningLoader;ui[command==='learn'?'next':command]?.();}catch{}
+ return learningLoader;
 }
 function updateLearning(summary,details){
- homeTutor?.update(summary,details);
+ homeTutor?.update(summary,details);town.setProgress(summary);
  learningData={summary,snapshot:details?.snapshot,lessons:details?.lessons,details};
  void memory.update({owner:accountOwner,...learningData});
  const next=summary.nextLesson,button=$('#life-next-button'),label=$('#life-next-title'),kicker=$('#life-next-kicker'),caption=$('#life-progress-caption'),review=$('#life-review-count');
@@ -178,7 +207,7 @@ function updateStudy(plan){
  $('#life-next-button').setAttribute('aria-label',`맞춤 학습 · ${next.label||next.title}`);
 }
 function showPlay(){
- const more=host?`<section class="play-more" aria-label="더 둘러보기"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>첫 문장 놀이</strong><small>문장 세 개를 맞히면 선물을 받아요</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>우리 동네</strong><small>친구들이 사는 마을을 걸어요</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>노래 듣기</strong><small>한글 노래와 뮤직비디오</small></span></button></section>`:'';
+ const more=host?`<section class="play-more" aria-label="더 둘러보기"><p class="eyebrow">MORE</p><button data-world="play"><img src="${asset('assets/world-felt/sentence.webp')}" alt=""><span><strong>첫 문장 놀이</strong><small>문장 세 개를 맞히면 선물을 받아요</small></span></button><button data-world="town"><img src="${asset('assets/world-felt/town.webp')}" alt=""><span><strong>싱크타운</strong><small>내 차림 그대로 광장을 걸어요</small></span></button><button data-world="songs"><img src="${asset('assets/world-felt/songs.webp')}" alt=""><span><strong>노래 듣기</strong><small>한글 노래와 뮤직비디오</small></span></button></section>`:'';
  openPanel('놀이',`<div class="play-list">${Object.entries(games).map(([id,g],i)=>`<button data-game="${id}"><span class="play-art w-print"><img src="${asset(`assets/${g.image}`)}" alt=""></span><span class="play-copy"><small class="play-label">${String(i+1).padStart(2,'0')} · ${g.label}</small><strong>${g.title}</strong><small>${g.detail}</small></span><span class="arrow" aria-hidden="true">↗</span></button>`).join('')}</div><p class="panel-note">한글이 처음이면 ‘한글 만나기’부터 시작해요.</p>${more}`,{eyebrow:'PLAY',nav:'play'});
 }
 function showWardrobe(){if(callHost('wardrobe'))return;openPanel('옷장',`<span class="panel-print w-print"><img src="${asset('assets/world-felt/wardrobe.webp')}" alt="옷걸이에 걸린 펠트 목도리"></span><p class="panel-description">세 친구에게 옷을 입혀 보고 사진으로 남길 수 있어요.</p><div class="panel-actions"><a class="felt-button" href="${asset('../mobile.html?wardrobe=1&opening=off')}">옷장 열기 <span aria-hidden="true">↗</span></a></div><p class="panel-note">계정을 연결하면 가진 옷과 차림이 저장돼요.</p>`,{eyebrow:'MY WARDROBE',nav:'wardrobe'});}
@@ -204,10 +233,11 @@ document.addEventListener('click',event=>{
  if(button.dataset.homeHost){callHost(button.dataset.homeHost);return;}
  if(button.dataset.world){if(['play','town','songs'].includes(button.dataset.world))callHost(button.dataset.world,button);return;}
  if(button.hasAttribute('data-close')){closePanel();return;}
- const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{if(panel.open)closePanel();window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
+ const view=button.dataset.view;if(['learn','packs','review','stories','cafe','study'].includes(view)){void callLearning(view);return;}if(view==='play')showPlay();else if(view==='wardrobe')showWardrobe();else if(view==='me')showMe();else{if(panel.open)closePanel();if(place==='room')setPlace('town');window.scrollTo({top:0,behavior:manualReduced||reduced.matches?'instant':'smooth'});}
 });
 content.addEventListener('change',event=>{const pref=event.target.dataset?.pref;if(pref){setPref(pref,event.target.checked);if(pref==='sound'&&event.target.checked)play('select');return;}if(event.target.name==='orientation')chooseOrientation(event.target.value);if(event.target.id==='reduce-motion'){manualReduced=event.target.checked;try{localStorage.setItem('synk.world.maru.reduced',String(manualReduced));}catch{}syncScene();}});
 document.querySelector('[data-orientation-auto]').addEventListener('click',()=>chooseOrientation('auto'));
+$('.room-back').addEventListener('click',()=>{play('close');setPlace('town');town.focus();});
 $('#panel-close').addEventListener('click',closePanel);panel.addEventListener('cancel',event=>{event.preventDefault();closePanel();});panel.addEventListener('click',event=>{if(event.target===panel){const r=panel.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)closePanel();}});
 panel.addEventListener('close',()=>{if(!panel.open&&(content.childElementCount||panelResource))closePanel();});
 panel.addEventListener('close',()=>queueMicrotask(()=>{
@@ -242,9 +272,12 @@ export const home={
  setSceneActive(active){sceneActive=Boolean(active);syncScene();},setSceneTime,setEntryState,
  setEquipment(slots={},dyes={}){equipment={slots:{...slots},dyes:{...dyes}};living.setEquipment(equipment.slots,equipment.dyes);},
  connectHost(callbacks){host=callbacks||null;document.documentElement.dataset.connected=String(Boolean(host));},
- updateAccount,updateLearning,updateStudy,photo,
+ place:()=>place,goTown:()=>{if(panel.open)closePanel();setPlace('town');},
+ updateAccount,updateLearning,updateStudy,
+ // 사진은 3D 방에서 찍는다. 동네에서 부르면 먼저 방으로 들어간다(capture는 방이 다 불러질 때까지 기다린다).
+ photo:()=>{if(place!=='room')setPlace('room');return photo();},
  connectEducation(value){education=value;},openLearningGame:launchGame,
- scene:()=>living.metrics(),memory:()=>memory.snapshot(),
+ scene:()=>living.metrics(),memory:()=>memory.snapshot(),town:()=>({place,...town.metrics()}),enterRoom:()=>setPlace('room'),leaveRoom:()=>setPlace('town'),
  startTutorial:()=>openTutor(),chooseTutor:()=>openTutor({force:true}),ensureTutor:then=>openTutor({then}),tutor:()=>tutorUI.metrics(),homeTutor:()=>homeTutor?.metrics(),
  applyTutorChoice:(id,owner)=>tutorUI.applyChoice(id,owner),refreshTutorStatus:()=>tutorUI.refreshStatus()
 };

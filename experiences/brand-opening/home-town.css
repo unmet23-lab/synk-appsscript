@@ -1,0 +1,76 @@
+/* 우리 동네 — WORLD 홈 첫 장면(유호님 10-14 「홈 4번」).
+ * 펠트 미니어처 동네 사진 한 장(세 친구까지 같은 장면으로 구움)을 자르지 않고 화면 안에 넣고, 장소마다 어두운 유리 이름표를 얹는다.
+ * 사진이 닿지 않는 자리는 사진 가장자리에서 읽은 배경지 색으로 이어 칠한다(home-town.mjs fill). 스스로 움직이는 것은 없다. */
+.town-scene{position:absolute;inset:0;overflow:hidden;container-type:size;background:#A3D3F9}
+/* 자리와 크기는 home-town.mjs fit()이 정한다. 사진이 끝나는 쪽만 이어 칠한 바탕으로 부드럽게 넘긴다. */
+.town-frame{position:absolute;left:0;top:0;width:100%}
+.town-frame[data-fit=wide]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%);mask-image:linear-gradient(90deg,transparent,#000 7%)}
+.town-frame[data-fit=tall]{-webkit-mask-image:linear-gradient(180deg,transparent,#000 9%);mask-image:linear-gradient(180deg,transparent,#000 9%)}
+.town-frame[data-fit=full]{-webkit-mask-image:linear-gradient(180deg,transparent,#000 3%,#000 95%,transparent);mask-image:linear-gradient(180deg,transparent,#000 3%,#000 95%,transparent)}
+.town-frame[data-fit=inset]{-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,#000 95%,transparent);-webkit-mask-composite:source-in;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent),linear-gradient(180deg,#000 95%,transparent);mask-composite:intersect}
+.town-photo{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;user-select:none;-webkit-user-drag:none}
+.town-areas{position:absolute;inset:0;z-index:1}
+.town-area{position:absolute;border-radius:14px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.town-pins{position:absolute;inset:0;z-index:2;pointer-events:none}
+.town-pin{--pin-x:-50%;position:absolute;display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:0 13px 0 10px;border-radius:999px;transform:translate(var(--pin-x),-50%);pointer-events:auto;background:rgba(14,15,19,.8);color:#FAFAF9;box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 0 0 1px rgba(255,255,255,.085),0 8px 22px rgba(20,40,70,.28);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);font:var(--wt-strong) 13.5px/1 var(--w-sans);letter-spacing:-.01em;white-space:nowrap;transition:background .16s var(--w-ease),transform .14s var(--w-ease)}
+/* 보이는 이름표는 34px, 누르는 자리는 44px 이상 */
+.town-pin::before{content:'';position:absolute;inset:-6px -4px}
+.town-pin:active{transform:translate(var(--pin-x),-50%) scale(.95)}
+.town-pin:hover,.town-pin.is-hover{background:rgba(8,9,12,.94)}
+.town-pin:focus-visible{outline:2px solid #FAFAF9;outline-offset:3px}
+.town-pin-dot{width:7px;height:7px;flex-shrink:0;border-radius:50%;background:rgba(250,250,249,.42)}
+.town-pin-count{display:inline-flex;align-items:center;font-size:13px;font-weight:var(--wt-label);color:rgba(250,250,249,.62);font-variant-numeric:tabular-nums}
+.town-pin-count:empty{display:none}
+.town-pin-count svg{width:14px;height:14px;color:var(--w-led-ok)}
+.town-pin-icon{display:grid;place-items:center;width:24px;height:24px;margin-left:-5px;flex-shrink:0;border-radius:50%;background:#FAFAF9;color:#08090C}
+.town-pin-icon svg{width:14px;height:14px}
+.town-pin[data-state=doing] .town-pin-dot{background:var(--w-led-check);box-shadow:0 0 8px rgba(245,196,69,.55)}
+.town-pin[data-state=done] .town-pin-dot{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.55)}
+/* 지금 할 차례인 곳 하나만 사업 색(코랄)으로. 반짝이거나 튀지 않는다. */
+.town-pin[data-state=now]{background:var(--w-face);color:var(--w-on-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 26px rgba(174,50,42,.32)}
+.town-pin[data-state=now]:hover,.town-pin[data-state=now].is-hover{background:#FF7A6B}
+.town-pin[data-state=now] .town-pin-dot{background:var(--w-on-face);box-shadow:none}
+.town-pin[data-state=now] .town-pin-count{color:rgba(30,14,10,.66)}
+.town-pin[data-state=now]::after{content:'지금';margin-left:2px;padding:4px 7px;border-radius:999px;background:rgba(30,14,10,.12);font-size:13px;font-weight:var(--wt-strong)}
+/* 휴대폰 세로: 이름표에는 이름과 상태 점만(숫자는 배우기 탭에). */
+.town-frame[data-layout=portrait] .town-pin{min-height:32px;padding:0 11px 0 9px;font-size:13px;gap:6px}
+.town-frame[data-layout=portrait] .town-pin-count{display:none}
+.town-frame[data-layout=portrait] .town-pin[data-state=now]::after{padding:3px 6px}
+/* 위 막대는 단추만 누를 수 있게: 두 단추 사이 빈자리 밑의 이름표도 눌린다. */
+.world-topbar{pointer-events:none}
+.world-topbar>*{pointer-events:auto}
+/* 우리 집 ↔ 3D 방: 방에 들어가면 동네를 숨기고, 동네로 돌아오는 알약을 위 막대 아래에 둔다. */
+.world-shell[data-place=room] .town-scene{visibility:hidden}
+.world-shell:not([data-place=room]) .maru-scene{visibility:hidden}
+.room-back{position:absolute;z-index:4;top:calc(76px + var(--safe-top));left:16px;display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 16px 0 12px;border-radius:999px;background:rgba(14,15,19,.72);color:#FAFAF9;box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);font:var(--wt-strong) 14px/1 var(--w-sans)}
+.room-back svg{width:18px;height:18px}
+.world-shell:not([data-place=room]) .room-back{display:none}
+[data-layout=landscape] .room-back{top:auto;bottom:calc(84px + var(--safe-bottom));left:auto;right:max(16px,env(safe-area-inset-right))}
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){[data-layout=landscape] .room-back{bottom:auto;top:20px;right:78px}}
+/* 동네에서는 제목이 하늘색 배경지 위에 놓인다(넓은 화면). */
+.world-shell:not([data-place=room]) .place-heading{color:#0E1B2A}
+.world-shell:not([data-place=room]) .place-kicker{color:rgba(14,27,42,.56)}
+.world-shell:not([data-place=room]) .place-kicker::after{background:rgba(14,27,42,.22)}
+.world-shell:not([data-place=room]) .place-heading>p:last-child{color:rgba(14,27,42,.66)}
+@media(prefers-reduced-motion:reduce){.town-pin{transition:none}}
+/* 시간대(기기 시계): 흐린 바탕이 뜨기 전에도 배경지 색이 먼저 보이게. 밤에는 넓은 화면 제목을 밝게. */
+.town-scene[data-time=evening]{background:#A9849A}
+.town-scene[data-time=night]{background:#0F2450}
+:root[data-town-time=night] .world-shell:not([data-place=room]) .place-heading{color:#F3F5FA}
+:root[data-town-time=night] .world-shell:not([data-place=room]) .place-kicker{color:rgba(243,245,250,.6)}
+:root[data-town-time=night] .world-shell:not([data-place=room]) .place-kicker::after{background:rgba(243,245,250,.25)}
+:root[data-town-time=night] .world-shell:not([data-place=room]) .place-heading>p:last-child{color:rgba(243,245,250,.72)}
+/* 첫 방문 안내 한 줄: 휴대폰은 동네 바로 아래 빈 하늘(자리가 없으면 숨김), 넓은 화면은 제목 아래. 움직이지 않는다. */
+.town-hint{position:absolute;z-index:3;display:flex;align-items:center;gap:10px;max-width:calc(100% - 32px);padding:8px 8px 8px 14px;border-radius:999px;background:rgba(250,250,249,.92);color:#0E1B2A;box-shadow:0 10px 28px rgba(20,40,70,.18);font-size:13.5px;font-weight:var(--wt-label);line-height:1.35}
+.town-hint i{width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-face)}
+.town-hint p{margin:0}
+.town-hint button{position:relative;display:grid;place-items:center;width:32px;height:32px;flex-shrink:0;border-radius:50%;color:rgba(14,27,42,.6)}
+.town-hint button::before{content:'';position:absolute;inset:-6px}
+.town-hint button svg{width:16px;height:16px}
+.town-hint[hidden]{display:none}
+.town-hint[data-fits=false]{visibility:hidden}
+:root:not([data-layout=landscape]) .town-hint{left:50%;transform:translateX(-50%);top:calc(var(--town-top,0px) + var(--town-fh,177cqw) * .615);width:max-content}
+[data-layout=landscape] .town-hint{left:max(22px,env(safe-area-inset-left));top:calc(170px + var(--safe-top));max-width:min(380px,44vw)}
+@media(min-width:600px) and (min-height:600px) and (pointer:fine){[data-layout=landscape] .town-hint{left:30px;top:196px}}
+/* 낮은 가로 화면은 안내가 카드와 겹치니 숨긴다(장소 이름표만으로 충분하다). */
+@media(max-height:500px){[data-layout=landscape] .town-hint{display:none}}
