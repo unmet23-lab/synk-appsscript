@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "completedAt": "2026-10-14T05:09:44.270Z",
+  "status": "published-and-public-bytes-verified",
+  "commit": "47fb0b72dddbf82bbbc8928f57b412beadf7badc",
+  "parent": "413056c0317ee7b6e6921e5ce176ed0208a0acd7",
+  "repository": "unmet23-lab/synk-policy",
+  "branch": "main",
+  "worktree": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-insight-20261014\\public",
+  "candidateManifestSha256": "f812596f5f823037b84b39e4fa9ccb231943c4f664af63fa4fd310a3e9c1226e",
+  "onlyFourAccountFiles": true,
+  "pages": {
+    "conclusion": "success",
+    "databaseId": 38514869493,
+    "headSha": "47fb0b72dddbf82bbbc8928f57b412beadf7badc",
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38514869493"
+  },
+  "siteCheck": {
+    "conclusion": "",
+    "databaseId": 38514869666,
+    "headSha": "47fb0b72dddbf82bbbc8928f57b412beadf7badc",
+    "status": "in_progress",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38514869666"
+  },
+  "files": [
+    {
+      "file": "account/dist/platform.js",
+      "url": "https://synk.im/account/dist/platform.js",
+      "status": 200,
+      "bytes": 258435,
+      "sha256": "8155ac06dac3aa36ac4fa510f346c0562d84b63ffe8ee4e1a37580084821a4d0",
+      "expectedSHA256": "8155ac06dac3aa36ac4fa510f346c0562d84b63ffe8ee4e1a37580084821a4d0",
+      "matched": true
+    },
+    {
+      "file": "account/platform.html",
+      "url": "https://synk.im/account/platform.html",
+      "status": 200,
+      "bytes": 4757,
+      "sha256": "909ca187601a74e8cc65b074fd4574b64a33ac0b2aaa3ae6bb13bdc56f0b1a59",
+      "expectedSHA256": "909ca187601a74e8cc65b074fd4574b64a33ac0b2aaa3ae6bb13bdc56f0b1a59",
+      "matched": true
+    },
+    {
+      "file": "account/member-insight.css",
+      "url": "https://synk.im/account/member-insight.css",
+      "status": 200,
+      "bytes": 13897,
+      "sha256": "db5c2b0905f231b29e0015c9cfc839a5f014079fc0769eb05fa105f151327f1b",
+      "expectedSHA256": "db5c2b0905f231b29e0015c9cfc839a5f014079fc0769eb05fa105f151327f1b",
+      "matched": true
+    },
+    {
+      "file": "account/assets/member/world-book.avif",
+      "url": "https://synk.im/account/assets/member/world-book.avif",
+      "status": 200,
+      "bytes": 790910,
+      "sha256": "1b764c1a17ebe67d55dd6b66d56dfdfd0858575cc9e2db7a0910b661dab8be0e",
+      "expectedSHA256": "1b764c1a17ebe67d55dd6b66d56dfdfd0858575cc9e2db7a0910b661dab8be0e",
+      "matched": true
+    }
+  ],
+  "preserved": [
+    {
+      "file": "desktop/releases/preview.json",
+      "status": 200,
+      "sha256": "b5eccc4e4e4527aba9f2ee3227d2818ceb4f2bbf76d4315b0f9ad93f009459d5",
+      "sameAsPreviousCommit": true,
+      "publicMatched": true,
+      "version": "0.4.7"
+    },
+    {
+      "file": "index.html",
+      "status": 200,
+      "sha256": "2782448023f4fdc26164b3e596c516c683e1f98fe6458810de9216631446a4cd",
+      "sameAsPreviousCommit": true,
+      "publicMatched": true
+    },
+    {
+      "file": "en/index.html",
+      "status": 200,
+      "sha256": "486eae907bd26523aa0030f20a1c6aeaa21afdd2408ff679abc5c42b6ee09dd8",
+      "sameAsPreviousCommit": true,
+      "publicMatched": true
+    }
+  ],
+  "validation": {
+    "candidateTests": 7,
+    "candidateTestsPassed": 7,
+    "existingBrowserChecks": 55,
+    "existingBrowserChecksPassed": 55,
+    "upstreamAccountDrift": false,
+    "inverseExactBaselineBytes": 233830,
+    "exactBundleTransformations": 17
+  },
+  "accountCalls": 0,
+  "realAccountManipulation": false,
+  "computerUse": false,
+  "otherTaskMessaging": false
+}
