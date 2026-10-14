@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "environment": "production",
+  "mode": "apply",
+  "clientId": "0f9f91d5-4032-4ff3-bb8d-2af1c646633a",
+  "callback": "https://synk.im/album/",
+  "callbackRegistered": true,
+  "beforeUris": [
+    "http://127.0.0.1:4298/",
+    "https://synk.im/album/"
+  ],
+  "targetUris": [
+    "http://127.0.0.1:4298/",
+    "https://synk.im/album/"
+  ],
+  "providerUpdates": 1,
+  "existingRegistrations": 23,
+  "newClients": 0,
+  "productMapChanged": false,
+  "fortuneAllowlistChanged": false,
+  "portalChanged": true,
+  "guards": {
+    "mappingDigest": "5015cf5fe039b3f07e8e5d8e0cd5e8c336d9b2eb40fb8e2c6b2f25ce200912fa",
+    "providerInventorySha256": "93d32705df40952578fdb939f60682340a60f464454bb0c7076796527639c5fd",
+    "journalSha256": "b668d59223756f306bc6794499656abdaf16ed4008f9cd765d90d8d7ac7e30bd"
+  },
+  "limitations": {
+    "portalPublished": false,
+    "userLoginVerified": false
+  }
+}

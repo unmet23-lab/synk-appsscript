@@ -1,0 +1,47 @@
+{
+  "live": true,
+  "pages": [
+    {
+      "width": 1440,
+      "status": 200,
+      "title": "가족 이야기 앨범 · SYNK FOR YOU",
+      "h1": "사진 밖의 이야기도,\n우리의 앨범에.",
+      "overflow": false,
+      "account": "로그인",
+      "errors": []
+    },
+    {
+      "width": 390,
+      "status": 200,
+      "title": "가족 이야기 앨범 · SYNK FOR YOU",
+      "h1": "사진 밖의 이야기도,\n우리의 앨범에.",
+      "overflow": false,
+      "account": "로그인",
+      "errors": []
+    }
+  ],
+  "login": {
+    "authorize": {
+      "origin": "https://qiwxeddwwnzkwalpsuty.supabase.co",
+      "clientId": "0f9f91d5-4032-4ff3-bb8d-2af1c646633a",
+      "redirectUri": "https://synk.im/album/",
+      "method": "S256"
+    },
+    "hops": [
+      "https://synk.im/id/"
+    ],
+    "final": "https://synk.im/id/",
+    "finalHasAlbumRedirect": false,
+    "text": "synk synk.im SYNK ID 내 SYNK로 이어가요. SYNK의 여러 서비스를 하나의 계정으로. 이메일로 로그인하거나 처음이라면 가입해 주세요. 다시 만나서 반가워요. 한 번 로그인하면 등록된 SYNK 서비스에 같은 계정으로 연결해요. 서비스별 이용 권한은 따로 확인해요. Google로 계속하기 처음이라면 Google 계정으로 가입할 수 있어요. Google에서 이메일과 기본 프로필을 받아 로그인과 계정 연결에 사용해요. Google 비밀번호는 받지 않아요. Google 가입 정보 안내 (새 창) 또는 이메일로 이메일 비밀"
+  },
+  "platform": {
+    "links": [
+      {
+        "text": "가족 이야기 앨범 웹에서 시작 ↗",
+        "href": "https://synk.im/album/"
+      }
+    ],
+    "status": true,
+    "errors": []
+  }
+}

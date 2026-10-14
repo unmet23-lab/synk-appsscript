@@ -49,8 +49,13 @@ test('release candidate links use only their exact public entry while developmen
     // Introduction and account links are not instrumented as service usage.
     assert.doesNotMatch(publicHtml, /href="#benefits\/[^\"]+" data-web/);
   }
-  for (const id of ['family-album', 'unknown', 'constructor', '__proto__']) assert.equal(publicBenefitEntry(id), null);
-  assert.doesNotMatch(benefitDetail('family-album', 'https://synk.im/platform/'), /data-web=/);
+  // 앨범은 2026-10-14부터 synk.im/album/ 에서 공개한다(id와 주소 이름이 다르다).
+  assert.equal(publicBenefitEntry('family-album'), 'https://synk.im/album/');
+  const albumHtml = benefitDetail('family-album', 'https://synk.im/platform/');
+  assert.ok(albumHtml.includes('href="https://synk.im/album/" data-web="family-album"'));
+  assert.match(albumHtml, /공개 웹 · PC 개발판/);
+  assert.doesNotMatch(albumHtml, /href="http:\/\/127\.0\.0\.1/);
+  for (const id of ['unknown', 'constructor', '__proto__']) assert.equal(publicBenefitEntry(id), null);
   assert.match(benefitDetail('fortune', 'https://synk.im/platform/'), /최근 7일의 기록/);
   assert.match(benefitDetail('rehearsal', 'https://synk.im/platform/'), /생성형 AI 대화와 자동 능력 평가는 제공하지 않아요/);
 });

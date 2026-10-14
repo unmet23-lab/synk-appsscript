@@ -14,7 +14,7 @@ export function localBenefitPreview(id, base) {
   } catch { return null; }
 }
 
-const PUBLIC_ENTRIES = Object.freeze({ care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/', rehearsal: 'https://synk.im/rehearsal/' });
+const PUBLIC_ENTRIES = Object.freeze({ care: 'https://synk.im/care/', fortune: 'https://synk.im/fortune/', rehearsal: 'https://synk.im/rehearsal/', 'family-album': 'https://synk.im/album/' });
 export function publicBenefitEntry(id) {
   if (!Object.hasOwn(PUBLIC_ENTRIES, id)) return null;
   const value = memberBenefit(id)?.publicUrl;

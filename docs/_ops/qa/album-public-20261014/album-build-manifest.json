@@ -1,0 +1,390 @@
+{
+  "version": 1,
+  "product": "album",
+  "targetUrl": "https://synk.im/album/",
+  "configFile": "config.json",
+  "builder": {
+    "file": "tools/prepare-personal-public.mjs",
+    "sha256": "eba5b11bea68f4811c563c16b7ac148fe7743be7b7602c8001e13c7873822750",
+    "esbuildVersion": "0.28.2"
+  },
+  "sourceFiles": [
+    {
+      "file": "atlas/ask.js",
+      "sha256": "5366b49994c61991e46d9b171547b534243120f2ba63cc48f3aa8297eae3d0dd"
+    },
+    {
+      "file": "atlas/domain.js",
+      "sha256": "950ae931d129fe5c4aebc4900aad20cf491012d4f997146e27626634fc8fe64f"
+    },
+    {
+      "file": "atlas/temper-outcomes.js",
+      "sha256": "d8e0a3f794190593a7a4b1286428bfd402163a2507863ec20afbbccbe3b0ad32"
+    },
+    {
+      "file": "atlas/trail-life.js",
+      "sha256": "a2045a196edde3ac986c9c2cdd952db792df7b919efc44c8811710dc777fe552"
+    },
+    {
+      "file": "atlas/travel.js",
+      "sha256": "0c0c65b97addb5afd69966f9620133abae88aa2154cecf1ff322678bfdba7ef2"
+    },
+    {
+      "file": "experiences/conversation-rehearsal/domain.mjs",
+      "sha256": "fac7ebc9f5b48c8bb0453d2d1925a3ea0ff50b765d9c5ab37224863c286268e6"
+    },
+    {
+      "file": "experiences/family-album/account-media.mjs",
+      "sha256": "a46a94fd69f2a48c8af34025d6ed74714017b0898fab18b52d37f10bd6128d81"
+    },
+    {
+      "file": "experiences/family-album/app.mjs",
+      "sha256": "8369d3268209085561833f81485a88280c9be46020173882531e0728d742540b"
+    },
+    {
+      "file": "experiences/family-album/assets/art/book.webp",
+      "sha256": "00f59cfabae472d6153d889f0d06cc079373fe31b2081d347c0d52f799e6d4c3"
+    },
+    {
+      "file": "experiences/family-album/assets/art/camera.webp",
+      "sha256": "8a363e6f5047ab30691208270391aaf0074fccce233ad76c5fa6ae11f1a705c3"
+    },
+    {
+      "file": "experiences/family-album/assets/art/clock.webp",
+      "sha256": "bb497812660b0a0beacf77207dd947c2bea4d3093aff4cecdb2fd1fe76f32afa"
+    },
+    {
+      "file": "experiences/family-album/assets/art/frame.webp",
+      "sha256": "82e7f04648bc66ee042cf3ec36171fce83f57701865a549f0e055e834bc6d94c"
+    },
+    {
+      "file": "experiences/family-album/assets/art/house.webp",
+      "sha256": "ed5d0c7c57ea8bfe09648aac916f9c60f22a052626b07bfbd008fb710b28f74c"
+    },
+    {
+      "file": "experiences/family-album/assets/art/mic.webp",
+      "sha256": "9ac92720b6cda8f29f5288c61c8a186eb0bec2ab507006df21194b436fe9c854"
+    },
+    {
+      "file": "experiences/family-album/assets/art/person.webp",
+      "sha256": "aa3aa5e9e159cd64915d4fe0272cc50d117c056d7e355dc0b166d1f53c07e510"
+    },
+    {
+      "file": "experiences/family-album/assets/art/question.webp",
+      "sha256": "925b3b300e608341856dbbc248a95834e87ecec562a7e416fa5aab50d0dd429d"
+    },
+    {
+      "file": "experiences/family-album/assets/art/speaker.webp",
+      "sha256": "1ceaac4c4a4694a09085e042c140987b2061465a9762572fe6de8177030434c1"
+    },
+    {
+      "file": "experiences/family-album/form-drafts.mjs",
+      "sha256": "6d530c5db45cb316f1b20142ceeedca64ed21baf67df5968163c07ab1e65a614"
+    },
+    {
+      "file": "experiences/family-album/index.html",
+      "sha256": "93e2661c2c64c5f54fcd686a124808fed84b457fefb7b4107ab2d4af3280054a"
+    },
+    {
+      "file": "experiences/family-album/media.mjs",
+      "sha256": "b8b0d2c7ab8463666e16cabb9a1b3524f4c13ff6939e9f01edb874e60865a746"
+    },
+    {
+      "file": "experiences/family-album/model.mjs",
+      "sha256": "78703855189f4ab5cb0f85eb6471b6844eb355f38375a6e42a2d74252646a5b4"
+    },
+    {
+      "file": "experiences/family-album/operations.mjs",
+      "sha256": "bd6cb3e3c473726abc65e498dcde08d6a7d350d18ecc14a8283027eee6137d83"
+    },
+    {
+      "file": "experiences/family-album/questions.mjs",
+      "sha256": "bdae238693b90dc39a959c151c5af05c74ce369080375b619eead730bcfbf105"
+    },
+    {
+      "file": "experiences/family-album/storage.mjs",
+      "sha256": "fd150a518c229cf5f01208cbe78d091b776c72c9e96c3c461b2cc1afaceb57c7"
+    },
+    {
+      "file": "experiences/family-album/style.css",
+      "sha256": "6a99322d1cc4de1cd4458e78224db79ff4e1250d6038be9a1ba71e53af9c0942"
+    },
+    {
+      "file": "experiences/family-album/takehome.mjs",
+      "sha256": "bf20d4df0d30d39ddb668a396a91fdaedbcbb1fe4e3577bcf5b6b80a62829ffb"
+    },
+    {
+      "file": "experiences/family-album/timeline.mjs",
+      "sha256": "9b91623575f78bde22e3d056e5d79f8cb28173e1135fce03a190ea79ba3c336e"
+    },
+    {
+      "file": "experiences/member-book-assets.mjs",
+      "sha256": "b1ea4058b87407ad4bdbf84609f359c0de2fee8bf51bebc08c64f409b2770fac"
+    },
+    {
+      "file": "experiences/member-signal/assets/DMMono-Medium.woff2",
+      "sha256": "69108e2080a3ffb271187d6d913a51b6faa4faf895d8cf15fc64879f8906cd8e"
+    },
+    {
+      "file": "experiences/member-signal/assets/DMMono-OFL.txt",
+      "sha256": "febfd2b42308d5327ade2884aed777da3d2decd2c53d574c43e603443d70c5b2"
+    },
+    {
+      "file": "experiences/member-signal/assets/grain.svg",
+      "sha256": "8818b4a926e16a9501b0afb112caa2d4c3bfc36d1f953ac7f2b18e23d4a63dcb"
+    },
+    {
+      "file": "experiences/member-signal/assets/InterTight-700.woff2",
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+    },
+    {
+      "file": "experiences/member-signal/assets/InterTight-Medium.woff2",
+      "sha256": "3f79a810283d78922a31ce5167f2875d40ae19ba8f7688110de0e63cfe359494"
+    },
+    {
+      "file": "experiences/member-signal/assets/InterTight-OFL.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "file": "experiences/member-signal/assets/InterTight-Regular.woff2",
+      "sha256": "141691dedbf7ae404140c4666a7f654c5c9dceb3d9e7f1a3ba5aef84a6b093d5"
+    },
+    {
+      "file": "experiences/member-signal/assets/SUIT-OFL.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "file": "experiences/member-signal/assets/SUIT-Variable.woff2",
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "file": "experiences/member-signal/assets/synk-logo.svg",
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "file": "experiences/member-signal/assets/SYNKArrow.woff2",
+      "sha256": "ab06bd2346b2632f508ee1c3baac448565f09ef5dde13b711ba16844ae3ba256"
+    },
+    {
+      "file": "experiences/member-signal/signal.css",
+      "sha256": "8447909dd1433f42aaeded1f569457534af6a72db8a75d6aadc404115df496c6"
+    },
+    {
+      "file": "experiences/member-signal/signal.mjs",
+      "sha256": "90ea9ccc80a839e2583aba76bd7e4bf6606da0285b6fa486b94100b73b82be9a"
+    },
+    {
+      "file": "experiences/path-travel/places-v2.mjs",
+      "sha256": "5a536ef94548c7acef01f4e5496c9767cd86a016f479f4edb4de4bb9085180fd"
+    },
+    {
+      "file": "experiences/path-travel/planner-account.mjs",
+      "sha256": "d4364cce5903c7172b8dd2635ae1ed596e758e0f601236cbc94d1022b8c33a60"
+    },
+    {
+      "file": "experiences/path-travel/planner-feedback.mjs",
+      "sha256": "ab4f891a852cf82039e635e66f3e233b04d3f82151678b96b9d7aa009b72584e"
+    },
+    {
+      "file": "experiences/path-travel/planner-storage.mjs",
+      "sha256": "2f62dbe247238824140df80facdd8c9931cb62abcd31562fdf160cd84672c311"
+    },
+    {
+      "file": "experiences/path-travel/planner.mjs",
+      "sha256": "0f7b4a56e4a6d729222cf10ec9ec6e8319ddd8969e4604f2682d26cd2c595af3"
+    },
+    {
+      "file": "experiences/path-travel/real-conditions.mjs",
+      "sha256": "0b949e9aa13039277982017240769ce591d31e2841c4838369559c1ee63c1435"
+    },
+    {
+      "file": "experiences/path-travel/real-guide.mjs",
+      "sha256": "ee738efe6e5dadd849471fe78f63dd28d2dbc300d54164e2e575290cb6458c0d"
+    },
+    {
+      "file": "experiences/path-travel/real-places.mjs",
+      "sha256": "b2008d4c8d4bca9ec992b1ebdf56c3002dcff60b2c9d52f0cfa26c8f2f48a4e5"
+    },
+    {
+      "file": "experiences/path-vr/model.mjs",
+      "sha256": "5a03f5982a8ff5658602974f43b6ead599cd64c0fa6bf5e3f1c73bfca033c9a4"
+    },
+    {
+      "file": "experiences/synk-account/src/account-notebook.mjs",
+      "sha256": "bdbf73763d5b1de80f49fc014ad9e628f3f47146c75cb95bb685bdfa0c83393e"
+    },
+    {
+      "file": "experiences/synk-account/src/core.mjs",
+      "sha256": "77e621f6d4418d7320d343af778f65e707e38a27132fe327ea2f2e5406e2a748"
+    },
+    {
+      "file": "experiences/synk-account/src/document-sync.mjs",
+      "sha256": "196c738623f3bad61860fb8e150b1c66417ed67eb0ba725d314a227639f45dbc"
+    },
+    {
+      "file": "experiences/synk-account/src/personal-data.mjs",
+      "sha256": "2aa92f658dfe6002f91b6bfcc08fcf833f7502af19cf9d8b80366d743357f26b"
+    },
+    {
+      "file": "experiences/synk-account/src/personal-media.mjs",
+      "sha256": "f38128e15bbd52a3c490e5c31502bd97a20d3242a37e002a7ab702c3ae3bc6e4"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-entry.mjs",
+      "sha256": "40c97bc8010d1175c9dc3734c5f2beab205a554ef5b7c4a51fef66d5bdfbefb4"
+    },
+    {
+      "file": "experiences/synk-account/src/platform-library-data.mjs",
+      "sha256": "60448bd29bc3e2495618883bb51c333109654dc5f186d664f300b9c17f59523b"
+    },
+    {
+      "file": "experiences/synk-account/src/product-account.mjs",
+      "sha256": "7a3d537a15144262db08188903d6c09b62edac25f367701ca59beb5a727a15cf"
+    }
+  ],
+  "files": [
+    {
+      "name": "app.mjs",
+      "bytes": 1543755,
+      "sha256": "d7128348881238aec610b1e9711d70751bb9c560648052e140a9551d3f688c9f"
+    },
+    {
+      "name": "style.css",
+      "bytes": 9309,
+      "sha256": "6a99322d1cc4de1cd4458e78224db79ff4e1250d6038be9a1ba71e53af9c0942"
+    },
+    {
+      "name": "assets/art/book.webp",
+      "bytes": 111544,
+      "sha256": "00f59cfabae472d6153d889f0d06cc079373fe31b2081d347c0d52f799e6d4c3"
+    },
+    {
+      "name": "assets/art/camera.webp",
+      "bytes": 19154,
+      "sha256": "8a363e6f5047ab30691208270391aaf0074fccce233ad76c5fa6ae11f1a705c3"
+    },
+    {
+      "name": "assets/art/clock.webp",
+      "bytes": 134708,
+      "sha256": "bb497812660b0a0beacf77207dd947c2bea4d3093aff4cecdb2fd1fe76f32afa"
+    },
+    {
+      "name": "assets/art/frame.webp",
+      "bytes": 158862,
+      "sha256": "82e7f04648bc66ee042cf3ec36171fce83f57701865a549f0e055e834bc6d94c"
+    },
+    {
+      "name": "assets/art/house.webp",
+      "bytes": 47970,
+      "sha256": "ed5d0c7c57ea8bfe09648aac916f9c60f22a052626b07bfbd008fb710b28f74c"
+    },
+    {
+      "name": "assets/art/mic.webp",
+      "bytes": 62076,
+      "sha256": "9ac92720b6cda8f29f5288c61c8a186eb0bec2ab507006df21194b436fe9c854"
+    },
+    {
+      "name": "assets/art/person.webp",
+      "bytes": 124432,
+      "sha256": "aa3aa5e9e159cd64915d4fe0272cc50d117c056d7e355dc0b166d1f53c07e510"
+    },
+    {
+      "name": "assets/art/question.webp",
+      "bytes": 79360,
+      "sha256": "925b3b300e608341856dbbc248a95834e87ecec562a7e416fa5aab50d0dd429d"
+    },
+    {
+      "name": "assets/art/speaker.webp",
+      "bytes": 131484,
+      "sha256": "1ceaac4c4a4694a09085e042c140987b2061465a9762572fe6de8177030434c1"
+    },
+    {
+      "name": "signal/signal.css",
+      "bytes": 34959,
+      "sha256": "8447909dd1433f42aaeded1f569457534af6a72db8a75d6aadc404115df496c6"
+    },
+    {
+      "name": "signal/assets/SUIT-Variable.woff2",
+      "bytes": 624536,
+      "sha256": "aa894a204d5a6fbae259dac6868d350cbd373a390caee0313f92946af741df23"
+    },
+    {
+      "name": "signal/assets/InterTight-Regular.woff2",
+      "bytes": 108048,
+      "sha256": "141691dedbf7ae404140c4666a7f654c5c9dceb3d9e7f1a3ba5aef84a6b093d5"
+    },
+    {
+      "name": "signal/assets/InterTight-Medium.woff2",
+      "bytes": 111908,
+      "sha256": "3f79a810283d78922a31ce5167f2875d40ae19ba8f7688110de0e63cfe359494"
+    },
+    {
+      "name": "signal/assets/InterTight-700.woff2",
+      "bytes": 18680,
+      "sha256": "e50c43780f95750d53a434731f49ed14251fd1038a757deabdcb9982b566566e"
+    },
+    {
+      "name": "signal/assets/DMMono-Medium.woff2",
+      "bytes": 14932,
+      "sha256": "69108e2080a3ffb271187d6d913a51b6faa4faf895d8cf15fc64879f8906cd8e"
+    },
+    {
+      "name": "signal/assets/SYNKArrow.woff2",
+      "bytes": 1080,
+      "sha256": "ab06bd2346b2632f508ee1c3baac448565f09ef5dde13b711ba16844ae3ba256"
+    },
+    {
+      "name": "signal/assets/synk-logo.svg",
+      "bytes": 10353,
+      "sha256": "cd4950d57eab280fe14b26d58cb78f416eaf5c1ae1f0fa130986dde9567f61f6"
+    },
+    {
+      "name": "signal/assets/grain.svg",
+      "bytes": 304,
+      "sha256": "8818b4a926e16a9501b0afb112caa2d4c3bfc36d1f953ac7f2b18e23d4a63dcb"
+    },
+    {
+      "name": "signal/assets/SUIT-OFL.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "name": "signal/assets/InterTight-OFL.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "name": "signal/assets/DMMono-OFL.txt",
+      "bytes": 4391,
+      "sha256": "febfd2b42308d5327ade2884aed777da3d2decd2c53d574c43e603443d70c5b2"
+    },
+    {
+      "name": "takehome.css",
+      "bytes": 5119,
+      "sha256": "9abf0f911146c2dbfe02d93da11d020a630501966b1ae20d7c88f895bf4a2d89"
+    },
+    {
+      "name": "config.json",
+      "bytes": 608,
+      "sha256": "73ded1446653fbb04d5f934326f0c2e8a03cd363d84bd576510305a08a3450c7"
+    },
+    {
+      "name": "index.html",
+      "bytes": 4156,
+      "sha256": "0f7f1ccbe3a0eb72ee8f244482118013cbcc84e3e83a00180d67bb97185a7a9a"
+    }
+  ],
+  "transformations": [
+    "bundle canonical modules with Core Ask and Atlas domain browser globals",
+    "product-account default configUrl=./config.json in bundle only",
+    "external BOOK_CSS as takehome.css",
+    "data: photos and blob:/data: audio in CSP",
+    "member signal kit under signal/ (theme applied by the app module)"
+  ],
+  "limitations": {
+    "registrationVerified": false,
+    "realLoginVerified": false,
+    "browserVerified": false,
+    "deployed": false
+  }
+}

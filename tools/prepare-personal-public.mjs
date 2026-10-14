@@ -31,6 +31,16 @@ const PRODUCTS = {
     // 누르고 말하기: 녹음은 이 창의 blob 주소로만 다시 듣는다.
     media: 'blob:',
   },
+  // 2026-10-14 synk.im/album 공개. 계정 열쇠는 기존 family-album 브라우저 클라이언트를 쓴다.
+  album: {
+    app: 'experiences/family-album', client: 'family-album', config: 'config.json', target: 'https://synk.im/album/',
+    modules: ['app', 'model', 'questions', 'timeline', 'storage', 'form-drafts', 'takehome', 'operations', 'media', 'account-media'],
+    css: 'style.css',
+    assets: ['book', 'camera', 'clock', 'frame', 'house', 'mic', 'person', 'question', 'speaker'].map(name => `art/${name}.webp`),
+    // 사진은 앨범 자료 안의 data: 주소, 원래 목소리는 이 창의 blob: 주소로만 보여 준다.
+    img: "'self' data:",
+    media: 'blob: data:',
+  },
 };
 const TRAVEL_CONFIGURATION = Object.freeze({ client: 'path-travel', config: 'config.json', target: 'https://synk.im/try/travel/' });
 
@@ -79,14 +89,14 @@ function localFile(value, files, name) {
   return value.slice(2);
 }
 
-function publicEntry(html, files, config, product, media = "'none'") {
+function publicEntry(html, files, config, product, media = "'none'", img = "'self'") {
   if (!html.includes('<meta charset="utf-8">') || /<(?:base|style|iframe|object)\b|\b(?:style|on[a-z]+)\s*=|http-equiv=["']Content-Security-Policy/i.test(html))
     throw Error('Unexpected inline content or public HTML policy.');
   for (const [, value] of html.matchAll(/\b(?:src|href)=["']([^"']+)["']/gi)) if (!value.startsWith('#')) localFile(value, files, 'index.html');
   const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
   if (scripts.length !== 1 || scripts[0][2].trim() || !/\btype="module"/.test(scripts[0][1]) || !/\bsrc="\.\/app.mjs"/.test(scripts[0][1])) throw Error('Unexpected public script entry.');
   const origins = [...new Set([config.supabaseUrl, config.accountApiUrl])].join(' ');
-  const policy = `default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' ${origins}; media-src ${media}; object-src 'none'; base-uri 'none'; form-action 'none'`;
+  const policy = `default-src 'none'; script-src 'self'; style-src 'self'; img-src ${img}; font-src 'self'; connect-src 'self' ${origins}; media-src ${media}; object-src 'none'; base-uri 'none'; form-action 'none'`;
   html = html.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n  <meta name="synk-${product}-runtime" content="public-web">\n  <meta name="referrer" content="no-referrer">\n  <meta http-equiv="Content-Security-Policy" content="${policy}">`);
   return html.replace(/\b(src|href)="(\.\/[^"?#]+\.(?:mjs|css))"/g, (_, attribute, value) => `${attribute}="${value}?v=${sha(files.get(value.slice(2)))}"`);
 }
@@ -94,12 +104,14 @@ function publicEntry(html, files, config, product, media = "'none'") {
 /** Prepare an isolated static candidate. No registration, account access or deployment. */
 export async function preparePersonalPublic({ product, out, config, targetUrl, root = ROOT } = {}) {
   if (product === 'path-travel') return prepareTravelPublicConfig({ out, config, targetUrl, root });
-  if (!Object.hasOwn(PRODUCTS, product) || !out || !config) throw Error('Choose fortune or rehearsal, a new output directory and explicit public account configuration.');
+  if (!Object.hasOwn(PRODUCTS, product) || !out || !config) throw Error('Choose fortune, rehearsal or album, a new output directory and explicit public account configuration.');
   const definition = PRODUCTS[product], checked = publicConfiguration(config, targetUrl ?? definition.target, definition);
   const workspace = await fs.realpath(root), output = await destination(out, workspace), files = new Map(), sources = new Map();
   const allowedModules = new Set([...definition.modules.map(name => `${definition.app}/${name}.mjs`), `${SIGNAL_SOURCE}/signal.mjs`]);
   if (product === 'fortune') for (const file of ['core', 'platform-entry']) allowedModules.add(`experiences/synk-account/src/${file}.mjs`);
   else for (const file of [...COMMON, ...TRAVEL_VALIDATOR, 'atlas/ask.js', 'experiences/member-book-assets.mjs', 'experiences/path-vr/model.mjs', 'experiences/family-album/model.mjs']) allowedModules.add(file);
+  // personal-data.mjs는 계정 문서 종류마다 검사기를 둔다. 앨범 공개본에도 리허설 문서 검사기가 함께 실린다.
+  if (product === 'album') allowedModules.add('experiences/conversation-rehearsal/domain.mjs');
   async function source(file) {
     const absolute = path.join(workspace, file), resolved = await fs.realpath(absolute);
     if (resolved !== absolute) throw Error('Source must not follow a file or directory link: ' + file);
@@ -116,7 +128,8 @@ export async function preparePersonalPublic({ product, out, config, targetUrl, r
         return { path: path.join(workspace, SIGNAL_SOURCE, 'signal.mjs') };
       });
       build.onResolve({ filter: /^\/synk-account\/src\// }, args => {
-        if (args.path !== '/synk-account/src/account-notebook.mjs' || slash(path.relative(workspace, args.importer)) !== definition.app + '/app.mjs') throw Error('Unexpected absolute public import.');
+        const absolute = product === 'album' ? ['/synk-account/src/account-notebook.mjs', '/synk-account/src/personal-data.mjs'] : ['/synk-account/src/account-notebook.mjs'];
+        if (!absolute.includes(args.path) || slash(path.relative(workspace, args.importer)) !== definition.app + '/app.mjs') throw Error('Unexpected absolute public import.');
         return { path: path.join(workspace, 'experiences' + args.path) };
       });
       build.onLoad({ filter: /.*/ }, async args => {
@@ -125,7 +138,10 @@ export async function preparePersonalPublic({ product, out, config, targetUrl, r
         let text = (await source(file)).toString('utf8');
         if (product === 'rehearsal' && file === definition.app + '/app.mjs')
           text = replaceOnce(text, "import './core/ask.js';", "import SynkAsk from '../../atlas/ask.js';\nglobalThis.SynkAsk = SynkAsk;", 'Core Ask browser bridge');
-        if (product === 'rehearsal' && file === 'experiences/synk-account/src/product-account.mjs')
+        // 앨범은 Core 두 원본을 고전 스크립트로 읽는다. 공개본은 같은 원본을 묶음에 넣고 같은 전역 이름으로 둔다.
+        if (product === 'album' && file === definition.app + '/app.mjs')
+          text = "import SynkAsk from '../../atlas/ask.js';\nimport SynkAtlasDomain from '../../atlas/domain.js';\nglobalThis.SynkAsk = SynkAsk;\nglobalThis.SynkAtlasDomain = SynkAtlasDomain;\n" + text;
+        if (product !== 'fortune' && file === 'experiences/synk-account/src/product-account.mjs')
           text = replaceOnce(text, "configUrl = '/api/account-config'", "configUrl = './config.json'", 'public account config URL');
         return { contents: text, loader: 'js' };
       });
@@ -133,11 +149,21 @@ export async function preparePersonalPublic({ product, out, config, targetUrl, r
   });
   if (compiled.outputFiles.length !== 1 || Object.values(compiled.metafile.outputs).some(value => value.imports.length)) throw Error('The public entry must contain its whole module graph.');
   files.set('app.mjs', compiled.outputFiles[0].contents);
-  await copy('app.css', definition.app + '/app.css');
+  const css = definition.css || 'app.css';
+  await copy(css, definition.app + '/' + css);
   for (const name of definition.assets) await copy('assets/' + name, definition.app + '/assets/' + name);
   for (const [name, file] of signalPublicFiles()) await copy(name, file);
   let html = signalPublicHtml((await source(definition.app + '/index.html')).toString('utf8'));
-  if (product === 'fortune') {
+  if (product === 'album') {
+    // 로컬 서버가 내주던 Core 고전 스크립트 두 개는 앱 묶음 안으로 들어갔다. 나머지 상대 참조는 ./ 로 고정한다.
+    for (const name of ['core/domain.js', 'core/ask.js']) html = replaceOnce(html, `  <script src="${name}" defer></script>\n`, '', 'album core script ' + name);
+    for (const [old, next] of [['href="assets/art/camera.webp"', 'href="./assets/art/camera.webp"'], ['href="style.css"', 'href="./style.css"'], ['href="takehome.css"', 'href="./takehome.css"'], ['src="app.mjs"', 'src="./app.mjs"']])
+      html = replaceOnce(html, old, next, 'album relative reference ' + old);
+    const takehome = (await source(definition.app + '/takehome.mjs')).toString('utf8');
+    const style = takehome.match(/export const BOOK_CSS = `([\s\S]*?)`;/)?.[1];
+    if (!style || /\$\{|\\/.test(style)) throw Error('Unexpected album book stylesheet contract.');
+    files.set('takehome.css', style.replace(/\r\n?/g, '\n'));
+  } else if (product === 'fortune') {
     await copy('licenses/lunar-javascript-LICENSE.txt', definition.app + '/vendor/lunar-javascript-1.7.7/LICENSE');
     await copy('licenses/lunar-javascript-provenance.json', definition.app + '/vendor/lunar-javascript-1.7.7/provenance.json');
   } else {
@@ -154,13 +180,14 @@ export async function preparePersonalPublic({ product, out, config, targetUrl, r
     for (const { value, file } of cssUrlTargets(name, text)) if (file && !files.has(file)) throw Error('Unknown or non-local public asset in ' + name + ': ' + value);
   }
   files.set(definition.config, JSON.stringify(checked.config, null, 2) + '\n');
-  files.set('index.html', publicEntry(html, files, checked.config, product, definition.media));
+  files.set('index.html', publicEntry(html, files, checked.config, product, definition.media, definition.img));
   // A shared worktree can change while esbuild reads dependencies. Refuse to label a mixed candidate as one source snapshot.
   for (const [file, hash] of sources) if (sha(await fs.readFile(path.join(workspace, file))) !== hash) throw Error('Source changed during build: ' + file);
   const manifest = { version: 1, product, targetUrl: checked.target.href, configFile: definition.config, builder: { file: 'tools/prepare-personal-public.mjs', sha256: sha(await fs.readFile(fileURLToPath(import.meta.url))), esbuildVersion: esbuild.version },
     sourceFiles: [...sources].sort(([a], [b]) => a.localeCompare(b)).map(([file, sha256]) => ({ file, sha256 })),
     files: [...files].map(([name, bytes]) => ({ name, bytes: Buffer.byteLength(bytes), sha256: sha(bytes) })),
-    transformations: [...(product === 'rehearsal' ? ['bundle canonical modules and preserve Core Ask browser global', 'product-account default configUrl=./config.json in bundle only', 'external BOOK_STYLES'] : ['bundle canonical modules']), 'member signal kit under signal/ (theme applied by the app module)'],
+    transformations: [...(product === 'rehearsal' ? ['bundle canonical modules and preserve Core Ask browser global', 'product-account default configUrl=./config.json in bundle only', 'external BOOK_STYLES']
+      : product === 'album' ? ['bundle canonical modules with Core Ask and Atlas domain browser globals', 'product-account default configUrl=./config.json in bundle only', 'external BOOK_CSS as takehome.css', 'data: photos and blob:/data: audio in CSP'] : ['bundle canonical modules']), 'member signal kit under signal/ (theme applied by the app module)'],
     limitations: { registrationVerified: false, realLoginVerified: false, browserVerified: false, deployed: false } };
   files.set('build-manifest.json', JSON.stringify(manifest, null, 2) + '\n');
   await destination(output, workspace); await fs.mkdir(path.dirname(output), { recursive: true });
@@ -190,7 +217,7 @@ export async function prepareTravelPublicConfig({ out, config, targetUrl = TRAVE
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const [product, out, configPath, targetUrl, ...extra] = process.argv.slice(2);
-  if (!product || !out || !configPath || extra.length) throw Error('Usage: node tools/prepare-personal-public.mjs <fortune|rehearsal|path-travel> <new-.tmp-output> <public-config.json> [exact-https-directory-url]; path-travel prepares account config only.');
+  if (!product || !out || !configPath || extra.length) throw Error('Usage: node tools/prepare-personal-public.mjs <fortune|rehearsal|album|path-travel><new-.tmp-output> <public-config.json> [exact-https-directory-url]; path-travel prepares account config only.');
   const { manifest, ...result } = await preparePersonalPublic({ product, out, config: JSON.parse(await fs.readFile(configPath, 'utf8')), targetUrl });
   console.log(JSON.stringify(result, null, 2));
 }
