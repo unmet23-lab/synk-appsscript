@@ -6,7 +6,7 @@ import { createPlatformAccount } from './platform-account.mjs';
 import { mountPlatformLibrary } from './platform-library-view.mjs';
 import { platformRoute, searchRoute, shortcutDestination } from './platform-home.mjs';
 import { platformPublicEntry, platformCompanyEntry } from './platform-entry.mjs';
-import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, downloadHref, checksumHref, downloadSize, detectDownloadOS } from './platform-downloads.mjs';
+import { PLATFORM_DOWNLOADS, DOWNLOAD_OS, DOWNLOAD_STEPS, downloadHref, checksumHref, downloadSize, detectDownloadOS, refreshPlatformDownloads } from './platform-downloads.mjs';
 const $ = id => document.getElementById(id), root = $('page-content');
 const esc = value => String(value).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const image = (name, cls = '') => `<img class="${cls}" src="./assets/${name}" alt="">`;
@@ -193,3 +193,4 @@ if (typeof window.synkDesktop?.authStatus === 'function') {
   window.addEventListener('pagehide', stop, { once: true });
 }
 void detectDownloadOS().then(os=>{detectedOS=os;if(!os||downloadPicked)return;downloadOS=os==='mac'?'mac-arm64':os;if(route().page==='downloads')render();});
+void refreshPlatformDownloads().then(changed=>{if(changed&&route().page==='downloads')render();});
