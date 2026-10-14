@@ -113,10 +113,10 @@ GPT 이미지 2.5(ChatGPT 구독 Codex CLI)로 SYNK 펠트 판과 같은 재질�
 ## 결과와 상태 (2026-10-14 3차)
 
 - 1차(화면 틀 교체) 뒤 유호님 「아직 많이 부족해 · 전부」 → 2차(기준선·소리 모듈·담당 브리프) → 3차(리드 + 담당 4조각: 배우기 / 바람길·말의 리듬 / 한글 만나기·게임 튜터 / 옷장·마을·앱 시트). 유호님 확인: 첫 결과 「이 방향 맞아」, 시트 전환 B안.
-- 격리 작업본 `Documents/SYNK-world-redesign`(가지 `claude/world-redesign-2nd`, 기준선 `f35c5d0bc`)에서 만들어 **공용 작업본에 얹었다(10-14, 커밋 전 · 공개 전)**. 얹기 전 공용 판 백업 `.tmp/world-redesign-20261014/backup-main-2026-10-14T06-40-34-404Z`.
+- 격리 작업본 `Documents/SYNK-world-redesign`(가지 `claude/world-redesign-2nd`, 기준선 `f35c5d0bc`)에서 만들어 **공용 작업본에 얹고 커밋했다(10-14 `78d659292`, push·공개 전)**. 얹기 전 공용 판 백업 `.tmp/world-redesign-20261014/backup-main-2026-10-14T06-40-34-404Z`.
 - 전후 비교: [WORLD 리디자인 3차 전후](https://claude.ai/artifact/ANNZZAWVU9m2tsFqwrxq2f) · [시트 전환 시안](https://claude.ai/artifact/1UPy1Lv9q4KBL9BxFDy8WP) · 원본 사진 `.tmp/world-redesign-20261014/r2/{lead,life,games,hangul-tutor,wardrobe-town/r3}/`.
 - 확인: WORLD 시험 537개 중 526 통과·1 건너뜀, 실패 10개는 작업 전부터 같은 것(말의 리듬 `app-learning` 6, 고정 빌드가 없는 「frozen /world」 4). 계정 통합 시험 통과. 얹은 뒤 공용 작업본에서 static·계정 통합을 뺀 532개 중 525 통과(실패 6 = 말의 리듬). 생활·계정 묶음 `--check` 일치. 390·320·844×390·1440 가로 넘침·13px 밑 한글·44px 밑 단추·콘솔 오류 0. LAB 단독 바람길·말의 리듬은 바꾸기 전과 차이 0(`r2/games/standalone-proof.cjs`). 공개 빌드 미리 만들기의 빠진 참조는 `social-conversion.mjs` 하나(GPT 진행 중, 1차와 같다).
-- 남은 일: 커밋(유호님 요청 시) → synk.im/world 공개(「공개해줘」 뒤) → 실기기 확인. 정할 것: 마을 「끝낸 팩만큼 자라기」의 잠금 표시(타운 서버 장소 데이터에 잠금 칸을 둘지). 정리 거리: 계정 없는 생활 묶음에 소리 모듈이 따로 한 벌 들어감, 게임 결과의 「우리 방으로」가 부모의 `#panel-close`를 누르는 방식(정식 메시지로 바꿀지), 한글 만나기 옛 `assets/kit/*.webp`(약 600KB) 삭제 여부.
+- 남은 일: synk.im/world 공개(「공개해줘」 뒤) → 실기기 확인. 정할 것: 마을 「끝낸 팩만큼 자라기」의 잠금 표시(타운 서버 장소 데이터에 잠금 칸을 둘지). 정리 거리: 계정 없는 생활 묶음에 소리 모듈이 따로 한 벌 들어감, 게임 결과의 「우리 방으로」가 부모의 `#panel-close`를 누르는 방식(정식 메시지로 바꿀지), 한글 만나기 옛 `assets/kit/*.webp`(약 600KB) 삭제 여부.
 
 ### 1차 기록
 
