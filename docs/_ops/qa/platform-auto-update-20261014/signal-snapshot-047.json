@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "verifiedAt": "2026-10-14T04:39:22.399Z",
+  "snapshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\signal",
+  "previous": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-20261014\\signal-release",
+  "files": 33,
+  "changed": [
+    {
+      "path": "build-signal.cjs",
+      "bytes": 12920,
+      "sha256": "564480f3844da4405a56b19c15058b701f256927aa411ca02d09cae0b6934e7b"
+    }
+  ],
+  "officialSchemaAccepted": true,
+  "officialCopyElevateHelperSkipped": true,
+  "cloudInstallerSourceUnchanged": true,
+  "installedStateTouched": false,
+  "productBuildStarted": false
+}

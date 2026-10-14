@@ -1,0 +1,190 @@
+{
+  "ok": true,
+  "changes": [
+    "renderer/startup-update.css",
+    "renderer/startup-update.html",
+    "renderer/startup-update.mjs",
+    "renderer/update-view.mjs",
+    "src/desktop-preferences.cjs",
+    "src/main.cjs",
+    "src/platform-startup-update.cjs",
+    "src/platform-startup-window.cjs",
+    "src/platform-tray.cjs",
+    "src/platform-update-handoff.cjs",
+    "src/platform-update-recovery.cjs",
+    "src/platform-update.cjs",
+    "src/startup-update-preload.cjs"
+  ],
+  "excludedConcurrentChanges": [
+    "renderer/draft-recovery.mjs",
+    "renderer/member-home.mjs"
+  ],
+  "workingCopyUntouched": true,
+  "installerFiles": [
+    {
+      "path": "app.manifest",
+      "bytes": 849,
+      "sha256": "dca1ff3ca3f6104bd9ebb4d53c0e633cf931832a2d3903c2304c0de0adb245bf"
+    },
+    {
+      "path": "art/make-poster.mjs",
+      "bytes": 1446,
+      "sha256": "a9df75a66920df3f14577be0f4d96b52910b94dbdfbd7afaf95e3bad8d7a71a7"
+    },
+    {
+      "path": "art/poster-messenger.png",
+      "bytes": 502138,
+      "sha256": "11ad3e90e42171873bca735a02736e96f80445ba6c0cffed9c4e5157400808f5"
+    },
+    {
+      "path": "art/poster-platform.png",
+      "bytes": 560713,
+      "sha256": "e1eb0bbd620c3db57c62725418e059b6353cd15ab6c4aa2413c9afe469a52a88"
+    },
+    {
+      "path": "art/poster-world.png",
+      "bytes": 691398,
+      "sha256": "4431f2c6d702bce568f2c3087a88299b8eced39b2c58f4771133e2cc088c1002"
+    },
+    {
+      "path": "art/poster.html",
+      "bytes": 2756,
+      "sha256": "f18bb267ae7afb96caa2fd05b74b4d0473c75806ea8aab320a6c37d013854e2e"
+    },
+    {
+      "path": "AutoUpdateEngine.cs",
+      "bytes": 26589,
+      "sha256": "109ac0f8dd4f7d3a7a9d6c3dee22765ef3ea90c88a01eec01c2911512521e908"
+    },
+    {
+      "path": "baseline-files-messenger.json",
+      "bytes": 10564,
+      "sha256": "3e20d13bfd84454d9b2d57daaa1ba7c516d2620e2a1da275e483e11bdac3faa3"
+    },
+    {
+      "path": "baseline-files-platform-children.json",
+      "bytes": 10881,
+      "sha256": "0e4bc7cac311710bf4dfa997661a243b7ffc4c9bead38cd5e9e7c57a78df9f69"
+    },
+    {
+      "path": "baseline-files-world.json",
+      "bytes": 10560,
+      "sha256": "4fdacf73d6a028dfecef4bffe09c2c5d9df78d093da99cff3924813f9e745094"
+    },
+    {
+      "path": "baseline-files.json",
+      "bytes": 10881,
+      "sha256": "6b26ac124439fb31a1a7652ecad3faee9556da8312f7b3867833543179cc5e75"
+    },
+    {
+      "path": "build-platform-children.cjs",
+      "bytes": 10050,
+      "sha256": "3026755f535480ed70d209ef3f6155c6e8157274033ed282c5b437e4a00d4615"
+    },
+    {
+      "path": "build-signal.cjs",
+      "bytes": 12896,
+      "sha256": "4aed7e16aea233b75e00c1dac30eb7c0c5383c05060e391765554129109fdfe3"
+    },
+    {
+      "path": "fonts/DMMono-LICENSE.txt",
+      "bytes": 4484,
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
+    },
+    {
+      "path": "fonts/DMMono-Medium.ttf",
+      "bytes": 50360,
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b"
+    },
+    {
+      "path": "fonts/InterTight-Bold.ttf",
+      "bytes": 310440,
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "path": "fonts/InterTight-LICENSE.txt",
+      "bytes": 4383,
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "path": "fonts/InterTight-Medium.ttf",
+      "bytes": 309140,
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "path": "fonts/SUIT-ExtraBold.otf",
+      "bytes": 352572,
+      "sha256": "67e6733beb6192138e4651f4436f0e2be2fe6a519861dd23cb86cf136bac0232"
+    },
+    {
+      "path": "fonts/SUIT-Heavy.otf",
+      "bytes": 349916,
+      "sha256": "8873533c970d6f1525a38e0dbd80e772377e85c8e8c9a89a26903f5da4d40611"
+    },
+    {
+      "path": "fonts/SUIT-LICENSE.txt",
+      "bytes": 4380,
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "path": "fonts/SUIT-Medium.otf",
+      "bytes": 352024,
+      "sha256": "204c9e9caad3a1f7cfe45bbec9e71cd679f6f009edfaa9fae85363722f5b333e"
+    },
+    {
+      "path": "InstallerEngine.cs",
+      "bytes": 15881,
+      "sha256": "24b8b2ac65a76b3c2c7d62ee595f6df408b6f4a0ff9b71d74dff9e9e242910c5"
+    },
+    {
+      "path": "messenger.ico",
+      "bytes": 88203,
+      "sha256": "d49c0d5e6f65c6ea66a477fa4a3870bd69d1ff09e464efacba02e6e9a789053e"
+    },
+    {
+      "path": "platform.ico",
+      "bytes": 29465,
+      "sha256": "5f85fa1e20d80f9f780a2fd68cd9a53498a5eec57a2b8b6202ce08e7a46fffe7"
+    },
+    {
+      "path": "Program.cs",
+      "bytes": 10773,
+      "sha256": "19ff2185bfe18fbd6197a5023cdf75cf9ccef8b5b762ca4863e2949e1f78489c"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13751,
+      "sha256": "ca1c0967334f888afc52ccc71bb28681ad3e4f4a3cf0949cbd805dffc48d1fcb"
+    },
+    {
+      "path": "signal-safety.nsh",
+      "bytes": 336,
+      "sha256": "9731948680de270f107a03bd4e6e0cb9c795be7da652f0a6ea1d842a33de10d6"
+    },
+    {
+      "path": "SignalWindow.cs",
+      "bytes": 61215,
+      "sha256": "7b2dbceb19d4e818680e78b5a991bd00106029077661f0567f00bd93ee122b24"
+    },
+    {
+      "path": "tests/test.cjs",
+      "bytes": 10639,
+      "sha256": "a0d4b7576a016d2816f9e0117897dd4b837421a040549d5e6d891aed7c92b3f1"
+    },
+    {
+      "path": "tests/Tests.cs",
+      "bytes": 25219,
+      "sha256": "a808a73477a8e24774aef940bda0431a7ac9a8ef11e91926af1265dbd11839f9"
+    },
+    {
+      "path": "tests/ui-check.cs",
+      "bytes": 7565,
+      "sha256": "0b127f7f57dd615cd4b62c7d3ecc16c0bbeae455ce6ee5432f0f88463922aeae"
+    },
+    {
+      "path": "world.ico",
+      "bytes": 105515,
+      "sha256": "ad4a6799128bccce5caadb5c6c4ad45c42b1c139f4e1c78bf70f355d1c0d682a"
+    }
+  ]
+}

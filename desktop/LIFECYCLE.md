@@ -1,8 +1,13 @@
 # SYNK 플랫폼의 앱 설치·실행 관리
 
 <a id="platform-update-044"></a>
+<a id="platform-update-045"></a>
+<a id="platform-update-046"></a>
+<a id="platform-update-047"></a>
 
-## 2026-10-14 현재 기준 · Platform 자체 업데이트
+## 2026-10-14 구현 기준 · Platform 자체 업데이트
+
+**0.4.7 / build 20261014.4의 공개 배포·현재 PC 설치·설치된 updater의 공개 feed 확인을 완료했다.** 동결 `sourceHash`는 `5d52702262a1f68f832b07d63d53cb20a7f3f05e1ebc9ac363038ba37e3971cc`이며, 선행 0.4.6의 자동 업데이트·저장 복구 통합에 사용자가 승인한 내 성향 관련 9개 파일을 추가했다. 최종 관련 시험 125개, Windows 네이티브 25개, Mac arm64/x64 설치 QA 34/37개 및 각 네이티브 흐름 18개가 통과했다. 공개 세 설치파일 전체 바이트·SHA와 현재 PC 75개 파일·ASAR를 대조했고, 설치된 updater가 `current / 0.4.7 / 20261014.4`를 반환했다. [최종 증거와 남은 확인](../docs/_ops/qa/platform-auto-update-20261014/README.md#publication-result)을 따른다. 실계정 저장 UI·재실행 QA는 다른 채팅에서 진행 중이며 물리 Mac 교체·정식 서명·공증은 이 완료 범위에 포함하지 않는다.
 
 **Preview 0.4.4 / build 20261014.1부터 Platform 자체 업데이트와 홈페이지 다운로드가 하나의 공통 릴리스를 따른다.** 고정 feed는 `https://synk.im/desktop/releases/preview.json`, 릴리스 ID는 `platform-preview-<version>`이다. Windows x64·Mac arm64·Mac x64 세 설치파일의 URL·바이트 크기·SHA-256·ASAR SHA-256과 공통 `version`·`buildId`·`sourceHash`를 함께 기록한다. OS별 설치파일이 같은 바이트라는 뜻은 아니다. 홈페이지의 Windows/Mac 선택과 다운로드 안내창의 다시 받기도 이 feed를 따른다. feed 오류 또는 오래된 버전이면 홈페이지에 이미 반영한 정상 링크를 유지한다.
 
@@ -10,11 +15,19 @@
 
 ### 사용자가 거치는 단계
 
-1. 설치된 Platform이 시작되면 최신 확인을 한 번 실행하고 이후 6시간마다 확인한다. 다운로드 중·설치 준비 완료·설치기 인계 중에는 주기 확인을 건너뛴다. 사용자는 설정 또는 설치·업데이트 화면에서 **최신 확인**을 언제든 요청할 수 있다. 확인만으로 파일을 받거나 설치하지 않는다.
-2. **다운로드**를 누르면 현재 OS·CPU의 설치파일을 앱 전용 캐시에 받고 실제 수신량으로 진행률을 표시한다. 고정 GitHub 릴리스 경로, 응답 크기, SHA-256을 검증한다. 실패·취소·공간 부족은 설치 가능 상태로 처리하지 않는다. 연결이 끊겨도 현재 앱은 계속 쓸 수 있다.
-3. Windows의 **앱 종료 후 설치 파일 열기**는 기존 작성 중 작업 확인을 먼저 거친다. 사용자가 종료를 취소하거나 초안 보존이 끝나지 않으면 인계하지 않는다. 정상 종료가 허용되면 설치파일을 다시 검증하고 대기 인자 `--wait-pid`로 시그널 설치기를 실행한다. 설치기는 Platform 프로세스의 종료를 기다린 다음 화면을 보여 준다. 사용자가 **설치하기**를 눌러 설치하고, 완료 후 **SYNK 열기**로 실행한다. 설치기를 열었다는 사실은 설치 완료가 아니다.
-4. Mac의 **설치 파일 열기**도 같은 작성 중 작업 확인을 거친 뒤 검증한 DMG만 연다. Platform을 자동 종료하거나 Applications를 자동 교체하지 않는다. 사용자가 Platform을 종료한 뒤 DMG의 앱을 Applications로 옮겨 교체하고 다시 실행한다.
-5. 실행된 앱의 버전·build와 설치 바이트를 다시 확인한 결과를 실제 반영 기록으로 남긴다. 격리 시험이나 설치기 호출 성공으로 실제 사용자 설치를 대신 판정하지 않는다.
+다음은 공개·현재 PC에 반영한 0.4.7의 시작 전·사용 중 자동 업데이트 기준이다. 검증 방법과 실제 계정 UI의 남은 확인은 위 QA 기록에서 구분한다.
+
+1. 패키징된 Platform을 실행하면 계정·메인 화면을 만들기 전에 전용 업데이트 창에서 공통 feed를 확인한다. 최신이면 메인을 열고, Windows의 새 버전이면 **자동 다운로드 → 파일 검증 → 설치 → 다시 실행**한다. 트레이에서 숨겨진 앱을 다시 열거나 단축키·두 번째 실행으로 다시 표시할 때도 이 확인을 거친다. 이미 보이는 앱을 다시 선택한 경우에는 현재 작업을 유지한다.
+2. 현재 OS·CPU의 설치파일을 앱 전용 캐시에 받고 실제 수신량으로 진행률을 표시한다. 고정 GitHub 릴리스 경로, 응답 크기, SHA-256을 검증한다. 시작 전 feed 확인은 최대 15초이며 실패·오프라인·공간 부족이면 **다시 시도 / 현재 버전 열기**를 제공한다. 정상 업데이트를 건너뛰는 사용자 설정이나 렌더러의 임의 URL·명령 전달 기능은 없다.
+3. Windows 자동 설치는 기존 작성 중 작업 보존·정상 종료 확인을 따른다. 사용자가 종료를 취소하면 현재 작업으로 돌아간다. 설치기는 요청한 부모 프로세스의 경로와 등록된 설치 버전을 검사한 뒤 일회성 인계 응답을 보내고, 앱이 정상 종료되기를 기다린다. 실행 중인 앱을 강제로 종료하지 않는다.
+4. 설치 전 기존 앱 파일·현재 사용자 설치 등록·바로가기를 보존한다. 새 설치 바이트를 검증하면 자동으로 다시 실행한다. 설치가 실패하면 보존한 파일과 설치 정보를 복구하고 이전 앱을 다시 연다. 복구 시 앱은 인계 토큰·만료·실제 파일 해시를 확인하여 자동 재시도 반복을 막고 재시도 또는 기존 버전 열기를 제공한다. 계정 저장소·작성 기록은 설치 대상에 포함하지 않는다.
+5. Mac Preview는 최신 확인·다운로드까지 자동이며, **설치 파일 열기**로 검증한 DMG를 연다. 사용자가 Platform을 종료한 뒤 DMG의 앱을 Applications로 옮겨 교체하고 다시 실행한다. Developer ID 서명·공증은 기존 결정대로 사업자 등록 후 재개한다. 서명 요구를 우회하는 별도 교체 도구는 추가하지 않는다.
+6. 메인 사용 중에도 **5분마다** 최신 여부를 확인하고 새 설치파일을 자동 다운로드한다. Windows는 같은 작업 보존·정상 종료 확인을 거쳐 자동 설치·재실행한다. Mac은 다운로드 완료 후 DMG 수동 교체 안내를 제공한다. 시작 전 검사와 진행 중인 다운로드가 겹치면 하나의 작업을 이어받아 중복 설치하지 않는다. 시작 전 확인 창이 판단을 기다리는 동안에는 주기 확인이 끼어들지 않는다. 종료 취소·설치기 인계 실패·실패 뒤 복구한 릴리스는 해당 실행 중에 반복 자동 설치하지 않으며, 더 새 릴리스는 계속 확인한다. 네트워크·다운로드 실패는 다음 주기에 재시도한다. 명시적인 재시도·앱 재열기는 다시 설치할 수 있다. 설정의 수동 확인·다운로드·설치도 유지한다.
+7. 실행된 앱의 버전·build와 설치 바이트를 다시 확인한 결과를 실제 반영 기록으로 남긴다. 격리 시험이나 설치기 호출 성공으로 실제 사용자 설치를 대신 판정하지 않는다.
+
+0.4.6의 저장·복구 통합은 `renderer/member-home.mjs`·`renderer/draft-recovery.mjs`에 한정한다. 읽지 못한 저장 문서는 수정 전 전체 검증을 통과해야 하며, 복구 상태를 읽기 전이나 사용자가 복구본을 선택하기 전에는 해당 복구본을 덮어쓰거나 지우지 않는다. 기존 동의·계정 결합·암호화 저장과 미저장 종료 보호를 사용한다. [승인 해시와 통합 검증](../docs/_ops/qa/platform-auto-update-20261014/README.md#storage-integration-046)을 확인하고, 다른 채팅에서 담당하는 실계정 저장·복구 QA 결과는 별도 인수한다.
+
+2026-10-14 설계 근거: [VS Code 업데이트 정책](https://code.visualstudio.com/docs/enterprise/updates)의 시작 시 확인과 사용 중 작업 보존을 참고했다. [Electron 자동 업데이트 문서](https://www.electronjs.org/docs/latest/api/auto-updater/)의 Mac 서명 요구에 따라 현재 ad-hoc Preview의 자동 교체는 유보했다. 이는 공식 동작 자료를 확인한 기술 선택이며 사용자 만족도 조사를 수행한 것으로 취급하지 않는다. SYNK에서는 공통 릴리스·검증된 설치파일·기존 초안 종료 보호를 연결한다.
 
 업데이트 API는 Platform의 허용된 창에서만 호출한다. 렌더러가 URL·파일 경로·셸 명령을 정하지 않는다. API가 없는 웹 미리보기에서는 업데이트 카드를 숨긴다. 같은 버전인데 `buildId`가 다르면 `UPDATE_BUILD_MISMATCH`로 거절하며 임의 덮어쓰기를 하지 않는다.
 
@@ -27,7 +40,9 @@ await window.synkDesktop.installUpdate();
 const unsubscribe = window.synkDesktop.onUpdateChanged(snapshot => {});
 ```
 
-snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestBuildId, progress, code }`다. `state`는 `disabled`, `idle`, `checking`, `current`, `available`, `downloading`, `ready`, `opening`, `error` 중 하나다. 진행률은 0–100이며 `ready`가 되어야 설치 파일 열기를 제공한다. 네트워크·무결성·저장 실패는 사용자에게 안전한 문구로 안내한다. Windows 종료 취소는 `UPDATE_EXIT_CANCELLED`, Mac DMG 열기는 `UPDATE_MANUAL_INSTALL`과 함께 `ready`로 돌아온다.
+snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestBuildId, progress, code, automatic }`다. `state`는 `disabled`, `idle`, `checking`, `current`, `available`, `downloading`, `ready`, `opening`, `error` 중 하나다. 진행률은 0–100이며 Windows의 `automatic: true`는 자동 다운로드·설치 진행을 뜻한다. 이때 수동 설치 버튼으로 중복 요청하지 않는다. 네트워크·무결성·저장 실패는 사용자에게 안전한 문구로 안내한다. Windows 종료 취소는 `UPDATE_EXIT_CANCELLED`와 `automatic: false`로 검증된 `ready` 상태를 유지한다. Mac DMG 열기는 `UPDATE_MANUAL_INSTALL`과 함께 `ready`로 돌아오며 자동 교체를 뜻하지 않는다.
+
+설치기 인계는 일회성 nonce와 일치하는 `SYNK_UPDATE_READY` 응답을 받은 뒤 정상 종료한다. 인계가 거절되면 앱과 트레이를 다시 사용할 수 있다. 복구 인자는 고정 위치의 인계 기록·복구 증거와 현재 실행 파일/실제 ASAR 바이트 해시·10분 만료를 대조한 뒤 한 번만 소비한다. 최신 버전 확인이 성공하면 현재 이하 버전·동일 OS/CPU의 정확한 갱신기 파일명에 해당하는 일반 캐시 파일만 정리하고, 다른 파일·링크·디렉터리·잠긴 파일은 보존한다. [검증 증거와 한계](../docs/_ops/qa/platform-auto-update-20261014/README.md).
 
 ### 변경하지 않을 배포 기준
 
@@ -58,6 +73,8 @@ node desktop/tools/build-platform-release.cjs "--release=$releaseWork/frozen" "-
 ```
 
 Windows 빌드 후 `dist/win-unpacked/SYNKPlatformPreview.exe --synk-smoke`를 새 격리 `APPDATA`·`LOCALAPPDATA`·`TEMP`·`TMP` 환경에서 실행한다. `SYNK_SMOKE`의 packaged·버전·화면 준비·네트워크/콘솔 오류 0·DPAPI 저장/복원/제거를 확인한다. 빌드 성공만으로 이 smoke가 실행된 것으로 보지 않는다. 이번 실행 원형은 [Windows 격리 시험](../.tmp/platform-unified-20261014/verify-windows-native.cjs)이다.
+
+Windows 릴리스 빌더는 Signal 하위 프로세스의 종료 코드뿐 아니라 `windows-signal-package.json`의 최종 성공을 확인한다. 릴리스 ID의 버전·설치파일명, 설치파일과 backend의 크기/SHA, 설치 명세, 고정 payload pin·개수·실제 파일 목록이 모두 일치해야 `build-report.json`을 생성한다. EXE만 남고 성공 보고서가 없거나 payload가 바뀐 빌드는 게시 입력으로 사용하지 않는다.
 
 Mac은 공개 `unmet23-lab/synk-policy`의 `.github/workflows/desktop-platform-unified.yml`을 따른다. arm64는 `macos-15`, x64는 `macos-15-intel`에서 실행하며 Intel 그래픽 로더 준비를 유지한다. 아래 작업 디렉터리는 공개 checkout의 `.github/desktop-preview`이고, `unified`는 동일 동결 원문·도구·DMG 자산이다. `desktop/platform-release.workflow.yml`은 준비 원본이며, draft 업로드까지 포함한 실제 실행은 공개 workflow를 확인한다.
 

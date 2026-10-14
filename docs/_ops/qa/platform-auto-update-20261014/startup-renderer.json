@@ -1,0 +1,352 @@
+{
+  "ok": true,
+  "scope": "isolated synthetic startup UI; no real account, update network, install or quit",
+  "checks": [
+    {
+      "name": "local-fonts-ready",
+      "ok": true
+    },
+    {
+      "name": "checking-560",
+      "ok": true,
+      "detail": {
+        "state": "checking",
+        "title": "최신 버전을 확인하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "downloading-560",
+      "ok": true,
+      "detail": {
+        "state": "downloading",
+        "title": "새 버전을 다운로드하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 37.6,
+        "percent": "37%"
+      }
+    },
+    {
+      "name": "installing-560",
+      "ok": true,
+      "detail": {
+        "state": "installing",
+        "title": "업데이트를 설치하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "offline-560",
+      "ok": true,
+      "detail": {
+        "state": "error",
+        "title": "업데이트를 진행하지 못했어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-retry",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "mac-560",
+      "ok": true,
+      "detail": {
+        "state": "ready",
+        "title": "Mac 업데이트 파일이 준비됐어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-install",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "checking-440",
+      "ok": true,
+      "detail": {
+        "state": "checking",
+        "title": "최신 버전을 확인하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "downloading-440",
+      "ok": true,
+      "detail": {
+        "state": "downloading",
+        "title": "새 버전을 다운로드하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 37.6,
+        "percent": "37%"
+      }
+    },
+    {
+      "name": "installing-440",
+      "ok": true,
+      "detail": {
+        "state": "installing",
+        "title": "업데이트를 설치하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "offline-440",
+      "ok": true,
+      "detail": {
+        "state": "error",
+        "title": "업데이트를 진행하지 못했어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-retry",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "mac-440",
+      "ok": true,
+      "detail": {
+        "state": "ready",
+        "title": "Mac 업데이트 파일이 준비됐어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-install",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "checking-360",
+      "ok": true,
+      "detail": {
+        "state": "checking",
+        "title": "최신 버전을 확인하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "downloading-360",
+      "ok": true,
+      "detail": {
+        "state": "downloading",
+        "title": "새 버전을 다운로드하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 37.6,
+        "percent": "37%"
+      }
+    },
+    {
+      "name": "installing-360",
+      "ok": true,
+      "detail": {
+        "state": "installing",
+        "title": "업데이트를 설치하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "offline-360",
+      "ok": true,
+      "detail": {
+        "state": "error",
+        "title": "업데이트를 진행하지 못했어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-retry",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "mac-360",
+      "ok": true,
+      "detail": {
+        "state": "ready",
+        "title": "Mac 업데이트 파일이 준비됐어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-install",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "checking-320",
+      "ok": true,
+      "detail": {
+        "state": "checking",
+        "title": "최신 버전을 확인하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "downloading-320",
+      "ok": true,
+      "detail": {
+        "state": "downloading",
+        "title": "새 버전을 다운로드하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 37.6,
+        "percent": "37%"
+      }
+    },
+    {
+      "name": "installing-320",
+      "ok": true,
+      "detail": {
+        "state": "installing",
+        "title": "업데이트를 설치하고 있어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "offline-320",
+      "ok": true,
+      "detail": {
+        "state": "error",
+        "title": "업데이트를 진행하지 못했어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-retry",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "mac-320",
+      "ok": true,
+      "detail": {
+        "state": "ready",
+        "title": "Mac 업데이트 파일이 준비됐어요",
+        "pageOverflow": 0,
+        "heightOverflow": 0,
+        "panelFits": true,
+        "buttonsFit": true,
+        "buttons": [
+          "startup-install",
+          "startup-open-current"
+        ],
+        "progress": 0,
+        "percent": "0%"
+      }
+    },
+    {
+      "name": "offline-retry",
+      "ok": true
+    },
+    {
+      "name": "explicit-current",
+      "ok": true
+    },
+    {
+      "name": "explicit-mac-file-open",
+      "ok": true
+    },
+    {
+      "name": "no-main-account-bridge",
+      "ok": true
+    }
+  ],
+  "network": [],
+  "errors": []
+}

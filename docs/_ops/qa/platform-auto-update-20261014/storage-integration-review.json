@@ -1,0 +1,76 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T04:32:19.840Z",
+  "version": "0.4.6",
+  "buildId": "20261014.3",
+  "sourceHash": "c3bb4bceb6f4de6760f79cede93240572d65637c3ed9847c90ee1cfa8e4adf93",
+  "baseSource": ".tmp/platform-startup-20261014/frozen-final/source",
+  "integratedStageChanges": [
+    "renderer/draft-recovery.mjs",
+    "renderer/member-home.mjs"
+  ],
+  "approved": [
+    {
+      "file": "renderer/member-home.mjs",
+      "expected": "66ae3b7233db9affceb66a86eb020816074abce1941540a8f851b63608d3d1f5",
+      "stage": "66ae3b7233db9affceb66a86eb020816074abce1941540a8f851b63608d3d1f5",
+      "frozen": "66ae3b7233db9affceb66a86eb020816074abce1941540a8f851b63608d3d1f5",
+      "ok": true
+    },
+    {
+      "file": "renderer/draft-recovery.mjs",
+      "expected": "86b710d99c012cd83695b14dd62bb379112da7b00e5aed098faccdd6fc466786",
+      "stage": "86b710d99c012cd83695b14dd62bb379112da7b00e5aed098faccdd6fc466786",
+      "frozen": "86b710d99c012cd83695b14dd62bb379112da7b00e5aed098faccdd6fc466786",
+      "ok": true
+    }
+  ],
+  "rendererImportClosure": [
+    "renderer/member-home.mjs",
+    "renderer/draft-recovery.mjs",
+    "renderer/state.mjs",
+    "renderer/library.mjs",
+    "renderer/benefits.mjs"
+  ],
+  "imports": [
+    {
+      "from": "renderer/member-home.mjs",
+      "to": "renderer/state.mjs",
+      "exists": true
+    },
+    {
+      "from": "renderer/member-home.mjs",
+      "to": "renderer/library.mjs",
+      "exists": true
+    },
+    {
+      "from": "renderer/member-home.mjs",
+      "to": "renderer/draft-recovery.mjs",
+      "exists": true
+    },
+    {
+      "from": "renderer/state.mjs",
+      "to": "renderer/benefits.mjs",
+      "exists": true
+    },
+    {
+      "from": "renderer/library.mjs",
+      "to": "renderer/state.mjs",
+      "exists": true
+    }
+  ],
+  "otherModuleChanges": [],
+  "nativeContract": "Existing draft-recovery.cjs and draft-recovery-ipc.cjs APIs; renderer expected owner remains a precondition. Only member-home consumes the revised standalone renderer helper.",
+  "readOnlyUiReview": "desktop_signup_ui found no reproduced regression in exact approved files",
+  "realAccountAccess": false,
+  "realProfileAccess": false,
+  "sourceModified": false,
+  "tests": {
+    "exactFrozenSource": true,
+    "files": 7,
+    "count": 101,
+    "passed": 101,
+    "failed": 0,
+    "exitCode": 0
+  }
+}

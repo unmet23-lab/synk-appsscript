@@ -1,0 +1,71 @@
+name: SYNK unified Platform Preview
+on:
+  workflow_dispatch:
+    inputs:
+      architecture:
+        type: choice
+        options: [both, arm64, x64]
+        default: both
+permissions:
+  contents: read
+jobs:
+  mac:
+    name: Mac ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(inputs.architecture == 'x64' && '[{"arch":"x64","runner":"macos-15-intel"}]' || inputs.architecture == 'arm64' && '[{"arch":"arm64","runner":"macos-15"}]' || '[{"arch":"arm64","runner":"macos-15"},{"arch":"x64","runner":"macos-15-intel"}]') }}
+    defaults:
+      run:
+        working-directory: .github/desktop-preview
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          architecture: ${{ matrix.arch }}
+          cache: npm
+          cache-dependency-path: .github/desktop-preview/package-lock.json
+      - run: npm ci --no-audit --no-fund
+        env:
+          ELECTRON_SKIP_BINARY_DOWNLOAD: '1'
+      - name: Build the existing Intel graphics loader
+        if: matrix.arch == 'x64'
+        run: bash build-vulkan-loader.sh
+      - name: Build one frozen Platform artifact
+        run: node unified/tools/build-platform-release.cjs --release=unified --out=unified-out/${{ matrix.arch }} --builder=. --platform=darwin --arch=${{ matrix.arch }} --background=unified/mac-dmg/background.png
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify the delivered DMGs and native Platform in isolation
+        run: node qa/run-macos-qa.cjs --arch=${{ matrix.arch }} --manifest=unified-out/${{ matrix.arch }}/mac-package-${{ matrix.arch }}.json --scope=platform
+        env:
+          SYNK_QA_VISIBLE: '1'
+          SYNK_QA_SOFTWARE_GPU: ${{ matrix.arch == 'x64' && '1' || '0' }}
+      - name: Preserve the exact verified release artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-unified-platform-${{ matrix.arch }}
+          path: |
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/dist/*.dmg
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/build-report.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/artifact.json
+            .github/desktop-preview/unified-out/${{ matrix.arch }}/SHA256SUMS.txt
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+      - name: Preserve native verification evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: synk-unified-platform-evidence-${{ matrix.arch }}
+          path: |
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/mac-native-qa.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/report.json
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/platform/*.png
+            .github/desktop-preview/qa-results/${{ matrix.arch }}/*-process.log
+          if-no-files-found: ignore
+          retention-days: 14

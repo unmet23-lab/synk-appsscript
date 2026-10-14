@@ -1,0 +1,173 @@
+TAP version 13
+# Subtest: freeze is immutable and validates actual source bytes
+ok 1 - freeze is immutable and validates actual source bytes
+  ---
+  duration_ms: 109.3793
+  type: 'test'
+  ...
+# Subtest: freeze does not include unrelated files and rejects credential content
+ok 2 - freeze does not include unrelated files and rejects credential content
+  ---
+  duration_ms: 188.746
+  type: 'test'
+  ...
+# Subtest: release identity cannot reuse a version with a mismatched release id
+ok 3 - release identity cannot reuse a version with a mismatched release id
+  ---
+  duration_ms: 3.7492
+  type: 'test'
+  ...
+# Subtest: Signal success evidence agrees with the final installer, backend and pinned payload
+ok 4 - Signal success evidence agrees with the final installer, backend and pinned payload
+  ---
+  duration_ms: 56.5651
+  type: 'test'
+  ...
+# Subtest: a zero-exit child with a leftover executable cannot pass without its final Signal success report
+ok 5 - a zero-exit child with a leftover executable cannot pass without its final Signal success report
+  ---
+  duration_ms: 154.5045
+  type: 'test'
+  ...
+# Subtest: incomplete or mismatched Signal results cannot produce a release artifact
+    # Subtest: malformed JSON
+    ok 1 - malformed JSON
+      ---
+      duration_ms: 48.965
+      type: 'test'
+      ...
+    # Subtest: null report
+    ok 2 - null report
+      ---
+      duration_ms: 40.9037
+      type: 'test'
+      ...
+    # Subtest: failure report
+    ok 3 - failure report
+      ---
+      duration_ms: 43.6157
+      type: 'test'
+      ...
+    # Subtest: wrong product
+    ok 4 - wrong product
+      ---
+      duration_ms: 54.9248
+      type: 'test'
+      ...
+    # Subtest: wrong version
+    ok 5 - wrong version
+      ---
+      duration_ms: 20.8485
+      type: 'test'
+      ...
+    # Subtest: wrong artifact name
+    ok 6 - wrong artifact name
+      ---
+      duration_ms: 23.4134
+      type: 'test'
+      ...
+    # Subtest: wrong installer size
+    ok 7 - wrong installer size
+      ---
+      duration_ms: 22.9867
+      type: 'test'
+      ...
+    # Subtest: wrong installer hash
+    ok 8 - wrong installer hash
+      ---
+      duration_ms: 21.8143
+      type: 'test'
+      ...
+    # Subtest: missing final installer
+    ok 9 - missing final installer
+      ---
+      duration_ms: 19.615
+      type: 'test'
+      ...
+    # Subtest: payload unchanged false
+    ok 10 - payload unchanged false
+      ---
+      duration_ms: 22.7721
+      type: 'test'
+      ...
+    # Subtest: wrong payload count
+    ok 11 - wrong payload count
+      ---
+      duration_ms: 23.0017
+      type: 'test'
+      ...
+    # Subtest: different payload pin
+    ok 12 - different payload pin
+      ---
+      duration_ms: 39.2722
+      type: 'test'
+      ...
+    # Subtest: missing installation specification
+    ok 13 - missing installation specification
+      ---
+      duration_ms: 32.8932
+      type: 'test'
+      ...
+    # Subtest: wrong install identity
+    ok 14 - wrong install identity
+      ---
+      duration_ms: 52.8897
+      type: 'test'
+      ...
+    # Subtest: wrong embedded backend hash
+    ok 15 - wrong embedded backend hash
+      ---
+      duration_ms: 32.7796
+      type: 'test'
+      ...
+    # Subtest: wrong backend report size
+    ok 16 - wrong backend report size
+      ---
+      duration_ms: 21.6214
+      type: 'test'
+      ...
+    # Subtest: backend modified after reporting
+    ok 17 - backend modified after reporting
+      ---
+      duration_ms: 58.386
+      type: 'test'
+      ...
+    # Subtest: missing backend
+    ok 18 - missing backend
+      ---
+      duration_ms: 21.547
+      type: 'test'
+      ...
+    # Subtest: different embedded inventory
+    ok 19 - different embedded inventory
+      ---
+      duration_ms: 27.3269
+      type: 'test'
+      ...
+    # Subtest: extra payload file left by builder
+    ok 20 - extra payload file left by builder
+      ---
+      duration_ms: 28.7015
+      type: 'test'
+      ...
+    # Subtest: payload changed after reporting
+    ok 21 - payload changed after reporting
+      ---
+      duration_ms: 31.6311
+      type: 'test'
+      ...
+    1..21
+ok 6 - incomplete or mismatched Signal results cannot produce a release artifact
+  ---
+  duration_ms: 692.2167
+  type: 'test'
+  ...
+1..6
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1409.9645

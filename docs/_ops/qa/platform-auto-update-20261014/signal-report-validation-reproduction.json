@@ -1,0 +1,13 @@
+{
+  "checkedAt": "2026-10-14T04:39:59.739Z",
+  "ok": true,
+  "scope": "read-only verification of actual failed 0.4.6 build directory",
+  "artifactExists": true,
+  "signalReportExists": false,
+  "rejected": "Signal success evidence missing: windows-signal-package.json",
+  "originalOuterReportPreserved": true,
+  "originalProof": "windows/payload-recovery-proof.json",
+  "newBuildReportWritten": false,
+  "sourceModified": false,
+  "exitCodeRootCause": "Not confirmed; the discarded child stderr and electron-builder exit hooks need a separate exact trace to attribute. The release builder now requires final success evidence regardless of a zero exit status."
+}

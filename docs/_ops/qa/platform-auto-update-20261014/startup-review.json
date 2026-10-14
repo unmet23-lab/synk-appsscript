@@ -1,0 +1,23 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T03:52:33.402Z",
+  "scope": "real updater synthetic streams/timer and exact main event handlers; no network/account/installer",
+  "checks": [
+    {
+      "name": "existing-manual-download-joined-and-installed",
+      "ok": true
+    },
+    {
+      "name": "periodic-check-paused-through-error-gate-and-resumed-after-current-choice",
+      "ok": true
+    },
+    {
+      "name": "initial-main-loading-does-not-create-second-gate",
+      "ok": true
+    },
+    {
+      "name": "ready-main-cannot-reveal-through-active-gate",
+      "ok": true
+    }
+  ]
+}

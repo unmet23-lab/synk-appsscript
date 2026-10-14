@@ -1,0 +1,12 @@
+{
+  "ok": true,
+  "phases": [
+    "draft-kept-main-restored",
+    "ready-handshake-accepted",
+    "normal-parent-exit"
+  ],
+  "prompts": 2,
+  "quits": 2,
+  "proceeds": 1,
+  "handshakes": 1
+}

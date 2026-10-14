@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "method": "VM execution of current main.cjs createWindow/before-quit/will-quit with synthetic native surfaces and real security/tray/connection-recovery modules",
+  "mainCreates": 2,
+  "ipcHandlers": 33,
+  "replacedHandlers": 66,
+  "preservedAuth": true,
+  "oldSenderRejected": true,
+  "trayActiveAfterFailedHandoff": true,
+  "closeToTrayAfterRecreate": true,
+  "protocolRegistrations": 1,
+  "downloadListeners": 1,
+  "realProfileAccess": false,
+  "combinedNodeTests": {
+    "tests": 172,
+    "passed": 172,
+    "failed": 0
+  }
+}

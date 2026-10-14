@@ -1,0 +1,15 @@
+{
+  "ok": true,
+  "background": true,
+  "phases": [
+    "background-auto-install-requested",
+    "draft-kept-main-restored",
+    "same-release-ticks-preserved-draft",
+    "ready-handshake-accepted",
+    "normal-parent-exit"
+  ],
+  "prompts": 2,
+  "quits": 2,
+  "proceeds": 0,
+  "handshakes": 1
+}

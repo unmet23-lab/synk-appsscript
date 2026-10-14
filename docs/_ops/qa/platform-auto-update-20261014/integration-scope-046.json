@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "approvedChanges": [
+    {
+      "path": "renderer/draft-recovery.mjs",
+      "bytes": 6311,
+      "sha256": "86b710d99c012cd83695b14dd62bb379112da7b00e5aed098faccdd6fc466786"
+    },
+    {
+      "path": "renderer/member-home.mjs",
+      "bytes": 34271,
+      "sha256": "66ae3b7233db9affceb66a86eb020816074abce1941540a8f851b63608d3d1f5"
+    }
+  ],
+  "previousSourceHash": "cda05cdc147b40533b352c07f572d4de222216e202e36c452c5c6365195002a9",
+  "releaseId": "platform-preview-0.4.6",
+  "buildId": "20261014.3",
+  "sourceHash": "c3bb4bceb6f4de6760f79cede93240572d65637c3ed9847c90ee1cfa8e4adf93",
+  "sourceFiles": 126,
+  "sourceBytes": 24766984
+}

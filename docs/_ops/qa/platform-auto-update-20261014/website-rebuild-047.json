@@ -1,0 +1,141 @@
+{
+  "checkedAt": "2026-10-14T05:03:28.301Z",
+  "ok": true,
+  "website": "C:/Users/q1212/Documents/SYNK-website",
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\website-rebuild",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "site-v10/build.mjs",
+    "--out",
+    "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\website-rebuild",
+    "--assets",
+    "dist"
+  ],
+  "release": {
+    "version": "0.4.7",
+    "buildId": "20261014.4",
+    "releaseId": "platform-preview-0.4.7",
+    "sourceHash": "5d52702262a1f68f832b07d63d53cb20a7f3f05e1ebc9ac363038ba37e3971cc",
+    "manifestSHA256": "b5eccc4e4e4527aba9f2ee3227d2818ceb4f2bbf76d4315b0f9ad93f009459d5"
+  },
+  "checks": [
+    {
+      "name": "canonical release is 0.4.7 build 20261014.4",
+      "ok": true
+    },
+    {
+      "name": "fresh v10 build exits successfully",
+      "ok": true,
+      "details": {
+        "exitCode": 0,
+        "error": null
+      }
+    },
+    {
+      "name": "generated feed is byte-identical to canonical 0.4.7 feed",
+      "ok": true,
+      "details": {
+        "sha256": "b5eccc4e4e4527aba9f2ee3227d2818ceb4f2bbf76d4315b0f9ad93f009459d5",
+        "version": "0.4.7"
+      }
+    },
+    {
+      "name": "generated live-feed client is byte-identical to source",
+      "ok": true,
+      "details": {
+        "sha256": "b41a73f06e572184bcc865c2573643339ee2a51b4511e9aef686c817db9c6502"
+      }
+    },
+    {
+      "name": "ko Windows and both Mac downloads equal canonical feed",
+      "ok": true,
+      "details": {
+        "links": [
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-arm64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-x64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-win-x64.exe"
+        ]
+      }
+    },
+    {
+      "name": "ko baked version is 0.4.7",
+      "ok": true
+    },
+    {
+      "name": "ko Windows and default Mac retry links use current feed",
+      "ok": true,
+      "details": {
+        "links": [
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-arm64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-win-x64.exe"
+        ]
+      }
+    },
+    {
+      "name": "ko client script uses current content hash",
+      "ok": true
+    },
+    {
+      "name": "en Windows and both Mac downloads equal canonical feed",
+      "ok": true,
+      "details": {
+        "links": [
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-arm64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-x64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-win-x64.exe"
+        ]
+      }
+    },
+    {
+      "name": "en baked version is 0.4.7",
+      "ok": true
+    },
+    {
+      "name": "en Windows and default Mac retry links use current feed",
+      "ok": true,
+      "details": {
+        "links": [
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-arm64.dmg",
+          "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-win-x64.exe"
+        ]
+      }
+    },
+    {
+      "name": "en client script uses current content hash",
+      "ok": true
+    },
+    {
+      "name": "site-v10 input files were not modified",
+      "ok": true,
+      "details": {
+        "changes": []
+      }
+    },
+    {
+      "name": "existing dist files were preserved",
+      "ok": true,
+      "details": {
+        "changes": []
+      }
+    },
+    {
+      "name": "canonical feed was not modified by build",
+      "ok": true
+    }
+  ],
+  "sourceChanges": [],
+  "distChanges": [],
+  "gitStatusUnchanged": true,
+  "sourceInputCount": 146,
+  "distFileCount": 4335,
+  "build": {
+    "exitCode": 0,
+    "stdout": "built 14 pages · css 49fad859bede · js c48bfc2dbcd5\nllms.txt 11464 bytes\n",
+    "stderr": ""
+  },
+  "notes": [
+    "Local regeneration verification only; no commit or deployment.",
+    "Existing dist was used only as asset input. Dist preservation compares full-tree file presence, size and modification time.",
+    "Any automatic source mutation is retained for review; no rollback is performed."
+  ]
+}

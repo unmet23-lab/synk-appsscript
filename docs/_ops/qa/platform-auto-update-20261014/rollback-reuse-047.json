@@ -1,0 +1,24 @@
+{
+  "ok": true,
+  "version": "0.4.7",
+  "oldVersion": "0.4.4",
+  "restorablePayloadFiles": 77,
+  "newPayloadFiles": 75,
+  "allNewPathsAlreadyBackedUp": true,
+  "backupReceipt": {
+    "ok": true,
+    "schemaVersion": 1,
+    "createdAt": "2026-10-14T04:28:40.1265352Z",
+    "archiveSHA256": "cd1a6712b3315fc88d2123f13286a85f7844df489737dd59a8a49447e72e0cbe",
+    "archiveBytes": 450027221,
+    "inventorySHA256": "68f36e7f6ef0745f74bb47a2922485ef1bacd3ddcd82e74e8fd7417ea7301fd5",
+    "payloadFiles": 77,
+    "payloadBytes": 679492373,
+    "registrationVerified": true,
+    "installedFilesWritten": 0,
+    "profileOperations": 0
+  },
+  "archive": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-20261014\\rollback\\platform-0.4.4-before-0.4.5.zip",
+  "restoreHelper": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-20261014\\rollback-platform.ps1",
+  "installedStateTouched": false
+}

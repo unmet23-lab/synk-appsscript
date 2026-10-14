@@ -1,0 +1,617 @@
+TAP version 13
+# Subtest: native close keeps unsaved work unless the user explicitly discards it
+ok 1 - native close keeps unsaved work unless the user explicitly discards it
+  ---
+  duration_ms: 106.6006
+  type: 'test'
+  ...
+# Subtest: destroyed windows do not display a late draft prompt
+ok 2 - destroyed windows do not display a late draft prompt
+  ---
+  duration_ms: 0.1843
+  type: 'test'
+  ...
+# Subtest: exit wording preserves saved records and describes only the last opted-in recovery copy
+ok 3 - exit wording preserves saved records and describes only the last opted-in recovery copy
+  ---
+  duration_ms: 57.8771
+  type: 'test'
+  ...
+# Subtest: a previous account still visible in renderer cannot read, write, clear, or enable the new account recovery slot
+ok 4 - a previous account still visible in renderer cannot read, write, clear, or enable the new account recovery slot
+  ---
+  duration_ms: 104.9614
+  type: 'test'
+  ...
+# Subtest: missing owner is rejected while signed in and the expected owner never selects another file
+ok 5 - missing owner is rejected while signed in and the expected owner never selects another file
+  ---
+  duration_ms: 6.6573
+  type: 'test'
+  ...
+# Subtest: guest may read capability only; it cannot consent, read a draft, or mutate encrypted recovery
+ok 6 - guest may read capability only; it cannot consent, read a draft, or mutate encrypted recovery
+  ---
+  duration_ms: 0.2062
+  type: 'test'
+  ...
+# Subtest: draft recovery defaults off, writes only after account consent, and reloads encrypted data
+ok 7 - draft recovery defaults off, writes only after account consent, and reloads encrypted data
+  ---
+  duration_ms: 474.6852
+  type: 'test'
+  ...
+# Subtest: main-owned account identity partitions drafts and rejects in-flight work after identity changes
+ok 8 - main-owned account identity partitions drafts and rejects in-flight work after identity changes
+  ---
+  duration_ms: 127.7834
+  type: 'test'
+  ...
+# Subtest: seven-day expiration purges draft but retains opted-in state; disabling removes all slots and consent
+ok 9 - seven-day expiration purges draft but retains opted-in state; disabling removes all slots and consent
+  ---
+  duration_ms: 625.5134
+  type: 'test'
+  ...
+# Subtest: platform draft and member-home draft clear independently and explicit account purge deletes recovery consent
+ok 10 - platform draft and member-home draft clear independently and explicit account purge deletes recovery consent
+  ---
+  duration_ms: 7358.4724
+  type: 'test'
+  ...
+# Subtest: unsafe storage and non-whitelisted payloads fail closed with no plaintext fallback
+ok 11 - unsafe storage and non-whitelisted payloads fail closed with no plaintext fallback
+  ---
+  duration_ms: 574.8343
+  type: 'test'
+  ...
+# Subtest: EPERM: recovery cleanup failure preserves confirmed logout and all server flags
+ok 12 - EPERM: recovery cleanup failure preserves confirmed logout and all server flags
+  ---
+  duration_ms: 9.0896
+  type: 'test'
+  ...
+# Subtest: EBUSY: recovery cleanup failure preserves confirmed logout and all server flags
+ok 13 - EBUSY: recovery cleanup failure preserves confirmed logout and all server flags
+  ---
+  duration_ms: 1.9316
+  type: 'test'
+  ...
+# Subtest: failed draft cleanup does not upgrade incomplete server revocation
+ok 14 - failed draft cleanup does not upgrade incomplete server revocation
+  ---
+  duration_ms: 1.8414
+  type: 'test'
+  ...
+# Subtest: failed authentication storage cleanup remains a failed logout with its original flags
+ok 15 - failed authentication storage cleanup remains a failed logout with its original flags
+  ---
+  duration_ms: 1.5708
+  type: 'test'
+  ...
+# Subtest: successful encrypted draft cleanup returns the original authentication result without invented flags
+ok 16 - successful encrypted draft cleanup returns the original authentication result without invented flags
+  ---
+  duration_ms: 1.54
+  type: 'test'
+  ...
+# Subtest: an absent owner or unavailable recovery service makes no deletion or cleanup-success claim
+ok 17 - an absent owner or unavailable recovery service makes no deletion or cleanup-success claim
+  ---
+  duration_ms: 1.9102
+  type: 'test'
+  ...
+# Subtest: failed suite logout publication stops authentication and draft deletion
+ok 18 - failed suite logout publication stops authentication and draft deletion
+  ---
+  duration_ms: 0.9371
+  type: 'test'
+  ...
+# Subtest: an authentication exception still becomes the ordinary IPC failure without draft deletion
+ok 19 - an authentication exception still becomes the ordinary IPC failure without draft deletion
+  ---
+  duration_ms: 1.4911
+  type: 'test'
+  ...
+# Subtest: a newer account cannot become the old logout cleanup target or be overwritten by the result
+ok 20 - a newer account cannot become the old logout cleanup target or be overwritten by the result
+  ---
+  duration_ms: 1.9558
+  type: 'test'
+  ...
+# Subtest: a pending deletion keeps IPC pending and cannot erase the completed authentication flags
+ok 21 - a pending deletion keeps IPC pending and cannot erase the completed authentication flags
+  ---
+  duration_ms: 7.3265
+  type: 'test'
+  ...
+# Subtest: home folds Messenger teaching favorites and recents while keeping the latest teaching launch target
+ok 22 - home folds Messenger teaching favorites and recents while keeping the latest teaching launch target
+  ---
+  duration_ms: 3.0077
+  type: 'test'
+  ...
+# Subtest: grouped teacher notes preserve their original key and disappear when the teacher permission is revoked
+ok 23 - grouped teacher notes preserve their original key and disappear when the teacher permission is revoked
+  ---
+  duration_ms: 8.0533
+  type: 'test'
+  ...
+# Subtest: Partners notes remain intact through PULSE display and unrelated writes, with explicit PULSE access
+ok 24 - Partners notes remain intact through PULSE display and unrelated writes, with explicit PULSE access
+  ---
+  duration_ms: 0.5461
+  type: 'test'
+  ...
+# Subtest: home records require a confirmed member, an allowed app and explicit storage consent
+ok 25 - home records require a confirmed member, an allowed app and explicit storage consent
+  ---
+  duration_ms: 0.6372
+  type: 'test'
+  ...
+# Subtest: saved records restore only to their owner and hide immediately when entitlement is revoked
+ok 26 - saved records restore only to their owner and hide immediately when entitlement is revoked
+  ---
+  duration_ms: 6.7436
+  type: 'test'
+  ...
+# Subtest: task completion, reopen and deletion persist without changing other records
+ok 27 - task completion, reopen and deletion persist without changing other records
+  ---
+  duration_ms: 0.5475
+  type: 'test'
+  ...
+# Subtest: corrupt and foreign records are rejected and arbitrary URLs or account fields are not retained
+ok 28 - corrupt and foreign records are rejected and arbitrary URLs or account fields are not retained
+  ---
+  duration_ms: 0.2253
+  type: 'test'
+  ...
+# Subtest: invalid home documents keep their exact original bytes through add, toggle and remove
+    # Subtest: malformed JSON
+    ok 1 - malformed JSON
+      ---
+      duration_ms: 0.4724
+      type: 'test'
+      ...
+    # Subtest: empty string
+    ok 2 - empty string
+      ---
+      duration_ms: 0.2723
+      type: 'test'
+      ...
+    # Subtest: JSON null
+    ok 3 - JSON null
+      ---
+      duration_ms: 0.2337
+      type: 'test'
+      ...
+    # Subtest: array root
+    ok 4 - array root
+      ---
+      duration_ms: 0.0942
+      type: 'test'
+      ...
+    # Subtest: primitive root
+    ok 5 - primitive root
+      ---
+      duration_ms: 0.1062
+      type: 'test'
+      ...
+    # Subtest: unknown schema
+    ok 6 - unknown schema
+      ---
+      duration_ms: 0.0997
+      type: 'test'
+      ...
+    # Subtest: foreign owner
+    ok 7 - foreign owner
+      ---
+      duration_ms: 0.0704
+      type: 'test'
+      ...
+    # Subtest: missing records
+    ok 8 - missing records
+      ---
+      duration_ms: 0.0774
+      type: 'test'
+      ...
+    # Subtest: unknown document field
+    ok 9 - unknown document field
+      ---
+      duration_ms: 0.0799
+      type: 'test'
+      ...
+    # Subtest: partial invalid row
+    ok 10 - partial invalid row
+      ---
+      duration_ms: 0.0951
+      type: 'test'
+      ...
+    # Subtest: unknown row field
+    ok 11 - unknown row field
+      ---
+      duration_ms: 0.1214
+      type: 'test'
+      ...
+    # Subtest: missing body
+    ok 12 - missing body
+      ---
+      duration_ms: 0.0912
+      type: 'test'
+      ...
+    # Subtest: invalid body
+    ok 13 - invalid body
+      ---
+      duration_ms: 0.0703
+      type: 'test'
+      ...
+    # Subtest: oversized body
+    ok 14 - oversized body
+      ---
+      duration_ms: 0.0977
+      type: 'test'
+      ...
+    # Subtest: blank title
+    ok 15 - blank title
+      ---
+      duration_ms: 0.0858
+      type: 'test'
+      ...
+    # Subtest: oversized title
+    ok 16 - oversized title
+      ---
+      duration_ms: 0.0734
+      type: 'test'
+      ...
+    # Subtest: invalid done
+    ok 17 - invalid done
+      ---
+      duration_ms: 0.0909
+      type: 'test'
+      ...
+    # Subtest: completed note
+    ok 18 - completed note
+      ---
+      duration_ms: 0.0752
+      type: 'test'
+      ...
+    # Subtest: invalid time
+    ok 19 - invalid time
+      ---
+      duration_ms: 0.0961
+      type: 'test'
+      ...
+    # Subtest: duplicate identity
+    ok 20 - duplicate identity
+      ---
+      duration_ms: 0.0803
+      type: 'test'
+      ...
+    # Subtest: over capacity
+    ok 21 - over capacity
+      ---
+      duration_ms: 0.1383
+      type: 'test'
+      ...
+    1..21
+ok 29 - invalid home documents keep their exact original bytes through add, toggle and remove
+  ---
+  duration_ms: 3.8495
+  type: 'test'
+  ...
+# Subtest: partial readable records remain displayable while mutation status preserves the entire invalid document
+ok 30 - partial readable records remain displayable while mutation status preserves the entire invalid document
+  ---
+  duration_ms: 0.1441
+  type: 'test'
+  ...
+# Subtest: valid notes, tasks, hidden apps and legacy Partners rows survive every unrelated write without normalization
+ok 31 - valid notes, tasks, hidden apps and legacy Partners rows survive every unrelated write without normalization
+  ---
+  duration_ms: 0.3581
+  type: 'test'
+  ...
+# Subtest: a missing store starts normally and storage status neither exposes read errors nor reads for an unverified account
+ok 32 - a missing store starts normally and storage status neither exposes read errors nor reads for an unverified account
+  ---
+  duration_ms: 0.1699
+  type: 'test'
+  ...
+# Subtest: storage failures are surfaced and do not claim a successful write
+ok 33 - storage failures are surfaced and do not claim a successful write
+  ---
+  duration_ms: 0.1106
+  type: 'test'
+  ...
+# Subtest: home suggestions, recent launches and favorites intersect current app grants
+ok 34 - home suggestions, recent launches and favorites intersect current app grants
+  ---
+  duration_ms: 0.1689
+  type: 'test'
+  ...
+# Subtest: renderer escapes handwritten records and refresh clears member content when owner changes
+ok 35 - renderer escapes handwritten records and refresh clears member content when owner changes
+  ---
+  duration_ms: 38.6415
+  type: 'test'
+  ...
+# Subtest: the next home action prioritizes an unfinished task, then a recent usable app
+ok 36 - the next home action prioritizes an unfinished task, then a recent usable app
+  ---
+  duration_ms: 0.5192
+  type: 'test'
+  ...
+# Subtest: home direct actions never run installers or bypass disabled launch states
+ok 37 - home direct actions never run installers or bypass disabled launch states
+  ---
+  duration_ms: 0.1454
+  type: 'test'
+  ...
+# Subtest: home distinguishes checking, retry, guest and a member with no connected apps
+ok 38 - home distinguishes checking, retry, guest and a member with no connected apps
+  ---
+  duration_ms: 0.8828
+  type: 'test'
+  ...
+# Subtest: purpose changes are temporary until the separate remember action is chosen
+ok 39 - purpose changes are temporary until the separate remember action is chosen
+  ---
+  duration_ms: 0.4195
+  type: 'test'
+  ...
+# Subtest: home launch controls show progress and recheck action and current grants at click time
+ok 40 - home launch controls show progress and recheck action and current grants at click time
+  ---
+  duration_ms: 1042.411
+  type: 'test'
+  ...
+# Subtest: in-memory drafts survive temporary account checks, require confirmation to discard and never autosave
+ok 41 - in-memory drafts survive temporary account checks, require confirmation to discard and never autosave
+  ---
+  duration_ms: 1.6081
+  type: 'test'
+  ...
+# Subtest: switching accounts or revoking the draft app prevents its recovery
+ok 42 - switching accounts or revoking the draft app prevents its recovery
+  ---
+  duration_ms: 0.8668
+  type: 'test'
+  ...
+# Subtest: saving a draft clears the leave guard only after storage succeeds
+ok 43 - saving a draft clears the leave guard only after storage succeeds
+  ---
+  duration_ms: 1.3579
+  type: 'test'
+  ...
+# Subtest: record search combines title, body and app while filtering task state
+ok 44 - record search combines title, body and app while filtering task state
+  ---
+  duration_ms: 9.7431
+  type: 'test'
+  ...
+# Subtest: command search never exposes notes from another owner or a revoked app
+ok 45 - command search never exposes notes from another owner or a revoked app
+  ---
+  duration_ms: 0.7243
+  type: 'test'
+  ...
+# Subtest: favorite order survives preference reload and appears in the same order on home
+ok 46 - favorite order survives preference reload and appears in the same order on home
+  ---
+  duration_ms: 1.3294
+  type: 'test'
+  ...
+# Subtest: failed encrypted discard restores unsaved content so a second close cannot bypass it
+ok 47 - failed encrypted discard restores unsaved content so a second close cannot bypass it
+  ---
+  duration_ms: 19.6766
+  type: 'test'
+  ...
+# Subtest: a display read failure after a successful storage check remains visible and blocks mutations
+ok 48 - a display read failure after a successful storage check remains visible and blocks mutations
+  ---
+  duration_ms: 0.5139
+  type: 'test'
+  ...
+# Subtest: recovery updates redraw once while preserving the latest input, consent and selection
+ok 49 - recovery updates redraw once while preserving the latest input, consent and selection
+  ---
+  duration_ms: 2.8359
+  type: 'test'
+  ...
+# Subtest: selecting a recovery draft absorbs its queued redraw and keeps focus and renewed consent
+ok 50 - selecting a recovery draft absorbs its queued redraw and keeps focus and renewed consent
+  ---
+  duration_ms: 1.2082
+  type: 'test'
+  ...
+# Subtest: disposing a home cancels queued rendering and late retry focus
+ok 51 - disposing a home cancels queued rendering and late retry focus
+  ---
+  duration_ms: 0.9198
+  type: 'test'
+  ...
+# Subtest: a late failed discard cannot reopen a disposed home
+ok 52 - a late failed discard cannot reopen a disposed home
+  ---
+  duration_ms: 1.2629
+  type: 'test'
+  ...
+# Subtest: discarding only current input preserves an unselected world recovery draft
+ok 53 - discarding only current input preserves an unselected world recovery draft
+  ---
+  duration_ms: 1.5898
+  type: 'test'
+  ...
+# Subtest: discarding only current input preserves an unselected messenger recovery draft
+ok 54 - discarding only current input preserves an unselected messenger recovery draft
+  ---
+  duration_ms: 0.8992
+  type: 'test'
+  ...
+# Subtest: opt-out never loads or saves draft contents
+ok 55 - opt-out never loads or saves draft contents
+  ---
+  duration_ms: 17.7823
+  type: 'test'
+  ...
+# Subtest: recovery requires confirmation and current app access
+ok 56 - recovery requires confirmation and current app access
+  ---
+  duration_ms: 0.8381
+  type: 'test'
+  ...
+# Subtest: a delayed response from another account cannot appear
+ok 57 - a delayed response from another account cannot appear
+  ---
+  duration_ms: 21.5208
+  type: 'test'
+  ...
+# Subtest: pending writes are cancelled if identity changes before its renderer event
+ok 58 - pending writes are cancelled if identity changes before its renderer event
+  ---
+  duration_ms: 15.1775
+  type: 'test'
+  ...
+# Subtest: typing during consent load saves once and explicitly sends the renderer owner
+ok 59 - typing during consent load saves once and explicitly sends the renderer owner
+  ---
+  duration_ms: 31.5085
+  type: 'test'
+  ...
+# Subtest: flush cancels debounce and reports an unsuccessful backup
+ok 60 - flush cancels debounce and reports an unsuccessful backup
+  ---
+  duration_ms: 31.9176
+  type: 'test'
+  ...
+# Subtest: turning consent off hides candidates and cancels pending writes
+ok 61 - turning consent off hides candidates and cancels pending writes
+  ---
+  duration_ms: 30.8773
+  type: 'test'
+  ...
+# Subtest: clear during a pending read cannot discard an unread recovery draft
+ok 62 - clear during a pending read cannot discard an unread recovery draft
+  ---
+  duration_ms: 15.6332
+  type: 'test'
+  ...
+# Subtest: restoring cancels the previous input debounce and flushes the chosen draft
+ok 63 - restoring cancels the previous input debounce and flushes the chosen draft
+  ---
+  duration_ms: 30.7017
+  type: 'test'
+  ...
+# Subtest: status structured failure stays protected until an explicit same-account retry
+ok 64 - status structured failure stays protected until an explicit same-account retry
+  ---
+  duration_ms: 31.469
+  type: 'test'
+  ...
+# Subtest: status thrown failure stays protected until an explicit same-account retry
+ok 65 - status thrown failure stays protected until an explicit same-account retry
+  ---
+  duration_ms: 30.4099
+  type: 'test'
+  ...
+# Subtest: load structured failure stays protected until an explicit same-account retry
+ok 66 - load structured failure stays protected until an explicit same-account retry
+  ---
+  duration_ms: 30.4715
+  type: 'test'
+  ...
+# Subtest: load thrown failure stays protected until an explicit same-account retry
+ok 67 - load thrown failure stays protected until an explicit same-account retry
+  ---
+  duration_ms: 46.1452
+  type: 'test'
+  ...
+# Subtest: only an explicit candidate discard clears a successfully read recovery draft
+ok 68 - only an explicit candidate discard clears a successfully read recovery draft
+  ---
+  duration_ms: 0.4984
+  type: 'test'
+  ...
+# Subtest: an explicit discard failure retains the candidate and requires a fresh read before writes
+ok 69 - an explicit discard failure retains the candidate and requires a fresh read before writes
+  ---
+  duration_ms: 0.172
+  type: 'test'
+  ...
+# Subtest: retry preserves its error while pending and ignores repeated refreshes from render callbacks
+ok 70 - retry preserves its error while pending and ignores repeated refreshes from render callbacks
+  ---
+  duration_ms: 0.1604
+  type: 'test'
+  ...
+# Subtest: opt-out, unavailable storage and an empty successful load are not read errors
+ok 71 - opt-out, unavailable storage and an empty successful load are not read errors
+  ---
+  duration_ms: 0.1194
+  type: 'test'
+  ...
+# Subtest: saving and clearing before the first read finishes never touch the bridge
+ok 72 - saving and clearing before the first read finishes never touch the bridge
+  ---
+  duration_ms: 15.8607
+  type: 'test'
+  ...
+# Subtest: a stale retry failure cannot replace the new account recovery state
+ok 73 - a stale retry failure cannot replace the new account recovery state
+  ---
+  duration_ms: 0.3751
+  type: 'test'
+  ...
+# Subtest: revoking app access during retry prevents the old candidate from reappearing
+ok 74 - revoking app access during retry prevents the old candidate from reappearing
+  ---
+  duration_ms: 14.8707
+  type: 'test'
+  ...
+# Subtest: a native consent change invalidates an in-flight read even while user retries are coalesced
+ok 75 - a native consent change invalidates an in-flight read even while user retries are coalesced
+  ---
+  duration_ms: 61.2885
+  type: 'test'
+  ...
+# Subtest: an unreadable app candidate stays byte-for-byte protected without exposing its content
+ok 76 - an unreadable app candidate stays byte-for-byte protected without exposing its content
+  ---
+  duration_ms: 46.6801
+  type: 'test'
+  ...
+# Subtest: integrated renderer accepts frozen native opt-out, consent, encrypted save and clear responses
+ok 77 - integrated renderer accepts frozen native opt-out, consent, encrypted save and clear responses
+  ---
+  duration_ms: 446.4327
+  type: 'test'
+  ...
+# Subtest: integrated controller protects existing encrypted candidates until explicit select or discard
+ok 78 - integrated controller protects existing encrypted candidates until explicit select or discard
+  ---
+  duration_ms: 718.436
+  type: 'test'
+  ...
+# Subtest: native unreadable ciphertext is preserved through failed read, flush and clear, then explicit retry recovers
+ok 79 - native unreadable ciphertext is preserved through failed read, flush and clear, then explicit retry recovers
+  ---
+  duration_ms: 460.5015
+  type: 'test'
+  ...
+# Subtest: hidden app and switched native account cannot overwrite or clear another draft
+ok 80 - hidden app and switched native account cannot overwrite or clear another draft
+  ---
+  duration_ms: 7162.5675
+  type: 'test'
+  ...
+1..80
+# tests 101
+# suites 0
+# pass 101
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11009.0432

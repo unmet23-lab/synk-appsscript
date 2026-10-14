@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-14T04:59:10.783Z",
+  "ok": true,
+  "version": "0.4.7",
+  "releaseId": "platform-preview-0.4.7",
+  "buildId": "20261014.4",
+  "checks": [
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "status": 200,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "sha256": "b5eccc4e4e4527aba9f2ee3227d2818ceb4f2bbf76d4315b0f9ad93f009459d5",
+      "name": "public feed matches exact assembled manifest"
+    },
+    {
+      "url": "https://synk.im/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "sha256": "2782448023f4fdc26164b3e596c516c683e1f98fe6458810de9216631446a4cd",
+      "name": "homepage embeds all three exact release links"
+    },
+    {
+      "url": "https://synk.im/en/",
+      "status": 200,
+      "contentType": "text/html; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "sha256": "486eae907bd26523aa0030f20a1c6aeaa21afdd2408ff679abc5c42b6ee09dd8",
+      "name": "homepage embeds all three exact release links"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/client.js",
+      "status": 200,
+      "contentType": "application/javascript; charset=utf-8",
+      "cacheControl": "max-age=600",
+      "sha256": "b41a73f06e572184bcc865c2573643339ee2a51b4511e9aef686c817db9c6502",
+      "name": "public download selector matches published script"
+    }
+  ],
+  "publicArtifacts": [
+    {
+      "bytes": 402704384,
+      "sha256": "7fb377ab1722a505d6fb690e7abd50a314aa22222950087250ea2b27ec2463ee",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-win-x64.exe"
+    },
+    {
+      "bytes": 461999512,
+      "sha256": "f58c56d2d42888a441372b65f957c62cdc4add49d625b5249ba9759c8aca70a2",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-arm64.dmg"
+    },
+    {
+      "bytes": 479680541,
+      "sha256": "5081f7f512f327f0639ac2527c9b1242c3a7f4c9d20debb581ab3d3732c24922",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.7/SYNK-Platform-Preview-0.4.7-Signal-mac-x64.dmg"
+    }
+  ],
+  "publicCommit": "413056c0317ee7b6e6921e5ce176ed0208a0acd7"
+}
