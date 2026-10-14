@@ -242,7 +242,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
   }
   function notifications(user,social={}){
     user=current(user);
-    const events=visibleJobs(user,social).filter(job=>attention.has(job.status)||job.status==='published').map(job=>({key:'job:'+job.id,state:job.status,version:job.updatedAt||job.createdAt,title:job.status==='published'?'SNS 게시 완료':'SNS 게시 확인 필요',text:job.message||({published:'게시됐어요.',unknown:'접수 결과를 확인한 뒤 다음 작업을 선택해 주세요.',missed:'지난 예약의 새 일정을 선택해 주세요.'}[job.status]||'발행 작업을 확인해 주세요.'),href:'/?tab=social&section=queue'}));
+    const weekAgo=Date.parse(clock())-7*86400000,events=visibleJobs(user,social).filter(job=>attention.has(job.status)||job.status==='published'&&Date.parse(job.publishedAt||job.updatedAt||job.createdAt)>=weekAgo).map(job=>({key:'job:'+job.id,state:job.status,version:job.updatedAt||job.createdAt,title:job.status==='published'?'SNS 게시 완료':'SNS 게시 확인 필요',text:job.message||({published:'게시됐어요.',unknown:'접수 결과를 확인한 뒤 다음 작업을 선택해 주세요.',missed:'지난 예약의 새 일정을 선택해 주세요.'}[job.status]||'발행 작업을 확인해 주세요.'),href:'/?tab=social&section=queue'}));
     for(const post of reviewPosts(user,social))events.push({key:'review:'+post.id,state:'review:'+post.contentVersion,version:post.updatedAt||post.createdAt,title:'SNS 승인 요청',text:post.title+' · 채널별 문구와 미디어를 검토해 주세요.',href:'/?tab=social&section=compose'});
     return events.map(event=>{const id='social:'+event.key+':'+digest(event.version+'|'+event.state).slice(0,12),receipt=store.get('socialNotificationReads',user.id+':'+id);return {id,kind:'social_publishing',title:event.title,text:event.text,body:event.text,createdAt:event.version,readAt:receipt?.at||null,unread:!receipt,href:event.href,message:null};});
   }

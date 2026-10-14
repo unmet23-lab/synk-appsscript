@@ -37,8 +37,9 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     if(data.user.role!=='admin')warnings.push('볼 수 있는 예약만 기준으로 계산했어요. 다른 팀 예약까지 함께 보려면 관리자가 전체 화면에서 확인해야 해요.');
     return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 더한 계획용 추정이에요.','파일 캐시·공동 조회로 줄거나 재시도로 늘 수 있어요. 실제로 보낼 때 서버 호출 한도를 다시 적용해요.','지금 만들어진 예약만 계산에 넣었어요. 아직 만들어지지 않은 반복 예약은 빠져 있어요.'],jobs:records,windows,warnings};
   }
-  function validateMove(user,change){
-    const data=state(user),record=data.records.find(row=>row.jobId===change.jobId);if(!record?.canMove)throw fail('예약의 현재 발행 권한과 승인 버전을 다시 확인해 주세요.',409);
+  // apply checks every change before writing any, so all of them can share the state it already built.
+  function validateMove(user,change,data=state(user)){
+    const record=data.records.find(row=>row.jobId===change.jobId);if(!record?.canMove)throw fail('예약의 현재 발행 권한과 승인 버전을 다시 확인해 주세요.',409);
     const job=store.get('socialPublishJobs',change.jobId);if(job.mode==='fixed'&&!change.fixedSelected)throw fail('정시 예약을 직접 선택한 뒤 다시 확인해 주세요.',409);
   }
   function trial(user,changes){
@@ -91,8 +92,8 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
       const plan=store.get(PLANS,input.previewId);if(!plan||plan.ownerId!==user.id)throw fail('예약 미리보기를 찾을 수 없어요. 미리보기를 다시 만들어 주세요.',404);
       const view=publishing.workspace(user),visible=new Set(view.jobs.map(j=>j.id));
       if(plan.appliedAt){if(plan.jobIds.some(id=>!visible.has(id)))throw fail('예약 접근 권한이 바뀌었어요.',403);return {jobs:view.jobs.filter(j=>plan.jobIds.includes(j.id)),existing:true};}
-      if(plan.expiresAt<=now()||!plan.canApply||state(user).signature!==plan.signature)throw fail('미리보기가 만료됐거나 예약·연결 상태가 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
-      const changes=plan.changes.filter(c=>!c.excluded&&c.from!==c.to);changes.forEach(change=>validateMove(user,change));
+      const current=state(user);if(plan.expiresAt<=now()||!plan.canApply||current.signature!==plan.signature)throw fail('미리보기가 만료됐거나 예약·연결 상태가 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
+      const changes=plan.changes.filter(c=>!c.excluded&&c.from!==c.to);changes.forEach(change=>validateMove(user,change,current));
       if(changes.some(c=>Date.parse(c.to)<(store.get('socialProviderRequests','postiz')?.retryAfter||0)))throw fail('발행 서비스의 대기 시간이 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
       const result=publishing.rescheduleApply(user,{changes});
       store.put(PLANS,plan.id,{id:plan.id,ownerId:user.id,jobIds:result.jobs.map(j=>j.id),appliedAt:now(),expiresAt:plan.expiresAt});return {...result,existing:false};

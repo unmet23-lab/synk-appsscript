@@ -76,14 +76,15 @@ export function createSocialProvider({store,fetchImpl=globalThis.fetch,clock=()=
   const authorize=(user,context)=>{admin(user);context?.authorize?.();const live=store.get('users',user.id);if(live&&(live.active===false||live.role!=='admin'))throw fail('ADMIN_REQUIRED','현재 관리자 권한을 확인해 주세요.',403);};
   function assertEndpoint(value){const result=baseUrl(value);if(!allowed.has(result))throw fail('BASE_URL_NOT_ALLOWED','이 API 주소는 서버 관리자가 허용한 Postiz 주소가 아니에요.');return result;}
   function configured(){const c=config(),secret=credentials();if(!c?.enabled||!secret?.apiKey||secret.version!==c.version)throw fail('NOT_CONFIGURED','Postiz 발행 연결을 먼저 설정해 주세요.',409);assertEndpoint(c.baseUrl);return {...c,apiKey:secret.apiKey};}
-  function requestBudget(){
+  // Result checks may use 20 of the 30 hourly Postiz requests, so publishing always keeps 10.
+  function requestBudget(limit=30){
     const now=Date.parse(time());transaction(()=>{const row=store.get('socialProviderRequests','postiz')||{},recent=(row.times||[]).filter(at=>Number.isFinite(at)&&at>now-HOUR);
-      if(row.retryAfter>now||recent.length>=30)throw fail('PROVIDER_RATE_LIMIT','Postiz API 호출 한도를 다 썼어요. 표시된 시각이 지나면 다시 확인해요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAfter||0,(recent[0]||now)+HOUR+1000)).toISOString()});
+      if(row.retryAfter>now||recent.length>=limit)throw fail('PROVIDER_RATE_LIMIT','Postiz API 호출 한도를 다 썼어요. 표시된 시각이 지나면 다시 확인해요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAfter||0,(recent[0]||now)+HOUR+1000)).toISOString()});
       store.put('socialProviderRequests','postiz',{times:[...recent,now],retryAfter:row.retryAfter||null});});
   }
-  async function request(cfg,path,{method='GET',json,form,signal}={}){
+  async function request(cfg,path,{method='GET',json,form,signal,share}={}){
     assertEndpoint(cfg.baseUrl);if(signal?.aborted)throw fail('REQUEST_CANCELLED','연결 요청이 취소됐어요.',409,{retryable:true});
-    requestBudget();const timeout=AbortSignal.timeout(form?120000:30000),joined=signal?AbortSignal.any([signal,timeout]):timeout;
+    requestBudget(share==='check'?20:30);const timeout=AbortSignal.timeout(form?120000:30000),joined=signal?AbortSignal.any([signal,timeout]):timeout;
     let response;try{response=await fetchImpl(cfg.baseUrl+path,{method,redirect:'error',headers:{Authorization:cfg.apiKey,Accept:'application/json',...(json!==undefined?{'Content-Type':'application/json'}:{})},body:form||(json!==undefined?JSON.stringify(json):undefined),signal:joined});}
     catch{throw fail('PROVIDER_NETWORK','Postiz 응답을 받지 못했어요. 요청이 처리됐는지 먼저 확인해 주세요.',502,{uncertain:method==='POST',retryable:method==='GET'});}
     const status=Number(response.status);
@@ -252,7 +253,7 @@ export function createSocialProvider({store,fetchImpl=globalThis.fetch,clock=()=
   async function listPosts(cfg,row,signal){
     const day=(row.createdAt||time()).slice(0,10),key=cfg.version+':'+day,cache=listCache.get(key);if(cache&&Date.parse(time())-cache.at<60000)return cache.rows;
     const start=new Date(Date.parse(day+'T00:00:00.000Z')-86400000).toISOString(),end=new Date(Math.max(Date.parse(time())+86400000,Date.parse(start)+3*86400000)).toISOString(),query=new URLSearchParams({startDate:start,endDate:end});
-    const result=await request(cfg,'/posts?'+query,{signal});if(!Array.isArray(result?.posts))throw fail('INVALID_PROVIDER_RESPONSE','Postiz 게시물 목록을 읽지 못했어요.',502);listCache.set(key,{at:Date.parse(time()),rows:result.posts});return result.posts;
+    const result=await request(cfg,'/posts?'+query,{signal,share:'check'});if(!Array.isArray(result?.posts))throw fail('INVALID_PROVIDER_RESPONSE','Postiz 게시물 목록을 읽지 못했어요.',502);listCache.set(key,{at:Date.parse(time()),rows:result.posts});return result.posts;
   }
   async function status({channel,job,signal}){
     const id=ledgerId(channel,job),row=store.get('socialProviderJobs',id);

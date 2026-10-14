@@ -223,3 +223,70 @@ test('legacy jobs without an approved snapshot ask for a new save and approval r
   const f=await fixture(t),post=f.approve(f.create()),[job]=f.schedule(post),saved=f.store.get('socialPublishJobs',job.id);delete saved.snapshot;f.store.put('socialPublishJobs',job.id,saved);
   assert.equal(f.service.get(f.users.manager,post.id).jobs[0].handoff,null);assert.throws(()=>f.service.handoff(f.users.manager,job.id),/다시 저장/);
 });
+
+test('a tick acts on the current job, so a reservation cancelled or moved while an earlier one publishes stays cancelled or moved',async t=>{
+  const f=await fixture(t),review=new Set();let release,entered,firstPost;const gate=new Promise(r=>release=r),ready=new Promise(r=>entered=r);
+  const service=createSocialPublishingService({store:f.store,clock:()=>f.now(),provider:{...f.provider,publish:async args=>{if(args.job.postId===firstPost){entered();await gate;}f.sends.push(args);return {status:'published',url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt:f.now()};}},
+    validateReview:({post})=>{if(review.has(post.id))throw Object.assign(new Error('고객 검토가 끝나야 발행해요.'),{code:'SOCIAL_REVIEW_REQUIRED'});},onPublished:async()=>({})});
+  t.after(()=>service.close());
+  const make=(title,extra={})=>{const post=service.savePost(f.users.writer,f.input({title,...extra})).post;return service.action(f.users.manager,post.id,{revision:post.revision,action:'approve'}).post;};
+  const plan=(post,at)=>service.action(f.users.manager,post.id,{revision:post.revision,action:'schedule',scheduledAt:at,timezone:'Asia/Seoul'}).jobs[0];
+  const p1=make('발행 중 멈춤');firstPost=p1.id;plan(p1,'2026-10-13T00:00:00Z');
+  const p2=make('검토 대기 뒤 취소');review.add(p2.id);const j2=plan(p2,'2026-10-13T00:00:01Z');
+  const p3=make('수동 마무리 뒤 취소',{variants:[{channelId:'yt',text:'수동 원고',format:'video',options:{notifyOnly:true}}]});const j3=plan(p3,'2026-10-13T00:00:02Z');
+  const p4=make('검토 대기 뒤 이동');review.add(p4.id);const j4=plan(p4,'2026-10-13T00:00:03Z');
+  f.setTime('2026-10-13T00:00:05.000Z');const ticking=service.tick();await ready;f.setTime('2026-10-13T00:00:06.000Z');
+  await service.jobAction(f.users.manager,j2.id,{action:'cancel',reason:'담당자가 취소'});await service.jobAction(f.users.manager,j3.id,{action:'cancel',reason:'담당자가 취소'});await service.jobAction(f.users.manager,j4.id,{action:'reschedule',scheduledAt:'2026-10-13T01:00:00Z'});
+  review.clear();f.setTime('2026-10-13T00:00:07.000Z');release();await ticking;
+  const job=id=>f.store.get('socialPublishJobs',id);assert.equal(job(j2.id).status,'cancelled');assert.equal(job(j3.id).status,'cancelled');assert.equal(job(j4.id).status,'scheduled');assert.equal(job(j4.id).scheduledAt,'2026-10-13T01:00:00.000Z');
+  assert.deepEqual(f.sends.map(s=>s.job.postId),[p1.id],'only the first reservation reached the provider');
+});
+
+test('a failure that may have posted part of the content blocks edits and post cancels until the job itself is settled',async t=>{
+  const f=await fixture(t,{publish:async()=>({status:'failed',definitive:false,retryable:false,errorCode:'PUBLISH_FAILED',message:'일부만 게시됐는지 확인해 주세요.'})});
+  const post=f.approve(f.create()),[job]=f.schedule(post),current=()=>f.service.get(f.users.manager,post.id).post;await f.service.tick();
+  assert.equal(f.store.get('socialPublishJobs',job.id).status,'failed');assert.equal(f.store.get('socialPublishJobs',job.id).definitiveFailure,false);
+  assert.throws(()=>f.service.savePost(f.users.writer,{revision:current().revision,body:'고친 원고'},post.id),{status:409});
+  assert.throws(()=>f.service.action(f.users.manager,post.id,{revision:current().revision,action:'cancel'}),{status:409});
+  assert.equal(f.store.get('socialPublishJobs',job.id).status,'failed','the job still asks for a check');
+  await f.service.jobAction(f.users.manager,job.id,{action:'cancel',reason:'SNS에서 확인해 보니 올라가지 않았어요'});assert.equal(f.store.get('socialPublishJobs',job.id).status,'cancelled');
+  await assert.rejects(f.service.jobAction(f.users.manager,job.id,{action:'reschedule',scheduledAt:'2026-10-13T01:00:00Z'}),{status:409},'an uncertain attempt is never sent again from the same job');
+  assert.doesNotThrow(()=>f.service.savePost(f.users.writer,{revision:current().revision,body:'고친 원고'},post.id));
+});
+
+test('a version whose attempt definitely sent nothing can be rescheduled after the post was cancelled',async t=>{
+  const f=await fixture(t,{publish:async()=>({status:'failed',definitive:true,retryable:true,errorCode:'PROVIDER_REJECTED',message:'계정이 요청을 거절했어요.'})});
+  const post=f.approve(f.create()),[job]=f.schedule(post),current=()=>f.service.get(f.users.manager,post.id).post;await f.service.tick();
+  assert.equal(f.store.get('socialPublishJobs',job.id).definitiveFailure,true);
+  f.approve(f.service.action(f.users.manager,post.id,{revision:current().revision,action:'cancel'}).post);assert.equal(f.store.get('socialPublishJobs',job.id).status,'cancelled');
+  const moved=await f.service.jobAction(f.users.manager,job.id,{action:'reschedule',scheduledAt:'2026-10-13T01:00:00Z'});
+  assert.equal(moved.job.status,'scheduled');assert.equal(f.store.get('socialPublishJobs',job.id).scheduledAt,'2026-10-13T01:00:00.000Z');
+});
+
+test('the scheduler backlog never turns a slot into a missed one, while a slot that passed before the scheduler ran still is',async t=>{
+  let f;f=await fixture(t,{publish:async()=>{f.setTime(new Date(Date.parse(f.now())+15000).toISOString());return {status:'published',url:'https://www.youtube.com/watch?v=abcdefghijk',publishedAt:f.now()};}});
+  const outage=f.approve(f.create({title:'멈춘 동안 지난 예약'}));f.schedule(outage);
+  f.setTime('2026-10-13T00:10:00.000Z');const posts=[];for(let i=0;i<30;i++)posts.push(f.approve(f.create({title:'같은 시각 '+i})));for(const post of posts)f.schedule(post,{scheduledAt:'2026-10-13T00:10:00.000Z'});
+  await f.service.tick();await f.service.tick();await f.service.tick();
+  const jobs=f.store.all('socialPublishJobs');assert.equal(jobs.find(j=>j.postId===outage.id).status,'missed');
+  assert.deepEqual(jobs.filter(j=>j.postId!==outage.id).map(j=>j.status).filter(s=>s!=='published'),[],'30 jobs due together all publish even though publishing them takes 7.5 minutes');
+});
+
+test('a reservation that waited for a required review publishes when the review ends, unless the server restarted in between',async t=>{
+  const f=await fixture(t),review=new Set();
+  const make=()=>{const service=createSocialPublishingService({store:f.store,clock:()=>f.now(),provider:f.provider,validateReview:({post})=>{if(review.has(post.id))throw Object.assign(new Error('고객 검토가 끝나야 발행해요.'),{code:'SOCIAL_REVIEW_REQUIRED'});},onPublished:async()=>({})});t.after(()=>service.close());return service;};
+  const first=make(),post=title=>{const p=first.savePost(f.users.writer,f.input({title})).post;return first.action(f.users.manager,p.id,{revision:p.revision,action:'approve'}).post;};
+  const plan=p=>first.action(f.users.manager,p.id,{revision:p.revision,action:'schedule',scheduledAt:'2026-10-13T00:00:00Z',timezone:'Asia/Seoul'}).jobs[0];
+  const late=post('검토가 늦게 끝남');review.add(late.id);const lateJob=plan(late);const restarted=post('검토가 끝난 뒤 재시작');review.add(restarted.id);const restartedJob=plan(restarted);
+  await first.tick();f.setTime('2026-10-13T00:20:00.000Z');await first.tick();assert.equal(f.store.get('socialPublishJobs',lateJob.id).reviewWaiting,true);
+  review.delete(late.id);f.setTime('2026-10-13T00:20:15.000Z');await first.tick();assert.equal(f.store.get('socialPublishJobs',lateJob.id).status,'published');
+  review.delete(restarted.id);await first.close();const second=make();f.setTime('2026-10-13T00:40:00.000Z');await second.tick();
+  assert.equal(f.store.get('socialPublishJobs',restartedJob.id).status,'missed','after a restart a late slot still needs a person');
+});
+
+test('result checks back off from 5 minutes to an hour while the provider keeps a job pending',async t=>{
+  const f=await fixture(t,{publish:async()=>({status:'submitted',providerId:'remote-1',message:'접수했어요.'}),status:async()=>({status:'processing',message:'처리 중이에요.'})});
+  const post=f.approve(f.create()),[job]=f.schedule(post);await f.service.tick();let row=f.store.get('socialPublishJobs',job.id);const gaps=[(Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/60000];
+  for(let i=0;i<6;i++){f.setTime(row.nextAttemptAt);await f.service.tick();row=f.store.get('socialPublishJobs',job.id);assert.equal(row.status,'processing');gaps.push((Date.parse(row.nextAttemptAt)-Date.parse(f.now()))/60000);}
+  assert.deepEqual(gaps,[5,5,10,20,40,60,60]);
+});

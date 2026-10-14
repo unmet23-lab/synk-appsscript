@@ -37,6 +37,7 @@ function credentialIssue(channel,credentials,at){
 }
 
 /** Explicitly enabled, bounded imports. Graph responses never become executable URLs. */
+const COLLECTION_LIMIT=100,SCAN_REQUESTS=40;
 export function createSocialInboxProvider({store,getCredentials,fetchImpl=globalThis.fetch,clock=()=>new Date().toISOString()}={}){
   if(!store)throw new TypeError('store is required');
   const now=()=>new Date(clock()).toISOString(),inFlight=new Set(),controllers=new Set(),idleWaiters=[];let closed=false,scanning=false,scanTask=null;
@@ -59,7 +60,8 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
     if(!['instagram','facebook'].includes(channel.platform))throw fail('UNSUPPORTED_PLATFORM','Instagram·Facebook 페이지만 연결할 수 있어요.',400);
     const previous=store.get(SETTINGS,channel.id)||{};store.put(SETTINGS,channel.id,{...previous,id:channel.id,enabled:input.enabled,version:randomUUID(),connectionVersion:channel.connectionVersion||0,updatedBy:user.id,updatedAt:now(),lastError:null,lastErrorCode:null,progress:null});return {channelId:channel.id,...capability(channel)};
   }
-  function reserveRequest(channelId){transaction(()=>{const at=Date.parse(now()),row=store.get(BUDGET,channelId)||{},times=(row.times||[]).filter(t=>t>at-3600000);if(times.length>=120||row.retryAt>at)throw fail('RATE_LIMIT','댓글 조회 한도를 다 썼어요. 잠시 후 다시 확인해 주세요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAt||0,(times[0]||at)+3600000)).toISOString()});store.put(BUDGET,channelId,{times:[...times,at],retryAt:row.retryAt||null});});}
+  // Collection and replies share the 120 requests an hour in BUDGET; collection stops at 100 so replies always keep 20.
+  function reserveRequest(channelId){transaction(()=>{const at=Date.parse(now()),row=store.get(BUDGET,channelId)||{},times=(row.times||[]).filter(t=>t>at-3600000);if(times.length>=COLLECTION_LIMIT||row.retryAt>at)throw fail('RATE_LIMIT','댓글 조회 한도를 다 썼어요. 잠시 후 다시 확인해 주세요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAt||0,(times[0]||at)+3600000)).toISOString()});store.put(BUDGET,channelId,{times:[...times,at],retryAt:row.retryAt||null});});}
   async function sync(user,input={},context={}){
     if(closed)throw fail('INBOX_STOPPED','댓글 수집기가 멈춰 있어 새 요청을 받지 않아요.',503);
     const initial=authorized(user,input.channelId,context),channel=initial.channel,state=store.get(SETTINGS,channel.id),ready=capability(channel);
@@ -85,7 +87,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
       tokenFingerprint=hash(credentials.accessToken);check();const version=credentials.apiVersion||'v26.0';if(!/^v\d{1,2}\.\d{1,2}$/.test(version))throw fail('INVALID_CONFIG','Meta API 버전 설정을 확인해 주세요.');
       const direct=channel.platform==='instagram'&&credentials.authType==='instagram-login',origin=direct?'https://graph.instagram.com':'https://graph.facebook.com';let token=credentials.accessToken;
       async function api(path,params={}){
-        check();if(++requests>40)throw fail('SCAN_LIMIT','한 번에 할 수 있는 댓글 조회량을 다 썼어요.',429,{partial:true});reserveRequest(channel.id);
+        check();if(++requests>SCAN_REQUESTS)throw fail('SCAN_LIMIT','한 번에 할 수 있는 댓글 조회량을 다 썼어요.',429,{partial:true});reserveRequest(channel.id);
         const url=new URL('/'+version+'/'+path,origin);for(const [key,value] of Object.entries(params))if(value!==undefined)url.searchParams.set(key,String(value));
         let response;try{response=await fetchImpl(url.href,{method:'GET',redirect:'error',headers:{Authorization:'Bearer '+token,Accept:'application/json'},signal:context.signal?AbortSignal.any([context.signal,AbortSignal.timeout(20000)]):AbortSignal.timeout(20000)});}catch{throw fail('PROVIDER_NETWORK','Meta에서 댓글 조회 응답을 받지 못했어요.',502,{retryable:true});}check();
         let data;try{if(Number(response.headers?.get?.('content-length')||0)>2*1024*1024)throw Error();const body=await response.text();if(Buffer.byteLength(body)>2*1024*1024)throw Error();data=JSON.parse(body);}catch{throw fail('INVALID_RESPONSE','Meta 댓글 응답을 읽을 수 없어요.',502);}check();
@@ -116,6 +118,16 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
       const replyFields=channel.platform==='instagram'?'id,text,timestamp,username,from,user,parent_id,hidden':'id,message,created_time,from,parent,is_hidden,is_private';
       const fields=channel.platform==='instagram'?replyFields+',replies.limit(50){'+replyFields+'}':replyFields;
       const rowKey=externalId=>'meta:'+hash(channel.platform+':'+accountId+':'+externalId);
+      // Look-ups instead of a full table scan for every saved comment (5,000 stored comments: one scan took 53~151 s and
+      // held the server for 7~45 s). Reply rows are created only by this scan, so the per-parent index is built once and
+      // grows as rows are saved; posts and published jobs are indexed once per checkpoint transaction.
+      const repliedParents=new Set(),childIndex=new Map();let lookups=null;
+      function addChild(row){let keys=childIndex.get(row.parentExternalId);if(!keys)childIndex.set(row.parentExternalId,keys=new Set());keys.add(row.id);}
+      for(const row of store.all(ROWS))if(row.parentExternalId){addChild(row);if(row.channelId===channel.id&&row.sourceAccountId===accountId)repliedParents.add(row.parentExternalId);}
+      function sweep(){const collectors=new Map(),published=new Map();
+        for(const p of store.all('posts'))if(p.channelId===channel.id&&p.source==='api:'+channel.platform&&!collectors.has(p.externalId))collectors.set(p.externalId,p);
+        for(const j of store.all('socialPublishJobs'))if(j.channelId===channel.id&&j.status==='published'){const key=comparableUrl(j.publicationUrl);if(!published.has(key))published.set(key,[]);published.get(key).push(j);}
+        return {collectors,published};}
       const coverage=()=>({scope:'recent-and-history',postLimit:maxPosts,commentLimit:maxComments,postsChecked:counts.recentPosts+counts.historyPosts,commentsReceived:counts.recentComments+counts.historyComments,status:partial||progress.history?.length?'partial':'scanned',includesReplies:true,includesMessages:false,completeHistory:false,progress:inboxProgressView(progress,counts)});
       function normalize(comment,post,parentId=null){
         if(!id(comment?.id))throw fail('INVALID_RESPONSE','댓글 응답의 ID가 올바르지 않아요.',502);
@@ -129,7 +141,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         if(!parent||parent.channelId!==channel.id||parent.sourceAccountId!==accountId||parent.nativePostId!==postId||parent.parentExternalId)return;
         if(parent.metaReplyCompleteAt&&parent.metaReplyCompleteAt>at)return;
         if(parent.metaReplyCompleteAt&&parent.metaReplyCompleteAt>startedAt)complete=false;
-        const prior=parent.externalReplyEvidence,children=store.all(ROWS).filter(row=>row.channelId===channel.id&&row.sourceAccountId===accountId&&row.nativePostId===postId&&row.parentExternalId===parentId&&row.metaAccountReply?.connectionVersion===(channel.connectionVersion||0));
+        const prior=parent.externalReplyEvidence,children=[...(childIndex.get(parentId)||[])].map(key=>store.get(ROWS,key)).filter(Boolean).filter(row=>row.channelId===channel.id&&row.sourceAccountId===accountId&&row.nativePostId===postId&&row.parentExternalId===parentId&&row.metaAccountReply?.connectionVersion===(channel.connectionVersion||0));
         // Complete scans replace the observed set; partial scans retain earlier proof.
         const observed=children.filter(row=>scanId===null||row.metaAccountReply?.[lane+'ScanId']===scanId);
         const rows=(complete?observed:children).filter(row=>row.metaAccountReply?.confirmed!==false&&row.metaAccountReply?.hidden!==true);
@@ -153,15 +165,15 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         if(old&&old.channelId!==channel.id)throw fail('DUPLICATE_ACCOUNT','같은 SNS 댓글이 다른 채널에 연결돼 있어요.');
         const observedAt=task.observedAt||at;
         if(old?.lastCollectedAt>observedAt){unchanged++;return;}
-        const collector=store.all('posts').find(p=>p.channelId===channel.id&&p.externalId===item.nativePostId&&p.source==='api:'+channel.platform);
-        const matches=item.url?store.all('socialPublishJobs').filter(j=>j.channelId===channel.id&&j.status==='published'&&comparableUrl(j.publicationUrl)===comparableUrl(item.url)):[];
+        const collector=lookups?lookups.collectors.get(item.nativePostId):store.all('posts').find(p=>p.channelId===channel.id&&p.externalId===item.nativePostId&&p.source==='api:'+channel.platform);
+        const matches=item.url?(lookups?lookups.published.get(comparableUrl(item.url))||[]:store.all('socialPublishJobs').filter(j=>j.channelId===channel.id&&j.status==='published'&&comparableUrl(j.publicationUrl)===comparableUrl(item.url))):[];
         const postId=old?.postId||(matches.length===1?matches[0].postId:''),same=old&&Object.entries(item).every(([k,v])=>old[k]===v)&&old.postId===postId&&old.collectorPostId===(collector?.id||null);
         const parent=item.parentExternalId?store.get(ROWS,rowKey(item.parentExternalId)):null;
         const currentAuthorProof=accountReply&&!(parent?.metaReplyCompleteAt>observedAt&&!old?.metaAccountReply?.confirmed);
         const currentHiddenProof=hiddenAccountReply&&!(parent?.metaReplyCompleteAt>observedAt);
         const metaAccountReply=currentAuthorProof||currentHiddenProof?{...(old?.metaAccountReply||{}),connectionVersion:channel.connectionVersion||0,[lane+'ScanId']:task.scanId,confirmed:!currentHiddenProof,hidden:currentHiddenProof===true}:old?.metaAccountReply||null;
         const row={...old,...item,id:key,channelId:channel.id,postId,collectorPostId:collector?.id||null,kind:'comment',source:'api:'+channel.platform,sourceAccountId:accountId,revision:(old?.revision||0)+(same?0:1),status:old?.status||'open',assigneeId:old?.assigneeId||initial.user.id,replyDraft:old?.replyDraft||'',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||at,updatedAt:same?old.updatedAt:at,importedAt:old?.importedAt||at,lastCollectedAt:observedAt,metaAccountReply};
-        store.put(ROWS,key,row);if(!old)imported++;else if(!same)updated++;else unchanged++;
+        store.put(ROWS,key,row);if(!old&&row.parentExternalId)addChild(row);if(!old)imported++;else if(!same)updated++;else unchanged++;
         if(currentAuthorProof||currentHiddenProof)updateEvidence(item.parentExternalId,item.nativePostId,lane,task.scanId,false,observedAt,task.startedAt||observedAt);
         if(!item.parentExternalId&&!old?.externalReplyEvidence)updateEvidence(item.externalId,item.nativePostId,lane,null,false,at);
       }
@@ -170,7 +182,8 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         transaction(()=>{
           check();const current=store.get(SETTINGS,channel.id);
           if((current.progress?.revision||0)!==expectedRevision)throw fail('PROGRESS_CHANGED','다른 수집이 먼저 진행 위치를 갱신했어요. 저장된 위치에서 다시 이어가요.');
-          for(const task of items)saveItem(task,task.scanLane||lane,at);
+          lookups=items.length?sweep():null;
+          try{for(const task of items)saveItem(task,task.scanLane||lane,at);}finally{lookups=null;}
           for(const task of ends)updateEvidence(task.parentId,task.postId,task.scanLane||lane,task.scanId,task.complete,task.observedAt||at,task.startedAt||at);
           if(lane==='history'||seedHistory)progress.history=tasks;
           if(done&&lane==='history')progress.historyCompletedAt=at;
@@ -206,12 +219,15 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
               if(task.kind==='replies'&&!item.authorKnown)identityComplete=false;
               expanded.push({kind:'item',item,scanId,scanLane,observedAt,startedAt});
               if(task.kind==='comments'&&channel.platform==='instagram'&&!item.parentExternalId){
-                const replies=comment.replies;
+                // Meta leaves `replies` out when a comment has none (10-14 live scan: 1 post, 6 comments, 14 GETs, one empty
+                // /replies lookup per comment). A missing field is an empty, complete list unless the comment had replies
+                // before; then its /replies edge is still read so a missing field cannot erase them.
+                const replies=comment.replies,known=replies?null:store.get(ROWS,rowKey(item.externalId)),hadReplies=!replies&&(repliedParents.has(item.externalId)||known?.externalReplyEvidence?.replyCount>0||known?.metaReplyProofIds?.length>0);
                 if(replies&&!Array.isArray(replies.data)||replies?.data?.length>50)throw fail('INVALID_RESPONSE','Meta 답글 목록을 확인하지 못했어요.',502);
                 let replyIdentityComplete=true;
                 for(const reply of replies?.data||[]){const replyItem=normalize(reply,task.post,item.externalId);if(!replyItem.authorKnown)replyIdentityComplete=false;expanded.push({kind:'item',item:replyItem,scanId,scanLane,observedAt,startedAt});}
-                const following=replies?nextInboxPage(replies,{after:null,cursors:[]}):{after:null,complete:false,cursors:[]};
-                if(!replies||following.after||!following.complete)expanded.push({kind:'replies',post:task.post,parentId:item.externalId,scanId,scanLane,startedAt,identityComplete:replyIdentityComplete,after:following.after,cursors:following.cursors});
+                const following=replies?nextInboxPage(replies,{after:null,cursors:[]}):{after:null,complete:!hadReplies,cursors:[]};
+                if(following.after||!following.complete)expanded.push({kind:'replies',post:task.post,parentId:item.externalId,scanId,scanLane,startedAt,identityComplete:replyIdentityComplete,after:following.after,cursors:following.cursors});
                 else expanded.push({kind:'reply-end',parentId:item.externalId,postId:task.post.id,scanId,scanLane,observedAt,startedAt,complete:following.complete&&replyIdentityComplete});
               }
             }
@@ -258,7 +274,9 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         const channel=store.get('channels',saved.id),actor=store.get('users',saved.updatedBy),state=store.get(SETTINGS,saved.id);
         if(!state?.enabled||!channel||channel.active===false||channel.hidden===true||!actor?.active||!canWriteChannel(actor,channel)||inFlight.has(channel.id)||!capability(channel).canSync)continue;
         if(state.lastAttemptAt&&Date.parse(state.lastAttemptAt)>Date.parse(now())-15*60000)continue;
-        const budget=store.get(BUDGET,channel.id);if(budget?.retryAt>Date.parse(now()))continue;
+        const budget=store.get(BUDGET,channel.id),hourAgo=Date.parse(now())-3600000;if(budget?.retryAt>Date.parse(now()))continue;
+        // A scheduled scan starts only when a whole scan fits in collection's share, instead of failing midway.
+        if((budget?.times||[]).filter(t=>t>hourAgo).length+SCAN_REQUESTS>COLLECTION_LIMIT)continue;
         result.checked++;
         try{const imported=await sync(actor,{channelId:channel.id},{signal:joined});result.imported+=imported.imported||0;result.updated+=imported.updated||0;}catch{result.failed++;}
       }

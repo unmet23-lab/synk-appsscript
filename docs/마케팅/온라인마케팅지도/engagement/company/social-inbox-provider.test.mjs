@@ -271,3 +271,23 @@ test('a newer complete public-reply proof survives an older hidden reply buffer 
   f.advance(60000);f.setHandler(path=>path==='200/comments'?json({data:[{id:'300',text:'root',replies:{data:[{id:'302',text:'new reply',from:{id:'100'}}],paging:{next:'unused',cursors:{after:'unfinished'}}}}]}):null);
   await f.sync(f.member,{maxComments:2});assert.deepEqual(f.store.get('socialInbox',parent.id).metaReplyProofIds,['301','302']);
 });
+
+test('a missing Instagram replies field is a complete empty list and costs no extra request, as in the 10-14 live scan',async t=>{
+  const f=fixture(t);f.enable();f.setHandler(path=>path==='200/comments'?json({data:Array.from({length:6},(_,i)=>({id:String(300+i),text:'question '+i,timestamp:'2026-10-13T00:00:00Z',username:'reader'+i,from:{id:String(900+i)}}))}):null);
+  const result=await f.sync();assert.equal(result.status,'scanned');const gets=f.calls.filter(c=>c.init.method==='GET').map(c=>new URL(c.url).pathname.replace(/^\/v[\d.]+\//,''));
+  assert.deepEqual(gets.filter(p=>/\/replies$/.test(p)),[],'no per-comment replies lookup');assert.equal(gets.length,3,'me, media and comments only');
+  for(const row of f.store.all('socialInbox')){assert.deepEqual(row.metaReplyProofIds,[]);assert.equal(typeof row.metaReplyCompleteAt,'string');assert.equal(row.externalReplyEvidence,undefined);}
+});
+test('a comment that had replies is still asked on its replies edge when the field disappears',async t=>{
+  for(const earlier of [{id:'301',from:{id:'100'},text:'ours'},{id:'302',from:{id:'777'},text:'customer follow-up',username:'reader2'}]){
+    const f=fixture(t);f.enable();let phase='with';f.setHandler(path=>path==='200/comments'?json({data:[{id:'300',text:'question',timestamp:'2026-10-13T00:00:00Z',username:'reader',from:{id:'900'},...(phase==='with'?{replies:{data:[earlier]}}:{})}]}):null);
+    await f.sync();phase='without';const before=f.calls.length;await f.sync();const asked=f.calls.slice(before).filter(c=>new URL(c.url).pathname.endsWith('/300/replies'));assert.equal(asked.length,1,earlier.id);
+  }
+});
+
+test('collection leaves replies their share of the hourly budget and scheduled scans start only when a whole scan fits',async t=>{
+  const now=Date.parse('2026-10-13T00:00:00Z'),fill=(f,n)=>f.store.put('socialInboxRequests','channel',{times:Array(n).fill(now-60000),retryAt:null});
+  {const f=fixture(t);f.enable();fill(f,100);const before=f.calls.length;await assert.rejects(f.sync(),{code:'RATE_LIMIT'});assert.equal(f.calls.length,before,'collection stops at 100 of 120');}
+  {const f=fixture(t);f.enable();fill(f,61);const result=await f.provider.scanDue();assert.equal(result.checked,0);assert.equal(f.calls.length,0);assert.equal(f.store.get('socialInboxConnections','channel').lastStatus,undefined,'a skipped scan records no error');}
+  {const f=fixture(t);f.enable();fill(f,60);const result=await f.provider.scanDue();assert.equal(result.checked,1);assert.equal(result.failed,0);assert.ok(f.calls.length>0);}
+});

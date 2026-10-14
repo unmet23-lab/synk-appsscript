@@ -158,3 +158,10 @@ test('definitive throttling supports an explicit later attempt and recurring job
   f.setHandler(null);f.advance(61000);input.job.attempts=1;assert.equal((await f.create().publish(input)).status,'submitted');await f.provider.publish(input);assert.equal(f.calls.filter(call=>call.url.endsWith('/posts')).length,2);
   const next={...input,job:{...input.job,id:'recurrence-two',idempotencyKey:'recurrence-two'}};assert.equal((await f.create().publish(next)).status,'submitted');await f.create().publish(next);assert.equal(f.calls.filter(call=>call.url.endsWith('/posts')).length,3);
 });
+
+test('result checks leave ten of the thirty hourly Postiz requests for publishing',async t=>{
+  const f=fixture(t);await f.configure();await f.connect();const input=f.input();assert.equal((await f.provider.publish(input)).status,'submitted');
+  f.advance(61000);f.store.put('socialProviderRequests','postiz',{times:Array(20).fill(Date.parse('2026-10-13T00:01:00.000Z')),retryAfter:null});
+  const before=f.calls.length,checked=await f.provider.status(input);assert.equal(checked.errorCode,'PROVIDER_RATE_LIMIT');assert.equal(f.calls.length,before,'the 21st check waits');
+  const second=f.input({job:{id:'job-2',idempotencyKey:'second-reservation',contentVersion:1}});assert.equal((await f.provider.publish(second)).status,'submitted','publishing still has its share');
+});

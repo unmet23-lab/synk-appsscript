@@ -3,6 +3,9 @@ import {socialOnboarding} from './social-onboarding.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const parameter=value=>{try{return value===undefined?undefined:decodeURIComponent(value);}catch{throw fail('SNS 항목 주소를 확인해 주세요.');}};
 
+// Requests that save nothing (previews, cost quotes, read-only insights, private recovery copies) do not tell every screen to refresh.
+const QUIET_PATHS=new Set(['/api/social/ai/quote','/api/social/insights/variants']);
+export function socialChangeNotifies(path){return !path.startsWith('/api/social/recovery/')&&!/[/-]preview$/.test(path)&&!QUIET_PATHS.has(path);}
 export function createSocialRoutes({store,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
   return async function handle(req,res,{url,demoRequest=false}){
     const path=url.pathname;if(!path.startsWith('/api/social/'))return false;
@@ -19,13 +22,13 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
       res.writeHead(200,{'Content-Type':file.mimeType,'Content-Length':file.bytes.length,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(file.fileName||'sns-media')});res.end(req.method==='HEAD'?undefined:file.bytes);return true;
     }
     if(req.method==='GET'){
-      if(path==='/api/social/workspace'){
+      if(path==='/api/social/workspace'){send(res,200,store.readScope(()=>{
         const social=publishing.workspace(user,Object.fromEntries(url.searchParams)),extra=marketing.workspace(user,social);
         const jobs=social.jobs.map(job=>{let linkCheck=null;if(job.performanceEntryId&&publicationLinks)try{linkCheck=publicationLinks.get(user,{kind:'post',id:job.performanceEntryId}).check;}catch(error){if(![403,404,409].includes(error.status))throw error;}return {...job,linkCheck};});
         const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),capacity:capacity?.workspace(user),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.list(user),tracking:tracking?.workspace(user),workflows:workflows?.workspace(user),runtime:runtime()};
         if(result.inboxProvider&&inboxRecovery){const recoveryByChannel=new Map(inboxRecovery.workspace(user).channels.map(row=>[row.channelId,row.recovery]));result.inboxProvider={...result.inboxProvider,channels:result.inboxProvider.channels.map(row=>({...row,recovery:recoveryByChannel.get(row.channelId)||null}))};}
-        result.onboarding=socialOnboarding(result,{origin});send(res,200,result);return true;
-      }
+        result.onboarding=socialOnboarding(result,{origin});return result;
+      }));return true;}
       const followup=path.match(/^\/api\/social\/inbox\/([^/]+)\/followup$/);
       if(followup){send(res,200,followups.workspace(user,{inboxId:parameter(followup[1])}));return true;}
       if(path==='/api/social/copy-insights'){send(res,200,copyInsights.comparison(user,Object.fromEntries(url.searchParams)));return true;}
@@ -60,6 +63,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     else if(path==='/api/social/inbox/reply/preview')result=await replies.preview(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/reply/send')result=await replies.send(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/reply/reconcile')result=await replies.reconcile(actor,input,{authorize,signal});
+    else if(path==='/api/social/inbox/reply/recheck')result=await replies.recheck(actor,input,{authorize,signal});
     else if(path==='/api/social/recovery/check')result=recovery.check(actor,input);
     else if(path==='/api/social/recovery/discard')result=recovery.discard(actor,input);
     else if(path==='/api/social/tracking/configure')result=tracking.configure(actor,input);
@@ -117,6 +121,6 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     }
     else if((match=path.match(/^\/api\/social\/provider\/(configure|refresh|connect|disconnect)$/))){result=await provider[match[1]](actor,input,{authorize});}
     else throw fail('SNS 변경 주소를 찾을 수 없어요.',404);
-    authorize();if(!path.startsWith('/api/social/recovery/'))onChange(actor);send(res,200,result??{ok:true});return true;
+    authorize();if(socialChangeNotifies(path))onChange(actor);send(res,200,result??{ok:true});return true;
   };
 }

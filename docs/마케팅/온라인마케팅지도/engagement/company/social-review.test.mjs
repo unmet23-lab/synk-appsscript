@@ -188,3 +188,10 @@ test('expired approvals remain bound to revocation, content, schedule, connectio
     const live=f.store.get('socialPosts',post.id);assert.throws(()=>f.review.validateReview({post:live}),{code:'SOCIAL_REVIEW_REQUIRED'});assert.equal(f.review.workspace(f.users.manager,{postId:post.id}).links[0].approvalValid,false,kind);
   }
 });
+test('a passing file read error keeps the review link, a changed file still retires it, and limits say review',async t=>{
+  const f=await fixture(t),post=f.create(),link=await f.link(post);
+  f.mediaHook(async()=>{throw Object.assign(new Error('EBUSY: resource busy or locked'),{code:'EBUSY'});});await assert.rejects(f.review.open(link.token,context),{status:503});
+  assert.equal(f.store.get('socialReviewLinks',link.link.id).invalidatedAt,undefined,'a passing error does not retire the link');f.mediaHook(null);assert.equal((await f.review.open(link.token,context)).review.revision>=1,true);
+  f.setBytes(Buffer.from('changed file'));await assert.rejects(f.review.open(link.token,context),{status:410});assert.equal(typeof f.store.get('socialReviewLinks',link.link.id).invalidatedAt,'string');
+  const guesses={...context,clientKey:'guesser-2'};for(let i=0;i<120;i++)await assert.rejects(f.review.open('bad',guesses),{status:410});await assert.rejects(f.review.open('bad',guesses),error=>error.status===429&&!/로그인/.test(error.message));
+});

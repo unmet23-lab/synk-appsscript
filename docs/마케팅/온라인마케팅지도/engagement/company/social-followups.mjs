@@ -52,21 +52,23 @@ export function createSocialFollowups({store,tasks,origin='',clock=()=>new Date(
       const canRetry=record.createdBy===user.id,revision=store.get('socialInbox',record.inboxId)?.revision;
       return {...base,state:'pending',canRetry,...(canRetry?{sourceRevision:record.sourceRevision,retryInput:{inboxId:record.inboxId,revision,roomId:record.roomId,assigneeId:record.assigneeId,nextAction:record.nextAction,dueDate:record.dueDate}}:{}),message:'업무 등록 결과를 확인하는 중이에요. 등록한 사람이 같은 내용으로 다시 확인하면 업무가 두 번 생기지 않고 이어져요.'};
     }
-    let result;
-    try{result=sync(tasks.get(user,{messageId:record.messageId}));}catch(error){if(![403,404,410].includes(error.status))throw error;}
+    let result,missing=false;
+    try{result=sync(tasks.get(user,{messageId:record.messageId}));}catch(error){if(![403,404,410].includes(error.status))throw error;missing=error.status!==403;}
+    if(!result&&missing&&memberOf(user,record.roomId))return {...base,state:'deleted',canRetry:false,message:'연결한 업무 카드가 지워졌어요. 필요하면 이 문의에 새 후속 업무를 만들 수 있어요.'};
     const task=result?.task;
     if(!task||String(task.messageId)!==record.messageId||task.channelId!==record.roomId||task.id!==record.taskId)return {...base,state:'unavailable',canRetry:false,message:'연결한 업무가 삭제됐거나 업무가 있는 대화방에 접근할 수 없어요. 새 업무를 자동으로 만들지는 않아요.'};
     return {...base,state:'linked',taskId:task.id,messageId:record.messageId,roomId:record.roomId,taskHref:taskHref(record.roomId,record.messageId),nextAction:record.nextAction,title:task.title,dueDate:task.dueDate??null,assigneeId:task.assignee?.companyUserId??result.assigneeCompanyUserId??null,assigneeName:task.assignee?.name||null,stage:task.stage,status:task.status,revision:task.revision,canManage:task.canManage===true,updatedAt:task.updatedAt,workday:task.workday||null};
   }
-  function item(user,row,channel){
-    const record=store.get(KIND,row.id);
-    return {inboxId:row.id,channelId:channel.id,sourceHref:sourceHref(row.id),canCreate:!record&&canWriteChannel(user,channel),followup:record?taskView(user,record):null};
+  function item(user,row,channel,records){
+    const record=records?records.get(row.id)||null:store.get(KIND,row.id);
+    const followup=record?taskView(user,record):null;
+    return {inboxId:row.id,channelId:channel.id,sourceHref:sourceHref(row.id),canCreate:(!record||followup.state==='deleted')&&canWriteChannel(user,channel),followup};
   }
   function list(user){
-    user=current(user);const items=[];
+    user=current(user);const items=[],records=new Map(store.all(KIND).map(record=>[record.inboxId,record]));
     for(const row of store.all('socialInbox')){
       const channel=store.get('channels',row.channelId);
-      if(channel&&channel.active!==false&&!channel.hidden&&canReadChannel(user,channel))items.push(item(user,row,channel));
+      if(channel&&channel.active!==false&&!channel.hidden&&canReadChannel(user,channel))items.push(item(user,row,channel,records));
     }
     return {items};
   }
@@ -84,11 +86,16 @@ export function createSocialFollowups({store,tasks,origin='',clock=()=>new Date(
     const live=source(user,record.inboxId,context,true);
     return {created:result.created!==false,followup:taskView(live.user,linked)};
   }
+  // The messenger answers 404 both for a deleted card and for a room this person left, so a card counts as gone only when
+  // a current member of its room cannot find it. Anyone else may simply have lost access while the card still exists.
+  function memberOf(user,roomId){try{return (sync(tasks.options(user))?.channels||[]).some(room=>room.id===roomId&&Array.isArray(room.companyUserIds)&&room.companyUserIds.includes(user.id));}catch(error){if([403,404].includes(error.status))return false;throw error;}}
+  function taskGone(user,record){let found;try{found=sync(tasks.get(user,{messageId:record.messageId}))?.task;}catch(error){if(![403,404,410].includes(error.status))throw error;if(error.status===403)return false;}return !found&&memberOf(user,record.roomId);}
   function create(user,input={},context={}){
     if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['inboxId','revision','roomId','assigneeId','nextAction','dueDate'].includes(key)))throw fail('후속 업무 입력 항목을 확인해 주세요.');
     let live=source(user,input.inboxId,context,true);
     const normalized={roomId:text(input.roomId,'업무 대화방'),assigneeId:text(input.assigneeId,'담당자'),nextAction:text(input.nextAction,'다음 행동',2000),dueDate:date(input.dueDate)},fingerprint=hash(normalized);
-    let record=store.get(KIND,live.row.id);
+    let record=store.get(KIND,live.row.id),detached=null;
+    if(record?.state==='linked'&&taskGone(live.user,record)){detached=record;record=null;}
     if(record){
       if(record.fingerprint!==fingerprint)throw fail(record.state==='pending'?'등록 결과를 확인하는 중인 후속 업무가 있어요. 처음 입력한 내용 그대로 다시 확인해 주세요.':'이 문의에는 이미 후속 업무를 연결했어요. 담당·기한·진행 상태는 연결한 업무 카드에서 바꿔 주세요.',409);
       if(record.state==='linked')return {created:false,followup:taskView(live.user,record)};
@@ -110,8 +117,8 @@ export function createSocialFollowups({store,tasks,origin='',clock=()=>new Date(
       live=source(user,input.inboxId,context,true);
       if(live.row.revision!==input.revision)throw fail('문의가 바뀌었어요. 다시 확인해 주세요.',409);
       const prior=store.get(KIND,live.row.id);
-      if(prior){if(prior.fingerprint!==fingerprint||prior.createdBy!==live.user.id&&prior.state!=='linked')throw fail('이미 등록하고 있는 후속 업무가 있어요.',409);record=prior;return;}
-      record={id:randomUUID(),inboxId:live.row.id,channelId:live.channel.id,sourceRevision:live.row.revision,...normalized,fingerprint,requestId:randomUUID(),taskUserId:assignee.taskUserId,createdBy:live.user.id,createdAt:clock(),state:'pending'};
+      if(prior&&prior.id!==detached?.id){if(prior.fingerprint!==fingerprint||prior.createdBy!==live.user.id&&prior.state!=='linked')throw fail('이미 등록하고 있는 후속 업무가 있어요.',409);record=prior;return;}
+      record={id:randomUUID(),inboxId:live.row.id,channelId:live.channel.id,sourceRevision:live.row.revision,...normalized,fingerprint,requestId:randomUUID(),taskUserId:assignee.taskUserId,createdBy:live.user.id,createdAt:clock(),state:'pending',...(detached?{replaces:{id:detached.id,taskId:detached.taskId,messageId:detached.messageId,linkedAt:detached.linkedAt||null}}:{})};
       store.put(KIND,live.row.id,record);
     });
     if(record.state==='linked')return {created:false,followup:taskView(live.user,record)};
