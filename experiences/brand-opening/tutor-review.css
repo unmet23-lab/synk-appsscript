@@ -52,7 +52,7 @@
 .tutor-review h3{order:1;margin:8px 0 4px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
 .tutor-review header small{order:2;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
 .tutor-review-speech{display:flex;align-items:flex-end;gap:10px;margin:18px 0 18px}
-.tutor-review-speech .game-tutor-portrait{width:60px;height:60px;filter:drop-shadow(0 10px 12px rgba(0,0,0,.4))}
+.tutor-review-speech .game-tutor-portrait{width:60px;height:60px}
 .tutor-review-speech>div{position:relative;flex:1;min-width:0;padding:12px 15px 13px;border-radius:18px 18px 18px 6px;background:#FAFAF9;color:#08090C;box-shadow:0 12px 28px rgba(0,0,0,.28)}
 .tutor-review-speech>div::before{content:'';position:absolute;left:-5px;bottom:13px;width:12px;height:12px;border-radius:3px;background:inherit;transform:rotate(45deg)}
 .tutor-review-line{font-size:15.5px;line-height:1.55;font-weight:var(--wt-strong);overflow-wrap:anywhere;text-wrap:pretty}

@@ -27,7 +27,7 @@ svg{width:24px;height:24px;flex-shrink:0}
 .profile-control{display:flex;align-items:center;gap:10px;min-width:0;max-width:calc(100% - 60px);height:52px;padding:5px 18px 5px 5px;border-radius:999px;text-align:left;background:rgba(14,15,19,.72);color:var(--w-ink);box-shadow:var(--w-glass-edge);-webkit-backdrop-filter:var(--w-blur);backdrop-filter:var(--w-blur);transition:transform .12s var(--w-ease)}
 .profile-control:active{transform:scale(.975)}
 .profile-portrait{display:grid;place-items:center;width:42px;height:42px;flex-shrink:0;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#16171b);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
-.profile-portrait img{width:38px;height:38px;object-fit:contain;transform:translateY(3px)}
+.profile-portrait img{width:100%;height:100%;object-fit:cover}
 .profile-copy{display:grid;gap:1px;min-width:0}
 .profile-copy small{display:flex;align-items:center;gap:6px;font-size:13px;line-height:1.35;font-weight:var(--wt-label);color:var(--w-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .profile-copy small::before{content:'';width:6px;height:6px;flex-shrink:0;border-radius:50%;background:var(--w-led-idle)}
@@ -72,7 +72,7 @@ svg{width:24px;height:24px;flex-shrink:0}
 #home-tutor{display:contents;color:var(--w-ink);text-align:left}
 #home-tutor .home-tutor-companion{flex-basis:100%;display:grid;grid-template-columns:44px minmax(0,1fr);gap:12px;align-items:start;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
 #home-tutor .game-tutor-portrait{grid-row:1;width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1);overflow:hidden}
-#home-tutor .game-tutor-portrait img{transform:translateY(4px) scale(.94)}
+#home-tutor .game-tutor-portrait img{object-fit:cover}
 #home-tutor .game-tutor-message{grid-column:2;display:block;min-width:0;margin:0;padding:0;background:none;border:0;box-shadow:none}
 #home-tutor .game-tutor-message::before,#home-tutor .game-tutor-message::after{display:none}
 #home-tutor .game-tutor-message small{display:block;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}

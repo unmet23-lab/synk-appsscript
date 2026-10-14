@@ -61,14 +61,14 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 .ws-signin .dialog-note{margin-top:18px}
 .panel-dialog:has(.welcome-art) .panel-description{text-align:center;text-wrap:balance}
 .welcome-art{position:relative;display:grid;place-items:center;height:184px;margin:4px 0 6px}
-.welcome-art img{width:168px;height:168px;object-fit:contain;filter:var(--w-cut-shadow)}
+.welcome-art img{width:168px;height:168px;object-fit:cover;border-radius:var(--w-r-lg);box-shadow:var(--w-card-edge),0 14px 30px rgba(0,0,0,.34)}
 .welcome-art span{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-family:var(--w-mono);font-size:var(--t-mono);letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3);white-space:nowrap}
 .welcome-lead{margin:22px 0 8px;font-size:var(--t-title-l);line-height:1.3;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-align:center;text-wrap:balance}
 
 /* ── 내 계정: 튜터 초상 한 줄 → 저장 LED 블록 → 학습 연결 → 반 연결 카드 → 저장한 차림 → 흰 알약 + 로그아웃 줄 ── */
 .ws-me-id{display:flex;align-items:center;gap:16px;padding:2px 0 4px}
 .ws-me-portrait{display:grid;place-items:center;flex:none;width:72px;height:72px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
-.ws-me-portrait img{width:88%;height:88%;object-fit:contain;transform:translateY(4px)}
+.ws-me-portrait img{width:100%;height:100%;object-fit:cover}
 .ws-me-name{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);text-wrap:balance}
 .ws-me-sub{margin-top:3px;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
 .ws-me .world-notice{margin-top:20px}

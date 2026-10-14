@@ -204,6 +204,8 @@
 
 /* ── 이야기: 말하는 친구는 가운데 크게(정본 컷), 나머지 둘은 옆에 작게. 대사는 흰 말풍선, 넘기기는 단추 하나 ── */
 .life-story-stage{display:grid;gap:16px;align-content:start}
+.life-story-photo{display:block;margin:0;aspect-ratio:3/2;border-radius:var(--w-r-lg);overflow:hidden;background:var(--w-s2);box-shadow:var(--w-card-edge)}
+.life-story-photo img{display:block;width:100%;height:100%;object-fit:cover}
 .life-cast{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,.8fr);grid-template-areas:"a main b";align-items:end;gap:4px;min-height:236px;padding:18px 10px 14px;border-radius:var(--w-r-lg);background:radial-gradient(70% 80% at 50% 105%,rgba(255,255,255,.08),transparent 70%),var(--w-s1);box-shadow:var(--w-card-edge);overflow:hidden}
 .life-cast>div{grid-area:b;min-width:0;text-align:center;opacity:.5;transition:opacity .2s var(--w-ease)}
 .life-cast>div:first-child:not(.is-speaking),.life-cast>div.is-speaking:first-child+div{grid-area:a}
@@ -313,6 +315,12 @@ h3.life-poster-sub{margin-bottom:0}
 .cafe-scene::after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(8,9,12,.18),transparent 30%,transparent 62%,rgba(8,9,12,.34));pointer-events:none}
 .cafe-scene-table{background:var(--cafe-room) 15% 60% / cover no-repeat,var(--w-s2)}
 .cafe-scene-table[data-cafe-seat=garden]{background-position:85% 60%}
+/* 세 친구까지 함께 구운 카페 사진(카운터 · 창가 · 정원). 사진이 있는 자리는 친구 컷을 얹지 않는다. */
+.cafe-scene[data-cafe-photo=true]{background:var(--cafe-counter) 50% 58% / cover no-repeat,var(--w-s2)}
+.cafe-scene-table[data-cafe-photo=true]{background:var(--cafe-window) 50% 58% / cover no-repeat,var(--w-s2)}
+.cafe-scene-table[data-cafe-seat=garden][data-cafe-photo=true]{background-image:var(--cafe-garden)}
+/* 사진 속 세 친구는 장면 폭의 왼쪽 58%까지 선다(굽기 지시). 쟁반은 그 옆 빈 카운터에만 놓이게 좁힌다(390 실측). */
+.cafe-scene[data-cafe-photo=true]>.cafe-tray{width:34%}
 .cafe-place-label{position:absolute;left:10px;top:10px;z-index:2;display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;line-height:1.2;font-weight:var(--wt-strong);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .cafe-place-label>span{font-weight:var(--wt-body);color:rgba(250,250,249,.68)}
 .cafe-place-label>span::before{content:'·';margin-right:6px}

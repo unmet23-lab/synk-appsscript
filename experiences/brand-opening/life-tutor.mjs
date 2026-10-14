@@ -1,15 +1,17 @@
 import {getTutor,tutorFace} from './game-tutor-lines.mjs';
 import {lifeTutorKind,lifeTutorLine,lifeTutorDifficulties,lifeTutorExercise} from './life-tutor-lines.mjs';
 import {getPref} from './world-sound.mjs';
+import {tutorPhoto,preloadTutorPhotos} from './tutor-photos.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL('assets/tutors/'+path,import.meta.url).href;
 export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],practised=[],getExercise,onHint=()=>{},onPause=()=>{},onPreparePractice=()=>{},onPracticeSuccess=null,onPracticeComplete=()=>{},onHelp=null,lineForState=lifeTutorLine,reduced=()=>false}){
  const tutor=getTutor(tutorId);if(!tutor||!container)return null;
+ const place=state.scope==='home'?'home':'life',photo=(emotion='기본')=>tutorPhoto(tutor.id,place,emotion);preloadTutorPhotos(tutor.id,place);
  const difficulties=lifeTutorDifficulties(snapshot,lessons,state.scope);
  getExercise ||= id=>lifeTutorExercise(lessons.find(l=>l.questions.some(q=>q.id===id||q.review.id===id)),id);
  let disposed=false,active=true,kind='',guide=null,practice=null,clip=null,timer=null,blink=null,sound=false,exercise=null,selected=null,correct=false;
  try{sound=localStorage.getItem('synk.world.tutor.sound')==='true';}catch{}
- const portrait=(face='기본')=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${asset(tutor.images.기본)}" alt="${tutor.name}" width="480" height="480"><img class="game-tutor-face" src="${asset(tutor.images[face]||tutor.images.기본)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
+ const portrait=(face='기본')=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${photo()}" alt="${tutor.name}" width="288" height="288"><img class="game-tutor-face" src="${photo(face)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor life-tutor';element.dataset.tutor=tutor.id;
  element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
  element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b><span class="life-tutor-role"> · 함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
@@ -17,7 +19,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  const helpButton=element.querySelector('.life-tutor-help'),face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),body=element.querySelector('.game-tutor-portrait');
  const motion=matchMedia('(prefers-reduced-motion:reduce)'),isReduced=()=>reduced()||motion.matches;
  const stopSound=()=>{clip?.pause();clip=null;};
- function restFace(){face.src=asset(tutor.images.기본);element.dataset.face='기본';element.dataset.reduced=String(isReduced());delete body.dataset.reaction;}
+ function restFace(){face.src=photo();element.dataset.face='기본';element.dataset.reduced=String(isReduced());delete body.dataset.reaction;}
  function quiet(){clearTimeout(timer);clearTimeout(blink);stopSound();restFace();}
  // 기다리는 동안은 정지(스스로 깜박이거나 움직이지 않는다). 표정은 입력 직후에만 한 번 바뀌고 잠시 뒤 기본으로 돌아온다.
  function idle(){clearTimeout(timer);clearTimeout(blink);restFace();}
@@ -32,7 +34,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   quiet();kind=nextKind;const reaction=['success','assisted','complete','practiceSuccess'].includes(kind)?'success':kind==='retry'?'retry':kind==='listen'?'listening':'ready';
   // 「친구들의 반응」이 꺼져 있으면 정답·오답에도 자세를 바꾸지 않는다(설정 시트 스위치).
   const emotion=['success','retry'].includes(reaction)&&!getPref('reactions')?'기본':tutorFace(tutor.id,reaction);element.dataset.reaction=reaction;element.dataset.face=emotion;element.dataset.reduced=String(isReduced());body.dataset.reaction=reaction;
-  face.src=asset(tutor.images[emotion]||tutor.images.기본);line.textContent=text;
+  face.src=photo(emotion);line.textContent=text;
   if(reaction==='success')playReaction('기쁨');else if(reaction==='retry')playReaction('안심');
   if(!active||document.hidden||guide||practice){quiet();return;}
   timer=setTimeout(()=>{if(disposed||!active||document.hidden)return;idle();},tutor.id==='kkamong'?2800:2300);
@@ -68,7 +70,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   practice.querySelectorAll('[data-expression-choice]').forEach(button=>button.addEventListener('click',()=>{
    if(correct||disposed)return;selected=button.dataset.expressionChoice;correct=selected===exercise.answerId;
    practice.dataset.correct=String(correct);practice.dataset.selected=selected;
-   const emotion=tutorFace(tutor.id,correct?'success':'retry');practice.querySelector('.game-tutor-face').src=asset(tutor.images[emotion]||tutor.images.기본);practice.dataset.face=emotion;
+   const emotion=tutorFace(tutor.id,correct?'success':'retry');practice.querySelector('.game-tutor-face').src=photo(emotion);practice.dataset.face=emotion;
    practice.querySelector('.life-expression-tutor').textContent=lifeTutorLine(tutor.id,correct?'practiceSuccess':'practiceRetry');
    const feedback=practice.querySelector('.life-expression-feedback');feedback.hidden=false;feedback.querySelector('p').textContent=exercise.explanation;
    practice.querySelectorAll('[data-expression-choice]').forEach(b=>{b.classList.toggle('is-chosen',b===button);b.disabled=correct;});
@@ -86,7 +88,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  // 판정 직후 한 번(world-sound verdict가 「친구들의 반응」이 켜져 있을 때만 부른다): 자세를 바꾸고 잠시 뒤 기본으로.
  function react(correct){
   if(disposed||!active||guide||practice)return;clearTimeout(timer);
-  const emotion=tutorFace(tutor.id,correct?'success':'retry');face.src=asset(tutor.images[emotion]||tutor.images.기본);element.dataset.face=emotion;
+  const emotion=tutorFace(tutor.id,correct?'success':'retry');face.src=photo(emotion);element.dataset.face=emotion;
   timer=setTimeout(()=>{if(!disposed)idle();},tutor.id==='kkamong'?2800:2300);
  }
  return {element,update,react,openGuide,openPractice,setActive(value){if(active===!!value&&element.dataset.reduced===String(isReduced()))return;active=!!value;if(!active)quiet();else idle();},metrics:()=>({tutor:tutor.id,scope:state.scope,kind,face:element.dataset.face,guideOpen:!!guide,practice:exercise?{id:exercise.id,selected,correct}:null,practised:[...practised],reactionAudioPlaying:!!clip&&!clip.paused}),dispose(){disposed=true;quiet();closeGuide({focus:false});closePractice({focus:false});element.remove();document.removeEventListener('visibilitychange',visibility);motion.removeEventListener('change',visibility);}};

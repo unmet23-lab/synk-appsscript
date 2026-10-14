@@ -1,0 +1,17 @@
+Image to generate: a stop-motion contact sheet. Landscape 3:2 image made of exactly SIX equal square frames in a precise 3 x 2 grid (3 columns, 2 rows), separated by thin straight pure-white gutter lines about 12 pixels wide. No outer border, no labels, no numbers, no text anywhere.
+
+All six frames are the SAME locked-off camera shot of the SAME miniature set, like six consecutive frames of a stop-motion film where the animator only swaps Marin's felt face pieces. The set, the camera position, the lighting, the props and Marin's body position, size, pose and shadow must be identical in all six frames. Only the face (and the tiny extra noted for a frame) changes.
+
+The shot (same in every frame): Marin (see MASCOTS) stands very upright next to a tiny open felt notebook with neat dotted lines and a small pencil on a warm honey-coloured oak floor in the sunny corner of a small handmade felt room; beside the notebook a single white felt daisy stands in a thimble used as a vase. Marin is serious and precise but secretly kind: it stands straight like on duty, one tiny arm holding the strap of its cross-body pouch, facing the camera. Background: a soft cream plaster wall with a faint felt texture, a bit of a window frame at the far left edge with warm afternoon sunlight from the upper left, gentle bounce light, soft real contact shadows. Eye-level camera, 50mm lens look, shallow depth of field.
+Framing inside each frame: Marin is centred slightly left, standing or sitting on the surface with its lowest point at about 88 percent of the frame height and the top of its head at about 42 percent of the frame height. The upper 38 percent of each frame is calm, empty background (a speech bubble will be placed there later). Nothing is cropped.
+
+Marin's face in each frame (REFERENCE 2 is an expression chart of the real Marin toy in 4 x 2 cells; copy the exact face pieces from the named chart cell):
+1. top-left: calm default - two round butter-yellow felt lens eyes (chart cell 1).
+2. top-middle: lenses switched off in a blink - both lenses dark navy (chart cell 2).
+3. top-right: surprised - both yellow lenses bigger, brighter and slightly oval (chart cell 4).
+4. bottom-left: secretly happy - both lenses glowing a warmer brighter yellow (chart cell 6).
+5. bottom-middle: focused - each lens with a bright horizontal glowing band across the middle (chart cell 7).
+6. bottom-right: a little embarrassed - one lens normal and one lens smaller and dimmer (chart cell 5).
+
+{{MASCOTS}}
+Only Marin appears in this image. REFERENCE 1 shows Marin's body; REFERENCE 2 shows its faces.

@@ -1,5 +1,6 @@
 import {CAFE_LESSON_ID,CAFE_SEATS,CAFE_VISITS,cafeVisitById,cafeQuestion,cafeReceipt,isCafeOrder,cafeOrderText} from './cafe-activity.mjs';
-import {lessonById} from './life-content.mjs';
+import {lessonById} from './life-content.mjs'
+import {hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const drinkNames={cold:'차가운 주스',warm:'따뜻한 주스',tea:'따뜻한 차',coldtea:'차가운 차',takeout:'포장한 차'};
 export function cafeDrink(kind,count=1){return kind?`<span class="cafe-cups" aria-label="${esc(drinkNames[kind])} ${count}잔">${Array.from({length:count},()=>`<span class="cafe-drink cafe-drink-${kind}" aria-hidden="true">${kind==='coldtea'?'<span class="cafe-ice"></span>':''}</span>`).join('')}</span>`:'';}
@@ -7,12 +8,14 @@ export function cafeDrink(kind,count=1){return kind?`<span class="cafe-cups" ari
 export function cafeSpeechLabel({available=true,phase='idle',heard=false}={}){return !available?'소리 다시 준비':phase==='playing'?'멈추기':phase==='paused'?'이어 듣기':heard?'다시 듣기':'듣기';}
 const two=n=>String(n).padStart(2,'0');
 const actions=(text,attribute,extra='')=>`<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text} <span aria-hidden="true">→</span></button>${extra}<button class="quiet-button" data-life-pause>나중에 하기</button></div>`;
+// 친구까지 함께 구운 카페 사진이 아직 없는 자리만 옛 컷을 얹는다(굽는 대로 사진으로 바뀐다).
 const cast=photo=>`<div class="cafe-friends">${['mongle','kkamong','marine'].map(id=>photo(id)).join('')}</div>`;
 const speakerName=id=>({mongle:'몽글',kkamong:'까몽',marine:'마린',narrator:'이야기'}[id]||'친구');
 const progress=(done,total)=>`<span class="life-progress" aria-hidden="true"><i style="width:${Math.round(Math.max(0,Math.min(1,done/total))*100)}%"></i></span>`;
-// 카페 한 장면: 카운터 사진 위에 친구들과 쟁반(주문한 잔이 놓인다). 위에는 어두운 유리 이름표, 아래는 지금 상태 한 줄.
+// 카페 한 장면: 세 친구가 카운터·자리에 함께 있는 카페 사진 위에 쟁반(주문한 잔이 놓인다). 위에는 어두운 유리 이름표, 아래는 지금 상태 한 줄.
 function sceneMarkup(state,receipt,photo,message,kind='counter'){
- return `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" aria-label="${kind==='table'?'친구와 앉은 자리':'카페 카운터'}"><div class="cafe-place-label">구름 한 잔 <span>동네 카페</span></div>${cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink||'empty'}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink,receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
+ const baked=hasCafePhoto(kind==='table'?state.seat:'counter');
+ return `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" data-cafe-photo="${baked}" aria-label="${kind==='table'?'친구와 앉은 자리':'카페 카운터'}"><div class="cafe-place-label">구름 한 잔 <span>동네 카페</span></div>${baked?'':cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink||'empty'}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink,receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
 }
 export function cafeMarkup(state,{photo,print=()=>'',helped=false,firstAnswer=null,retryButton=()=>'',lessonId=CAFE_LESSON_ID,speechAvailable=false,speechPhase='idle'}={}){
  const visit=cafeVisitById(lessonId),receipt=cafeReceipt(state,lessonId),step=visit.steps[state.step];

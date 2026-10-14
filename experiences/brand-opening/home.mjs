@@ -4,6 +4,7 @@ import {createLifeTutor} from './life-tutor.mjs';
 import {createHomeTutor} from './home-tutor.mjs';
 import {createHomeScene} from './home-scene.mjs';
 import {createHomeMemory} from './home-memory.mjs';
+import {profilePhoto} from './tutor-photos.mjs';
 import {createWardrobeAlbum} from '../synk-world-home/wardrobe-album.mjs';
 import {play,bindTaps,getPref,setPref,PREF_LABELS} from './world-sound.mjs';
 const $=selector=>document.querySelector(selector);
@@ -256,7 +257,7 @@ home.mountGameTutor=(game,{frame=null,practiceEnabled=true,presentation=educatio
 home.mountLifeTutor=options=>createLifeTutor({...options,tutorId:tutorUI.choice()?.id,container:content,reduced:()=>home.state.reduced});
 tutorUI=createTutorOnboarding({home,asset,commitChoice:(id,owner)=>host?.selectTutor?host.selectTutor(id,owner):null,getChoiceStatus:owner=>host?.tutorStatus?.(owner),onChoice:tutor=>{
  const profile=$('.profile-portrait img');
- profile.src=asset(tutor?`assets/tutors/${tutor.images.기본}`:'assets/home/mongle-smile.webp');
+ profile.src=profilePhoto(tutor?.id);
  renderHeading(tutor);
  living.setTutor(tutor?.id||null);
  homeTutor?.refresh();
@@ -264,7 +265,7 @@ tutorUI=createTutorOnboarding({home,asset,commitChoice:(id,owner)=>host?.selectT
 homeTutor=createHomeTutor({container:$('#home-tutor'),getTutor:()=>tutorUI.metrics(),learn:command=>void callLearning(command),choose:()=>home.chooseTutor(),profile:showMe,reduced:()=>home.state.reduced});
 homeTutor.refresh();
 const initialTutor=tutorUI.choice();
-if(initialTutor){$('.profile-portrait img').src=asset(`assets/tutors/${initialTutor.images.기본}`);renderHeading(initialTutor);living.setTutor(initialTutor.id);}
+if(initialTutor){$('.profile-portrait img').src=profilePhoto(initialTutor.id);renderHeading(initialTutor);living.setTutor(initialTutor.id);}
 window.__synkHome=home;
 // 단추를 누를 때의 짧은 소리(효과음 스위치를 따른다). 시트 안 단추도 문서 하나로 묶인다.
 bindTaps(document);

@@ -1,0 +1,10 @@
+Image to generate: a stop-motion contact sheet. Landscape 3:2 image made of exactly FOUR equal frames in a precise 2 x 2 grid, separated by thin straight pure-white gutter lines about 12 pixels wide. No outer border, no text.
+All four frames are the SAME locked-off camera shot of the SAME miniature set: the three friends stand at the counter of a cosy felt cafe; on the counter is a cup topped with a big fluffy whipped-cream cloud that looks like a real little cloud. The friends stand left to right: Mongle, Kkamong, Marin, at the same positions and sizes in every frame, their bodies between 30 and 86 percent of the frame height, together about 60 percent of the frame width, nothing cropped. Only who is talking changes:
+1. top-left: nobody talks - all three calm with default faces (Mongle black bead eyes, Kkamong round green eyes, Marin round yellow lenses), looking at the scene.
+2. top-right: Mongle talks - Mongle has lively smiling stitched-arc eyes and leans a tiny bit forward; the other two turn their heads slightly toward Mongle.
+3. bottom-left: Kkamong talks - Kkamong has proud happy green stitched-arc eyes and lifts one short arm; the other two turn slightly toward Kkamong.
+4. bottom-right: Marin talks - Marin's lenses glow brighter with a bright horizontal band (focused, explaining) and it raises one tiny arm; the other two turn slightly toward Marin.
+Light and set are identical in all frames. It is a real photograph of a handmade needle-felt miniature set (felt, wool, wood, paper), shot with a 50mm lens look, natural soft light, shallow depth of field, gentle film grain. Warm, calm, slightly muted colours. Absolutely no letters, numbers, words, logos or symbols anywhere in the image (signs, books, tags and labels are blank).
+
+{{MASCOTS}}
+REFERENCE 1 is the real Mongle toy, REFERENCE 2 the real Kkamong toy, REFERENCE 3 the real Marin toy.
