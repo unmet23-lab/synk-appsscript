@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="./launcher.css">
   <link rel="stylesheet" href="./member-home.css">
   <link rel="stylesheet" href="./convenience.css">
+  <link rel="stylesheet" href="./pulse-client.css">
+  <link rel="stylesheet" href="./pulse-workflow.css">
   <script src="/assets/launcher/engine.js"></script>
   <script src="/assets/launcher/personalization.js"></script>
   <script type="module" src="./launcher.mjs"></script>
@@ -75,6 +77,7 @@
     <main id="main" tabindex="-1">
       <section id="view-home" class="view member-home" aria-label="내 홈"></section>
       <section id="view-library" class="view library-view" aria-label="앱 상세" hidden>
+      <section id="pulse-client" hidden aria-label="SYNK PULSE 클라이언트 공간"></section>
         <div class="personal-entry" id="personal-entry" hidden><span class="atlas-dot" aria-hidden="true"></span><div><span class="label">YOUR SYNK, YOUR WAY</span><strong id="personal-heading">무엇부터 시작할까요?</strong><p id="personal-summary">목적과 보기 방식을 고르면, 나에게 맞는 공간부터 보여 드려요.</p></div><button class="ghost-button" id="personal-open">맞춤 시작</button></div>
         <div id="recommendation" class="recommendation" hidden aria-live="polite"></div>
         <div class="library-empty" id="library-empty" hidden aria-live="polite"><svg class="empty-mark" viewBox="0 0 560 328" aria-hidden="true"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg><span class="label">YOUR SYNK</span><h1 id="library-empty-title">내 앱을 확인하고 있어요</h1><p id="library-empty-description">계정 연결을 마치면 이용할 수 있는 앱이 나타납니다.</p><div class="empty-actions"><button class="solid-button" id="library-account">계정 관리</button><button class="ghost-button" id="library-retry" hidden>다시 불러오기</button></div></div>

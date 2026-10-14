@@ -22,7 +22,7 @@ if(!process.versions.electron){
   // Sequential scenarios close their isolated window before creating the next one.
   app.on('window-all-closed',()=>{});
   app.whenReady().then(async()=>{
-    let window;const checks=[],errors=[],requests=[],windowOpens=[];const all=/* 10-09 결정: Partners는 PULSE로, 교사는 Workspace로 합쳐 여덟 개 */['world','messenger','path','pulse','care','fortune','rehearsal','family-album'];
+    let window;const checks=[],errors=[],requests=[],windowOpens=[];const all=/* 회원 혜택 네 서비스는 별도 혜택 화면에서 진입 */['world','messenger','path','pulse'];
     const check=(name,ok,details={})=>checks.push({name,ok:!!ok,...details});
     const same=(a,b)=>JSON.stringify([...a].sort())===JSON.stringify([...b].sort());
     const run=script=>window.webContents.executeJavaScript(script);
@@ -42,49 +42,51 @@ if(!process.versions.electron){
       for(let attempt=0;attempt<200;attempt++){const state=await run('document.documentElement.dataset.ready');if(state==='true')return;if(state==='error')throw Error('Renderer init failed');await new Promise(resolve=>setTimeout(resolve,25));}throw Error('Renderer readiness timeout');
     }
     async function action(id,expected){
-      await click('#app-list [data-app="'+id+'"]');const before=await run('window.__synkCatalogFixture.calls().length');
-      const button=await run("({action:document.getElementById('primary-action').dataset.action,disabled:document.getElementById('primary-action').disabled})");
+      const publicBenefit=expected==='public-web',selector=publicBenefit?'#benefit-detail [data-benefit-public="'+id+'"]':'#primary-action';
+      if(publicBenefit){await click('[data-view="benefits"]');await click('#benefits-grid [data-benefit="'+id+'"]');}else await click('#app-list [data-app="'+id+'"]');
+      const before=await run('window.__synkCatalogFixture.calls().length');
+      const button=await run('(()=>{const button=document.querySelector('+JSON.stringify(selector)+');return {action:button.dataset.benefitPublic?"public-web":button.dataset.action,disabled:button.disabled};})()');
       check(id+'-action-ready',button.action===expected&&!button.disabled,button);
       if(button.disabled||button.action!==expected)return;
-      await click('#primary-action');for(let i=0;i<80;i++){if(await run('window.__synkCatalogFixture.calls().length')>before)break;await new Promise(resolve=>setTimeout(resolve,20));}await settle();
+      await click(selector);for(let i=0;i<80;i++){if(await run('window.__synkCatalogFixture.calls().length')>before)break;await new Promise(resolve=>setTimeout(resolve,20));}await settle();
       const calls=await run('window.__synkCatalogFixture.calls()');check(id+'-fixed-action-call',calls.length===before+1&&calls.at(-1).operation===expected&&calls.at(-1).id===id&&calls.at(-1).synthetic===true,{lastCall:calls.at(-1)});
     }
     try{
       fs.mkdirSync(artifacts,{recursive:true});Menu.setApplicationMenu(null);await createWindow('development');
-      check('development-guest-sees-eight-catalog-cards',same(await ids(),all),{ids:await ids()});
+      check('development-guest-sees-four-catalog-cards',same(await ids(),all),{ids:await ids()});
       check('guest-home-visible-without-member-write',await run("!document.getElementById('view-home').hidden&&!document.querySelector('[data-member-add]')&&!document.getElementById('view-home').textContent.includes('아직 연결된 앱이 없어요')"));
-      await click('#app-list [data-app="care"]');await click('#favorite');
-      check('guest-favorite-stays-in-device-scope',await run("JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('care')&&!Object.keys(localStorage).some(key=>key.includes(':account:'))"));
+      await click('#app-list [data-app="path"]');await click('#favorite');
+      check('guest-favorite-stays-in-device-scope',await run("JSON.parse(localStorage.getItem('synk-launcher-view-v1')).favorites.includes('path')&&!Object.keys(localStorage).some(key=>key.includes(':account:'))"));
       await account('catalog-a');await settle();
-      check('empty-grant-account-still-sees-eight-cards',same(await ids(),all),{ids:await ids()});
+      check('empty-grant-account-still-sees-four-cards',same(await ids(),all),{ids:await ids()});
       check('fixture-grants-remain-empty',await run('window.__synkCatalogFixture.snapshot().library.appIds.length===0'));
-      await click('#app-list [data-app="care"]');check('guest-favorite-not-imported-to-account',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='false'"));
+      await click('#app-list [data-app="path"]');check('guest-favorite-not-imported-to-account',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='false'"));
       await click('[data-view="home"]');await click('[data-member-purpose="student"]');
       check('home-purpose-works-with-empty-grants',await run("document.querySelector('[data-member-purpose=student]').getAttribute('aria-pressed')==='true'&&!!document.querySelector('.member-next [data-member-launch],.member-next [data-member-app]')&&!document.getElementById('view-home').textContent.includes('아직 연결된 앱이 없어요')"));
       check('home-summary-has-app-and-no-overflow',await run("(()=>{const m=document.getElementById('main');return !!document.querySelector('.member-next h2')&&document.documentElement.scrollWidth<=innerWidth&&m.scrollWidth<=m.clientWidth;})()"),{screenshot:await capture('empty-grant-home-1280')});
       await click('[data-view="library"]');
-      for(const [filter,expected]of [['development',all.filter(id=>id!=='pulse')],['planned',['pulse']],['installed',['world','messenger']],['all',all]]){await click('[data-filter="'+filter+'"]');check('catalog-filter-'+filter,same(await ids(),expected),{ids:await ids()});}
-      await run("document.getElementById('search').value='리허설';document.getElementById('search').dispatchEvent(new Event('input'))");check('catalog-search-rehearsal',same(await ids(),['rehearsal']));
+      for(const [filter,expected]of [['development',all],['planned',[]],['installed',['world','messenger']],['all',all]]){await click('[data-filter="'+filter+'"]');check('catalog-filter-'+filter,same(await ids(),expected),{ids:await ids()});}
+      await run("document.getElementById('search').value='리허설';document.getElementById('search').dispatchEvent(new Event('input'))");check('catalog-search-rehearsal-stays-in-benefits',!(await ids()).length&&await run("!document.getElementById('benefits-search').hidden&&!!document.querySelector('#benefits-search [data-benefit=rehearsal]')"));
       await run("document.getElementById('search').value='no-matching-synthetic-app';document.getElementById('search').dispatchEvent(new Event('input'))");check('catalog-search-empty-is-search-state',!(await ids()).length&&await run("!document.getElementById('empty-search').hidden&&document.getElementById('library-empty').hidden"));
       await run("document.getElementById('search').value='';document.getElementById('search').dispatchEvent(new Event('input'))");
-      for(const id of all){await click('#app-list [data-app="'+id+'"]');check('catalog-select-'+id,await run('document.querySelector(\'#app-list [data-app="'+id+'"]\').getAttribute("aria-pressed")==="true"&&!document.getElementById("app-detail").hidden'));}
-      for(const id of ['pulse']){await click('#app-list [data-app="'+id+'"]');check('planned-remains-disabled-'+id,await run("document.getElementById('primary-action').disabled&&document.getElementById('primary-action').dataset.action==='none'"));}
+      for(const id of all.filter(id=>id!=='pulse')){await click('#app-list [data-app="'+id+'"]');check('catalog-select-'+id,await run('document.querySelector(\'#app-list [data-app="'+id+'"]\').getAttribute("aria-pressed")==="true"&&!document.getElementById("app-detail").hidden'));}
+      const pulseBefore=await run('window.__synkCatalogFixture.calls().length'),selectedBeforePulse=await run('document.getElementById("breadcrumb-app").textContent');await click('#app-list [data-app="pulse"]');await settle();check('pulse-sidebar-opens-independent-app',await run('window.__synkCatalogFixture.calls().length')===pulseBefore+1&&await run('window.__synkCatalogFixture.calls().at(-1).operation==="pulse-app"'));check('pulse-does-not-replace-platform-with-catalog',await run('document.getElementById("pulse-client").hidden&&document.getElementById("breadcrumb-app").textContent==='+JSON.stringify(selectedBeforePulse)));
       for(const id of ['world','messenger'])await action(id,'launch');for(const id of ['care','fortune','rehearsal'])await action(id,'public-web');
       const beforeUnknown=await run('window.__synkCatalogFixture.calls().length');
       await run("(()=>{const b=document.createElement('button');b.dataset.command='public-web';b.dataset.client='unknown-synthetic';document.body.append(b);b.click();b.remove();const a=document.createElement('button');a.dataset.app='unknown-synthetic';document.body.append(a);a.click();a.remove();})()");
       check('unknown-id-never-reaches-bridge',await run('window.__synkCatalogFixture.calls().length')===beforeUnknown);
-      await click('#app-list [data-app="care"]');await click('#favorite');await click('[data-filter="favorites"]');check('account-favorite-filter',same(await ids(),['care']));await click('[data-filter="all"]');
+      await click('#app-list [data-app="path"]');await click('#favorite');await click('[data-filter="favorites"]');check('account-favorite-filter',same(await ids(),['path']));await click('[data-filter="all"]');
       check('catalog-all-restored',same(await ids(),all),{screenshot:await capture('empty-grant-catalog-1280')});
       for(const width of [390,320]){window.setContentSize(width,960);await settle();check('catalog-'+width+'-no-horizontal-overflow',await run("document.documentElement.scrollWidth<=innerWidth&&document.getElementById('main').scrollWidth<=document.getElementById('main').clientWidth"),{screenshot:await capture('empty-grant-catalog-'+width)});}
       await click('[data-view="home"]');for(const width of [390,320]){window.setContentSize(width,960);await settle();check('home-'+width+'-no-horizontal-overflow',await run("document.documentElement.scrollWidth<=innerWidth&&document.getElementById('main').scrollWidth<=document.getElementById('main').clientWidth"),{screenshot:await capture('empty-grant-home-'+width)});}window.setContentSize(1280,960);await click('[data-member-add]');
       await run("(()=>{const f=document.getElementById('member-record-form');f.elements.kind.value='task';f.elements.appId.value='care';f.elements.title.value='catalog owner A local note';f.elements.body.value='synthetic owner A only';f.elements.consent.checked=true;f.requestSubmit();})()");
       check('member-local-note-saves-for-empty-grant-account',await run("document.querySelectorAll('.member-record').length===1&&document.getElementById('view-home').textContent.includes('catalog owner A local note')"));
-      await account('catalog-b',2);await settle();check('account-b-keeps-eight-cards-but-no-a-note',same(await ids(),all)&&await run("document.querySelectorAll('.member-record').length===0&&!document.getElementById('view-home').textContent.includes('catalog owner A local note')"));
-      await click('#app-list [data-app="care"]');check('account-b-does-not-inherit-a-favorite',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='false'"));
+      await account('catalog-b',2);await settle();check('account-b-keeps-four-cards-but-no-a-note',same(await ids(),all)&&await run("document.querySelectorAll('.member-record').length===0&&!document.getElementById('view-home').textContent.includes('catalog owner A local note')"));
+      await click('#app-list [data-app="path"]');check('account-b-does-not-inherit-a-favorite',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='false'"));
       await account('catalog-a',3);await click('[data-view="home"]');check('account-a-restores-own-local-note',await run("document.querySelectorAll('.member-record').length===1&&document.getElementById('view-home').textContent.includes('catalog owner A local note')"));
       await click('#sign-out');await settle();check('logout-keeps-catalog-hides-member-data',same(await ids(),all)&&await run("document.querySelectorAll('.member-record').length===0&&!document.querySelector('[data-member-add]')&&window.__synkCatalogFixture.snapshot().signedIn===false"));
-      await click('#app-list [data-app="care"]');check('logout-restores-guest-favorite-only',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='true'"));
-      const calls=await run('window.__synkCatalogFixture.calls()');check('only-five-fixed-synthetic-actions',calls.length===5&&calls.every(row=>row.synthetic===true)&&same(calls.filter(row=>row.operation==='launch').map(row=>row.id),['world','messenger'])&&same(calls.filter(row=>row.operation==='public-web').map(row=>row.id),['care','fortune','rehearsal']),{calls});
+      await click('#app-list [data-app="path"]');check('logout-restores-guest-favorite-only',await run("document.getElementById('favorite').getAttribute('aria-pressed')==='true'"));
+      const calls=await run('window.__synkCatalogFixture.calls()');check('only-six-fixed-synthetic-actions',calls.length===6&&calls.every(row=>row.synthetic===true)&&same(calls.filter(row=>row.operation==='launch').map(row=>row.id),['world','messenger'])&&same(calls.filter(row=>row.operation==='public-web').map(row=>row.id),['care','fortune','rehearsal'])&&same(calls.filter(row=>row.operation==='pulse-app').map(row=>row.id),['pulse']),{calls});
       check('development-window-hidden',!window.isVisible());window.destroy();window=null;
       await createWindow('development-delayed');const timing=await run('window.__synkCatalogFixture.observations()');
       check('environment-first-auth-delayed-still-resolves-member-catalog',timing.environmentResolvedAt<timing.authStatusResolvedAt&&same(await ids(),all)&&await run("window.__synkCatalogFixture.snapshot().account.synk_user_id==='delayed-empty'&&!!document.querySelector('[data-member-add]')"),{timing});

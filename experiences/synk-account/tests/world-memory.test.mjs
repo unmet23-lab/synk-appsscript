@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { createAccountView } from '../src/account-view.mjs';
 import { WORLD_GAMES } from '../src/atlas-words.mjs';
+import { emptyPlayState } from '../../play-common/play-data.mjs';
 
 // The WORLD page hands the account client's memory transport to the host and follows the page:
 // going to the background sends the changed memory, coming back reads what other devices chose.
@@ -17,6 +18,7 @@ class Node {
   append(...nodes) { this.children.push(...nodes); }
   replaceChildren(...nodes) { this.children = [...nodes]; }
   addEventListener() {}
+  remove() {}
   closest() { return this; }
 }
 const settle = async () => { for (let i = 0; i < 20; i++) await new Promise(resolve => setImmediate(resolve)); };
@@ -36,6 +38,7 @@ test('the WORLD page sends changed memory when it goes to the background and rea
   t.after(() => { for (const [key, descriptor] of originals) { if (descriptor) Object.defineProperty(globalThis, key, descriptor);else delete globalThis[key]; } });
   const key = entry => `${entry.kind}|${entry.key}`;
   const client = {
+    play:{load:async()=>({ok:true,scope:'synk-play',accountId:'synthetic-memory-account',revision:0,state:emptyPlayState()}),mutate:async()=>{throw Error('unexpected mutation');}},
     load: async () => ({ ok: true, account: { synk_user_id: 'synthetic-memory-account', status: 'active', profile: {} }, learning: { enabled: true, revision: 1 }, capabilities: { learningSync: true }, sessions: [] }),
     learning: { get: async () => ({ ok: true, revision: 1, cursor: 0, hasMore: false, events: [] }), post: async ({ events }) => ({ ok: true, revision: 1, accepted: events.map(e => e.id) }) },
     // synk-learning ?view=memory: per entry, the newer time wins.
@@ -67,7 +70,7 @@ test('the WORLD page sends changed memory when it goes to the background and rea
   const restoreConnection=windowListeners.get('online');assert.equal(typeof restoreConnection,'function');restoreConnection();await settle();
   assert.deepEqual(game.presentation(),{support:'step'},'network restoration imports account memory without changing tabs');
   let releaseMemory;client.memory.get=({revision})=>new Promise(resolve=>{releaseMemory=()=>resolve({ok:true,revision,entries:[...rows.values()].map(copy)});});
-  const play=buttons(ids.get('world-games')).find(button=>button.textContent===WORLD_GAMES[0].label),frame=ids.get('world-games').children.find(node=>node.tagName==='iframe');
+  const play=buttons(ids.get('world-games')).find(button=>button.textContent===WORLD_GAMES.find(g=>g.path==='korean-racing').label),frame=ids.get('world-games').children.find(node=>node.tagName==='iframe');
   show('visible');await settle();play.onclick();await settle();
   assert.equal(frame.src,undefined,'personal practice waits for a delayed foreground memory read');
   releaseMemory();await settle();assert.match(frame.src,/\/korean-racing\//);

@@ -1,13 +1,30 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, webcrypto } from 'node:crypto';
-import { readConfig, beginOAuth, consumeCallback, trustedConsentRedirect, authorizationProduct, scopedStorage, tokenRequest } from '../src/core.mjs';
+import { readConfig, beginOAuth, consumeCallback, trustedConsentRedirect, authorizationProduct, firstPartyAuthorization, scopedStorage, tokenRequest } from '../src/core.mjs';
 const base = 'https://id.example.test/index.html';
 const raw = { version: 1, supabaseUrl: 'https://auth.example.test', supabasePublishableKey: 'sb_publishable_example', portalUrl: base,
   clients: { platform: { clientId: 'platform-web', redirectUri: 'https://platform.example.test/client.html?product=platform' }, world: { clientId: 'world-web', redirectUri: 'https://world.example.test/client.html?product=world' } },
   authorizationClients: [{ product: 'world', clientId: 'world-native', redirectUris: ['synktalk://oauth/callback'] }] };
 const config = readConfig(raw, base);
 const memory = () => { const values = new Map();return { values, getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) }; };
+
+test('token errors distinguish recoverable connectivity from a rejected login without exposing provider details', async () => {
+  await assert.rejects(tokenRequest(config, {}, async () => { throw Error('private endpoint details'); }), { code: 'NETWORK', retryable: true });
+  for (const status of [429, 500, 503]) await assert.rejects(tokenRequest(config, {}, async () => new Response('provider details', { status })), error => error.code === 'AUTH_UNAVAILABLE' && error.retryable === true && !error.message.includes('provider'));
+  for (const status of [400, 401, 403]) await assert.rejects(tokenRequest(config, {}, async () => new Response('{}', { status })), { code: 'AUTH_REQUIRED', retryable: false });
+  await assert.rejects(tokenRequest(config, {}, async () => new Response('{}')), { code: 'INVALID_RESPONSE' });
+});
+
+test('token response body interruptions remain retryable while completed malformed JSON is rejected', async () => {
+  for (const failure of [new TypeError('private transport detail'), new DOMException('private abort detail', 'AbortError')]) {
+    const response = () => new Response(new ReadableStream({ start(controller) { controller.error(failure); } }), { status: 200 });
+    await assert.rejects(tokenRequest(config, {}, async () => response()), error => error.code === 'NETWORK' && error.retryable === true && !error.message.includes('private'));
+  }
+  await assert.rejects(tokenRequest(config, {}, async () => new Response('{malformed', { status: 200 })), { code: 'INVALID_RESPONSE' });
+  await assert.rejects(tokenRequest(config, {}, async () => new Response('{malformed', { status: 401 })), { code: 'AUTH_REQUIRED', retryable: false });
+  await assert.rejects(tokenRequest(config, {}, async () => new Response('{malformed', { status: 503 })), { code: 'AUTH_UNAVAILABLE', retryable: true });
+});
 async function pending(product = 'world') { const storage = memory();const auth = new URL(await beginOAuth({ config, product, storage, cryptoAPI: webcrypto, now: 1000 }));const callback = new URL(config.clients[product].redirectUri);callback.searchParams.set('state', auth.searchParams.get('state'));callback.searchParams.set('code', 'one-use-code');return { storage, auth, callback }; }
 test('missing public configuration stays unconfigured; private fields/keys/HTTP are refused', () => {
   assert.equal(readConfig({ version: 1 }, base).configured, false);
@@ -73,4 +90,18 @@ test('public token exchange sends form PKCE and no client secret, rejects non-to
   const session = await tokenRequest(config, fields, async (url, init) => { assert.equal(url.pathname, '/auth/v1/oauth/token');assert.equal(init.credentials, 'omit');assert.equal(init.body.get('client_secret'), null);assert.equal(init.body.get('code'), 'one-use-code');assert.ok(init.signal);return { ok: true, json: async () => ({ access_token: 'synthetic-token', expires_in: 3600 }) }; });
   assert.equal(session.access_token, 'synthetic-token');
   await assert.rejects(tokenRequest(config, fields, async () => ({ ok: false, json: async () => ({ error: 'invalid_grant' }) })));
+});
+
+test('automatic first-party authorization requires exact registered client callback and basic scopes', () => {
+  const request = { client: { id: 'world-web', name: 'Untrusted display name' }, redirect_uri: raw.clients.world.redirectUri, scope: 'openid email profile' };
+  assert.deepEqual(firstPartyAuthorization(request, config), { clientId: 'world-web', product: 'world', destination: raw.clients.world.redirectUri, scopes: ['openid', 'email', 'profile'] });
+  assert.equal(firstPartyAuthorization({ client: { id: 'world-native' }, redirect_uri: 'synktalk://oauth/callback', scope: 'openid profile' }, config).product, 'world');
+  for (const change of [
+    { client: { id: 'unknown', name: 'SYNK WORLD' } }, { client: { id: '__proto__' } }, { client: { id: '' } },
+    { client: { id: 'platform-web' } }, { redirect_uri: 'https://attacker.example.test/client.html?product=world' },
+    { redirect_uri: request.redirect_uri + '&code=injected' }, { redirect_uri: request.redirect_uri + '&state=injected' },
+    { redirect_uri: request.redirect_uri + '#fragment' }, { redirect_uri: request.redirect_uri.replace('product=world', 'product=platform') },
+    { scope: 'openid email profile offline_access' }, { scope: 'openid admin' }, { scope: '' }, { scope: 'email profile' },
+    { scope: ['openid'] }, { scope: 'openid openid' },
+  ]) assert.throws(() => firstPartyAuthorization({ ...request, ...change }, config));
 });

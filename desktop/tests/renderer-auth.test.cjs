@@ -38,11 +38,11 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     onAuthChanged:callback=>subscribe('auth',callback),onClientsChanged:callback=>subscribe('clients',callback),onClientProgress:callback=>subscribe('progress',callback),...bridgeOverrides};
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-home'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-home','pulse-client'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-home|platform-continuity|convenience)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-home|platform-continuity|convenience|pulse-client)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
@@ -108,8 +108,11 @@ test('new client event is not overwritten by old initial client snapshot',async(
 test('hidden clients cannot return through search, direct selection or progress',async()=>{
   const f=await fixture({initialAuth:signedIn});assert.equal(await f.ready,'true');f.input('search','메신저');assert.deepEqual(f.ids(),[]);f.input('search','');await f.action({app:'messenger'});assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');f.emit('clients',[installedClient,{id:'messenger',installer:{status:'preparing',transferredBytes:8,totalBytes:10}}]);assert.doesNotMatch(f.element('download-list').innerHTML,/Messenger/);assert.equal(f.element('queue-count').hidden,true);
 });
-test('granted planned app remains a plan and cannot invoke launch bridge',async()=>{
-  let called=0;const f=await fixture({initialAuth:account('customer',['pulse']),initialClients:[{id:'pulse',canLaunch:true,installer:{canPrepare:true}}],bridgeOverrides:{launch:async()=>{called++;return {ok:true};}}});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').disabled,true);assert.equal(f.element('primary-action').dataset.action,'none');assert.match(f.element('detail-content').innerHTML,/제작 고객·창작자·파트너/);assert.doesNotMatch(f.element('download-list').innerHTML,/SYNK PULSE/);await f.click('primary-action');assert.equal(called,0);assert.deepEqual(f.ids(),['pulse']);
+test('granted PULSE launches the independent window and keeps prior local drafts behind an explicit entry',async()=>{
+  let called=0,opened=0;const f=await fixture({initialAuth:account('customer',['pulse']),initialClients:[{id:'pulse',canLaunch:true,installer:{canPrepare:true}}],bridgeOverrides:{launch:async()=>{called++;return {ok:true};},openPulseApp:async()=>{opened++;return {ok:true};}}});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').disabled,false);assert.equal(f.element('primary-action').dataset.action,'pulse-app');assert.doesNotMatch(f.element('download-list').innerHTML,/SYNK PULSE/);assert.equal(f.element('pulse-client').hidden,true);await f.click('primary-action');assert.equal(called,0);assert.equal(opened,1);assert.deepEqual(f.ids(),['pulse']);await f.action({pulseLegacy:'open'});assert.equal(f.element('pulse-client').hidden,false);assert.match(f.element('pulse-client').innerHTML,/모델 캐스팅/);assert.match(f.element('pulse-client').innerHTML,/포트폴리오/);
+});
+test('PULSE sidebar opens separately without replacing the current app and failure leaves no launch record',async()=>{
+  let called=0;const f=await fixture({initialAuth:account('customer',['world','pulse']),bridgeOverrides:{openPulseApp:async()=>{called++;return {ok:false,code:'PULSE_APP_OPEN_FAILED'};}}});assert.equal(await f.ready,'true');const before=f.element('breadcrumb-app').textContent;await f.action({app:'pulse'});await new Promise(resolve=>setImmediate(resolve));assert.equal(called,1);assert.equal(f.element('breadcrumb-app').textContent,before);assert.match(f.element('toast').textContent,/PULSE를 열지 못했어요/);assert.equal(f.element('pulse-client').hidden,true);assert.equal(f.storage.get(viewKey('customer')),null);
 });
 test('teacher preview needs server library and explicit development capability',async()=>{
   let calls=0;const opts={getEnvironment:async()=>({...environment,teacherPreviewAvailable:true}),openTeacherPreview:async()=>{calls++;return {ok:true};}};const f=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:opts});assert.equal(await f.ready,'true');assert.equal(f.element('primary-action').dataset.action,'teacher-preview');await f.click('primary-action');assert.equal(calls,1);assert.notEqual(f.element('last-launch').textContent,'기록 없음');const old=await fixture({initialAuth:account('teacher',['teacher']),bridgeOverrides:{openTeacherPreview:opts.openTeacherPreview}});assert.equal(await old.ready,'true');assert.equal(old.element('primary-action').disabled,true);await old.click('primary-action');assert.equal(calls,1);
@@ -242,7 +245,7 @@ test('benefit search opens a public detail without replacing authorized app sele
 test('member benefit clients launch only their own local preview after exact entitlement checks',async()=>{
   for(const id of ['fortune','rehearsal','family-album']){
     const calls=[],f=await fixture({initialAuth:account('benefit-'+id,[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async actual=>{calls.push(actual);return {ok:true};},launch:async()=>assert.fail('must not use package launch')}});
-    assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[id]);assert.equal(f.element('primary-action').dataset.action,'product-preview');
+    assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('primary-action').dataset.action,'product-preview');
     await f.action({benefit:id});assert.match(f.element('benefit-detail').innerHTML,new RegExp('data-benefit-preview="'+id+'"'));
     assert.doesNotMatch(f.element('benefit-detail').innerHTML,/플레저 개발 미리보기 열기/);
     await f.action({benefitPreview:id});assert.deepEqual(calls,[id]);
@@ -318,7 +321,7 @@ test('native benefit controls never fall back to anchors when capability or enti
 test('native benefit clicks retain the development guest catalogue without inventing an account',async()=>{
   const {createPublicApps}=require('../src/public-apps.cjs'),opened=[],publicApps=createPublicApps({clientId:'platform',mode:'development',accountStatus:()=>signedOut,openExternal:async url=>opened.push(url)});
   const f=await fixture({initialAuth:signedOut,bridgeOverrides:{getEnvironment:async()=>({...environment,clientId:'platform',nativeShell:true,publicAppsAvailable:publicApps.available()}),openPublicApp:publicApps.open}});
-  assert.equal(await f.ready,'true');await f.action({benefit:'care'});await f.clickPublicBenefit();assert.deepEqual(opened,['https://synk.im/care/']);assert.deepEqual(f.ids().sort(),['world','messenger','path','pulse','care','fortune','rehearsal','family-album'].sort());
+  assert.equal(await f.ready,'true');await f.action({benefit:'care'});await f.clickPublicBenefit();assert.deepEqual(opened,['https://synk.im/care/']);assert.deepEqual(f.ids().sort(),['world','messenger','path','pulse'].sort());
 });
 
 test('Messenger and teacher rights share one card while teaching action keeps its own permission',async()=>{
@@ -346,13 +349,13 @@ test('retrying an unavailable signed-in library restores only server-confirmed a
   const owner='library-recovery',member=account(owner,['world','fortune']);let loads=0;
   const f=await fixture({initialAuth:{...member,library:{status:'unavailable',appIds:[]}},initialPreferences:JSON.stringify({selected:'fortune',favorites:['fortune'],lastLaunch:{fortune:123}}),bridgeOverrides:{accountRequest:async operation=>{assert.equal(operation,'load');loads++;f.emit('auth',{...member,library:{status:'unavailable',appIds:[]}});f.emit('auth',member);return {ok:true};}}});
   assert.equal(await f.ready,'true');assert.equal(f.element('library-retry').hidden,false);assert.deepEqual(f.ids(),[]);await f.click('library-retry');
-  assert.equal(loads,1);assert.deepEqual(f.ids(),['world','fortune']);assert.equal(f.element('library-retry').hidden,true);assert.equal(f.element('breadcrumb-app').textContent,'SYNK 무료 운세');assert.equal(f.element('favorite').attributes.get('aria-pressed'),'true');assert.notEqual(f.element('last-launch').textContent,'기록 없음');
+  assert.equal(loads,1);assert.deepEqual(f.ids(),['world']);assert.equal(f.element('library-retry').hidden,true);assert.equal(f.element('breadcrumb-app').textContent,'SYNK 무료 운세');assert.equal(f.element('favorite').attributes.get('aria-pressed'),'true');assert.notEqual(f.element('last-launch').textContent,'기록 없음');
 });
 
 test('sign-in from a connection error restores the confirmed account library through actual handlers',async()=>{
   const f=await fixture({initialAuth:{...signedOut,status:'error',error:{message:'연결 확인 필요'}},bridgeOverrides:{authSignIn:async()=>{f.setAuth(account('recovered',['fortune']));return {ok:true};}}});
   assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[]);assert.equal(f.element('sign-in').disabled,false);await f.click('sign-in');
-  assert.deepEqual(f.ids(),['fortune']);assert.equal(f.element('account-label').textContent,'합성 recovered');assert.doesNotMatch(f.element('account-state').textContent,/연결 확인 필요/);assert.equal(f.element('library-empty').hidden,true);
+  assert.deepEqual(f.ids(),[]);assert.equal(f.element('account-label').textContent,'합성 recovered');assert.doesNotMatch(f.element('account-state').textContent,/연결 확인 필요/);assert.equal(f.element('library-empty').hidden,true);
 });
 
 test('a failed old library retry cannot replace a new account or expose its saved history',async()=>{
@@ -400,7 +403,7 @@ test('account dialog preserving retry uses one load and no OAuth, then shows onl
     accountRequest:async operation=>{assert.equal(operation,'load');loads++;f.emit('auth',account('dialog-restored',['fortune']));return {ok:true};},
     authSignIn:async()=>{oauth++;assert.fail('preserving retry must not start OAuth');}
   }});await f.ready;await f.click('account-retry');
-  assert.equal(loads,1);assert.equal(oauth,0);assert.deepEqual(f.ids(),['fortune']);assert.equal(f.element('account-label').textContent,'합성 dialog-restored');
+  assert.equal(loads,1);assert.equal(oauth,0);assert.deepEqual(f.ids(),[]);assert.equal(f.element('account-label').textContent,'합성 dialog-restored');
   assert.equal(f.storage.get('synthetic-local-draft'),'preserved');assert.equal(f.element('account-retry').hidden,true);
 });
 for(const kind of ['returned failure','IPC rejection'])test('account dialog retry keeps its recovery choice after '+kind,async()=>{
@@ -425,5 +428,5 @@ for(const outcome of ['resolve','reject'])test('account dialog late retry '+outc
 });
 test('account dialog explicit fresh login still invokes OAuth once without a preserving load',async()=>{
   let loads=0,oauth=0;const f=await fixture({initialAuth:retryableConnectionError(),bridgeOverrides:{accountRequest:async()=>{loads++;return {ok:true};},authSignIn:async()=>{oauth++;f.setAuth(account('dialog-explicit-login',['fortune']));return {ok:true};}}});await f.ready;
-  assert.equal(f.element('sign-in').textContent,'새로 로그인');await f.click('sign-in');assert.equal(oauth,1);assert.equal(loads,0);assert.deepEqual(f.ids(),['fortune']);assert.equal(f.element('account-label').textContent,'합성 dialog-explicit-login');
+  assert.equal(f.element('sign-in').textContent,'새로 로그인');await f.click('sign-in');assert.equal(oauth,1);assert.equal(loads,0);assert.deepEqual(f.ids(),[]);assert.equal(f.element('account-label').textContent,'합성 dialog-explicit-login');
 });

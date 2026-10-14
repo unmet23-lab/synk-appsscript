@@ -19,6 +19,22 @@ test('registry preserves existing legacy identities and distinguishes unimplemen
   assert.ok(Object.isFrozen(CLIENTS[0].redirectUris));
 });
 
+test('travel uses a separate browser-only client and observed config without changing PATH VR or native ports', async () => {
+  const travel = CLIENTS.filter(row => row.service === 'path-travel');
+  assert.equal(travel.length, 1); assert.equal(travel[0].id, 'path-travel-browser');
+  assert.deepEqual(travel[0].redirectUris, ['http://127.0.0.1:4303/']);
+  assert.equal(CLIENTS.filter(row => row.runtime === 'native').length, 9);
+  const plan = buildConfigPlan(input(['path-browser', 'path-travel-browser'])), browser = data(plan, 'browser');
+  assert.deepEqual(browser.clients.path, { clientId: 'synthetic-path-browser', redirectUri: 'http://127.0.0.1:4292/' });
+  assert.deepEqual(browser.clients['path-travel'], { clientId: 'synthetic-path-travel-browser', redirectUri: 'http://127.0.0.1:4303/' });
+  assert.deepEqual(data(plan, 'desktop').clients, {});
+  assert.equal(plan.products['synthetic-path-travel-browser'], 'platform');
+  const core = await import(pathToFileURL(path.resolve(__dirname, '../../experiences/synk-account/src/core.mjs')));
+  assert.equal(core.readConfig(browser, 'http://127.0.0.1:4303/').clients['path-travel'].clientId, 'synthetic-path-travel-browser');
+  const shared = input(['path-browser', 'path-travel-browser']); shared.clients[1].client_id = shared.clients[0].client_id;
+  assert.throws(() => buildConfigPlan(shared), /중복/);
+});
+
 test('actual registrations produce all six isolated desktop clients and canonical browser configs', async () => {
   const plan = buildConfigPlan(input()), desktop = data(plan, 'desktop'), browser = data(plan, 'browser'), fortune = data(plan, 'fortune');
   assert.deepEqual(Object.keys(desktop.clients), ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care']);
@@ -46,6 +62,41 @@ test('three personal apps produce distinct native and browser clients using thei
     assert.notEqual(checked.clients[id].clientId, desktop.clients[id].clientId);
   }
   assert.equal(plan.registered.length, 6);
+});
+
+test('dating uses a dedicated browser registration without changing any existing native callback', () => {
+  const dating = CLIENTS.filter(item => item.service === 'dating');
+  assert.equal(dating.length, 1);
+  assert.equal(dating[0].id, 'dating-browser');
+  assert.equal(dating[0].product, 'platform');
+  assert.deepEqual(dating[0].redirectUris, ['http://127.0.0.1:4300/atlas-lab/dating.html']);
+  const native = CLIENTS.filter(item => item.runtime === 'native');
+  assert.deepEqual(native.map(item => item.service), ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'rehearsal', 'family-album', 'path']);
+  for (const [index, item] of native.entries()) assert.deepEqual(item.redirectUris, [`http://127.0.0.1:${43821 + index}/synk/oauth/${item.service}/callback`]);
+});
+
+test('only an observed dating registration adds its isolated platform config and consent entry', async () => {
+  const baseline = buildConfigPlan(input());
+  assert.equal(baseline.files.length, 3);
+  assert.equal(baseline.files.some(file => file.path === OUTPUTS.dating), false);
+  const fixture = input(); fixture.clients.push(input(['dating-browser']).clients[0]);
+  const plan = buildConfigPlan(fixture), dating = data(plan, 'dating'), browser = data(plan, 'browser');
+  assert.equal(plan.files.length, 4);
+  assert.deepEqual(Object.keys(dating.clients), ['platform']);
+  assert.equal(dating.clients.platform.clientId, 'synthetic-dating-browser');
+  assert.equal(dating.clients.platform.redirectUri, 'http://127.0.0.1:4300/atlas-lab/dating.html');
+  assert.deepEqual(data(plan, 'desktop'), data(baseline, 'desktop'));
+  assert.deepEqual(browser.clients, data(baseline, 'browser').clients);
+  assert.deepEqual(data(plan, 'fortune').clients, data(baseline, 'fortune').clients);
+  assert.equal(browser.clients.dating, undefined);
+  assert.equal(plan.products['synthetic-dating-browser'], 'platform');
+  assert.deepEqual(browser.authorizationClients.at(-1), { product: 'platform', clientId: 'synthetic-dating-browser', redirectUris: ['http://127.0.0.1:4300/atlas-lab/dating.html'] });
+  assert.deepEqual(dating.authorizationClients, browser.authorizationClients);
+  const core = await import(pathToFileURL(path.resolve(__dirname, '../../experiences/synk-account/src/core.mjs')));
+  assert.equal(core.readConfig(dating, 'http://127.0.0.1:4300/atlas-lab/dating.html').clients.platform.clientId, 'synthetic-dating-browser');
+  assert.doesNotThrow(() => core.readConfig(browser, 'http://127.0.0.1:4280/'));
+  fixture.clients.at(-1).client_id = fixture.clients[0].client_id;
+  assert.throws(() => buildConfigPlan(fixture), /중복/);
 });
 
 test('only observed legacy IDs are auto-bound; unknown registrations and missing clients stay explicit', () => {
@@ -92,8 +143,30 @@ test('dry-run writes nothing; writes are backed up atomically and equivalent fil
     assert.equal(await fs.readFile(path.join(root, replaced[0].backup), 'utf8'), original);
     assert.equal(JSON.parse(await fs.readFile(file, 'utf8')).supabasePublishableKey, 'sb_publishable_rotated');
     assert.equal((await fs.readdir(path.dirname(file))).some(name => name.includes('.tmp-')), false);
-    const unsafe = { ...plan, files: [{ path: '../outside.json', data: {} }] }; await assert.rejects(applyConfigPlan(unsafe, { root, write: true }), /고정된 세 파일/);
+    const unsafe = { ...plan, files: [{ path: '../outside.json', data: {} }] }; await assert.rejects(applyConfigPlan(unsafe, { root, write: true }), /고정된 공개 설정 파일/);
   } finally { await fs.rm(root, { recursive: true, force: true }); }
+});
+
+test('a selected dating output can be written without replacing the three existing app configs', async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'synk-dating-config-'));
+  try {
+    const baseline = buildConfigPlan(input());
+    await applyConfigPlan(baseline, { root, write: true });
+    const before = await Promise.all(baseline.files.map(file => fs.readFile(path.join(root, file.path), 'utf8')));
+    const plan = buildConfigPlan(input(['dating-browser']));
+    plan.files = plan.files.filter(file => file.path === OUTPUTS.dating);
+    const result = await applyConfigPlan(plan, { root, write: true });
+    assert.deepEqual(result, [{ path: OUTPUTS.dating, action: 'create', written: true }]);
+    assert.deepEqual(await Promise.all(baseline.files.map(file => fs.readFile(path.join(root, file.path), 'utf8'))), before);
+    const saved = JSON.parse(await fs.readFile(path.join(root, OUTPUTS.dating), 'utf8'));
+    assert.equal(saved.clients.platform.clientId, 'synthetic-dating-browser');
+    await applyConfigPlan(baseline, { root, write: true });
+    assert.deepEqual(JSON.parse(await fs.readFile(path.join(root, OUTPUTS.dating), 'utf8')), saved);
+  } finally {
+    assert.equal(path.dirname(await fs.realpath(root)), await fs.realpath(os.tmpdir()));
+    assert.match(path.basename(root), /^synk-dating-config-/);
+    await fs.rm(root, { recursive: true, force: true });
+  }
 });
 
 test('config generation refuses junctions leading outside the workspace before writing', async () => {

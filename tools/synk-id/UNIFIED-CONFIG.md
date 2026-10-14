@@ -1,8 +1,20 @@
 # SYNK ID 공통 등록 목록과 로컬 설정
 
+## 2026-10-09 여행 전용 로컬 준비
+
+`path-travel-browser`는 기존 VR `path`와 다른 `platform` public client다. 개발 callback은 `http://127.0.0.1:4303/`이며 native 등록/포트는 추가하지 않는다. `provision-apply.cjs --only path-travel-browser`는 해당 등록과 제품 매핑만 계획하고, `--apply`가 없는 실행은 읽기다. 지정하지 않으면 기존 전체 계획/적용 동작을 유지한다. 범위 지정 적용은 다른 미등록/미매핑 항목을 보류하고 공통 runtime 설정 파일을 쓰지 않는다. 알 수 없는 ID·다른 pending mapping·다른 등록의 재시도는 거절한다.
+
+전용 등록·매핑이 확인된 뒤 `personal-public-provision.cjs --운영 --product path-travel --out <새-.tmp-폴더>`로 정확한 공개 callback `https://synk.im/try/travel/`과 포털/설정 후보를 준비한다. 이 명령도 `--apply`가 없으면 읽기이며, 옵션 없는 기존 운세·리허설 선택은 유지한다. `prepare-personal-public.mjs path-travel <새-.tmp-폴더> <여행설정.json>`은 앱을 복제하지 않고 `config.json`과 `build-manifest.json`만 만든다. 실제 여행 앱은 기존 홈페이지 여행 빌드가 담당한다.
+
+여행 등록·callback·매핑·DB/function 적용과 공개 동기화는 이번 로컬 구현에서 실행하지 않았다. [검증·정확한 단계](../../experiences/path-travel/qa/expansion-20261009/ACCOUNT-RELEASE-READINESS.md).
+
 `registry.cjs`가 서비스, 실행 환경, API 제품, 정확한 개발 콜백의 공통 목록이다. 플랫폼·WORLD·메신저·교사·운세·플레저는 각자의 OAuth client와 저장소를 사용하면서 기존 중앙 SYNK ID에 연결한다. 기존 WORLD 앱과 맞춤 도구의 등록 ID도 같은 목록에서 관리한다. 등록 ID나 비밀번호를 서비스 사이에 복사하지 않는다.
 
 PATH·대화 리허설·가족 앨범의 native·브라우저 어댑터는 로컬 구현과 합성 시험을 마쳤다. 교사의 브라우저 직접 로그인은 `pending-adapter`다. 목록에 이름이 있다는 것은 실제 앱 어댑터·원격 데이터 API·OAuth 등록이 모두 운영 중이라는 뜻이 아니다. 공통 생성기는 인증 방식이나 데이터 API를 새로 만들지 않는다.
+
+소개팅은 `dating-browser` 전용 public client로 기존 `platform` 제품 계약을 쓴다. 개발 콜백은 `http://127.0.0.1:4300/atlas-lab/dating.html`이며 native 등록을 추가하거나 기존 native 포트를 옮기지 않는다. 계정 모드 서버도 해당 포트와 전용 공개 설정으로 실행해야 한다. 이 목록 추가 자체는 공급자 등록·포털 동의 목록 게시·실제 로그인 확인을 뜻하지 않는다.
+
+2026-10-08 소개팅은 **리허설에만** 실제 등록·매핑을 추가했다(기존18개 보존, 총19개). `state/provision-rehearsal.json`이 현재 근거이며 전용 공개 설정만 저장하고 공통3개 설정과 운영 환경은 유지했다. 실제 제공자 인증 HTTP/로컬 제품 왕복10개를 확인했다. 공개 동의 포털의 소개팅 추가 후보는 준비했으나 게시하지 않았고, 브라우저 포털·물리 기기·운영 로그인 완료를 뜻하지 않는다. [상세 기록](../../docs/_ops/qa/atlas-dating-provider-20261008/report.json). 계정 실행 설정은 `SYNK_DATING_MODE=account`와 `SYNK_DATING_ACCOUNT_CONFIG`를 명시하고 `node experiences/atlas-lab/dating-server.mjs --check-config`로 외부 호출 없이 점검한다. 포트는 등록된 콜백에서 선택하며 임의 포트로 바꾸지 않는다.
 
 ## 공개 등록 결과 입력
 
@@ -38,11 +50,12 @@ node tools/synk-id/generate-public-config.cjs --input=공개등록결과.json --
 node --test tools/synk-id/public-config.test.cjs
 ```
 
-기본 실행은 dry-run이다. `--write`도 원격 변경 없이 다음 세 로컬 파일만 쓴다.
+기본 실행은 dry-run이다. `--write`도 원격 변경 없이 다음 고정된 로컬 파일만 쓴다.
 
 - `desktop/auth-config.json`: 현재 등록된 native 9종 중 확인된 항목만.
 - `experiences/synk-account/config.json`: 브라우저 플랫폼·WORLD·메신저·플레저·PATH·대화 리허설·가족 앨범 및 등록된 전체 동의 콜백 목록.
 - `experiences/daily-fortune/account.config.json`: 운세 전용 browser client를 기존 운세 어댑터의 `clients.platform` 필드로 제공.
+- `experiences/atlas-lab/account.config.json`: 입력에서 실제 `dating-browser` 등록이 확인된 경우에만 생성한다. 소개팅 전용 client를 `clients.platform`으로 제공하고 공통 브라우저 `clients`에는 `dating` 키를 넣지 않는다. 전체 등록의 `authorizationClients`에는 소개팅도 포함한다. 등록이 없는 입력은 이 파일을 생성·교체·삭제하지 않는다.
 
 설정이 의미상 같으면 파일을 건드리지 않는다. 바뀌는 파일은 같은 디렉터리에 기존 내용을 `.backup-시각-난수`로 보관하고 임시 파일을 원자적으로 교체한다. 각 파일별 원자 교체이며 여러 파일 전체가 하나의 트랜잭션인 것은 아니다. 저장소 밖으로 연결된 junction·symlink는 거부한다. 출력에는 공개 키 값이나 토큰을 출력하지 않는다.
 
@@ -73,7 +86,7 @@ node --test tests/synk-id-provision-plan.test.cjs tests/synk-id-provision-apply.
 
 등록 응답이 끊기면 공급자 목록을 다시 조회한다. 반환받은 실제 ID가 있으면 이름 필드 없이도 콜백·public 유형을 대조해 복구한다. 결과가 계속 불명확하면 같은 등록을 재요청하지 않는다. 이전 요청이 종료됐고 실제 등록이 없음을 운영자가 확인한 경우에만 `--apply --retry-confirmed-absent care-native`처럼 그 등록 하나를 명시해 재시도한다. 도구도 직전 지문과 공급자 목록을 다시 확인하고 일치하는 등록이 있으면 재사용한다. 반환 ID가 기록돼 있는데 목록에 없으면 재시도를 거부하므로 공급자 상태를 먼저 확인해야 한다. 확정 HTTP 거절도 임의 자동 재시도하지 않는다.
 
-제품 매핑 쓰기 응답이 끊겨도 지문을 먼저 대조하며, 확인된 쓰기를 다시 POST하지 않는다. 전체 등록과 매핑이 확인된 뒤에만 실제 ID로 로컬 세 설정 파일을 생성한다. 매핑 병합 후 재개할 때는 오래된 `--mapping`을 다시 넘기지 않고 보존한 journal의 최신 매핑을 사용한다. 입력 원본이 journal과 다르면 중단한다. 동의 화면 배포, DB/function 배포, 역할·권한 변경, 유료 서비스, 사용자 로그인은 이 도구의 기능에 포함되지 않는다.
+제품 매핑 쓰기 응답이 끊겨도 지문을 먼저 대조하며, 확인된 쓰기를 다시 POST하지 않는다. 전체 등록과 매핑이 확인된 뒤에만 실제 ID로 로컬 설정 파일을 생성한다. 매핑 병합 후 재개할 때는 오래된 `--mapping`을 다시 넘기지 않고 보존한 journal의 최신 매핑을 사용한다. 입력 원본이 journal과 다르면 중단한다. 동의 화면 배포, DB/function 배포, 역할·권한 변경, 유료 서비스, 사용자 로그인은 이 도구의 기능에 포함되지 않는다.
 
 ## 2026-10-06 현재 적용 기준과 포털 보존
 
@@ -90,3 +103,7 @@ node tools/synk-id/prepare-portal.mjs production 새출력폴더 --current=현�
 ```
 
 이번 최소 게시 후보는 `--config-only`의 `config.json` 하나다. 이 모드는 기존 게시 번들의 platform/world/messenger 제품과 네 native scheme 계약도 검사하므로, 로컬 소스에만 추가된 제품·scheme은 별도 포털 배포 검수 없이 끼워 넣을 수 없다. root가 synk-policy origin/main 기준 격리 작업본의 `id/config.json`·`id-rehearsal/config.json`만 교체하여 검수하며 기존 앱 번들/자산/다른 공개 설정은 유지한다. 준비 명령은 원격 게시를 하지 않는다. 현재 스냅샷이 실제 live와 같은지는 준비 직전/게시 직전 별도 GET·diff로 확인한다.
+
+## 2026-10-07 운영 반영
+
+사용자 명시 승인 후 리허설 18개와 별도로 운영 기존 4개를 보존하고 신규 15개를 등록했다(총 19개). 최종 공개 ID 원문은 `state/mapping-production-20261007-confirmed.json`·`state/bindings-production-20261007-confirmed.json`, 재개 journal은 `state/provision-production.json`이다. 로컬 세 공개 설정은 운영을 가리키며, synk.im/id/config.json의 동의 등록도 19개로 게시됐다. care/personal 저장 migration 2개·서버 함수 3개·flag 2개를 운영에 적용했다. [적용 결과·검증·복구 절차](qa/운영적용-최종준비-20261007.md)에서 리허설 인증 왕복과 운영 배포 증거를 구분한다. teacher-browser adapter·일반 신규 가입 메일 발송·실사용자의 물리 두 기기 왕복은 완료하지 않았다.

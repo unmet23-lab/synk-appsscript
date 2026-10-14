@@ -32,7 +32,13 @@ function output(relative, content) {
   hashes[relative] = sha(bytes);
 }
 output('src/generated/account-client.cjs', fs.readFileSync(path.join(talkRoot, 'lib/synk-account-client.js')));
+for (const name of ['wardrobe-client', 'wardrobe-catalog']) output(`src/generated/${name}.cjs`, fs.readFileSync(path.join(talkRoot, `lib/${name}.js`), 'utf8').replace("require('./wardrobe-catalog.js')", "require('./wardrobe-catalog.cjs')"));
 output('src/generated/world-learning-host.cjs', fs.readFileSync(path.join(sourceRoot, 'account/world-learning-host.js')));
+const wardrobeAssets = JSON.parse(fs.readFileSync(path.join(sourceRoot, 'docs/_ops/코스튬_20261008/costume-assets.json'), 'utf8'));
+for (const asset of wardrobeAssets.assets) output(`assets/wardrobe/${path.basename(asset.imageRelativePath)}`, fs.readFileSync(path.join(sourceRoot, 'docs/_ops/코스튬_20261008', asset.imageRelativePath)));
+for (const [id, name] of [['mongle', '몽글'], ['marin', '마린']]) output(`assets/wardrobe/${id}-basic.webp`, fs.readFileSync(path.join(talkRoot, `assets/마스코트/${name}_본체.webp`)));
+for (const [id, name] of [['paper', 'cream'], ['night', 'black'], ['lapis', 'lapis']]) output(`assets/wardrobe/felt-${id}.webp`, fs.readFileSync(path.join(sourceRoot, `docs/디자인/펠트부품/assets/배경/wide-${name}.webp`)));
+for (const name of ['cream', 'blush']) output(`assets/wardrobe/cushion-${name}.webp`, fs.readFileSync(path.join(sourceRoot, `docs/디자인/펠트부품/assets/cushion/cushion-${name}.webp`)));
 for (const file of ['SUIT-Variable.woff2', 'InterTight-700.woff2', 'scrapbook.css', 'sticker-book.webp', 'thread-shift.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'experiences/learning-hub/assets', file)));
 for (const file of ['slab-coral-long.webp', 'slab-cream-long.webp', 'chip-blush-long.webp', 'badge-cream.webp', 'badge-check.webp']) output(`assets/${file}`, fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui', file)));
 output('assets/tex-blush.webp', fs.readFileSync(path.join(sourceRoot, 'docs/디자인/펠트부품/assets/ui/tex-blush.webp')));
@@ -50,6 +56,9 @@ output('assets/brand-synk-paper.webp', fs.readFileSync(path.join(sourceRoot, 'do
 for (const id of ['platform', 'world']) output(`assets/app-${id}.png`, fs.readFileSync(path.join(sourceRoot, `desktop/assets/${id}.png`)));
 for (const [source, name] of [['InterTight/InterTight-Regular.ttf', 'InterTight-Regular.ttf'], ['InterTight/InterTight-Medium.ttf', 'InterTight-Medium.ttf'], ['DM_Mono/DMMono-Medium.ttf', 'DMMono-Medium.ttf']]) output(`assets/${name}`, fs.readFileSync(path.join(sourceRoot, 'docs/브랜드_폰트', source)));
 const esbuild = require(require.resolve('esbuild', { paths: [dir] }));
+// Optional wardrobe preview: shared by portal bundles and fetched only on demand.
+const wardrobeThree = esbuild.buildSync({ absWorkingDir: dir, entryPoints: ['../mascot-render-lab/three/renderer.mjs'], bundle: true, write: false, platform: 'browser', format: 'esm', target: ['es2022'], charset: 'utf8', minify: true });
+output('dist/wardrobe-three.js', wardrobeThree.outputFiles[0].contents);
 const entries = ['app', 'client', 'preview', 'platform', 'local-world', 'teacher'];
 for (const name of entries) { const entry = name;
   const built = esbuild.buildSync({ absWorkingDir: dir, entryPoints: [`src/${entry}.mjs`], bundle: true, write: false, platform: 'browser', format: 'iife', target: ['es2022'], charset: 'utf8', minifyWhitespace: true,

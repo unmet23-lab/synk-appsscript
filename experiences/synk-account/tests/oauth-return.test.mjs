@@ -64,3 +64,15 @@ test('shared server uses validated app config and does not expose its server-onl
   const invalid = sharedAccountServer({ config: { ...config, supabasePublishableKey: 'sb_secret_invalid' } }); await invalid.ready;
   assert.equal(invalid.allowsOAuthReturn(req, new URL(req.url, base), 'family-album'), false);
 });
+
+test('shared product-account entry resolves its platform handshake dependency without exposing server files', async () => {
+  const shared = sharedAccountServer({ config });
+  const entry = await shared.read('/synk-account/src/product-account.mjs');
+  assert.match(entry.body.toString(), /from ['"]\.\/platform-entry\.mjs['"]/);
+  const dependency = await shared.read('/synk-account/src/platform-entry.mjs');
+  assert.equal(dependency.type, 'text/javascript; charset=utf-8');
+  assert.match(dependency.body.toString(), /export function createPlatformEntry/);
+  assert.equal(await shared.read('/synk-account/server-shared.mjs'), null);
+  assert.equal(await shared.read('/synk-account/src/../config.json'), null);
+  assert.ok(await shared.read('/path-vr/model.mjs'), 'existing PATH VR support is preserved');
+});

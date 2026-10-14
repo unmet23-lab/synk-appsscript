@@ -1,10 +1,63 @@
-<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>합성 화면 예시 · SYNK ID · 하나의 계정</title><link rel="stylesheet" href="./assets/scrapbook.css"><link rel="stylesheet" href="./style.css"></head>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>합성 화면 예시 · SYNK ID · 하나의 계정</title><link rel="stylesheet" href="./assets/scrapbook.css"><link rel="stylesheet" href="./style.css?v=google-only-20261009"></head>
 <body class="sb-page"><main><header><a class="brand" href="./platform.html">synk</a><nav><a href="./platform.html">플랫폼</a><a href="./client.html?product=world">WORLD</a></nav></header>
 <div id="preview-banner" class="notice" hidden>로컬 화면 검증 · 실제 계정에 연결되지 않은 예시입니다.</div>
-<section class="hero"><div><p class="sb-eyebrow">ONE ACCOUNT, YOUR SYNK</p><h1>어디서 시작하든,<br><span class="sb-mark">내 SYNK로.</span></h1><p>플랫폼과 두 클라이언트를 하나의 계정으로.<br>배움의 기록과 연결할 범위는 직접 정해요.</p></div><img src="./assets/sticker-book.webp" alt="" class="book"></section>
-<p id="notice" class="notice" role="status" aria-live="polite">계정 연결을 준비하고 있어요.</p>
+<section class="hero"><div><p class="sb-eyebrow">SYNK ID</p><h1><span class="sb-mark">내 SYNK로</span> 이어가요.</h1><p>SYNK의 여러 서비스를 하나의 계정으로.</p></div><img src="./assets/sticker-book.webp" alt="" class="book"></section>
+<p id="notice" class="notice" data-kind="pending" role="status" aria-live="polite" aria-atomic="true" tabindex="-1">계정 연결을 준비하고 있어요.</p>
 <section id="setup" hidden class="sb-card setup"><h2>로그인 연결을 준비하고 있어요</h2><p>이 화면은 준비되었지만 실제 계정 서비스 설정은 아직 없어요. 지금은 기본 학습을 둘러볼 수 있어요.</p><a id="learning-link" class="sb-btn" href="../learning-hub/">기본 학습 열기</a></section>
-<section id="auth-panel" class="auth-layout" hidden><div class="intro-copy"><h2 id="auth-heading">다시 만나서 반가워요.</h2><p id="auth-copy">이메일과 비밀번호로 내 계정에 들어가요.</p><p class="small">일반 가입과 학생·교직원 권한은 별개예요. 소속과 이용 권한은 계정에서 확인해요.</p></div><form id="auth-form" class="sb-card auth-card"><label>이메일<input id="email" type="email" autocomplete="email" required></label><label id="password-label">비밀번호<input id="password" type="password" autocomplete="current-password" minlength="8" required></label><div id="signup-choices" class="signup-choices" hidden><label class="toggle"><input id="signup-age" type="checkbox"><span>만 14세 이상이에요 <span class="muted">(필수)</span></span></label><label class="toggle"><input id="signup-learning" type="checkbox"><span>학습 기록을 계정에 저장할게요 <span class="muted">(선택)</span></span></label><p class="small">저장하면 연습 기록, 직접 고른 도움 방식과 화면 설정, 게임마다 맞춰진 난도가 계정에 남아 어느 기기와 SYNK 앱에서든 이어져요. 나이·성별이나 성격은 짐작해 저장하지 않아요. 계정 화면에서 언제든 끄고, 내려받고, 삭제를 요청할 수 있어요.</p><p class="small">가입하면 이메일과 비밀번호(암호화해 보관)를 로그인과 SYNK 서비스 제공에 쓰고, 계정 삭제 요청을 처리할 때까지 보관해요. 자세한 내용은 <a href="https://synk.im/privacy/#synk-id">개인정보 처리 안내</a>에 있어요.</p></div><button id="auth-submit" class="sb-btn" type="submit">로그인</button><div class="text-actions"><button type="button" data-view="signup">처음이에요 · 가입</button><button type="button" data-view="recover">비밀번호 찾기</button><button type="button" data-view="login" hidden>로그인으로</button></div></form></section>
+<section id="auth-panel" class="auth-layout" aria-labelledby="auth-heading" hidden>
+  <div class="intro-copy"><h2 id="auth-heading">다시 만나서 반가워요.</h2><p id="auth-copy">이메일과 비밀번호로 내 계정에 들어가요.</p></div>
+  <form id="auth-form" class="sb-card auth-card" aria-labelledby="auth-heading">
+    <div id="google-signin" class="google-signin">
+      <button id="google-login" class="google-btn" type="button" aria-describedby="google-availability" disabled><span class="google-mark" aria-hidden="true"></span><span id="google-login-label">Google로 계속하기</span></button>
+      <p id="google-availability" class="small" role="status" aria-live="polite">Google 로그인 연결을 확인하고 있어요.</p>
+    </div>
+    <p id="email-divider" class="email-divider">또는 이메일로</p>
+    <label>이메일<input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none" spellcheck="false" required></label>
+    <label id="password-label">비밀번호<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+    <div id="signup-choices" class="signup-choices" hidden>
+      <label class="toggle"><input id="signup-age" type="checkbox"><span>만 14세 이상이에요 <span class="muted">(필수)</span></span></label>
+      <label class="toggle"><input id="signup-learning" type="checkbox" aria-describedby="learning-summary"><span>학습 기록을 계정에 저장할게요 <span class="muted">(선택)</span></span></label>
+      <p id="learning-summary" class="small">선택하면 연습 기록·도움 방식·화면 설정·게임 난도를 계정에 저장해요. 언제든 저장을 끄거나 삭제를 요청할 수 있어요.</p>
+      <details class="signup-details"><summary>학습 기록 저장 안내</summary><p class="small">저장하면 연습 기록, 직접 고른 도움 방식과 화면 설정, 게임마다 맞춰진 난도가 계정에 남아 어느 기기와 SYNK 앱에서든 이어져요. 나이·성별이나 성격은 짐작해 저장하지 않아요. 계정 화면에서 언제든 끄고, 내려받고, 삭제를 요청할 수 있어요.</p></details>
+      <p class="small signup-privacy">가입하면 이메일과 비밀번호(암호화해 보관)를 로그인과 SYNK 서비스 제공에 쓰고, 계정 삭제 요청을 처리할 때까지 보관해요. 자세한 내용은 <a href="https://synk.im/privacy/#synk-id">개인정보 처리 안내</a>에 있어요.</p>
+    </div>
+    <button id="auth-submit" class="sb-btn" type="submit">로그인</button>
+    <div class="text-actions"><button type="button" data-view="signup">처음이라면 가입</button><button type="button" data-view="recover">비밀번호 찾기</button><button type="button" data-view="login" hidden>로그인으로</button></div>
+    <p class="small auth-access-note">학생·교직원 권한은 소속 확인 후 별도로 연결돼요.</p>
+  </form>
+</section>
+<section id="google-onboarding" class="auth-layout google-onboarding" aria-labelledby="google-onboarding-heading" hidden>
+  <div class="intro-copy"><p class="sb-eyebrow">MY SYNK ACCOUNT</p><h2 id="google-onboarding-heading" tabindex="-1">가입을 마무리해요.</h2><p id="google-onboarding-copy">휴대폰을 인증하고 기본 정보를 입력해 주세요. 아이디와 비밀번호는 따로 만들지 않아요.</p></div>
+  <form id="google-onboarding-form" class="sb-card auth-card google-onboarding-card" aria-labelledby="google-onboarding-heading">
+    <div class="signup-choices google-signup-choices">
+      <label class="toggle"><input id="google-privacy" type="checkbox" aria-describedby="google-privacy-summary" required><span>개인정보 수집·이용 안내를 확인했어요 <span class="muted">(필수)</span></span></label>
+      <p id="google-privacy-summary" class="small signup-privacy"><span id="google-privacy-fields">휴대폰 번호·국가·나이·성별</span>을 계정 관리와 SYNK 서비스 제공을 위해 보관하며, 계정 삭제 요청을 처리할 때까지 유지해요. 성별은 응답하지 않아도 돼요. <span id="google-privacy-action-note">번호를 보내기 전에</span> <a href="https://synk.im/privacy/#synk-id" target="_blank" rel="noopener noreferrer">개인정보 처리 안내<span class="visually-hidden"> (새 창)</span></a>를 확인해 주세요.</p>
+    </div>
+    <fieldset id="google-phone-fields" class="google-phone-fields">
+      <legend>휴대폰 번호 인증</legend>
+      <label class="google-field-label" for="google-phone">휴대폰 번호</label>
+      <div class="google-phone-row"><input id="google-phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+821012345678" pattern="\+[1-9][0-9]{7,14}" maxlength="16" aria-describedby="google-phone-help google-phone-status" required><button id="google-phone-send" class="sb-btn soft" type="button">인증번호 받기</button></div>
+      <p id="google-phone-help" class="small field-help">국제번호로 입력해 주세요. 한국 번호 010-1234-5678은 +821012345678이에요.</p>
+      <label class="google-field-label" for="google-phone-code">문자로 받은 인증번호</label>
+      <div class="google-phone-row"><input id="google-phone-code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6자리 인증번호" aria-describedby="google-phone-status" required><button id="google-phone-verify" class="sb-btn soft" type="button">인증번호 확인</button></div>
+      <p id="google-phone-status" class="small" role="status" aria-live="polite" aria-atomic="true">휴대폰 번호 인증이 필요해요.</p>
+    </fieldset>
+    <label>국가<select id="google-country" autocomplete="country" required><option value="">국가 선택</option></select></label>
+    <label>나이 <span class="muted">(만 나이)</span><input id="google-age" type="number" inputmode="numeric" min="14" max="120" step="1" placeholder="만 14세 이상" aria-describedby="google-age-help" required></label>
+    <p id="google-age-help" class="small field-help">SYNK 계정은 만 14세부터 만들 수 있어요. 생년월일은 받지 않아요.</p>
+    <label>성별<select id="google-gender" required><option value="">성별 선택</option><option value="female">여성</option><option value="male">남성</option><option value="other">기타</option><option value="unspecified">응답하지 않음</option></select></label>
+    <label id="google-gender-text-label" hidden>성별 직접 입력<input id="google-gender-text" type="text" maxlength="60" autocomplete="off" placeholder="60자 이내로 입력해 주세요"></label>
+    <div class="signup-choices google-signup-choices">
+      <label class="toggle"><input id="google-learning" type="checkbox" aria-describedby="google-learning-summary"><span>학습 기록을 계정에 저장할게요 <span class="muted">(선택)</span></span></label>
+      <p id="google-learning-summary" class="small">선택하면 연습 기록·도움 방식·화면 설정·게임 난도를 계정에 저장해요. 언제든 저장을 끄거나 삭제를 요청할 수 있어요.</p>
+    </div>
+    <button id="google-complete" class="sb-btn" type="submit">가입 완료</button>
+    <div class="text-actions google-cancel-actions"><button id="google-cancel" class="sb-btn soft" type="button">나중에 하기</button></div>
+    <p id="google-cancel-note" class="small">나중에 하기를 누르면 이 브라우저에서 로그아웃해요. Google 인증 계정은 가입을 이어갈 수 있도록 남아 있어요. <span id="google-cancel-phone-note">입력·인증한 휴대폰 번호도 함께 남아 있어요. </span>삭제하려면 <a href="mailto:hello@synk.im?subject=SYNK%20%EA%B0%80%EC%9E%85%20%EB%8C%80%EA%B8%B0%20%EC%A0%95%EB%B3%B4%20%EC%82%AD%EC%A0%9C%20%EC%9A%94%EC%B2%AD">가입 대기 정보 삭제 요청</a>을 보내 주세요.</p>
+  </form>
+</section>
 <section id="consent" hidden class="sb-card consent"><p class="sb-eyebrow">CONNECT YOUR ACCOUNT</p><h2><span id="consent-name"></span>에 연결할까요?</h2><p>아래 정보를 이 제품에 연결해요. 학습 기록 저장 동의는 계정에서 별도로 정해요.</p><ul id="scopes"></ul><p class="small">돌아갈 곳: <span id="consent-destination"></span></p><div class="actions"><button id="approve" class="sb-btn">연결하기</button><button id="deny" class="sb-btn soft">취소</button></div></section>
+<section id="google-linking" class="sb-card google-linking" aria-labelledby="google-linking-heading" hidden><div><h2 id="google-linking-heading">Google로도 편하게 로그인해요.</h2><p>지금 쓰는 SYNK 계정에 Google을 연결하면 같은 기록을 그대로 이어갈 수 있어요.</p></div><button id="google-link" class="google-btn" type="button" aria-describedby="google-link-status"><span class="google-mark" aria-hidden="true"></span><span>Google 계정 연결</span></button><p id="google-link-status" class="small" role="status" aria-live="polite" aria-atomic="true"></p></section>
+<section id="account-next" class="sb-card account-next" aria-labelledby="account-next-heading" hidden><div><h2 id="account-next-heading">내 계정으로 이어서</h2><p>플레저 수첩을 열어 사람과 기억할 일을 챙겨요.</p></div><div class="actions"><a class="sb-btn" href="https://synk.im/care/">플레저 수첩 열기</a><a class="sb-btn soft" href="https://synk.im/">SYNK 홈</a></div></section>
 <section id="account" hidden></section><section id="world-games" hidden></section>
-<footer class="sb-stitch"><p>내 계정, 내 선택. 로그인 상태와 학습 연결 여부를 구분해 보여 드려요.</p><a href="../learning-hub/">기본 학습으로</a></footer></main><script src="../learning-hub/atlas-learning.js"></script><script type="module" src="./dist/preview.js"></script></body></html>
+<footer class="sb-stitch"><p>내 계정, 내 선택. 로그인 상태와 학습 연결 여부를 구분해 보여 드려요.</p><a href="../learning-hub/">기본 학습으로</a></footer></main><script src="../learning-hub/atlas-learning.js"></script><script type="module" src="./dist/preview.js?v=google-only-20261009"></script></body></html>

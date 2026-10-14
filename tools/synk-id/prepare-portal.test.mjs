@@ -159,3 +159,21 @@ test('config-only rejects source-only products and native schemes unsupported by
     assert.equal(fs.existsSync(options.out), false);
   }
 });
+
+test('dating consent joins the published platform contract without changing its app config or existing callbacks', async t => {
+  const { directory, options } = fixture(t), current = generatedConfig();
+  const env = environment('production'), registration = CLIENTS.find(row => row.id === 'dating-browser');
+  const clients = current.authorizationClients.map(client => ({ client_id: client.clientId, client_type: 'public', redirect_uris: client.redirectUris }));
+  clients.push({ registration: registration.id, client_id: 'synthetic-dating-browser', client_type: 'public', redirect_uris: [...registration.redirectUris] });
+  const plan = buildConfigPlan({ version: 1, environment: 'production', supabaseUrl: env.EXPO_PUBLIC_SUPABASE_URL, supabasePublishableKey: env.EXPO_PUBLIC_SUPABASE_ANON_KEY, portalUrl: TARGETS.production.portal, clients });
+  const dedicated = plan.files.find(file => file.path === OUTPUTS.dating).data;
+  const result = await preparePortal({ ...options, configPath: saveConfig(directory, dedicated), configOnly: true });
+  const actual = JSON.parse(fs.readFileSync(path.join(result.output, 'config.json')));
+  assert.deepEqual(result.files, ['config.json']);
+  assert.deepEqual({ ...actual, authorizationClients: undefined }, { ...current, authorizationClients: undefined });
+  assert.deepEqual(actual.authorizationClients.slice(0, current.authorizationClients.length), current.authorizationClients);
+  const checked = core.readConfig(actual, TARGETS.production.portal), redirect = `${registration.redirectUris[0]}?code=synthetic&state=synthetic`;
+  assert.equal(core.authorizationProduct('synthetic-dating-browser', checked), 'platform');
+  assert.equal(core.trustedConsentRedirect(redirect, checked, 'synthetic-dating-browser'), redirect);
+  assert.throws(() => core.trustedConsentRedirect(redirect.replace(':4300/', ':4301/'), checked, 'synthetic-dating-browser'));
+});

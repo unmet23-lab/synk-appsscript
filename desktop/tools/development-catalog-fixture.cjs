@@ -16,7 +16,7 @@ contextBridge.exposeInMainWorld('synkDesktop',Object.freeze({
   getEnvironment:async()=>{observations.environmentResolvedAt=Date.now();return {clientId:'platform',nativeShell:true,platform:'win32',arch:'x64',version:'synthetic-catalog',mode,teacherPreviewAvailable:false,productPreviewsAvailable:[],publicAppsAvailable:['care','fortune','rehearsal']};},
   getClients:async()=>clone(clients),authStatus:async()=>{const snapshot=clone(auth);if(scenario==='development-delayed')await new Promise(resolve=>setTimeout(resolve,150));observations.authStatusResolvedAt=Date.now();return snapshot;},
   onAuthChanged:listener=>{listeners.add(listener);return()=>listeners.delete(listener);},onClientsChanged:()=>()=>{},onClientProgress:()=>()=>{},
-  launch:fixedCall('launch',['world','messenger']),openPublicApp:fixedCall('public-web',['care','fortune','rehearsal']),
+  launch:fixedCall('launch',['world','messenger']),openPublicApp:fixedCall('public-web',['care','fortune','rehearsal']),openPulseApp:()=>fixedCall('pulse-app',['pulse'])('pulse'),
   openTeacherPreview:blocked('teacher-preview'),openProductPreview:blocked('product-preview'),prepareClient:blocked('prepare'),openInstaller:blocked('install'),cancelPreparation:blocked('cancel'),authSignIn:blocked('login'),accountRequest:blocked('account-request'),
   authSignOut:async()=>{publish({configured:true,status:'signed-out',signedIn:false,sessionGeneration:auth.sessionGeneration+1});return {ok:true,serverRevoked:true,serverSessionRevoked:true};},
   getWindowState:async()=>({maximized:false,minimized:false,focused:false,platform:'win32'}),onWindowStateChanged:()=>()=>{},windowAction:blocked('window-action'),

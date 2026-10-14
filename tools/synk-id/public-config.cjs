@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('node:fs/promises'), path = require('node:path'), crypto = require('node:crypto');
 const { SERVICES, CLIENTS } = require('./registry.cjs');
-const OUTPUTS = Object.freeze({ desktop: 'desktop/auth-config.json', browser: 'experiences/synk-account/config.json', fortune: 'experiences/daily-fortune/account.config.json' });
+const OUTPUTS = Object.freeze({ desktop: 'desktop/auth-config.json', browser: 'experiences/synk-account/config.json', fortune: 'experiences/daily-fortune/account.config.json', dating: 'experiences/atlas-lab/account.config.json' });
 const fail = message => { throw new Error(message); };
 const object = value => !!value && typeof value === 'object' && !Array.isArray(value);
 function publicUrl(value, originOnly = false) {
@@ -45,7 +45,7 @@ function buildConfigPlan(input) {
       explicit.set(row.registration, row.client_id);
     }
   }
-  const desktop = { ...common, clients: {} }, browser = { ...browserBase, clients: {}, authorizationClients: [] }, fortune = { ...browserBase, clients: {}, authorizationClients: [] };
+  const desktop = { ...common, clients: {} }, browser = { ...browserBase, clients: {}, authorizationClients: [] }, fortune = { ...browserBase, clients: {}, authorizationClients: [] }, dating = { ...browserBase, clients: {}, authorizationClients: [] };
   const registered = [], missing = [], used = new Set(), products = {};
   for (const registration of CLIENTS) {
     const bound = bindings[registration.id];
@@ -69,19 +69,21 @@ function buildConfigPlan(input) {
     if (registration.runtime === 'native') desktop.clients[registration.configKey] = client;
     if (registration.runtime === 'browser') {
       if (registration.service === 'fortune') fortune.clients.platform = client;
+      else if (registration.service === 'dating') dating.clients.platform = client;
       else browser.clients[registration.configKey] = client;
     }
   }
   fortune.authorizationClients = browser.authorizationClients;
+  dating.authorizationClients = browser.authorizationClients;
   return { environment: input.environment, services: SERVICES, registered, missing, unmapped: [...byId.keys()].filter(id => !used.has(id)), products,
-    files: [{ path: OUTPUTS.desktop, data: desktop }, { path: OUTPUTS.browser, data: browser }, { path: OUTPUTS.fortune, data: fortune }] };
+    files: [{ path: OUTPUTS.desktop, data: desktop }, { path: OUTPUTS.browser, data: browser }, { path: OUTPUTS.fortune, data: fortune }, ...(dating.clients.platform ? [{ path: OUTPUTS.dating, data: dating }] : [])] };
 }
 const stable = value => JSON.stringify(Array.isArray(value) ? value.map(item => JSON.parse(stable(item))) : object(value) ? Object.fromEntries(Object.keys(value).sort().map(key => [key, JSON.parse(stable(value[key]))])) : value);
 const inside = (root, candidate) => { const relative = path.relative(root, candidate); return relative !== '..' && !relative.startsWith('..' + path.sep) && !path.isAbsolute(relative); };
 async function applyConfigPlan(plan, { write = false, root = path.resolve(__dirname, '../..') } = {}) {
   const workspace = await fs.realpath(root), allowed = new Set(Object.values(OUTPUTS)), pending = [];
   for (const file of plan.files) {
-    if (!allowed.has(file.path)) fail('설정 출력 경로는 저장소 안의 고정된 세 파일만 허용해요.');
+    if (!allowed.has(file.path)) fail('설정 출력 경로는 저장소 안의 고정된 공개 설정 파일만 허용해요.');
     const target = path.resolve(workspace, file.path);
     if (!inside(workspace, target)) fail('설정 파일이 저장소 밖에 있어요.');
     // Check every existing ancestor before mkdir or any write, including junctions.

@@ -59,8 +59,8 @@ export function createHomeStore(storage,{clock=Date.now}={}){
   };
 }
 
-export function canOpenFromHome(action){return !!action&&!action.disabled&&['launch','teacher-preview','product-preview','public-web'].includes(action.action);}
-const homeLaunchTarget=action=>canOpenFromHome(action)||!!action?.pending&&['launch','teacher-preview','product-preview','public-web'].includes(action.action);
+export function canOpenFromHome(action){return !!action&&!action.disabled&&['launch','teacher-preview','product-preview','public-web','pulse-app'].includes(action.action);}
+const homeLaunchTarget=action=>canOpenFromHome(action)||!!action?.pending&&['launch','teacher-preview','product-preview','public-web','pulse-app'].includes(action.action);
 export function hasDraftContent(draft){return !!(clean(draft?.title,80)||clean(draft?.body,1200));}
 
 export function filterHomeRecords(records,query='',filter='all'){

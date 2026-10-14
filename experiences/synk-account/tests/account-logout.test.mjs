@@ -6,6 +6,7 @@ import { buildSync } from 'esbuild';
 import { createClient } from '@supabase/supabase-js';
 import { createAccountView } from '../src/account-view.mjs';
 import { mountPortal } from '../src/portal.mjs';
+import { emptyPlayState } from '../../play-common/play-data.mjs';
 
 // Exercise the real view and the built client entry point against a minimal DOM.
 // No remote Auth service, browser credentials or production account is used.
@@ -23,7 +24,7 @@ class Node {
 function dom() {
   const ids = new Map(), selectors = new Map();
   const get = (map, key) => { if (!map.has(key)) map.set(key, new Node());return map.get(key); };
-  const document = { body: new Node('body'), createElement: tag => new Node(tag), getElementById: id => get(ids, id), querySelector: selector => get(selectors, selector), querySelectorAll: () => [] };
+  const document = { body: new Node('body'), createElement: tag => new Node(tag), getElementById: id => get(ids, id), querySelector: selector => get(selectors, selector), querySelectorAll: () => [],addEventListener(){},removeEventListener(){} };
   const root = document.getElementById('account');root.hidden = true;
   const find = (node, label) => node.tagName === 'button' && node.textContent === label ? node : node.children.map(child => find(child, label)).find(Boolean);
   return { document, root, button: label => { const value = find(root, label) || find(document.getElementById('world-games'), label);assert.ok(value, `button missing: ${label}`);return value; } };
@@ -76,15 +77,15 @@ async function clientFixture({ reply = 'offline', sessions = fixture().sessions,
   const account = { ...fixture(), sessions };
   const base = `https://${product}.example.test/client.html?product=${product}`;
   const config = { version: 1, supabaseUrl: 'https://auth.example.test', supabasePublishableKey: 'sb_publishable_synthetic', portalUrl: 'https://id.example.test/', clients: { [product]: { clientId: `${product}-web`, redirectUri: base } } };
-  let state = { configured: true, signedIn: true, status: 'signed-in', sessionGeneration: 1, account: account.account }, listener;
+  let state = { configured: true, signedIn: true, status: 'signed-in', sessionGeneration: 1, account: account.account }, listener,copyToRenderer=value=>value;
   const bridge = {
     getEnvironment: async () => ({ clientId: product }), authStatus: async () => state,
     onAuthChanged: callback => { listener = callback;return () => {}; },
-    accountRequest: async operation => { calls.push(operation);if (operation === 'load') return account;if(operation==='classroom')return {ok:true,classes:[]};if (bridgeThrow) throw new Error('synthetic IPC failure');return { ok: false }; },
+    accountRequest: async operation => { calls.push(operation);if (operation === 'load') return account;if(operation==='classroom')return {ok:true,classes:[]};if(operation==='playLoad')return copyToRenderer({ok:true,scope:'synk-play',accountId:account.account.synk_user_id,revision:0,state:emptyPlayState()});if (bridgeThrow) throw new Error('synthetic IPC failure');return { ok: false }; },
     authSignOut: async () => { calls.push('authSignOut');state = { configured: true, signedIn: false, status: 'signed-out' };listener?.(state);return { ok: true, serverRevoked: false }; },
   };
   const window = { addEventListener() {}, ...(desktop ? { synkDesktop: bridge } : {}) };
-  const context = vm.createContext({ document: page.document, window, URL, URLSearchParams, AbortController, setTimeout, clearTimeout, console,
+  const context = vm.createContext({ document: page.document, window, URL, URLSearchParams, AbortController, TextEncoder, setTimeout, clearTimeout, console,
     location: { href: base }, localStorage: { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) },
     sessionStorage: { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => { if (removeFailure) throw new Error('synthetic storage denied');values.delete(key); } },
     fetch: async (url, init) => { if (url === './config.json') return { ok: true, json: async () => config };
@@ -93,6 +94,7 @@ async function clientFixture({ reply = 'offline', sessions = fixture().sessions,
       return { ok: true, status: 200, json: async () => ({ ok: true, current: true, refreshRevoked: reply === 'complete', legacyAccessGuard: reply === 'complete' }) };
     },
   });
+  copyToRenderer=vm.runInContext('(value)=>JSON.parse(JSON.stringify(value))',context);
   vm.runInContext(runtime, context);await settle();assert.equal(page.root.hidden, false, page.document.getElementById('notice').textContent);
   return { ...page, values, calls, window, state: () => state, notice: () => page.document.getElementById('notice'),
     emit: async next => { state = next;if (state.signedIn && state.account) account.account = state.account;listener?.(state);await settle(); } };
@@ -135,7 +137,7 @@ test('same-session desktop refresh preserves the running WORLD iframe, host and 
   assert.equal(page.document.getElementById('connect').hidden, true);assert.doesNotThrow(() => host.retry());
   await page.emit(signedIn);
   assert.equal(page.window.SYNKLearningHost, host);assert.equal(page.root.children[0], head);assert.equal(frame.src, source);
-  assert.deepEqual(page.calls, ['classroom','load','atlasSummary']);assert.doesNotThrow(() => host.retry());
+  assert.deepEqual(page.calls.filter(x=>x!=='playLoad'), ['classroom','load','atlasSummary']);assert.ok(page.calls.includes('playLoad'));assert.doesNotThrow(() => host.retry());
 });
 test('a new session generation, revoked session or restore error closes the previous WORLD host', async () => {
   for (const change of [
@@ -154,11 +156,11 @@ test('switching account within a signed-in desktop event replaces and fences the
   const page = await clientFixture({ desktop: true, product: 'world' }), host = page.window.SYNKLearningHost;
   await page.emit({ ...page.state(), sessionGeneration: 2, account: { synk_user_id: 'synthetic-new-account', profile: {}, status: 'active' } });
   assert.equal(page.root.hidden, false);assert.notEqual(page.window.SYNKLearningHost, host);assert.throws(() => host.retry(), /바뀌|ended/);
-  assert.doesNotThrow(() => page.window.SYNKLearningHost.retry());assert.deepEqual(page.calls, ['classroom','load','atlasSummary', 'classroom','load','atlasSummary']);
+  assert.doesNotThrow(() => page.window.SYNKLearningHost.retry());assert.deepEqual(page.calls.filter(x=>x!=='playLoad'), ['classroom','load','atlasSummary', 'classroom','load','atlasSummary']);
 });
 
 async function portalFixture(t, { server = 'offline', clear = true, preview = false, switchAccount = false } = {}) {
-  const page = dom(), calls = [], initial = { access_token: 'synthetic-access', user: { id: 'synthetic-user' } };
+  const page = dom(), calls = [], cleanupAccounts = [], initial = { access_token: 'synthetic-access', user: { id: 'synthetic-user' } };
   let saved = initial, listener;
   const originals = ['document', 'window', 'location'].map(key => [key, Object.getOwnPropertyDescriptor(globalThis, key)]);
   Object.assign(globalThis, { document: page.document, window: { addEventListener() {} }, location: { href: 'https://id.example.test/index.html' } });
@@ -166,7 +168,7 @@ async function portalFixture(t, { server = 'offline', clear = true, preview = fa
   const sdk = { auth: {
     getSession: async () => ({ data: { session: saved } }), getUser: async () => ({ data: { user: saved.user } }),
     onAuthStateChange: fn => { listener = fn;return {}; },
-    signOut: async ({ scope }) => { calls.push(`sdk:${scope}`);if (clear) { saved = null;listener('SIGNED_OUT', null); }return { error: server === 'offline' ? new Error('synthetic offline') : null }; },
+    signOut: async ({ scope }) => { calls.push(`sdk:${scope}`);cleanupAccounts.push(saved?.user?.id);if (clear) { saved = null;listener('SIGNED_OUT', null); }return { error: server === 'offline' ? new Error('synthetic offline') : null }; },
   } };
   const revoke = async action => {
     calls.push(action);
@@ -174,9 +176,9 @@ async function portalFixture(t, { server = 'offline', clear = true, preview = fa
     if (server === 'offline') throw new Error('synthetic offline');
     return { refreshRevoked: server === 'complete', legacyAccessGuard: server === 'complete' };
   };
-  const client = { load: async () => fixture(), revokeSession: async id => { assert.equal(id, 'synthetic-current');return revoke('current'); }, revokeAll: () => revoke('all') };
+  const client = { load: async () => { const data = fixture();data.account.synk_user_id = saved?.user?.id;return data; }, revokeSession: async id => { assert.equal(id, 'synthetic-current');return revoke('current'); }, revokeAll: () => revoke('all') };
   await mountPortal({ config: { configured: true, learningUrl: '/', accountApiUrl: 'https://auth.example.test', supabasePublishableKey: 'synthetic-public' }, sdk, accountFactory: () => client, preview });
-  return { ...page, calls, saved: () => saved, notice: () => page.document.getElementById('notice') };
+  return { ...page, calls, cleanupAccounts, saved: () => saved, notice: () => page.document.getElementById('notice') };
 }
 test('actual portal forwards global revocation but SDK local cleanup still runs when server is offline', async t => {
   const page = await portalFixture(t);page.button('모든 제품의 로그인 종료').onclick();await settle();
@@ -193,7 +195,10 @@ test('actual portal separates server completion, local storage failure and synth
 });
 test('portal logout cannot clear a newer account received while revocation was pending', async t => {
   const page = await portalFixture(t, { switchAccount: true });page.button('모든 제품의 로그인 종료').onclick();await settle();
-  assert.deepEqual(page.calls, ['all']);assert.equal(page.saved().user.id, 'synthetic-new-user');assert.equal(page.root.hidden, false);
+  assert.deepEqual(page.calls, ['all']);assert.deepEqual(page.cleanupAccounts, [], 'SDK cleanup must not sign out the newer account received during revocation');
+  assert.equal(page.saved().user.id, 'synthetic-new-user');assert.equal(page.root.hidden, false);
+  const text = node => [node.textContent, ...node.children.map(text)].join(' ');
+  assert.match(text(page.root), /SYNK ID · synthetic-new-user/);assert.match(page.notice().textContent, /로그인됐어요/);
 });
 
 test('installed Auth SDK removes its persisted local session even when remote logout returns 503', async () => {

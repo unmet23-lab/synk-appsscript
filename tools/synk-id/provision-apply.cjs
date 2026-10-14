@@ -90,10 +90,11 @@ async function main() {
   for (let index = 0; index < args.length; index++) {
     const key = args[index];
     if (['--apply', '--운영'].includes(key)) { if (flags.has(key)) throw Error('중복된 옵션이에요.'); flags.add(key); }
-    else if (['--mapping', '--bindings', '--public', '--retry-confirmed-absent'].includes(key)) { if (values.has(key) || !args[index + 1] || args[index + 1].startsWith('--')) throw Error('옵션 값 하나가 필요해요.'); values.set(key, args[++index]); }
+    else if (['--mapping', '--bindings', '--public', '--retry-confirmed-absent', '--only'].includes(key)) { if (values.has(key) || !args[index + 1] || args[index + 1].startsWith('--')) throw Error('옵션 값 하나가 필요해요.'); values.set(key, args[++index]); }
     else throw Error('사용: node tools/synk-id/provision-apply.cjs [--운영] [--mapping 원본.json] [--bindings 연결.json] [--public 공개설정.json] [--apply] [--retry-confirmed-absent 등록이름]');
   }
   const environment = flags.has('--운영') ? 'production' : 'rehearsal', apply = flags.has('--apply');
+  const only = require('./provision-plan.cjs').validateOnly(values.get('--only'));
   if (apply && !values.has('--public')) throw Error('--apply에는 확인된 --public 공개 설정 파일이 필요해요.');
   const existingMapping = values.has('--mapping') ? await readJson(values.get('--mapping')) : undefined;
   const bindings = values.has('--bindings') ? await readJson(values.get('--bindings')) : {};
@@ -103,7 +104,7 @@ async function main() {
   let lock;
   try {
     if (apply) { await fs.mkdir(directory, { recursive: true }); try { lock = await fs.open(lockPath, 'wx', 0o600); await lock.writeFile(JSON.stringify({ pid: process.pid, at: new Date().toISOString() })); } catch { throw Error('다른 적용 작업의 잠금이 있어요. 주인 프로세스를 확인한 뒤 다시 실행해 주세요.'); } }
-    const result = await provision({ environment, api, apply, existingMapping, bindings, journal, publicSettings, saveJournal, retryConfirmedAbsent: values.get('--retry-confirmed-absent'), writeConfigs: plan => applyConfigPlan(plan, { write: true }) });
+    const result = await provision({ environment, api, apply, existingMapping, bindings, journal, publicSettings, saveJournal, only, retryConfirmedAbsent: values.get('--retry-confirmed-absent'), writeConfigs: plan => applyConfigPlan(plan, { write: true }) });
     console.log(JSON.stringify(result, null, 2));
   } finally { if (lock) { await lock.close(); await fs.unlink(lockPath); } }
 }

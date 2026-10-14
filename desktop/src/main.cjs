@@ -27,6 +27,8 @@ const {createWindowPlacement}=require('./window-placement.cjs');
 const {createDraftRecovery}=require('./draft-recovery.cjs');
 const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
+const {createPulseRequests,PULSE_ORIGIN,PULSE_ENTRY}=require('./pulse-requests.cjs');
+const {createPulseApp}=require('./pulse-app.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -52,10 +54,10 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 const suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
-function publishAuthState(state){platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
+function publishAuthState(state){pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
 async function signOutAccount(){
@@ -73,7 +75,41 @@ const suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublis
 const accountStatus=()=>suitePublisher?suitePublisher.project(auth.status()):auth?.status();
 const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.resolve({ok:false,code:'SUITE_UNAVAILABLE'}):operation();
 const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
-app.on('will-quit',()=>{desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();});
+function pulseResourceAllowed(value){
+  try{const url=new URL(value);return url.origin===PULSE_ORIGIN&&!url.username&&!url.password&&(url.pathname.startsWith('/pulse/')||url.pathname.startsWith('/messenger/assets/')||['/wordmark.svg','/font.woff2'].includes(url.pathname));}catch{return false;}
+}
+function createPulseSession(partition){
+  // No persist: prefix: customer capabilities never enter the platform's
+  // SYNK ID/employee cookie jar or survive closing the desktop application.
+  const isolated=session.fromPartition(partition);
+  isolated.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));
+  isolated.setPermissionCheckHandler(()=>false);
+  isolated.webRequest.onBeforeRequest({urls:['http://*/*','https://*/*','ws://*/*','wss://*/*']},(details,callback)=>callback({cancel:!pulseResourceAllowed(details.url)}));
+  return isolated;
+}
+function openPulseReview({session:isolated,url}){
+  if(url!==PULSE_ENTRY)throw Error('Invalid PULSE entry');
+  const review=new BrowserWindow({width:1180,height:860,minWidth:720,minHeight:580,title:'SYNK PULSE · 프로젝트 라운지',parent:window,show:false,autoHideMenuBar:true,backgroundColor:'#ffffff',webPreferences:{session:isolated,sandbox:true,contextIsolation:true,nodeIntegration:false,nodeIntegrationInWorker:false,nodeIntegrationInSubFrames:false,webviewTag:false,webSecurity:true,allowRunningInsecureContent:false,experimentalFeatures:false,devTools:false}});
+  const contents=review.webContents,mediaUrl=value=>{try{const next=new URL(value);return next.origin===PULSE_ORIGIN&&!next.username&&!next.password&&/^\/pulse\/api\/media\/[a-f0-9-]{36}$/.test(next.pathname)&&!next.search&&!next.hash;}catch{return false;}};
+  const navigationAllowed=value=>value===PULSE_ENTRY;
+  const openReference=value=>{try{const next=new URL(value);if(mediaUrl(value)){contents.downloadURL(value);return;}if(next.protocol==='https:'&&!next.username&&!next.password&&next.origin!==PULSE_ORIGIN)void shell.openExternal(next.href).catch(()=>{});}catch{}};
+  contents.setWindowOpenHandler(({url:next})=>{openReference(next);return {action:'deny'};});
+  contents.on('will-attach-webview',event=>event.preventDefault());
+  contents.on('will-navigate',(event,next)=>{if(!navigationAllowed(next)){event.preventDefault();openReference(next);}});
+  contents.on('will-redirect',(event,next)=>{if(!navigationAllowed(next))event.preventDefault();});
+  const download=(event,item,source)=>{
+    const max=100*1024*1024;
+    if(source!==contents||!mediaUrl(item.getURL())||!['video/mp4','video/webm','image/png','image/jpeg'].includes(item.getMimeType())||item.getTotalBytes()>max){event.preventDefault();return;}
+    item.on('updated',()=>{if(item.getTotalBytes()>max||item.getReceivedBytes()>max)item.cancel();});
+    item.setSaveDialogOptions({title:'PULSE 프로젝트 파일 저장',defaultPath:path.join(app.getPath('downloads'),path.basename(item.getFilename()))});
+  };
+  isolated.on('will-download',download);
+  review.once('closed',()=>isolated.removeListener('will-download',download));
+  review.once('ready-to-show',()=>{review.show();review.focus();});
+  review.pulseReady=review.loadURL(url).catch(error=>{if(!review.isDestroyed())review.destroy();throw error;});
+  return review;
+}
+app.on('will-quit',()=>{pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();});
 if(!app.requestSingleInstanceLock())app.quit();
 else {
   app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
@@ -98,6 +134,8 @@ function createWindow(){
     auth=createAuthService({config:authConfig,store,openExternal:url=>shell.openExternal(url),appVersion:app.getVersion(),onChange:state=>{suitePublisher?.publish(state);publishAuthState(suitePublisher?suitePublisher.project(state):state);}});
     if(suiteStore&&runtime.clientId!=='platform'){suiteFollower=createSuiteFollower({store:suiteStore,auth});void suiteFollower.start();}else if(suitePublisher)void suitePublisher.initialize(auth);else void auth.initialize();
   }
+  if(runtime.clientId==='platform'&&!pulseRequests)pulseRequests=createPulseRequests({clientId:runtime.clientId,getAccount:accountStatus,createSession:createPulseSession,createReviewWindow:openPulseReview});
+  if(runtime.clientId==='platform'&&!pulseApp)pulseApp=createPulseApp({clientId:runtime.clientId,getAccount:accountStatus,BrowserWindow,session,openExternal:url=>shell.openExternal(url),getDownloads:()=>app.getPath('downloads')});
   if(runtime.clientId==='messenger'&&!teacherService){
     const teacherKey=teacherAuthConfig?suiteKey(teacherAuthConfig,runtime.mode):null;
     const teacherSuite=!smoke&&teacherAuthConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,teacherKey),key:teacherKey}):null;
@@ -162,6 +200,8 @@ function createWindow(){
     'synk:window-state':windowState,'synk:window-action':action=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};if(action==='minimize')window.minimize();else if(action==='toggle-maximize'){if(window.isMaximized())window.unmaximize();else window.maximize();}else if(action==='close')window.close();else return {ok:false,code:'INVALID_WINDOW_ACTION'};return {ok:true};},
     'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
+    'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
+    'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});

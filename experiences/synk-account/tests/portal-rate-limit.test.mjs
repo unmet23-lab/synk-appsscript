@@ -28,8 +28,10 @@ function clock() {
 const waitError = seconds => ({ code: 'over_email_send_rate_limit', status: 429, message: `For security purposes, you can only request this after ${seconds} seconds.` });
 const settled = async () => { for (let n = 0; n < 4; n++) await new Promise(resolve => setImmediate(resolve)); };
 function deferred() { let resolve;const promise = new Promise(done => { resolve = done; });return { promise, resolve }; }
-async function fixture(t, { initial = null, reset = false, consent = false, redirectUri = 'https://app.example.test/', consentDetails = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null } = {}) {
-  const ids = new Map(), events = new Map(), calls = [], replies = {}, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
+async function fixture(t, { initial = null, reset = false, consent = false, preview = consent, redirectUri = 'https://app.example.test/', consentDetails = null, initialReplies = {}, verifiedUser = null, defaultClock = false, callbackQuery = '', initializeError = null, sessionError = null, accountResponse = null, onInitialize = null, duringGetSession = null, beforeMountComplete = null } = {}) {
+  // Older manual-consent/rate-limit cases use the retained synthetic preview.
+  // Automatic first-party login cases below explicitly exercise production mode.
+  const ids = new Map(), events = new Map(), calls = [], replies = { ...initialReplies }, modes = ['login', 'signup', 'recover'].map(value => Object.assign(new Element('button'), { dataset: { view: value } })), time = clock();
   const get = id => { if (!ids.has(id)) ids.set(id, new Element());return ids.get(id); };
   const document = { body: new Element(), getElementById: get, createElement: tag => new Element(tag), querySelectorAll: () => modes };
   for (const id of ['auth-panel', 'consent', 'account', 'setup', 'signup-choices']) get(id).hidden = true;
@@ -54,7 +56,7 @@ async function fixture(t, { initial = null, reset = false, consent = false, redi
   const sdk = { auth: {
     initialize: async () => { await onInitialize?.({ emit: (event, value) => { saved = value;listener(event, value); }, setUrl: url => { location.href = url; } });return { error: initializeError }; },
     getSession: async () => { const snapshot = saved;await duringGetSession?.({ emit: (event, value) => { saved = value;listener(event, value); } });return { data: { session: snapshot }, error: sessionError }; },
-    getUser: async () => { metrics.userChecks++;metrics.checkedUsers.push(saved?.user?.id || null);return { data: { user: saved?.user } }; },
+    getUser: async () => { metrics.userChecks++;metrics.checkedUsers.push(saved?.user?.id || null);return { data: { user: verifiedUser || saved?.user } }; },
     onAuthStateChange: fn => { listener = fn;return {}; },
     signUp: args => invoke('signUp', args), signInWithPassword: args => invoke('signInWithPassword', args),
     resetPasswordForEmail: (...args) => invoke('resetPasswordForEmail', args), updateUser: args => invoke('updateUser', args),
@@ -62,8 +64,8 @@ async function fixture(t, { initial = null, reset = false, consent = false, redi
       approveAuthorization: (...args) => invoke('approveAuthorization', args), denyAuthorization: (...args) => invoke('denyAuthorization', args) },
   } };
   const mounting = mountPortal({ config: { configured: true, learningUrl: '/', portalUrl: 'https://id.example.test/',
-    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients: [] }, sdk, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
-  await beforeMountComplete?.({ time, get, metrics, historyUrls, mounting });await mounting;
+    clients: { platform: { clientId: 'synthetic-client', redirectUri } }, authorizationClients: [] }, sdk, preview, ...(defaultClock ? {} : { cooldownClock: time }), ...(accountResponse ? { accountFactory: () => ({ load: async () => { metrics.accountLoads++;return accountResponse; } }) } : {}) });
+  await beforeMountComplete?.({ time, get, metrics, historyUrls, mounting, calls, events, replies, emit: (event, value) => { saved = value;listener(event, value); } });await mounting;
   return { get, calls, replies, time, receivers, events, destinations, historyUrls, metrics, notice: get('notice'), feedback: get('auth-submit').beforeNodes[0], consentFeedback: get('approve').beforeNodes[0],
     mode: name => modes.find(button => button.dataset.view === name).onclick(), submit: () => get('auth-form').onsubmit({ preventDefault() {} }),
     emit: async (event, value) => { saved = value;listener(event, value);await settled(); } };
@@ -590,7 +592,7 @@ test('a getSession error does not permanently block a later authenticated consen
 });
 
 test('successful password update removes reset view while preserving the original authorization request', async t => {
-  const page = await fixture(t, { reset: true, initial: syntheticSession('reset-owner'), callbackQuery: '&authorization_id=synthetic-authorization&keep=one' });
+  const page = await fixture(t, { reset: true, preview: true, initial: syntheticSession('reset-owner'), callbackQuery: '&authorization_id=synthetic-authorization&keep=one' });
   assert.equal(page.get('auth-submit').textContent, '새 비밀번호 저장');assert.equal(page.metrics.consentLoads, 0);
   page.get('password').value = 'synthetic-new-password';page.replies.updateUser = { data: { user: { id: 'reset-owner' } } };await page.submit();
   assert.equal(page.calls.length, 1);assert.equal(page.calls[0].method, 'updateUser');assert.equal(page.get('password').value, '');
@@ -627,4 +629,81 @@ test('a convincing consent name cannot bypass the registered callback check', as
   assert.equal(page.get('consent-name').textContent, '');assert.equal(page.get('consent-destination').textContent, '');
   assert.match(page.notice.textContent, /등록한 SYNK 제품의 도착 주소를 확인하지 못/);assert.equal(page.notice['data-kind'], 'error');
   assert.equal(page.destinations.length, 0);assert.equal(page.calls.length, 0);
+});
+
+const automaticRedirect = 'https://app.example.test/?code=synthetic-authorized-code&state=synthetic-state';
+const automaticResult = { data: { redirect_url: automaticRedirect } };
+test('registered first-party login authorizes through the SDK once without a second consent click', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.metrics.userChecks, 1);
+  assert.deepEqual(page.calls, [{ method: 'approveAuthorization', args: ['synthetic-authorization', { skipBrowserRedirect: true }] }]);
+  assert.deepEqual(page.destinations, [automaticRedirect]);
+  await page.emit('TOKEN_REFRESHED', syntheticSession('owner-a'));
+  await page.emit('SIGNED_IN', syntheticSession('owner-a'));
+  assert.equal(page.calls.length, 1);assert.equal(page.destinations.length, 1);
+});
+
+test('automatic login waits for central credentials then uses the same first-party OAuth request', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.calls.length, 0);assert.equal(page.get('auth-panel').hidden, false);
+  await page.emit('SIGNED_IN', syntheticSession('owner-a'));
+  assert.equal(page.calls.length, 1);assert.deepEqual(page.destinations, [automaticRedirect]);
+});
+
+test('password recovery waits for the new password before automatically continuing its registered request', async t => {
+  const page = await fixture(t, { reset: true, preview: false, initial: syntheticSession('reset-owner'), callbackQuery: '&authorization_id=synthetic-authorization', initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.calls.length, 0);assert.equal(page.metrics.consentLoads, 0);
+  page.get('password').value = 'synthetic-new-password';page.replies.updateUser = { data: { user: { id: 'reset-owner' } } };await page.submit();
+  assert.deepEqual(page.calls.map(call => call.method), ['updateUser', 'approveAuthorization']);assert.deepEqual(page.destinations, [automaticRedirect]);
+});
+
+test('automatic approval failure never loops on cooldown expiry or same-user auth events; manual retry remains available', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), initialReplies: { approveAuthorization: { error: waitError(2) } } });
+  assert.equal(page.calls.length, 1);assert.equal(page.destinations.length, 0);assert.equal(page.get('approve').disabled, true);
+  page.time.advance(5000);await page.emit('TOKEN_REFRESHED', syntheticSession('owner-a'));
+  assert.equal(page.calls.length, 1);assert.equal(page.get('approve').disabled, false);
+  page.replies.approveAuthorization = automaticResult;await page.get('approve').onclick();
+  assert.equal(page.calls.length, 2);assert.deepEqual(page.destinations, [automaticRedirect]);
+});
+
+test('closing during automatic approval fences its late redirect and all later approval or denial calls', async t => {
+  const pending = deferred();
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), initialReplies: { approveAuthorization: () => pending.promise },
+    beforeMountComplete: async ({ calls, events }) => { await settled();assert.equal(calls.length, 1);events.get('pagehide')({});pending.resolve(automaticResult); } });
+  assert.equal(page.destinations.length, 0);await page.get('approve').onclick();await page.get('deny').onclick();assert.equal(page.calls.length, 1);
+});
+
+test('an account change during automatic approval blocks the old redirect and cannot auto-approve the replacement account', async t => {
+  const pending = deferred();
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), initialReplies: { approveAuthorization: () => pending.promise },
+    beforeMountComplete: async ({ calls, emit }) => { await settled();assert.equal(calls.length, 1);emit('SIGNED_IN', syntheticSession('owner-b'));await settled();pending.resolve(automaticResult); } });
+  assert.equal(page.destinations.length, 0);assert.equal(page.calls.length, 1);assert.equal(page.get('approve').disabled, false);
+  page.replies.denyAuthorization = { data: { redirect_url: 'https://app.example.test/?error=access_denied&state=synthetic-state' } };
+  await page.get('deny').onclick();assert.equal(page.calls.length, 2);assert.match(page.destinations[0], /error=access_denied/);
+});
+
+test('signing out while automatic approval waits cannot restore the old account or navigate', async t => {
+  const pending = deferred();
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), initialReplies: { approveAuthorization: () => pending.promise },
+    beforeMountComplete: async ({ calls, emit }) => { await settled();assert.equal(calls.length, 1);emit('SIGNED_OUT', null);await settled();pending.resolve(automaticResult); } });
+  assert.equal(page.destinations.length, 0);assert.equal(page.calls.length, 1);assert.equal(page.get('auth-panel').hidden, false);
+});
+
+for (const [label, details] of [
+  ['unknown client', { client: { id: 'unknown-client', name: 'SYNK 앱' }, redirect_uri: 'https://app.example.test/', scope: 'openid email profile' }],
+  ['extra scope', { client: { id: 'synthetic-client' }, redirect_uri: 'https://app.example.test/', scope: 'openid email profile admin' }],
+  ['injected callback code', { client: { id: 'synthetic-client' }, redirect_uri: 'https://app.example.test/?code=injected', scope: 'openid email profile' }],
+]) test('automatic login rejects ' + label + ' before an SDK approval', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), consentDetails: details, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);assert.equal(page.get('consent').hidden, true);
+});
+
+test('a central user response for a different identity cannot authorize the stored session', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: syntheticSession('owner-a'), verifiedUser: { id: 'owner-b' }, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.metrics.consentLoads, 0);assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);
+});
+
+test('a malformed central identity cannot start automatic authorization', async t => {
+  const page = await fixture(t, { consent: true, preview: false, initial: { user: {} }, verifiedUser: {}, initialReplies: { approveAuthorization: automaticResult } });
+  assert.equal(page.metrics.consentLoads, 0);assert.equal(page.calls.length, 0);assert.equal(page.destinations.length, 0);
 });

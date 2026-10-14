@@ -13,6 +13,8 @@ const SERVICES = freeze([
   { id: 'path', name: 'SYNK PATH', product: 'platform', connection: 'implemented' },
   { id: 'rehearsal', name: '중요한 대화 리허설', product: 'platform', connection: 'implemented' },
   { id: 'family-album', name: '가족 이야기 앨범', product: 'platform', connection: 'implemented' },
+  { id: 'dating', name: 'SYNK 소개팅', product: 'platform', connection: 'implemented' },
+  { id: 'path-travel', name: 'SYNK PATH 여행', product: 'platform', connection: 'implemented' },
 ]);
 const native = ['platform', 'world', 'messenger', 'teacher', 'fortune', 'care', 'rehearsal', 'family-album', 'path'].map((service, index) => ({
   id: `${service}-native`, service, product: SERVICES.find(item => item.id === service).product, runtime: 'native', connection: SERVICES.find(item => item.id === service).connection === 'pending-adapter' ? 'pending-adapter' : 'implemented', configKey: service,
@@ -24,6 +26,8 @@ const browserRedirects = {
   messenger: 'http://127.0.0.1:4191/api/synk-id/callback',
   teacher: 'http://127.0.0.1:4295/', fortune: 'http://127.0.0.1:4299/', care: 'http://127.0.0.1:4296/',
   rehearsal: 'http://127.0.0.1:4297/', 'family-album': 'http://127.0.0.1:4298/', path: 'http://127.0.0.1:4292/',
+  dating: 'http://127.0.0.1:4300/atlas-lab/dating.html',
+  'path-travel': 'http://127.0.0.1:4303/',
 };
 const browser = Object.entries(browserRedirects).map(([service, callback]) => ({
   id: `${service}-browser`, service, product: SERVICES.find(item => item.id === service).product, runtime: 'browser',

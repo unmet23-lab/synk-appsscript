@@ -2,13 +2,14 @@
 // Callable workflow with injected API, also used by the offline tests. No network
 // and no credential access occur merely by importing this module.
 const { CLIENTS } = require('./registry.cjs');
-const { buildProvisionPlan, canonicalMap, digest, clientName, matchesClient } = require('./provision-plan.cjs');
+const { buildProvisionPlan, canonicalMap, digest, clientName, matchesClient, validateOnly } = require('./provision-plan.cjs');
 const { buildConfigPlan } = require('./public-config.cjs');
 const copy = value => JSON.parse(JSON.stringify(value));
 const fail = message => { throw new Error(message); };
-function recoverBindings(environment, clients, bindings, results = {}) {
+function recoverBindings(environment, clients, bindings, results = {}, only) {
   const result = { ...bindings };
   for (const wanted of CLIENTS) {
+    if (only && wanted.id !== only) continue;
     if (result[wanted.id] || wanted.knownIds?.[environment] || wanted.connection === 'pending-adapter') continue;
     const returnedId = results[wanted.id]?.clientId;
     if (returnedId) {
@@ -25,7 +26,16 @@ function recoverBindings(environment, clients, bindings, results = {}) {
 function preserveLegacy(environment, mapping) {
   for (const [id, product] of Object.entries(canonicalMap(environment))) if (mapping[id] !== product) fail('기존 WORLD·맞춤 도구 제품 매핑을 보존해야 해요.');
 }
-async function provision({ environment, api, apply = false, existingMapping, bindings = {}, journal = null, saveJournal = async () => {}, publicSettings, writeConfigs = async () => [], retryConfirmedAbsent = null }) {
+async function provision({ environment, api, apply = false, existingMapping, bindings = {}, journal = null, saveJournal = async () => {}, publicSettings, writeConfigs = async () => [], retryConfirmedAbsent = null, only }) {
+  validateOnly(only);
+  if (only && journal?.pendingMapping) {
+    const id = journal.bindings?.[only], pending = journal.pendingMapping, previous = journal.mapping ?? {};
+    if (!id || pending[id] !== CLIENTS.find(row => row.id === only).product
+      || [...new Set([...Object.keys(previous), ...Object.keys(pending)])].some(key => key !== id && previous[key] !== pending[key]))
+      fail('다른 제품 매핑 적용 기록이 진행 중이에요. 원래 작업에서 확인한 뒤 범위를 지정해 주세요.');
+  }
+  if (only && retryConfirmedAbsent && retryConfirmedAbsent !== only) fail('--only와 재시도 등록 이름이 달라요.');
+  const inScope = row => !only || row.id === only;
   if (!['production', 'rehearsal'].includes(environment)) fail('대상 환경을 확인해 주세요.');
   if (journal && (journal.version !== 1 || journal.environment !== environment || !journal.mapping || !journal.bindings || !Array.isArray(journal.attempted))) fail('이 환경의 적용 기록이 아니에요.');
   const state = journal ? copy(journal) : { version: 1, environment, mapping: existingMapping || canonicalMap(environment), bindings: {}, attempted: [], pendingMapping: null };
@@ -37,20 +47,21 @@ async function provision({ environment, api, apply = false, existingMapping, bin
   if (state.pendingMapping && remoteDigest === digest(state.pendingMapping)) { state.mapping = state.pendingMapping; state.pendingMapping = null; }
   if (remoteDigest !== digest(state.mapping)) fail('원격 제품 매핑 지문이 달라졌어요. 현재 원본을 확인하기 전에는 적용하지 않아요.');
   preserveLegacy(environment, state.mapping);
-  let clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults);
+  let clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults, only);
   if (api.verifyFortuneBindings) await api.verifyFortuneBindings(state.bindings);
-  let plan = buildProvisionPlan({ environment, clients, secretDigest: remoteDigest, existingMapping: state.mapping, bindings: state.bindings });
-  const summary = current => ({ environment, mode: apply ? 'apply' : 'dry-run', registered: current.registrations.filter(item => item.clientId).length, pending: current.registrations.filter(item => item.status === 'pending-adapter').map(item => item.id), bindingRequired: current.registrations.filter(item => item.status === 'binding-required').map(item => item.id), registrationsNeeded: current.actions.filter(item => item.action === 'register-public-client').map(item => item.registration), mappingVerified: true });
+  let plan = buildProvisionPlan({ environment, clients, secretDigest: remoteDigest, existingMapping: state.mapping, bindings: state.bindings, only });
+  const summary = current => ({ environment, mode: apply ? 'apply' : 'dry-run', registered: current.registrations.filter(inScope).filter(item => item.clientId).length, pending: current.registrations.filter(inScope).filter(item => item.status === 'pending-adapter').map(item => item.id), bindingRequired: current.registrations.filter(inScope).filter(item => item.status === 'binding-required').map(item => item.id), registrationsNeeded: current.actions.filter(item => item.action === 'register-public-client').map(item => item.registration), mappingVerified: true,
+    ...(only ? { only, deferredRegistrations: current.registrations.filter(item => !inScope(item) && ['registration-needed', 'binding-required', 'mapping-needed'].includes(item.status)).map(item => item.id), localConfigWriteDeferred: true } : {}) });
   if (!apply) return summary(plan);
   if (!publicSettings) fail('로컬 설정 생성에 사용할 공개 설정 파일이 필요해요.');
   // Validate public settings before the first mutation, excluding provider rows
   // unrelated to this registry (confidential third-party clients are preserved).
   buildConfigPlan({ ...publicSettings, version: 1, environment, clients: [], bindings: {} });
-  if (plan.registrations.some(item => item.status === 'binding-required')) fail('같은 콜백의 기존 등록이 있어요. 명시한 binding을 확인한 뒤 실행해 주세요.');
+  if (plan.registrations.some(item => inScope(item) && item.status === 'binding-required')) fail('같은 콜백의 기존 등록이 있어요. 명시한 binding을 확인한 뒤 실행해 주세요.');
   await saveJournal(copy(state));
   const fresh = async () => { const observed = await api.readDigest(); if (observed !== digest(state.mapping)) fail('적용 도중 제품 매핑이 바뀌어 중단했어요. 기존 설정은 덮지 않았어요.'); return observed; };
   for (const action of plan.actions.filter(item => item.action === 'register-public-client')) {
-    await fresh(); clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults);
+    await fresh(); clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults, only);
     const wanted = CLIENTS.find(item => item.id === action.registration);
     if (state.bindings[wanted.id]) { await saveJournal(copy(state)); continue; }
     if (clients.some(client => matchesClient(wanted, client))) fail('적용 도중 같은 콜백 등록이 생겼어요. 중복 등록하지 않고 중단했어요.');
@@ -70,14 +81,14 @@ async function provision({ environment, api, apply = false, existingMapping, bin
       state.attemptResults[wanted.id] = { outcome: 'unconfirmed', at: new Date().toISOString(), ...(Number.isInteger(error.status) ? { httpStatus: error.status } : {}) };
     }
     await saveJournal(copy(state));
-    clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults);
+    clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults, only);
     const actual = state.bindings[wanted.id] && clients.find(client => client.client_id === state.bindings[wanted.id]);
     if (!actual || !matchesClient(wanted, actual) || returned && returned.client_id !== actual.client_id) fail('등록 응답과 실제 공급자 목록을 대조하지 못했어요. 새 등록 없이 결과 확인 후 재실행해 주세요.');
     await saveJournal(copy(state));
   }
-  await fresh(); clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults);
-  plan = buildProvisionPlan({ environment, clients, secretDigest: digest(state.mapping), existingMapping: state.mapping, bindings: state.bindings });
-  if (plan.actions.some(action => action.action === 'register-public-client') || plan.registrations.some(item => item.status === 'binding-required')) fail('모든 등록 결과를 확인하지 못해 제품 매핑을 쓰지 않았어요.');
+  await fresh(); clients = await api.listClients(); state.bindings = recoverBindings(environment, clients, state.bindings, state.attemptResults, only);
+  plan = buildProvisionPlan({ environment, clients, secretDigest: digest(state.mapping), existingMapping: state.mapping, bindings: state.bindings, only });
+  if (plan.actions.some(action => action.action === 'register-public-client') || plan.registrations.some(item => inScope(item) && item.status === 'binding-required')) fail('모든 등록 결과를 확인하지 못해 제품 매핑을 쓰지 않았어요.');
   const merge = plan.actions.find(action => action.action === 'merge-product-mapping');
   if (merge) {
     preserveLegacy(environment, merge.value); state.pendingMapping = merge.value; await saveJournal(copy(state));
@@ -90,8 +101,10 @@ async function provision({ environment, api, apply = false, existingMapping, bin
   await fresh(); clients = await api.listClients();
   const selected = CLIENTS.flatMap(wanted => { const id = state.bindings[wanted.id] || wanted.knownIds?.[environment]; if (!id) return []; const row = clients.find(client => client.client_id === id); if (!row || !matchesClient(wanted, row)) fail('설정 생성 전에 등록 상태가 바뀌었어요.'); return [{ registration: wanted.id, client_id: row.client_id, client_type: row.client_type, redirect_uris: [...row.redirect_uris] }]; });
   const configPlan = buildConfigPlan({ ...publicSettings, version: 1, environment, clients: selected, bindings: {} });
-  const files = await writeConfigs(configPlan);
+  // A scoped registration must not rewrite the three shared runtime configs.
+  // Its public config is prepared separately after exact callback verification.
+  const files = only ? [] : await writeConfigs(configPlan);
   state.completedAt = new Date().toISOString(); await saveJournal(copy(state));
-  return { ...summary(buildProvisionPlan({ environment, clients, secretDigest: digest(state.mapping), existingMapping: state.mapping, bindings: state.bindings })), mappingEntries: Object.keys(state.mapping).length, files, liveLoginVerified: false };
+  return { ...summary(buildProvisionPlan({ environment, clients, secretDigest: digest(state.mapping), existingMapping: state.mapping, bindings: state.bindings, only })), mappingEntries: Object.keys(state.mapping).length, files, liveLoginVerified: false };
 }
 module.exports = { provision, recoverBindings };
