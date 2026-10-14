@@ -22,7 +22,9 @@
 | [Mac 최종 검증](mac-install-0.4.11/mac-evidence.json), [화면 검수](mac-install-0.4.11/visual-review.json) | CI 38539926490 두 칩 성공. 각 칩 이동 4경우·실제 자동 재실행·합성 기록 보존, Finder/Dock/DMG 8장, 세 앱 0.4.11·서명/ASAR/아이콘 일치. 최초 합성 앱의 CFBundleName 변경으로 Helper 탐색이 실패한 시험은 도구만 수정 후 재실행했다. |
 | [공통 manifest](mac-install-0.4.11/preview.json), [게시 영수증](mac-install-0.4.11/publication.json), [공개 대조](mac-install-0.4.11/public-verification.json), [공개 CI](mac-install-0.4.11/public-ci.json) | GitHub 세 자산 크기·digest와 실제 공개 전체 다운로드 SHA 일치. 한영 홈페이지·feed·선택 스크립트 일치, Pages·전체 사이트 점검 성공. |
 
-별도 PC 담당 채팅의 첫 실제 0.4.10→0.4.11 자동 업데이트에서는 기존 앱의 60초 종료 대기를 넘겨 설치 시작 전에 중단됐다. [실제 오류 화면](mac-install-0.4.11/pc-first-update-parent-timeout.png)은 이 작업에서도 직접 확인했고, 기존 0.4.10 ASAR 보존은 담당 채팅이 보고했다. 정상 종료 후 공식 설치·실계정 자동 연결·재실행은 그 채팅에서 진행 중이다. 이를 자동 업데이트 성공으로 기록하지 않는다. 사이트 전체 CI에서는 기존 WORLD·LAB 자산 세 개가 처음 503을 반환했으나 각각 새 브라우저의 전체 시나리오 재검사 1회에 통과했다([원 로그](mac-install-0.4.11/site-ci.log)).
+별도 PC 담당 채팅의 첫 실제 0.4.10→0.4.11 자동 업데이트에서는 기존 앱의 60초 종료 대기를 넘겨 설치 시작 전에 중단됐다. [실제 오류 화면](mac-install-0.4.11/pc-first-update-parent-timeout.png)은 이 작업에서도 직접 확인했고, 기존 0.4.10 ASAR 보존은 담당 채팅이 보고했다. 정상 종료 후 공식 설치는 복구용 공간 검사에서 파일 교체 전에 중단됐고, 공간 확보 후 재시도 직전에 사용자 Esc로 작업을 멈췄다. 이를 자동 업데이트 성공으로 기록하지 않는다. 사이트 전체 CI에서는 기존 WORLD·LAB 자산 세 개가 처음 503을 반환했으나 각각 새 브라우저의 전체 시나리오 재검사 1회에 통과했다([원 로그](mac-install-0.4.11/site-ci.log)).
+
+**PC 후속 상태 · 18:50 KST:** 별도 담당 채팅에서 0.4.11 설치 재시도 전에 사용자의 Esc 중지를 확인했다. 현재 설치는 **0.4.10**이며 0.4.11 적용·실계정 자동 연결·재실행은 미완료다. 두 설치 시도는 모두 파일 교체 전에 중단됐고 기존 기록은 보존됐다. 정상 종료를 위해 바꾼 `closeToTray=false`를 원래 `true`로 복원하는 일도 남았다. 담당 자동화는 일시 중지됐으며, 직접 재개 요청 전에는 앱을 조작하지 않는다. [중단 상태](mac-install-0.4.11/pc-stopped-1850.json)·[설치 시도](mac-install-0.4.11/pc-update-attempts.json)·[담당 기록](../platform-real-account-20261010/README.md).
 
 남은 범위: 물리 Mac에서의 기존 앱 교체·실계정 왕복, Windows 실사용 계정으로 0.4.10→0.4.11 자동 업데이트는 이 기록의 완료 범위가 아니다. Mac Preview는 자동 확인·다운로드 후 Applications 수동 교체이며, 정식 서명·Apple 공증 유예를 유지한다.
 

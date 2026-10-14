@@ -1,0 +1,21 @@
+{
+  "status": "STOPPED_BY_USER_PHYSICAL_ESCAPE",
+  "stoppedAtApprox": "2026-10-14T18:50:00+09:00",
+  "installedVersionLastVerified": "0.4.10",
+  "targetVersion": "0.4.11",
+  "installationComplete": false,
+  "latestUserFacingState": "Official 0.4.11 installer showed insufficient recovery space. No retry input after space compression.",
+  "lastConfirmedPlatformProcessCount": 0,
+  "closeToTrayOriginal": true,
+  "closeToTrayCurrentLastVerified": false,
+  "closeToTrayRestorationPending": true,
+  "profileAndSuiteClosedBackupFiles": 318,
+  "failedAttemptProfileHashDifferences": 0,
+  "filesDeleted": 0,
+  "spaceAction": "Lossless NTFS compression of retained old build copies, with before/after content hashes. See compression-complete.json and compression-extra-complete.json.",
+  "automationId": "synk-0-4-11-pc",
+  "automationPausedDueToUserStop": true,
+  "remaining": ["Retry official 0.4.11 installation after current space and process checks", "Verify installed files and preserved profile before launch", "Verify actual account automatic connection and normal restart", "Restore original closeToTray=true and home screen"],
+  "push": "DEFERRED_BY_USER",
+  "noFurtherComputerUseAfterEscape": true
+}

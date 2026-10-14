@@ -1,0 +1,44 @@
+{
+  "version": "0.4.11",
+  "buildId": "20261014.8",
+  "publicInstallerSHA256": "a9e76846e54ecff1c3ae128d85a881309f4b59a523937c7e18c065a9e980866a",
+  "publicInstallerBytes": 405961216,
+  "attempts": [
+    {
+      "mode": "existing 0.4.10 automatic check and download",
+      "installerStartedAt": "2026-10-14T18:38:40.667468+09:00",
+      "oldMainPid": 3452,
+      "installerPid": 53744,
+      "status": "FAILED_PARENT_EXIT_TIMEOUT_BEFORE_INSTALLATION",
+      "parentExitTimeoutSeconds": 60,
+      "visibleMessage": "SYNK가 아직 실행 중입니다. 작업을 저장하고 앱을 종료한 뒤 다시 시도해 주세요.",
+      "oldAsarUnchanged": true,
+      "backupOrFileReplacementStarted": false,
+      "recoveryPerformed": false,
+      "screenshot": "auto-update-parent-timeout.png"
+    },
+    {
+      "mode": "official installer UI after normal app close",
+      "installerStartedAtApprox": "2026-10-14T18:43:25+09:00",
+      "installerPid": 10680,
+      "status": "FAILED_SPACE_PREFLIGHT_BEFORE_INSTALLATION",
+      "requiredBytesIncludingRecovery": 4321012852,
+      "availableBytesApproximately": 3552768000,
+      "visibleMessage": "자동 업데이트와 복구를 위한 여유 공간이 부족합니다. 기존 앱을 다시 엽니다.",
+      "backupOrFileReplacementStarted": false,
+      "recoveryPerformed": false,
+      "screenshot": "manual-install-space-failure.png"
+    }
+  ],
+  "preservation": {
+    "runningProfileBackupFiles": 320,
+    "closedProfileAndSuiteBackupFiles": 318,
+    "closedBackupAllHashesVerified": true,
+    "closeToTrayOriginal": true,
+    "closeToTrayTemporarilySetFalseForNormalExit": true,
+    "normalCloseProcessCount": 0,
+    "forceTerminations": 0,
+    "credentialsOrPrivateRecordBodiesReported": false
+  },
+  "push": "DEFERRED_BY_USER"
+}
