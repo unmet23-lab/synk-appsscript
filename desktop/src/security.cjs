@@ -59,6 +59,7 @@ function allowedNavigation(value,entry,clientId) {
 }
 function externalDestination(value,entry,clientId,mode) {
   try {const u=new URL(value),base=new URL(entry);if(u.username||u.password)return null;
+    if(clientId==='platform'&&value==='https://synk.im/account/client.html?product=platform')return value;
     if(clientId==='platform'&&Object.values(PUBLIC_APP_URLS).includes(value))return value;
     if(clientId==='world'&&entry!==WORLD_CLOUD_PREVIEW_ENTRY&&value==='https://synk.im/world/')return value;
     const paths=clientId==='platform'?['/learning-hub/']:clientId==='world'?(entry===WORLD_CLOUD_PREVIEW_ENTRY?['/account/platform.html','/account/index.html']:['/synk-account/platform.html','/synk-account/index.html']):[];

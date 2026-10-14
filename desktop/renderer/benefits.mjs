@@ -2,6 +2,24 @@
 // A catalogue entry never grants launch access or stores personal information.
 export const MEMBER_BENEFITS = [
   {
+    id: 'insight',
+    name: '내 성향 확인하기',
+    kicker: '기록으로 조금 더 알아가는 나',
+    headline: '나에게 맞는 방식, 내 기록에서.',
+    description: '내가 알려준 관심사·선호와 실제 학습 기록을 나눠 보고, 그 근거를 확인해요.',
+    status: 'integrated',
+    statusLabel: '내 계정 요약',
+    embedded: true,
+    asset: 'world-book.avif',
+    alt: '나의 기록을 펼쳐 보는 펠트 책',
+    steps: [
+      { title: '나의 관심사·선호', body: '직접 알려준 배우는 목적과 편한 이용 방식을 살펴봐요.' },
+      { title: '학습 성향·성장', body: '혼자 응답한 기록과 도움받은 기록, 다시 연습할 내용을 확인해요.' },
+      { title: '왜 이렇게 보나요?', body: '선택한 정보와 관찰된 기록을 구분하고 근거를 열어 봐요.' },
+    ],
+    availability: '로그인한 SYNK ID의 기존 Atlas 요약을 보여줘요. 학습 기록 연결이 꺼져 있으면 직접 알려준 배우는 이유만 표시해요.',
+  },
+  {
     id: 'care',
     name: '플레저',
     kicker: '소중한 사람을 챙기는 일',

@@ -78,7 +78,7 @@ async function main() {
   const config={appId:product.appId,productName:product.productName,executableName:product.executableName,electronVersion:'44.5.1',npmRebuild:false,forceCodeSigning:false,
     directories:{app:project,output:path.join(output,'backend')},artifactName:'signal-backend.exe',
     win:{target:[{target:'nsis',arch:['x64']}],signExecutable:false,icon},
-    nsis:{guid,include:path.join(ROOT,'signal-safety.nsh'),oneClick:false,perMachine:false,allowElevation:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},publish:null};
+    nsis:{guid,include:path.join(ROOT,'signal-safety.nsh'),oneClick:false,perMachine:false,allowElevation:false,packElevateHelper:false,allowToChangeInstallationDirectory:false,runAfterFinish:false,deleteAppDataOnUninstall:false,createDesktopShortcut:true,createStartMenuShortcut:true},publish:null};
   let backend=path.resolve(get('backend')||path.join(output,'backend/signal-backend.exe'));
   if(!process.argv.includes('--reuse-backend')) { const {build,Platform,Arch}=dependencies('electron-builder'); const artifacts=await build({projectDir:project,prepackaged:payload,targets:Platform.WINDOWS.createTarget('nsis',Arch.x64),config,publish:'never'}); backend=artifacts.find(file=>file.endsWith('.exe')); }
   assert(backend&&fs.existsSync(backend),'Missing NSIS engine');
