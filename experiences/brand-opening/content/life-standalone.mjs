@@ -13123,6 +13123,21 @@ function createLifeProgress({ storage = globalThis.localStorage, owner = "guest"
   return api;
 }
 
+// experiences/brand-opening/tutor-photos-data.mjs
+var LIFE_PHOTOS = { "story": {}, "cafe": { "counter": "cafe/counter.webp?v=a08e91c304f8" }, "welcome": "welcome/friends.webp?v=f9c00a1a30ec" };
+
+// experiences/brand-opening/tutor-photos.mjs
+var storyPhotoFile = (pack, speaker) => {
+  const set = LIFE_PHOTOS.story?.[pack], file = set?.[speaker] || set?.narrator;
+  return file ? "tutor-photos/" + file : "";
+};
+var hasStoryPhoto = (pack) => Boolean(LIFE_PHOTOS.story?.[pack]);
+var cafePhotoFile = (kind) => {
+  const file = LIFE_PHOTOS.cafe?.[kind];
+  return file ? "tutor-photos/" + file : "";
+};
+var hasCafePhoto = (kind) => Boolean(LIFE_PHOTOS.cafe?.[kind]);
+
 // experiences/synk-world-app/cafe-ui.mjs
 var esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var drinkNames = { cold: "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4", warm: "\uB530\uB73B\uD55C \uC8FC\uC2A4", tea: "\uB530\uB73B\uD55C \uCC28", coldtea: "\uCC28\uAC00\uC6B4 \uCC28", takeout: "\uD3EC\uC7A5\uD55C \uCC28" };
@@ -13138,7 +13153,8 @@ var cast = (photo) => `<div class="cafe-friends">${["mongle", "kkamong", "marine
 var speakerName = (id) => ({ mongle: "\uBABD\uAE00", kkamong: "\uAE4C\uBABD", marine: "\uB9C8\uB9B0", narrator: "\uC774\uC57C\uAE30" })[id] || "\uCE5C\uAD6C";
 var progress = (done, total) => `<span class="life-progress" aria-hidden="true"><i style="width:${Math.round(Math.max(0, Math.min(1, done / total)) * 100)}%"></i></span>`;
 function sceneMarkup(state, receipt, photo, message, kind = "counter") {
-  return `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" aria-label="${kind === "table" ? "\uCE5C\uAD6C\uC640 \uC549\uC740 \uC790\uB9AC" : "\uCE74\uD398 \uCE74\uC6B4\uD130"}"><div class="cafe-place-label">\uAD6C\uB984 \uD55C \uC794 <span>\uB3D9\uB124 \uCE74\uD398</span></div>${cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink || "empty"}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink, receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
+  const baked = hasCafePhoto(kind === "table" ? state.seat : "counter");
+  return `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" data-cafe-photo="${baked}" aria-label="${kind === "table" ? "\uCE5C\uAD6C\uC640 \uC549\uC740 \uC790\uB9AC" : "\uCE74\uD398 \uCE74\uC6B4\uD130"}"><div class="cafe-place-label">\uAD6C\uB984 \uD55C \uC794 <span>\uB3D9\uB124 \uCE74\uD398</span></div>${baked ? "" : cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink || "empty"}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink, receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
 }
 function cafeMarkup(state, { photo, print = () => "", helped = false, firstAnswer = null, retryButton = () => "", lessonId = CAFE_LESSON_ID, speechAvailable = false, speechPhase = "idle" } = {}) {
   const visit = cafeVisitById(lessonId), receipt = cafeReceipt(state, lessonId), step = visit.steps[state.step];
@@ -13432,6 +13448,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
 }, onNext = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
+  for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
   let context2 = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life";
   const practised = /* @__PURE__ */ new Set();
@@ -13834,7 +13851,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         return;
       }
       const friend = friends[scene2.speaker], speaker = friend ? scene2.speaker : "narrator", last = context2.sceneIndex + 1 === l.scenes.length;
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}"><div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div><div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${escape(scene2.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story" });
+      if (hasStoryPhoto(l.packId)) for (const who of ["narrator", "mongle", "kkamong", "marine"]) {
+        const img = new Image();
+        img.src = asset(storyPhotoFile(l.packId, who));
+      }
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${hasStoryPhoto(l.packId) ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 \uC138 \uCE5C\uAD6C\uAC00 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74` : "\uC138 \uCE5C\uAD6C\uAC00 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74"}" width="768" height="512" decoding="async"></figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${escape(scene2.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story" });
       return;
     }
     renderQuestion();

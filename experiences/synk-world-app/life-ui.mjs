@@ -2,7 +2,7 @@ import {PACKS,LESSONS,lessonById,packById} from './life-content.mjs';
 import {CAFE_LESSON_ID,CAFE_COMPOSE_ID,CAFE_LESSON_IDS,CAFE_VISITS,isCafeLesson,resumeCafe,chooseCafe,advanceCafe,chooseCafeSeat,cafeQuestion,updateCafeOrder,submitCafeOrder} from './cafe-activity.mjs';
 import {cafeMarkup,cafeCompletionMarkup,createCafeSpeech,cafeSpeechLabel} from './cafe-ui.mjs';
 import {play,haptic,verdict,getPref} from '../brand-opening/world-sound.mjs'
-import {storyPhoto,hasStoryPhoto,cafePhoto,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
+import {storyPhotoFile,hasStoryPhoto,cafePhotoFile,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 if(!document.querySelector('[data-life-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./life-ui.css',import.meta.url).href;style.dataset.lifeStyle='true';document.head.append(style);}
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 // 세 친구: 카페 장면은 방 사진 속 작은 친구(home/friend-*), 이야기 무대는 정본 컷(assets/tutors).
@@ -26,7 +26,7 @@ const expressionOf=(lesson,q)=>lesson?.expressions.find(e=>e.id===q?.expressionI
 export function createLifeExperience({home,getProgress,show=(title,html,options)=>home.showPanel(title,html,options),asset,onSummary=()=>{},onNext=null}){
  const panel=document.querySelector('#world-panel'),content=document.querySelector('#panel-content');
  for(const [variable,file]of Object.entries({'--cafe-room':'home/cafe-room-v1.webp','--cafe-drinks':'home/cafe-drinks-v2.png','--cafe-ice':'home/cafe-ice.webp','--life-print-goals':'world-felt/goals.webp'}))panel.style.setProperty(variable,`url("${asset(file)}")`);
- for(const kind of ['counter','window','garden'])if(hasCafePhoto(kind))panel.style.setProperty('--cafe-'+kind,`url("${cafePhoto(kind)}")`);
+ for(const kind of ['counter','window','garden'])if(hasCafePhoto(kind))panel.style.setProperty('--cafe-'+kind,`url("${asset(cafePhotoFile(kind))}")`);
  // 흰 인화지에 붙인 펠트 사진(assets/world-felt). 한 화면에 같은 사진은 한 번만 쓴다.
  const print=(name,className='')=>`<span class="w-print ${className}" aria-hidden="true"><img src="${asset('world-felt/'+name+'.webp')}" alt="" width="640" height="640" decoding="async"></span>`;
  let context=null,shown=false,rendering=false,ended=false,reviewRun=null,lastFeedback=null,helped=false,generation=0,timer,cafeRun=null,cafeView='',companion=null,place='life';
@@ -243,8 +243,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    const scene=l.scenes[context.sceneIndex];if(!scene){context.phase='questions';persistStage();renderLesson();return;}
    const friend=friends[scene.speaker],speaker=friend?scene.speaker:'narrator',last=context.sceneIndex+1===l.scenes.length;
    // 이야기 장소에서 세 친구를 함께 구운 사진. 말하는 친구가 바뀌면 같은 장면의 그 순간 사진으로 바꾼다. 대사는 흰 말풍선. 저절로 넘어가지 않는다.
-   if(hasStoryPhoto(l.packId))for(const who of ['narrator','mongle','kkamong','marine']){const img=new Image();img.src=storyPhoto(l.packId,who);}
-   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${hasStoryPhoto(l.packId)?`<figure class="life-story-photo"><img src="${storyPhoto(l.packId,speaker)}" alt="${friend?`${friend.name} 차례 · 세 친구가 있는 이야기 장면`:'세 친구가 있는 이야기 장면'}" width="768" height="512" decoding="async"></figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend?friend.name:'이야기'}</small><p>${escape(scene.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last?'문제 풀기':'다음'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>나중에 하기</button></div>`,{type:'life-story'});return;
+   if(hasStoryPhoto(l.packId))for(const who of ['narrator','mongle','kkamong','marine']){const img=new Image();img.src=asset(storyPhotoFile(l.packId,who));}
+   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${hasStoryPhoto(l.packId)?`<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId,speaker))}" alt="${friend?`${friend.name} 차례 · 세 친구가 있는 이야기 장면`:'세 친구가 있는 이야기 장면'}" width="768" height="512" decoding="async"></figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend?friend.name:'이야기'}</small><p>${escape(scene.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last?'문제 풀기':'다음'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>나중에 하기</button></div>`,{type:'life-story'});return;
   }
   renderQuestion();
  }
