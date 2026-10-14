@@ -24,7 +24,7 @@ const finite=value=>typeof value==='number'&&Number.isFinite(value)&&value>=0;
 const text=(value,max=2000)=>typeof value==='string'?value.slice(0,max):'';
 const iso=value=>typeof value==='string'&&Number.isFinite(Date.parse(value))?new Date(value).toISOString():null;
 const contentFields=['brandId','category','campaignId','language','purpose','topikArea','source','sourceId'];
-const basis='실제 게시 당시 고정된 문구만 비교합니다. 같은 원본·계정·형식·목적·언어·미디어·관측 시간·측정 출처를 나누며, 문구별 3개 미만은 표본 부족입니다. 시간·대상·노출 차이가 있으므로 승자나 문구의 인과효과를 판단하지 않습니다.';
+const basis='게시 당시 그대로 남은 문구만 비교해요. 원본·계정·형식·목적·언어·미디어·관측 시간·측정 출처가 같은 것끼리 묶고, 문구별로 3개가 안 되면 표본 부족으로 봐요. 시간·대상·노출이 서로 달라서 어느 문구가 나은지, 성과가 문구 때문인지는 판단하지 않아요.';
 
 function publicationIdentity(value){
   try{return normalizePerformancePostUrl(value).identity;}catch{return null;}
@@ -75,26 +75,26 @@ function normalizedFilters(input={}){
     // Date inputs use the same fixed Korean calendar as the workspace UI.
     result[key]=value.length===10?iso(value+(key==='to'?'T23:59:59.999+09:00':'T00:00:00.000+09:00')):iso(value);
   }
-  if(result.from&&result.to&&result.from>result.to)throw fail('조회 종료일은 시작일 이후여야 합니다.');
+  if(result.from&&result.to&&result.from>result.to)throw fail('조회 종료일은 시작일 이후로 정해 주세요.');
   return result;
 }
 function observation(checkpoint,metric,publishedAt){
   const definition=POST_PERFORMANCE_METRICS.find(row=>row.id===metric),meta=checkpoint?.metricProvenance?.[metric]||{},raw=checkpoint?.metrics?.[metric];
   const observedAt=iso(meta.observedAt||checkpoint?.observedAt),recordedAt=iso(meta.recordedAt||checkpoint?.recordedAt);
   const ageMinutes=observedAt&&publishedAt?(Date.parse(observedAt)-Date.parse(publishedAt))/MINUTE:null;
-  const result={value:null,status:'missing',reason:checkpoint?.unavailableReasons?.[metric]||'아직 확인한 값이 없습니다.',source:meta.source||checkpoint?.source||null,unit:meta.unit||definition?.unit||'count',timing:meta.timing||checkpoint?.timing||null,observedAt,recordedAt,ageMinutes,observationOffsetMinutes:ageMinutes===null?null:Math.floor((ageMinutes-checkpoint.hours*60)/15)*15};
+  const result={value:null,status:'missing',reason:checkpoint?.unavailableReasons?.[metric]||'아직 확인한 값이 없어요.',source:meta.source||checkpoint?.source||null,unit:meta.unit||definition?.unit||'count',timing:meta.timing||checkpoint?.timing||null,observedAt,recordedAt,ageMinutes,observationOffsetMinutes:ageMinutes===null?null:Math.floor((ageMinutes-checkpoint.hours*60)/15)*15};
   if(!finite(raw)){if(/제공하지|지원하지|미지원/.test(result.reason))result.status='unsupported';return result;}
   result.value=raw;
-  if(checkpoint?.status!=='recorded'||!meta.source||!meta.unit||!observedAt||!publishedAt||!meta.timing){result.status='excluded';result.reason='측정 출처·단위·실제 게시/관측 시각을 확인해야 비교할 수 있습니다.';return result;}
-  if(meta.measurementWindowMissed||ageMinutes<checkpoint.hours*60||ageMinutes>checkpoint.hours*60+360){result.status='excluded';result.reason='정해진 관측 시간 범위를 벗어나 비교에서 제외했습니다.';return result;}
-  if(meta.unit!==definition.unit||definition.unit==='count'&&!Number.isSafeInteger(raw)||definition.max!==undefined&&raw>definition.max){result.status='excluded';result.reason='지표 단위 또는 값의 범위를 확인해야 합니다.';return result;}
+  if(checkpoint?.status!=='recorded'||!meta.source||!meta.unit||!observedAt||!publishedAt||!meta.timing){result.status='excluded';result.reason='측정 출처·단위·실제 게시/관측 시각이 확인돼야 비교할 수 있어요.';return result;}
+  if(meta.measurementWindowMissed||ageMinutes<checkpoint.hours*60||ageMinutes>checkpoint.hours*60+360){result.status='excluded';result.reason='정해진 관측 시간을 벗어나서 비교에서 뺐어요.';return result;}
+  if(meta.unit!==definition.unit||definition.unit==='count'&&!Number.isSafeInteger(raw)||definition.max!==undefined&&raw>definition.max){result.status='excluded';result.reason='지표 단위나 값의 범위가 맞지 않아 비교에서 뺐어요.';return result;}
   return {...result,status:'measured',reason:null};
 }
 function exposure(checkpoint,publishedAt){
   return {
-    impressions:{value:null,status:'unsupported',reason:'현재 성과 원문의 노출 횟수 지표가 연결되어 있지 않습니다.'},
+    impressions:{value:null,status:'unsupported',reason:'성과 기록에 노출 횟수 지표가 연결돼 있지 않아요.'},
     reach:observation(checkpoint,'reach',publishedAt),views:observation(checkpoint,'views',publishedAt),
-    note:'조회·도달은 노출 횟수와 다른 지표입니다. 없는 노출 분모를 대체하거나 참여율을 계산하지 않습니다.'
+    note:'조회·도달은 노출 횟수와 다른 지표예요. 없는 노출 수를 다른 값으로 대체하거나 참여율을 계산하지 않아요.'
   };
 }
 
@@ -103,14 +103,14 @@ export function createSocialVariantPerformanceService({store,publishing,performa
   if(!store||!publishing||!performance||typeof validatePostInput!=='function')throw new TypeError('store, publishing, performance and validatePostInput are required');
   function current(user,write=false){
     const live=store.get('users',user?.id);if(!live?.active||!['admin','manager','member','viewer'].includes(live.role))throw fail('먼저 로그인해 주세요.',401);
-    if(write&&live.role==='viewer')throw fail('템플릿 작성 권한이 필요합니다.',403);return live;
+    if(write&&live.role==='viewer')throw fail('템플릿 작성 권한이 필요해요.',403);return live;
   }
   function readable(user,job,write=false){
     const channel=store.get('channels',job?.channelId);
-    if(!channel||channel.active===false||channel.hidden||!(write?canWriteChannel:canReadChannel)(user,channel))throw fail('현재 접근할 수 없는 게시 기록입니다.',404);
+    if(!channel||channel.active===false||channel.hidden||!(write?canWriteChannel:canReadChannel)(user,channel))throw fail('접근할 수 없는 게시 기록이에요.',404);
     const post=publishing.get(user,job.postId).post;
     if(write&&!post.canEdit)throw fail('현재 게시물 작성 권한을 확인해 주세요.',403);
-    if(!job.snapshot?.post||!job.snapshot?.variant||job.snapshot.variant.channelId!==job.channelId)throw fail('게시 당시 문구 원본이 없어 비교할 수 없습니다.',409);
+    if(!job.snapshot?.post||!job.snapshot?.variant||job.snapshot.variant.channelId!==job.channelId)throw fail('게시 당시 문구 원본이 없어 비교할 수 없어요.',409);
     // Do not expose a private Studio/PULSE source or old media after its access is revoked.
     const snapshot=clone(job.snapshot.post);snapshot.variants=[clone(job.snapshot.variant)];snapshot.media=clone(job.snapshot.variant.media||[]);
     validatePostInput(user,snapshot);
@@ -128,21 +128,21 @@ export function createSocialVariantPerformanceService({store,publishing,performa
   }
   function trackingFor(job,linkIndex,usage){
     const refs=linkReferences(job,linkIndex);
-    if(!refs.length)return {status:'unlinked',links:[],reason:'게시 당시 문구에서 연결된 추적 주소를 확인하지 못했습니다.'};
+    if(!refs.length)return {status:'unlinked',links:[],reason:'게시 당시 문구에서 연결된 추적 주소를 찾지 못했어요.'};
     const ambiguous=refs.some(link=>usage.get(link.id)!==1||link.postId!==job.postId);
     return {status:ambiguous?'ambiguous':'link-observations',links:refs.map(link=>({id:link.id,label:link.label,shortUrl:link.shortUrl,active:link.active,stats:clone(link.stats)})),
-      attributionKnown:!ambiguous,window:'rolling-90-days',reason:ambiguous?'같은 링크를 여러 게시에 사용해 문구별 유입을 구분할 수 없습니다. 아래 값은 링크 전체 기록이며 문구 비교에 합산하지 않습니다.':'링크 단위 최근 90일 관측입니다. 플랫폼의 24/72시간 수치와 관측 기간이 달라 합산하거나 전환율을 계산하지 않습니다.'};
+      attributionKnown:!ambiguous,window:'rolling-90-days',reason:ambiguous?'같은 링크를 여러 게시에 써서 문구별 유입을 나눌 수 없어요. 아래 값은 링크 전체 기록이라 문구 비교에 더하지 않아요.':'링크 전체의 최근 90일 관측이에요. 플랫폼의 24/72시간 수치와 기간이 달라서 더하거나 전환율을 계산하지 않아요.'};
   }
   function firstPartyObservation(job,definition,hours,linkIndex,usage,data){
     const publishedAt=iso(job.publishedAt),from=publishedAt?Date.parse(publishedAt):NaN,to=from+hours*HOUR,now=Date.parse(clock()),cutoff=now-90*24*HOUR;
-    const result={value:null,status:'missing',reason:null,source:definition.source,unit:'count',timing:'fixed-window',observedAt:null,recordedAt:iso(clock()),ageMinutes:hours*60,observationOffsetMinutes:0,windowFrom:publishedAt,windowTo:Number.isFinite(to)?new Date(to).toISOString():null,lastEventAt:null,definition:'기록된 익명 클릭 식별자별 횟수입니다. 사람 수·매출·노출 대비 전환율이 아닙니다.'};
-    if(!publishedAt)return {...result,status:'excluded',reason:'실제 게시 시각이 없어 관측 기간을 정할 수 없습니다.'};
-    if(now<to)return {...result,reason:hours+'시간 관측 기간이 아직 끝나지 않았습니다.'};
-    if(from<cutoff)return {...result,reason:'90일 보존 경계를 넘어 관측 기간 전체 기록을 확인할 수 없습니다.'};
+    const result={value:null,status:'missing',reason:null,source:definition.source,unit:'count',timing:'fixed-window',observedAt:null,recordedAt:iso(clock()),ageMinutes:hours*60,observationOffsetMinutes:0,windowFrom:publishedAt,windowTo:Number.isFinite(to)?new Date(to).toISOString():null,lastEventAt:null,definition:'익명 클릭 식별자 기준으로 센 횟수예요. 사람 수·매출·노출 대비 전환율이 아니에요.'};
+    if(!publishedAt)return {...result,status:'excluded',reason:'실제 게시 시각이 없어 관측 기간을 정할 수 없어요.'};
+    if(now<to)return {...result,reason:hours+'시간 관측 기간이 아직 끝나지 않았어요.'};
+    if(from<cutoff)return {...result,reason:'관측 기간이 90일 보존 기간을 벗어나 기록을 다 확인할 수 없어요.'};
     const refs=linkReferences(job,linkIndex);
-    if(!refs.length)return {...result,reason:'게시 당시 문구에 연결된 추적 주소가 없습니다.'};
-    if(refs.some(link=>usage.get(link.id)!==1||link.postId!==job.postId))return {...result,status:'excluded',reason:'재사용되거나 다른 게시물에 속한 링크여서 이 문구의 결과로 구분할 수 없습니다.'};
-    if(refs.some(link=>!iso(link.createdAt)||Date.parse(link.createdAt)>from))return {...result,status:'excluded',reason:'게시 전에 만들어진 추적 링크인지 확인할 수 없습니다.'};
+    if(!refs.length)return {...result,reason:'게시 당시 문구에 연결된 추적 주소가 없어요.'};
+    if(refs.some(link=>usage.get(link.id)!==1||link.postId!==job.postId))return {...result,status:'excluded',reason:'여러 게시에 쓴 링크이거나 다른 게시물의 링크라서 이 문구의 결과로 나눌 수 없어요.'};
+    if(refs.some(link=>!iso(link.createdAt)||Date.parse(link.createdAt)>from))return {...result,status:'excluded',reason:'게시 전에 만든 추적 링크인지 확인할 수 없어요.'};
     const relevantClicks=refs.flatMap(link=>data.clicks.get(link.id)||[]),validClicks=new Map(relevantClicks.filter(click=>Number.isFinite(Date.parse(click.createdAt))&&Date.parse(click.createdAt)>=from&&Date.parse(click.createdAt)<=to).map(click=>[click.id,click]));
     if(!definition.event){const times=[...validClicks.values()].map(click=>click.createdAt).sort();return {...result,value:validClicks.size,status:'measured',lastEventAt:times.at(-1)||null,reason:null};}
     const source=definition.source==='first-party:verified'?'verified':'browser';
@@ -152,7 +152,7 @@ export function createSocialVariantPerformanceService({store,publishing,performa
     };
     // A configured key or an allowed origin alone does not prove site instrumentation.
     // A different event kind does not prove this conversion is instrumented.
-    if(refs.some(link=>!(data.events.get(link.id)||[]).some(event=>validEvent(event,link)&&event.event===definition.event)))return {...result,reason:source==='verified'?'이 링크에서 해당 종류의 서버 확인 사건 연결을 관측하지 못했습니다.':'이 링크에서 해당 종류의 브라우저 사건 연결을 관측하지 못했습니다.'};
+    if(refs.some(link=>!(data.events.get(link.id)||[]).some(event=>validEvent(event,link)&&event.event===definition.event)))return {...result,reason:source==='verified'?'이 링크에 연결된 해당 종류의 서버 확인 기록이 아직 없어요.':'이 링크에 연결된 해당 종류의 브라우저 기록이 아직 없어요.'};
     const events=refs.flatMap(link=>(data.events.get(link.id)||[]).filter(event=>validEvent(event,link)&&event.event===definition.event&&validClicks.has(event.clickId)&&Date.parse(event.createdAt)>=from));
     const unique=new Set(events.map(event=>event.clickId+'|'+event.event));
     return {...result,value:unique.size,status:'measured',lastEventAt:events.map(event=>event.createdAt).sort().at(-1)||null,reason:null};
@@ -186,8 +186,8 @@ export function createSocialVariantPerformanceService({store,publishing,performa
       const matches=entryMap.get(identity)||[],linked=matches.filter(entry=>entry.id===job.performanceEntryId),entry=linked.length===1?linked[0]:matches.length===1?matches[0]:null;
       const checkpoints=(entry?.checkpoints||[]).filter(row=>row.hours===filters.hours),checkpoint=checkpoints.length===1?checkpoints[0]:null;
       const metric=firstParty?firstPartyObservation(job,firstParty,filters.hours,linkIndex,counts,trackingData):observation(checkpoint,filters.metric,publishedAt);
-      if(!firstParty&&(matches.length>1&&!linked.length||checkpoints.length>1)){metric.status='excluded';metric.reason='같은 게시물의 성과 기록이 중복되어 연결할 원문을 먼저 확인해야 합니다.';metric.value=null;}
-      if(!firstParty&&entry&&iso(entry.publishedAt)!==publishedAt){metric.status='excluded';metric.reason='성과 원문과 실제 게시 시각이 일치하지 않습니다.';}
+      if(!firstParty&&(matches.length>1&&!linked.length||checkpoints.length>1)){metric.status='excluded';metric.reason='같은 게시물의 성과 기록이 겹쳐 있어요. 어느 기록을 연결할지 먼저 확인해 주세요.';metric.value=null;}
+      if(!firstParty&&entry&&iso(entry.publishedAt)!==publishedAt){metric.status='excluded';metric.reason='성과 기록의 게시 시각이 실제 게시 시각과 달라요.';}
       const normalizedOptions=Object.fromEntries(Object.entries(variant.options||{}).filter(([key])=>key!=='hashtags').map(([key,value])=>[key,['link','firstComment'].includes(key)?comparisonText(value,job,linkIndex):value]));
       const condition={channelId:channel.id,channelName:channel.displayName||channel.name||channel.handle||channel.id,originKey,format,purpose:post.purpose||'',language:post.language||'',hours:filters.hours,metric:filters.metric,source:metric.source,unit:metric.unit,timing:metric.timing,observationOffsetMinutes:metric.observationOffsetMinutes,mediaFingerprint:hash(mediaIdentity(variant)),optionsFingerprint:hash(normalizedOptions)};
       const normalizedCopy=comparisonCopy(job,copy,linkIndex),id=hash(condition),group=groups.get(id)||{id,condition,variants:new Map()},variantKey=hash([originKey,normalizedCopy]);
@@ -200,18 +200,18 @@ export function createSocialVariantPerformanceService({store,publishing,performa
     const rows=[...groups.values()].map(group=>({...group,variants:[...group.variants.values()].map(item=>{
       const values=item.observations.filter(row=>row.status==='measured').map(row=>row.value).sort((a,b)=>a-b),mid=Math.floor(values.length/2);
       return {...item,median:values.length?values.length%2?values[mid]:(values[mid-1]+values[mid])/2:null,min:values[0]??null,max:values.at(-1)??null,status:values.length===0?'unmeasured':values.length<3?'insufficient':'observed',observations:item.observations.sort((a,b)=>(b.publishedAt||'').localeCompare(a.publishedAt||''))};})}));
-    return {filters,metricDefinitions:clone(SOCIAL_COPY_METRICS),groups:rows,excluded,basis:basis+' 같은 게시물·계정에 게시 전에 만든 자체 추적 주소만 목적지가 정확히 같으면 같은 문구로 묶습니다. 목적지의 UTM·기타 쿼리·fragment는 보존합니다. 대표 문구와 각 게시 원문·문구 ID·정확한 지문은 따로 남습니다. 사이트 지표는 게시 후 정해진 24/72시간에 기록된 클릭·사건만 집계합니다. 브라우저 신고와 서버 확인은 합산하지 않으며 미수집된 동작을 추정하지 않습니다.',generatedAt:iso(clock()),minimumSamples:3};
+    return {filters,metricDefinitions:clone(SOCIAL_COPY_METRICS),groups:rows,excluded,basis:basis+' 같은 게시물·계정에서 게시 전에 만든 자체 추적 주소만 다르고 목적지가 똑같으면 같은 문구로 봐요. 목적지의 UTM·기타 쿼리·fragment도 지우지 않고 그대로 비교해요. 대표 문구와 별개로 게시마다 원문·문구 ID·정확한 지문이 남아요. 사이트 지표는 게시 뒤 24/72시간 안에 기록된 클릭·사건만 집계해요. 브라우저 신고와 서버 확인은 더하지 않고, 수집하지 않은 동작은 짐작하지 않아요.',generatedAt:iso(clock()),minimumSamples:3};
   }
   function templatePreview(user,input={},context={}){
-    user=current(user,true);if(context.signal?.aborted)throw fail('요청이 중단됐습니다.',409);
-    if(context.authorize&&current(context.authorize(),true).id!==user.id)throw fail('로그인 사용자가 변경됐습니다.',401);
+    user=current(user,true);if(context.signal?.aborted)throw fail('요청이 중단됐어요.',409);
+    if(context.authorize&&current(context.authorize(),true).id!==user.id)throw fail('로그인한 사용자가 바뀌었어요.',401);
     const job=store.get('socialPublishJobs',input.jobId);
     if(!job||job.status!=='published')throw fail('게시가 완료된 원문을 선택해 주세요.',404);
     readable(user,job,true);const original=job.snapshot.post,variant=job.snapshot.variant,copy=copyOf(job);
     const post={...Object.fromEntries(contentFields.filter(key=>original[key]!==undefined).map(key=>[key,clone(original[key])])),title:copy.title,body:copy.text,media:clone(variant.media||[]),variants:[{channelId:job.channelId,title:copy.title,text:copy.text,format:variant.format,publicationFormat:variant.publicationFormat,media:clone(variant.media||[]),options:clone(variant.options||{}),copyVariants:[]}],recurrence:null,expiresAt:null};
     validatePostInput(user,clone(post));
     const links=tracking?.workspace(user)?.links||[],hasTrackingLink=linkReferences(job,new Map(links.map(link=>[link.shortUrl,link])),false).length>0;
-    return {post,selection:{jobId:job.id,postId:job.postId,copyId:copy.copyId,fingerprint:copy.fingerprint,contentVersion:job.contentVersion},notice:'게시 당시 문구를 넣은 템플릿 제안입니다. 확인 후 이름을 정해 템플릿으로 저장하세요. 새 승인·예약은 만들지 않습니다.'+(hasTrackingLink?' 현재 제안에는 기록 당시 추적 링크가 그대로 들어 있습니다. 다음 게시에는 추적 링크를 새로 만들어 넣어야 문구별 유입을 구분할 수 있습니다.':'')};
+    return {post,selection:{jobId:job.id,postId:job.postId,copyId:copy.copyId,fingerprint:copy.fingerprint,contentVersion:job.contentVersion},notice:'게시 당시 문구를 넣은 템플릿 제안이에요. 확인하고 이름을 정해 템플릿으로 저장하세요. 저장해도 새 승인·예약은 만들지 않아요.'+(hasTrackingLink?' 이 제안에는 기록 당시 추적 링크가 그대로 들어 있어요. 다음 게시에는 추적 링크를 새로 만들어 넣어야 문구별 유입을 나눠 볼 수 있어요.':'')};
   }
   return {comparison,templatePreview};
 }

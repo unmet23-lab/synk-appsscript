@@ -14,7 +14,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     const handoffMedia=path.match(/^\/api\/social\/jobs\/([^/]+)\/media\/(\d+)\/download$/);
     if(['GET','HEAD'].includes(req.method)&&handoffMedia){
       const context=publishing.handoff(authorize(),parameter(handoffMedia[1])),ref=context.variant.media[Number(handoffMedia[2])];
-      if(!ref)throw fail('이 게시 버전의 파일을 찾을 수 없습니다.',404);
+      if(!ref)throw fail('이 게시 버전에서 파일을 찾을 수 없어요.',404);
       const file=await marketing.downloadHandoff(authorize(),ref,{...context,authorize,signal});authorize();
       res.writeHead(200,{'Content-Type':file.mimeType,'Content-Length':file.bytes.length,'Cache-Control':'no-store','X-Content-Type-Options':'nosniff','Content-Disposition':"attachment; filename*=UTF-8''"+encodeURIComponent(file.fileName||'sns-media')});res.end(req.method==='HEAD'?undefined:file.bytes);return true;
     }
@@ -31,13 +31,13 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
       if(path==='/api/social/recovery'){send(res,200,recovery.list(user));return true;}
       const reviewPost=path.match(/^\/api\/social\/posts\/([^/]+)\/review$/);
       if(reviewPost){send(res,200,review.workspace(user,{postId:parameter(reviewPost[1])}));return true;}
-      throw fail('SNS 조회 주소를 찾을 수 없습니다.',404);
+      throw fail('SNS 조회 주소를 찾을 수 없어요.',404);
     }
     if(req.method!=='POST')throw fail('SNS 요청 방식을 확인해 주세요.',405);
     if(req.headers.origin!==origin||req.headers['x-csrf-token']!==auth.body.csrfToken)throw fail('워크스페이스 화면에서 요청해 주세요.',403);
     if(url.search)throw fail('SNS 변경 주소를 확인해 주세요.');
     if(path==='/api/social/media'){
-      if(user.role==='viewer')throw fail('열람 계정에서는 업로드할 수 없습니다.',403);
+      if(user.role==='viewer')throw fail('열람 계정으로는 업로드할 수 없어요.',403);
       let upload;try{upload=await receiveStudioMedia(req,store.directory);authorize();await commitStudioMedia(upload,store.directory);const result=await marketing.addMedia(authorize(),upload.metadata,{authorize});upload=null;send(res,201,result);return true;}finally{await discardStudioMedia(upload,store.directory);}
     }
     const input=await body(req,{maxBytes:2*1024*1024,maxChars:2*1024*1024});const actor=authorize();
@@ -113,7 +113,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
       result=await publishing.jobAction(authorize(),input.jobId,{action:'reconcile'});
     }
     else if((match=path.match(/^\/api\/social\/provider\/(configure|refresh|connect|disconnect)$/))){result=await provider[match[1]](actor,input,{authorize});}
-    else throw fail('SNS 변경 주소를 찾을 수 없습니다.',404);
+    else throw fail('SNS 변경 주소를 찾을 수 없어요.',404);
     authorize();if(!path.startsWith('/api/social/recovery/'))onChange(actor);send(res,200,result??{ok:true});return true;
   };
 }

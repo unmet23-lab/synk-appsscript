@@ -17,37 +17,37 @@ export function createProviderHealth({store,config,credentials,configured,reques
   function health(user){
     user=current(user);const cfg=config(),saved=store.get('socialProviderHealth','postiz'),same=saved?.generation===generation(),cached=same?saved:null;
     const stale=!cached?.checkedAt||stamp()-Date.parse(cached.checkedAt)>HOUR;
-    const api={state:!cfg?.enabled?'unconfigured':cached?.apiState||'unknown',checkedAt:cached?.checkedAt||null,lastAttemptAt:cached?.lastAttemptAt||null,stale,nextCheckAt:cached?.nextCheckAt||null,errorCode:cached?.errorCode||null,message:cached?.message||'아직 현재 연결을 점검하지 않았습니다.'};
+    const api={state:!cfg?.enabled?'unconfigured':cached?.apiState||'unknown',checkedAt:cached?.checkedAt||null,lastAttemptAt:cached?.lastAttemptAt||null,stale,nextCheckAt:cached?.nextCheckAt||null,errorCode:cached?.errorCode||null,message:cached?.message||'아직 연결을 점검하지 않았어요.'};
     const visible=user?.active?store.all('channels').filter(c=>c.active!==false&&!c.hidden&&canReadChannel(user,c)):[];
     return {provider:'postiz',api,canCheck:user?.active===true&&user.role==='admin',intervalMinutes:60,channels:visible.map(c=>{
-      const link=store.get('socialConnections',c.id),remote=cached?.integrations?.find(r=>r.id===link?.integrationId);let state='not_connected',message='Postiz 발행 계정 연결 전입니다.';
+      const link=store.get('socialConnections',c.id),remote=cached?.integrations?.find(r=>r.id===link?.integrationId);let state='not_connected',message='아직 Postiz 발행 계정을 연결하지 않았어요.';
       if(link?.status==='connected'){
-        if(!cfg?.enabled||link.configVersion!==cfg.version||link.channelConnectionVersion!==(c.connectionVersion||0)){state='changed';message='연결 설정 또는 담당이 변경되었습니다. 계정을 다시 확인해 주세요.';}
-        else if(!cached?.integrations){state='unknown';message='API 상태와 별도로 이 계정의 최근 점검이 필요합니다.';}
-        else if(!remote){state='missing';message='현재 Postiz 계정 목록에서 연결한 계정을 찾지 못했습니다.';}
-        else if(remote.disabled){state='disabled';message='Postiz가 이 계정을 비활성 연결로 보고했습니다.';}
-        else if(remote.identifier!==link.identifier||remote.profile!==link.profile){state='changed';message='Postiz 계정의 프로필 또는 연결 식별자가 변경됐습니다.';}
-        else {state='listed';message='Postiz 목록에서 사용 가능한 계정을 확인했습니다. SNS의 실제 게시 권한은 발행 때 다시 확인합니다.';}
+        if(!cfg?.enabled||link.configVersion!==cfg.version||link.channelConnectionVersion!==(c.connectionVersion||0)){state='changed';message='연결 설정이나 담당이 바뀌었어요. 계정을 다시 확인해 주세요.';}
+        else if(!cached?.integrations){state='unknown';message='API 상태와는 별개로 이 계정도 점검해야 해요.';}
+        else if(!remote){state='missing';message='Postiz 계정 목록에 연결한 계정이 없어요.';}
+        else if(remote.disabled){state='disabled';message='Postiz가 이 계정을 비활성 연결로 표시했어요.';}
+        else if(remote.identifier!==link.identifier||remote.profile!==link.profile){state='changed';message='Postiz 계정의 프로필이나 연결 종류가 바뀌었어요. 계정을 다시 확인해 주세요.';}
+        else {state='listed';message='Postiz 목록에서 쓸 수 있는 계정으로 확인했어요. SNS 게시 권한은 발행 때 다시 확인해요.';}
       }
       return {channelId:c.id,state,checkedAt:cached?.checkedAt||null,stale,message,canCheck:user.role==='admin'};
     })};
   }
   function checkHealth(user,_input={},context={}){
-    assertActor(user,context);if(closed)throw fail('HEALTH_STOPPED','연결 점검을 종료했습니다.',503);
+    assertActor(user,context);if(closed)throw fail('HEALTH_STOPPED','연결 점검을 멈췄어요.',503);
     const cfg=configured(),key=generation(),prior=store.get('socialProviderHealth','postiz');
     if(running)return running.then(()=>{assertActor(user,context);return health(user);});
     if(prior?.generation===key&&prior.lastAttemptAt&&stamp()-Date.parse(prior.lastAttemptAt)<60000)return Promise.resolve({...health(user),cached:true});
     controller=new AbortController();const signal=context.signal?AbortSignal.any([context.signal,controller.signal]):controller.signal;
-    const check=()=>{if(signal.aborted||closed)throw fail('HEALTH_CANCELLED','연결 점검이 중단됐습니다.');assertActor(user,context);if(generation()!==key)throw fail('CONFIG_CHANGED','연결 설정이 바뀌어 이전 점검 결과를 저장하지 않았습니다.');};
+    const check=()=>{if(signal.aborted||closed)throw fail('HEALTH_CANCELLED','연결 점검이 중단됐어요.');assertActor(user,context);if(generation()!==key)throw fail('CONFIG_CHANGED','연결 설정이 바뀌어서 앞선 점검 결과는 저장하지 않았어요.');};
     check();const attempted=now();store.put('socialProviderHealth','postiz',{...(prior?.generation===key?prior:{}),id:'postiz',generation:key,lastAttemptAt:attempted,nextCheckAt:new Date(stamp()+HOUR).toISOString()});
     running=(async()=>{
       try{
-        const connected=await request(cfg,'/is-connected',{signal});check();if(connected?.connected!==true)throw fail('PROVIDER_AUTH','Postiz API 인증이 연결되어 있지 않습니다.');
-        const me=await request(cfg,'/me',{signal});check();if(!me?.organization?.id||me.organization.id!==cfg.organization?.id)throw fail('ORGANIZATION_CHANGED','Postiz API가 다른 워크스페이스를 가리킵니다.');
+        const connected=await request(cfg,'/is-connected',{signal});check();if(connected?.connected!==true)throw fail('PROVIDER_AUTH','Postiz API 인증이 연결돼 있지 않아요. API 키를 다시 확인해 주세요.');
+        const me=await request(cfg,'/me',{signal});check();if(!me?.organization?.id||me.organization.id!==cfg.organization?.id)throw fail('ORGANIZATION_CHANGED','Postiz API가 다른 워크스페이스를 가리키고 있어요. 발행 연결 설정을 확인해 주세요.');
         const integrations=parseIntegrations(await request(cfg,'/integrations',{signal}));check();
-        store.transaction(()=>{check();store.put('socialProviderHealth','postiz',{id:'postiz',generation:key,lastAttemptAt:attempted,checkedAt:now(),nextCheckAt:new Date(stamp()+HOUR).toISOString(),apiState:'connected',integrations,message:'Postiz API 인증과 워크스페이스를 확인했습니다.',errorCode:null});});
+        store.transaction(()=>{check();store.put('socialProviderHealth','postiz',{id:'postiz',generation:key,lastAttemptAt:attempted,checkedAt:now(),nextCheckAt:new Date(stamp()+HOUR).toISOString(),apiState:'connected',integrations,message:'Postiz API 인증과 워크스페이스를 확인했어요.',errorCode:null});});
       }catch(error){
-        check();const safe=error.providerSafe?error:fail('HEALTH_FAILED','Postiz 연결 점검을 완료하지 못했습니다.',502),apiState=['PROVIDER_AUTH','ORGANIZATION_CHANGED'].includes(safe.code)?'auth_required':'error';
+        check();const safe=error.providerSafe?error:fail('HEALTH_FAILED','Postiz 연결 점검을 끝내지 못했어요. 잠시 후 다시 점검해 주세요.',502),apiState=['PROVIDER_AUTH','ORGANIZATION_CHANGED'].includes(safe.code)?'auth_required':'error';
         // A failed attempt never turns old channel observations into fresh proof.
         store.put('socialProviderHealth','postiz',{...(prior?.generation===key?prior:{}),id:'postiz',generation:key,lastAttemptAt:attempted,nextCheckAt:safe.nextRetryAt||new Date(stamp()+HOUR).toISOString(),apiState,errorCode:safe.code,message:safe.message});
       }
