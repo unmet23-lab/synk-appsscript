@@ -1,18 +1,19 @@
 'use strict';
 
 const TRAY_APPS=Object.freeze({world:'SYNK WORLD',messenger:'SYNK Workspace',teacher:'SYNK 선생님',path:'SYNK PATH',pulse:'SYNK PULSE',partners:'SYNK Partners',care:'SYNK 플레저',fortune:'SYNK 무료 운세',rehearsal:'SYNK 대화 리허설','family-album':'SYNK 가족 앨범'});
-function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{}}){
+function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWindow,enabled=true,shouldHide=()=>true,onAction=()=>{},onShow=null}){
   let tray=null,quitting=false,shortcuts=[];
   const bindings=new Map();
   function isActive(){return !!tray&&!tray.isDestroyed();}
-  function show(){
+  function show({forQuit=false}={}){
+    if(onShow&&!forQuit){onShow();return;}
     const window=getWindow();
     if(!window||window.isDestroyed()){createWindow();return;}
     if(window.isMinimized())window.restore();
     window.show();window.focus();
   }
   function cancelQuit(){quitting=false;}
-  const beforeQuit=()=>{quitting=true;const window=getWindow();if(window&&!window.isDestroyed()&&!window.isVisible())show();};
+  const beforeQuit=()=>{quitting=true;const window=getWindow();if(window&&!window.isDestroyed()&&!window.isVisible())show({forQuit:true});};
   function attachWindow(window){
     if(!isActive()||bindings.has(window))return;
     const close=event=>{
@@ -21,7 +22,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     };
     // The draft guard runs first: preventing this event means the user chose
     // to discard. Keeping a draft cancels quitting and restores the same page.
-    const blockedUnload=event=>{if(quitting&&!event.defaultPrevented){cancelQuit();show();}};
+    const blockedUnload=event=>{if(quitting&&!event.defaultPrevented){cancelQuit();show({forQuit:true});}};
     const sessionEnd=()=>{quitting=true;};
     const closed=()=>bindings.delete(window);
     window.on('close',close);
@@ -31,7 +32,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
     window.once('closed',closed);
   }
   function dispose(){
-    app.removeListener('before-quit',beforeQuit);app.removeListener('will-quit',dispose);
+    app.removeListener('before-quit',beforeQuit);app.removeListener('will-quit',onWillQuit);
     for(const [window,listeners]of bindings){
       if(window.isDestroyed())continue;
       window.removeListener('close',listeners.close);window.removeListener('session-end',listeners.sessionEnd);
@@ -51,6 +52,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
       {label:'완전히 종료',click:()=>app.quit()},
     ]));
   }
+  function onWillQuit(event){if(!event.defaultPrevented)dispose();}
   function setShortcuts(items){
     if(!Array.isArray(items)||items.length>5||items.some(item=>!item||typeof item.id!=='string'||!Object.hasOwn(TRAY_APPS,item.id)||item.kind!==undefined&&!['favorite','recent'].includes(item.kind)))return {ok:false,code:'INVALID_TRAY_SHORTCUTS'};
     shortcuts=items.filter((item,index)=>items.findIndex(row=>row.id===item.id)===index).map(item=>({id:item.id}));
@@ -62,7 +64,7 @@ function createPlatformTray({app,Tray,Menu,icon,productName,getWindow,createWind
       tray.setToolTip(productName);
       updateMenu();
       tray.on('click',show);tray.on('double-click',show);
-      app.on('before-quit',beforeQuit);app.on('will-quit',dispose);
+      app.on('before-quit',beforeQuit);app.on('will-quit',onWillQuit);
     }catch{
       // A missing tray must never leave the user with an unreachable window.
       dispose();

@@ -26,6 +26,7 @@ internal static class SignalInstallerTests
     private static string Backend;
     private static InstallSpec Spec;
     private static int ProductionRegistryFields;
+    private static Dictionary<string, object> Fixture;
 
     [STAThread]
     private static int Main(string[] args)
@@ -38,6 +39,7 @@ internal static class SignalInstallerTests
             Assert(args.Length == 1, "Fixture manifest argument required.");
             FixtureJson = Path.GetFullPath(args[0]);
             var metadata = Json.Deserialize<Dictionary<string, object>>(File.ReadAllText(FixtureJson));
+            Fixture = metadata;
             Root = Path.GetFullPath((string)metadata["directory"]);
             Backend = Path.GetFullPath((string)metadata["backend"]);
             Spec = ReadSpec();
@@ -69,6 +71,30 @@ internal static class SignalInstallerTests
             var sentinelHash = Hash(sentinel);
 
             var engine = Engine(Spec);
+            Check("known-folder shortcut guard accepts Cloud variants but rejects symlinks, junctions and unknown reparse tags", delegate
+            {
+                for(uint variant=0;variant<16;variant++)
+                {
+                    uint tag=0x9000001au|(variant<<12);
+                    Assert(InstallerEngine.IsCloudPlaceholderTag(tag),"Cloud placeholder variant was rejected.");
+                    InstallerEngine.ValidateShortcutEntryAttributes(FileAttributes.ReparsePoint|FileAttributes.Directory,tag);
+                    InstallerEngine.ValidateShortcutEntryAttributes(FileAttributes.ReparsePoint|FileAttributes.Archive,tag);
+                }
+                foreach(uint tag in new uint[]{0xa000000cu,0xa0000003u,0x9000001bu,0x8000001au,0u})
+                {
+                    Assert(!InstallerEngine.IsCloudPlaceholderTag(tag),"Unsafe reparse tag was accepted as Cloud.");
+                    ExpectFailure(delegate { InstallerEngine.ValidateShortcutEntryAttributes(FileAttributes.ReparsePoint,tag); });
+                }
+                InstallerEngine.ValidateShortcutEntryAttributes(FileAttributes.Normal,0);
+            });
+            Check("only exact current-user known-folder shortcut paths get the Cloud exception", delegate
+            {
+                engine.ValidateShortcutPath(StartMenuShortcut());engine.ValidateShortcutPath(DesktopShortcut());
+                ExpectFailure(delegate { engine.ValidateShortcutPath(Path.Combine(Root,Spec.ShortcutName+".lnk")); });
+                ExpectFailure(delegate { engine.ValidateShortcutPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),"other-shortcut.lnk")); });
+                foreach(string known in new [] { Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory),Environment.GetFolderPath(Environment.SpecialFolder.Programs) })
+                    if((File.GetAttributes(known)&FileAttributes.ReparsePoint)!=0)ExpectFailure(delegate { InstallerEngine.RejectReparsePoints(known); });
+            });
             Check("read-only preflight", delegate
             {
                 Assert(Same(engine.Preflight(), Spec.InstallDirectory), "Preflight chose another folder.");
@@ -118,6 +144,11 @@ internal static class SignalInstallerTests
                 ExpectFailure(delegate { InstallOnWorker(engine); });
                 Assert(!held.HasExited, "Engine stopped the fixture process.");
             });
+            Check("automatic update rejects the same installed version while preserving its live process", delegate
+            {
+                ExpectFailure(delegate { engine.PrepareAutomaticUpdate(held.Id,new string('a',64),new string('b',64)); });
+                Assert(!held.HasExited,"Rejected automatic update stopped the installed fixture.");
+            });
             Check("NSIS race guard returns 20 and preserves the running process", delegate
             {
                 Assert(Run(Backend, "/S /currentuser") == 20, "NSIS did not return the blocked-process code.");
@@ -134,6 +165,40 @@ internal static class SignalInstallerTests
                 VerifyRegistrationAndShortcuts();
                 Assert(Hash(sentinel) == sentinelHash, "External synthetic account data changed.");
             });
+            Check("automatic update rejects wrong parent and invalid handoff without mutations", delegate
+            {
+                ExpectFailure(delegate { Engine(Spec).PrepareAutomaticUpdate(Process.GetCurrentProcess().Id,new string('a',64),new string('b',64)); });
+                ExpectFailure(delegate { Engine(Spec).PrepareAutomaticUpdate(2147483647,"invalid",new string('b',64)); });
+                Assert(SnapshotProductionRegistration()==productionBefore,"Automatic rejection touched production registration.");
+                engine.VerifyInstalled();
+            });
+            if (Fixture.ContainsKey("autoFailure"))
+            {
+                Check("real automatic installer READY then normal parent exit rolls failed NSIS verification back and relaunches once", delegate
+                {
+                    using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
+                    using(var key=hive.CreateSubKey(AppModelKey()))
+                    { key.SetValue("DisplayName","fixture previous registration");key.SetValue("FixtureInteger",42,RegistryValueKind.DWord); }
+                    RunAutomaticFixture((string)Fixture["autoFailure"],false);
+                    engine.VerifyInstalled(); VerifyRegistrationAndShortcuts();
+                    using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))
+                    using(var key=hive.OpenSubKey(AppModelKey()))
+                        Assert(key!=null&&(string)key.GetValue("DisplayName")=="fixture previous registration"&&(int)key.GetValue("FixtureInteger")==42,"AppUserModelId registration was not restored.");
+                    Assert(!File.Exists(Path.Combine(Spec.InstallDirectory,"update-only.txt")),"Failed update left new payload files.");
+                    Assert(Hash(sentinel)==sentinelHash,"Automatic rollback changed external synthetic account data.");
+                });
+                Check("real automatic installer READY then normal parent exit installs verified upgrade and relaunches without bypass", delegate
+                {
+                    RunAutomaticFixture((string)Fixture["autoSuccess"],true);
+                    using(var stream=File.OpenRead((string)Fixture["upgradeSpec"]))
+                    {
+                        var upgrade=(InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
+                        new InstallerEngine(upgrade,delegate { return File.OpenRead(Backend); }).VerifyInstalled();
+                    }
+                    Assert(File.Exists(Path.Combine(Spec.InstallDirectory,"update-only.txt")),"Verified upgrade is missing its new payload.");
+                    Assert(Hash(sentinel)==sentinelHash,"Automatic upgrade changed external synthetic account data.");
+                });
+            }
             Check("fixture uninstall preserves external data and removes its registration", delegate
             {
                 var uninstaller = Path.Combine(Spec.InstallDirectory, "Uninstall " + Path.GetFileNameWithoutExtension(Spec.ExecutableName) + ".exe");
@@ -178,6 +243,7 @@ internal static class SignalInstallerTests
                 using (var hive = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
                 using (var uninstall = hive.OpenSubKey(UninstallKey()))
                     if (uninstall == null) hive.DeleteSubKeyTree(InstallKey(), false);
+                using(var hive=RegistryKey.OpenBaseKey(RegistryHive.CurrentUser,RegistryView.Registry64))hive.DeleteSubKeyTree(AppModelKey(),false);
             }
         }
     }
@@ -186,6 +252,48 @@ internal static class SignalInstallerTests
     {
         using (var stream = File.OpenRead(FixtureJson))
             return (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
+    }
+    private static void RunAutomaticFixture(string wrapper,bool success)
+    {
+        Assert(IsInside(wrapper,Root),"Automatic wrapper escaped fixture root.");
+        string nonce=System.Guid.NewGuid().ToString("N")+System.Guid.NewGuid().ToString("N"),hold=Path.Combine(Root,"auto-parent-"+nonce),launched=Path.Combine(Spec.InstallDirectory,"fixture-launched");
+        if(File.Exists(launched))File.Delete(launched);
+        using(var parent=Process.Start(new ProcessStartInfo(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName),"--hold \""+hold+"\""){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden}))
+        {
+            WaitFor(delegate{return File.Exists(Path.Combine(hold,"ready"));},"Automatic parent did not become ready.");
+            var start=new ProcessStartInfo(wrapper,"--auto-update --wait-pid="+parent.Id+" --handoff-token="+nonce){UseShellExecute=false,CreateNoWindow=true,WindowStyle=ProcessWindowStyle.Hidden,RedirectStandardOutput=true,RedirectStandardError=true};
+            using(var child=Process.Start(start))
+            {
+                try
+                {
+                    var ready=child.StandardOutput.ReadLineAsync();
+                    Assert(ready.Wait(30000)&&ready.Result=="SYNK_UPDATE_READY "+nonce,"Production installer did not acknowledge the live verified parent.");
+                    Assert(!parent.HasExited,"Installer terminated the parent before normal exit.");
+                    File.WriteAllText(Path.Combine(hold,"stop"),"fixture parent exits normally after READY");
+                    Assert(parent.WaitForExit(5000),"Parent did not exit normally.");
+                    WaitFor(delegate{return File.Exists(launched);},"Automatic installer did not relaunch the application.",30000);
+                    string arguments=File.ReadAllText(launched);
+                    if(success) { Assert(arguments=="","Successful update used a startup bypass.");Assert(child.WaitForExit(10000),"Successful installer did not close itself.");Assert(child.ExitCode==0,"Successful installer failed."); }
+                    else
+                    {
+                        Assert(arguments=="--synk-update-recovery="+nonce,"Restored app did not receive its exact one-use nonce.");
+                        string marker=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"SYNK","Installer","Recovery",Spec.AppId+".json");
+                        var data=Json.Deserialize<Dictionary<string,object>>(File.ReadAllText(marker));
+                        Assert((string)data["nonce"]==nonce&&(string)data["status"]=="rolled-back"&&(string)data["fromVersion"]=="0.0.1"&&(string)data["toVersion"]=="0.0.2","Recovery marker binding mismatch.");
+                        Assert((string)data["installerSHA256"]==Hash(wrapper),"Recovery marker used another installer.");
+                        Assert((string)data["executableSHA256"]==Hash(Path.Combine(Spec.InstallDirectory,Spec.ExecutableName))&&(string)data["asarSHA256"]==Hash(Path.Combine(Spec.InstallDirectory,"resources","app.asar")),"Recovery marker does not bind restored bytes.");
+                        File.Delete(marker);
+                        Assert(child.WaitForExit(10000),"Restored installer did not close itself and release the retry mutex.");
+                        Assert(child.ExitCode==0,"Restored installer failed to close normally.");
+                    }
+                }
+                finally
+                {
+                    if(!parent.HasExited){File.WriteAllText(Path.Combine(hold,"stop"),"normal fixture cleanup");parent.WaitForExit(5000);}
+                    if(!child.HasExited){child.CloseMainWindow();child.WaitForExit(5000);}
+                }
+            }
+        }
     }
     private static InstallerEngine Engine(InstallSpec spec) { return new InstallerEngine(spec, delegate { return File.OpenRead(Backend); }); }
     private static string InstallOnWorker(InstallerEngine engine)
@@ -198,6 +306,7 @@ internal static class SignalInstallerTests
     }
     private static string InstallKey() { return "Software\\" + Spec.Guid; }
     private static string UninstallKey() { return "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\" + Spec.Guid; }
+    private static string AppModelKey() { return "Software\\Classes\\AppUserModelId\\" + Spec.AppId; }
     private static string StartMenuShortcut() { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), Spec.ShortcutName + ".lnk"); }
     private static string DesktopShortcut() { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory), Spec.ShortcutName + ".lnk"); }
     private static bool Same(string first, string second) { return string.Equals(Path.GetFullPath(first).TrimEnd('\\'), Path.GetFullPath(second).TrimEnd('\\'), StringComparison.OrdinalIgnoreCase); }
@@ -215,10 +324,10 @@ internal static class SignalInstallerTests
         try { action(); Checks.Add(new { name = name, ok = true }); }
         catch (Exception error) { Checks.Add(new { name = name, ok = false, error = error.Message }); throw; }
     }
-    private static void WaitFor(Func<bool> ready, string error)
+    private static void WaitFor(Func<bool> ready, string error, int timeout = 7000)
     {
         var watch = Stopwatch.StartNew();
-        while (!ready()) { Assert(watch.ElapsedMilliseconds < 7000, error); Thread.Sleep(40); }
+        while (!ready()) { Assert(watch.ElapsedMilliseconds < timeout, error); Thread.Sleep(40); }
     }
     private static int Run(string executable, string arguments)
     {

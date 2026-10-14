@@ -1,19 +1,21 @@
 const STATES=new Set(['disabled','idle','checking','current','available','downloading','ready','opening','error']);
 const METHODS={check:'checkForUpdate',download:'downloadUpdate',install:'installUpdate'};
 const version=value=>typeof value==='string'&&/^[0-9][0-9A-Za-z.+-]{0,47}$/.test(value)?value:null;
+const automaticUpdate=(snapshot,platform)=>snapshot.automatic===true&&platform==='win32'&&snapshot.code!=='UPDATE_EXIT_CANCELLED';
 function updateMessage(snapshot,platform){
-  const latest=version(snapshot.latestVersion),label=latest?'v'+latest:'새 버전';
+  const latest=version(snapshot.latestVersion),label=latest?'v'+latest:'새 버전',automatic=automaticUpdate(snapshot,platform);
   if(snapshot.state==='disabled')return '이 환경에서는 플랫폼 업데이트를 사용할 수 없어요. 현재 앱은 계속 이용할 수 있어요.';
   if(snapshot.state==='checking')return '새 버전이 있는지 확인하고 있어요. 현재 앱은 계속 이용할 수 있어요.';
-  if(snapshot.state==='current')return '최신 Preview 버전입니다.';
+  if(snapshot.state==='current')return '최신 Preview 버전입니다. 사용 중에도 새 버전을 자동으로 확인합니다.';
   if(snapshot.state==='available')return `${label} Preview를 다운로드할 수 있어요. 설치 전까지 현재 앱을 계속 이용할 수 있어요.`;
-  if(snapshot.state==='downloading')return `${label} Preview 설치 파일을 다운로드하고 있어요. 현재 앱은 계속 이용할 수 있어요.`;
+  if(snapshot.state==='downloading')return automatic?`${label} Preview를 다운로드하고 있어요. 완료되면 앱을 업데이트하고 자동으로 다시 열어요. 다운로드 중에는 현재 앱을 계속 이용할 수 있어요.`:`${label} Preview 설치 파일을 다운로드하고 있어요. 현재 앱은 계속 이용할 수 있어요.`;
   if(snapshot.state==='ready'){
     if(snapshot.code==='UPDATE_EXIT_CANCELLED')return '앱 종료를 취소했어요. 작성 중인 내용을 저장한 뒤 다시 설치를 시작할 수 있어요.';
+    if(automatic)return `${label} Preview 설치 파일이 준비됐어요. 작성 중인 내용을 확인한 뒤 앱을 업데이트하고 자동으로 다시 열어요.`;
     if(platform==='darwin')return snapshot.code==='UPDATE_MANUAL_INSTALL'?'설치 파일을 열었어요. 작성 중인 내용을 저장하고 SYNK Platform을 종료한 뒤, 열린 파일의 앱을 Applications 폴더로 옮겨 주세요.':`${label} Preview 설치 파일이 준비됐어요. 파일을 연 뒤 작성 중인 내용을 저장하고 SYNK Platform을 종료해 주세요. 열린 파일의 앱을 Applications 폴더로 옮기면 설치됩니다.`;
     return `${label} Preview 설치 파일이 준비됐어요. 작성 중인 내용을 저장한 뒤 진행해 주세요. 앱을 종료하고 설치 파일을 엽니다.`;
   }
-  if(snapshot.state==='opening')return '설치를 준비하고 있어요. 앱이 종료된 뒤 열린 설치 파일에서 계속 진행해 주세요.';
+  if(snapshot.state==='opening')return automatic?'업데이트를 준비하고 있어요. 앱이 종료된 뒤 설치하고, 완료되면 자동으로 다시 열립니다.':'설치를 준비하고 있어요. 앱이 종료된 뒤 열린 설치 파일에서 계속 진행해 주세요.';
   if(snapshot.state==='error'){
     const code=typeof snapshot.code==='string'?snapshot.code:'';
     if(code==='UPDATE_STORAGE_FAILED')return '설치 파일을 저장하지 못했어요. PC 저장 공간과 파일 권한을 확인한 뒤 다시 다운로드해 주세요. 현재 앱은 계속 이용할 수 있어요.';
@@ -22,7 +24,7 @@ function updateMessage(snapshot,platform){
     if(/OPEN|INSTALL/.test(code))return '설치 파일을 열지 못했어요. 최신 버전을 다시 확인하고 시도해 주세요. 현재 앱은 계속 이용할 수 있어요.';
     return '업데이트를 확인하거나 다운로드하지 못했어요. 인터넷 연결을 확인한 뒤 다시 시도해 주세요. 현재 앱은 계속 이용할 수 있어요.';
   }
-  return '최신 버전을 확인할 수 있어요. 다운로드와 설치는 직접 시작합니다.';
+  return platform==='darwin'?'앱을 시작할 때와 사용 중에 새 버전을 자동으로 확인하고 다운로드합니다. 설치 파일을 열어 업데이트해 주세요.':'앱을 시작할 때와 사용 중에 새 버전을 자동으로 확인합니다. 새 버전을 다운로드하고 업데이트한 뒤 자동으로 다시 열립니다.';
 }
 export function mountPlatformUpdates({bridge,document=globalThis.document,getEnvironment=()=>null,confirmInstall=async()=>false}={}){
   const ids=['platform-update-downloads','platform-update-settings'],roots=ids.map(id=>document.getElementById(id)).filter(Boolean);
@@ -36,13 +38,13 @@ export function mountPlatformUpdates({bridge,document=globalThis.document,getEnv
     for(const action of Object.keys(METHODS))row[action].addEventListener('click',()=>run(action));return row;
   });
   function render(){
-    const state=snapshot.state,busy=!!pending||['checking','downloading','opening'].includes(state),env=getEnvironment()||{},current=version(snapshot.currentVersion)||version(env.version),progress=Number.isFinite(snapshot.progress)?Math.max(0,Math.min(100,snapshot.progress)):0;
+    const state=snapshot.state,env=getEnvironment()||{},automatic=automaticUpdate(snapshot,env.platform),busy=!!pending||['checking','downloading','opening'].includes(state)||automatic&&state==='ready',current=version(snapshot.currentVersion)||version(env.version),progress=Number.isFinite(snapshot.progress)?Math.max(0,Math.min(100,snapshot.progress)):0;
     for(const row of rows){
       row.root.hidden=false;row.root.dataset.updateState=state;
       row.version.textContent=current?'현재 v'+current+' · Preview':'Preview';row.status.textContent=updateMessage(snapshot,env.platform);
       row['progress-wrap'].hidden=state!=='downloading';row.progress.value=progress;row.percent.textContent=Math.round(progress)+'%';
       row.check.textContent=state==='checking'?'확인 중…':'최신 버전 확인';row.check.disabled=busy||state==='disabled';
-      row.download.hidden=state!=='available';row.download.disabled=busy;row.install.hidden=state!=='ready';row.install.disabled=busy;row.install.textContent=env.platform==='darwin'?'설치 파일 열기':'앱 종료 후 설치 파일 열기';
+      row.download.hidden=state!=='available';row.download.disabled=busy;row.install.hidden=state!=='ready'||automatic;row.install.disabled=busy;row.install.textContent=env.platform==='darwin'?'설치 파일 열기':'앱 종료 후 설치 파일 열기';
     }
   }
   function receive(value){
@@ -51,7 +53,7 @@ export function mountPlatformUpdates({bridge,document=globalThis.document,getEnv
     return false;
   }
   async function run(action){
-    if(disposed||pending||['disabled','checking','downloading','opening'].includes(snapshot.state))return;
+    if(disposed||pending||['disabled','checking','downloading','opening'].includes(snapshot.state)||snapshot.state==='ready'&&automaticUpdate(snapshot,getEnvironment()?.platform))return;
     if(action==='download'&&snapshot.state!=='available'||action==='install'&&snapshot.state!=='ready')return;
     pending=action;render();let start=revision;
     try{

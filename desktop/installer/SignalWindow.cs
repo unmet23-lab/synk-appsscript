@@ -146,6 +146,7 @@ namespace Synk.SignalInstaller
 
         public event EventHandler InstallRequested;
         public event EventHandler LaunchRequested;
+        private bool retryAllowed = true;
 
         public SignalWindow(string fontDirectory, string version) : this(fontDirectory, version, null) { }
 
@@ -436,6 +437,7 @@ namespace Synk.SignalInstaller
         {
             if (!Dispatcher.CheckAccess()) { Dispatcher.Invoke(new Action<string>(ShowFailure), message); return; }
             state = InstallerState.Failure;
+            retryAllowed = true;
             clock.Stop();
             SetHeadline("설치를\n마치지 못했어요.");
             description.Text = "아래 내용을 확인한 뒤 다시 시도해 주세요.\n이 설치 파일은 나중에 다시 열어도 돼요.";
@@ -449,9 +451,18 @@ namespace Synk.SignalInstaller
             Announce(failureText);
         }
 
+        public void ShowAutomaticFailure(string message)
+        {
+            ShowFailure(message);
+            retryAllowed = false;
+            description.Text = "이전 앱을 다시 열 수 있는지 확인했습니다.\n자동 업데이트는 앱에서 다시 시도해 주세요.";
+            SetButtons("닫기", "닫기", true);
+        }
+
         private void OnPrimaryClick(object sender, RoutedEventArgs args)
         {
             if (state == InstallerState.Installing) return;
+            if (state == InstallerState.Failure && !retryAllowed) { Close(); return; }
             if (state == InstallerState.Complete) {
                 primary.IsEnabled = false;
                 primaryLabel.Text = "여는 중";

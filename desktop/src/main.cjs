@@ -30,6 +30,10 @@ const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseRequests,PULSE_ORIGIN,PULSE_ENTRY}=require('./pulse-requests.cjs');
 const {createPulseApp}=require('./pulse-app.cjs');
 const {createPlatformUpdater}=require('./platform-update.cjs');
+const {createStartupUpdateGate}=require('./platform-startup-update.cjs');
+const {createStartupUpdateWindow}=require('./platform-startup-window.cjs');
+const {launchWindowsUpdate}=require('./platform-update-handoff.cjs');
+const {createUpdateRecovery}=require('./platform-update-recovery.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -56,8 +60,9 @@ app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.s
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
 let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let startupGate,startupWindow,updateRecovery,suiteStore,suitePublisher,pendingDesktopAction,mainInitialized=false,mainWindowReady=false,quittingRequested=false;
+let startupAllowed=runtime.clientId!=='platform'||!packaged||smoke;
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
-const suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
 function publishAuthState(state){pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
@@ -79,7 +84,6 @@ async function signOutAccount(){
   return result;
 }
 function sendTeachingView(){if(pendingTeachingView&&runtime.clientId==='messenger'&&window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId)){window.webContents.send('synk:open-view','teaching');pendingTeachingView=false;}}
-const suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
 const accountStatus=()=>suitePublisher?suitePublisher.project(auth.status()):auth?.status();
 const requireSuite=operation=>suitePublisher&&!suitePublisher.refresh()?Promise.resolve({ok:false,code:'SUITE_UNAVAILABLE'}):operation();
 const productPreviews=createProductPreviews({packaged,mode:runtime.mode,clientId:runtime.clientId,executable:process.execPath,appRoot:app.getAppPath(),spawn,authConfigPath:developmentAuthConfigPath,accountStatus:()=>accountStatus()});
@@ -117,6 +121,7 @@ function openPulseReview({session:isolated,url}){
   review.pulseReady=review.loadURL(url).catch(error=>{if(!review.isDestroyed())review.destroy();throw error;});
   return review;
 }
+app.on('before-quit',()=>{quittingRequested=true;});
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
     // will-quit runs only after the normal window/draft guards accepted. Hold
@@ -124,36 +129,75 @@ app.on('will-quit',event=>{
     event.preventDefault();
     void platformUpdate.completeInstall().then(result=>{
       if(result.ok&&!platformUpdate.needsInstallHandoff())app.quit();
-      else{platformTray?.cancelQuit();if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
+      else{quittingRequested=false;platformTray?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
     });return;
   }
-  platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
+  startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
 });
 if(!app.requestSingleInstanceLock())app.quit();
 else {
-  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
+  app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
   app.on('window-all-closed',()=>{if(process.platform!=='darwin'&&(!platformTray?.isActive()||platformTray.isQuitting()||desktopPreferences?.snapshot().preferences.closeToTray===false))app.quit();});
-  app.on('activate',()=>{if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
-  app.whenReady().then(()=>{
+  app.on('activate',()=>{if(runtime.clientId==='platform'){requestPlatformWindow();return;}if(platformTray?.isActive())platformTray.show();else if(!window||window.isDestroyed())createWindow();});
+  app.whenReady().then(async()=>{
     if(runtime.clientId==='platform'){
-      desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,appRoot:app.getAppPath(),name:current.appId});
-      desktopPreferences.initialize();
-      windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
-      draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
-      draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
-      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot:path.join(app.getPath('userData'),'PlatformUpdates'),onChange:state=>sendDesktop('synk:update-changed',state),
+      const cacheRoot=path.join(app.getPath('userData'),'PlatformUpdates');
+      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot,onChange:state=>{sendDesktop('synk:update-changed',state);startupGate?.observe(state);},
         requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
-        openInstaller:file=>new Promise((resolve,reject)=>{
-          const child=spawn(file,['--wait-pid='+process.pid],{detached:true,stdio:'ignore',windowsHide:true});
-          child.once('error',reject);child.once('spawn',()=>{child.unref();resolve();});
-        })});
+        openInstaller:async(file,options)=>{const nonce=options.automatic?await updateRecovery.prepare({targetVersion:options.version,installerSHA256:options.artifact.sha256}):null;await launchWindowsUpdate({spawn,file,pid:process.pid,automatic:options.automatic,nonce});}});
+      if(!startupAllowed){
+        let recovery;
+        try{if(platformUpdate.snapshot().state!=='disabled'&&process.platform==='win32'){updateRecovery=createUpdateRecovery({cacheRoot,localAppData:process.env.LOCALAPPDATA,executablePath:process.execPath,asarPath:app.getAppPath(),currentVersion:app.getVersion()});recovery=await updateRecovery.consume(process.argv);}}
+        catch{recovery={code:'UPDATE_RECOVERY_INVALID'};}
+        await beginPlatformStartup(recovery?.code,recovery?.releaseId);return;
+      }
       platformUpdate.start();
     }
-    platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>sendDesktop('synk:desktop-action',action)});
-    createWindow();
+    initializeMain();
   });
 }
+function showPlatformMain(){
+  if(!mainInitialized)initializeMain();
+  else if(!window||window.isDestroyed())createWindow();
+  else{if(window.isMinimized())window.restore();window.show();window.focus();}
+  if(pendingDesktopAction&&window&&!window.isDestroyed()){
+    const action=pendingDesktopAction;pendingDesktopAction=null;
+    if(window.webContents.isLoading())window.webContents.once('did-finish-load',()=>sendDesktop('synk:desktop-action',action));else sendDesktop('synk:desktop-action',action);
+  }
+}
+function requestPlatformWindow(action){
+  if(action)pendingDesktopAction=action;
+  if(!startupAllowed||startupGate?.isBlocking()){startupWindow?.show();return;}
+  if(window&&!window.isDestroyed()&&(!mainWindowReady||window.isVisible())){if(mainWindowReady)showPlatformMain();return;}
+  if(platformUpdate&&platformUpdate.snapshot().state!=='disabled'&&!quittingRequested){void beginPlatformStartup();return;}
+  showPlatformMain();
+}
+function beginPlatformStartup(recoveryCode=null,recoveryReleaseId=null){
+  if(startupGate?.isBlocking()){startupWindow?.show();return Promise.resolve();}
+  startupAllowed=false;startupGate?.dispose();startupWindow?.dispose();
+  startupGate=createStartupUpdateGate({updater:platformUpdate,platform:process.platform,recoveryCode,recoveryReleaseId,onChange:state=>startupWindow?.publish(state),proceed:()=>{startupAllowed=true;showPlatformMain();startupWindow?.dispose();}});
+  if(platformUpdate.snapshot().state!=='disabled'||recoveryCode){
+    startupWindow=createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot:app.getAppPath(),gate:startupGate,onClose:()=>{if(!quittingRequested){quittingRequested=true;app.quit();}}});startupWindow.show();
+  }
+  return startupGate.start();
+}
+function initializeMain(){
+  if(mainInitialized||!startupAllowed)return;mainInitialized=true;
+  suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
+  suitePublisher=suiteStore&&runtime.clientId==='platform'?createSuitePublisher({store:suiteStore,key:suiteBindingKey,onChange:()=>{if(auth)publishAuthState(suitePublisher.project(auth.status()));}}):null;
+  if(runtime.clientId==='platform'){
+    desktopPreferences=createDesktopPreferences({directory:app.getPath('userData'),app,globalShortcut,getWindow:()=>window,onShow:action=>requestPlatformWindow(action),onAction:action=>sendDesktop('synk:desktop-action',action),onChange:()=>sendDesktop('synk:desktop-preferences',desktopSnapshot()),enabled:!smoke,packaged,appRoot:app.getAppPath(),name:current.appId});
+    desktopPreferences.initialize();
+    windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
+    draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
+    draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
+  }
+  platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,onShow:()=>requestPlatformWindow(),enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>{if(!startupAllowed)pendingDesktopAction=action;else sendDesktop('synk:desktop-action',action);}});
+  createWindow();
+}
 function createWindow(){
+  if(!startupAllowed){startupWindow?.show();return;}
+  mainWindowReady=false;
   let smokeDownload=null;const smokeNetworkRequests=[],smokeConsoleErrors=[];
   const partition='persist:'+current.sessionScope,ownSession=session.fromPartition(partition);
   if(!auth){const store=createTokenStore({directory:app.getPath('userData'),safeStorage,scope:current.sessionScope,configFingerprint:authConfig?.fingerprint||'unconfigured'});
@@ -192,7 +236,7 @@ function createWindow(){
   if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});
   platformTray?.attachWindow(window);
-  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented)platformUpdate?.cancelInstall();});
+  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
   const send=(channel,value)=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);};
   const windowState=()=>({maximized:window.isMaximized(),minimized:window.isMinimized(),focused:window.isFocused(),platform:process.platform});
@@ -236,7 +280,7 @@ function createWindow(){
   };
   for(const [channel,handler]of Object.entries(handlers)){ipcMain.removeHandler(channel);ipcMain.handle(channel,async(event,...args)=>{assertSender(event,window,entry,runtime.clientId);try{return await handler(...args);}catch(error){return {ok:false,error:publicError(error)};}});}
   unbindTeacher?.();unbindTeacher=bindMessengerTeacherIPC({ipcMain,getWindow:()=>window,service:teacherService,entry,clientId:runtime.clientId,environment:{mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion()}});
-  window.once('ready-to-show',()=>{if(smoke)return;const hidden=isPlatform&&process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&platformTray.isActive();if(!hidden)window.show();});
+  window.once('ready-to-show',()=>{mainWindowReady=true;if(smoke||isPlatform&&!startupAllowed)return;const hidden=isPlatform&&process.argv.includes('--synk-autostart')&&desktopPreferences.snapshot().preferences.startHidden&&platformTray.isActive();if(!hidden)window.show();});
   if(smoke) {
     const timer=setTimeout(()=>{process.stdout.write('SYNK_SMOKE '+JSON.stringify({ok:false,clientId:runtime.clientId,error:'TIMEOUT'})+'\n');app.exit(1);},20000);
     contents.once('did-finish-load',async()=>{

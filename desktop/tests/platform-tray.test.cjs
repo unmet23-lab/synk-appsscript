@@ -5,8 +5,9 @@ const {createPlatformTray}=require('../src/platform-tray.cjs');
 const {installDraftExitGuard}=require('../src/draft-exit.cjs');
 
 function cancellable(){return {defaultPrevented:false,preventDefault(){this.defaultPrevented=true;}};}
-function fixture({enabled=true,failure=null,draft='작성 중인 메모'}={}){
+function fixture({enabled=true,failure=null,draft='작성 중인 메모',onShow=null,preventQuit=false}={}){
   const app=new EventEmitter(),trays=[],dialogs=[];
+  if(preventQuit)app.on('will-quit',event=>event.preventDefault());
   let window,created=0,choice=0,quitCalls=0;
   class Window extends EventEmitter{
     constructor(){super();this.webContents=new EventEmitter();this.destroyed=false;this.visible=true;this.minimized=false;this.draft=draft;this.calls={hide:0,show:0,focus:0,restore:0,unload:0};}
@@ -35,7 +36,7 @@ function fixture({enabled=true,failure=null,draft='작성 중인 메모'}={}){
     return window;
   };
   makeWindow();
-  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled});
+  const controller=createPlatformTray({app,Tray,Menu:{buildFromTemplate:template=>template},icon:'platform.ico',productName:'SYNK 플랫폼',getWindow:()=>window,createWindow:()=>{makeWindow();controller.attachWindow(window);},enabled,onShow});
   controller.attachWindow(window);
   return {app,controller,trays,dialogs,get window(){return window;},get created(){return created;},get quitCalls(){return quitCalls;},choose:value=>{choice=value;},forgetWindow:()=>{window=null;}};
 }
@@ -47,6 +48,12 @@ test('X hides the same page without unloading or asking to discard its draft',()
   assert.equal(window.calls.hide,1);assert.equal(window.calls.unload,0);assert.equal(window.draft,'작성 중인 메모');assert.equal(f.dialogs.length,0);assert.equal(f.quitCalls,0);
   f.controller.show();assert.equal(f.window,window);assert.equal(window.draft,'작성 중인 메모');assert.equal(window.visible,true);assert.equal(window.calls.focus,1);
   f.controller.dispose();
+});
+test('tray reveal delegates to the startup gate while draft cancellation still restores the same page directly',()=>{
+  let requests=0;const f=fixture({onShow:()=>requests++});f.window.close();f.controller.show();assert.equal(requests,1);assert.equal(f.window.visible,false);f.app.quit();assert.equal(f.window.visible,true);assert.equal(f.window.destroyed,false);assert.equal(f.dialogs.length,1);assert.equal(requests,1);f.controller.dispose();
+});
+test('a quit prevented for installer READY keeps the tray alive when the handoff fails',()=>{
+  const f=fixture({draft:null,preventQuit:true});f.app.quit();assert.equal(f.controller.isActive(),true);assert.equal(f.trays[0].destroyed,false);f.controller.cancelQuit();f.controller.show();assert.equal(f.window.visible,true);assert.equal(f.window.destroyed,false);f.controller.dispose();
 });
 
 for(const action of ['click','double-click','menu'])test(action+' restores and focuses a minimized tray window',()=>{

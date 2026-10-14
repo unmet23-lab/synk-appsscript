@@ -6,12 +6,12 @@ function validatePatch(patch){
   if(!patch||typeof patch!=='object'||Array.isArray(patch))return false;
   return Object.keys(patch).every(key=>Object.hasOwn(DEFAULTS,key)&&(['closeToTray','launchAtLogin','startHidden'].includes(key)?typeof patch[key]==='boolean':key==='globalShortcut'?validShortcut(patch[key]):typeof patch[key]==='number'&&Number.isFinite(patch[key])&&patch[key]>=0.8&&patch[key]<=1.5));
 }
-function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},platform=process.platform,enabled=true,packaged=false,executable=process.execPath,appRoot,name='SYNKPlatform'}){
+function createDesktopPreferences({directory,app,globalShortcut,getWindow,onAction=()=>{},onChange=()=>{},onShow=null,platform=process.platform,enabled=true,packaged=false,executable=process.execPath,appRoot,name='SYNKPlatform'}){
   const file=path.join(directory,'desktop-preferences.json'),supported=enabled&&platform==='win32';
   const startup={path:executable,args:packaged?['--synk-autostart']:[appRoot,'--synk-dev','--client=platform','--synk-autostart'],name};
   let values={...DEFAULTS},registered='',shortcutError=null;
   if(enabled)try{const text=fs.readFileSync(file,'utf8');if(text.length<4096){const parsed=JSON.parse(text);if(validatePatch(parsed))values={...values,...parsed};}}catch{}
-  function showSearch(){const window=getWindow();if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();onAction({type:'command-menu'});}
+  function showSearch(){if(onShow){onShow({type:'command-menu'});return;}const window=getWindow();if(!window||window.isDestroyed())return;if(window.isMinimized())window.restore();window.show();window.focus();onAction({type:'command-menu'});}
   function loginState(strict=false){
     try{
       if(!supported||typeof app.getLoginItemSettings!=='function')return {registered:values.launchAtLogin,enabled:values.launchAtLogin};

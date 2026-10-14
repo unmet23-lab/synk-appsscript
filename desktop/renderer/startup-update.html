@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SYNK Platform 업데이트</title>
+  <link rel="stylesheet" href="startup-update.css">
+  <script type="module" src="startup-update.mjs"></script>
+</head>
+<body>
+  <header class="brand">
+    <svg class="wordmark" viewBox="0 0 560 328" role="img" aria-label="싱ㅋ"><path d="M87 8h58v30c0 46 23 76 61 103l-34 43c-29-19-52-45-66-70-15 30-36 54-64 72L8 143c49-32 79-64 79-112Z"/><path d="M222 8h58v172h-58Z"/><path fill-rule="evenodd" d="M157 192c-76 0-124 24-124 65s48 65 124 65 124-24 124-65-48-65-124-65Zm0 45c42 0 67 8 67 20s-25 20-67 20-67-8-67-20 25-20 67-20Z"/><path d="M326 8h226L464 312h-61l40-138H322v-54h137l16-55H326Z"/></svg>
+    <span class="product">PLATFORM</span>
+    <span class="version" id="startup-version">Preview</span>
+  </header>
+  <main class="update-panel" id="startup-update" data-state="checking" aria-labelledby="startup-title">
+    <div class="status-label"><span class="led" aria-hidden="true"></span><span id="startup-stage">시작 준비</span></div>
+    <div class="message" aria-live="polite" aria-atomic="true">
+      <h1 id="startup-title">최신 버전을 확인하고 있어요</h1>
+      <p id="startup-description">잠시만 기다려 주세요. 확인이 끝나면 이어서 시작합니다.</p>
+    </div>
+    <div class="download" id="startup-progress-wrap" hidden>
+      <div class="download-label"><span>다운로드</span><span class="percent" id="startup-percent">0%</span></div>
+      <progress id="startup-progress" max="100" value="0" aria-label="업데이트 다운로드"></progress>
+    </div>
+    <ol class="steps" id="startup-steps" aria-label="업데이트 단계">
+      <li id="startup-step-checking" aria-current="step"><span>01</span>확인</li>
+      <li id="startup-step-downloading"><span>02</span>다운로드</li>
+      <li id="startup-step-installing"><span>03</span>설치</li>
+    </ol>
+    <div class="actions" id="startup-actions" hidden>
+      <button class="primary" id="startup-retry" type="button" hidden>다시 시도</button>
+      <button class="primary" id="startup-install" type="button" hidden>설치 파일 열기</button>
+      <button class="secondary" id="startup-open-current" type="button" hidden>현재 버전 열기</button>
+    </div>
+  </main>
+</body>
+</html>

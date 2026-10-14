@@ -2,6 +2,7 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),fsp=fs.promises,os=require('node:os'),path=require('node:path'),vm=require('node:vm');
 const {Readable}=require('node:stream'),{createHash}=require('node:crypto');
 const {MANIFEST_URL,MAX_MANIFEST_BYTES,MAX_INSTALLER_BYTES,compareVersion,validateManifest,createPlatformUpdater}=require('../src/platform-update.cjs');
+const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
 const payload=Buffer.from('synthetic public Signal installer'),sha=value=>createHash('sha256').update(value).digest('hex');
 const now=Date.parse('2026-10-14T12:00:00.000Z');
 function manifest({version='0.4.5',buildId='20261015.1',platform='win32',arch='x64',bytes=payload.length,hash=sha(payload)}={}){
@@ -42,14 +43,14 @@ test('artifact metadata rejects invalid size, hashes, duplicate target and URL i
   for(const patch of invalid)assert.throws(()=>validateManifest({...original,artifacts:[{...artifact,...patch}]},options),JSON.stringify(patch));
   assert.throws(()=>validateManifest({...original,artifacts:[artifact,artifact]},options));
 });
-test('startup detects an update without downloading, opening, quitting or exposing installer paths',async t=>{
+test('initial check stays explicit and five-minute background timer automatically prepares the next update',async t=>{
   let repeat,unrefs=0,clears=0;
-  const f=await fixture(t,{setInterval:(fn,ms)=>{repeat=fn;assert.equal(ms,6*60*60*1000);return {unref(){unrefs++;}};},clearInterval:()=>clears++});
+  const f=await fixture(t,{setInterval:(fn,ms)=>{repeat=fn;assert.equal(ms,5*60*1000);return {unref(){unrefs++;}};},clearInterval:()=>clears++});
   f.updater.start();f.updater.start();await f.updater.checkForUpdate();
   assert.deepEqual(f.requests,[MANIFEST_URL]);assert.equal(f.updater.snapshot().state,'available');assert.equal(unrefs,1);assert.equal(f.quits(),0);assert.deepEqual(f.installed,[]);
   assert.equal(JSON.stringify(f.updater.snapshot()).includes('https://'),false);assert.equal(JSON.stringify(f.updater.snapshot()).includes(f.directory),false);
-  repeat();await f.updater.checkForUpdate();assert.equal(f.requests.length,2);
-  await f.updater.downloadUpdate();repeat();await settled();assert.equal(f.requests.length,3,'ready update is not displaced by periodic checking');
+  await f.updater.checkInBackground();assert.equal(f.requests.length,3);assert.equal(f.quits(),1);assert.equal(f.updater.snapshot().automatic,true);
+  repeat();await settled();assert.equal(f.requests.length,3,'opening installer is not displaced by periodic checking');
   f.updater.dispose();assert.equal(clears,1);
 });
 test('development, unknown OS and tampered runtime configuration remain disabled without network or cache writes',async t=>{
@@ -112,6 +113,85 @@ test('concurrent downloads share one stream and cannot race a manifest refresh o
   await f.updater.checkForUpdate();const first=f.updater.downloadUpdate(),second=f.updater.downloadUpdate();assert.equal(first,second);
   assert.equal((await f.updater.checkForUpdate()).code,'UPDATE_BUSY');assert.equal((await f.updater.installUpdate()).code,'UPDATE_BUSY');wait.resolve();assert.equal((await first).state,'ready');assert.equal(f.requests.length,2);
 });
+
+test('reopening during a manual download joins the existing stream then automatically hands off without a busy dead-end',async t=>{
+  const wait=deferred(),started=deferred();let gate;
+  const f=await fixture(t,{request:async url=>{if(url===MANIFEST_URL)return response(manifest());return {status:200,headers:{},body:Readable.from((async function*(){yield payload.subarray(0,3);started.resolve();await wait.promise;yield payload.subarray(3);})())};},onChange:state=>gate?.observe(state)});
+  await f.updater.checkForUpdate();const manual=f.updater.downloadUpdate();await started.promise;
+  gate=createStartupUpdateGate({updater:f.updater,platform:'win32'});const pending=gate.start();await settled();assert.equal(gate.snapshot().state,'downloading');wait.resolve();await manual;await pending;
+  assert.equal(gate.snapshot().state,'installing');assert.equal(f.quits(),1);assert.equal(f.requests.length,2);assert.equal(f.updater.snapshot().state,'opening');
+});
+
+test('automatic installer mode is passed only when explicitly requested and periodic checks never opt in',async t=>{
+  const modes=[];const f=await fixture(t,{openInstaller:async(_file,options)=>modes.push(options)});await f.updater.checkForUpdate();await f.updater.downloadUpdate();await f.updater.installUpdate({automatic:true});await f.updater.completeInstall();assert.equal(modes[0].automatic,true);assert.equal(modes[0].artifact.sha256,sha(payload));assert.equal(modes[0].version,'0.4.5');
+});
+
+test('periodic checking pauses while a reopen gate waits for an error choice and resumes after current-version choice',async t=>{
+  let tick,online=true,gate;const f=await fixture(t,{setInterval:fn=>{tick=fn;return {unref(){}};},clearInterval:()=>{},request:async()=>{if(!online)throw Error('offline');return response(manifest({version:'0.4.4',buildId:'20261014.1'}));},onChange:value=>gate?.observe(value)});
+  f.updater.start();await f.updater.waitForIdle();online=false;gate=createStartupUpdateGate({updater:f.updater});await gate.start();assert.equal(gate.snapshot().state,'error');const count=f.requests.length;online=true;tick();await settled();assert.equal(f.requests.length,count);assert.equal(gate.snapshot().canOpenCurrent,true);gate.openCurrent();tick();await f.updater.waitForIdle();assert.equal(f.requests.length,count+1);
+});
+
+test('successful current-version check removes only old/current regular updater cache files for this target',async t=>{
+  const f=await fixture(t,{document:manifest({version:'0.4.4',buildId:'20261014.1'})});await fsp.mkdir(f.cacheRoot);
+  const name=(version,platform='win32',arch='x64',ext='exe')=>`platform-preview-${version}-20261014.1-${platform}-${arch}-${'a'.repeat(64)}.${ext}`;
+  const removed=[name('0.4.3'),name('0.4.4')],preserved=[name('0.4.5'),name('0.4.3','darwin','arm64','dmg'),'user-document.txt','pending-auto-update.json',name('0.4.3')+'.partial'];
+  for(const file of [...removed,...preserved])await fsp.writeFile(path.join(f.cacheRoot,file),'synthetic');
+  const directory=name('0.4.2');await fsp.mkdir(path.join(f.cacheRoot,directory));await f.updater.checkForUpdate();
+  assert.deepEqual((await fsp.readdir(f.cacheRoot)).sort(),[...preserved,directory].sort());
+});
+
+test('background tick downloads then requests guarded automatic installation without launching the wrapper early',async t=>{
+  let tick;const f=await fixture(t,{setInterval:(fn,ms)=>{assert.equal(ms,300000);tick=fn;return {unref(){}};},clearInterval:()=>{}});
+  f.updater.start({check:false});tick();await settled();await f.updater.checkInBackground();
+  for(let i=0;i<20&&f.updater.snapshot().state!=='opening';i++){await f.updater.waitForIdle();await settled();}
+  assert.equal(f.updater.snapshot().state,'opening');assert.equal(f.updater.snapshot().automatic,true);assert.equal(f.quits(),1);assert.equal(f.installed.length,0);assert.deepEqual(f.requests,[MANIFEST_URL,f.document.artifacts[0].url]);
+  await f.updater.completeInstall();assert.equal(f.installed.length,1);
+});
+
+test('cancelling a background quit keeps checking but never repeats installation of the same release in this session',async t=>{
+  let latest=manifest();const f=await fixture(t,{request:async url=>url===MANIFEST_URL?response(latest):response(payload)});
+  await f.updater.checkInBackground();f.updater.cancelInstall();assert.equal(f.updater.snapshot().automatic,false);
+  await f.updater.checkInBackground();await f.updater.checkInBackground();assert.equal(f.quits(),1);assert.equal(f.requests.filter(url=>url===MANIFEST_URL).length,3);assert.equal(f.updater.snapshot().state,'ready');
+  latest=manifest({version:'0.4.6',buildId:'20261016.1'});await f.updater.checkInBackground();assert.equal(f.quits(),2);assert.equal(f.updater.snapshot().latestVersion,'0.4.6');
+});
+
+test('explicit reopen rechecks and can install a release deferred by a background draft cancellation',async t=>{
+  let gate;const f=await fixture(t,{onChange:value=>gate?.observe(value)});await f.updater.checkInBackground();f.updater.cancelInstall();await f.updater.checkInBackground();assert.equal(f.quits(),1);
+  gate=createStartupUpdateGate({updater:f.updater});await gate.start();assert.equal(gate.snapshot().state,'installing');assert.equal(f.quits(),2);
+});
+
+test('background network and download failures retry on a later tick without an immediate retry loop',async t=>{
+  let phase='offline';const f=await fixture(t,{request:async url=>{if(phase==='offline')throw Error('synthetic offline');if(url===MANIFEST_URL)return response(manifest());return response(phase==='bad-download'?Buffer.from('invalid'):payload);}});
+  await f.updater.checkInBackground();assert.equal(f.updater.snapshot().code,'UPDATE_NETWORK_FAILED');assert.equal(f.requests.length,1);assert.equal(f.quits(),0);
+  phase='bad-download';await f.updater.checkInBackground();assert.equal(f.updater.snapshot().code,'UPDATE_INTEGRITY_FAILED');assert.equal(f.quits(),0);
+  phase='online';await f.updater.checkInBackground();assert.equal(f.updater.snapshot().state,'opening');assert.equal(f.quits(),1);
+});
+
+test('failed READY handoff never repeatedly closes the app for the same release, while later releases remain eligible',async t=>{
+  let latest=manifest();const f=await fixture(t,{request:async url=>url===MANIFEST_URL?response(latest):response(payload),openInstaller:async()=>{throw Object.assign(Error('synthetic blocked'),{updateCode:'UPDATE_HANDOFF_FAILED'});}});
+  await f.updater.checkInBackground();await f.updater.completeInstall();assert.equal(f.updater.snapshot().state,'error');await f.updater.checkInBackground();assert.equal(f.quits(),1);assert.equal(f.updater.snapshot().state,'ready');
+  latest=manifest({version:'0.4.6',buildId:'20261016.1'});await f.updater.checkInBackground();assert.equal(f.quits(),2);
+});
+
+test('a gate inherits an in-flight background download without duplicate transfer or installation',async t=>{
+  const waiting=deferred(),started=deferred();let gate;
+  const f=await fixture(t,{onChange:value=>gate?.observe(value),request:async url=>url===MANIFEST_URL?response(manifest()):{status:200,headers:{},body:Readable.from((async function*(){yield payload.subarray(0,2);started.resolve();await waiting.promise;yield payload.subarray(2);})())}});
+  const background=f.updater.checkInBackground();await started.promise;gate=createStartupUpdateGate({updater:f.updater});const pending=gate.start();waiting.resolve();await Promise.all([background,pending]);assert.equal(f.quits(),1);assert.equal(f.requests.length,2);assert.equal(gate.snapshot().state,'installing');
+});
+
+test('a gate joins an already-opening background install and does not request a second quit',async t=>{
+  let gate;const f=await fixture(t,{onChange:value=>gate?.observe(value)});await f.updater.checkInBackground();assert.equal(f.quits(),1);gate=createStartupUpdateGate({updater:f.updater});await gate.start();assert.equal(f.quits(),1);assert.equal(gate.snapshot().state,'installing');
+});
+
+test('verified rollback release stays deferred after opening the current version until an explicit new gate',async t=>{
+  let gate;const f=await fixture(t,{onChange:value=>gate?.observe(value)});
+  gate=createStartupUpdateGate({updater:f.updater,recoveryCode:'UPDATE_RECOVERED',recoveryReleaseId:'platform-preview-0.4.5'});await gate.start();gate.openCurrent();await f.updater.checkInBackground();assert.equal(f.quits(),0);assert.equal(f.requests.length,1);assert.equal(f.updater.snapshot().state,'available');
+  gate=createStartupUpdateGate({updater:f.updater});await gate.start();assert.equal(f.quits(),1);
+});
+
+test('Mac background tick downloads a verified DMG without quitting or opening it automatically',async t=>{
+  const f=await fixture(t,{platform:'darwin',arch:'arm64'});await f.updater.checkInBackground();assert.equal(f.updater.snapshot().state,'ready');assert.equal(f.updater.snapshot().automatic,false);assert.equal(f.quits(),0);assert.equal(f.opened.length,0);await f.updater.checkInBackground();assert.equal(f.requests.length,3);assert.equal(f.opened.length,0);
+});
 test('installer remains unlaunched until normal quit guards accept; draft cancellation leaves verified download ready',async t=>{
   const f=await fixture(t);await f.updater.checkForUpdate();await f.updater.downloadUpdate();
   assert.equal((await f.updater.installUpdate()).state,'opening');assert.equal(f.quits(),1);assert.equal(f.installed.length,0);assert.equal(f.updater.needsInstallHandoff(),true);
@@ -158,8 +238,8 @@ test('main updater is platform-packaged only, uses existing trusted sender check
   const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8');
   assert.match(main,/if\(runtime\.clientId==='platform'\)\{[\s\S]*?platformUpdate=createPlatformUpdater\(\{enabled:packaged&&!smoke,config:runtime\.update/);
   assert.match(main,/app\.on\('will-quit',event=>\{[\s\S]*?event\.preventDefault\(\);[\s\S]*?platformUpdate\.completeInstall\(\)/);
-  assert.match(main,/spawn\(file,\['--wait-pid='\+process\.pid\],\{detached:true,stdio:'ignore',windowsHide:true\}\)/);
-  assert.match(main,/contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)platformUpdate\?\.cancelInstall\(\);\}\)/);
+  assert.match(main,/launchWindowsUpdate\(\{spawn,file,pid:process\.pid,automatic:options\.automatic,nonce\}\)/);
+  assert.match(main,/contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)\{quittingRequested=false;platformUpdate\?\.cancelInstall\(\);startupGate\?\.cancelInstall\(\);\}\}\)/);
   assert.match(main,/ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\)/);
   for(const operation of ['check-for-update','download-update','install-update'])assert.match(main,new RegExp("'synk:"+operation+"':\\(\\)=>platformUpdate\\?\\."));
 });

@@ -37,7 +37,7 @@ namespace Synk.SignalInstaller
         [DataMember(Name="shortName")] public string ShortName;
     }
 
-    public sealed class InstallerEngine
+    public sealed partial class InstallerEngine
     {
         readonly InstallSpec spec;
         readonly Func<Stream> backendFactory;
