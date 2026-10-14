@@ -56,6 +56,7 @@ test('HTTP official reply confirms the exact account and text once, then reconci
   let item=f.app.store.get('socialInbox','inbox-300');assert.equal(item.outboundSent,true);assert.equal(item.replyDraft,'저장된 초안');let edited=await f.api(f.writer,'/api/social/inbox/inbox-300',{revision:item.revision,replyDraft:'다음 초안'});assert.equal(edited.status,200);assert.equal(edited.data.item.outboundSent,true);
   lose=true;const second=await preview('301'),unknown=await f.api(f.writer,'/api/social/inbox/reply/send',second);assert.equal(unknown.status,200);assert.equal(unknown.data.attempt.status,'unknown');assert.equal(posts,2);
   const blocked=await f.api(f.writer,'/api/social/inbox/reply/preview',{inboxId:'inbox-301',revision:1,text:'문구를 바꿔도 차단'});assert.equal(blocked.status,409);assert.equal(posts,2);
+  const early=await f.api(f.writer,'/api/social/inbox/reply/recheck',{attemptId:unknown.data.attempt.id});assert.equal(early.status,409,JSON.stringify(early.data));assert.equal(posts,2);assert.equal(f.app.store.get('socialReplyAttempts',unknown.data.attempt.id).status,'unknown');
   const recovered=await f.api(f.writer,'/api/social/inbox/reply/reconcile',{attemptId:unknown.data.attempt.id,remoteReplyId:'401'});assert.equal(recovered.status,200,JSON.stringify(recovered.data));assert.equal(recovered.data.attempt.status,'sent');assert.equal(posts,2);assert.equal(f.app.store.get('socialInbox','inbox-301').outboundSent,true);
 });
 
@@ -81,4 +82,10 @@ test('HTTP reconnection checks current account and CSRF before resuming the prio
   const verified=await f.api(f.admin,'/api/social/inbox/provider/recovery/verify',input);assert.equal(verified.status,200,JSON.stringify(verified.data));assert.equal(verified.data.recovery.canResume,true);assert.equal(f.app.store.get('socialInboxConnections','ig').connectionVersion,1);
   const resumed=await f.api(f.admin,'/api/social/inbox/provider/recovery/resume',{...input,recoveryId:verified.data.recovery.recoveryId});assert.equal(resumed.status,200,JSON.stringify(resumed.data));assert.equal(resumed.data.status,'resumed');assert.equal(f.app.store.get('socialInboxConnections','ig').connectionVersion,2);assert.equal(f.app.store.get('socialInboxConnections','ig').enabled,true);
   assert.ok(calls.every(call=>call.method==='GET'));assert.equal(f.app.store.all('socialReplyAttempts').length,0);
+});
+
+test('only requests that save something tell every screen to refresh',async()=>{
+  const {socialChangeNotifies}=await import('./social-routes.mjs');
+  for(const path of ['/api/social/queue/preview','/api/social/capacity/preview','/api/social/copy-insights/template-preview','/api/social/inbox/reply/preview','/api/social/workflow/preview','/api/social/ai/quote','/api/social/insights/variants','/api/social/recovery/save'])assert.equal(socialChangeNotifies(path),false,path);
+  for(const path of ['/api/social/posts','/api/social/capacity/apply','/api/social/inbox/reply/send','/api/social/settings','/api/social/workflow/apply','/api/social/ai/generate','/api/social/media/prepare'])assert.equal(socialChangeNotifies(path),true,path);
 });

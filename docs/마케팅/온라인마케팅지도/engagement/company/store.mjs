@@ -54,11 +54,18 @@ export class Store {
     if(!this.get('settings','company'))this.put('settings','company',{companyName:'SYNK',enabled:true,hourKst:9});
     this.#statement('DELETE FROM tokens WHERE expiresAt < ?').run(now());
   }
-  get(kind,id) { const row=this.#statement('SELECT body FROM documents WHERE kind=? AND id=?').get(kind,id);return row?JSON.parse(row.body):null; }
-  all(kind) { return this.#statement('SELECT body FROM documents WHERE kind=? ORDER BY rowid').all(kind).map(x=>JSON.parse(x.body)); }
-  put(kind,id,body) { this.#statement('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));return body; }
-  remove(kind,id) {this.#statement('DELETE FROM documents WHERE kind=? AND id=?').run(kind,id);}
-  transaction(fn) {this.db.exec('BEGIN IMMEDIATE');try{const result=fn();this.db.exec('COMMIT');return result;}catch(e){this.db.exec('ROLLBACK');throw e;}}
+  // readScope(fn): during one synchronous build, repeated get/all of a document skip SQLite. Only the stored
+  // JSON text is remembered and every read still returns a fresh object; any write or rollback forgets it all.
+  #scope=null;
+  readScope(fn){if(this.#scope)return fn();this.#scope={get:new Map(),all:new Map()};try{return fn();}finally{this.#scope=null;}}
+  #forget(){if(this.#scope){this.#scope.get.clear();this.#scope.all.clear();}}
+  get(kind,id) { if(id==null)return null;const scope=this.#scope,key=scope&&kind+'\u0000'+id;if(scope?.get.has(key)){const body=scope.get.get(key);return body==null?null:JSON.parse(body);}const row=this.#statement('SELECT body FROM documents WHERE kind=? AND id=?').get(kind,id);if(scope)scope.get.set(key,row?row.body:null);return row?JSON.parse(row.body):null; }
+  all(kind) { const scope=this.#scope;if(scope?.all.has(kind))return scope.all.get(kind).map(body=>JSON.parse(body));const rows=this.#statement('SELECT body FROM documents WHERE kind=? ORDER BY rowid').all(kind);if(scope)scope.all.set(kind,rows.map(x=>x.body));return rows.map(x=>JSON.parse(x.body)); }
+  put(kind,id,body) { this.#forget();this.#statement('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run(kind,id,JSON.stringify(body));return body; }
+  count(kind) { return this.#statement('SELECT COUNT(*) AS count FROM documents WHERE kind=?').get(kind).count; }
+  createdBefore(kind,iso) { return this.#statement("SELECT id, json_extract(body,'$.createdAt') AS createdAt FROM documents WHERE kind=? AND json_extract(body,'$.createdAt')<?").all(kind,iso); }
+  remove(kind,id) {if(id==null)return;this.#forget();this.#statement('DELETE FROM documents WHERE kind=? AND id=?').run(kind,id);}
+  transaction(fn) {this.db.exec('BEGIN IMMEDIATE');try{const result=fn();this.db.exec('COMMIT');return result;}catch(e){this.#forget();this.db.exec('ROLLBACK');throw e;}}
   encrypt(value) {const iv=randomBytes(12),cipher=createCipheriv('aes-256-gcm',this.key,iv);const data=Buffer.concat([cipher.update(JSON.stringify(value)),cipher.final()]);return Buffer.concat([iv,cipher.getAuthTag(),data]).toString('base64');}
   decrypt(value) {const data=Buffer.from(value,'base64'),cipher=createDecipheriv('aes-256-gcm',this.key,data.subarray(0,12));cipher.setAuthTag(data.subarray(12,28));return JSON.parse(Buffer.concat([cipher.update(data.subarray(28)),cipher.final()]).toString());}
   setSecret(id,value) {this.#statement('INSERT INTO credentials VALUES (?,?) ON CONFLICT(id) DO UPDATE SET ciphertext=excluded.ciphertext').run(id,this.encrypt(value));}

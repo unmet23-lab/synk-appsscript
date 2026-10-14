@@ -199,3 +199,35 @@ test('confirmed current public own replies are not unanswered incoming work and 
   for(const proof of [{...child.metaAccountReply,hidden:true},{...child.metaAccountReply,confirmed:false},{...child.metaAccountReply,connectionVersion:99}]){f.store.put('socialInbox',child.id,{...child,metaAccountReply:proof});assert.equal(get().isAccountReply,false);assert.equal(get().effectiveStatus,'open');}
   assert.equal(f.store.all('socialReplyAttempts').length,0);assert.equal(f.calls.length,0);
 });
+
+test('an unknown reply is rechecked on the platform: an exact own reply confirms it, no own reply clears it, anything else keeps it unknown',async t=>{
+  const lost=async f=>{const p=await f.preview();f.setHandler((_path,_url,init)=>{if(init.method==='POST')throw Error('lost');});const {attempt}=await f.send(p);f.setHandler(null);assert.equal(attempt.status,'unknown');return attempt;};
+  const listing=(f,data)=>f.setHandler((path,_url,init)=>init.method==='GET'&&path==='300/replies'?json({data}):path==='401'||path==='403'?json({id:path,text:'다른 문구',parent_id:'300',media:{id:'200'},user:{id:'100'},...(path==='401'?{timestamp:'2026-10-13T00:01:00Z'}:{})}):null);
+  {const f=fixture(t),attempt=await lost(f),before=f.calls.length;await assert.rejects(f.service.recheck(f.member,{attemptId:attempt.id}),{code:'RECHECK_TOO_EARLY'});assert.equal(f.calls.length,before,'no Meta request before the settle window');assert.equal(f.store.get('socialReplyAttempts',attempt.id).status,'unknown');
+    f.advance(11*60000);await assert.rejects(f.service.recheck(f.viewer,{attemptId:attempt.id}),{code:'CHANNEL_FORBIDDEN'});assert.equal(f.store.get('socialReplyAttempts',attempt.id).status,'unknown');}
+  for(const platform of ['instagram','facebook']){const f=fixture(t,{platform}),attempt=await lost(f);f.advance(11*60000);const before=f.calls.length,{attempt:after}=await f.service.recheck(f.member,{attemptId:attempt.id});
+    assert.equal(after.status,'failed');assert.equal(after.errorCode,'REPLY_NOT_POSTED');assert.ok(f.calls.slice(before).every(c=>c.init.method==='GET'),'rechecking never writes');assert.equal(f.service.workspace(f.member).items[0].canReply,true);
+    await assert.rejects(f.service.recheck(f.member,{attemptId:attempt.id}),{code:'RECHECK_NOT_NEEDED'});const {attempt:second}=await f.send(await f.preview());assert.equal(second.status,'sent');assert.equal(f.calls.filter(c=>c.init.method==='POST').length,2);}
+  {const f=fixture(t),attempt=await lost(f);f.advance(11*60000);listing(f,[{id:'400',from:{id:'100'},parent_id:'300',timestamp:'2026-10-13T00:01:00Z'}]);const {attempt:after}=await f.service.recheck(f.member,{attemptId:attempt.id});
+    assert.equal(after.status,'sent');assert.equal(after.remoteReplyId,'400');assert.equal(f.store.get('socialInbox','inbox').outboundSent,true);assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);}
+  for(const reply of [{id:'401',from:{id:'100'},parent_id:'300',timestamp:'2026-10-13T00:01:00Z'},{id:'403',from:{id:'100'},parent_id:'300'}]){
+    const f=fixture(t),attempt=await lost(f);f.advance(11*60000);listing(f,[reply]);await assert.rejects(f.service.recheck(f.member,{attemptId:attempt.id}),{code:'RECHECK_AMBIGUOUS'});assert.equal(f.store.get('socialReplyAttempts',attempt.id).status,'unknown');assert.equal(f.service.workspace(f.member).items[0].canReply,false);}
+  for(const reply of [{id:'402',from:{id:'777'},parent_id:'300',timestamp:'2026-10-13T00:01:00Z'},{id:'404',from:{id:'100'},parent_id:'300',timestamp:'2026-10-12T23:00:00Z'}]){
+    const f=fixture(t),attempt=await lost(f);f.advance(11*60000);listing(f,[reply]);const {attempt:after}=await f.service.recheck(f.member,{attemptId:attempt.id});assert.equal(after.status,'failed',reply.id);assert.equal(f.service.workspace(f.member).items[0].canReply,true);}
+});
+
+test('a reply proven by its ID is recorded as sent even when a list check closed it first, and a hidden own reply counts as sent',async t=>{
+  const lost=async f=>{const p=await f.preview();f.setHandler((_path,_url,init)=>{if(init.method==='POST')throw Error('lost');});const {attempt}=await f.send(p);f.setHandler(null);assert.equal(attempt.status,'unknown');return attempt;};
+  {const f=fixture(t),attempt=await lost(f);f.advance(11*60000);let release,entered;const gate=new Promise(r=>release=r),reached=new Promise(r=>entered=r);
+    f.setHandler(async(path,_url,init)=>{if(init.method==='GET'&&path==='400'){entered();await gate;}return null;});
+    const proving=f.service.reconcile(f.member,{attemptId:attempt.id,remoteReplyId:'400'});await reached;
+    const {attempt:listed}=await f.service.recheck(f.member,{attemptId:attempt.id});assert.equal(listed.status,'failed');assert.equal(listed.errorCode,'REPLY_NOT_POSTED','the late reply list closes it first');
+    release();const {attempt:proved}=await proving;assert.equal(proved.status,'sent');assert.equal(proved.remoteReplyId,'400');
+    assert.equal(f.store.get('socialReplyAttempts',attempt.id).verifiedAbsent,false);assert.equal(f.store.get('socialInbox','inbox').outboundSent,true);}
+  const hidden={id:'400',text:'최종 답장',parent_id:'300',media:{id:'200'},user:{id:'100'},timestamp:'2026-10-13T00:00:00.000Z',hidden:true};
+  {const f=fixture(t),attempt=await lost(f);f.advance(11*60000);
+    f.setHandler((path,_url,init)=>init.method==='GET'&&path==='300/replies'?json({data:[{id:'400',from:{id:'100'},parent_id:'300',timestamp:'2026-10-13T00:00:00.000Z',hidden:true}]}):init.method==='GET'&&path==='400'?json(hidden):null);
+    const {attempt:after}=await f.service.recheck(f.member,{attemptId:attempt.id});assert.equal(after.status,'sent');assert.match(after.message,/숨김/);assert.equal(f.store.get('socialReplyAttempts',attempt.id).hiddenOnPlatform,true);assert.equal(f.service.workspace(f.member).items[0].canReply,true);}
+  {const f=fixture(t),attempt=await lost(f);f.setHandler((path,_url,init)=>init.method==='GET'&&path==='400'?json(hidden):null);
+    const {attempt:after}=await f.service.reconcile(f.member,{attemptId:attempt.id,remoteReplyId:'400'});assert.equal(after.status,'sent');assert.equal(f.calls.filter(c=>c.init.method==='POST').length,1);}
+});

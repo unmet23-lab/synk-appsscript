@@ -44,3 +44,19 @@ test('role changes and deactivation remain visible on every user read',async t=>
   const store=await fixture(t),user=store.createUser({email:'fixture@example.test',name:'검사용 직원',role:'member'});assert.equal(store.get('users',user.id).role,'member');
   store.put('users',user.id,{...user,active:false,role:'viewer'});assert.equal(store.get('users',user.id).active,false);assert.equal(store.get('users',user.id).role,'viewer');
 });
+test('a read scope skips repeated SQL reads yet returns fresh objects and forgets on writes and rollback',async t=>{
+  const store=await fixture(t),direct=(id,value)=>store.db.prepare('INSERT INTO documents(kind,id,body) VALUES (?,?,?) ON CONFLICT(kind,id) DO UPDATE SET body=excluded.body').run('fixture',id,JSON.stringify(value));
+  store.put('fixture','one',{sequence:1});store.put('fixture','two',{sequence:2});
+  const seen=store.readScope(()=>{const first=store.get('fixture','one');first.sequence='local-only';assert.equal(store.get('fixture','one').sequence,1,'every read is a fresh object');
+    const list=store.all('fixture');list[0].sequence='local-only';assert.equal(store.all('fixture')[0].sequence,1);assert.equal(store.get('fixture','missing'),null);
+    direct('one',{sequence:5});direct('missing',{sequence:6});
+    assert.equal(store.get('fixture','one').sequence,1,'a repeated get is served from the scope');assert.equal(store.all('fixture')[0].sequence,1,'a repeated all is served from the scope');assert.equal(store.get('fixture','missing'),null,'a remembered miss stays a miss');
+    store.put('fixture','one',{sequence:3});assert.equal(store.get('fixture','one').sequence,3,'a write in the scope is seen at once');assert.equal(store.get('fixture','missing').sequence,6,'a write forgets every remembered read');
+    store.remove('fixture','two');assert.equal(store.all('fixture').some(row=>row.sequence===2),false);
+    assert.throws(()=>store.transaction(()=>{store.put('fixture','one',{sequence:4});assert.equal(store.get('fixture','one').sequence,4);throw new Error('rollback');}),/rollback/);
+    assert.equal(store.get('fixture','one').sequence,3,'a rolled back write is forgotten');return 'done';});
+  assert.equal(seen,'done');store.readScope(()=>{store.get('fixture','one');direct('one',{sequence:9});});assert.equal(store.get('fixture','one').sequence,9,'the scope ends with the build');
+  direct('one',{sequence:10});assert.equal(store.get('fixture','one').sequence,10,'outside a scope every read reaches SQLite');
+  assert.equal(store.readScope(()=>store.readScope(()=>store.get('fixture','one').sequence)),10,'a nested scope just runs');
+});
+test('a missing identifier reads as nothing instead of a SQLite binding error',async t=>{const store=await fixture(t);assert.equal(store.get('fixture',undefined),null);assert.equal(store.get('fixture',null),null);assert.doesNotThrow(()=>store.remove('fixture',undefined));store.readScope(()=>assert.equal(store.get('fixture',undefined),null));});

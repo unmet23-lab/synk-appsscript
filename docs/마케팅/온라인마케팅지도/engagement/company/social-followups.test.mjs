@@ -68,7 +68,7 @@ test('a hidden, archived or reassigned source stops creates and hides existing f
 
 test('deleted or inaccessible tasks are explicit and never automatically recreated',t=>{
   const f=fixture(t);f.service.create(f.users.writer,f.input);f.setGetHook(()=>{throw Object.assign(new Error('private room'),{status:403});});let followup=f.service.list(f.users.writer).items[0].followup;assert.equal(followup.state,'unavailable');assert.equal(followup.taskId,undefined);assert.equal(followup.nextAction,undefined);assert.equal(followup.taskHref,undefined);assert.equal(f.service.create(f.users.writer,f.input).created,false);assert.equal(f.calls.length,1);
-  f.setGetHook(null);f.ledger.clear();followup=f.service.workspace(f.users.writer,{inboxId:'inbox'}).items[0].followup;assert.equal(followup.state,'unavailable');assert.equal(f.calls.length,1);
+  f.setGetHook(null);f.ledger.clear();followup=f.service.workspace(f.users.writer,{inboxId:'inbox'}).items[0].followup;assert.equal(followup.state,'deleted');assert.equal(f.calls.length,1);
 });
 
 test('strict source revision, real date and input fields reject malformed or unapproved work before task creation',t=>{
@@ -136,4 +136,15 @@ test('real receipt lookup restores a committed task after response loss, restart
   f.store.put('users','worker',{...f.store.get('users','worker'),active:false});
   const input=f.service.list(f.user).items[0].followup.retryInput,result=f.service.create(f.user,input);
   assert.equal(input.revision,2);assert.equal(result.created,false);assert.equal(result.followup.assigneeId,'writer');assert.equal(result.followup.state,'linked');assert.equal(calls,1);assert.equal(f.messenger.db.prepare('SELECT COUNT(*) n FROM message_tasks').get().n,1);assert.doesNotMatch(JSON.stringify(result),/PRIVATE/);
+});
+
+test('a follow-up whose task card was deleted can be made again on request, while one the person cannot open stays linked',t=>{
+  const f=fixture(t),first=f.service.create(f.users.writer,f.input);assert.equal(f.calls.length,1);
+  f.setGetHook(()=>{throw Object.assign(new Error('private room'),{status:403});});assert.equal(f.service.list(f.users.writer).items[0].canCreate,false);
+  assert.throws(()=>f.service.create(f.users.writer,{...f.input,nextAction:'다른 일'}),{status:409});assert.equal(f.calls.length,1,'a card this person cannot open may still exist');
+  f.setGetHook(null);f.ledger.clear();const view=f.service.list(f.users.worker).items[0];
+  assert.equal(view.followup.state,'deleted');assert.equal(view.canCreate,true);assert.equal(f.calls.length,1,'seeing a deleted card creates nothing');
+  const again=f.service.create(f.users.worker,{...f.input,nextAction:'다시 확인하고 답변'});assert.equal(again.created,true);assert.equal(again.followup.state,'linked');assert.equal(f.calls.length,2);
+  const record=f.store.get('socialFollowups','inbox');assert.equal(record.replaces.taskId,first.followup.taskId);assert.equal(record.createdBy,'worker');
+  assert.equal(f.service.list(f.users.writer).items[0].canCreate,false,'the new card is linked');
 });

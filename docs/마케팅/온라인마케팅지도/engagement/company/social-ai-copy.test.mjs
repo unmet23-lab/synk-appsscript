@@ -89,3 +89,13 @@ test('the daily budget follows the Korean calendar day, and a stopped service sa
   await f.service.stop();const s=f.service.state(f.admin);assert.equal(s.canUse,false);assert.match(s.reason,/멈췄/);
   assert.throws(()=>f.service.quote(f.admin,f.input),error=>/멈췄/.test(error.message)&&error.status===503);await assert.rejects(f.service.generate(f.admin,{quoteId:q.id,confirmCost:true}),error=>/멈췄/.test(error.message)&&error.status===503);
 });
+
+test('a request the AI provider refused outright frees its reservation, while an unclear failure keeps it',async t=>{
+  for(const status of [400,401,403,429]){const f=fixture(t,{fetchImpl:async()=>new Response(JSON.stringify({error:{message:'synthetic refusal'}}),{status})}),before=f.service.state(f.admin).remainingUsd,q=f.service.quote(f.admin,f.input).quote;
+    await assert.rejects(f.service.generate(f.admin,{quoteId:q.id,confirmCost:true}),{status:502});const call=f.store.get('socialAiCalls',q.id);
+    assert.equal(call.status,'rejected',String(status));assert.equal(call.reservedUsd,0);assert.equal(f.service.state(f.admin).remainingUsd,before,String(status));}
+  for(const failure of [async()=>new Response('{}',{status:500}),async()=>new Response('{}',{status:503}),async()=>{throw new TypeError('fetch failed');}]){
+    const f=fixture(t,{fetchImpl:failure}),before=f.service.state(f.admin).remainingUsd,q=f.service.quote(f.admin,f.input).quote;
+    await assert.rejects(f.service.generate(f.admin,{quoteId:q.id,confirmCost:true}),{status:502});const call=f.store.get('socialAiCalls',q.id);
+    assert.equal(call.status,'unconfirmed');assert.equal(call.reservedUsd,q.estimatedMaxUsd);assert.ok(f.service.state(f.admin).remainingUsd<before);}
+});

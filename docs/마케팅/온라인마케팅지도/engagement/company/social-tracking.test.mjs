@@ -28,3 +28,18 @@ test('observing signup never fabricates zero visits, trial starts or inquiries',
     assert.deepEqual(stats.verifiedEvents,{trial_start:null,signup:1,inquiry:null});
   }
 });
+const fillKind=(store,kind,count,createdAt)=>store.db.prepare(`WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i+1 FROM n WHERE i<?) INSERT INTO documents(kind,id,body) SELECT ?,'fill-'||i,json_object('id','fill-'||i,'linkId','other','clickId','other','event','signup','source','browser','createdAt',?) FROM n`).run(count,kind,createdAt);
+test('a full click log still redirects visitors and only skips recording',t=>{const f=fixture(t);fillKind(f.store,'socialTrackingClicks',100000,f.clock());const result=f.service.click(f.link.id,{client:'visitor'});assert.equal(result.location,f.link.destination,'the visitor still reaches the site');assert.equal(result.clickId,null);assert.equal(f.store.count('socialTrackingClicks'),100000);});
+test('one click cannot flood outcome rows and verified outcomes are never capped by browser volume',t=>{const f=fixture(t),{clickId}=f.service.click(f.link.id),context={origin:'https://synk.example.test'};
+  assert.equal(f.service.event({clickId,eventId:'signup-0',event:'signup'},context).duplicate,undefined);for(let i=1;i<50;i++)assert.equal(f.service.event({clickId,eventId:'signup-'+i,event:'signup'},context).duplicate,true);
+  assert.equal(f.store.all('socialTrackingEvents').length,1,'one stored row per click, outcome and source');assert.equal(f.service.workspace(f.user).totals.browserEvents.signup,1);
+  fillKind(f.store,'socialTrackingEvents',200000,f.clock());const late=f.service.click(f.link.id);assert.throws(()=>f.service.event({clickId:late.clickId,eventId:'browser-late',event:'signup'},context),{status:429});
+  const {key}=f.service.rotateKey(f.admin,{rotate:true}),input={clickId:late.clickId,eventId:'server-late',event:'signup'},timestamp=String(Date.parse(f.clock())),signature=createHmac('sha256',key).update(socialTrackingSignaturePayload(timestamp,input)).digest('hex');
+  assert.equal(f.service.event(input,{verified:true,timestamp,signature}).source,'verified');});
+test('outcome markers expire with the anonymous records',t=>{const f=fixture(t),{clickId}=f.service.click(f.link.id);f.service.event({clickId,eventId:'once',event:'signup'},{origin:'https://synk.example.test'});assert.equal(f.store.count('socialTrackingOutcomes'),1);f.advance(91);f.service.prune(true);assert.equal(f.store.count('socialTrackingOutcomes'),0);assert.equal(f.store.count('socialTrackingEvents'),0);assert.equal(f.store.count('socialTrackingClicks'),0);});
+
+test('server confirmations may sign the time in seconds or milliseconds, and either must be fresh',t=>{
+  const f=fixture(t),{clickId}=f.service.click(f.link.id),{key}=f.service.rotateKey(f.admin,{rotate:true}),sign=(timestamp,input)=>createHmac('sha256',key).update(socialTrackingSignaturePayload(timestamp,input)).digest('hex');
+  for(const [eventId,event,timestamp] of [['in-seconds','signup',String(Math.floor(Date.parse(f.clock())/1000))],['in-millis','inquiry',String(Date.parse(f.clock()))]]){const input={clickId,eventId,event};assert.equal(f.service.event(input,{verified:true,timestamp,signature:sign(timestamp,input)}).source,'verified',eventId);}
+  const stale=String(Math.floor(Date.parse(f.clock())/1000)-600),input={clickId,eventId:'stale',event:'trial_start'};assert.throws(()=>f.service.event(input,{verified:true,timestamp:stale,signature:sign(stale,input)}),{status:401});
+});

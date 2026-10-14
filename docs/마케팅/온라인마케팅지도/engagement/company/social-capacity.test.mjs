@@ -66,3 +66,11 @@ test('restoring an unmovable later reservation cannot silently overload an earli
   const a=f.add(),b=f.add({time:'2026-10-13T01:02:00.000Z'}),post=f.store.get('socialPosts',b.postId);f.store.put('socialPosts',b.postId,{...post,expiresAt:'2026-10-13T01:02:30.000Z'});
   const plan=f.capacity.preview(f.admin,{jobIds:[a.id,b.id],maxShiftHours:1});assert.equal(plan.changes.find(c=>c.jobId===b.id).excluded,true);assert.equal(plan.canApply,false);assert.ok(plan.warnings.some(message=>message.includes('분산 후에도')));assert.throws(()=>f.capacity.apply(f.admin,{previewId:plan.previewId,confirmed:true}),{status:409});assert.equal(f.store.get('socialPublishJobs',a.id).scheduledAt,a.scheduledAt);
 });
+
+test('applying a spread builds the workspace a fixed number of times however many reservations move',async t=>{
+  const f=await fixture(t),jobs=Array.from({length:8},(_,i)=>f.add({time:i<4?'2026-10-13T01:59:00.000Z':'2026-10-13T02:01:00.000Z'}));
+  const preview=f.capacity.preview(f.admin,{jobIds:jobs.map(j=>j.id)}),moving=preview.changes.filter(c=>!c.excluded&&c.from!==c.to).length;assert.ok(moving>=3,'moves '+moving);
+  const original=f.publishing.workspace;let builds=0;f.publishing.workspace=(...args)=>{builds++;return original(...args);};
+  const applied=f.capacity.apply(f.admin,{previewId:preview.previewId,confirmed:true});f.publishing.workspace=original;
+  assert.equal(applied.jobs.length,moving);assert.ok(builds<=2,'workspace builds '+builds);
+});

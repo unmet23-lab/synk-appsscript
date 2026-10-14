@@ -310,3 +310,43 @@ test('a published job whose performance record did not connect says so on its ca
   const f=fixture();f.context.post=post;f.run('socialWorkspaceState.data.posts=[post]');f.context.job={id:'j',postId:'p',channelId:'ch',status:'published',publicationUrl:'https://www.instagram.com/p/SYNK1/',outcomeError:'발행은 됐지만 성과 기록 연결을 다시 확인해야 해요.'};
   assert.match(f.run('snswJobCard(job)'),/성과 기록 연결을 다시 확인해야 해요/);f.context.job={...f.context.job,outcomeError:null};assert.doesNotMatch(f.run('snswJobCard(job)'),/성과 기록 연결/);
 });
+
+test('an unknown reply offers a platform recheck only after the settle window and never sends',async()=>{
+  const f=fixture(),old=new Date(Date.now()-11*60000).toISOString();f.run('socialWorkspaceState.data.inbox=[{id:"i",channelId:"ch"}];socialWorkspaceState.data.replies={items:[{inboxId:"i",canReply:false,canReconcile:true}],attempts:[{id:"a",inboxId:"i",status:"unknown",text:"body",createdAt:"'+new Date().toISOString()+'",submittedAt:"'+new Date().toISOString()+'"}]}');
+  assert.match(f.run('snswReplyPanel(socialWorkspaceState.data.inbox[0])'),/data-sw-action="reply-recheck" data-value="a" disabled/);
+  f.run('socialWorkspaceState.data.replies.attempts[0].submittedAt="'+old+'"');const html=f.run('snswReplyPanel(socialWorkspaceState.data.inbox[0])');assert.match(html,/data-sw-action="reply-recheck" data-value="a" >/);assert.ok(!html.includes('data-sw-action="reply-send"'));
+  f.run('socialWorkspaceState.data.replies.items[0].canReconcile=false');assert.ok(!f.run('snswReplyPanel(socialWorkspaceState.data.inbox[0])').includes('reply-recheck'));f.run('socialWorkspaceState.data.replies.items[0].canReconcile=true');
+  const work=f.run('snswFourAction("reply-recheck","a")');assert.equal(f.requests[0].path,'/api/social/inbox/reply/recheck');assert.deepEqual(JSON.parse(JSON.stringify(f.requests[0].body)),{attemptId:'a'});f.requests[0].reject(new Error('synthetic stop'));await work;assert.equal(f.requests.length,1);
+});
+
+test('typing while another request runs is kept when the screen redraws',async()=>{
+  const f=fixture(),fire=(kind,target)=>{for(const h of f.handlers.get(kind)||[])h({type:kind,target});};
+  f.context.initial.inbox=[{id:'i1',channelId:'ch',text:'첫 문의',status:'open',effectiveStatus:'open',canEdit:true,revision:1},{id:'i2',channelId:'ch',text:'둘째 문의',status:'open',effectiveStatus:'open',canEdit:true,revision:1}];
+  f.context.initial.inboxProvider={channels:[{channelId:'ch',enabled:true,available:true,canConfigure:true,canSync:true}]};f.run('socialWorkspaceState.data=JSON.parse(JSON.stringify(initial));socialWorkspaceState.view="inbox"');
+  const pending=f.run('snswAction("inbox-provider-sync","ch")');assert.equal(f.requests[0].path,'/api/social/inbox/provider/sync');assert.equal(f.run('socialWorkspaceState.busy'),true);
+  const form={dataset:{swForm:'inbox-update',id:'i2'},values:{replyDraft:'수집 기다리며 쓴 초안',assigneeId:'u',status:'open'}};fire('input',{dataset:{},hasAttribute:()=>false,closest:()=>form});
+  const followup={dataset:{swForm:'followup',id:'i1',revision:'1'},values:{roomId:'r',assigneeId:'u',dueDate:'2026-10-15',nextAction:'기다리며 쓴 다음 행동'}};fire('change',{dataset:{},hasAttribute:()=>false,closest:selector=>selector==='[data-sw-form="followup"]'?followup:null});
+  assert.equal(f.run('socialWorkspaceState.forms["followup:i1"].nextAction'),'기다리며 쓴 다음 행동');
+  f.requests[0].resolve({ok:true});await settle();assert.equal(f.requests[1].path,'/api/social/workspace');f.requests[1].resolve(JSON.parse(JSON.stringify(f.context.initial)));await pending;
+  assert.match(f.run('snswInbox()'),/수집 기다리며 쓴 초안/);
+});
+
+test('switches and selections the server would refuse are not offered',()=>{
+  const f=fixture();f.run(`state.user.role='member';socialWorkspaceState.data.settings.canPauseGlobal=false;
+    socialWorkspaceState.data.channels=[{id:'ch',name:'LAB Instagram',platform:'instagram',brandId:'LAB',canEdit:true,canPublish:true,capability:{}},{id:'ro',name:'쓰기만 되는 계정',platform:'youtube',brandId:'PULSE',canEdit:true,canPublish:false,capability:{}}];
+    socialWorkspaceState.data.rules=[{id:'rule',title:'남의 규칙',enabled:true,sourceId:'src',channelIds:['ro'],delayMinutes:0},{id:'mine',title:'내 규칙',enabled:true,sourceId:'src',channelIds:['ch'],delayMinutes:0}];
+    socialWorkspaceState.data.posts=[{id:'p',title:'관리자만 예약 가능한 글',status:'approved',canEdit:true,canPublish:false,variants:[{channelId:'ro'}]},{id:'q',title:'내가 옮길 수 있는 글',status:'approved',canEdit:true,canPublish:true,variants:[{channelId:'ch'}]}];
+    socialWorkspaceState.data.jobs=[{id:'j',postId:'p',channelId:'ro',status:'scheduled',mode:'fixed',scheduledAt:'2026-11-01T03:00:00Z'},{id:'k',postId:'q',channelId:'ch',status:'scheduled',mode:'fixed',scheduledAt:'2026-11-01T04:00:00Z'}];`);
+  const settings=f.run('snswSettings()');assert.ok(!settings.includes('data-sw-action="pause-brand"'),'brand pauses are for administrators');
+  assert.ok(!settings.includes('data-sw-action="pause-channel" data-value="ro"'));assert.match(settings,/data-sw-action="pause-channel" data-value="ch"/);
+  const queue=f.run('snswQueue()');assert.ok(!queue.includes('data-sw-action="rule-toggle" data-value="rule"'));assert.match(queue,/data-sw-action="rule-toggle" data-value="mine"/);
+  assert.ok(!queue.includes('data-sw-job-select="j"'));assert.match(queue,/data-sw-job-select="k"/);
+});
+
+test('the queue reads each reservation day once instead of once per day it shows, keeping day groups in time order',()=>{
+  const f=fixture(),start=Date.parse('2030-01-07T00:00:00Z');
+  f.run(`socialWorkspaceState.data.posts=[{id:'p',title:'예약 글',status:'approved',canEdit:true,canPublish:true,variants:[]}];socialWorkspaceState.data.jobs=Array.from({length:40},(_,i)=>({id:'j'+i,postId:'p',channelId:'ch',status:'scheduled',mode:'fixed',scheduledAt:new Date(${start}+Math.floor(i/10)*86400000+(i%10)*60000).toISOString()}));var originalDay=snswDay,dayReads=0;snswDay=(...args)=>{dayReads++;return originalDay(...args)};`);
+  const html=f.run('snswQueue()'),at=i=>html.indexOf('data-sw-job-select="j'+i+'"');f.run('snswDay=originalDay');
+  for(let i=0;i<40;i++)assert.ok(at(i)>=0,'j'+i);for(let i=1;i<40;i++)assert.ok(at(i-1)<at(i),'order '+i);
+  assert.ok(f.run('dayReads')<130,'day reads '+f.run('dayReads'));
+});
