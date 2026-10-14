@@ -29,6 +29,7 @@ const {createDraftRecoveryRequests}=require('./draft-recovery-ipc.cjs');
 const {copyDiagnostics}=require('./diagnostics-clipboard.cjs');
 const {createPulseRequests,PULSE_ORIGIN,PULSE_ENTRY}=require('./pulse-requests.cjs');
 const {createPulseApp}=require('./pulse-app.cjs');
+const {createPlatformUpdater}=require('./platform-update.cjs');
 app.enableSandbox();
 protocol.registerSchemesAsPrivileged([{scheme:'synk-desktop',privileges:{standard:true,secure:true,supportFetchAPI:true}}]);
 const packaged=app.isPackaged;
@@ -54,12 +55,19 @@ app.setName(current.productName);
 app.setPath('userData',path.join(app.getPath('appData'),'SYNK Desktop',current.sessionScope+(smoke?'.smoke':'')));
 app.setPath('sessionData',path.join(app.getPath('userData'),'Session'));
 if(process.platform==='win32')app.setAppUserModelId(current.appId);
-let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
+let window,platformTray,desktopPreferences,windowPlacement,draftRecovery,draftRecoveryRequests,pulseRequests,pulseApp,platformUpdate,protocolRegistered=false,auth,installations,connectionRecovery,suiteFollower,teacherService,unbindTeacher,pendingTeachingView=false;
 const suiteBindingKey=authConfig?suiteKey(authConfig,runtime.mode):null;
 const suiteStore=!smoke&&authConfig?createSuiteStore({directory:path.join(app.getPath('appData'),'SYNK Desktop','Suite',runtime.mode,suiteBindingKey),key:suiteBindingKey}):null;
 function publishAuthState(state){pulseRequests?.syncContext(state);pulseApp?.syncContext(state);platformTray?.setShortcuts([]);if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send('synk:auth-changed',state);}
 function sendDesktop(channel,value){if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);}
 function desktopSnapshot(){const result=desktopPreferences?.snapshot()||{ok:false,code:'LAUNCHER_ONLY'};return {...result,capabilities:{...result.capabilities,tray:!!platformTray?.isActive(),encryptedDrafts:!!draftRecovery?.available()}};}
+async function openAccountSignUp(){
+  if(runtime.clientId!=='platform'||smoke)return {ok:false,code:'LAUNCHER_ONLY'};
+  const state=accountStatus();
+  if(!state||state.signedIn||state.status==='signed-in'||['restoring','signing-in','signing-out'].includes(state.status))return {ok:false,code:'AUTH_SIGNUP_UNAVAILABLE'};
+  try{await shell.openExternal('https://synk.im/id/?view=signup');return {ok:true};}
+  catch{return {ok:false,code:'AUTH_SIGNUP_OPEN_FAILED'};}
+}
 async function signOutAccount(){
   const owner=accountStatus()?.account?.synk_user_id;
   if(suitePublisher&&!suitePublisher.signOut())return {ok:false,status:accountStatus(),error:{code:'SUITE_UNAVAILABLE',message:'앱 계정 연결을 저장하지 못해 로그아웃을 완료하지 못했어요.'}};
@@ -109,7 +117,18 @@ function openPulseReview({session:isolated,url}){
   review.pulseReady=review.loadURL(url).catch(error=>{if(!review.isDestroyed())review.destroy();throw error;});
   return review;
 }
-app.on('will-quit',()=>{pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();});
+app.on('will-quit',event=>{
+  if(platformUpdate?.needsInstallHandoff()){
+    // will-quit runs only after the normal window/draft guards accepted. Hold
+    // this quit until the wrapper starts; it waits for our PID before installing.
+    event.preventDefault();
+    void platformUpdate.completeInstall().then(result=>{
+      if(result.ok&&!platformUpdate.needsInstallHandoff())app.quit();
+      else{platformTray?.cancelQuit();if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
+    });return;
+  }
+  platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
+});
 if(!app.requestSingleInstanceLock())app.quit();
 else {
   app.on('second-instance',(_event,argv)=>{if(runtime.clientId==='messenger'&&Array.isArray(argv)&&argv.includes('--view=teaching'))pendingTeachingView=true;if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();sendTeachingView();void connectionRecovery?.retryIfDisconnected();}});
@@ -122,6 +141,13 @@ else {
       windowPlacement=createWindowPlacement({directory:app.getPath('userData'),screen,enabled:!smoke});
       draftRecovery=createDraftRecovery({directory:path.join(app.getPath('userData'),'DraftRecovery'),safeStorage,getAccount:accountStatus,configFingerprint:authConfig?.fingerprint||'unconfigured',enabled:!smoke,onChange:status=>sendDesktop('synk:draft-recovery-changed',status)});
       draftRecoveryRequests=createDraftRecoveryRequests({getAccount:accountStatus,recovery:draftRecovery});
+      platformUpdate=createPlatformUpdater({enabled:packaged&&!smoke,config:runtime.update,currentVersion:app.getVersion(),platform:process.platform,arch:process.arch,cacheRoot:path.join(app.getPath('userData'),'PlatformUpdates'),onChange:state=>sendDesktop('synk:update-changed',state),
+        requestQuit:()=>setImmediate(()=>app.quit()),openDiskImage:file=>shell.openPath(file),
+        openInstaller:file=>new Promise((resolve,reject)=>{
+          const child=spawn(file,['--wait-pid='+process.pid],{detached:true,stdio:'ignore',windowsHide:true});
+          child.once('error',reject);child.once('spawn',()=>{child.unref();resolve();});
+        })});
+      platformUpdate.start();
     }
     platformTray=createPlatformTray({app,Tray,Menu,icon:path.join(app.getAppPath(),'assets','platform.ico'),productName:current.productName,getWindow:()=>window,createWindow,enabled:runtime.clientId==='platform'&&process.platform==='win32'&&!smoke,shouldHide:()=>desktopPreferences?.snapshot().preferences.closeToTray!==false,onAction:action=>sendDesktop('synk:desktop-action',action)});
     createWindow();
@@ -166,6 +192,7 @@ function createWindow(){
   if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});
   platformTray?.attachWindow(window);
+  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented)platformUpdate?.cancelInstall();});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
   const send=(channel,value)=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);};
   const windowState=()=>({maximized:window.isMaximized(),minimized:window.isMinimized(),focused:window.isFocused(),platform:process.platform});
@@ -184,6 +211,10 @@ function createWindow(){
   const handlers={
     'synk:environment':()=>({clientId:runtime.clientId,mode:runtime.mode,platform:process.platform,arch:process.arch,version:app.getVersion(),sessionScope:current.sessionScope,nativeShell:isPlatform,closeToTray:!!platformTray?.isActive()&&desktopPreferences?.snapshot().preferences.closeToTray!==false,teacherPreviewAvailable:teacherPreview.available(),productPreviewsAvailable:productPreviews.available(),publicAppsAvailable:publicApps.available()}),
     'synk:desktop-preferences':()=>desktopSnapshot(),
+    'synk:update-status':()=>platformUpdate?.snapshot()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
+    'synk:check-for-update':()=>platformUpdate?.checkForUpdate()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
+    'synk:download-update':()=>platformUpdate?.downloadUpdate()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
+    'synk:install-update':()=>platformUpdate?.installUpdate()||{ok:false,state:'disabled',code:'UPDATE_UNAVAILABLE'},
     'synk:desktop-preferences-update':patch=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};const result=desktopPreferences.update(patch);return result.ok?desktopSnapshot():result;},
     'synk:copy-platform-diagnostics':input=>isPlatform&&!smoke?copyDiagnostics({clipboard,input,environment:{platform:process.platform,arch:process.arch,version:app.getVersion(),mode:runtime.mode},account:accountStatus()}):{ok:false,code:'CLIPBOARD_UNAVAILABLE'},
     'synk:tray-shortcuts':items=>isPlatform?platformTray.setShortcuts(items):{ok:false,code:'LAUNCHER_ONLY'},
@@ -198,7 +229,7 @@ function createWindow(){
     'synk:clients':()=>installations.getClients(),'synk:launch':id=>requireSuite(()=>installations.launch(id)),
     'synk:prepare-client':id=>installations.prepareClient(id),'synk:cancel-preparation':id=>installations.cancelPreparation(id),'synk:open-installer':id=>installations.openInstaller(id),
     'synk:window-state':windowState,'synk:window-action':action=>{if(!isPlatform)return {ok:false,code:'LAUNCHER_ONLY'};if(action==='minimize')window.minimize();else if(action==='toggle-maximize'){if(window.isMaximized())window.unmaximize();else window.maximize();}else if(action==='close')window.close();else return {ok:false,code:'INVALID_WINDOW_ACTION'};return {ok:true};},
-    'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
+    'synk:auth-status':accountStatus,'synk:auth-sign-in':async()=>{if(suitePublisher&&!suitePublisher.beginSignIn())return accountStatus();await auth.signIn();return accountStatus();},'synk:auth-sign-up':openAccountSignUp,'synk:auth-cancel':()=>auth.cancel(),'synk:auth-sign-out':signOutAccount,
     'synk:account-request':(operation,params)=>requireSuite(()=>auth.accountRequest(operation,params)),'synk:company-request':companyRequest,
     'synk:pulse-request':(operation,params)=>isPlatform&&!smoke?requireSuite(()=>pulseRequests.request(operation,params)):{ok:false,error:{code:'PULSE_UNAVAILABLE',message:'현재 창에서는 프로젝트를 연결할 수 없어요.'}},
     'synk:pulse-app-open':()=>isPlatform&&!smoke?requireSuite(()=>pulseApp.open()):{ok:false,code:'PULSE_APP_UNAVAILABLE'},

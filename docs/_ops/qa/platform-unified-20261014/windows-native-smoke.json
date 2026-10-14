@@ -1,0 +1,26 @@
+{
+  "ok": true,
+  "exitCode": 0,
+  "version": "0.4.4",
+  "packaged": true,
+  "visible": false,
+  "nativeShell": {
+    "url": "synk-desktop://platform/index.html",
+    "ready": true,
+    "html": 862,
+    "remoteResources": [],
+    "networkBlocked": true,
+    "networkRequests": [],
+    "consoleErrors": []
+  },
+  "secureStorageRoundtrip": {
+    "available": true,
+    "encrypted": true,
+    "restored": true,
+    "removed": true
+  },
+  "error": null,
+  "isolatedProfile": true,
+  "liveProfileTouched": false,
+  "capture": "native-smoke.png"
+}

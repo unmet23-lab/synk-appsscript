@@ -36,6 +36,11 @@ async function main() {
   const id=get('product')||'platform';
   assert(Object.hasOwn(PRODUCTS,id),'Unknown --product '+id);
   const product={...PRODUCTS[id]};
+  if(get('version')) {
+    assert(/^\d+\.\d+\.\d+$/.test(get('version')) && get('pin') && get('inventory'), 'New versions require a reviewed pin and payload inventory');
+    product.version=get('version');product.output=product.output.replace(PRODUCTS[id].version,product.version);
+    product.fileVersion=product.version+'.1';product.revision='unified.1';
+  }
   // A rebuilt Platform (for example with Signal child installers) is pinned by a reviewed JSON file instead of the public 0.4.3 file.
   if(get('pin')) { product.pin=JSON.parse(fs.readFileSync(path.resolve(get('pin')),'utf8')); assert(product.pin.bytes&&product.pin.sha256&&product.pin.asarSHA256,'Incomplete --pin'); }
   if(get('inventory')) product.inventory=path.resolve(get('inventory'));
@@ -46,12 +51,16 @@ async function main() {
   const dependencies=createRequire(path.join(path.resolve(get('builder')||path.join(ROOT,'..')),'package.json'));
   assert(dependencies('electron-builder/package.json').version==='26.15.3','Pinned electron-builder 26.15.3 required');
   fs.mkdirSync(output,{recursive:true});
+  const directPayload=process.argv.includes('--from-payload');
+  assert(!directPayload || get('payload') && get('pin') && get('inventory') && get('version') && pin.source==='unified-reviewed-payload', 'Direct payload requires the unified build contract');
   const baseline=path.resolve(get('baseline')||path.join(output,'baseline.exe'));
-  if(!fs.existsSync(baseline)) { assert(pin.url,'Pass --baseline=<file>: '+(pin.source||'no public download for this pin')); const response=await fetch(pin.url); assert(response.ok,'Baseline download failed'); await pipeline(Readable.fromWeb(response.body),fs.createWriteStream(baseline,{flags:'wx'})); }
-  assert(fs.statSync(baseline).size===pin.bytes&&await sha(baseline)===pin.sha256,'Public baseline checksum mismatch');
+  if(!directPayload) {
+    if(!fs.existsSync(baseline)) { assert(pin.url,'Pass --baseline=<file>: '+(pin.source||'no public download for this pin')); const response=await fetch(pin.url); assert(response.ok,'Baseline download failed'); await pipeline(Readable.fromWeb(response.body),fs.createWriteStream(baseline,{flags:'wx'})); }
+    assert(fs.statSync(baseline).size===pin.bytes&&await sha(baseline)===pin.sha256,'Public baseline checksum mismatch');
+  }
   const seven=await dependencies('app-builder-lib/out/toolsets/7zip').getPath7za();
   const payload=path.resolve(get('payload')||path.join(output,'payload'));
-  if(!fs.existsSync(payload)) { fs.mkdirSync(payload); command(seven,['x',baseline,'-o'+payload,'-y']); }
+  if(!fs.existsSync(payload)) { assert(!directPayload,'Direct payload does not exist');fs.mkdirSync(payload); command(seven,['x',baseline,'-o'+payload,'-y']); }
   assert(await sha(path.join(payload,'resources/app.asar'))===pin.asarSHA256,'Public app archive changed');
   if(pin.executableSHA256) assert(await sha(path.join(payload,product.executableName+'.exe'))===pin.executableSHA256,'Public app executable changed');
   const files=await inventory(payload);

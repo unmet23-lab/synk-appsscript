@@ -6,6 +6,7 @@ import {mountPulseClient} from './pulse-client.mjs';
 import {mountMemberHome} from './member-home.mjs';
 import {mountPlatformLibrary} from './platform-continuity.mjs';
 import {mountConvenience} from './convenience.mjs';
+import {mountPlatformUpdates} from './update-view.mjs';
 const $=id=>document.getElementById(id),bridge=globalThis.synkDesktop,asset='/assets/launcher/';
 const apps=APPS;
 const localStore={getItem:key=>localStorage.getItem(key),setItem:(key,value)=>localStorage.setItem(key,value),removeItem:key=>localStorage.removeItem(key)};
@@ -14,8 +15,8 @@ let personal=createPersonal(),personalState=personal.current({appIds:displayLibr
 const games={racing:{name:'한국어 레이싱',image:'racing.jpg',tag:'듣고 이해하며 달리는 레이스',description:'한국어를 듣고 뜻을 이해하며 달리는 레이싱 게임입니다. 질문과 선택지를 듣는 연습을 게임 안에서 진행합니다.'},runner:{name:'바람길',image:'runner.jpg',tag:'짧은 지시를 듣고 움직이기',description:'짧은 한국어 지시를 듣고 길을 선택하는 게임입니다. TOPIK I의 짧은 지시 듣기를 보조하는 연습이며, 게임 기록 자체가 시험 점수나 학습 효과를 입증하지는 않습니다.'},rhythm:{name:'시그널 리듬',image:'rhythm.jpg',tag:'리듬과 함께 한국어에 귀 기울이기',description:'음악과 리듬, 한국어 듣기 활동을 함께 경험하는 게임입니다. 리듬 조작 성적과 한국어 이해도는 서로 다른 기록으로 다룹니다.'}};
 let prefs=parsePreferences(readPrefs()),clients=clientRows([],{native:!!bridge}),environment=null,view='home',detail='overview',filter='all',search='',busy=new Set(),toastTimer;
 let selectedBenefit=null,environmentRevision=0,sessionPurpose=null,sessionPurposeOwner=null,leaveDecision=null;
-let continuity=null,convenience=null;
-let accountRetryPending=false,pulseLegacyView=false;
+let continuity=null,convenience=null,platformUpdates=null;
+let accountRetryPending=false,signUpPending=false,signUpOpened=false,pulseLegacyView=false;
 const memberHome=mountMemberHome($('view-home'),{storage:localStore,getSnapshot:()=>({library,personal:personalState,prefs:effectivePrefs(),clients:clients.map(row=>client(row.id))}),getAppAction,onLaunch:launchFromHome,onRetry:()=>refreshAuth({reload:true}),onApp:selectApp,onPurpose:choosePurpose,onAccount:()=>$('account-dialog').showModal(),onBenefits:()=>showView('benefits'),onToast:toast});
 const pulseClient=mountPulseClient($('pulse-client'),{storage:localStore,getContext:()=>({owner:library.owner,status:library.status}),getFavorite:()=>effectivePrefs().favorites.includes('pulse'),onFavorite:()=>$('favorite').click(),onToast:toast,request:typeof bridge?.pulseRequest==='function'?(operation,params)=>bridge.pulseRequest(operation,params):undefined});
 const continuityRoot=document.createElement('aside');continuityRoot.setAttribute('aria-label','계정 라이브러리');$('view-home').before(continuityRoot);
@@ -79,6 +80,7 @@ function confirmDraftExit(message){
   $('leave-dialog').returnValue='keep';
   return new Promise(resolve=>{leaveDecision=resolve;$('leave-dialog').showModal();});
 }
+async function confirmUpdateInstall(){const epoch=ownerEpoch;return await confirmDraftExit('업데이트 설치 전 작성 중인 메모를 저장해 주세요. 돌아가서 저장하거나, 저장하지 않은 메모를 버리고 설치를 진행할 수 있어요.')&&epoch===ownerEpoch&&!hasUnsavedDrafts();}
 async function windowAction(action){if(!bridge?.windowAction)return;const epoch=ownerEpoch;if(action==='close'&&environment?.closeToTray!==true&&(!await confirmDraftExit('아직 저장하지 않은 메모가 있어요. 돌아가서 저장하거나, 메모를 버리고 창을 닫을 수 있어요.')||epoch!==ownerEpoch))return;try{await bridge.windowAction(action);}catch{toast('창 상태를 변경하지 못했어요.');}}
 function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,5500);}
 function errorText(result){const code=result?.code||result?.error?.code;return ({
@@ -120,7 +122,20 @@ function renderDownloads(){preserveFocus(()=>{$('download-list').innerHTML=INSTA
 }
 function systemName(){return environment?`${({win32:'Windows',darwin:'macOS',linux:'Linux'})[environment.platform]||environment.platform} · ${environment.arch}`:'브라우저 미리보기';}
 function renderSettings(){renderPersonalization();$('density').value=prefs.density;document.documentElement.classList.toggle('compact',prefs.density==='compact');$('platform-version').textContent=environment?`v${environment.version} · ${systemName()}`:'화면 미리보기';$('diagnostics').innerHTML=`<dt>플랫폼 화면</dt><dd>${bridge?'앱에 포함된 로컬 화면':'브라우저 미리보기'}</dd><dt>SYNK ID</dt><dd>${auth.signedIn?'로그인됨':auth.configured?'로그인 가능':'연결 준비 중'}</dd><dt>배포</dt><dd>${environment?.mode==='release'?'정식 배포':'개발 미리보기'}</dd><dt>설치·실행</dt><dd>${bridge?'독립 클라이언트':'PC 앱에서 이용'}</dd>${allowed('pulse')?'<dt>PULSE 이전 초안</dt><dd><button class="text-link" data-pulse-legacy="open">이 PC에 저장한 요청 초안 보기</button></dd>':''}`;}
-function renderAuth(){const signedIn=auth.signedIn,signing=auth.status==='signing-in'||auth.status==='restoring',retryable=!!bridge&&auth.configured&&!signedIn&&!signing&&auth.status==='error'&&auth.error?.retryable===true&&typeof bridge.accountRequest==='function',name=auth.account?.display_name||'SYNK 회원';$('account-label').textContent=signedIn?name:signing?'로그인 연결 중':'SYNK ID 로그인';$('account-title').textContent=signedIn?`${name} 님`:signing?'SYNK ID 연결 중':'SYNK에 로그인';$('account-description').textContent=signedIn?'같은 SYNK ID를 사용하며 앱별 권한은 따로 적용됩니다.':retryable?'저장된 연결을 다시 확인하거나, 새로 로그인할 수 있어요.':'하나의 계정으로 각자의 SYNK 공간을 연결하세요.';let message=signedIn?'로그인되어 있어요. 각 앱의 접근 권한은 따로 적용됩니다.':!bridge?'로그인은 SYNK Platform PC 앱에서 시작하세요.':!auth.configured?'SYNK ID 서비스 연결을 준비 중입니다. 연결 설정이 완료되면 여기서 로그인할 수 있어요.':signing?'기본 브라우저에서 로그인을 마쳐 주세요.':'기본 브라우저에서 안전하게 로그인합니다.';if(auth.error)message+='\n'+(auth.error.message||'로그인을 완료하지 못했어요. 다시 시도해 주세요.');$('account-state').textContent=message;$('account-retry').hidden=!retryable;$('account-retry').disabled=accountRetryPending;$('sign-in').textContent=retryable?'새로 로그인':'로그인';$('sign-in').hidden=signedIn||signing;$('sign-in').disabled=!bridge||!auth.configured||accountRetryPending;$('sign-out').hidden=!signedIn;$('cancel-sign-in').hidden=auth.status!=='signing-in';$('settings-account').textContent=signedIn?`${name} 님으로 로그인됨`:auth.configured?'로그인하고 앱을 연결하세요.':'SYNK ID 서비스 연결 준비 중';renderSettings();}
+function renderAuth(){
+  const signedIn=auth.signedIn,signing=['signing-in','restoring','signing-out'].includes(auth.status),retryable=!!bridge&&auth.configured&&!signedIn&&!signing&&auth.status==='error'&&auth.error?.retryable===true&&typeof bridge.accountRequest==='function',name=auth.account?.display_name||'SYNK 회원';
+  $('account-button').dataset.signedIn=String(!!signedIn);$('account-button').setAttribute('aria-label',signedIn?'SYNK ID 계정 관리':'SYNK ID 로그인');
+  $('account-label').textContent=signedIn?name:signing?'로그인 연결 중':'로그인';
+  $('account-title').textContent=signedIn?`${name} 님`:signing?'SYNK ID 연결 중':'SYNK 시작하기';
+  $('account-description').textContent=signedIn?'같은 SYNK ID를 사용하며 앱별 권한은 따로 적용됩니다.':retryable?'저장된 연결을 다시 확인하거나, 새로 로그인할 수 있어요.':'처음이라면 회원가입, 계정이 있다면 로그인해 주세요.';
+  let message=signedIn?'로그인되어 있어요. 각 앱의 접근 권한은 따로 적용됩니다.':!bridge?'회원가입과 로그인은 SYNK Platform PC 앱에서 시작하세요.':!auth.configured?'SYNK ID 서비스 연결을 준비 중입니다. 연결 설정이 완료되면 여기서 로그인할 수 있어요.':signing?'기본 브라우저에서 로그인을 마쳐 주세요.':signUpOpened?'회원가입 페이지를 열었어요. 가입을 마쳤다면 아래 로그인 버튼을 눌러 주세요.':'기본 브라우저에서 회원가입하거나 로그인할 수 있어요.';
+  if(auth.error)message+='\n'+(auth.error.message||'로그인을 완료하지 못했어요. 다시 시도해 주세요.');$('account-state').textContent=message;
+  for(const id of ['signup-button','sign-up']){$(id).hidden=!!signedIn;$(id).disabled=typeof bridge?.authSignUp!=='function'||signing||signUpPending||accountRetryPending;$(id).textContent=signUpPending?'여는 중…':'회원가입';}
+  $('signup-help').hidden=!!signedIn||signing;
+  $('account-retry').hidden=!retryable;$('account-retry').disabled=accountRetryPending||signUpPending;
+  $('sign-in').textContent=retryable?'새로 로그인':'로그인';$('sign-in').hidden=signedIn||signing;$('sign-in').disabled=!bridge||!auth.configured||accountRetryPending||signUpPending;
+  $('sign-out').hidden=!signedIn;$('cancel-sign-in').hidden=auth.status!=='signing-in';$('settings-account').textContent=signedIn?`${name} 님으로 로그인됨`:auth.configured?'로그인하고 앱을 연결하세요.':'SYNK ID 서비스 연결 준비 중';renderSettings();
+}
 function readRoute(){return {view,appId:prefs.selected,detail,benefitId:selectedBenefit,scroll:$('main').scrollTop,pageScroll:globalThis.scrollY||0};}
 function showView(next,{restore=false,...route}={}){if(!['home','library','benefits','downloads','settings'].includes(next))return;if(convenience&&!restore){convenience.navigate({view:next,appId:prefs.selected,...route});return;}view=next;if(allowed(route.appId))prefs.selected=route.appId;detail=route.detail||'overview';selectedBenefit=view==='benefits'?route.benefitId||null:null;for(const name of ['home','library','benefits','downloads','settings'])$('view-'+name).hidden=name!==view;document.querySelectorAll('[data-view]').forEach(el=>{el.classList.toggle('active',el.dataset.view===view);if(el.dataset.view===view)el.setAttribute('aria-current','page');else el.removeAttribute('aria-current');});if(view==='home'){memberHome.render();$('member-home-title').focus({preventScroll:true});}if(view==='library'){renderLibrary();renderSelected();$('main').focus({preventScroll:true});}if(view==='downloads')renderDownloads();if(view==='settings')renderSettings();if(view==='benefits'){renderBenefits();$(selectedBenefit?'benefit-title':'benefits-title').focus({preventScroll:true});}document.documentElement.dataset.view=view;$('main').scrollTop=route.scroll||0;globalThis.scrollTo?.(0,route.pageScroll||0);}
 function canPreviewBenefit(id){return typeof bridge?.openProductPreview==='function'&&benefitPreviewAvailable(id,{native:!!bridge,appIds:library.appIds,productPreviewsAvailable:environment?.productPreviewsAvailable});}
@@ -139,7 +154,7 @@ function selectApp(id,{legacy=false}={}){if(!allowed(id))return;if(id==='pulse'&
 function setClients(snapshot){if(!Array.isArray(snapshot))return;const previous=clients;clients=clientRows(snapshot,{native:!!bridge});convenience?.clientsChanged(previous,clients);renderLibrary();renderActions();renderDownloads();if(detail==='info')renderDetails();convenience?.refresh();}
 async function loadEnvironment(){
   const revision=++environmentRevision,snapshot=await bridge.getEnvironment();
-  if(revision===environmentRevision){environment=snapshot;setAuth(auth,{environmentOnly:true});$('runtime-label').textContent=`${systemName()} · ${environment?.mode==='release'?'SYNK Platform':'개발 미리보기'}`;}
+  if(revision===environmentRevision){environment=snapshot;setAuth(auth,{environmentOnly:true});platformUpdates?.refresh();$('runtime-label').textContent=`${systemName()} · ${environment?.mode==='release'?'SYNK Platform':'개발 미리보기'}`;}
   return snapshot;
 }
 async function refresh(){
@@ -189,11 +204,20 @@ function moveFavorite(id,direction){if(!allowed(id)||![-1,1].includes(direction)
 $('favorite').addEventListener('click',()=>toggleFavorite(prefs.selected));
 $('download-shortcut').addEventListener('click',()=>showView('downloads'));$('footer-settings').addEventListener('click',()=>showView('settings'));
 for(const id of ['account-button','settings-login','library-account'])$(id).addEventListener('click',()=>$('account-dialog').showModal());
+async function openSignUp(){
+  if(typeof bridge?.authSignUp!=='function'||auth.signedIn||['restoring','signing-in','signing-out'].includes(auth.status)||signUpPending||accountRetryPending)return;
+  if(!$('account-dialog').open)$('account-dialog').showModal();
+  signUpPending=true;renderAuth();const revision=authRevision;
+  try{const result=await bridge.authSignUp();if(revision!==authRevision)return;if(result?.ok===true)signUpOpened=true;else toast('회원가입 페이지를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.');}
+  catch{if(revision===authRevision)toast('회원가입 페이지를 열지 못했어요. 잠시 뒤 다시 눌러 주세요.');}
+  finally{signUpPending=false;renderAuth();}
+}
+for(const id of ['signup-button','sign-up'])$(id).addEventListener('click',openSignUp);
 $('density').addEventListener('change',event=>{prefs.density=event.target.value;savePrefs();renderSettings();});
 $('reset-preferences').addEventListener('click',()=>{prefs=parsePreferences(null);reconcileSelection();filter='all';search='';$('search').value='';savePrefs();renderLibrary();renderSelected();renderSettings();toast('이 기기의 보기 설정을 초기화했어요.');});
 $('content-go-world').addEventListener('click',()=>{if(!allowed('world'))return;$('content-dialog').close();selectApp('world');$('primary-action').focus();});
 $('sign-in').addEventListener('click',async()=>{
-  if(!bridge||!auth.configured||auth.signedIn||auth.status==='signing-in'||accountRetryPending)return;
+  if(!bridge||!auth.configured||auth.signedIn||['restoring','signing-in','signing-out'].includes(auth.status)||accountRetryPending||signUpPending)return;
   setAuth({...auth,status:'signing-in',signedIn:false,account:null,library:{status:'unavailable',appIds:[]}});const revision=authRevision;
   try{const result=await bridge.authSignIn();if(revision!==authRevision)return;await refreshAuth();if(result?.ok===false&&!auth.signedIn)toast(errorText(result));}
   catch{if(revision===authRevision)setAuth({status:'error',configured:true,signedIn:false,error:{message:'로그인을 시작하지 못했어요. 다시 시도해 주세요.'}});}
@@ -248,6 +272,7 @@ $('personal-skip').addEventListener('click',()=>{$('personal-dialog').close();})
 $('personal-clear').addEventListener('click',()=>{if(!library.owner)return;try{personal.clear();sessionPurpose=null;applyPersonalization();renderLibrary();$('personal-dialog').close();toast('이 기기의 맞춤 설정을 삭제했어요. 기본 순서로 돌아왔습니다.');}catch(error){$('personal-message').textContent=error.message;}});
 function windowState(state){$('maximize').setAttribute('aria-label',state?.maximized?'창 크기 복원':'최대화');$('maximize').dataset.maximized=String(!!state?.maximized);}
 convenience=mountConvenience({bridge,storage:localStore,apps,getSnapshot:()=>({owner:library.owner,appIds:library.appIds,prefs:effectivePrefs(),environment,auth,clients}),readRoute,applyRoute:route=>showView(route.view,{...route,restore:true}),launchApp:launchFromHome,onToast:toast,onFavorite:toggleFavorite,onMoveFavorite:moveFavorite,onLibrarySearch:()=>{showView('library');openLibrarySearch();},getNotes:query=>[...(memberHome.searchRecords?.(query)||[]).map(row=>({...row,source:'device'})),...(continuity?.searchNotes?.(query)||[]).map(row=>({...row,source:'account'}))],openNote:note=>note.source==='account'?continuity?.openNote?.(note.id):memberHome.focusRecord?.(note.id),onDesktopPreferences:snapshot=>{if(environment)environment.closeToTray=snapshot.preferences?.closeToTray===true&&snapshot.capabilities?.tray===true;}});
+platformUpdates=mountPlatformUpdates({bridge,document,getEnvironment:()=>environment,confirmInstall:confirmUpdateInstall});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){void memberHome.flushDraft?.();void continuity?.flushDraft?.();}});
 async function init(){
   applyPersonalization();reconcileSelection();continuity?.render();renderLibrary();renderSelected();renderDownloads();renderAuth();renderBenefits();showView('home',{restore:true});convenience.refresh();

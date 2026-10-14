@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "phases": [
+    "draft-kept",
+    "cancel-preserved-window",
+    "will-quit-1",
+    "verified-handoff",
+    "will-quit-2",
+    "normal-final-quit"
+  ],
+  "prompts": 2,
+  "quits": 2,
+  "launched": 1
+}

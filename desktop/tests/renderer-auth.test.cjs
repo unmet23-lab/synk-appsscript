@@ -38,11 +38,11 @@ async function fixture({initialAuth=signedOut,initialClients=[waitingClient],bri
     onAuthChanged:callback=>subscribe('auth',callback),onClientsChanged:callback=>subscribe('clients',callback),onClientProgress:callback=>subscribe('progress',callback),...bridgeOverrides};
   const owner=initialAuth.signedIn?initialAuth.account?.synk_user_id:null;
   const storage=new Map([[viewKey(owner),initialPreferences],[personalKey(owner),personalPreferences],...storageEntries]);
-  const modules={};for(const file of ['state','personalization','library','benefits','member-home','pulse-client'])modules[file]=await import('../renderer/'+file+'.mjs');
+  const modules={};for(const file of ['state','personalization','library','benefits','member-home','pulse-client','update-view'])modules[file]=await import('../renderer/'+file+'.mjs');
   // This auth fixture owns no layout. Navigation still invokes the real launcher's
   // applyRoute; the separately exercised convenience UI is not a second fake DOM.
   modules.convenience={mountConvenience:options=>({navigate:route=>options.applyRoute(route),refresh(){},capture(){},clientsChanged(){}})};
-  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-home|platform-continuity|convenience|pulse-client)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
+  const source=fs.readFileSync(path.join(__dirname,'../renderer/launcher.mjs'),'utf8').replace(/^import \{([^}]+)\} from '\.\/(state|personalization|library|benefits|member-home|platform-continuity|convenience|pulse-client|update-view)\.mjs';/gm,(_all,names,file)=>'const {'+names+'}=globalThis.rendererModules["'+file+'"];');
   // Execute the shipped continuity bundle in the same realm as the renderer.
   // Only its ESM export is adapted; mount/projection/dispatch remain real code.
   const continuity=fs.readFileSync(path.join(__dirname,'../renderer/platform-continuity.mjs'),'utf8').replace(/export \{\s*mountPlatformLibrary\s*\};\s*$/, 'globalThis.rendererModules["platform-continuity"]={mountPlatformLibrary};');
@@ -75,7 +75,7 @@ for(const id of ['path'])test(id+' native preview invokes only its dedicated bri
   const calls=[];
   const f=await fixture({initialAuth:account(id+'-member',[id]),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:[id]}),openProductPreview:async value=>{calls.push(value);return {ok:true};},launch:async()=>assert.fail('preview must not use installer launch')}});
   assert.equal(await f.ready,'true');assert.deepEqual(f.ids(),[id]);assert.equal(f.element('primary-action').dataset.action,'product-preview');assert.equal(f.element('primary-action').disabled,false);
-  assert.match(f.element('detail-content').innerHTML,/로컬 MVP/);assert.doesNotMatch(f.element('detail-content').innerHTML,/사내 대화/);
+  assert.match(f.element('detail-content').innerHTML,/공개 MVP/);assert.doesNotMatch(f.element('detail-content').innerHTML,/사내 대화/);
   await f.click('primary-action');assert.deepEqual(calls,[id]);assert.match(f.element('toast').textContent,/별도 창/);
   f.emit('auth',account('unrelated',['world']));await f.action({command:'product-preview',client:id});assert.deepEqual(calls,[id]);
 });
@@ -85,6 +85,31 @@ test('product preview stays unavailable without source capability and ignores la
   const f=await fixture({initialAuth:account('member',['path']),bridgeOverrides:{getEnvironment:async()=>({...environment,productPreviewsAvailable:['path']}),openProductPreview:()=>pending.promise}});await f.ready;
   const opening=f.click('primary-action');f.emit('auth',account('new-member',['world']));pending.resolve({ok:true});await opening;
   assert.equal(f.element('toast').hidden,true);assert.equal(f.element('breadcrumb-app').textContent,'SYNK WORLD');
+});
+
+test('both signup buttons open registration and preserve guest state without starting login',async()=>{
+  let opens=0;const f=await fixture({bridgeOverrides:{authSignUp:async()=>{opens++;return {ok:true};},authSignIn:async()=>assert.fail('signup must not authenticate'),authSignOut:async()=>assert.fail('signup must not sign out')}});await f.ready;
+  const storage=JSON.stringify([...f.storage]);assert.equal(f.element('account-label').textContent,'로그인');
+  for(const id of ['signup-button','sign-up']){assert.equal(f.element(id).hidden,false);assert.equal(f.element(id).disabled,false);assert.equal(f.element(id).textContent,'회원가입');await f.click(id);}
+  assert.equal(opens,2);assert.equal(f.element('account-dialog').open,true);assert.match(f.element('account-state').textContent,/가입을 마쳤다면 아래 로그인/);assert.equal(f.element('sign-in').hidden,false);assert.equal(f.element('sign-in').disabled,false);assert.deepEqual(f.ids(),['world']);assert.equal(JSON.stringify([...f.storage]),storage);
+});
+test('signup blocks double opens and concurrent login, reports failures, and ignores late account changes',async()=>{
+  const pending=deferred();let opens=0,logins=0;const f=await fixture({bridgeOverrides:{authSignUp:()=>{opens++;return pending.promise;},authSignIn:async()=>{logins++;}}});await f.ready;
+  const opening=f.click('signup-button');assert.equal(f.element('sign-up').disabled,true);assert.equal(f.element('sign-in').disabled,true);await f.click('sign-up');await f.click('sign-in');assert.equal(opens,1);assert.equal(logins,0);
+  pending.resolve({ok:false});await opening;assert.match(f.element('toast').textContent,/회원가입 페이지를 열지 못했어요/);assert.equal(f.element('sign-up').disabled,false);
+  const late=deferred(),g=await fixture({bridgeOverrides:{authSignUp:()=>late.promise}});await g.ready;const request=g.click('sign-up');g.emit('auth',signedIn);late.resolve({ok:true});await request;
+  assert.equal(g.element('signup-button').hidden,true);assert.equal(g.element('sign-up').hidden,true);assert.equal(g.element('signup-help').hidden,true);assert.equal(g.element('account-label').textContent,'합성 student-a');assert.doesNotMatch(g.element('account-state').textContent,/회원가입 페이지를 열었어요/);
+});
+test('signup controls stay unavailable while sessions change or the bridge is unavailable',async()=>{
+  for(const status of ['restoring','signing-in','signing-out']){let calls=0;const f=await fixture({initialAuth:{...signedOut,status},bridgeOverrides:{authSignUp:async()=>{calls++;return {ok:true};}}});await f.ready;for(const id of ['signup-button','sign-up']){assert.equal(f.element(id).disabled,true);await f.click(id);}assert.equal(calls,0);}
+  for(const native of [true,false]){const f=await fixture({native});await f.ready;assert.equal(f.element('sign-up').disabled,true);await f.click('sign-up');}
+});
+
+test('launcher mounts shared update controls and explicitly opens a ready installer without auth calls',async()=>{
+  let installs=0;const status={ok:true,state:'ready',currentVersion:'0.4.4',latestVersion:'0.4.5'};
+  const f=await fixture({bridgeOverrides:{updateStatus:async()=>status,checkForUpdate:async()=>status,downloadUpdate:async()=>status,installUpdate:async()=>{installs++;return {...status,state:'opening'};},onUpdateChanged:()=>()=>{},authSignIn:async()=>assert.fail('update must not authenticate'),authSignOut:async()=>assert.fail('update must not sign out')}});await f.ready;
+  assert.equal(f.element('platform-update-settings-install').hidden,false);assert.equal(f.element('platform-update-downloads-install').textContent,'앱 종료 후 설치 파일 열기');
+  await f.click('platform-update-settings-install');assert.equal(installs,1);assert.equal(f.element('platform-update-downloads').dataset.updateState,'opening');assert.deepEqual(f.ids(),['world']);
 });
 
 test('signed out exposes only public WORLD, never the complete catalog',async()=>{

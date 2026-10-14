@@ -65,7 +65,7 @@ test('preload forwards exactly the fixed public IDs and refuses URL or prototype
   assert.equal(calls.length,4);
 });
 
-async function mainFixture({clientId='platform',mode='development'}={}){
+async function mainFixture({clientId='platform',mode='development',authState={signedIn:false,status:'signed-out'},externalFailure=false}={}){
   const entry=clientId==='platform'?PLATFORM_ENTRY:DEV_URLS[clientId],runtime={clientId,mode,entry,auth:null};
   const app=new EventEmitter(),handlers=new Map(),calls=[],frame={url:entry};let window,accountCalls=0;
   Object.assign(app,{isPackaged:true,enableSandbox(){},setName(){},setPath(){},getPath:name=>name==='home'?'C:\\Users\\synthetic':'/synthetic',getAppPath:()=>'/synthetic/app',getVersion:()=> '0.4.0',setAppUserModelId(){},getLoginItemSettings:()=>({openAtLogin:false}),requestSingleInstanceLock:()=>true,whenReady:()=>Promise.resolve()});
@@ -74,10 +74,10 @@ async function mainFixture({clientId='platform',mode='development'}={}){
   const ownSession={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onHeadersReceived(){}},removeAllListeners(){},on(){},protocol:{handle(){}}};
   const noop=()=>({});
   const stubs={
-    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle:(name,handler)=>handlers.set(name,handler)},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:async url=>{calls.push(url);}},dialog:{},safeStorage:{isEncryptionAvailable:()=>false},screen:{getAllDisplays:()=>[{workArea:{x:0,y:0,width:1920,height:1080}}],getPrimaryDisplay:()=>({workArea:{x:0,y:0,width:1920,height:1080}})},globalShortcut:{register:()=>false,unregister(){}},clipboard:{writeText(){throw Error('No clipboard operation allowed');}}},
+    electron:{app,BrowserWindow:Window,ipcMain:{removeHandler(){},handle:(name,handler)=>handlers.set(name,handler)},session:{fromPartition:()=>ownSession},protocol:{registerSchemesAsPrivileged(){}},Menu:{setApplicationMenu(){}},shell:{openExternal:async url=>{calls.push(url);if(externalFailure)throw Error('synthetic browser failure');}},dialog:{},safeStorage:{isEncryptionAvailable:()=>false},screen:{getAllDisplays:()=>[{workArea:{x:0,y:0,width:1920,height:1080}}],getPrimaryDisplay:()=>({workArea:{x:0,y:0,width:1920,height:1080}})},globalShortcut:{register:()=>false,unregister(){}},clipboard:{writeText(){throw Error('No clipboard operation allowed');}}},
     'node:fs':{readFileSync:()=>JSON.stringify(runtime)},'node:child_process':{spawn(){throw Error('No process allowed');}},
     './auth-config.cjs':{configuration:()=>null},'./auth-config-path.cjs':{resolveAuthConfigPath:()=>null},'./auth-store.cjs':{createTokenStore:noop},
-    './auth-service.cjs':{createAuthService:()=>({initialize:async()=>{},status:()=>({signedIn:false,status:'signed-out'}),accountRequest:()=>{accountCalls++;throw Error('No account request allowed');}}),publicError:noop},
+    './auth-service.cjs':{createAuthService:()=>({initialize:async()=>{},status:()=>authState,accountRequest:()=>{accountCalls++;throw Error('No account request allowed');}}),publicError:noop},
     './client-lifecycle.cjs':{createClientLifecycle:()=>({getClients:async()=>[]})},'./teacher-preview.cjs':{createTeacherPreview:()=>({available:()=>false})},'./product-preview.cjs':{createProductPreviews:()=>({available:()=>[]})},
     './company-requests.cjs':{createCompanyRequests:()=>()=>{accountCalls++;throw Error('No company request allowed');}},'./downloads.cjs':{createDownloadHandler:noop},
     './native-content.cjs':{createNativeContent:noop},'./connection-content.cjs':{createConnectionContent:noop},'./connection-recovery.cjs':{createConnectionRecovery:()=>({connect:async()=>{},dispose(){}})},
@@ -87,6 +87,26 @@ async function mainFixture({clientId='platform',mode='development'}={}){
   await new Promise(resolve=>setImmediate(resolve));
   return {handlers,calls,frame,contents,window,event:{sender:contents,senderFrame:frame},get accountCalls(){return accountCalls;}};
 }
+
+test('signup preload and main open only the fixed registration URL without account operations',async()=>{
+  let bridge;const calls=[];
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../src/preload.cjs'),'utf8'),{require:()=>({contextBridge:{exposeInMainWorld:(_name,value)=>{bridge=value;}},ipcRenderer:{invoke:async(...args)=>{calls.push(args);return {ok:true};}}})});
+  await bridge.authSignUp('https://untrusted.invalid/',{token:'synthetic'});assert.deepEqual(calls,[['synk:auth-sign-up']]);
+  for(const mode of ['development','release']){
+    const f=await mainFixture({mode}),result=await f.handlers.get('synk:auth-sign-up')(f.event,'https://untrusted.invalid/');
+    assert.equal(result.ok,true);assert.deepEqual(f.calls,['https://synk.im/id/?view=signup']);assert.equal(f.accountCalls,0);
+  }
+  const failure=await mainFixture({externalFailure:true});assert.equal((await failure.handlers.get('synk:auth-sign-up')(failure.event)).code,'AUTH_SIGNUP_OPEN_FAILED');
+});
+test('signup IPC refuses connected and changing sessions, sibling clients and untrusted senders',async()=>{
+  for(const authState of [{signedIn:true,status:'signed-in'},...['signed-in','restoring','signing-in','signing-out'].map(status=>({signedIn:false,status}))]){
+    const f=await mainFixture({authState});assert.equal((await f.handlers.get('synk:auth-sign-up')(f.event)).code,'AUTH_SIGNUP_UNAVAILABLE');assert.equal(f.calls.length,0);
+  }
+  for(const clientId of ['world','messenger']){const f=await mainFixture({clientId});assert.equal((await f.handlers.get('synk:auth-sign-up')(f.event)).code,'LAUNCHER_ONLY');assert.equal(f.calls.length,0);}
+  const f=await mainFixture(),open=f.handlers.get('synk:auth-sign-up');
+  for(const event of [{...f.event,sender:{}},{...f.event,senderFrame:{url:PLATFORM_ENTRY}},{...f.event,senderFrame:null}])await assert.rejects(open(event),/UNTRUSTED_SENDER/);
+  f.frame.url='https://synk.im/id/';await assert.rejects(open(f.event),/UNTRUSTED_SENDER/);assert.equal(f.calls.length,0);
+});
 
 test('packaged development Platform wires the real public capability without account or company requests',async()=>{
   const f=await mainFixture(),environment=await f.handlers.get('synk:environment')(f.event);

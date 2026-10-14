@@ -1,0 +1,372 @@
+{
+  "ok": true,
+  "scope": "real built ko/en homepage in isolated hidden Electron; synthetic manifest responses; external requests and downloads prohibited",
+  "checks": [
+    {
+      "name": "ko-current-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-current-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "ko-current-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-current-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-current-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-current-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-new-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-new-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "ko-new-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.5",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-new-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-new-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-new-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "mobile-windows-dialog-fits",
+      "ok": true
+    },
+    {
+      "name": "ko-invalid-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-invalid-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "ko-invalid-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-invalid-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-invalid-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-invalid-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-error-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-error-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "ko-error-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-error-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-error-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-error-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-stale-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-stale-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "ko-stale-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-stale-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-stale-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-stale-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-current-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-current-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "en-current-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-current-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-current-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-current-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-new-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-new-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "en-new-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.5",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.5/SYNK-Platform-Preview-0.4.5-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-new-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-new-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-new-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-invalid-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-invalid-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "en-invalid-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-invalid-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-invalid-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-invalid-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-error-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-error-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "en-error-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-error-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-error-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-error-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-stale-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-stale-automatic-fixed-feed",
+      "ok": true
+    },
+    {
+      "name": "en-stale-three-downloads-and-template",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-stale-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-stale-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-stale-mac-x64-retry",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "network": [],
+  "downloads": [],
+  "feedRequests": [
+    {
+      "scenario": "ko-current",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "ko-new",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "ko-invalid",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "ko-error",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "ko-stale",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "en-current",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "en-new",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "en-invalid",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "en-error",
+      "path": "/desktop/releases/preview.json"
+    },
+    {
+      "scenario": "en-stale",
+      "path": "/desktop/releases/preview.json"
+    }
+  ],
+  "sources": {
+    "/index.html": "926d3a57de4d0e56316ea48107322e63016bc2ae71da3bfdcce8480c398910bd",
+    "/en/index.html": "40a96eec78de1738f2df266f6437916fb2a5bd88e643fc8b4ffabfeffeecb48c",
+    "/assets/v10/site.css": "49fad859bede3f24aec24044313ce3a38de69db123bdc57bb45f0be93b89e66d",
+    "/assets/v10/site.js": "c48bfc2dbcd5e8f25f6030103e41430b3b6637519097c66a9a3bce203f1f4c77",
+    "/desktop/releases/client.js": "b41a73f06e572184bcc865c2573643339ee2a51b4511e9aef686c817db9c6502"
+  }
+}

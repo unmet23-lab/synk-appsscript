@@ -1,0 +1,18 @@
+{
+  "ok": true,
+  "payloadFilesVerified": 75,
+  "installedAsarSHA256": "483c4354e3d8a77c1e7f9e60e3483ac3fba47dc74040d145057bf769f29f2059",
+  "update": {
+    "ok": true,
+    "state": "current",
+    "currentVersion": "0.4.4",
+    "currentBuildId": "20261014.1",
+    "latestVersion": "0.4.4",
+    "latestBuildId": "20261014.1",
+    "progress": 0,
+    "code": null
+  },
+  "profileOperations": 0,
+  "downloadOperations": 0,
+  "installOperations": 0
+}

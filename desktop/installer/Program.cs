@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Serialization.Json;
 using System.Security.Principal;
@@ -12,7 +13,7 @@ namespace Synk.SignalInstaller
     static class Program
     {
         [STAThread]
-        static int Main()
+        static int Main(string[] args)
         {
             string cache = null;
             try
@@ -21,6 +22,7 @@ namespace Synk.SignalInstaller
                 InstallSpec spec;
                 using (Stream stream = assembly.GetManifestResourceStream("install.json"))
                     spec = (InstallSpec)new DataContractJsonSerializer(typeof(InstallSpec)).ReadObject(stream);
+                WaitForUpdatingApplication(args, spec.ExecutableName);
                 SignalProduct product = SignalProduct.ById(spec.Product);
                 // 제품마다 설치 화면 하나만(플랫폼 안에서 WORLD와 워크스페이스 설치 창을 함께 열 수 있다)
                 bool created;
@@ -66,6 +68,30 @@ namespace Synk.SignalInstaller
             }
             catch (Exception error) { MessageBox.Show("설치 화면을 열 수 없습니다.\n" + error.Message, "SYNK 설치", MessageBoxButton.OK, MessageBoxImage.Error); return 1; }
             finally { if (cache != null) try { Directory.Delete(cache, true); } catch (IOException) { } catch (UnauthorizedAccessException) { } }
+        }
+
+        // Called only after the running app has accepted its normal quit guard.
+        // Never kills the app, skips installation checks, or starts an installation.
+        static void WaitForUpdatingApplication(string[] args, string executableName)
+        {
+            if (args.Length == 0) return;
+            int pid;
+            if (args.Length != 1 || !args[0].StartsWith("--wait-pid=", StringComparison.Ordinal) ||
+                !Int32.TryParse(args[0].Substring(11), out pid) || pid <= 0 || pid == Process.GetCurrentProcess().Id)
+                throw new ArgumentException("설치 실행 정보를 확인할 수 없습니다.");
+            Process previous;
+            try { previous = Process.GetProcessById(pid); }
+            catch (ArgumentException) { return; }
+            using (previous)
+            {
+                string previousName;
+                try { previousName = previous.ProcessName; }
+                catch (InvalidOperationException) { if (previous.HasExited) return; throw; }
+                if (!String.Equals(previousName, Path.GetFileNameWithoutExtension(executableName), StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("업데이트할 SYNK 앱을 확인할 수 없습니다.");
+                if (!previous.WaitForExit(60000))
+                    throw new InvalidOperationException("SYNK가 아직 실행 중입니다. 작업을 저장하고 앱을 종료한 뒤 설치 파일을 다시 열어 주세요.");
+            }
         }
 
         // 준비 화면에 보일 설치 위치. 읽기 전용 확인만 하고, 확인이 막히면(예: SYNK 실행 중) 기본 위치를 보인다.

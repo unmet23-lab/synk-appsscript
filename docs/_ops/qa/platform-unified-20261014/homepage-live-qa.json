@@ -1,0 +1,238 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T03:24:07.967Z",
+  "scope": "actual synk.im GET responses in isolated Electron, modal callbacks invoked directly without clicking installer anchors; no account or installer requests",
+  "version": "0.4.4",
+  "buildId": "20261014.1",
+  "checks": [
+    {
+      "name": "ko-baked-version",
+      "ok": true
+    },
+    {
+      "name": "ko-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "ko-displayed-version",
+      "ok": true
+    },
+    {
+      "name": "ko-three-links-match-live-manifest",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "ko-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "ko-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-baked-version",
+      "ok": true
+    },
+    {
+      "name": "en-dialogs-ready",
+      "ok": true
+    },
+    {
+      "name": "en-displayed-version",
+      "ok": true
+    },
+    {
+      "name": "en-three-links-match-live-manifest",
+      "ok": true,
+      "detail": {
+        "version": "0.4.4",
+        "win": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe",
+        "arm": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-arm64.dmg",
+        "x64": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-mac-x64.dmg",
+        "template": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.4/SYNK-Platform-Preview-0.4.4-Signal-win-x64.exe"
+      }
+    },
+    {
+      "name": "en-windows-retry",
+      "ok": true
+    },
+    {
+      "name": "en-mac-arm64-retry",
+      "ok": true
+    },
+    {
+      "name": "en-mac-x64-retry",
+      "ok": true
+    },
+    {
+      "name": "both-pages-read-live-common-feed",
+      "ok": true
+    }
+  ],
+  "errors": [],
+  "blocked": [],
+  "downloads": [],
+  "requests": [
+    {
+      "url": "https://synk.im/",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/suit-v10.woff2",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/site.css?v=49fad859bede",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/site.js?v=c48bfc2dbcd5",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/social-conversion.js?v=07c3d1bb5c11",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/opt/brand-synk-w144.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/brand-synk-paper.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/client.js?v=b41a73f06e57",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/korean-eaves-day-20260927.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/eaves-roof-land.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/dm-mono-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/inter-tight-bold-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/inter-tight-latin.woff2",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/r/v10-shot-platform-w800.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/opt/brand-lab-w240.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/r/index-lab-object-cut-20260930-w480.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/opt/brand-shift-w256.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/v10/r/index-shift-work-cut-20260930-w480.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/opt/brand-pulse-w272.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/assets/opt/brand-path-spaced-20260919-w208.webp",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/en/",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "method": "GET"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "method": "GET"
+    }
+  ],
+  "sources": [
+    {
+      "url": "https://synk.im/",
+      "status": 200,
+      "bytes": 37275,
+      "sha256": "f50deecb2843cc36faf574a6902e0cc1cc32bec1159245cd6eeb74eed0f61447"
+    },
+    {
+      "url": "https://synk.im/assets/v10/site.js?v=c48bfc2dbcd5",
+      "status": 200,
+      "bytes": 30715,
+      "sha256": "c48bfc2dbcd5e8f25f6030103e41430b3b6637519097c66a9a3bce203f1f4c77"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/client.js?v=b41a73f06e57",
+      "status": 200,
+      "bytes": 3883,
+      "sha256": "b41a73f06e572184bcc865c2573643339ee2a51b4511e9aef686c817db9c6502"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "status": 200,
+      "bytes": 1535,
+      "sha256": "3b504d93e8211781e8bd51abea091ed96aa406d5111b502c9a4106d6fc7e94a2"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "status": 200,
+      "bytes": 1535,
+      "sha256": "3b504d93e8211781e8bd51abea091ed96aa406d5111b502c9a4106d6fc7e94a2"
+    },
+    {
+      "url": "https://synk.im/en/",
+      "status": 200,
+      "bytes": 35618,
+      "sha256": "15c96a6b1b01a23e6fb6cb3bdd8c646ae3def93997f609ff6b985eb2d1b2002f"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "status": 200,
+      "bytes": 1535,
+      "sha256": "3b504d93e8211781e8bd51abea091ed96aa406d5111b502c9a4106d6fc7e94a2"
+    },
+    {
+      "url": "https://synk.im/desktop/releases/preview.json",
+      "status": 200,
+      "bytes": 1535,
+      "sha256": "3b504d93e8211781e8bd51abea091ed96aa406d5111b502c9a4106d6fc7e94a2"
+    }
+  ]
+}

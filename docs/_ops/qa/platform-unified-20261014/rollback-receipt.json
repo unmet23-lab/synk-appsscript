@@ -1,0 +1,13 @@
+{
+    "ok":  true,
+    "schemaVersion":  1,
+    "createdAt":  "2026-10-14T03:27:35.0380461Z",
+    "archiveSHA256":  "2929bdc51c3cc530e80998c403e0117ca5b37ef08821f17e3ee6c9a56d044777",
+    "archiveBytes":  446455962,
+    "inventorySHA256":  "412f417bde23b2c8f84889a1f6fe76dc59be755bd68d10c968b21ec9538f12dc",
+    "payloadFiles":  77,
+    "payloadBytes":  674479937,
+    "registrationVerified":  true,
+    "installedFilesWritten":  0,
+    "profileOperations":  0
+}

@@ -1,0 +1,13 @@
+{
+  "ok": true,
+  "version": "0.4.4",
+  "fileVersion": "0.4.4.1",
+  "payloadFiles": 75,
+  "payloadBytes": 679202635.0,
+  "backendBytes": 400320854,
+  "backendSHA256": "928153b3fa303f9b8a9ede3d65fe72b61844dd05bbe9ac87a778367dbb1c15f2",
+  "installerSHA256": "625bb57b6aba4a1793531081e6199c7008cdad64b8282abd3d758f71bd01d046",
+  "minFreeBytes": 3221225472,
+  "assemblyExecuted": false,
+  "installedStateTouched": false
+}

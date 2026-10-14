@@ -1,5 +1,29 @@
 # SYNK 데스크톱 클라이언트
 
+## 2026-10-14 · 0.4.4부터 공통 릴리스와 플랫폼 업데이트
+
+**현재 운영 기준은 이 절과 [설치·업데이트 수명주기](LIFECYCLE.md#platform-update-044)다.** 홈페이지의 Windows x64·Mac Apple Silicon·Mac Intel 다운로드와 설치된 Platform의 업데이트는 고정 주소 `https://synk.im/desktop/releases/preview.json`에서 같은 릴리스를 선택한다. 이번 검증 대상은 **Preview 0.4.4 / build 20261014.1**이며, 세 설치파일은 하나의 동결 원문 `sourceHash`를 공유한다. OS별 설치파일과 ASAR의 해시는 각각 다르며 manifest에 별도로 기록한다.
+
+앱은 시작할 때 한 번, 실행 중에는 6시간마다 최신 버전을 확인한다. 다운로드·설치 준비 중에는 주기 확인으로 진행 중인 상태를 바꾸지 않는다. 설정과 설치·업데이트 화면에서 사용자가 **최신 확인 → 다운로드 → 설치 파일 열기**를 진행한다. Windows는 작성 중 작업의 보존·정상 종료 확인을 거친 뒤 앱이 종료되면 시그널 설치기를 열며, 실제 **설치하기**는 사용자가 누른다. Mac은 DMG를 열고 사용자가 앱을 종료한 뒤 Applications의 앱을 교체한다. 자동 다운로드·무인 설치나 Mac 자동 교체는 하지 않는다. 연결 실패 시 현재 앱은 계속 사용할 수 있다.
+
+**릴리스 절차는 원문 동결 → 세 대상 빌드와 QA → manifest 조립 → 공통 게시 도구 한 경로로 유지한다.** 현재 PC도 공개한 동일 설치파일로 갱신한다. 설치된 `app.asar`의 일부 파일을 PC에서 직접 패치하는 방식은 더 이상 사용하지 않는다. 공개된 버전의 파일 바이트를 교체하지 않으며, 변경이 있으면 버전을 올리고 새 릴리스를 만든다. 아래의 PC 직접 교체·0.4.3 기록은 당시 작업 이력이다. 빌드·검증·재현 명령과 중단 후 재개 조건은 [LIFECYCLE](LIFECYCLE.md#platform-release-reproduction)에 둔다.
+
+0.4.4는 Windows 미서명 Preview, Mac ad-hoc 서명 Preview이며 **정식 코드 서명·Developer ID·Apple 공증은 사업자 등록 후 재개하는 기존 결정을 유지한다.** 무결성 해시 대조를 정식 서명·공증 완료로 해석하지 않는다.
+
+**공개 배포와 현재 PC 설치 완료.** 공개 커밋 `2fb762a954b29a21758226ec0c8af89964f72d0b`의 홈페이지·feed와 GitHub의 Windows/Mac 설치파일 세 개를 확인했다. 공개 파일 전체 다운로드의 SHA-256이 원본과 일치하고 Pages 및 전체 사이트 CI가 성공했다. 기존 PC 설치본 77개 파일·설치 등록·바로가기를 압축 백업한 뒤 동일한 공개 Windows 설치기의 내장 설치 엔진으로 0.4.4를 적용했다. 설치된 75개 파일의 크기·해시를 독립 대조했고, 설치된 updater 코드가 공개 feed를 읽어 `current / 0.4.4 / 20261014.1`로 응답했다. 실제 설치 경로의 `SYNK Platform` 창 재실행·응답을 확인했다. 설치 도구의 사용자 프로필 읽기·쓰기는 0이다.
+
+관련 원문 시험 140개, 홈페이지 격리 UI 61개·실제 공개 UI 15개, Windows 패키지 부팅과 Mac 두 아키텍처 CI 네이티브 QA를 통과했다. 새 실계정 가입·로그인 왕복, 사용자 PC 창의 시각 검사, 물리 Mac의 수동 교체는 이번 검증에 포함하지 않았다. [최종 반영과 증거](../docs/_ops/qa/platform-unified-20261014/README.md).
+
+근거: [동결 원문](../.tmp/platform-unified-20261014/release-prepared/release-input.json), [조립한 manifest](../.tmp/platform-unified-20261014/preview.json), [원문 시험](../.tmp/platform-unified-20261014/source-tests.txt), [Windows 네이티브 확인](../.tmp/platform-unified-20261014/windows-0.4.4/native-smoke.json), [Mac arm64 QA](../.tmp/platform-unified-20261014/mac-arm64/qa/mac-native-qa.json), [Mac x64 QA](../.tmp/platform-unified-20261014/mac-x64/qa/mac-native-qa.json), [업데이트 UI·초안 보호](../.tmp/platform-signup-20261014/update-ui-qa/report.json), [홈페이지 UI 61개 확인](../.tmp/platform-signup-20261014/web-release-ui-qa/report.json).
+
+## 2026-10-14 회원가입 입구 · 현재 PC 반영
+
+로그인 전 상단에 **로그인 / 회원가입**을 나란히 표시하고, 계정 창에도 두 동작과 가입 후 PC 로그인 안내를 넣었다. 가입은 고정 주소 `https://synk.im/id/?view=signup`만 기본 브라우저로 열며 기존 로그인·토큰·메모를 변경하지 않는다. 로그인됨·복구 중·로그인 중에는 가입 동작을 막는다. 기존 플랫폼 시그널 메뉴/버튼 스타일을 재사용했고 1280·1024·900px 브라우저 화면에서 가시성과 상단 메뉴 겹침 해소를 확인했다.
+
+중앙 계정의 가입 직접 진입은 공개 `d530261a`의 `id/index.html`·`id/dist/app.js` 두 파일만 반영했다. Pages 배포 성공·공개 SHA 일치·포털 관련148개 시험을 확인했다. PC는 사용자의 정상 종료 후 현재 0.4.3에 이번5파일만 교체했고 나머지112파일·실행 파일·자식 설치파일을 보존했다. 원문 관련95개·정확 설치 후보97개·교체/복구3개 시험과 설치 후 전체파일 대조 통과, 설치된 실행 파일 재시작을 확인했다. 업데이트 도구는 사용자 프로필을 읽거나 수정하지 않았다. 신규 계정 생성·가입 완료 후 실제 PC 로그인과 네이티브 창의 시각 확인은 이번 검증에 포함하지 않았으며 공개 다운로드 설치파일은 갱신하지 않았다.
+
+근거는 [현재 PC 적용·검증](../.tmp/platform-signup-20261014/asar-update-retry/installed-verification.json), [공개 파일 대조](../.tmp/platform-signup-20261014/public-verification.json)에 둔다. 첫 후보 시험의 packed engine 로딩 방식 오류는 제품 변경 없이 브라우저 UMD fixture로 고쳐 재검증했고 이전 실패 기록을 보존했다.
+
 ## 2026-10-12 최종 배포·검수 상태
 
 현재 홈페이지는 **Windows·Mac 두 버튼**을 함께 보여 주며 Mac은 Apple Silicon·Intel을 선택한다. 공개 Platform 설치판은 세 아키텍처 모두 **0.4.3**, 포함된 WORLD·Workspace 설치판은 **0.4.1**이다. WORLD는 인터넷 연결로 실행하며 별도 개발 서버를 요구하지 않는다. 아래 날짜별 0.4.0·0.4.1 설명은 당시 출시 이력이다.
