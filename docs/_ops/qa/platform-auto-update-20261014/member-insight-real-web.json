@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-14T05:29:00Z",
+  "surface": "https://synk.im/account/platform.html#benefits/insight",
+  "status": "real-account-public-ui-verified",
+  "method": "Existing user Chrome session, normal SYNK ID sign-in and server-confirmed callback, visible UI only",
+  "newInsightScreenVerified": true,
+  "preferenceAndLearningRegionsVisible": true,
+  "emptyDeclaredInformationExplained": true,
+  "connectedPracticeSummaryVisible": true,
+  "recordUnitsAndLimitsExplained": true,
+  "evidenceDisclosureOpened": true,
+  "summaryAndLastPracticeTimesSeparated": true,
+  "refreshReturnedReady": true,
+  "capturedConsoleErrors": 0,
+  "accountSettingsChanged": false,
+  "profileEdited": false,
+  "notesEdited": false,
+  "credentialsRead": false,
+  "personalIdentifiersOrRecordContentsStored": false,
+  "nativeAppUiVerified": false,
+  "nativePendingReason": "Another authorized task is finishing storage restore UI verification on the same installed app"
+}

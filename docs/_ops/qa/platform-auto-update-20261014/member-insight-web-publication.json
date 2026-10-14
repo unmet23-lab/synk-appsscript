@@ -17,11 +17,14 @@
     "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38514869493"
   },
   "siteCheck": {
-    "conclusion": "",
+    "conclusion": "success",
     "databaseId": 38514869666,
     "headSha": "47fb0b72dddbf82bbbc8928f57b412beadf7badc",
-    "status": "in_progress",
-    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38514869666"
+    "status": "completed",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38514869666",
+    "runAttempt": 1,
+    "githubUpdatedAt": "2026-10-14T05:14:54Z",
+    "checkedAt": "2026-10-14T05:27:22.202Z"
   },
   "files": [
     {

@@ -1,6 +1,6 @@
 # Platform 0.4.7 자동 업데이트·저장 복구·내 성향 통합 검증 · 2026-10-14
 
-**상태: 0.4.7 최종 검증·공개 배포·현재 PC 설치·설치된 updater의 공개 feed 확인 완료.** 실제 저장 UI·재실행을 통한 실계정 QA는 다른 채팅에서 진행 중이며 아직 완료로 판정하지 않는다. 이전 [0.4.4 공개·PC 반영](../platform-unified-20261014/README.md) 및 아래 선행 0.4.5·0.4.6 검증과 구분한다.
+**상태: 0.4.7 최종 검증·공개 배포·현재 PC 설치·공개 feed 확인·실제 저장/재실행 QA 완료.** 담당 채팅의 [실제 UI 증거](../platform-real-account-20261010/installed-storage-fix-20261014/actual-ui.json)를 인수했다. 계정 라이브러리는 재실행 후 수동 연결했으며 앱 내부 특정 작업 위치 복귀까지 확인한 것은 아니다. 이전 [0.4.4 공개·PC 반영](../platform-unified-20261014/README.md) 및 아래 선행 0.4.5·0.4.6 검증과 구분한다.
 
 | 항목 | 공개·설치 기준 |
 | --- | --- |
@@ -25,13 +25,14 @@
 | [Mac x64 빌드](mac-x64-build-047.json), [설치 QA](mac-x64-installer-qa-047.json), [네이티브 흐름](mac-x64-native-047.json) | 실제 DMG의 격리 Applications 설치 QA **37/37**, 네이티브 흐름 **18개** 통과. 같은 검증 한계 적용. |
 | [공통 manifest](preview-047.json), [공개 검증](public-verification-047.json) | 한·영 홈페이지의 세 정확한 다운로드 링크, 고정 feed·선택 스크립트, 공개 설치파일 3개 전체 다운로드의 크기·SHA 일치. 공개 커밋 `413056c0317ee7b6e6921e5ce176ed0208a0acd7`. |
 | [홈페이지 재생성](website-rebuild-047.json), [공개 CI](public-ci-047.json) | 정본 feed로 별도 출력에 14페이지를 생성하고 릴리스 연결 15/15 확인. 원문146·기존 dist4,335파일 변경0. Pages `38513927169`와 전체 사이트 점검 `38513927242` 모두 성공. |
+| [후속 공개 후 재확인](recheck-047.json) | 10월14일 14:27 KST 독립 읽기 검사 13/13. 설치75파일·ASAR·0.4.7/build20261014.4와 공개 feed·한영 세 다운로드 링크가 그대로 일치. 설치·프로필·앱 조작 없음. |
 | [PC 설치 영수증](apply-047.json) | 공개 Windows 설치기와 같은 SHA로 실제 설치. `APPLY_VERIFIED`, 버전·build·sourceHash·ASAR 및 설치 파일 **75/75** 일치. 설치 도구의 프로필 작업 0. |
 | [설치된 updater의 공개 feed 확인](installed-live-update-047.json) | 설치 파일 75개·ASAR 대조 후 `current / 0.4.7 / 20261014.4`. 프로필·다운로드·설치 작업 모두 0. 실제 UI 저장 왕복 시험은 아님. |
 | [설치 직후 기존 프로필 보존](profile-preservation-047.json) | 별도 저장 검증 담당자가 기존 Platform **296개**, suite **1개** 파일의 누락·바이트 변경 **0** 확인. 기록 내용은 보고하지 않았으며, 이 결과를 실제 저장 UI·재실행 성공으로 확대하지 않음. |
 
 현재 PC 적용 전 복구 가능한 앱 payload·설치 등록 백업을 검증했다. 기존 프로세스가 정상 종료되어 강제 종료는 실행하지 않았다. 현재 설치기 SHA는 `7fb377ab1722a505d6fb690e7abd50a314aa22222950087250ea2b27ec2463ee`, 설치 ASAR SHA는 `5f3947ce4dfb39d411ecd2c154b3721ba558dfffd584f7540cd06c88aa10e418`다.
 
-**내 성향 웹 후속 공개:** 담당 작업이 `account/` 4파일만 공개 커밋 `47fb0b72dddbf82bbbc8928f57b412beadf7badc`에 반영했다. Pages `38514869493` 성공과 공개 4파일의 HTTP200·크기·전체 SHA 일치를 확인했고, 공통 0.4.7 feed·한영 홈페이지는 이전 공개 바이트 그대로다. [공개 증거](member-insight-web-publication.json), [화면 입구](https://synk.im/account/platform.html#benefits/insight). 배포 전 합성 브라우저 검사 55/55와 실제 본인 계정의 새 성향 화면 인수는 구분하며, 후자는 아직 미확인이다.
+**내 성향 웹 후속 공개:** 담당 작업이 `account/` 4파일만 공개 커밋 `47fb0b72dddbf82bbbc8928f57b412beadf7badc`에 반영했다. Pages `38514869493`·전체 사이트 점검 `38514869666` 성공과 공개 4파일의 HTTP200·크기·전체 SHA 일치를 확인했고, 공통 0.4.7 feed·한영 홈페이지는 이전 공개 바이트 그대로다. [공개 증거](member-insight-web-publication.json), [화면 입구](https://synk.im/account/platform.html#benefits/insight). 배포 전 합성 브라우저 검사 55/55에 이어 14:29 KST [실제 계정 웹 UI](member-insight-real-web.json)의 두 영역·연결된 학습 요약·근거 펼침·새로고침 성공도 확인했다. 계정 설정·프로필·노트 변경 및 인증 정보 읽기 0. 설치 앱의 새 성향 UI 확인은 담당 작업에서 별도로 진행한다.
 
 <a id="storage-integration-046"></a>
 
@@ -47,7 +48,7 @@
 - [storage-integration-review.json](storage-integration-review.json): 선행 원문 대비 승인된 두 파일만 추가됐는지, 해시·의존성·기존 native 계약을 대조한 독립 검토. UI 교차 검토에서도 재현 가능한 회귀 없음.
 - [storage-frozen-integration-tests.tap](storage-frozen-integration-tests.tap): 최종 **0.4.6 동결 원문을 직접 참조한 101/101 시험 통과**. 저장·복구·계정 경계·미저장 종료 보호 97개와 새 renderer/기존 native 저장소/IPC를 연결한 합성 통합 4개다. 동의·저장·삭제 응답, 미선택 복구본, 손상 암호문 원문 보존과 재시도, 앱 권한·계정 변경 경계를 확인했다.
 
-이 선행 검토는 실계정·사용자 프로필을 열지 않았다. 실제 계정 저장 UI·재실행 QA는 다른 채팅 담당자가 수행하며, 그 결과를 아직 완료 증거로 인수하지 않았다. 최종 패키지 QA와 실제 공개·PC 반영은 위 0.4.7 증거 및 아래 결과에서 별도로 확인한다.
+이 선행 검토는 실계정·사용자 프로필을 열지 않았다. 실제 설치된 0.4.7의 저장·재실행 QA는 별도 담당자가 수행했으며 아래 최종 결과로 인수했다. 선행 합성 검사와 실제 공개·PC 적용·운영 계정의 관찰은 별도 근거로 구분한다.
 
 ## 제공하는 동작
 
@@ -96,6 +97,6 @@ Windows 0.4.5 네이티브 결과의 feed는 시험에서 후보 버전을 응�
 | 공개 설치파일·홈페이지·feed 전환 | 완료 | [공개 링크·feed·세 설치파일 전체 SHA 대조](public-verification-047.json), 공개 커밋 `413056c0317ee7b6e6921e5ce176ed0208a0acd7` |
 | 현재 PC 백업·동일 공개 Windows 파일 적용 | 완료 | 복구 백업 검증 후 [APPLY_VERIFIED 75/75](apply-047.json). 기존 프로세스 정상 종료, 강제 종료 0 |
 | 설치 후 버전·파일·공개 업데이트 확인 | 완료 | [설치된 updater 검증](installed-live-update-047.json)의 `current / 0.4.7 / 20261014.4`, 75개 파일·ASAR 일치 |
-| 실제 앱 UI 저장·재실행·복구 QA 인수 | pending · 다른 채팅 담당 | 기존 296+1개 파일 보존은 확인. 실제 앱 UI에서 저장·재실행하는 실계정 왕복은 결과 대기. 계정 식별자·노트 본문은 보고서에 넣지 않음 |
+| 실제 앱 UI 저장·재실행·복원 QA 인수 | 완료 | [담당자의 실제 UI 증거](../platform-real-account-20261010/installed-storage-fix-20261014/actual-ui.json). 합성 기기 할 일·결과 메모 저장→정상 완전 종료→새 프로세스 실행→제목·본문·기존 기록 복원→WORLD 시작 화면→합성 할 일 완료. 기존 계정 메모7·복구1 보존, 트레이 설정 원복. 계정 라이브러리는 수동 연결. 기존 기록 수정·삭제0, 새 검증 기록2개는 보존 |
 
 게시 전 검증 실패는 기존 공개 feed·다운로드를 유지한다. 이미 공개한 버전의 바이트는 교체하지 않는다. 운영 PC 적용은 홈페이지와 동일한 설치파일로 수행하며 설치된 ASAR 일부를 직접 패치하지 않는다.
