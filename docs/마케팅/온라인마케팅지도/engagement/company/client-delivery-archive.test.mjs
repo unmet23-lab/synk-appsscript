@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,rm,mkdir,writeFile,unlink,symlink,truncate,stat} from 'node:fs/promises';
+import {mkdtemp,rm,mkdir,writeFile,unlink,symlink,truncate,stat,utimes} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {randomUUID} from 'node:crypto';
@@ -120,7 +120,11 @@ test('authority revoked partway through a stream prevents a complete ZIP central
 });
 
 test('stream catches a file modified after preflight and does not emit a complete valid ZIP',async t=>{
-  const f=await fixture(t);f.preview();const version=await f.file('large.mp4',Buffer.alloc(512*1024,7)),result=await f.download();await writeFile(join(f.directory,'studio-media',version.media.diskName),Buffer.alloc(version.media.byteSize,8));await rejected(()=>collect(result),409);
+  const f=await fixture(t);f.preview();const version=await f.file('large.mp4',Buffer.alloc(512*1024,7)),path=join(f.directory,'studio-media',version.media.diskName),uploaded=new Date(Date.now()-60000);
+  // Real uploads finish long before a delivery is prepared. Backdate the original so the
+  // rewrite cannot share its file-time tick: Windows can give two same-size writes a few ms
+  // apart identical mtime/ctime, and then no stat check can tell the files apart.
+  await utimes(path,uploaded,uploaded);const result=await f.download();await writeFile(path,Buffer.alloc(version.media.byteSize,8));let emitted=0;await rejected(async()=>{for await(const chunk of result.stream)emitted+=chunk.length;},409);assert.ok(emitted<result.contentLength);
 });
 
 test('same-user concurrent stream is bounded and an unconsumed destroyed stream releases its handles',async t=>{
