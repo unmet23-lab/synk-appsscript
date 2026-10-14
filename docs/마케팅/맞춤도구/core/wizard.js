@@ -9,6 +9,8 @@
 (function (root) {
   'use strict';
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  // 「·」로 이은 말(「병·상자·화장품」)은 한 덩어리로 묶는다 — word-break:keep-all이 「·」 앞뒤에서 줄을 가르기 때문(10-13 글자 2판, PULSE keepDots와 같은 규칙).
+  const keepDots = s => esc(s).replace(/[^\s·]+(?:·[^\s·]+)+/g, m => `<span class="nw">${m}</span>`);
   const store = {
     get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
     set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
@@ -117,7 +119,7 @@
     function optButton(s, o, pressed, multi, chip) {
       const role = multi ? 'checkbox' : 'radio';
       const cls = chip ? 'glass chip' : `glass opt${multi ? ' multi' : ''}`;
-      const inner = chip ? `<span>${esc(o.label)}</span>` : `<span><strong>${esc(o.label)}</strong>${o.sub ? `<small>${esc(o.sub)}</small>` : ''}</span><span class="mark">${ICON.check}</span>`;
+      const inner = chip ? `<span>${keepDots(o.label)}</span>` : `<span><strong>${keepDots(o.label)}</strong>${o.sub ? `<small>${keepDots(o.sub)}</small>` : ''}</span><span class="mark">${ICON.check}</span>`;
       return `<button type="button" class="${cls}" role="${role}" aria-checked="${pressed}" data-opt="${esc(o.id)}"${chip && o.sub ? ` title="${esc(o.sub)}"` : ''}>${inner}</button>`;
     }
 
@@ -139,7 +141,7 @@
       const words = chosen && chosen.presentation && account ? account.describe(chosen.presentation) : [];
       const accountNote = words.length ? `<p class="hint account-note">SYNK 계정에서 고른 설정을 따라요 · ${esc(words.join(' · '))} <button type="button" class="linkbtn" data-action="account">끊기</button></p>`
         : account && account.available() ? `<p class="hint account-note"><button type="button" class="linkbtn" data-action="account">SYNK 계정의 내 설정 불러오기</button> · 로그인해 고른 설정(도움 방식·설명 길이·글씨 크기)만 읽어 와요</p>` : '';
-      el.innerHTML = `<section class="intro fade-in"><div><p class="eyebrow">${esc(i.eyebrow)}</p><h1 id="q" tabindex="-1">${i.title}</h1><p class="lead">${esc(i.lead)}</p><ul class="meta">${i.meta.map(m => `<li>${esc(m)}</li>`).join('')}</ul><span class="start"><button type="button" class="btn primary" data-action="begin">${esc(i.start)} ${ICON.right}</button></span>${resume}${links}<p class="privacy">${esc(i.privacy)}</p>${accountNote}</div><div class="art" aria-hidden="true">${V.hero ? V.hero() : ''}</div></section>`;
+      el.innerHTML = `<section class="intro fade-in"><div><p class="eyebrow">${esc(i.eyebrow)}</p><h1 id="q" tabindex="-1">${i.title}</h1><p class="lead">${esc(i.lead)}</p><ul class="meta">${i.meta.map(m => `<li>${keepDots(m)}</li>`).join('')}</ul><span class="start"><button type="button" class="btn primary" data-action="begin">${esc(i.start)} ${ICON.right}</button></span>${resume}${links}<p class="privacy">${esc(i.privacy)}</p>${accountNote}</div><div class="art" aria-hidden="true">${V.hero ? V.hero() : ''}</div></section>`;
     }
     function forget() {
       mem.clear(); store.del(KEY);
@@ -170,7 +172,7 @@
       const ready = answered(s);
       const pickedTip = lastTip && lastTip.step === s.id ? lastTip.text : '';
       const aside = V.aside ? V.aside(state.answers, R, s) : '';
-      el.innerHTML = `<div class="stage fade-in"><div class="main"><div class="progress"><div class="meter" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${idx + 1}" aria-label="질문 진행"><i style="width:${Math.round(((idx + 1) / total) * 100)}%"></i></div><span>${idx + 1} / ${total}</span></div>${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ''}<h2 class="q" id="q" tabindex="-1">${esc(s.title)}</h2>${s.sub ? `<p class="q-sub">${esc(s.sub)}</p>` : ''}${opts}<div class="picked"${pickedTip ? '' : ' hidden'} aria-live="polite">${ICON.bulb}<p>${esc(pickedTip)}</p></div><div class="nav"><button type="button" class="btn ghost" data-action="back">${ICON.left} 이전</button><span class="grow"></span><button type="button" class="btn primary" data-action="next"${ready ? '' : ' disabled'}>${idx === total - 1 ? '결과 보기' : '다음'} ${ICON.right}</button></div>${multi ? '<p class="hint">여러 개를 고를 수 있어요.</p>' : ''}</div><aside class="aside">${tipHtml(s)}${aside ? `<div style="margin-top:18px">${aside}</div>` : ''}</aside></div>`;
+      el.innerHTML = `<div class="stage fade-in"><div class="main"><div class="progress"><div class="meter" role="progressbar" aria-valuemin="1" aria-valuemax="${total}" aria-valuenow="${idx + 1}" aria-label="질문 진행"><i style="width:${Math.round(((idx + 1) / total) * 100)}%"></i></div><span>${idx + 1} / ${total}</span></div>${s.eyebrow ? `<p class="eyebrow">${esc(s.eyebrow)}</p>` : ''}<h2 class="q" id="q" tabindex="-1">${esc(s.title)}</h2>${s.sub ? `<p class="q-sub">${keepDots(s.sub)}</p>` : ''}${opts}<div class="picked"${pickedTip ? '' : ' hidden'} aria-live="polite">${ICON.bulb}<p>${keepDots(pickedTip)}</p></div><div class="nav"><button type="button" class="btn ghost" data-action="back">${ICON.left} 이전</button><span class="grow"></span><button type="button" class="btn primary" data-action="next"${ready ? '' : ' disabled'}>${idx === total - 1 ? '결과 보기' : '다음'} ${ICON.right}</button></div>${multi ? '<p class="hint">여러 개를 고를 수 있어요.</p>' : ''}</div><aside class="aside">${tipHtml(s)}${aside ? `<div style="margin-top:18px">${aside}</div>` : ''}</aside></div>`;
     }
 
     // 질문을 끝내고 결과에 도착했거나 공유 링크로 처음 열었을 때만 한 회차로 기록한다. 새로고침은 기억만 읽는다.
@@ -191,9 +193,19 @@
       el.innerHTML = `<div class="stage single fade-in">${out.html}</div>`;
       el._texts = out.texts || {};
       if (V.bindResult) V.bindResult(el, { rec, answers: state.answers, rules: R, content: C });
+      watchDock();
+    }
+    // 떠 있는 하단 바(.dock)는 본문의 요청문 상자 단추 줄이 화면에 보이는 동안 숨긴다(흰 주 단추는 한 화면에 하나, 싱ㅋ 시그널).
+    let dockWatch = null;
+    function watchDock() {
+      const dock = el.querySelector('.dock'), row = el.querySelector('.copybox.main .row');
+      if (!dock || !row || typeof IntersectionObserver !== 'function') return;
+      dockWatch = new IntersectionObserver(entries => { for (const e of entries) dock.classList.toggle('away', e.isIntersecting); });
+      dockWatch.observe(row);
     }
 
     function render(focus = true) {
+      if (dockWatch) { dockWatch.disconnect(); dockWatch = null; }
       if (state.at === 'intro') renderIntro();
       else if (state.at === 'result') renderResult();
       else { const s = stepById(state.at) || steps()[0]; state.at = s.id; renderStep(s); }
@@ -359,5 +371,5 @@
     return { state: () => JSON.parse(JSON.stringify(state)), memory: mem };
   }
 
-  root.SynkWizard = Object.freeze({ start, esc, copyText, encode, decode });
+  root.SynkWizard = Object.freeze({ start, esc, keepDots, copyText, encode, decode });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

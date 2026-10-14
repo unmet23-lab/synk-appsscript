@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // SYNK 맞춤 도구 빌드 — 원고(core/, <도구>/)를 synk.im에 올릴 폴더(dist/)로 조립한다.
 // 사용: node docs/마케팅/맞춤도구/build.mjs [도구이름...]   (기본: 모든 도구)
-// 하는 일: 공통 파일·Atlas 엔진 복사(app.css = 공통 양식 scrapbook.css + core/wizard.css) → 쓰인 글자만 남긴 SUIT 폰트
+// 하는 일: 공통 파일·Atlas 엔진 복사(app.css = 화면 양식, 아래 THEMES) → 쓰인 글자만 남긴 SUIT 폰트
 //          → 설명서 PDF·링크 미리보기 이미지(Chrome) → 지문 기록.
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
@@ -15,21 +15,28 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 const FONT = path.join(REPO, 'docs/브랜드_폰트/SUIT/SUIT-Variable.woff2');
 const ATLAS = path.join(REPO, 'atlas/engine.js');
-// 공통 디자인 양식(펠트 스크랩북, 2026-09-29 사용자 확정). app.css 맨 앞에 붙인다.
+// 화면 양식. 새 도구의 기본은 싱ㅋ 시그널(core/signal.css, 플랫폼과 같은 문법) — 유호님 10-13 「우리 플렛폼 만든것처럼 … 앞으로 프로그램 만들때 이 규칙」.
+// 'scrapbook'은 펠트 스크랩북(2026-09-29 확정, scrapbook.css + core/wizard.css)으로 만든 옛 도구를 다시 그리기 전까지만 쓴다.
 const KIT_CSS = path.join(REPO, 'docs/디자인/펠트스크랩북/scrapbook.css');
+const THEMES = {
+  signal: () => fs.readFileSync(path.join(HERE, 'core/signal.css'), 'utf8'),
+  scrapbook: () => `${fs.readFileSync(KIT_CSS, 'utf8')}\n${fs.readFileSync(path.join(HERE, 'core/wizard.css'), 'utf8')}`,
+};
 const CHROME = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', '/usr/bin/google-chrome'].find(p => fs.existsSync(p));
 
-// 도구 = 원고 폴더 이름 → 올릴 경로. assets는 공통 assets/에서 그 도구가 쓰는 것만,
+// 도구 = 원고 폴더 이름 → 올릴 경로. theme은 화면 양식(없으면 signal). assets는 공통 assets/에서 그 도구가 쓰는 것만,
 // keep은 <도구>/keep/의 파일을 바이트 그대로 싣는다(이미 공개된 PDF·ZIP처럼 다른 작업이 만든 자료).
 const STICKERS = ['sticker-check.webp', 'sticker-envelope.webp', 'sticker-person.webp', 'sticker-search.webp', 'sticker-time.webp', 'sticker-book.webp', 'sticker-adapt.webp'];
 const SHARED_ASSETS = ['brand-shift.webp', 'thread-shift.webp', 'felt-paper.webp', 'favicon-32.png', ...STICKERS];
 const TOOLS = {
-  computer: { out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
-  meeting: { out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
+  computer: { theme: 'scrapbook', out: 'brief/computer', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'laptop-felt.webp'] },
+  meeting: { theme: 'scrapbook', out: 'brief/meeting', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: [...SHARED_ASSETS, 'meeting-hero.webp'], keep: ['meeting-guide.pdf', 'meeting-kit.zip'] },
+  // synkbrief 뉴스 「카타나 써 봤습니다」(10-13). 시그널로 그린 첫 도구(10-13). 포스터 그림은 화면마다 내용을 설명하는 펠트 물건(GPT 이미지 2.5로 한 판에 구워 오림 — 클래퍼보드·주인공 후보·필름·사진 묶음·휴대폰과 모니터·코인 탑·자물쇠·체크 메모), 실제 요청 카드는 카타나 결과 장면.
+  katana: { out: 'brief/katana', files: ['content.js', 'rules.js', 'view.js', 'index.html'], assets: ['favicon-32.png', 'brand-shift.webp', 'katana-art-intro.webp', 'katana-art-hero.webp', 'katana-art-style.webp', 'katana-art-input.webp', 'katana-art-where.webp', 'katana-art-quality.webp', 'katana-art-keep.webp', 'katana-art-result.webp', 'katana-ex-ad.webp', 'katana-ex-aura.webp'] },
   // yuhobuilds 허브(synk.im/builds/)의 첫 도구. theme.css = 도구 쪽 색(검정·버터). outside = 도구 폴더 밖에 둘 파일(허브 첫 화면).
   // 10-06 저녁: synk.im 홈페이지 디자인 언어(theme.css 머리말). hero-manual = 펠트 매뉴얼 오브젝트(docs/디자인/펠트부품/assets/builds),
   // field-grain = synk.im 브랜드 면의 결, fb-badge-check = 고른 표시의 버터 펠트 배지.
-  manual: { out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
+  manual: { theme: 'scrapbook', out: 'builds/manual', files: ['content.js', 'rules.js', 'view.js', 'index.html', 'theme.css'], assets: ['favicon-32.png', 'thread-butter.webp', 'logo-synk.webp', 'hero-manual.webp', 'field-grain.webp', 'fb-badge-check.webp', 'gpt-guide-1-sidebar.webp', 'gpt-guide-2-create.webp', 'gpt-guide-3-menu.webp', 'gpt-guide-4-instructions.webp', 'gemini-guide-1-settings.webp', 'gemini-guide-2-menu.webp', 'gemini-guide-3-skills.webp', 'gemini-guide-4-form.webp', 'gemini-guide-5-slash.webp'], outside: { 'builds-index.html': 'builds/index.html' } },
 };
 
 const sha = file => createHash('sha256').update(fs.readFileSync(file)).digest('hex');
@@ -104,8 +111,10 @@ for (const name of names) {
   fs.copyFileSync(path.join(HERE, 'core/wizard.js'), path.join(out, 'wizard.js'));
   // SYNK 계정에서 고른 설정 불러오기(누를 때만, 등록한 synk.im 주소에서만).
   fs.copyFileSync(path.join(HERE, 'core/account.js'), path.join(out, 'account.js'));
-  // 화면 스타일 = 공통 양식 + 도구 틀. 양식이 앞에 와야 도구 틀이 필요한 곳만 덮는다.
-  fs.writeFileSync(path.join(out, 'app.css'), `${fs.readFileSync(KIT_CSS, 'utf8')}\n${fs.readFileSync(path.join(HERE, 'core/wizard.css'), 'utf8')}`);
+  // 화면 스타일: 시그널은 core/signal.css 하나, 스크랩북은 공통 양식 + 도구 틀(양식이 앞에 와야 도구 틀이 필요한 곳만 덮는다).
+  const theme = THEMES[tool.theme || 'signal'];
+  if (!theme) throw new Error(`${name}: 모르는 화면 양식 ${tool.theme}`);
+  fs.writeFileSync(path.join(out, 'app.css'), theme());
   fs.copyFileSync(ATLAS, path.join(out, 'atlas-engine.js'));
   for (const f of tool.assets || fs.readdirSync(path.join(HERE, 'assets'))) fs.copyFileSync(path.join(HERE, 'assets', f), path.join(out, 'assets', f));
   for (const f of tool.keep || []) fs.copyFileSync(path.join(src, 'keep', f), path.join(out, f));

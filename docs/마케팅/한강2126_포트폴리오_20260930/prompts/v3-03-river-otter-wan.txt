@@ -1,0 +1,13 @@
+15-second photoreal brand film, 9:16 vertical, one invisible flying camera over the Han River in 2126 at golden hour, then three cameras on a single half-second. Continuous FPV flight at real-time speed; no slow motion except one half-second reveal, then an instant snap back to full speed.
+@Image1 is the white felt building: keep its shape and its top-floor window. @Image2 shows the flight route as a red line: use it only for direction and never show the line. @Image3 is the cruise boat and the river. @Image4 is the baby otter. @Image5 is the visitor's character card, seen from behind only. @Audio1 is the only soundtrack.
+FLIGHT LOCK: only the camera flies and it is invisible: no drone, shadow or reflection. Ultra-wide 14mm lens, heavy motion blur on fast moves, spray beading on the lens.
+Shot 1 [0-1.88s] Camera A, behind his shoulder at the second-floor window: he lifts his coffee; the camera pushes past him through the open window, the felt frame brushing the lens.
+Shot 2 [1.88-3.75s] Camera A, continuous: it dives down the white felt facade, fibers rushing inches away, levels out over the promenade where a jogger passes below, and races out over the river.
+Shot 3 [3.75-7.5s] Camera A, deck height over the water: a white cruise boat crosses its path; the one close pass at arm's length, passengers in sharp detail, a child waving, a woman holding her hat, a man raising his phone; the camera arcs under the bow into sun glare.
+Shot 4 [7.5-8.44s] THE REVEAL, half-second slow motion, Camera B, split waterline view: a baby otter pops up right ahead, droplets hanging in the low sun.
+Shot 5 [8.44-9.38s] Camera C, macro, still slow motion: the otter's wet whiskered nose boops the lens and leaves one droplet on the glass.
+Shot 6 [9.38-10.31s] Camera D, at the otter's eye level looking up: the white felt building rises beyond it, its top-floor window glowing.
+Shot 7 [10.31-15s] Camera A, instant snap back to full speed along the red route: it rockets up from the water, leaving the otter in the river below; it climbs straight toward that same top-floor window, keeps it centered, slows near the glass, dips slightly and glides inside over a planter into a warm coral felt room.
+Style: photoreal IMAX travel documentary, not a game engine, not animation; dreamcore future Seoul skyline, garden terraces, low warm sun, turquoise and gold water, fine 35mm grain.
+Audio: @Audio1 only, unaltered, in exact sync from 0.0s. No added music, vocals, voice-over or sound effects.
+Negative: no text, no logos, no drone in frame, no red line, no high aerial wide shot, no orbit around the building, the otter never leaves the water, no cartoon eyes, no extra otters, no face change, no image flicker, no self-inserted cut points.

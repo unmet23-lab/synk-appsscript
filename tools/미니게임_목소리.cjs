@@ -61,7 +61,9 @@ async function applyGame(game, jobs, { onStep = () => {}, stopped = () => false 
   const adapter = G.GAMES[game], casting = V.loadCasting();
   const missing = jobs.filter(j => !fs.existsSync(V.rawPath(j.voice, j.key)));
   if (missing.length) return { ok: false, why: `원본 ${missing.length}줄이 아직 없다(적용하지 않음)` };
-  const stage = path.join(V.VENDOR, 'stage', game);
+  const stageRoot = path.resolve(V.VENDOR, 'stage');
+  const stage = path.resolve(stageRoot, game);
+  if (!stage.startsWith(stageRoot + path.sep)) throw Error('무대 폴더 밖의 경로');
   fs.rmSync(stage, { recursive: true, force: true });
   const results = new Array(jobs.length), problems = [];
   let next = 0, done = 0;

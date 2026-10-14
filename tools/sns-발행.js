@@ -14,6 +14,7 @@ const {
   publishPlan,
   youtubeMakePublic,
   openManualItem,
+  recordInstagramPublication,
 } = require('./lib/sns-publisher.js');
 
 function fail(message) {
@@ -34,6 +35,7 @@ SYNK SNS 발행기
   node tools/sns-발행.js --발행 <계획.json> [--항목 id,id]
   node tools/sns-발행.js --공개 <계획.json> --항목 <id> [--시각 2026-10-09T08:00:00+09:00] [--합성표시] --근거 "유호님 공개 승인"
   node tools/sns-발행.js --수동열기 <계획.json> --항목 <id>
+  node tools/sns-발행.js --게시확인 <계획.json> --항목 <id> --주소 <Instagram URL> --근거 "승인한 게시물 확인"
 
   --계정설정 <계정.json>  명시한 계정 설정 사용 (계획 작업은 기본적으로 계획의 설정 사용)
 
@@ -143,6 +145,13 @@ async function main() {
     for (const [id, item] of Object.entries(result.items)) console.log(`   · ${id}: ${item.state}${item.url ? ` · ${item.url}` : ''}`);
     console.log('');
     return;
+  }
+
+  if (arg('--게시확인')) {
+    const selected=ids();if(selected.length!==1)throw new Error('--게시확인은 --항목을 하나만 지정합니다.');
+    const result=recordInstagramPublication(absolute(arg('--게시확인')),selected[0],arg('--주소'),arg('--근거'),
+      {accountsFile:arg('--계정설정')?accountsFile:undefined});
+    console.log(JSON.stringify({recorded:true,resultFile:result.resultFile,state:result.item.state}));return;
   }
 
   if (arg('--공개')) {

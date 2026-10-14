@@ -27,8 +27,9 @@ function write(relative,bytes,source=null){
  const target=path.join(payload,relative);if(fs.existsSync(target))throw Error('Duplicate payload file: '+relative);fs.mkdirSync(path.dirname(target),{recursive:true});const previous=reusedFiles.get(relative),oldFile=reuse&&path.join(reuse,relative);if(previous?.sha256===sha(bytes)&&fs.existsSync(oldFile)&&sha(fs.readFileSync(oldFile))===previous.sha256){fs.linkSync(oldFile,target);hardlinked++;}else fs.writeFileSync(target,bytes);
  entries.push({path:relative,bytes:bytes.length,sha256:sha(bytes),...(source?{source:path.relative(root,source).replaceAll('\\','/'),sourceSha256:sourceHashes.get(source)}:{generated:true})});
 }
-function rewrite(text){
- text=text.replaceAll('../synk-world-home/','./').replaceAll('href=\"../learning-hub/\"','href=\"'+config.account.learningUrl+'\"');
+function rewrite(text,relative=''){
+ text=text.replaceAll('../synk-world-home/',relative.startsWith('brand-opening/')?'../':'./').replaceAll('href=\"../learning-hub/\"','href=\"'+config.account.learningUrl+'\"');
+ if(!relative.includes('/'))text=text.replaceAll('../brand-opening/','./brand-opening/');
  // All mounted standalone games/assets live beneath this public WORLD path.
  text=text.replace(/(["'`])\/(scene-assets|[a-zA-Z0-9_-]+\.mjs|engine|korean-runner|korean-rhythm|hangul-stage|brand-opening|world-town-client\.mjs)(?=[/"'`])/g,(_,quote,folder)=>quote+config.basePath+folder);
  return text;
@@ -46,6 +47,7 @@ function publicAsset(relative,bytes){
   }
  }
  if(relative==='songs.mjs'||relative==='hangul-stage/songs.mjs')bytes=Buffer.from(bytes.toString('utf8').replace(/^[ \t]*\/\/[^\r\n]*Suno[^\r\n]*(?:\r?\n|$)/gmu,'').replace(/\bsuno(?=\s*:)/g,'sourceId'));
+ if(relative==='world-account.bundle.mjs'||relative==='brand-opening/content/life-standalone.mjs')bytes=Buffer.from(bytes.toString('utf8').replaceAll('SUNO_RECORDINGS','RECORDINGS').replaceAll('suno-tracks.mjs','recording-tracks.mjs'));
  if(relative==='korean-rhythm/core.mjs'||relative==='korean-rhythm/suno-tracks.mjs'){
   bytes=Buffer.from(bytes.toString('utf8').replaceAll('SUNO_RECORDINGS','RECORDINGS').replaceAll('./suno-tracks.mjs','./recording-tracks.mjs'));
   if(relative==='korean-rhythm/suno-tracks.mjs')relative='korean-rhythm/recording-tracks.mjs';
@@ -70,7 +72,7 @@ function copyFile(source,relative,{transform=true}={}){
  let content=bytes.toString('utf8');
  if(relative==='hangul-stage/index.html')content=content.replace('id="games"','id="games" target="_top"').replace('id="grad-games"','id="grad-games" target="_top"');
  if(relative==='hangul-stage/app.mjs')content=content.replace(/const HUB = [^;]+;/,"const HUB = !hosted ? 'https://synk.im/account/client.html?product=world&play=learning-hub' : null;");
- const rendered=transform&&/\.(?:mjs|js|cjs|html|css)$/.test(source)?Buffer.from(rewrite(content)):bytes;
+ const rendered=transform&&/\.(?:mjs|js|cjs|html|css)$/.test(source)?Buffer.from(rewrite(content,relative)):bytes;
  const prepared=publicAsset(relative,rendered);if(prepared)write(prepared.relative,prepared.bytes,source);
 }
 function copyTree(source,target='',accept=()=>true){
@@ -78,7 +80,7 @@ function copyTree(source,target='',accept=()=>true){
   if(forbiddenPart(dirent.name)||forbiddenName(dirent.name))continue;
   const next=path.join(source,dirent.name),relative=target?target+'/'+dirent.name:dirent.name;
   if(dirent.isDirectory())copyTree(next,relative,accept);
-  else if(dirent.isFile()&&browserExtensions.has(path.extname(next))&&accept(next,relative))copyFile(next,relative);
+  else if(dirent.isFile()&&(browserExtensions.has(path.extname(next))||relative==='assets/wardrobe-environment-v1.bin.gz')&&accept(next,relative))copyFile(next,relative);
  }
 }
 const home=path.join(root,'experiences/synk-world-home'),town=path.join(root,'experiences/synk-town');
@@ -86,7 +88,7 @@ copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
 const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
-for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 write('world-config.json',Buffer.from(JSON.stringify(config,null,2)+'\n'));
 const dayFiles=['day-app.mjs','day-style.css','day-scene.mjs','day-character.mjs','day-residents.mjs','day-environment.mjs','day-materials.mjs','day-rendering.mjs','walk.mjs','walk-controls.mjs','town-layout.mjs'];
@@ -99,14 +101,15 @@ for(const name of ['azure-sky-v3.jpg','azure-sky-v3-mobile.jpg','terrain-normal.
 copyFile(path.join(home,'assets/felt-coral.webp'),'town/day-assets/felt-coral.webp');
 const opening=path.join(root,'experiences/brand-opening');
  for(const name of ['content/life-standalone.mjs','content/life-ui.css'])copyFile(path.join(opening,name),'brand-opening/'+name);
- for(const name of ['opening.mjs','opening.css','home.mjs','home.css','tutor-onboarding.mjs','tutor-onboarding.css','tutor-profiles.mjs','tutor-choice.mjs','game-tutor.mjs','game-tutor.css','game-tutor-lines.mjs','game-tutor-contract.mjs','game-tutor-channel.mjs','tutor-practice.mjs','tutor-practice.css','tutor-practice-core.mjs','tutor-practice-lines.mjs','tutor-review.mjs','tutor-review.css','game-tutor-support.mjs','life-tutor.mjs','life-tutor.css','life-tutor-lines.mjs','home-tutor.mjs','home-tutor-lines.mjs','home-tutor-days.mjs','home-tutor-recap.mjs'])copyFile(path.join(opening,name),'brand-opening/'+name);
+ for(const name of ['world-ui.css','opening.mjs','opening.css','home.mjs','home.css','home-scene.mjs','home-scene.css','home-memory.mjs','tutor-onboarding.mjs','tutor-onboarding.css','tutor-profiles.mjs','tutor-choice.mjs','game-tutor.mjs','game-tutor.css','game-tutor-lines.mjs','game-tutor-contract.mjs','game-tutor-channel.mjs','tutor-practice.mjs','tutor-practice.css','tutor-practice-core.mjs','tutor-practice-lines.mjs','tutor-review.mjs','tutor-review.css','game-tutor-support.mjs','life-tutor.mjs','life-tutor.css','life-tutor-lines.mjs','home-tutor.mjs','home-tutor-lines.mjs','home-tutor-days.mjs','home-tutor-recap.mjs'])copyFile(path.join(opening,name),'brand-opening/'+name);
  copyTree(path.join(opening,'assets/tutors'),'brand-opening/assets/tutors',(_source,relative)=>/\.(?:webp|wav)$/.test(relative)||/\/(?:marin|mongle)-face-mask\.svg$/.test(relative));
  copyTree(path.join(opening,'assets/cafe-voice'),'brand-opening/assets/cafe-voice',(_source,relative)=>/^[a-z0-9-]+\.mp3$/.test(path.basename(relative))||path.basename(relative)==='manifest.json');
- const openingSource=['opening.mjs','opening.css','home.mjs','home.css','home.html'].map(name=>fs.readFileSync(path.join(opening,name),'utf8')).join('\n');
+ const openingSource=['world-ui.css','opening.mjs','opening.css','home.mjs','home.css','home.html'].map(name=>fs.readFileSync(path.join(opening,name),'utf8')).join('\n');
  const openingAssets=new Set([...fs.readFileSync(path.join(opening,'opening.mjs'),'utf8').matchAll(/[\"']([a-zA-Z0-9_.-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g)].map(match=>match[1]));
  for(const match of openingSource.matchAll(/url\([\"']?(?:\.\/)?assets\/([^\"')]+)[\"']?\)/g))openingAssets.add(match[1]);
  for(const match of openingSource.matchAll(/[\"']assets\/([a-zA-Z0-9_./-]+\.(?:webp|png|jpg|mp4|wav|woff2))[\"']/g))openingAssets.add(match[1]);
  for(const name of fs.readdirSync(path.join(opening,'assets/home')))if(/\.(?:webp|woff2)$/.test(name)||name==='cafe-drinks-v2.png')openingAssets.add('home/'+name);
+ for(const name of fs.readdirSync(path.join(opening,'assets/world-felt')))if(/^[a-z0-9-]+\.webp$/.test(name))openingAssets.add('world-felt/'+name);
 for(const name of openingAssets)copyFile(path.join(opening,'assets',name),'brand-opening/assets/'+name);
 for(const game of ['korean-runner','korean-rhythm','hangul-stage'])copyTree(path.join(root,'experiences',game),game,(source,relative)=>!relative.startsWith('hangul-stage/assets/voice/'));
  // Publish only explicitly approved voice clips, and runtime-only empty fallback metadata otherwise.

@@ -1,0 +1,7 @@
+Use case: precise-object-edit.
+Edit the supplied three-panel photograph contact sheet with ONE targeted correction. This is an expression storyboard for the same real-looking Kkamong plush clipped to a black backpack.
+Change ONLY the MIDDLE PANEL: the mascot must have BOTH eyes completely closed simultaneously, depicting a brief natural blink instead of a wink. The eye on the image-right is already closed; now close the image-left eye too. Both green irises and black pupils must be fully concealed by matching brown plush eyelids. Draw only two subtle relaxed shallow curved eyelid seams at the exact existing eye positions, following the plush's head angle. Keep the subtle existing closed eyelid appearance; do not add eyelashes, eyebrows, a mouth, a nose, new fur, cheek dimples, smiling expression or squint exaggeration.
+LEFT PANEL: exactly preserve both eyes open.
+RIGHT PANEL: exactly preserve both eyes open.
+The sheet therefore reads OPEN EYES → BOTH EYES CLOSED → OPEN EYES, one ordinary blink. NO wink, NO asynchronous eye closure.
+Preserve everything else exactly: same three vertical panels and narrow white gutters, same size and photographic crop, all head/body/tail poses, fur, green open eyes in left/right frames, exact light, background, black backpack, silver clip, coral tail plate and white dots, clothing, focus and color. No head tilt change or other action. No captions or decorative marks. It remains a landscape three-panel photographic still storyboard, not an animation file.

@@ -6,7 +6,7 @@
       "contentHash": "327cde72ac6e60bbb8aaad82620b19142a24f70053618323f384a32b555ccb11",
       "publicationHash": "b62fc1699338a9b31b5b835c882c6bb205302d54382a9b00432d97b5860aa6c2",
       "startedAt": "2026-10-09T13:01:11.465Z",
-      "state": "public",
+      "state": "private",
       "id": "n-_Vp4PYTcw",
       "url": "https://www.youtube.com/watch?v=n-_Vp4PYTcw",
       "thumbnail": null,
@@ -27,7 +27,9 @@
       "finishedAt": "2026-10-09T13:01:21.982Z",
       "publicAt": "2026-10-09T13:01:25.080Z",
       "publicNote": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 공개된 v5(G21IYoeTEPQ)를 v6로 바꿈: v6 바로 공개, AI 음악 표시 켬(10-08 결정)",
-      "containsSyntheticMedia": true
+      "containsSyntheticMedia": true,
+      "privateAt": "2026-10-12T12:09:03.604Z",
+      "privateNote": "유호님 10-12 「중복되는 예전꺼는 비공개로 바꿔줘」. 바꾸기 전 일부 공개(unlisted)였다(교체 때 계획대로). 혜리 판 knW2_3ifY08만 공개로 둔다. API가 합성 표시 값을 돌려주지 않아 다시 공개할 땐 --합성표시를 다시 건다."
     }
   }
 }

@@ -20,6 +20,9 @@
       #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #fff; font-family: 'SUIT Variable', 'Inter Tight', sans-serif; }
       .k-scene { position: absolute; inset: 0; overflow: hidden; }
       .k-scene > .k-slide { position: absolute; inset: 0; }
+      /* 2026-10-13 유호님 「가운데 배치로 하고」(10-12 「배치가 위로 치우쳐 있어」) — 장면 내용 전체를 180px 내려 화면 가운데에 맞춘다.
+         좌표는 키트의 메타 통합 안전 영역(위 269·아래 672) 그대로이고, 배경·모서리 실땀은 section에 남는다. 키트 기본 .k-center와 같은 값 */
+      .shift { position: absolute; inset: 0; transform: translateY(180px); }
       /* 2026-10-13 이 판의 키트 사본(10-01)은 M.seam이 인라인 var(--thread-paper)를 써서 렌더에서 /assets/thread-coral.webp 404로 실땀이 빠졌다(키트 README §8).
          승인된 모습을 그대로 두려고 키트를 다시 연결하지 않고 루트 기준 경로로만 덮어쓴다. 다시 연결하면 이 줄을 지운다 */
       body[data-acc="lab"] { --thread-paper: url("/assets/synk-kit/assets/thread-coral.webp"); --thread-field: url("/assets/synk-kit/assets/thread-coral-soft.webp"); }
@@ -91,6 +94,7 @@
       <!-- 1 표지(코랄 면): 0초 화면부터 제목과 「아 맞다!」가 읽힌다. 소리 표기는 내레이션 음절에 맞춰 한 조각씩 -->
       <div id="s1" class="k-scene">
         <section class="k-slide k-field k-corners" data-fmt="cover916" data-name="cover">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span>1 Korean phrase</span></div>
           <div class="k-in s1-in">
             <p class="k-title s k-latin ttl-latin" id="s1-title"><span class="ln">Forgot something?</span><span class="ln">Koreans say…</span></p>
@@ -104,12 +108,14 @@
             <img data-face="놀람" class="on" src="assets/synk-kit/assets/mascot-몽글_놀람.webp" alt="" />
           </div>
           <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="assets/synk-kit/assets/logo-lab.webp" alt="synk LAB" /></span><span class="k-handle">@synkkorean</span></div>
+          </div>
         </section>
       </div>
 
       <!-- 2 언제 쓰나(흰 종이): v2 예문 장면(Veo 펠트 우산)을 아치 창 하나에. 「우산」 첫소리에 펀치인 -->
       <div id="s2" class="k-scene">
         <section class="k-slide k-paper" data-fmt="cover916" data-name="when">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span class="k-count">02 / 06</span></div>
           <div class="k-in pin">
             <p class="k-label">WHEN TO SAY IT</p>
@@ -125,12 +131,14 @@
             <span class="k-stamp" id="s2-ai">AI example image</span>
           </div>
           <p class="kv-cap k-latin" id="c2"><span class="w">Oh</span> <span class="w">right</span> <span class="w">—</span> <span class="w">my</span> <span class="w k-mark k-acc">umbrella!</span></p>
+          </div>
         </section>
       </div>
 
       <!-- 3 몽글도 그래요(흰 종이): 말풍선 셋 · 박자 컷 6.20(알아차림) 8.14(같이 하자) · 몽글은 표정 컷만 -->
       <div id="s3" class="k-scene">
         <section class="k-slide k-paper" data-fmt="cover916" data-name="mongle">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span class="k-count">03 / 06</span></div>
           <div class="stage" id="s3-stage">
             <div class="k-in pin">
@@ -153,12 +161,14 @@
           <p class="kv-cap k-latin" id="c3a"><span class="w">Huh?</span> <span class="w">A</span> <span class="w k-mark k-acc">bird</span> <span class="w">outside!</span></p>
           <p class="kv-cap k-latin" id="c3b"><span class="w">…Oh</span> <span class="w">right!</span> <span class="w k-mark k-acc">Homework!</span></p>
           <p class="kv-cap k-latin" id="c3c"><span class="w">Let’s</span> <span class="w">do</span> <span class="w">it</span> <span class="w k-mark k-acc">together!</span></p>
+          </div>
         </section>
       </div>
 
       <!-- 4 소리 · 따라 말하기(흰 종이): 음절 채움 → Now you!(다시 비움) → 다시 한 번 채움 + Nice! -->
       <div id="s4" class="k-scene">
         <section class="k-slide k-paper" data-fmt="cover916" data-name="sound">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span class="k-count">04 / 06</span></div>
           <!-- 크레용 동그라미는 글자 뒤에 둔다(선이 음절을 가리지 않게) -->
           <span class="k-crayon circle" id="s4-circle" data-deco style="left:150px;top:505px;width:780px;height:250px"></span>
@@ -179,12 +189,14 @@
           </div>
           <p class="kv-cap k-latin" id="c4b"><span class="w">Now</span> <span class="w k-mark k-acc">you!</span></p>
           <p class="kv-cap k-latin" id="c4c"><span class="w k-mark k-acc">Nice!</span></p>
+          </div>
         </section>
       </div>
 
       <!-- 5 내 차례(흰 종이): 빈칸 댓글 -->
       <div id="s5" class="k-scene">
         <section class="k-slide k-paper" data-fmt="cover916" data-name="your-turn">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span class="k-count">05 / 06</span></div>
           <div class="stage" id="s5-stage">
             <div class="k-in pin">
@@ -198,12 +210,14 @@
             <img data-face="윙크" src="assets/mascot/mongle-wink.webp" alt="" />
           </div>
           <p class="kv-cap k-latin" id="c5"><span class="w">Comment</span> <span class="w k-mark k-acc">yours</span> <span class="w">below</span> <span class="w">↓</span></p>
+          </div>
         </section>
       </div>
 
       <!-- 6 끝(코랄 면): 행동 하나 — 친구에게 보내기 -->
       <div id="s6" class="k-scene">
         <section class="k-slide k-field k-corners" data-fmt="cover916" data-name="end">
+          <div class="shift">
           <div class="k-head"><b>SYNK LAB</b><span class="k-count">06 / 06</span></div>
           <div class="k-in s6-in">
             <p class="k-word s6-word"><span class="ko" id="s6-ko">아 맞다!</span></p>
@@ -214,6 +228,7 @@
             <img data-face="눈웃음" class="on" src="assets/synk-kit/assets/mascot-몽글_눈웃음.webp" alt="" />
           </div>
           <div class="k-foot"><span class="k-logo-tag"><img class="k-logo" src="assets/synk-kit/assets/logo-lab.webp" alt="synk LAB" /></span><span class="k-handle">@synkkorean</span></div>
+          </div>
         </section>
       </div>
 

@@ -306,7 +306,7 @@ function main() {
     const r = 굽기('썸네일', 썸네일지면(), 방);
     const MB = r.바이트 / 1024 / 1024;
     console.log(`✅ 썸네일 · ${W}×${H} · ${MB.toFixed(2)}MB ${MB < 2 ? '(유튜브 상한 2MB 안)' : '🔴 2MB 초과 — 유튜브가 거절한다'}`);
-    console.log(`   세 친구의 차분한 마당 · ${path.relative(ROOT, r.png)}`);
+    console.log(`   세 친구의 반딧불 노을 들판 · ${path.relative(ROOT, r.png)}`);
     return;
   }
 

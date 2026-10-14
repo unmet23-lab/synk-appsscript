@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 // 09-09 두 곡 추가. 기존 9곡 방송본의 음량은 유지하고 새 곡만 같은 평균 크기로 맞춘다.
-// 곡 사이와 마지막→처음 모두 기존 6초 겹침 원칙을 유지한다. 서비스 재시작은 하지 않는다.
+// 2026-10-05: 다른 블록 사이에 놓는 묶음은 원곡 전체를 순서대로 잇는다.
+// 순환용 앞뒤 자르기는 앞 6초를 잃고 노래 끝을 다른 곡과 섞으므로 사용하지 않는다.
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
@@ -14,7 +15,7 @@ const result = path.join(out, 'synk-radio-blok11-20260909-air.aac');
 const reportPath = path.join(out, 'audio-verification.json');
 const oldPlaylistHash = 'a02f329c92a5f4b1dbedecf84366a6c0b33196d209b0e286c7665e36312dc8fd';
 const oldAudioHash = '12db68bb1b8f064ac632816ef6a187caea9ff5310806d3929fc1af9612ba8878';
-const crossfade = 6;
+const crossfade = 0;
 const sources = [
   path.join(os.homedir(), 'Downloads/오늘 밤 제일 환한 사람.wav'),
   path.join(os.homedir(), "Downloads/The Phantom's Lament.wav"),
@@ -58,21 +59,11 @@ function prep() {
     '[0:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,asetpts=N/SR/TB[a0]',
     '[1:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,asetpts=N/SR/TB[a1]',
     '[2:a]aformat=sample_fmts=fltp:sample_rates=44100:channel_layouts=stereo,asetpts=N/SR/TB[a2]',
-    `[a0][a1]acrossfade=d=${crossfade}:c1=tri:c2=tri[x]`,
-    `[x][a2]acrossfade=d=${crossfade}:c1=tri:c2=tri[out]`,
+    '[a0][a1][a2]concat=n=3:v=0:a=1[out]',
   ].join(';');
   ff(['-v', 'error', '-y', '-i', tracks[0].normalized, '-i', tracks[1].normalized, '-i', previous, '-filter_complex', filter, '-map', '[out]', '-map_metadata', '-1', '-c:a', 'pcm_s24le', '-ar', '44100', '-ac', '2', chain]);
-  const chainDuration = +probe(chain).format.duration;
   const loop = path.join(out, 'loop-pcm.wav');
-  const seam = [
-    '[0:a]asplit=3[h][m][t]',
-    `[h]atrim=0:${crossfade},asetpts=N/SR/TB[head]`,
-    `[m]atrim=${crossfade}:${chainDuration - crossfade},asetpts=N/SR/TB[mid]`,
-    `[t]atrim=start=${chainDuration - crossfade},asetpts=N/SR/TB[tail]`,
-    `[tail][head]acrossfade=d=${crossfade}:c1=tri:c2=tri[join]`,
-    '[mid][join]concat=n=2:v=0:a=1[out]',
-  ].join(';');
-  ff(['-v', 'error', '-y', '-i', chain, '-filter_complex', seam, '-map', '[out]', '-c:a', 'pcm_s24le', '-ar', '44100', '-ac', '2', loop]);
+  fs.copyFileSync(chain, loop);
   // The pre-existing block has already been levelled and peak-limited. Do not loudnorm it again.
   ff(['-v', 'error', '-y', '-i', loop, '-map_metadata', '-1', '-c:a', 'aac', '-b:a', '192k', '-ar', '44100', '-ac', '2', '-f', 'adts', result]);
   const finalLoudness = loudness(result);
@@ -90,7 +81,7 @@ function prep() {
     output: { file: result, sha256: hash(result), bytes: fs.statSync(result).size, probe: probe(result), loudness: finalLoudness, highBand: bandPeak(result), decodeErrors: 0, silences },
     newTrackStartsSeconds: [0, tracks[0].duration - crossfade * 2],
     existingBlockStartsSeconds: tracks.reduce((sum, t) => sum + t.duration, 0) - crossfade * 3,
-    notes: ['New tracks use constant gain only; the previous block receives no extra loudness normalization.', 'The first six seconds are crossfaded at the loop seam, as in the existing radio bake.', 'AAC duration from ffprobe is an estimate; durationSeconds is measured from the PCM render.'],
+    notes: ['New tracks use constant gain only; the previous block receives no extra loudness normalization.', 'Complete source tracks are concatenated without a cyclic block seam.', 'AAC duration from ffprobe is an estimate; durationSeconds is measured from the PCM render.'],
   };
   fs.writeFileSync(reportPath, JSON.stringify(report, null, 2) + '\n');
   console.log(JSON.stringify(report, null, 2));

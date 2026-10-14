@@ -1,0 +1,22 @@
+15-second photoreal brand film, 9:16 vertical, inside a white felt building in 2126 at golden hour. A visitor walks up through two floors; on each floor one small playful event happens while everyone stays natural and calm. Three scenes, each covered by four cameras (A, B, C, D) that cut on the beat; every cut continues the same moment from a new camera, never a time jump.
+@Image1 is the visitor's character card: identity, outfit and props only (the black VR headset now pushed up on his head, iced coffee in his right hand); do not copy its pose, framing or background. @Image2 is his real 45-degree face: keep it identical, never copy its clothing. @Image3 is the creator in Scene 1: keep her face, never copy any logo on her sweater. @Image4 is the berry felt studio. @Image5 is the coral felt robot. @Image6 is the lapis felt room with the city model. @Image7 is the navy robot. @Audio1 is the only soundtrack.
+SCENE 1, the berry felt creative studio: pen displays, music keyboards, deep berry felt walls and seats.
+Shot 1 [0-0.94s] Camera A, low wide from inside the lobby: felt-framed glass doors slide open and he steps in, backlit, a silhouette.
+Shot 2 [0.94-1.88s] Camera A, gliding forward past his shoulder into the studio, slipping between the desks.
+Shot 3 [1.88-2.81s] Camera B, macro: a pen nib draws one stroke on a pen display, finishing the arm of a coral ghost-shaped character.
+Shot 4 [2.81-3.75s] Camera C, over the creator's shoulder: on her screen the character hops once; she smiles slightly.
+Shot 5 [3.75-4.69s] Camera D, floor level: the real coral felt robot on the floor hops at the same instant, then turns and gives a small bow toward his passing white sneakers.
+Shot 6 [4.69-5.63s] Camera B, macro: a finger presses one key and the waveform on the monitor pulses on the beat.
+SCENE 2, a curved felt staircase.
+Shot 7 [5.63-7.5s] Camera A, strict side profile of the staircase so every step reads clearly: he climbs with his coffee, and each felt tread he steps on turns from berry to lapis blue.
+SCENE 3, the lapis felt room: three colleagues around a large miniature city model on a round table.
+Shot 8 [7.5-8.44s] Camera A, wide: one red blocked delivery route blinks in the model.
+Shot 9 [8.44-9.38s] Camera B, macro: a fingertip swipes a new route and it lights blue.
+Shot 10 [9.38-11.25s] Camera C, low across the tabletop: tiny streetlights switch on in a domino cascade and tiny delivery trucks race along the blue route; one tiny truck shoots off the table edge.
+Shot 11 [11.25-12.19s] Camera D, medium: the navy robot catches the tiny truck in one hand, perfectly deadpan, then hands a real parcel to a colleague.
+Shot 12 [12.19-13.13s] Camera A, 3/4 medium: two colleagues give one silent, synchronized nod with small smiles.
+Shot 13 [13.13-15s] Camera C, from behind: he stops at a tall open window with his coffee and looks out at the river.
+Face: his face appears only as a backlit silhouette in Shot 1; the creator and the colleagues look natural and calm, no wide grins.
+Style: photoreal live action, real felt fibers on walls and seats, berry #99295D in Scene 1, lapis #24448C with #3D6BC9 accents in Scene 3, warm low sun through tall windows, 35mm film grain, natural motion blur.
+Audio: @Audio1 only, unaltered, in exact sync from 0.0s. No added music, vocals, voice-over or sound effects.
+Negative: no text, no logos, no signage, no letters on screens, no brand marks, no extra robots, no stairs seen from above, no face change, no image flicker, no self-inserted cut points.

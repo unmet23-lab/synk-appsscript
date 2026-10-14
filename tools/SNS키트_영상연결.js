@@ -59,3 +59,4 @@ console.log(`@font-face{font-family:'SUIT Variable';font-weight:100 900;src:url(
 @font-face{font-family:'Inter Tight';font-weight:400 600;src:url("assets/synk-kit/fonts/InterTight-SemiBold.ttf")}
 @font-face{font-family:'Inter Tight';font-weight:700 900;src:url("assets/synk-kit/fonts/InterTight-Bold.ttf")}
 @font-face{font-family:'DM Mono';font-weight:400 700;src:url("assets/synk-kit/fonts/DMMono-Medium.ttf")}`);
+console.log('9:16 장면은 section 바로 안의 <div class="k-center">에 내용을 넣는다(가운데 배치 기본, README §9 배치).');

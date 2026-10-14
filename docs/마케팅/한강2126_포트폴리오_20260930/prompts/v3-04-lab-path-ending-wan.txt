@@ -1,0 +1,22 @@
+15-second photoreal brand film ending, 9:16 vertical, a coral felt learning room in 2126 at golden hour with a sage felt arch at the back. Three adult learners finish a Korean-speaking teamwork mission, then the late visitor walks in for a deadpan finish. Three scenes, each covered by four cameras (A, B, C, D) that cut on the beat; every cut continues the same moment from a new camera, never a time jump.
+@Image1 is the room: coral felt LAB in front, sage felt PATH arch behind, a tabletop river model with puzzle pieces. @Image2 is the coral felt robot. @Image3 is the visitor's character card (black VR headset pushed up on his head, iced coffee): identity, outfit and props only; do not copy its pose, framing or background. @Image4 and @Image5 are his real face at 45 degrees to the right: keep his face identical, never copy their clothing. @Image6 is the baby otter. @Audio1 is the only soundtrack.
+Learners: a Latin American woman in her twenties with curly hair, a Southeast Asian man in his thirties, a woman in her fifties with silver-streaked hair; soft knitwear, no logos.
+SCENE 1, the request.
+Shot 1 [0-1.88s] Camera A, wide from the window: the three kneel around the river model; one gap in the channel is empty; the coral robot holds up a small felt card showing a picture of a blue knot, no words.
+Shot 2 [1.88-3.75s] Camera B, 45-degree medium: the curly-haired woman looks at the glowing blue piece in the man's hand and says in Korean, "파란 조각 주세요." Lip sync.
+Shot 3 [3.75-4.69s] Camera C, macro: the blue piece passes from his hand to hers.
+Shot 4 [4.69-5.63s] Camera D, straight-down overhead: she clicks it into the gap.
+SCENE 2, the river wakes up.
+Shot 5 [5.63-7.5s] Camera A, skimming along the miniature river at tabletop height like a tiny drone: light and water rush through the channels and tiny plants unfurl on the banks.
+Shot 6 [7.5-8.44s] Camera B, macro: a small simulated otter made of soft light pops out of the miniature river and spins once.
+Shot 7 [8.44-9.38s] Camera D, 90-degree profile close-up: the woman in her fifties breaks into a small delighted smile.
+Shot 8 [9.38-11.25s] Camera C, through the sage arch: a researcher lowers a slim sensor into a water basin and a dragonfly-like drone lifts off.
+SCENE 3, the late arrival.
+Shot 9 [11.25-12.19s] Camera A, wide: he walks in at the back with his coffee; the curly-haired woman turns and says in Korean, "늦었어요!" Lip sync.
+Shot 10 [12.19-13.13s] Camera B, macro: the dragonfly drone lands on his coffee lid.
+Shot 11 [13.13-14.06s] Camera D, 45-degree right medium: he looks at the drone, perfectly deadpan, one eyebrow barely raised, and lifts the cup a little.
+Shot 12 [14.06-15s] Camera C, over his shoulder through the window: far below, the real baby otter pops up in the river and looks up.
+Face: his face shows only in Shots 9 and 11, never frontal, mouth closed; the learners look warm and natural, no wide grins.
+Style: photoreal live action, real felt fibers, LAB coral #F96859 with #AE322A accents, PATH sage #526956, warm low sun through tall windows, 35mm film grain, natural motion blur.
+Audio: @Audio1 only, unaltered, in exact sync from 0.0s; its two Korean lines are hers. No added music, vocals, voice-over or sound effects.
+Negative: no text, no logos, no letters on cards, screens or pieces, no extra people, no real otter indoors, the real otter stays in the river, no face change, no image flicker, no self-inserted cut points.

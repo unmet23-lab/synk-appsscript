@@ -1,0 +1,26 @@
+GLOBAL STYLE: 15-second photoreal live-action brand film opening, 9:16 vertical, golden hour, 35mm film look with fine grain and natural motion blur, real skin and fabric texture, not CGI, not a game engine, except the three in-game shots, which are clean stylized CG. No text, no logos, no signage anywhere.
+SCENE: A man walking along a future Han River promenade in 2126 plays a Korean listening race game in his VR headset. When his kart grabs the booster, his real-world lean bumps a jogger, the coffee flies, and the booster freezes time around him. He calmly puts the coffee back into the cup. Only he, and the plush on his bag, stay alive.
+ACTIVE REFERENCES: @Image1 is his character card: identity, outfit and props only; ignore its pose and background. @Image2 and @Image3 are his real front face, @Image4 his real 45-degree right, @Image5 his real 90-degree profile: identical face and cornrows at every angle, never copy their clothing. @Image6 is the game look only; ignore any text in it. @Image7 is the location: the promenade and the white felt building. @Image8 is the plush keychain. @Audio1 sets the timing.
+CHARACTERS: HIM, a Korean man in his late twenties with neat cornrows, slim athletic build, about 180 cm: charcoal shirt jacket, white T-shirt, dark trousers, white sneakers, black backpack with the plush clipped on; a plain matte-black VR headset covering both eyes, no logo; a clear cup of iced coffee with a flat white lid in his right hand, a phone in his left. Deadpan and calm, mouth closed. THE JOGGER passes through, seen mostly from behind. THE PLUSH: a small dark-brown fluffy plush, big green eyes, coral tail tag.
+LOCATION: a wide wet-stone promenade along a turquoise river, garden terraces, a dreamcore future skyline, and at the far end the white short-pile felt building with curved floors; pigeons and petals in the air.
+THE FREEZE EFFECT (critical staging): at the bump, one ring of warm gold light ripples outward from his visor; everything it crosses locks in place: the jogger mid-stride, pigeons mid-flap, petals, river spray, every coffee droplet and ice cube. Frozen things are absolute statues with zero sway. Only he moves, at a normal relaxed speed. The plush blinks once. Time resumes only when he taps the side of his visor.
+FORMAT MODE: thirteen shots, hard cuts on the beat; every cut continues the same moment from a new camera (A wide, B macro, C floor level or overhead, D side or 45 degrees), never a time jump.
+Shot 1 (0.0-0.9s) Camera A, game POV over the kart's wheel: three floating picture capsules, a school, a subway train and a swimming pool, glow equally; none is highlighted. Hard cut.
+Shot 2 (0.9-1.9s) Camera B, low chase camera: the kart leans hard right toward the school. Hard cut.
+Shot 3 (1.9-2.8s) Camera C, overhead: the kart takes the school capsule; gold burst; the booster fires. Hard cut.
+Shot 4 (2.8-3.75s) Camera D, reality, 90-degree side medium-wide: he leans exactly like the kart; his shoulder clips the jogger. Hard cut.
+Shot 5 (3.75-4.7s) Camera A, low wide: the cup leaves his hand, the lid pops, coffee and ice fly; the gold ring ripples out and the world freezes. Hard cut.
+Shot 6 (4.7-5.6s) Camera B, macro: coffee as glassy ribbons and perfect spheres, ice frozen mid-spin, the felt building reflected in one droplet. Hard cut.
+Shot 7 (5.6-6.6s) Camera C, floor level: the jogger's shoe frozen above the stone; his white sneaker steps calmly forward. Hard cut.
+Shot 8 (6.6-8.4s) Camera D, 45-degree right medium, headset on: he sweeps the cup through the floating coffee; every ribbon and ice cube flows back in; he presses the lid on. Hard cut.
+Shot 9 (8.4-9.4s) Camera B, macro on the backpack: the frozen plush blinks both eyes once; nothing else moves. Hard cut.
+Shot 10 (9.4-10.3s) Camera A, wide: he taps his visor; time snaps back; the jogger stumbles on, pigeons burst up, petals fall; his coffee is safe. Hard cut.
+Shot 11 (10.3-11.25s) Camera D, 45-degree right chest-up: he pushes the headset up onto his head and his face is revealed, calm and deadpan, petals falling behind him. Hard cut.
+Shot 12 (11.25-13.1s) Camera C, over his shoulder: the same game on his phone, the track ending at a white felt building; push straight into the screen toward it. Match cut.
+Shot 13 (13.1-15.0s) Camera A, the same composition in reality: the real felt building ahead; low behind his sneakers, he walks toward it as its glass doors slide open.
+OPTICS: 24mm for wides, 100mm macro for inserts, 50mm for the side and 45-degree shots; shallow depth of field on the inserts.
+CAMERA: smooth stabilized moves in reality, a punchy chase camera in the game; no shaky handheld.
+PHYSICS: liquids keep true volume and surface tension; frozen objects have zero sway; when time resumes everything falls with real weight; he never falls.
+LIGHTING: one low golden sun from screen left, warm rim light, wet-stone reflections; his face lit softly from the front.
+AUDIO: follow @Audio1 for timing; the only voice is the short game line in it. No other voices.
+POSITIVE LOCKS: the same face, outfit and props in every shot; one cup, one phone, one headset, one plush; the headset covers his eyes until he pushes it up in Shot 11; nothing highlighted before the pick; nothing readable anywhere; his face never shown frontal.

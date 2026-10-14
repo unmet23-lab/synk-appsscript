@@ -143,6 +143,7 @@
         "앱·게임"
       ],
       "height": 165,
+      "weightKg": 50,
       "build": "슬림",
       "sizes": {
         "top": "55 (S)",

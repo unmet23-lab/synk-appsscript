@@ -6,7 +6,7 @@
       "contentHash": "74e369f41f79b7da8cf66ac2627eb009a5531532018fab2a78fe98ee0dd463cd",
       "publicationHash": "02b3513b055bba77fd7dcc8fe5f7ff84c5d8db3acbb246da0d2dd791cbc227fe",
       "startedAt": "2026-10-07T15:28:34.802Z",
-      "state": "unlisted",
+      "state": "private",
       "id": "G21IYoeTEPQ",
       "url": "https://www.youtube.com/watch?v=G21IYoeTEPQ",
       "thumbnail": null,
@@ -44,7 +44,9 @@
         "byPlan": "docs/마케팅/LAB_한글초보_모음댄스_v6_20261009/게시/계획.json",
         "what": "공개 중이던 v5를 일부 공개로(이미 공유된 링크는 열림), 재생목록에서 뺌 — v6를 바로 공개",
         "note": "유호님 10-09 18:44 「오케이 이어서 남은것도 전부 하자」 — 세 곡 새 판(노래 영상 가이드 적용)으로 바꿈. 옛 판은 지우지 않았다(.tmp/hangul-mascot-video-20261006/youtube/기록.jsonl)."
-      }
+      },
+      "privateAt": "2026-10-12T12:09:03.604Z",
+      "privateNote": "유호님 10-12 「중복되는 예전꺼는 비공개로 바꿔줘」. 바꾸기 전 일부 공개(unlisted)였다(교체 때 계획대로). 혜리 판 knW2_3ifY08만 공개로 둔다. API가 합성 표시 값을 돌려주지 않아 다시 공개할 땐 --합성표시를 다시 건다."
     }
   }
 }

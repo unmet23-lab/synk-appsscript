@@ -99,7 +99,7 @@
 .k-slide[data-fmt="pin23"]{--w:1000px;--h:1500px;--safe-t:72px;--safe-b:220px;--safe-l:64px;--safe-r:64px;--pad-x:76px;--pad-top:170px;--pad-bot:300px}
 /* 세로 9:16: 메타 통합 안전 영역(위 269·아래 672·좌우 65)을 따른다. 오른쪽은 좋아요·댓글 단추 자리라 160을 비운다.
    2026-09-27 인터뷰 세로 클립 v2가 이 기준으로 실측했고, 2026-10-01 키트도 같은 기준으로 맞췄다(이전 키트 값은 아래 420) */
-.k-slide[data-fmt="cover916"]{--w:1080px;--h:1920px;--safe-t:269px;--safe-b:672px;--safe-l:65px;--safe-r:160px;--pad-x:84px;--pad-top:350px;--pad-bot:740px}
+.k-slide[data-fmt="cover916"]{--w:1080px;--h:1920px;--safe-t:269px;--safe-b:672px;--safe-l:65px;--safe-r:160px;--pad-x:84px;--pad-top:350px;--pad-bot:740px;--k-center:180px}
 /* 유튜브 썸네일: 오른쪽 아래 재생 시간 자리를 비운다 */
 .k-slide[data-fmt="thumb169"]{--w:1920px;--h:1080px;--safe-t:64px;--safe-b:64px;--safe-l:72px;--safe-r:72px;--pad-x:110px;--pad-top:110px;--pad-bot:110px}
 .k-slide[data-fmt="og"]{--w:1200px;--h:630px;--safe-t:40px;--safe-b:40px;--safe-l:48px;--safe-r:48px;--pad-x:72px;--pad-top:64px;--pad-bot:64px}
@@ -131,6 +131,10 @@
 .k-slide[data-fmt="cover916"] .k-head,.k-slide[data-fmt="cover916"] .k-foot{right:calc(var(--safe-r) + 4px)}
 /* 영상에서 말자막(y 1080~1236)이 있는 장면은 발(로고 줄)을 자막 위로 올리거나(.up) 빼고, 로고는 자막 없는 표지·끝 장면에 둔다 */
 .k-slide[data-fmt="cover916"] .k-foot.up{bottom:calc(var(--safe-b) + 200px)}
+/* 9:16 가운데 배치 기본(2026-10-13 유호님 「당연히 가운데지」). 좌표는 위 안전 영역(위 269·아래 672) 기준으로 짜고,
+   장면 내용 전체를 .k-center로 감싸면 --k-center(9:16은 180px)만큼 내려가 내용 묶음의 위아래 여백이 같아진다.
+   배경 면·모서리 실땀(.k-corners)은 section에 남는다. 다른 판에서는 0이라 감싸도 그대로다 */
+.k-slide .k-center{position:absolute;inset:0;transform:translateY(var(--k-center,0px))}
 .k-logo{height:46px;width:auto;display:block}
 .k-logo.sm{height:36px}
 /* 색 면 위 로고: 펠트 로고를 다른 색으로 칠하지 않고 흰 라벨 위에 원본 그대로 얹는다(사업명 색이 바탕과 같아도 보이게).

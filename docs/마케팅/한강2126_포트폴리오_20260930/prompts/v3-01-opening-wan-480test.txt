@@ -1,0 +1,23 @@
+15-second deadpan photoreal brand film opening, 9:16 vertical, golden hour on a future Han River promenade in 2126. The Korean race game in his VR headset spills into reality: his game booster freezes time around him while he stays perfectly cool. Three scenes, each covered by four cameras (A, B, C, D) that cut on the beat; every cut continues the same moment from a new camera, never a time jump.
+@Image1 is the character card: outfit, backpack and props only; do not copy its pose, framing or background. @Image2 is his face and hair with the headset pushed up. @Image3 and @Image4 are his real front face, @Image5 his real 45-degree right, @Image6 his real 90-degree profile: keep his face and cornrows identical at every angle, never copy their clothing. @Image7 is the game look only. @Image8 is the promenade and the white felt building, look only; do not copy its framing and ignore its text. @Image9 is the plush on his backpack.
+Wardrobe and props: charcoal shirt jacket, white T-shirt, dark trousers, white sneakers, black backpack; a plain matte-black VR headset over both eyes, no logo; a clear cup of dark iced americano with a flat white lid in his right hand; a phone in his left hand.
+SCENE 1, inside the game: a bright dreamcore race track above a sunlit river city.
+Shot 1 [0-0.94s] Camera A, driver POV over the kart's wheel: three floating picture capsules ahead, a school, a subway train and a swimming pool, glowing equally, none highlighted.
+Shot 2 [0.94-1.88s] Camera B, low chase camera: the kart leans hard right toward the school.
+Shot 3 [1.88-2.81s] Camera C, straight-down overhead: the kart hits the school capsule; gold burst; the booster fires.
+Shot 4 [2.81-3.75s] Camera D, hard cut on the same lean into reality, 90-degree side medium-wide: he leans hard right like the kart and his shoulder clips a passing jogger.
+SCENE 2, the promenade freezes.
+Shot 5 [3.75-4.69s] Camera A, low wide: the cup flies, the lid pops, coffee and ice burst out; a ring of warm gold light ripples from his visor and everything it crosses freezes.
+Shot 6 [4.69-5.63s] Camera B, macro: the coffee hangs as glassy ribbons and spheres, ice frozen mid-spin, the felt building mirrored in one droplet.
+Shot 7 [5.63-6.56s] Camera C, floor level: the jogger's shoe frozen above the wet stone, pigeons frozen mid-flap; only his white sneaker steps calmly forward.
+Shot 8 [6.56-8.44s] Camera D, 45-degree right medium, headset on: deadpan, he sweeps the cup through the floating coffee; every ribbon and ice cube flows back in; he presses the lid on.
+Shot 9 [8.44-9.38s] Camera B, macro on the backpack: in the frozen world the plush blinks both eyes once; nothing else moves.
+Shot 10 [9.38-10.31s] Camera A, wide: he taps the side of his visor; time snaps back, the jogger stumbles on, pigeons burst into flight; his coffee is safe in his hand.
+Shot 11 [10.31-11.25s] Camera D, 45-degree right chest-up: he pushes the headset up onto his head and his face is revealed, calm and deadpan, petals falling behind him.
+SCENE 3, the phone becomes the place.
+Shot 12 [11.25-13.13s] Camera C, over his shoulder: the same race game on his phone, the track ending at a white felt building; push straight into the screen toward it.
+Shot 13 [13.13-15s] Camera A, match cut to the same composition in reality: the real felt building at the end of the promenade; low behind his sneakers, he walks toward it as its glass doors slide open.
+Face: only Shots 4, 8 and 11 show his face, the headset over his eyes in Shots 4 and 8, never frontal; calm, mouth closed.
+Style: photoreal live action, real skin and fabric, low warm sun from screen left, wet stone reflections, 35mm film grain, natural motion blur; the game shots are clean stylized CG.
+Audio: no music. A calm female game voice says "학교!" in Korean at 0.3s; kart hum; a booster whoosh at 2.2s; a soft shoulder bump at 3.4s; at the freeze all sound drops into a muffled hush with one high tone; a soft reverse slurp as the coffee returns; a lid click; at 9.4s the world rushes back with flapping wings; footsteps; glass doors sliding open. No other voices.
+Negative: no text, no subtitles, no logos, no brand marks on the headset, cup or phone, no highlight before the pick, no second plush, no falling down, no face change, no image flicker, no self-inserted cut points.
