@@ -1,0 +1,110 @@
+{
+  "ok": true,
+  "baselineVersion": "0.4.13",
+  "baselineSourceHash": "22d4414a082b3b5ff4db5e16f5024dd28067504367d774e2be08b505842f516f",
+  "candidate": {
+    "prepared": ".tmp/member-understanding-20261014/desktop-candidate",
+    "sourceHash": "b88499cc6dc50e2e28815654248fa8ff92111072faf7aa5ed7350f77fcca8be7",
+    "verification": {
+      "checks": 10,
+      "ok": true
+    }
+  },
+  "changed": [
+    {
+      "path": "renderer/launcher.mjs",
+      "before": "c797d9000d137e0715a4785608682591d6b2f5643e1cdb64a66fe520199c701c",
+      "after": "18c6a2a3228f3062f62ea1988825ba05bddfa374a081a01156b83c291ea593e6"
+    },
+    {
+      "path": "renderer/member-insight-model.mjs",
+      "before": "c793fde9d4d5532e948458fc45e1ae90cd00b403a79572693c1ba33dfc639131",
+      "after": "3a6f378258205eb80be2f8f16801b54ad38d58f560782acfba6fdace13e82a33"
+    },
+    {
+      "path": "renderer/member-insight-view.mjs",
+      "before": "a4662b18cf5f7cb00527d1647f13439a8b50175bf5aaee3e87f92e0273f4c08d",
+      "after": "2040f5754b7291f3d0bbba73c51187480c76f37a08dbe7548ab6ba4d7464f951"
+    },
+    {
+      "path": "renderer/member-insight.css",
+      "before": "db5c2b0905f231b29e0015c9cfc839a5f014079fc0769eb05fa105f151327f1b",
+      "after": "fc5ad3e90f12d78ba52671af260ae7dd3b26caa783189b2ac636f9009b5ba981"
+    },
+    {
+      "path": "renderer/member-insight.mjs",
+      "before": "33032a0d3ef96eae8964a5b9fd5395941473755ff2496a57c684e797b3f5c72e",
+      "after": "5604f24c09ef308491654c75660bfee1dae1a6597668fde1336cdfa2d249d7db"
+    },
+    {
+      "path": "renderer/platform-continuity.mjs",
+      "before": "b05c15902fee6125a2e12e62454d2a44da87b9312bba7b751d86647f3ed7e718",
+      "after": "13a3a705238df0f5441113fc27b9365f6567ec8b073550e29e82748a450f9c37"
+    },
+    {
+      "path": "src/account-requests.cjs",
+      "before": "6b542c80abb04facbc6cc76e56dc7147a2c6c03d33f324c2f9b7bf497f0537ae",
+      "after": "719e284cca50c65e2a0996ab27eeeea57dfb7319ca0dcca5b001e06ade490971"
+    },
+    {
+      "path": "src/auth-service.cjs",
+      "before": "fd76864c94c9d7aad5bba6dad7ce7cf50c830b01d1dbbc07adb3880ec9229134",
+      "after": "1605a73423e88035a448ab0ccd1bf4e54e1c3d409c53c30db413aa692017d2f6"
+    },
+    {
+      "path": "src/personal-requests.cjs",
+      "before": "8aa34bd0839a5bcf948d7ad29e65a2dcfb9ecabc6f837d623be3efc6e01b050d",
+      "after": "faee54fad02f53dec125b4607c1f94143ddb0df1f66aa8422979453560bf0489"
+    }
+  ],
+  "added": [
+    {
+      "path": "renderer/generated/member-activity-data.manifest.json",
+      "after": "90606cbdae3f77268715f842121463e52420bb9cc83456cc99f89682fdb0f272"
+    },
+    {
+      "path": "renderer/generated/member-activity-data.mjs",
+      "after": "2424d76f2c751ecc9d79d4479de31311cab105d4ee8f4551181b778958835d75"
+    },
+    {
+      "path": "renderer/generated/member-activity.manifest.json",
+      "after": "cf993ac049804a078c19dbe3e61d1e1e24d34fd6a614de51c8086d5423b0d231"
+    },
+    {
+      "path": "renderer/generated/member-activity.mjs",
+      "after": "2dcd64dc85998dfe7a39694d8e5d77e54f079dedf66535c1b5c6b90afa9b24a8"
+    },
+    {
+      "path": "renderer/generated/member-understanding-data.manifest.json",
+      "after": "63fea1bc2881a57951e0e8ea898a18b7b901a7eecb593681e85fe11db7378847"
+    },
+    {
+      "path": "renderer/generated/member-understanding-data.mjs",
+      "after": "176a40f4550f2227ff85faf93893d45a8100572315165b04741bef75443a16bb"
+    },
+    {
+      "path": "renderer/generated/member-understanding.manifest.json",
+      "after": "1de8af3ff409ff823fb3f2f0711c404b118707b2bf08c3ce657cfe1ad67c5efb"
+    },
+    {
+      "path": "renderer/generated/member-understanding.mjs",
+      "after": "0e48fbeb88df160a2cfbd9e8c402763a4694da71742771914dfec4a53b4953f8"
+    },
+    {
+      "path": "renderer/member-activity-controller.mjs",
+      "after": "99a1c44ac711adb975093feaed1f6163a45cfb25f761daa286f537bebc79cc2c"
+    },
+    {
+      "path": "renderer/member-understanding-controller.mjs",
+      "after": "bbd60ae4954f7f94fc0906523fb02355b7047277365e2a35c0a073b3b79e9299"
+    },
+    {
+      "path": "renderer/member-understanding-host.mjs",
+      "after": "a604803880edf39f95dc70a8264449a58758857403d22b30d5c528def1513bf8"
+    }
+  ],
+  "removed": [],
+  "preservedFiles": 122,
+  "childScope": "WORLD·워크스페이스 0.4.11 설치파일을 0.4.13 기준 설치파일에서 그대로 가져온다",
+  "installedAppTouched": false
+}

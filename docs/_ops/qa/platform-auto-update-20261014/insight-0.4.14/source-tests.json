@@ -1,0 +1,16 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-15T03:40:00+09:00",
+  "sourceHash": "b88499cc6dc50e2e28815654248fa8ff92111072faf7aa5ed7350f77fcca8be7",
+  "runs": [
+    {"command": "node .tmp/platform-insight-0414-20261015/desktop-candidate/verify.cjs", "where": "회원 인사이트 세션 후보를 복사해 다시 실행", "checks": 10, "pass": 231, "fail": 0},
+    {"command": "node --test desktop/tests/platform-update.test.cjs desktop/tests/update-view.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs", "where": "appsscript 작업본(릴리스 도구)", "pass": 92, "fail": 0},
+    {"command": "node --test desktop/tests/renderer-auth.test.cjs desktop/tests/member-benefit-preview.test.cjs desktop/tests/public-apps.test.cjs", "where": "후보 src·renderer·assets + 로컬 master 시험·atlas 사본. 런처 시험 틀의 모듈 목록에 새 런처 모듈 3개(member-activity-controller·member-understanding-controller·member-understanding-host)만 더함", "pass": 101, "fail": 3,
+     "failures": [
+       "actions waiting for automatic hydration use only device storage when account consent is off",
+       "a waiting favorite or launch cannot transfer into a different verified account",
+       "failed automatic hydration does not silently save an account action into device preferences"
+     ],
+     "failureReading": "세 시험은 계정 요청 목록을 정확히 ['platformLoad']처럼 적어 둔 기존 기대값이다. 후보의 앱 활동 기록은 쓰기 전에 매번 계정의 활동 문서를 다시 읽고(insightLoad) 그 문서의 동의가 꺼져 있으면 쓰지 않으므로 읽기 요청이 늘었다. 세 시험 모두 쓰기 요청은 0이고, 다른 계정으로 즐겨찾기·실행 기록이 넘어가지 않았다(나머지 단언 통과). 기대 목록 갱신은 회원 인사이트 담당의 후속 일이다."}
+  ]
+}
