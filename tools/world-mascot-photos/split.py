@@ -1,6 +1,6 @@
 # 표정 판 나누기: 흰 줄로 칸을 찾고, 칸마다 첫 칸에 맞춰 정렬(ECC)한 뒤 「첫 칸과 다른 곳(얼굴)」만 덮어
 # 몸·배경은 모든 표정에서 같은 화소가 되게 한다(표정이 바뀌어도 몸이 흔들리지 않는다).
-# 사용: python split.py <판 이름> <열> <행> <표정이름,...> [--size=512] [--crop=x0,y0,x1,y1(칸 비율)] [--free]
+# 사용: python split.py <판 이름> <열> <행> <표정이름,...> [--size=512] [--crop=x0,y0,x1,y1(칸 비율)] [--free] [--thr=28] [--face=cx,cy,rx,ry(칸 비율)]
 #   --free: 칸끼리 합치지 않고 따로 낸다(장면이 칸마다 다른 판).
 # 결과: cut/<판>/<표정>.webp(+ .png 원본 크기), cut/<판>/_check.jpg
 import os, sys
@@ -84,6 +84,10 @@ if 'free' not in opts:
         for k in range(1, n):
             if stats[k, cv2.CC_STAT_AREA] >= w * h * 0.0015:
                 keep[lab == k] = 1
+        if 'face' in opts:
+            # --face=cx,cy,rx,ry(칸 비율): 어두운 털 위 가는 자수 눈처럼 차이가 작게 잡히는 얼굴을 늘 통째로 바꾼다
+            cx, cy, rx, ry = [float(v) for v in opts['face'].split(',')]
+            cv2.ellipse(keep, (int(cx * w), int(cy * h)), (int(rx * w), int(ry * h)), 0, 0, 360, 1, -1)
         keep = cv2.dilate(keep, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (31, 31)))
         keep = cv2.morphologyEx(keep, cv2.MORPH_CLOSE, cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (41, 41)))
         soft = cv2.GaussianBlur(keep.astype(np.float32), (0, 0), 7)

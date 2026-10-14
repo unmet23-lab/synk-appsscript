@@ -15,7 +15,7 @@ WORLD 앱의 튜터·친구 그림은 정본 누끼를 얹지 않고, 화면(자
 
 | 자리 | 판 | 쓰는 곳 |
 |---|---|---|
-| onb | 친구마다 3×2 표정 | 튜터 고르기 큰 사진 카드 |
+| onb | 친구마다 3×2 표정(복숭아색 무지 배경지, 첫 화면 #F8C6B3) | 튜터 고르기 큰 사진 카드 |
 | home · life | 3×2 | 우리 방 말풍선 · 배우기 튜터 |
 | runner · rhythm · hangul · first | 3×2 | 놀이 위 튜터 띠 · 조작 연습 · 다시 풀기 |
 | profile | 2×2 | 왼쪽 위 계정 캡슐 · 내 계정 · 튜터 고르기 탭 |
@@ -27,5 +27,7 @@ WORLD 앱의 튜터·친구 그림은 정본 누끼를 얹지 않고, 화면(자
 ## 10-14 상태
 
 - 구움: 튜터 표정 판 21장(7자리 × 3), profile, welcome, cafe_counter.
+- 튜터 고르기(onb)는 유호님 「튜터 고르기 배경은 복숭아색 배경지로 다시 구워줘」로 `make_onb_peach.py` 지시문(`prompts/p_onbpeach_*.txt`)을 구독 한도 대신 힉스필드 GPT Image 2.5(3:2 · 2k · high, 판당 2.75크레딧)로 다시 구웠다. 참고 그림은 `ref/본체_*`·`ref/표정표_*`를 올려 image_references로.
+- 까몽 판은 어두운 털 위 가는 자수 눈이라 차이 검출이 한쪽 눈만 잡는다 → `split.py … --face=0.47,0.34,0.15,0.08`로 얼굴 타원을 늘 바꾼다. 옛 판(방 구석 배경)의 life·rhythm·hangul·first 까몽 `놀람`과 life 몽글 `놀람`은 기본과 같은 화소로 나왔다(바람길 장애물 반응에만 쓰여 그대로 둠).
 - 못 구움(구독 주간 한도, 10-21 15:40 풀림): cafe_window, cafe_garden, story_ 6편, teach_mongle. 그 자리는 굽는 대로 바뀌게 되어 있고, 그 전까지는 이전 그림을 쓴다(카페 자리 `hasCafePhoto`, 이야기 `hasStoryPhoto`, 한글 무대는 코드 그대로).
 - 한도 뒤: `python run_jobs.py jobs_scene.json cafe_ --par=3`, `story_`, `teach_` → `python install.py <작업본>` → 한글 무대 `app.mjs`의 가르치기 그림을 `assets/brand/teach-curious.webp`·`teach-smile.webp`로 바꾸고 `style.css` `.teach .mongle`을 사진 카드로.

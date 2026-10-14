@@ -4,7 +4,7 @@
 import {TUTOR_PHOTOS,PROFILE_PHOTOS,LIFE_PHOTOS} from './tutor-photos-data.mjs';
 
 // 모듈 맨 위에서 계산하지 않는다(배우기 묶음에 들어가도 쓰지 않는 표·URL이 남지 않게).
-const url=file=>file?new URL('./assets/tutor-photos/'+file,import.meta.url).href:'';
+const url=file=>file?new URL('assets/tutor-photos/'+file,import.meta.url).href:'';
 // 그 자리에 없는 표정은 가장 가까운 표정으로(판마다 여섯 표정만 구웠다).
 const NEAR={기쁨:['눈웃음','으쓱'],눈웃음:['기쁨','으쓱'],으쓱:['기쁨','눈웃음'],집중:['기본'],민망:['놀람','기본'],놀람:['기본'],잔잔감음:['기본'],윙크:['눈웃음','기쁨'],졸림:['잔잔감음','기본']};
 

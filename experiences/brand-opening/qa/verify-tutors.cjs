@@ -60,7 +60,7 @@ async function context(viewport,options={}){
  check('second step is still an uncommitted preview',await page.evaluate(()=>localStorage.getItem('synk.world.tutor.v1:guest')===null));
  await take(page,'phone390-welcome');await page.locator('[data-tutor-action="back"]').click();await complete(page,'marin');
  check('finish stores only a completed tutor choice',await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.tutor.v1:guest')).tutor==='marin'&&!document.querySelector('#world-panel').open));
- check('home displays chosen tutor',await page.locator('.place-heading>p:last-child').textContent().then(t=>t.includes('마린'))&&await page.locator('.profile-portrait img').getAttribute('src').then(src=>src.includes('/marin-')));
+ check('home displays chosen tutor',await page.locator('.place-heading>p:last-child').textContent().then(t=>t.includes('마린'))&&await page.locator('.profile-portrait img').getAttribute('src').then(src=>src.includes('profile/marin')));
  check('first Start completion restores keyboard focus to a home action',await page.evaluate(()=>Boolean(document.activeElement?.closest('.lobby-action'))&&document.activeElement.getClientRects().length>0));
  check('closing the screen stops its audio',await page.evaluate(()=>window.__tutorSounds.every(a=>a.paused)));
  await page.reload();await ready(page);await page.waitForFunction(()=>window.__synkHome.tutor().tutor==='marin');await page.waitForFunction(()=>window.__synkOpening?.stage()==='title');await page.locator('.opening-enter').click();
