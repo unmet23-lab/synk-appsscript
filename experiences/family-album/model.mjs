@@ -1,5 +1,19 @@
-export const LIMITS = Object.freeze({ photo: 6*1024*1024, audio: 8*1024*1024, total:20*1024*1024, export:32*1024*1024, pages:30, contributions:40, attempts:20 });
+export const LIMITS = Object.freeze({ photo: 6*1024*1024, audio: 8*1024*1024, total:20*1024*1024, export:32*1024*1024, pages:30, contributions:40, attempts:20, skippedQuestions:300 });
 export const EXPORT_NAME = 'synk-family-album.json';
+// Whose story the album holds. callName is how the family addresses that person
+// in questions ('어머니'); self/spouse/other start without one.
+export const STORYTELLER_RELATIONS = Object.freeze([
+  { id:'mother', label:'어머니', callName:'어머니' },
+  { id:'father', label:'아버지', callName:'아버지' },
+  { id:'grandmother', label:'할머니', callName:'할머니' },
+  { id:'grandfather', label:'할아버지', callName:'할아버지' },
+  { id:'maternal-grandmother', label:'외할머니', callName:'외할머니' },
+  { id:'maternal-grandfather', label:'외할아버지', callName:'외할아버지' },
+  { id:'spouse', label:'배우자', callName:'' },
+  { id:'self', label:'나', callName:'' },
+  { id:'other', label:'그 밖의 가족', callName:'' },
+].map(Object.freeze));
+export const STORYTELLER_LIMITS = Object.freeze({ name:30, callName:20, hometown:40, firstBirthYear:1900 });
 export const QUESTIONS = Object.freeze([
   { id:'place', label:'장소', prompt: () => '함께한 그날, 어디에 있었나요?' },
   { id:'occasion', label:'그날의 계기', prompt: p => `「${p.title}」의 날, 함께 모인 계기가 있었나요?` },
@@ -18,7 +32,59 @@ const id = v => typeof v==='string' && /^[a-zA-Z0-9-]{1,80}$/.test(v);
 const stamp = v => typeof v==='string'&&Number.isFinite(Date.parse(v));
 const validDate = (v,required=false) => typeof v==='string' && (!v ? !required : /^\d{4}-\d{2}-\d{2}$/.test(v)&&Number.isFinite(Date.parse(v))&&new Date(v).toISOString().slice(0,10)===v);
 const ownKeys = (v,allowed) => v && typeof v==='object' && !Array.isArray(v) && Object.keys(v).every(k=>allowed.includes(k));
+// Question bank ids are referenced, not imported: an id retired from the bank
+// must never make an existing album unreadable.
+export const isQuestionRef = v => typeof v==='string' && v.length<=60 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(v);
+const STORYTELLER_KEYS = ['name','relation','callName','birthYear','hometown'];
+const storytellerError = () => fail(`이야기 주인 정보를 확인해 주세요. 이름은 ${STORYTELLER_LIMITS.name}자, 호칭은 ${STORYTELLER_LIMITS.callName}자, 고향은 ${STORYTELLER_LIMITS.hometown}자까지이고 태어난 해는 ${STORYTELLER_LIMITS.firstBirthYear}년부터 올해까지 적을 수 있어요.`);
+function validateStoryteller(v){
+  if(!ownKeys(v,STORYTELLER_KEYS)||!STORYTELLER_KEYS.every(k=>Object.hasOwn(v,k))) storytellerError();
+  if(typeof v.name!=='string'||v.name.length>STORYTELLER_LIMITS.name||!v.name.trim()) storytellerError();
+  if(!STORYTELLER_RELATIONS.some(r=>r.id===v.relation)) storytellerError();
+  if(typeof v.callName!=='string'||v.callName.length>STORYTELLER_LIMITS.callName) storytellerError();
+  if(typeof v.hometown!=='string'||v.hometown.length>STORYTELLER_LIMITS.hometown) storytellerError();
+  if(v.birthYear!==null&&!(Number.isInteger(v.birthYear)&&v.birthYear>=STORYTELLER_LIMITS.firstBirthYear&&v.birthYear<=new Date().getFullYear())) storytellerError();
+  return {name:v.name.trim(),relation:v.relation,callName:v.callName.trim(),birthYear:v.birthYear,hometown:v.hometown.trim()};
+}
+function validateSkippedQuestions(v){
+  if(!Array.isArray(v)||v.length>LIMITS.skippedQuestions) fail(`건너뛴 질문은 ${LIMITS.skippedQuestions}개까지 기억할 수 있어요.`);
+  const list=Array.from(v);
+  if(list.some(item=>!isQuestionRef(item))||new Set(list).size!==list.length) fail('건너뛴 질문 기록을 확인해 주세요.');
+  return list;
+}
 export function emptyAlbum(){ return {format:'synk-family-album',version:1,pages:[]}; }
+/** Accepts loose form input (birthYear as '1948' or '', missing callName) and
+ * returns the canonical storyteller record that validateAlbum stores. */
+export function makeStoryteller(input){
+  if(!input||typeof input!=='object'||Array.isArray(input)) storytellerError();
+  const relation=input.relation??'other';
+  const known=STORYTELLER_RELATIONS.find(r=>r.id===relation);
+  let birthYear=input.birthYear??null;
+  if(typeof birthYear==='string') birthYear=birthYear.trim()===''?null:/^\d{4}$/.test(birthYear.trim())?Number(birthYear.trim()):NaN;
+  return validateStoryteller({name:input.name,relation,callName:input.callName??known?.callName??'',birthYear,hometown:input.hometown??''});
+}
+/** null removes the storyteller so the album returns to the original v1 shape. */
+export function setStoryteller(album,input){
+  const next=structuredClone(album);
+  if(input===null||input===undefined) delete next.storyteller; else next.storyteller=makeStoryteller(input);
+  return validateAlbum(next);
+}
+export function skipQuestion(album,questionId){
+  if(!isQuestionRef(questionId)) fail('건너뛸 질문을 확인해 주세요.');
+  const next=structuredClone(album),list=next.skippedQuestions??[];
+  if(!list.includes(questionId)) list.push(questionId);
+  next.skippedQuestions=list;
+  return validateAlbum(next);
+}
+/** Removing the last skipped id removes the field instead of storing []. */
+export function unskipQuestion(album,questionId){
+  const next=structuredClone(album);
+  if(Array.isArray(next.skippedQuestions)){
+    next.skippedQuestions=next.skippedQuestions.filter(item=>item!==questionId);
+    if(!next.skippedQuestions.length) delete next.skippedQuestions;
+  }
+  return validateAlbum(next);
+}
 // A read-only view: search entered text, never media bytes or account references.
 export function selectAlbumPages(album,{query='',sort='recent'}={}){
   const normalize=value=>String(value??'').normalize('NFKC').toLocaleLowerCase('ko-KR');
@@ -75,13 +141,19 @@ export function mediaBytes(media,kind) {
   if(!valid) fail('확장자와 실제 파일 내용이 달라요. 다른 파일을 골라 주세요.');
   return count;
 }
+// Version stays 1. storyteller, skippedQuestions and page.questionId are optional
+// keys: absent keys are never added, so older files and account documents keep
+// their exact shape when read and written again (same rule as page.recipe).
 export function validateAlbum(input){
-  if(!ownKeys(input,['format','version','pages'])||input.format!=='synk-family-album'||input.version!==1||!Array.isArray(input.pages)||input.pages.length>LIMITS.pages) fail('가족 이야기 앨범 파일이 아니거나 페이지가 너무 많아요.');
+  if(!ownKeys(input,['format','version','storyteller','skippedQuestions','pages'])||input.format!=='synk-family-album'||input.version!==1||!Array.isArray(input.pages)||input.pages.length>LIMITS.pages) fail('가족 이야기 앨범 파일이 아니거나 페이지가 너무 많아요.');
+  const storyteller=Object.hasOwn(input,'storyteller')?validateStoryteller(input.storyteller):null;
+  const skippedQuestions=Object.hasOwn(input,'skippedQuestions')?validateSkippedQuestions(input.skippedQuestions):null;
   let bytes=0; const ids=new Set();
   const pages=input.pages.map(p=>{
-    if(!ownKeys(p,['id','title','date','person','author','story','photo','audio','details','skipped','contributions','createdAt','updatedAt','recipe'])||!id(p.id)||ids.has(p.id)||!stamp(p.createdAt)||!stamp(p.updatedAt)) fail('페이지 정보가 올바르지 않아요.');
+    if(!ownKeys(p,['id','title','date','person','author','story','photo','audio','details','skipped','contributions','createdAt','updatedAt','questionId','recipe'])||!id(p.id)||ids.has(p.id)||!stamp(p.createdAt)||!stamp(p.updatedAt)) fail('페이지 정보가 올바르지 않아요.');
     ids.add(p.id);
     if(!validDate(p.date)) fail('날짜를 확인해 주세요.');
+    if(Object.hasOwn(p,'questionId')&&!isQuestionRef(p.questionId)) fail('질문 기록을 확인해 주세요.');
     const recipe=Object.hasOwn(p,'recipe')?validateRecipe(p.recipe,p.createdAt):null;
     const questions=recipe?[...QUESTIONS,...RECIPE_QUESTIONS]:QUESTIONS;
     if(!ownKeys(p.details,questions.map(q=>q.id))||!Array.isArray(p.skipped)||p.skipped.some(v=>!questions.some(q=>q.id===v))||new Set(p.skipped).size!==p.skipped.length) fail('질문 기록을 확인해 주세요.');
@@ -93,10 +165,10 @@ export function validateAlbum(input){
       contributionIds.add(c.id);return {id:c.id,name:text(c.name,60,true),text:text(c.text,2000,true),createdAt:c.createdAt};
     });
     bytes+=mediaBytes(p.photo,'photo')+mediaBytes(p.audio,'audio');
-    return {id:p.id,title:text(p.title,100,true),date:p.date,person:text(p.person,100),author:text(p.author,60,true),story:text(p.story,10000,true),photo:p.photo?{...p.photo}:null,audio:p.audio?{...p.audio}:null,details,skipped:[...p.skipped],contributions,createdAt:p.createdAt,updatedAt:p.updatedAt,...(recipe?{recipe}:{})};
+    return {id:p.id,title:text(p.title,100,true),date:p.date,person:text(p.person,100),author:text(p.author,60,true),story:text(p.story,10000,true),photo:p.photo?{...p.photo}:null,audio:p.audio?{...p.audio}:null,details,skipped:[...p.skipped],contributions,createdAt:p.createdAt,updatedAt:p.updatedAt,...(Object.hasOwn(p,'questionId')?{questionId:p.questionId}:{}),...(recipe?{recipe}:{})};
   });
   if(bytes>LIMITS.total) fail('앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요. 기존 파일을 줄여 주세요.');
-  const result={format:input.format,version:1,pages};
+  const result={format:input.format,version:1,...(storyteller?{storyteller}:{}),...(skippedQuestions?{skippedQuestions}:{}),pages};
   if(new TextEncoder().encode(JSON.stringify(result)).length>LIMITS.export) fail('사진·음성·글을 합친 앨범 파일은 32 MB까지 담을 수 있어요. 일부 내용을 나눠 보관해 주세요.');
   return result;
 }

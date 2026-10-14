@@ -1,76 +1,55 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="night">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
-  <meta name="description" content="별자리 운세와 생년월일·시간으로 보는 한국 사주를 선택하는 SYNK 무료 운세.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#060709">
+  <meta name="description" content="별자리와 한국 사주로 보는 오늘의 기운, 궁합, 올해의 흐름. SYNK 회원 무료 혜택.">
   <title>무료 운세 · SYNK FOR YOU</title>
-  <link rel="icon" href="./assets/synk-logo.svg" type="image/svg+xml">
+  <link rel="icon" href="/member-signal/assets/synk-logo.svg" type="image/svg+xml">
+  <script src="/member-signal/theme.js"></script>
+  <link rel="stylesheet" href="/member-signal/signal.css">
   <link rel="stylesheet" href="./app.css">
   <script type="module" src="./app.mjs"></script>
 </head>
-<body>
-  <a class="skip" href="#main">본문으로</a>
-  <header class="topbar"><div class="brand"><img src="./assets/synk-logo.svg" width="88" height="30" alt="SYNK"><span>FOR YOU</span></div><span class="top-label">무료 운세</span></header>
-  <main id="main" tabindex="-1">
-    <section class="hero" aria-labelledby="page-title">
-      <div class="hero-copy"><p class="eyebrow">A LITTLE LUCK, EVERY DAY</p><h1 id="page-title">오늘의 좋은 기운,<br><span>내 방식으로 만나봐요.</span></h1><p class="intro">나를 알아가는 한 장, 일주일을 채우는 작은 행동.<br>별자리와 한국 사주를 내 계정에서 이어가요.</p><p class="free-note">무료 · 비회원도 이용 · 로그인하면 내 정보와 기록 저장</p></div>
-      <div class="hero-art" aria-hidden="true"><img src="./assets/fortune-star.avif" width="280" height="280" alt=""></div>
-    </section>
-    <section class="account-card" aria-labelledby="account-title">
-      <div><p class="eyebrow">MY SYNK</p><h2 id="account-title">내 운세를 이어가는 자리</h2><p id="account-status" class="helper" role="status">계정 연결을 확인하고 있어요.</p><p class="account-explainer">계정에 저장하면 출생정보·선호 방식·보관한 결과와 메모를 다음에도 불러올 수 있어요. 내보내기와 삭제도 여기서 할 수 있어요.</p></div>
-      <div class="account-actions"><button id="account-login" class="soft-button" type="button" hidden>SYNK ID로 로그인</button><button id="account-cancel" class="text-button" type="button" hidden>로그인 취소</button><button id="account-reload" class="soft-button" type="button" hidden>계정에서 다시 불러오기</button><button id="account-logout" class="text-button" type="button" hidden>로그아웃</button></div>
-      <p id="saved-profile" class="saved-profile" hidden></p>
-    </section>
-    <nav class="view-tabs" aria-label="운세 둘러보기"><button type="button" data-view="today" aria-pressed="true">오늘의 운세</button><button type="button" data-view="week" aria-pressed="false">이번 주</button><button type="button" data-view="reflection" aria-pressed="false">최근 7일 돌아보기</button><button type="button" data-view="history" aria-pressed="false">내 보관함 <span id="history-count">0</span></button></nav>
-    <div id="reading-area">
-    <section class="mode-picker" aria-labelledby="mode-title">
-      <div class="section-heading"><div><p class="eyebrow">01 / CHOOSE YOUR WAY</p><h2 id="mode-title" tabindex="-1">어떤 운세로 볼까요?</h2></div><p class="date"><time id="today"></time><span>한국 시간 기준</span></p></div>
-      <p class="helper">먼저 방식을 골라 주세요. 언제든 바꿔 볼 수 있어요.</p>
-      <div class="modes" role="group" aria-labelledby="mode-title">
-        <button class="mode" type="button" data-mode="western" aria-pressed="false" aria-controls="picker"><span class="mode-english">HOROSCOPE</span><strong>별자리 운세</strong><span class="mode-description">양자리부터 물고기자리까지, 12별자리</span></button>
-        <button class="mode" type="button" data-mode="korean" aria-pressed="false" aria-controls="saju-input"><span class="mode-english">KOREAN SAJU</span><strong>한국 사주</strong><span class="mode-description">태어난 날과 시간으로 만나는 나의 네 기둥</span></button>
+<body class="app-fortune">
+  <div class="shell">
+    <header class="bar">
+      <button class="brand" type="button" data-view="today" aria-label="운세 처음으로"><span class="bead"><img src="/member-signal/assets/synk-logo.svg" width="64" height="22" alt="SYNK"></span><span class="crumb">FOR YOU <i>/</i> <b>FORTUNE</b></span></button>
+      <span class="grow"></span>
+      <nav class="tabs" aria-label="운세 메뉴">
+        <button type="button" data-view="today">오늘</button>
+        <button type="button" data-view="month">이번 달</button>
+        <button type="button" data-view="match">궁합</button>
+        <button type="button" data-view="year">올해</button>
+        <button type="button" data-view="vault">보관함 <span class="count" data-vault-count></span></button>
+      </nav>
+      <span class="grow"></span>
+      <div class="bar-tools">
+        <button class="iconbtn" type="button" data-action="theme" aria-label="화면 밝기 바꾸기"></button>
+        <button class="acct" type="button" data-action="account" aria-haspopup="dialog"><span>로그인</span></button>
       </div>
-      <noscript><p>운세를 펼치려면 브라우저의 JavaScript를 켜 주세요.</p></noscript>
-    </section>
-    <section id="picker" class="picker" aria-labelledby="choose-title" hidden><div class="section-heading"><div><p class="eyebrow">02 / CHOOSE YOUR SIGN</p><h2 id="choose-title" tabindex="-1"></h2></div></div><p class="helper" id="choose-help"></p><div class="zodiac-finder"><label for="zodiac-birth">생일로 별자리 찾기 <span>양력</span><input id="zodiac-birth" type="date" min="1900-01-01"></label><button id="find-zodiac" class="soft-button" type="button">내 별자리 찾기</button><p id="zodiac-hint" class="helper" role="status"></p></div><div id="signs" class="signs" role="group" aria-labelledby="choose-title" aria-describedby="choose-help"></div><p class="mode-note" id="mode-note"></p></section>
-    <section id="saju-input" class="picker" aria-labelledby="saju-title" hidden>
-      <p class="eyebrow">02 / YOUR BIRTH, FOUR PILLARS</p><h2 id="saju-title" tabindex="-1">태어난 날과 시간을 알려주세요.</h2>
-      <p class="helper">양력 생년월일과 한국 표준시(UTC+9)를 기준으로 계산해요.</p>
-      <form id="saju-form" autocomplete="off">
-        <div class="birth-fields"><label for="birth-date">생년월일 <span>양력</span><input id="birth-date" name="birth-date" type="date" min="1900-01-01" required></label><label for="birth-time">태어난 시간 <span>24시간 기준</span><input id="birth-time" name="birth-time" type="time" step="60" required></label></div>
-        <label class="unknown-time"><input id="time-unknown" type="checkbox">태어난 시간을 몰라요</label>
-        <p class="mode-note">시간을 모르면 시주는 비워 두고, 확인할 수 있는 기둥만 보여 드려요. 현재는 한국 표준시로 기록된 출생정보를 지원하며, 진태양시와 과거 서머타임은 보정하지 않아요.</p>
-        <button class="felt-button" type="submit">내 사주 펼치기</button><p id="saju-error" class="form-error" role="alert" hidden></p>
-      </form>
-    </section>
-    <div id="profile-tools" class="profile-tools" hidden><button id="save-profile" class="soft-button" type="button">계정에 내 정보 저장</button><p id="profile-save-note" class="helper">로그인한 계정에 출생정보와 선호 방식을 저장해요. 다른 사람의 정보는 입력하지 마세요.</p></div>
-    <section id="week-panel" aria-labelledby="week-title" hidden><div class="section-heading"><h2 id="week-title" tabindex="-1">이번 주, 하루 한 가지</h2><p id="week-range" class="date"></p></div><p class="helper">하루의 운세와 작은 행동을 한눈에 살펴봐요. 날짜를 고르면 자세히 볼 수 있어요.</p><div id="week-grid" class="week-grid"></div></section>
-    <section id="result" class="result" aria-labelledby="fortune-title" hidden>
-      <div class="result-head"><div><p class="eyebrow" id="result-label"></p><h2 id="fortune-title" tabindex="-1"></h2></div><span class="result-stamp">오늘의 한 장</span></div>
-      <section id="saju-details" class="saju-details" aria-labelledby="pillars-title" hidden><h3 id="pillars-title">나의 네 기둥</h3><p id="birth-summary" class="mode-note"></p><div id="pillars" class="pillars"></div><p id="day-master" class="day-master"></p><h3>겉글자의 오행 분포</h3><ul id="elements" class="elements"></ul><p class="mode-note">천간·지지의 대표 오행을 세었어요. 지장간·합충·계절을 함께 보는 사주의 강약 판정과는 달라요.</p><ul id="saju-notes" class="saju-notes"></ul></section>
-      <div class="reading-grid"><article class="reading overall"><p class="reading-label" id="overall-label">총운</p><p id="overall"></p></article><article class="reading"><h3>관계</h3><p id="relationship"></p></article><article class="reading"><h3>일상과 집중</h3><p id="focus"></p></article></div>
-      <div class="action-card"><p class="eyebrow">오늘의 작은 행동</p><h3 id="action"></h3><p>마음에 드는 것만 가볍게 해 보세요.</p></div>
-      <section class="reflection" aria-labelledby="reflection-title"><h3 id="reflection-title">읽고 끝내지 말고, 내 하루에 남겨요.</h3><label class="unknown-time"><input id="complete-action" type="checkbox">이 작은 행동을 해 봤어요</label><label for="reflection-note">한 줄 돌아보기</label><textarea id="reflection-note" rows="3" maxlength="1000" placeholder="해 보니 어땠나요? 내일의 나에게 남길 한 줄을 적어 보세요."></textarea><div class="reflection-footer"><span id="note-count">0 / 1000</span><button id="save-reading" class="felt-button" type="button">내 보관함에 저장</button></div><p id="reading-save-note" class="helper">로그인하면 결과와 메모를 SYNK 계정에 보관할 수 있어요.</p></section>
-      <details class="reading-guide"><summary id="guide-title">내 운세를 읽는 법</summary><div id="guide-content"></div></details>
-      <div class="lucky-pair" id="lucky-pair"><p><span>행운의 색</span><strong id="color"></strong></p><p><span>행운의 숫자</span><strong id="number"></strong></p></div>
-      <div class="result-actions"><button id="copy" class="felt-button" type="button">오늘의 운세 복사</button><button id="change" class="soft-button" type="button">다시 선택하기</button></div>
-      <div id="manual-copy" class="manual-copy" hidden><label for="copy-text">자동 복사가 어려워요. 아래 글을 선택해 복사해 주세요.</label><textarea id="copy-text" rows="8" readonly></textarea></div>
-      <p class="result-note" id="result-note"></p>
-    </section>
+    </header>
+    <main id="app" class="board" tabindex="-1"></main>
+    <footer class="foot">
+      <p>가볍게 즐기는 재미용 운세예요. 미래를 예측하거나 중요한 결정을 대신하지 않아요.</p>
+      <p>비회원 입력은 이 화면에만 남아요. 저장 단추를 누를 때만 SYNK 계정에 보관해요.</p>
+    </footer>
+  </div>
+  <nav class="tabbar" aria-label="운세 메뉴">
+    <button type="button" data-view="today"><span data-icon="sun"></span>오늘</button>
+    <button type="button" data-view="month"><span data-icon="calendar"></span>이번 달</button>
+    <button type="button" data-view="match"><span data-icon="heart"></span>궁합</button>
+    <button type="button" data-view="year"><span data-icon="sparkle"></span>올해</button>
+    <button type="button" data-view="vault"><span data-icon="star"></span>보관함</button>
+  </nav>
+  <div id="account-sheet" class="sheet" hidden>
+    <div class="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="account-title" tabindex="-1">
+      <div class="sheet-head"><div><p class="kicker">SYNK ID</p><h2 id="account-title">내 운세 이어가기</h2></div><button class="iconbtn" type="button" data-sheet-close aria-label="계정 판 닫기"></button></div>
+      <div id="account-body"></div>
     </div>
-    <section id="history-panel" aria-labelledby="history-title" hidden><div class="section-heading"><div><p class="eyebrow">MY COLLECTION</p><h2 id="history-title" tabindex="-1">나에게 남긴 작은 기록</h2></div></div><p id="history-summary" class="helper"></p><div class="history-tools"><label for="history-filter">기록 보기 <select id="history-filter"><option value="all">전체</option><option value="western">별자리</option><option value="korean">한국 사주</option><option value="completed">실천한 기록</option></select></label><button id="export-records" class="soft-button" type="button">내 기록 내보내기</button></div><div id="history-list" class="history-list"></div><div class="delete-account-data"><button id="delete-data" class="text-button" type="button">계정의 운세 정보 전체 삭제</button><div id="delete-confirm" hidden><p>저장한 출생정보·선호 방식·운세 기록과 메모를 지워요. SYNK 계정 자체는 유지돼요. 필요한 기록은 먼저 내보내세요.</p><button id="confirm-delete-data" class="soft-button" type="button">운세 정보 삭제하기</button><button id="cancel-delete-data" class="text-button" type="button">취소</button></div></div></section>
-    <section id="reflection-panel" aria-labelledby="reflection-week-title" hidden>
-      <div class="section-heading"><div><p class="eyebrow">MY LAST 7 DAYS</p><h2 id="reflection-week-title" tabindex="-1">작은 실천을 다시 만나요</h2></div></div>
-      <p id="reflection-range" class="helper"></p>
-      <p class="helper">오늘부터 6일 전까지의 운세에 남긴 메모와 실천한 행동이에요. 운세 날짜를 기준으로 모으며, 계정에 저장한 내용만 보여요.</p>
-      <p class="reflection-prompt">다시 해 보고 싶은 행동이나 기억하고 싶은 메모가 있나요?</p>
-      <p id="reflection-empty" class="empty-state"></p><div id="reflection-days"></div>
-    </section>
-    <p class="disclaimer">가볍게 읽는 재미용 운세예요. 미래를 예측하지 않아요.</p>
-  </main>
-  <footer><span>SYNK FOR YOU</span><p>비회원 입력은 이 화면에만 남아요. 계정 저장은 저장 단추를 누를 때 이뤄져요.</p><button id="clear-input" type="button">화면의 입력·결과 지우기</button></footer>
-  <p id="notice" class="notice" role="status" aria-live="polite" aria-atomic="true"></p>
+  </div>
+  <p id="notice" class="toast" role="status" aria-live="polite"></p>
 </body>
 </html>

@@ -3,10 +3,11 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { readConfig } from '../experiences/synk-account/src/core.mjs';
+import { signalPublicFiles, signalPublicHtml, SIGNAL_SOURCE, SIGNAL_DIR } from './lib/member-signal-public.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const APP_FILES = ['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs', 'care-contact-import.mjs'];
-const ASSETS = ['icon192.png', 'icon512.png', 'apple-touch-icon180.png', 'badge-check.webp', 'badge-cream.webp', 'InterTight-Bold.ttf', 'InterTight-LICENSE.txt', 'slab-blush-long.webp', 'slab-coral-long.webp', 'slab-cream-long.webp', 'sticker-check.webp', 'sticker-envelope.webp', 'sticker-person.webp', 'sticker-time.webp', 'SUIT-LICENSE.txt', 'SUIT-Variable.woff2', 'synk-logo.svg', 'thread-shift.webp'];
+const APP_FILES = ['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs', 'care-contact-import.mjs', 'care-signal-view.mjs', 'care-upcoming.mjs', 'care-today.mjs', 'care-ledger.mjs', 'care-amount.mjs', 'care-memorial.mjs', 'care-gift.mjs'];
+const ASSETS = ['icon192.png', 'icon512.png', 'apple-touch-icon180.png', 'badge-check.webp', 'badge-cream.webp', 'InterTight-Bold.ttf', 'InterTight-LICENSE.txt', 'slab-blush-long.webp', 'slab-coral-long.webp', 'slab-cream-long.webp', 'sticker-check.webp', 'sticker-envelope.webp', 'sticker-person.webp', 'sticker-time.webp', 'SUIT-LICENSE.txt', 'SUIT-Variable.woff2', 'synk-logo.svg', 'thread-shift.webp', ...['letter', 'calendar', 'piggy', 'person', 'bell', 'flower', 'bubble', 'ribbon', 'care-note'].map(name => `art/${name}.webp`)];
 const ENGINES = ['domain.js', 'ask.js', 'vellum-expression.js', 'temper-outcomes.js'];
 const ACCOUNT_FILES = ['core.mjs', 'platform-entry.mjs', 'product-account.mjs', 'document-sync.mjs'];
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -71,6 +72,8 @@ export async function prepareCarePublic({ out, config, targetUrl = 'https://synk
   for (const name of APP_FILES) await add(name, path.relative(root, path.join(appRoot, name)), text => {
     if (name === 'index.html') {
       if (!text.includes('<meta charset="utf-8">') || text.includes('synk-care-runtime')) throw Error('Unexpected public HTML entry.');
+      // 2026-10-14 시그널 판: 공통 틀은 signal/ 아래 상대 경로로(테마 스크립트는 고전 스크립트로 남긴다).
+      text = signalPublicHtml(text, { keepTheme: true });
       const origins = [...new Set([checked.supabaseUrl, checked.accountApiUrl].map(value => new URL(value).origin))].join(' ');
       const policy = `default-src 'self'; script-src 'self'; worker-src 'self'; manifest-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src 'self' blob:; font-src 'self'; connect-src 'self' ${origins}; object-src 'none'; base-uri 'none'; form-action 'self'`;
       text = text.replace('<meta charset="utf-8">', `<meta charset="utf-8">\n  <meta name="synk-care-runtime" content="public-web">\n  <meta name="referrer" content="no-referrer">\n  <meta http-equiv="Content-Security-Policy" content="${policy}">`);
@@ -80,11 +83,16 @@ export async function prepareCarePublic({ out, config, targetUrl = 'https://synk
       text = text.replace("'../synk-account/src/", "'./vendor/account/");
     }
     if (['care-planner.mjs', 'care-support.mjs', 'care-outcomes.mjs', 'care-focus.mjs'].includes(name)) text = text.replaceAll("'../../atlas/", "'./vendor/atlas/");
+    if (name === 'app.mjs') {
+      if (text.split("'/member-signal/signal.mjs'").length !== 2) throw Error('Unexpected member signal import in app.mjs.');
+      text = text.replace("'/member-signal/signal.mjs'", `'./${SIGNAL_DIR}/signal.mjs'`);
+    }
     return text;
   });
   for (const name of ASSETS) await add('assets/' + name, 'experiences/relationship-care/assets/' + name);
   for (const name of ENGINES) await add('vendor/atlas/' + name, 'atlas/' + name);
   for (const name of ACCOUNT_FILES) await add('vendor/account/' + name, 'experiences/synk-account/src/' + name);
+  for (const [name, file] of [...signalPublicFiles({ withTheme: true }), [`${SIGNAL_DIR}/signal.mjs`, `${SIGNAL_SOURCE}/signal.mjs`]]) await add(name, file);
   files.set('config.json', JSON.stringify(publicConfig, null, 2) + '\n');
   versionPublicEntry(files);
   // Only the fixed public graph is copied. No recursive source, user state, local config, server or QA copy.

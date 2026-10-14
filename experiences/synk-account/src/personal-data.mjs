@@ -115,6 +115,10 @@ const uuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const mediaTypes = Object.freeze({ image: ['image/jpeg', 'image/png', 'image/webp'], audio: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm', 'audio/mp4'] });
 const mediaKind = slot => slot === 'photo' ? 'image' : 'audio';
 const mediaKey = (pageId, slot) => `${pageId}:${slot}`;
+// Optional album-level keys carried between the device album and the account
+// manifest. validateAlbum owns their rules; absent keys stay absent.
+const FAMILY_ALBUM_OPTIONAL = Object.freeze(['storyteller', 'skippedQuestions']);
+const familyOptional = value => Object.fromEntries(FAMILY_ALBUM_OPTIONAL.filter(key => Object.hasOwn(value, key)).map(key => [key, value[key]]));
 
 // Shape validation cannot prove ownership or upload completion. The account
 // server checks both against its asset registry when committing a manifest.
@@ -125,7 +129,7 @@ export function validatePersonalMediaRef(value, { kind } = {}) {
 }
 
 function familyManifest(value) {
-  if (!fields(value, ['format', 'version', 'pages']) || value.format !== FAMILY_MANIFEST_FORMAT || value.version !== 1 || !Array.isArray(value.pages) || value.pages.length > ALBUM_LIMITS.pages) invalid();
+  if (!fields(value, ['format', 'version', ...FAMILY_ALBUM_OPTIONAL, 'pages']) || value.format !== FAMILY_MANIFEST_FORMAT || value.version !== 1 || !Array.isArray(value.pages) || value.pages.length > ALBUM_LIMITS.pages) invalid();
   let totalBytes = 0, encodedBytes = 0;
   const assets = new Map();
   const pages = value.pages.map(page => {
@@ -149,7 +153,7 @@ function familyManifest(value) {
   if (totalBytes > ALBUM_LIMITS.total) fail('PERSONAL_MEDIA_TOO_LARGE', '앨범의 사진과 음성은 모두 합쳐 20 MB까지 담을 수 있어요.');
   // Reuse every product text/date/recipe rule, then account for base64 without
   // allocating or fetching a single original on the server.
-  const textAlbum = validateAlbum({ format: 'synk-family-album', version: 1, pages });
+  const textAlbum = validateAlbum({ format: 'synk-family-album', version: 1, ...familyOptional(value), pages });
   const exportShell = { ...textAlbum, pages: textAlbum.pages.map((page, index) => {
     const next = { ...page };
     for (const slot of ['photo', 'audio']) {
@@ -159,7 +163,7 @@ function familyManifest(value) {
     return next;
   }) };
   if (encoder.encode(JSON.stringify(exportShell)).length + encodedBytes > ALBUM_LIMITS.export) fail('PERSONAL_DATA_TOO_LARGE', '원본을 포함한 앨범 내보내기가 32 MB를 넘어요. 앨범을 나눠 보관해 주세요.');
-  return { format: FAMILY_MANIFEST_FORMAT, version: 1, pages: textAlbum.pages.map((page, index) => ({ ...page, photo: value.pages[index].photo, audio: value.pages[index].audio })) };
+  return { format: FAMILY_MANIFEST_FORMAT, version: 1, ...familyOptional(textAlbum), pages: textAlbum.pages.map((page, index) => ({ ...page, photo: value.pages[index].photo, audio: value.pages[index].audio })) };
 }
 
 function decodedMedia(media) {
@@ -206,7 +210,7 @@ export async function createFamilyManifest(album, references) {
     for (const slot of ['photo', 'audio']) next[slot] = page[slot] === null ? null : { name: page[slot].name, mediaRef: refs.get(mediaKey(page.id, slot)) };
     return next;
   });
-  return validatePersonalState('family-album', { format: FAMILY_MANIFEST_FORMAT, version: 1, pages });
+  return validatePersonalState('family-album', { format: FAMILY_MANIFEST_FORMAT, version: 1, ...familyOptional(checked), pages });
 }
 
 export async function restoreFamilyAlbum(manifest, readMedia) {
@@ -225,5 +229,5 @@ export async function restoreFamilyAlbum(manifest, readMedia) {
     }
     pages.push(next);
   }
-  return validateAlbum({ format: 'synk-family-album', version: 1, pages });
+  return validateAlbum({ format: 'synk-family-album', version: 1, ...familyOptional(checked), pages });
 }

@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ko" data-theme="night">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#ffffff">
+  <meta name="theme-color" content="#060709">
   <meta name="description" content="소중한 사람의 날을 기억하고, 내 말투로 마음을 전하는 SYNK 플레저.">
   <title>SYNK 플레저 · 소중한 사람을 기억하는 수첩</title>
   <link rel="icon" href="assets/sticker-envelope.webp" type="image/webp">
@@ -11,31 +11,32 @@
   <link rel="apple-touch-icon" href="assets/apple-touch-icon180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="플레저">
+  <script src="/member-signal/theme.js"></script>
+  <link rel="stylesheet" href="/member-signal/signal.css">
   <link rel="stylesheet" href="style.css">
   <script type="module" src="app.mjs"></script>
 </head>
-<body data-view="home" data-mood="celebrate">
+<body class="app-care" data-view="home" data-mood="celebrate">
   <a class="skip-link" href="#main-content">본문으로</a>
-  <header class="app-header">
-    <a class="brand" href="./" aria-label="SYNK 플레저 홈"><img class="brand-logo" src="assets/synk-logo.svg" alt="SYNK"><span class="brand-divider"></span><strong>플레저</strong></a>
-    <span class="header-caption">소중한 사람을 기억하는 수첩</span>
-    <nav class="header-actions" aria-label="플레저 메뉴"><button id="show-home" class="quiet-button home-link" type="button" aria-current="page">오늘</button><button id="notification-button" class="quiet-button" type="button">알림 설정</button></nav>
+  <div class="shell">
+  <header class="bar">
+    <a class="brand" href="./" aria-label="SYNK 플레저 처음으로"><span class="bead"><img src="/member-signal/assets/synk-logo.svg" width="64" height="22" alt="SYNK"></span><span class="crumb">FOR YOU <i>/</i> <b>PLEASURE</b></span></a>
+    <span class="grow"></span>
+    <nav class="tabs header-actions" aria-label="플레저 메뉴"><button id="show-home" type="button" aria-current="page">오늘</button><button id="show-ledger" type="button">장부</button><button id="notification-button" type="button">알림</button></nav>
+    <span class="grow"></span>
+    <div class="bar-tools"><button class="iconbtn" type="button" id="theme-button" aria-label="화면 밝기 바꾸기"></button><button class="acct" type="button" id="account-chip" aria-haspopup="dialog"><span>계정</span></button></div>
   </header>
 
-  <main id="main-content" class="app-shell" tabindex="-1" aria-busy="true">
+  <main id="main-content" class="board app-shell" tabindex="-1" aria-busy="true">
     <section class="intro" aria-labelledby="page-title">
-      <div><p class="eyebrow">A LITTLE CARE, EVERY DAY</p><h1 id="page-title">오늘, <span class="underline">누가 떠오르나요?</span></h1><p class="intro-copy">기억해 둔 날을 살펴보고, 나다운 한마디를 준비해요.</p></div>
-      <div class="intro-art" aria-hidden="true"><img class="envelope" src="assets/sticker-envelope.webp" alt=""><img class="time-sticker" src="assets/sticker-time.webp" alt=""></div>
-      <div class="summary" aria-label="플레저 현황"><div><strong id="person-count">—</strong><span>챙길 사람</span></div><div><strong id="upcoming-count">—</strong><span>30일 안의 일정</span></div><div><strong id="complete-count">—</strong><span>챙긴 마음</span></div></div>
+      <div class="copy"><p class="kicker">SYNK FOR YOU · PLEASURE</p><h1 id="page-title" tabindex="-1">오늘, 누가<br><span class="hl">떠오르나요?</span></h1><p class="lead intro-copy">생일·기념일·경조사를 음력까지 챙기고, 오늘 연락할 한 사람과 나다운 한마디를 준비해요.</p>
+        <ul class="meta summary" aria-label="플레저 현황"><li><small class="ko">챙길 사람</small><strong id="person-count" class="big">—</strong></li><li><small class="ko">30일 안의 날</small><strong id="upcoming-count" class="big">—</strong></li><li><small class="ko">챙긴 마음</small><strong id="complete-count" class="big">—</strong></li></ul></div>
+      <div class="art"><div class="poster" data-word="플레저" data-len="3"><span class="label">01 / PLEASURE</span><span class="led-chip">무료</span><img class="cut" src="assets/art/care-note.webp" alt="기억할 날에 빨간 별표를 붙인 크림색 펠트 메모" width="720" height="720"></div></div>
     </section>
 
-    <div id="sample-banner" class="sample-banner" hidden>지금은 예시 자료를 보고 있어요. 실제 인물이나 대화가 아닙니다.<button class="text-button" id="clear-sample" type="button">예시 지우기</button></div>
-    <section id="account-panel" class="account-panel" aria-labelledby="account-title" data-kind="pending">
-      <div class="account-copy"><p class="mini-label" id="account-title">내 SYNK 계정</p><p id="account-status" class="account-status" role="status">계정 연결 상태를 확인하고 있어요.</p><p id="account-detail" class="account-detail">저장한 수첩을 확인하는 동안 잠시 기다려 주세요.</p></div>
-      <div class="account-actions"><button id="account-signin" class="soft-button" type="button" disabled>계정 확인 중…</button><button id="account-import-device" class="text-button" type="button" hidden>이 기기의 수첩을 계정으로 옮기기</button><button id="account-refresh" class="text-button" type="button" hidden>계정 자료 새로고침</button><button id="account-signout" class="text-button" type="button" hidden>로그아웃</button></div>
-      <div id="account-conflict" class="account-conflict" hidden><p>다른 기기에서 수첩이 바뀌었어요. 확인할 자료를 골라 주세요.</p><div class="action-row"><button id="account-conflict-load" class="soft-button" type="button">계정 자료 불러오기</button><button id="account-conflict-retry" class="text-button" type="button">내 변경 다시 저장</button></div></div>
-    </section>
-    <section id="notebook-loading" class="notebook-loading" aria-labelledby="notebook-loading-title"><img src="assets/sticker-envelope.webp" alt="" aria-hidden="true"><div><h2 id="notebook-loading-title">내 수첩을 준비하고 있어요.</h2><p id="notebook-loading-detail">불러오기가 끝나면 사람과 기록이 나타나요. 잠시 기다려 주세요.</p></div></section>
+    <div id="sample-banner" class="sample-banner" hidden>지금은 예시 자료를 보고 있어요. 실제 인물이나 대화가 아니에요.<button class="text-button" id="clear-sample" type="button">예시 지우기</button></div>
+    
+    <section id="notebook-loading" class="notebook-loading" aria-labelledby="notebook-loading-title"><img src="assets/art/letter.webp" alt="" aria-hidden="true"><div><h2 id="notebook-loading-title">내 수첩을 준비하고 있어요.</h2><p id="notebook-loading-detail">불러오기가 끝나면 사람과 기록이 나타나요. 잠시 기다려 주세요.</p><button class="btn small soft" type="button" data-open-account>계정 상태 보기</button></div></section>
     <div class="main-grid" hidden inert>
       <aside class="people-panel" aria-labelledby="people-title">
         <div class="section-heading"><h2 id="people-title">사람 수첩</h2><button id="add-person" class="add-button" aria-label="챙길 사람 추가" type="button">+</button></div>
@@ -49,6 +50,7 @@
 
       <section id="home-view" class="home-view" aria-labelledby="home-title" tabindex="-1">
         <div class="home-heading"><div><p class="eyebrow">YOUR LITTLE REMINDERS</p><h2 id="home-title">오늘부터 이번 주까지</h2><p>가까운 날부터, 마음을 하나씩 준비해요.</p></div><button id="home-add-person" class="soft-button" type="button">사람과 날짜 추가</button></div>
+        <section id="today-section" class="today-section" aria-labelledby="today-title"><div class="sec-head"><h2 id="today-title">오늘 챙길 사람</h2><span class="side" id="today-side"></span></div><div id="today-cards" class="today-cards"></div></section>
         <section id="care-focus" class="care-focus" aria-labelledby="care-focus-title" hidden>
           <div class="care-focus-heading"><img src="assets/sticker-person.webp" alt="" aria-hidden="true"><h3 id="care-focus-title">오늘 챙길 한 사람</h3></div>
           <h4 id="care-focus-person"></h4><p id="care-focus-subtitle" class="care-focus-subtitle"></p>
@@ -73,7 +75,8 @@
         <div id="empty-state" class="empty-state"><img src="assets/sticker-person.webp" alt="" aria-hidden="true"><p class="eyebrow">A LITTLE CARE GOES A LONG WAY</p><h2>먼저, 떠오르는 한 사람.</h2><p>생일을 기억하고 싶은 친구도,<br>안부를 전하고 싶은 동료도 좋아요.</p><button id="empty-add" class="felt-button" type="button">챙길 사람 추가</button><p class="empty-foot">대화는 직접 가져오고, 메시지는 확인한 뒤 복사해요.</p></div>
 
         <div id="person-workspace" hidden>
-          <div class="person-heading"><div><p id="person-relationship" class="eyebrow"></p><h2><span id="person-name"></span><span class="heading-suffix">님의 수첩</span></h2><p id="person-checkin-summary" class="person-checkin-summary"></p></div><button id="edit-person" class="text-button" type="button">정보 수정</button></div>
+          <div class="person-heading"><div><p id="person-relationship" class="eyebrow"></p><h2><span id="person-name"></span><span class="heading-suffix">님의 수첩</span></h2><p id="person-checkin-summary" class="person-checkin-summary"></p></div><div class="person-tools"><button id="open-memorial" class="text-button" type="button">고인으로 기억</button><button id="edit-person" class="text-button" type="button">정보 수정</button></div></div>
+          <div class="poster band person-poster" data-word="마음" data-len="2"><span class="label">PERSON · NOTEBOOK</span><img class="cut" src="assets/art/letter.webp" alt="" width="720" height="562"></div>
           <div class="tabs" role="tablist" aria-label="사람 수첩"><button id="tab-events" class="tab active" role="tab" aria-selected="true" aria-controls="panel-events" data-tab="events" type="button">기억할 날</button><button id="tab-history" class="tab" role="tab" aria-selected="false" aria-controls="panel-history" data-tab="history" type="button" tabindex="-1">우리의 기록</button><button id="tab-message" class="tab" role="tab" aria-selected="false" aria-controls="panel-message" data-tab="message" type="button" tabindex="-1">마음 전하기</button><button id="tab-conversation" class="tab" role="tab" aria-selected="false" aria-controls="panel-conversation" data-tab="conversation" type="button" tabindex="-1">대화와 말투</button></div>
 
           <section id="panel-conversation" class="tab-panel" role="tabpanel" aria-labelledby="tab-conversation" hidden>
@@ -96,7 +99,7 @@
 
           <section id="panel-events" class="tab-panel" role="tabpanel" aria-labelledby="tab-events">
             <div class="panel-heading"><h3>기억하고 싶은 날</h3><p>생일과 기일은 양력·음력을 구분해서 기억해요.</p></div>
-            <div id="event-list" class="event-list"></div>
+            <div id="memorial-panel" class="memorial-panel" hidden></div><div id="event-list" class="event-list"></div>
             <form id="event-form" class="event-form">
               <h3 id="event-form-title">일정 추가</h3><input id="event-edit-id" type="hidden">
               <div class="form-grid"><label>어떤 날인가요<select id="event-type"><option value="birthday">생일</option><option value="wedding">결혼</option><option value="condolence">부고·조문</option><option value="memorial">기일</option><option value="anniversary">기념일</option></select></label><label>양력·음력<select id="event-calendar"><option value="solar">양력</option><option value="lunar">음력</option></select></label><label>날짜 <span class="required">필수</span><input id="event-date" type="date" required aria-describedby="lunar-hint"></label><label>반복<select id="event-repeat"><option value="yearly">매년</option><option value="none">이번 한 번</option></select></label></div>
@@ -139,17 +142,19 @@
                   <p class="helper">즐겨찾기를 먼저, 나머지는 최근 순으로 보여 드려요. 예전에 기억한 안부는 ‘목적 미지정’으로 찾아볼 수 있어요.</p>
                 </details>
               </section>
-              <div class="action-row draft-actions"><button id="copy-draft" class="felt-button" type="button">확인한 메시지 복사</button><button id="complete-event" class="soft-button" type="button">챙김 완료</button><button id="remember-event" class="soft-button" type="button" hidden>조용히 기억했어요</button></div><p class="helper">메시지는 직접 전해 주세요. ‘챙김 완료’는 연락하거나 챙긴 뒤에, ‘조용히 기억했어요’는 연락 없이 마음에 담은 날에 남기는 기록이에요.</p>
+              <div class="action-row draft-actions"><button id="copy-draft" class="felt-button" type="button">확인한 메시지 복사</button><button id="complete-event" class="soft-button" type="button">챙김 완료</button><button id="remember-event" class="soft-button" type="button" hidden>조용히 기억했어요</button></div><p id="complete-help" class="helper">메시지는 직접 전해 주세요. ‘챙김 완료’는 연락하거나 챙긴 뒤에, ‘조용히 기억했어요’는 연락 없이 마음에 담은 날에 남기는 기록이에요.</p>
             </div>
           </section>
 
           <section id="panel-history" class="tab-panel" role="tabpanel" aria-labelledby="tab-history" hidden><div class="panel-heading"><h3>우리 사이에 남은 마음</h3><p>기억할 메모와 직접 전한 마음을 이곳에서 이어 봐요.</p></div><div id="person-history" class="person-history"></div><section class="followup-section" aria-labelledby="person-followup-title"><div class="section-heading"><h3 id="person-followup-title">다음 안부도 잊지 않도록</h3></div><div id="person-followups" class="followup-list"></div><details class="followup-add"><summary>내가 정한 날에 다시 챙기기</summary><form id="followup-form"><label>무엇을 챙길까요?<input id="followup-title" maxlength="120" placeholder="예: 잘 도착했는지 안부 묻기" required></label><label>다시 챙길 날<input id="followup-date" type="date" required></label><button class="soft-button" type="submit">다음 챙김 기억하기</button><p class="helper">내가 정한 날 수첩에 보여요. 계정에 저장하고 이 기기 알림을 켜면 해당 날짜에 알려드려요. 메시지는 직접 전해 주세요.</p></form></details></section>
-            <details id="memory-card-builder" class="memory-card-builder"><summary>우리의 기억을 한 장으로</summary><p class="helper">담고 싶은 기억·챙김 기록을 최대 3개 골라 주세요. 이름과 선택한 내용만 카드에 담고, 대화 원문은 넣지 않아요.</p><div id="memory-card-items" class="memory-card-items"></div><label>카드 제목<input id="memory-card-title" maxlength="60" placeholder="예: 함께 기억하고 싶은 순간"></label><label>전하고 싶은 한마디<textarea id="memory-card-message" rows="3" maxlength="300" placeholder="내 마음으로 한 줄을 더해 주세요."></textarea></label><label>사진 한 장 <span class="optional">선택 · 기기에서만 사용</span><input id="memory-card-photo" type="file" accept="image/png,image/jpeg,image/webp"></label><p class="helper">사진은 10MiB 이내예요. 카드의 사진은 계정에 저장하지 않아요.</p><button id="preview-memory-card" class="soft-button" type="button">기억 카드 미리 보기</button><p id="memory-card-status" class="helper" role="status"></p></details><form id="care-log-form" class="care-log-form"><h3>직접 챙긴 마음 남기기</h3><p class="helper">실제로 나눈 연락·참석·선물과 주고받은 내역을 적어 주세요.</p><div class="form-grid"><label>연결할 일정 <span class="optional">선택</span><select id="care-log-event"><option value="">일정과 관계없는 기록</option></select></label><label>어떤 마음이었나요?<select id="care-log-kind"><option value="contact">연락</option><option value="attend">참석</option><option value="gift">선물</option><option value="money">경조금</option><option value="remember">조용히 기억</option></select></label><label>실제로 챙긴 날<input id="care-log-date" type="date" required></label><label>주고받은 방향<select id="care-log-direction"><option value="sent">내가 전했어요</option><option value="received">내가 받았어요</option></select></label><label>실제 금액 <span class="optional">원 · 선택</span><input id="care-log-amount" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 50000"></label></div><label for="care-log-note">남길 이야기 <span class="optional">선택</span></label><textarea id="care-log-note" rows="3" maxlength="2000" placeholder="예: 결혼식에 함께 갔어요. 좋아하는 차도 선물했어요."></textarea><div class="action-row"><button class="felt-button" type="submit">우리의 기록에 남기기</button></div></form></section>
+            <section id="gift-section" class="gift-section" aria-labelledby="gift-title"><div class="section-heading"><h3 id="gift-title">선물과 마음 메모</h3><button id="open-amount" class="soft-button" type="button">금액 도우미</button></div><div id="gift-notes"></div><form id="wish-form" class="inline-form"><label for="wish-text">갖고 싶다고 말한 것</label><div class="inline"><input id="wish-text" maxlength="200" placeholder="예: 블루투스 스피커, 좋아하는 차" required><button class="soft-button" type="submit">메모</button></div><p id="wish-overlap" class="helper" role="status"></p></form></section>
+            <details id="memory-card-builder" class="memory-card-builder"><summary>우리의 기억을 한 장으로</summary><p class="helper">담고 싶은 기억·챙김 기록을 최대 3개 골라 주세요. 이름과 선택한 내용만 카드에 담고, 대화 원문은 넣지 않아요.</p><div id="memory-card-items" class="memory-card-items"></div><label>카드 제목<input id="memory-card-title" maxlength="60" placeholder="예: 함께 기억하고 싶은 순간"></label><label>전하고 싶은 한마디<textarea id="memory-card-message" rows="3" maxlength="300" placeholder="내 마음으로 한 줄을 더해 주세요."></textarea></label><label>사진 한 장 <span class="optional">선택 · 기기에서만 사용</span><input id="memory-card-photo" type="file" accept="image/png,image/jpeg,image/webp"></label><p class="helper">사진은 10MiB 이내예요. 카드의 사진은 계정에 저장하지 않아요.</p><button id="preview-memory-card" class="soft-button" type="button">기억 카드 미리 보기</button><p id="memory-card-status" class="helper" role="status"></p></details><form id="care-log-form" class="care-log-form"><h3>직접 챙긴 마음 남기기</h3><p class="helper">실제로 나눈 연락·참석·선물과 주고받은 내역을 적어 주세요.</p><div class="form-grid"><label>연결할 일정 <span class="optional">선택</span><select id="care-log-event"><option value="">일정과 관계없는 기록</option></select></label><label>어떤 마음이었나요?<select id="care-log-kind"><option value="contact">연락</option><option value="attend">참석</option><option value="gift">선물</option><option value="money">경조금</option><option value="remember">조용히 기억</option></select></label><label>실제로 챙긴 날<input id="care-log-date" type="date" required></label><label>주고받은 방향<select id="care-log-direction"><option value="sent">내가 전했어요</option><option value="received">내가 받았어요</option></select></label><label>실제 금액 <span class="optional">원 · 선택</span><input id="care-log-amount" type="number" min="0" step="1" inputmode="numeric" placeholder="예: 50000"></label><label>무슨 일이었나요 <span class="optional">선택</span><select id="care-log-occasion"><option value="">고르지 않음</option></select></label><label>물품 <span class="optional">선택</span><input id="care-log-item" maxlength="120" placeholder="예: 돌반지 1돈"></label></div><label for="care-log-note">남길 이야기 <span class="optional">선택</span></label><textarea id="care-log-note" rows="3" maxlength="2000" placeholder="예: 결혼식에 함께 갔어요. 좋아하는 차도 선물했어요."></textarea><div class="action-row"><button class="felt-button" type="submit">우리의 기록에 남기기</button></div></form></section>
         </div>
       </section>
     </div>
+    <section id="ledger-view" class="ledger-view" aria-labelledby="ledger-title" tabindex="-1" hidden></section>
     <footer class="app-footer"><span>SYNK 플레저 <span class="footer-dot">·</span> 내 기기에서 시작하는 작은 배려</span><span id="notification-status">앱이 열려 있을 때 알림</span><button id="open-browser" class="text-button" type="button" hidden>브라우저에서 열기</button></footer>
-  </main>
+  </main></div>
 
   <dialog id="contact-import-dialog" class="contact-import-dialog" aria-labelledby="contact-import-title">
     <div class="dialog-heading"><h2 id="contact-import-title">기억할 사람만 골라요</h2><button id="close-contact-import" class="close-button" type="button" aria-label="연락처 가져오기 닫기">×</button></div>
@@ -191,6 +196,20 @@
   <dialog id="confirm-dialog"><form method="dialog"><h2 id="confirm-title">확인해 주세요</h2><p id="confirm-message"></p><div class="action-row"><button value="cancel" class="soft-button">취소</button><button value="confirm" class="felt-button">삭제</button></div></form></dialog>
   <dialog id="memory-card-dialog" class="memory-card-dialog"><div class="dialog-heading"><h2>우리의 기억 한 장</h2><button id="close-memory-card" class="close-button" type="button" aria-label="카드 미리보기 닫기">×</button></div><img id="memory-card-preview" alt="선택한 내용으로 만든 기억 카드"><div class="action-row"><button id="download-memory-card" class="felt-button" type="button">PNG 카드 저장</button></div><p class="helper">저장한 사진을 직접 전해 주세요. 이 앱에서 다른 사람에게 보내지 않아요.</p></dialog>
   <dialog id="followup-calendar-dialog"><form id="followup-calendar-form"><div class="dialog-heading"><h2>다음 챙김을 내 달력에</h2><button id="close-followup-calendar" type="button" class="close-button" aria-label="닫기">×</button></div><p id="followup-calendar-title"></p><label>원하는 시간 <span class="optional">선택 · 비우면 종일</span><input id="followup-calendar-time" type="time"></label><label class="check-label"><input id="followup-calendar-alarm" type="checkbox" disabled><span>선택한 시간에 달력 알림 요청</span></label><p class="helper">한국 시간 기준으로 저장해요. 내려받은 파일을 달력 앱에 추가해 주세요. 앱을 닫은 뒤 알림은 달력 앱의 설정과 권한에 따라 울려요.</p><button class="felt-button" type="submit">달력 파일 저장</button></form></dialog>
+  <nav class="tabbar" aria-label="플레저 메뉴"><button type="button" data-proxy="show-home"><span data-icon="home"></span>오늘</button><button type="button" data-proxy="show-ledger"><span data-icon="gift"></span>장부</button><button type="button" data-proxy="add-person"><span data-icon="plus"></span>사람</button><button type="button" data-proxy="notification-button"><span data-icon="bell"></span>알림</button></nav>
+  <div id="account-sheet" class="sheet" hidden>
+    <div class="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="SYNK 계정" tabindex="-1">
+      <div class="sheet-head"><p class="kicker">SYNK ID</p><button class="iconbtn" type="button" data-sheet-close aria-label="계정 판 닫기"></button></div>
+      <section id="account-panel" class="account-panel" aria-labelledby="account-title" data-kind="pending">
+      <div class="account-copy"><p class="mini-label" id="account-title">내 SYNK 계정</p><p id="account-status" class="account-status" role="status">계정 연결 상태를 확인하고 있어요.</p><p id="account-detail" class="account-detail">저장한 수첩을 확인하는 동안 잠시 기다려 주세요.</p></div>
+      <div class="account-actions"><button id="account-signin" class="soft-button" type="button" disabled>계정 확인 중…</button><button id="account-import-device" class="text-button" type="button" hidden>이 기기의 수첩을 계정으로 옮기기</button><button id="account-refresh" class="text-button" type="button" hidden>계정 자료 새로고침</button><button id="account-signout" class="text-button" type="button" hidden>로그아웃</button></div>
+      <div id="account-conflict" class="account-conflict" hidden><p>다른 기기에서 수첩이 바뀌었어요. 확인할 자료를 골라 주세요.</p><div class="action-row"><button id="account-conflict-load" class="soft-button" type="button">계정 자료 불러오기</button><button id="account-conflict-retry" class="text-button" type="button">내 변경 다시 저장</button></div></div>
+    </section>
+    </div>
+  </div>
+  <dialog id="amount-dialog" class="signal-dialog amount-dialog" aria-labelledby="amount-title"><form id="amount-form" method="dialog"><div class="dialog-heading"><div><p class="kicker">HOW MUCH</p><h2 id="amount-title">얼마가 좋을까요?</h2></div><button class="iconbtn close-x" type="button" data-close-dialog="amount-dialog" aria-label="금액 도우미 닫기"></button></div><div id="amount-fields"></div><div id="amount-result" class="amount-result" role="status"></div></form></dialog>
+  <dialog id="memorial-dialog" class="signal-dialog" aria-labelledby="memorial-title"><form id="memorial-form" method="dialog"><div class="dialog-heading"><div><p class="kicker">IN MEMORY</p><h2 id="memorial-title">고인으로 기억하기</h2></div><button class="iconbtn close-x" type="button" data-close-dialog="memorial-dialog" aria-label="닫기"></button></div><p class="small muted">고인으로 표시하면 축하 문구와 이모지를 빼고, 기일·제사·49재를 조용히 알려 드려요.</p><div class="field"><label for="memorial-died">돌아가신 날 <span class="opt-note">양력 · 모르면 비워 두세요</span></label><input id="memorial-died" type="date"></div><div id="memorial-preview"></div><div class="actions"><button id="memorial-save" class="btn primary" type="button">고인으로 표시</button><button id="memorial-unmark" class="btn ghost danger" type="button" hidden>표시 해제</button></div></form></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
   <noscript><p class="noscript">플레저를 사용하려면 JavaScript를 켜 주세요.</p></noscript>
 </body>
