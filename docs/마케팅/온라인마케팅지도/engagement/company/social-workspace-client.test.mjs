@@ -298,3 +298,15 @@ test('updated comments, sender accounts and lost permission invalidate a reply c
   for(const change of ['revision','account','permission','channel']){const f=replyFixture();f.run(change==='revision'?'socialWorkspaceState.data.inbox[0].revision=5;socialWorkspaceState.data.inbox[0].text="changed question"':change==='account'?'socialWorkspaceState.data.inbox[0].channelId="other"':change==='permission'?'socialWorkspaceState.data.replies.items[0].canReply=false':'socialWorkspaceState.data.channels=[]');assert.ok(!f.run('snswReplyPanel(socialWorkspaceState.data.inbox[0])').includes('data-sw-action="reply-send"'));f.run('snswFourAccept(socialWorkspaceState.data)');assert.equal(f.run('socialWorkspaceState.forms.replyPreview'),undefined);await f.run('snswFourAction("reply-send","comment")');assert.equal(f.requests.length,0);assert.equal(f.run('socialWorkspaceState.data.inbox[0].replyDraft'),'saved draft');}
   const f=replyFixture();f.run('socialWorkspaceState.data.inbox[0].revision=5');await f.run('snswFourAction("reply-send","comment")');assert.equal(f.requests.length,0);assert.equal(f.run('socialWorkspaceState.forms.replyPreview'),undefined);
 });
+test('a conflict whose latest recovery cannot load keeps saving the typed draft under a new recovery copy',async()=>{
+  const f=fixture(),disk=new Map();f.context.localStorage={getItem:k=>disk.get(k)||null,setItem:(k,v)=>disk.set(k,v),removeItem:k=>disk.delete(k)};
+  f.run('snswRecoveryAccept({scopeId:"company-one",drafts:[]});socialWorkspaceState.draft.body="충돌 뒤 문구";socialWorkspaceState.dirty=true');
+  const work=f.run('snswRecoveryFlush()');f.requests[0].reject(Object.assign(new Error('changed elsewhere'),{status:409}));await settle();
+  assert.equal(f.requests[1].path,'/api/social/recovery');f.requests[1].reject(new Error('offline'));await work;
+  assert.equal(f.run('socialRecoveryState.paused'),false);assert.match(f.run('socialRecoveryState.key'),/_local_/);assert.match(f.run('socialRecoveryState.status'),/불러오지 못했/);assert.match([...disk.values()].join(''),/충돌 뒤 문구/);
+  f.run('socialWorkspaceState.draft.body="이어서 쓴 문구"');const next=f.run('snswRecoveryFlush()');assert.equal(f.requests[2].path,'/api/social/recovery/save');assert.match(f.requests[2].body.draftKey,/_local_/);assert.equal(f.requests[2].body.revision,0);assert.equal(f.requests[2].body.draft.body,'이어서 쓴 문구');f.requests[2].resolve({recovery:{revision:1}});await next;
+});
+test('a published job whose performance record did not connect says so on its card',()=>{
+  const f=fixture();f.context.post=post;f.run('socialWorkspaceState.data.posts=[post]');f.context.job={id:'j',postId:'p',channelId:'ch',status:'published',publicationUrl:'https://www.instagram.com/p/SYNK1/',outcomeError:'발행은 됐지만 성과 기록 연결을 다시 확인해야 해요.'};
+  assert.match(f.run('snswJobCard(job)'),/성과 기록 연결을 다시 확인해야 해요/);f.context.job={...f.context.job,outcomeError:null};assert.doesNotMatch(f.run('snswJobCard(job)'),/성과 기록 연결/);
+});

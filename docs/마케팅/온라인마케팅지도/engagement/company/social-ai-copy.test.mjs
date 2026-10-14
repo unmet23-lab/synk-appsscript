@@ -79,3 +79,13 @@ test('malformed quote or confirmation inputs fail before reserving money or maki
   const f=fixture(t);for(const input of [null,[],false]){assert.throws(()=>f.service.quote(f.admin,input),{status:400});await assert.rejects(f.service.generate(f.admin,input),{status:400});}
   assert.equal(f.calls,0);assert.equal(f.store.all('socialAiCalls').length,0);
 });
+
+test('the daily budget follows the Korean calendar day, and a stopped service says it stopped',async t=>{
+  const f=fixture(t);f.advance(15.5*3600000);const q=f.service.quote(f.admin,f.input).quote;await f.service.generate(f.admin,{quoteId:q.id,confirmCost:true});
+  const after=f.service.state(f.admin).remainingUsd;assert.ok(after<1);
+  f.advance(9*3600000);assert.equal(f.service.state(f.admin).remainingUsd,after,'10-14 09:30 KST is still the same Korean day');
+  f.advance(14.5*3600000-1);assert.equal(f.service.state(f.admin).remainingUsd,after,'10-14 23:59 KST is still the same Korean day');
+  f.advance(2);assert.equal(f.service.state(f.admin).remainingUsd,1,'a new Korean day starts at midnight KST');
+  await f.service.stop();const s=f.service.state(f.admin);assert.equal(s.canUse,false);assert.match(s.reason,/멈췄/);
+  assert.throws(()=>f.service.quote(f.admin,f.input),error=>/멈췄/.test(error.message)&&error.status===503);await assert.rejects(f.service.generate(f.admin,{quoteId:q.id,confirmCost:true}),error=>/멈췄/.test(error.message)&&error.status===503);
+});

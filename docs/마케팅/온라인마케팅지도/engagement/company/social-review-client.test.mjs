@@ -54,3 +54,7 @@ test('stale feedback refreshes current revision and revoked links hide the post 
 test('reject and comment require text before sending',async()=>{
   const f=fixture();f.resolveRequest(0,opened);await flush();f.submit('reject');assert.equal(f.requests.length,1);assert.equal(f.ids['review-comment'].focused,true);f.submit('comment');assert.equal(f.requests.length,1);
 });
+test('a link that expires during the conflict refresh keeps the expiry reason instead of the conflict message',async()=>{
+  const f=fixture();f.resolveRequest(0,opened);await flush();f.submit('approve');f.resolveRequest(1,{error:'다른 검토 의견이 먼저 등록됐어요.'},409);await flush();assert.equal(f.requests[2].path,'/api/social-review/open');
+  f.resolveRequest(2,{error:'만료된 검토 링크예요.'},410);await flush();assert.equal(f.ids['review-form'].hidden,true);assert.match(f.ids['review-error'].textContent,/만료/);
+});
