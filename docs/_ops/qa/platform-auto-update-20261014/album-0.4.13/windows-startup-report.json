@@ -1,0 +1,250 @@
+{
+  "checkedAt": "2026-10-14T12:42:07.742Z",
+  "ok": true,
+  "code": 0,
+  "error": null,
+  "normalQuit": true,
+  "asarSha256": "388ea34c25fde654bc08ba883c8066130a30262218318703ce94ae1ae47bb0e6",
+  "packageBytesUnchanged": true,
+  "buildSourceHash": "22d4414a082b3b5ff4db5e16f5024dd28067504367d774e2be08b505842f516f",
+  "result": {
+    "ok": true,
+    "checkedAt": "2026-10-14T12:42:07.444Z",
+    "packaged": true,
+    "platform": "win32",
+    "arch": "x64",
+    "version": "0.4.13",
+    "buildId": "20261014.10",
+    "profileIsolated": true,
+    "visible": false,
+    "mainCount": 1,
+    "startupCount": 1,
+    "feedRequests": 3,
+    "states": [
+      "checking",
+      "current",
+      "checking",
+      "current",
+      "checking",
+      "current"
+    ],
+    "checks": [
+      {
+        "name": "candidate runtime identity",
+        "ok": true
+      },
+      {
+        "name": "updater requests only the fixed manifest URL",
+        "ok": true
+      },
+      {
+        "name": "real startup window is isolated and checking",
+        "ok": true,
+        "detail": {
+          "status": {
+            "state": "checking",
+            "code": null,
+            "platform": "win32",
+            "progress": 0,
+            "currentVersion": "0.4.13",
+            "latestVersion": null,
+            "canRetry": false,
+            "canOpenCurrent": false,
+            "canInstall": false
+          },
+          "title": "SYNK Platform 업데이트",
+          "text": "PLATFORM\nv0.4.13 · Preview\n시작 준비\n최신 버전을 확인하고 있어요\n\n잠시만 기다려 주세요. 확인이 끝나면 이어서 시작합니다.\n\n01\n확인\n02\n다운로드\n03\n설치",
+          "desktop": "undefined",
+          "node": "undefined",
+          "keys": [
+            "getStatus",
+            "install",
+            "onChanged",
+            "openCurrent",
+            "retry"
+          ]
+        }
+      },
+      {
+        "name": "startup window stays hidden in QA",
+        "ok": true
+      },
+      {
+        "name": "main remains absent while startup check is pending",
+        "ok": true
+      },
+      {
+        "name": "actual packaged Windows candidate",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before main initialization",
+        "ok": true
+      },
+      {
+        "name": "production gate reaches current before one main window",
+        "ok": true,
+        "detail": {
+          "states": [
+            "checking",
+            "current"
+          ],
+          "feedRequests": 1
+        }
+      },
+      {
+        "name": "native environment and fixed update bridges",
+        "ok": true
+      },
+      {
+        "name": "empty isolated account stays signed out",
+        "ok": true
+      },
+      {
+        "name": "startup current status reaches manual updater",
+        "ok": true,
+        "detail": {
+          "ok": true,
+          "state": "current",
+          "currentVersion": "0.4.13",
+          "currentBuildId": "20261014.10",
+          "latestVersion": "0.4.13",
+          "latestBuildId": "20261014.10",
+          "progress": 0,
+          "code": null,
+          "automatic": false
+        }
+      },
+      {
+        "name": "startup window is disposed after gate passes",
+        "ok": true
+      },
+      {
+        "name": "login and signup visible at 1280",
+        "ok": true,
+        "detail": {
+          "account-button": {
+            "text": "로그인",
+            "visible": true,
+            "disabled": false
+          },
+          "signup-button": {
+            "text": "회원가입",
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      {
+        "name": "login and signup visible at 1024",
+        "ok": true,
+        "detail": {
+          "account-button": {
+            "text": "로그인",
+            "visible": true,
+            "disabled": false
+          },
+          "signup-button": {
+            "text": "회원가입",
+            "visible": true,
+            "disabled": false
+          }
+        }
+      },
+      {
+        "name": "header signup opens only the fixed URL through native IPC",
+        "ok": true
+      },
+      {
+        "name": "account dialog signup uses the same fixed URL",
+        "ok": true
+      },
+      {
+        "name": "signup keeps native session signed out and login separate",
+        "ok": true
+      },
+      {
+        "name": "updater requests only the fixed manifest URL",
+        "ok": true
+      },
+      {
+        "name": "downloads manual update displays the current candidate",
+        "ok": true,
+        "detail": {
+          "version": "현재 v0.4.13 · Preview",
+          "status": "최신 Preview 버전입니다. 사용 중에도 새 버전을 자동으로 확인합니다.",
+          "downloadHidden": true,
+          "installHidden": true,
+          "rootHidden": false
+        }
+      },
+      {
+        "name": "updater requests only the fixed manifest URL",
+        "ok": true
+      },
+      {
+        "name": "settings manual update displays the current candidate",
+        "ok": true,
+        "detail": {
+          "version": "현재 v0.4.13 · Preview",
+          "status": "최신 Preview 버전입니다. 사용 중에도 새 버전을 자동으로 확인합니다.",
+          "downloadHidden": true,
+          "installHidden": true,
+          "rootHidden": false
+        }
+      },
+      {
+        "name": "manual checks emit real checking and current events",
+        "ok": true,
+        "detail": {
+          "events": [
+            "checking",
+            "current",
+            "checking",
+            "current"
+          ],
+          "feedRequests": 3
+        }
+      },
+      {
+        "name": "only one main window opened",
+        "ok": true
+      },
+      {
+        "name": "no account, remote assets, child process, or installer operation",
+        "ok": true
+      },
+      {
+        "name": "all native QA windows remained hidden",
+        "ok": true
+      }
+    ],
+    "errors": [],
+    "pageErrors": [],
+    "requests": [],
+    "providerRequests": [],
+    "forbidden": [],
+    "openRequestsSuppressed": [
+      {
+        "kind": "external",
+        "url": "https://synk.im/id/?view=signup"
+      },
+      {
+        "kind": "external",
+        "url": "https://synk.im/id/?view=signup"
+      }
+    ],
+    "screenshots": [
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\startup-checking.png",
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\platform-home-1280.png",
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\platform-home-1024.png",
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\platform-signup-dialog.png",
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\platform-update-downloads.png",
+      "D:\\a\\synk-policy\\synk-policy\\.github\\desktop-preview\\qa-results\\win32-x64\\platform-update-settings.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realInstallerOpened": false,
+    "realProfileTouched": false,
+    "syntheticCurrentFeed": true
+  }
+}

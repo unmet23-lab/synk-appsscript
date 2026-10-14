@@ -10,7 +10,7 @@
 | synk.im/id/config.json | 앨범 클라이언트의 동의 목록에 같은 콜백 한 줄. |
 | synk.im/album/ | `tools/prepare-personal-public.mjs album` 결과 27개 파일([빌드 기록](album-build-manifest.json)). Core 두 원본(`atlas/ask.js`·`atlas/domain.js`)은 고전 스크립트 대신 묶음 안에 넣고 같은 전역 이름으로 둔다. 소장본 스타일은 `takehome.mjs`의 `BOOK_CSS`를 `takehome.css`로. CSP는 사진 `data:`, 목소리 `blob:`·`data:`만 더 연다. 다른 세션의 미커밋 계정 모듈이 섞이지 않게 원격 master 사본으로 빌드했다. |
 | 웹 플랫폼 `account/dist/platform.js` | 앨범 혜택 항목의 상태 글·`publicUrl`·이용 안내와 공개 주소 허용 목록(`PUBLIC_ENTRIES`)만 바꿨다. 「가족 이야기 앨범 웹에서 시작」 링크가 생긴다. |
-| 원문(다음 설치 앱 릴리스부터) | `desktop/renderer/benefits.mjs` 앨범 항목, `desktop/src/public-apps.cjs`·`member-benefits.mjs` 허용 목록. 지금 설치된 0.4.12에는 없고, 다음 릴리스 전까지 앱의 앨범은 개발 미리보기로 열린다. |
+| 설치 앱 | `desktop/renderer/benefits.mjs` 앨범 항목, `desktop/src/public-apps.cjs`·`member-benefits.mjs` 허용 목록. 같은 날 [Platform 0.4.13](../platform-auto-update-20261014/album-0.4.13/README.md)으로 공개해 앱의 앨범 소개도 공개 웹을 연다. |
 | 앨범 앱 | 사진·목소리를 담을 때 안내가 「목소리을」로 나오던 조사 오류를 고쳤다. |
 
 ## 확인

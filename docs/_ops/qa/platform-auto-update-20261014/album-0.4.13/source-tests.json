@@ -1,0 +1,10 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T12:05:00Z",
+  "sourceHash": "22d4414a082b3b5ff4db5e16f5024dd28067504367d774e2be08b505842f516f",
+  "runs": [
+    {"command": "node --test desktop/tests/platform-update.test.cjs desktop/tests/update-view.test.cjs desktop/tests/release-pipeline.test.cjs desktop/tests/assemble-platform-release.test.cjs desktop/tests/platform-publication.test.cjs", "where": "appsscript 작업본", "pass": 92, "fail": 0},
+    {"command": "node --test desktop/tests/member-benefit-preview.test.cjs desktop/tests/renderer-auth.test.cjs desktop/tests/public-apps.test.cjs", "where": "0.4.13 동결 원문 src·renderer·assets + 로컬 master 시험·atlas 사본", "pass": 104, "fail": 0}
+  ],
+  "note": "작업본의 런처 시험은 다른 세션이 작업 중인 파일 때문에 깨져서 동결 원문 사본으로 돌렸다. public-apps 시험은 앨범 공개 주소(family-album → https://synk.im/album/)를 기대값에 넣은 판이다."
+}
