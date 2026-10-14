@@ -1,0 +1,134 @@
+{
+  "ok": true,
+  "preparedOnly": true,
+  "sourceHash": "b88499cc6dc50e2e28815654248fa8ff92111072faf7aa5ed7350f77fcca8be7",
+  "checks": [
+    {
+      "name": "independent candidate inventory and source hash match their manifest",
+      "ok": true
+    },
+    {
+      "name": "the frozen 0.4.13 release and prior insight overlay form the exact preserved parent",
+      "ok": true
+    },
+    {
+      "name": "all unrelated parent files are byte-identical and no parent file is missing",
+      "ok": true
+    },
+    {
+      "name": "launcher, fixed request dispatch and package changes reverse to the exact parent",
+      "ok": true
+    },
+    {
+      "name": "canonical sources, build support, SDK handoff and original tests match their independent inventories",
+      "ok": true
+    },
+    {
+      "name": "all four generated browser modules reproduce from frozen canonical sources",
+      "ok": true
+    },
+    {
+      "name": "frozen desktop preflight accepts four receipts and refuses tampering of each module",
+      "ok": true
+    },
+    {
+      "name": "launcher browser imports resolve entirely inside the candidate runtime",
+      "ok": true
+    },
+    {
+      "name": "changed runtime JavaScript parses without starting an application",
+      "ok": true
+    },
+    {
+      "name": "native runtime and browser SDK use the fixed correction resource without generic access",
+      "ok": true
+    }
+  ],
+  "tests": {
+    "exitCode": 0,
+    "total": 231,
+    "passed": 231,
+    "failed": 0,
+    "skipped": 0,
+    "bodiesUnchangedExceptRuntimeModulePaths": true,
+    "files": [
+      {
+        "file": "tests/member-activity-controller.test.cjs",
+        "sourceSHA256": "868996e2629476f49c2232ce4e8f7c5d4053cdefd74ed69364b3b12b94cf4c3b",
+        "executedSHA256": "6364557fe97a33cc2fcd679b764a2d1f17a6a1833fb291c09752007c41458bec",
+        "output": "validation/tests/tests__member-activity-controller.test.cjs"
+      },
+      {
+        "file": "tests/member-understanding-controller.test.cjs",
+        "sourceSHA256": "5dec8d3682cfe7c14eb0c4ba3ac902315aa8b045463311c35f86d4783aa69732",
+        "executedSHA256": "a024b3a637093d1005124a6df8a7662aa41e379f1c4565f663aa8ff02331207b",
+        "output": "validation/tests/tests__member-understanding-controller.test.cjs"
+      },
+      {
+        "file": "desktop/tests/member-insight-account.test.cjs",
+        "sourceSHA256": "370b047a9a4c313b9a8cded50b2fe2cdedbc311ce17b8de9195029f57d9fa5a9",
+        "executedSHA256": "e5b1b9edc368826ad22e337760d647a1cc9f0450fd7b24f9f0ec31e1b3f768ea",
+        "output": "validation/tests/desktop__tests__member-insight-account.test.cjs"
+      },
+      {
+        "file": "desktop/tests/member-understanding-account.test.cjs",
+        "sourceSHA256": "c55b93be3dff3ef864aae2e7820ce87d65b5ffdbf2193f3839cc0f3ba2512b24",
+        "executedSHA256": "a35f64f31f69ccc625c7dbf460428a1a3bd22f4d27090672de44801b15d6dd29",
+        "output": "validation/tests/desktop__tests__member-understanding-account.test.cjs"
+      },
+      {
+        "file": "desktop/tests/member-insight.test.cjs",
+        "sourceSHA256": "4795432da4ea101ec63fc3f88b06d9e74c7826ead55a811a0c26f3243b61eba1",
+        "executedSHA256": "8c68a3f169fdca3aceb7af7eb888987d004fbca48e5beac8d6dee10a41648791",
+        "output": "validation/tests/desktop__tests__member-insight.test.cjs"
+      },
+      {
+        "file": "desktop/tests/member-insight-model.test.cjs",
+        "sourceSHA256": "6e6c9926733f73ad1a59cc6faa978b217381a3012283cedd8f0bae59ee1271ed",
+        "executedSHA256": "1d3b79e5028532c38a7a961ba94c868192d64de119189f106a7d939051be0783",
+        "output": "validation/tests/desktop__tests__member-insight-model.test.cjs"
+      },
+      {
+        "file": "desktop/tests/member-insight-view.test.cjs",
+        "sourceSHA256": "bf6b105d963b9788ffe94bbc7f6c15747c6ae04415215f11b6c06535a6b713e1",
+        "executedSHA256": "1c38147e4eacc643fd070f71e3e71bc7cb702936829c099e4230e91b6b3e6f3c",
+        "output": "validation/tests/desktop__tests__member-insight-view.test.cjs"
+      },
+      {
+        "file": "desktop/tests/platform-continuity-auth.test.cjs",
+        "sourceSHA256": "b6dd27b4fe2b9448de4be2dee89c6e354e6a843130f70fdd4fd39c36ed6b12bd",
+        "executedSHA256": "1a32b8f27582181bdd2202ff7fe9d069bac4667315a0daba7d6972e0506792e4",
+        "output": "validation/tests/desktop__tests__platform-continuity-auth.test.cjs"
+      },
+      {
+        "file": "desktop/tests/personal-account.test.cjs",
+        "sourceSHA256": "83559ed5b7fd2fe93af2d3568d519cfc47596855c703e3b54de886d793d33801",
+        "executedSHA256": "cf8da6f0abed0276e3501646778675e9f9a9048eb2555b68db36c3650d3dc77d",
+        "output": "validation/tests/desktop__tests__personal-account.test.cjs"
+      },
+      {
+        "file": "desktop/tests/auth.test.cjs",
+        "sourceSHA256": "d9ef3c83290a992f2200d3157eefbf9dd91d94e1fd4c51d50b8d492b8c882701",
+        "executedSHA256": "87104fec031fcd71f6841660cb396f953d6165ae5f835b4518e7b315a2570405",
+        "output": "validation/tests/desktop__tests__auth.test.cjs"
+      },
+      {
+        "file": "experiences/synk-account/tests/platform-library-view.test.mjs",
+        "sourceSHA256": "9ab7ada6fd08023b7117c298f85d2efd02e2669955bcad90fc635780a4ec307c",
+        "executedSHA256": "389ac40c8691f8bdfc9c2d3f11edd14e58826a85e27b993421dad77292268472",
+        "output": "validation/tests/experiences__synk-account__tests__platform-library-view.test.mjs"
+      },
+      {
+        "file": "tests/build-member-activity.test.js",
+        "sourceSHA256": "7655d515925cde51789d5754d2438815f8717d32cf7172abc0e14167a18340ee",
+        "executedSHA256": "9c4e04bf60bb058a117a11244b049b1173fc6d0a75762888fad8c458a00eb70c",
+        "output": "validation/tests/tests__build-member-activity.test.js"
+      }
+    ],
+    "reportSHA256": "8b2457e7959bf62d8d0a046d1440c20ed60431fc8b2bd17deb72166458f2903f"
+  },
+  "installerBuilt": false,
+  "installedStateTouched": false,
+  "published": false,
+  "realAccountValidated": false
+}

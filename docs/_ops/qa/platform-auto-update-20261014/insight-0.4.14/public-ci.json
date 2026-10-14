@@ -1,0 +1,46 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T18:50:55.141Z",
+  "commit": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+  "runs": [
+    {
+      "conclusion": "success",
+      "databaseId": 38617016229,
+      "headSha": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+      "name": "pages build and deployment",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38617016229"
+    },
+    {
+      "conclusion": "success",
+      "databaseId": 38617015098,
+      "headSha": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+      "name": "synk.im 배포 점검",
+      "status": "completed",
+      "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38617015098"
+    }
+  ],
+  "siteCheckCoveredBy": {
+    "commit": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+    "containsPublication": true,
+    "runs": [
+      {
+        "conclusion": "success",
+        "databaseId": 38617016229,
+        "headSha": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+        "name": "pages build and deployment",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38617016229"
+      },
+      {
+        "conclusion": "success",
+        "databaseId": 38617015098,
+        "headSha": "a2fb8ccd69ee1591c8bca159b3d20d0cff21fac9",
+        "name": "synk.im 배포 점검",
+        "status": "completed",
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38617015098"
+      }
+    ]
+  },
+  "note": "공개 커밋의 사이트 점검이 성공했다."
+}
