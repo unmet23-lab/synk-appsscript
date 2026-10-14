@@ -1,8 +1,36 @@
 # Platform 자동 업데이트·계정 라이브러리 연결 검증 · 2026-10-14
 
+<a id="mac-install-0411"></a>
+
+## 0.4.11 Mac 아이콘·Applications 이동·Windows 설치 시간 제한 — 공통 공개 완료
+
+**Platform과 포함된 WORLD·워크스페이스를 0.4.11 / build20261014.8로 묶어 게시했다.** 공통 원문 해시는 `1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902`, 공개 커밋은 `39b432bf95a56727f9a3dce46da091d4c40be5d1`이다. Windows x64·Mac arm64·Mac x64의 다운로드와 업데이트 feed가 같은 릴리스를 가리킨다. 이번 작업은 현재 PC의 실사용 앱 설치·실행·설정 변경을 하지 않았다. 기존 라이브러리 자동 연결 코드는 0.4.10에서 보존했다. 별도 승인된 채팅에서 18:13 KST에 기존 0.4.10의 무클릭 자동 연결·정상 재실행·기존 기록 유지와 closeToTray=true 복원을 실제 UI로 완료했다([담당 기록](../platform-real-account-20261010/README.md)). 이는 0.4.11 자동 설치 성공과 구분한다.
+
+- Mac ICNS 세 개는 1024 캔버스 중앙 824×824, 반경 185, 바깥 투명으로 바꿨다. 내부 마크의 불투명 픽셀 RGB는 기존 PNG와 일치하고 Windows ICO·PNG 6개는 변경 0이다. DMG 앱·볼륨에도 같은 ICNS를 넣었다.
+- 세 Mac 앱은 Applications 밖 실행에서 이동을 제안하고 기존 앱 교체 전에 별도 확인한다. 거절·실패는 현재 사본을 열되 업데이트 위치를 안내한다. Electron 44의 관리자 이동 경로가 conflictHandler를 건너뛰므로 쓰기 권한 없는 대상은 Finder로 이동하도록 안내한다. 계정·userData의 이동·초기화는 없다.
+- 세 Windows 설치기와 Platform 자동 업데이트는 같은 엔진이다. NSIS 프로세스와 모든 자손을 Windows Job에 묶어 **10분** 뒤 중단하고 **최대 15초** 동안 종료를 확인한다. 종료가 확인되면 이전 앱 파일·등록·바로가기를 복구하거나 새 설치의 부분 파일을 정리한 뒤 **다시 시도·닫기**를 표시한다. 종료·복구를 확인하지 못하면 남은 상태·복구 위치를 표시하고 재시도를 막는다. 미해결 설치는 다음 자동 업데이트의 READY 전에도 차단한다.
+
+실제 679,291,638바이트 payload의 격리 재설치 2회에서 설치+첫 검증은 **147.630초/63.733초**, 백업을 포함한 전체는 **550.619초/219.700초**였다. 10분은 느린 표본 상한의 4.06배이며 **전체 창이 아닌 NSIS 설치 단계의 제한**이다. 백업과 검증된 복구는 별도 단계다. 저사양 기기 전체의 시간 분포를 확인한 것은 아니다.
+
+| 근거 | 확인 결과 |
+| --- | --- |
+| [동결 입력](mac-install-0.4.11/release-input.json), [범위](mac-install-0.4.11/integration-scope.json), [최종 동결](mac-install-0.4.11/freeze-final.json) | 0.4.10의 계정·저장 흐름을 보존하고 main/위치 helper·Mac 자산만 변경. 세 대상 동일 sourceHash. |
+| [아이콘 검사](mac-install-0.4.11/icons.json), [Windows 보존](mac-install-0.4.11/windows-icons-preserved.json) | 1024 경계 100..923·반경 185, 기존 마크 RGB 차이 0, Windows 6파일 SHA 동일. |
+| [관련 원문 시험](mac-install-0.4.11/source-tests-final.json) | 최종 이동/하위 이식/배포 조립 56개 통과. 기존 시작·업데이트·초안 보호 관련 89개 통과 기록 보존. |
+| [설치 엔진·실측](mac-install-0.4.11/installer-evidence.json), [실측 원문](mac-install-0.4.11/installer-measurement.json) | 로컬 22/22·CI 22/22, 자손 잔류·부분 쓰기·복구 불확실·새 설치 정리·합성 계정 보존. WPF 3제품 × 12상태 × 3배율 108장 검사. 앞선 로컬 1회 복구 보류 실패는 원인 미확정으로 보존하며 이후 통과로 숨기지 않는다. |
+| [Windows 최종 검증](mac-install-0.4.11/windows-evidence.json) | 실제 packaged 25/25·정상 종료·ASAR 보존. 부모/하위 설치기 3개가 같은 6개 엔진 원문으로 컴파일됨을 SHA 대조. CI 38537148997의 Windows job 성공. |
+| [Mac 최종 검증](mac-install-0.4.11/mac-evidence.json), [화면 검수](mac-install-0.4.11/visual-review.json) | CI 38539926490 두 칩 성공. 각 칩 이동 4경우·실제 자동 재실행·합성 기록 보존, Finder/Dock/DMG 8장, 세 앱 0.4.11·서명/ASAR/아이콘 일치. 최초 합성 앱의 CFBundleName 변경으로 Helper 탐색이 실패한 시험은 도구만 수정 후 재실행했다. |
+| [공통 manifest](mac-install-0.4.11/preview.json), [게시 영수증](mac-install-0.4.11/publication.json), [공개 대조](mac-install-0.4.11/public-verification.json), [공개 CI](mac-install-0.4.11/public-ci.json) | GitHub 세 자산 크기·digest와 실제 공개 전체 다운로드 SHA 일치. 한영 홈페이지·feed·선택 스크립트 일치, Pages·전체 사이트 점검 성공. |
+
+별도 PC 담당 채팅의 첫 실제 0.4.10→0.4.11 자동 업데이트에서는 기존 앱의 60초 종료 대기를 넘겨 설치 시작 전에 중단됐다. [실제 오류 화면](mac-install-0.4.11/pc-first-update-parent-timeout.png)은 이 작업에서도 직접 확인했고, 기존 0.4.10 ASAR 보존은 담당 채팅이 보고했다. 정상 종료 후 공식 설치·실계정 자동 연결·재실행은 그 채팅에서 진행 중이다. 이를 자동 업데이트 성공으로 기록하지 않는다. 사이트 전체 CI에서는 기존 WORLD·LAB 자산 세 개가 처음 503을 반환했으나 각각 새 브라우저의 전체 시나리오 재검사 1회에 통과했다([원 로그](mac-install-0.4.11/site-ci.log)).
+
+남은 범위: 물리 Mac에서의 기존 앱 교체·실계정 왕복, Windows 실사용 계정으로 0.4.10→0.4.11 자동 업데이트는 이 기록의 완료 범위가 아니다. Mac Preview는 자동 확인·다운로드 후 Applications 수동 교체이며, 정식 서명·Apple 공증 유예를 유지한다.
+
 <a id="startup-quit-0410"></a>
 
 ## 0.4.10 정상 종료 보완 · 공개·PC 설치 완료, 실제 UI 검증은 사용자 요청으로 중단
+
+아래는 당시 중단 시점의 기록이다. 이후 별도 승인된 채팅에서 18:13 KST에 기존 0.4.10의 실제 자동 연결·재실행·트레이 설정 복원을 완료했으며, 최신 경과는 위 0.4.11 절과 [실계정 담당 기록](../platform-real-account-20261010/README.md)을 따른다.
 
 **상태: 패키지 검증·공개·현재 PC 설치·설치 직후 기록 보존 확인 완료. 실제 앱 자동 연결·재실행 검증은 사용자의 ‘앱 조작은 여기서 멈춰줘’ 지시로 중단했으며 미확인 상태다.** 검증 중 바꾼 ‘닫으면 트레이로’는 꺼짐(`false`), 원래 켜짐(`true`)으로 복원하지 않았다. 사용자가 16:02경 직접 종료·설치하여 PC는 먼저 0.4.9가 됐고, 이후 정상 종료·백업 뒤 0.4.10 공통 설치기로 교체했다. 이를 구버전의 자동 업데이트 성공으로 기록하지 않는다. 0.4.10 / build20261014.7의 sourceHash는 `ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb`다. [동결 입력](startup-quit-0.4.10/release-input.json)·[범위](startup-quit-0.4.10/integration-scope.json)대로 0.4.9에서 `src/main.cjs`·`src/platform-startup-window.cjs`만 수정했다. 계정 자동 연결 renderer와 다른 128파일은 그대로다.
 

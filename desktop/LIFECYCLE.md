@@ -7,7 +7,9 @@
 
 ## 2026-10-14 구현 기준 · Platform 자체 업데이트
 
-**최신 수정: 0.4.10 공개·현재 PC 설치 완료.** 실제 0.4.7 시작 업데이트에서 설치 중 창의 `setClosable(false)`가 Windows의 `app.quit()`도 막는 것을 확인했다. 0.4.10은 `before-quit`에서 시작 창의 닫힘을 허용하고, 늦은 상태 알림이 다시 잠그지 않도록 유지한다. 일반적인 설치 중 수동 닫힘 방지·메인 초안 종료 보호·`will-quit` 뒤 인계 순서는 유지한다. 종료 취소·인계 실패·새 시작 창에서는 해당 잠금 정책을 복원한다. 실제 시작 창과 gate/updater, 원문 main 종료 핸들러를 연결한 격리 Electron53개 검사로 정상 시작·초안 취소·인계 실패 후 재시도를 확인했다. 사용자 요청으로 실제 앱 조작을 중단해 최종 실계정 자동 연결·재실행과 향후 실제 자동 업데이트는 미검증이다. ‘닫으면 트레이로’는 검증 중 꺼진 상태로 복원하지 않았다. 공개·설치·기록 보존 및 검증 범위는 [최신 QA](../docs/_ops/qa/platform-auto-update-20261014/README.md#startup-quit-0410)를 따른다. 아래 0.4.7은 당시 공개·설치 이력이다.
+**최신 공통 공개: 0.4.11 / build20261014.8.** Mac 아이콘·Applications 이동 확인과 Windows 세 설치기/자동 업데이트의 10분 NSIS 제한·종료 확인·복구를 적용했다. 계정·userData는 이동·초기화하지 않는다. 이번 작업은 현재 PC를 직접 교체하거나 조작하지 않았으며 [공개 증거와 남은 범위](../docs/_ops/qa/platform-auto-update-20261014/README.md#mac-install-0411)를 따른다.
+
+**이전 수정: 0.4.10 공개·현재 PC 설치 완료.** 실제 0.4.7 시작 업데이트에서 설치 중 창의 `setClosable(false)`가 Windows의 `app.quit()`도 막는 것을 확인했다. 0.4.10은 `before-quit`에서 시작 창의 닫힘을 허용하고, 늦은 상태 알림이 다시 잠그지 않도록 유지한다. 일반적인 설치 중 수동 닫힘 방지·메인 초안 종료 보호·`will-quit` 뒤 인계 순서는 유지한다. 종료 취소·인계 실패·새 시작 창에서는 해당 잠금 정책을 복원한다. 실제 시작 창과 gate/updater, 원문 main 종료 핸들러를 연결한 격리 Electron53개 검사로 정상 시작·초안 취소·인계 실패 후 재시도를 확인했다. 사용자 요청으로 실제 앱 조작을 중단해 최종 실계정 자동 연결·재실행과 향후 실제 자동 업데이트는 미검증이다. ‘닫으면 트레이로’는 검증 중 꺼진 상태로 복원하지 않았다. 공개·설치·기록 보존 및 검증 범위는 [최신 QA](../docs/_ops/qa/platform-auto-update-20261014/README.md#startup-quit-0410)를 따른다. 아래 0.4.7은 당시 공개·설치 이력이다.
 
 **0.4.7 / build 20261014.4의 공개 배포·현재 PC 설치·설치된 updater의 공개 feed 확인을 완료했다.** 동결 `sourceHash`는 `5d52702262a1f68f832b07d63d53cb20a7f3f05e1ebc9ac363038ba37e3971cc`이며, 선행 0.4.6의 자동 업데이트·저장 복구 통합에 사용자가 승인한 내 성향 관련 9개 파일을 추가했다. 최종 관련 시험 125개, Windows 네이티브 25개, Mac arm64/x64 설치 QA 34/37개 및 각 네이티브 흐름 18개가 통과했다. 공개 세 설치파일 전체 바이트·SHA와 현재 PC 75개 파일·ASAR를 대조했고, 설치된 updater가 `current / 0.4.7 / 20261014.4`를 반환했다. [최종 증거와 남은 확인](../docs/_ops/qa/platform-auto-update-20261014/README.md#publication-result)을 따른다. 실제 설치 앱의 기기 기록 저장·정상 종료·재실행 복원·앱 열기·할 일 완료도 담당 증거로 확인했다. 계정 라이브러리는 수동 연결했으며, 물리 Mac 교체·정식 서명·공증은 이 완료 범위에 포함하지 않는다.
 
@@ -71,6 +73,8 @@ snapshot은 `{ ok, state, currentVersion, currentBuildId, latestVersion, latestB
 
 1. **정의와 동결.** 검토한 `release-definition.json`에 `schemaVersion: 1`, `product: platform`, `channel: preview`, 새 `version`, `releaseId`, `buildId`, 고정 `manifestUrl`, 세 대상의 기준 설치파일 URL·크기·해시를 적는다. Windows 기준 설치파일에는 내장 `backendSHA256`도 필요하다. 승인한 자식 앱 구버전 실행을 보존할 때만 검증된 `additionalLegacyPins`를 넣는다. 이번 원본은 [0.4.4 정의](../.tmp/platform-unified-20261014/release-definition.json)다. `freeze-platform-release.cjs`가 `src`·`renderer`·`assets`를 복사하고 파일 목록·해시·공통 `sourceHash`를 기록한다.
 
+0.4.11처럼 하위 앱의 공통 변경도 반영할 때는 `refreshBundledClients: {version: <같은 새 버전>}`을 넣는다. `build-child-release.cjs`는 승인된 기존 WORLD·워크스페이스 ASAR에서 시작해 위치 확인 코드·Mac 아이콘·버전 메타데이터만 이식한다. 다른 원문과 Windows ICO는 바이트 대조하고, Windows 하위 설치기에도 같은 Signal 엔진을 컴파일한다. 새 설치파일·실행 파일·ASAR pin을 부모에 넣되 이미 설치된 구버전의 승인 pin도 유지한다.
+
 ```powershell
 $releaseWork = '<새 작업 폴더>'
 node desktop/tools/freeze-platform-release.cjs --source=desktop "--out=$releaseWork/frozen" "--definition=$releaseWork/release-definition.json"
@@ -98,13 +102,15 @@ node qa/run-macos-qa.cjs --arch=$ARCH --scope=platform --manifest=unified-out/$A
 
 Mac은 ad-hoc 서명·CPU·읽기 전용 DMG의 ASAR·Applications 링크와 네이티브 QA를 확인한다. 각 빌드의 `build-report.json`, `artifact.json`, 설치파일 및 QA 결과를 보존한다. Mac workflow의 검증된 draft 업로드는 공개 feed 전환과 구분한다.
 
+공통 workflow는 Windows도 `windows-latest`에서 같은 동결 입력으로 빌드한다. 설치 엔진의 별도 GUID 시험과 실제 packaged 시작 화면·updater 검사를 통과한 파일만 draft에 올린다. Mac은 기본 QA 뒤 `mac-application-location-native-qa.cjs`로 실제 이동·자동 재실행·교체 거절과 합성 기록 보존을 확인하고, `mac-icon-native-qa.cjs`로 Finder·Dock·세 DMG의 밝은/어두운 화면을 캡처한다. 이 CI 도구는 임시 runner에서만 쓰며 사용자 PC의 앱이나 계정으로 시험하지 않는다.
+
 3. **manifest 조립.** 세 보고서와 sidecar의 버전·build·동결 원문 해시, 설치파일의 크기·해시를 다시 대조한다. 예시는 세 설치파일을 `$releaseWork/installers`에 모은 경우다. 로컬에 없는 파일은 `--remote-assets=<GitHub assets JSON>`으로 실제 업로드 크기·digest를 검증할 수 있다. 이 도구는 업로드·설치·공개 feed 교체를 수행하지 않는다.
 
 ```powershell
 node desktop/tools/assemble-platform-release.cjs "--release=$releaseWork/frozen" "--report=$releaseWork/win32-x64/build-report.json" "--report=$releaseWork/darwin-arm64/build-report.json" "--report=$releaseWork/darwin-x64/build-report.json" "--artifact-root=$releaseWork/installers" "--out=$releaseWork/preview.json"
 ```
 
-4. **공통 게시.** `publish-platform-release.cjs`만으로 release와 홈페이지·feed를 전진시킨다. 별도 깨끗한 공개 checkout이 `origin/main`과 일치해야 한다. `--apply`가 없으면 사전 검증만 한다. Mac 파일을 검증된 draft에 이미 올렸고 로컬에 두지 않은 경우 `--remote-artifacts`를 함께 쓴다. `--website`는 게시 후 홈페이지 원문 저장소의 `desktop/releases/preview.json`도 동기화한다. `site-v10` 빌드는 이 파일과 같은 `desktop-release.js`를 사용한다.
+4. **공통 게시.** `publish-platform-release.cjs`만으로 release와 홈페이지·feed를 전진시킨다. 별도 깨끗한 공개 checkout이 `origin/main`과 일치해야 한다. `--apply`가 없으면 사전 검증만 한다. 검증된 설치파일을 draft에 이미 올렸고 로컬에 두지 않은 경우 `--remote-artifacts`를 함께 쓴다. 세 대상 모두 이 방식을 쓸 수 있으며 실제 공개 다운로드의 전체 바이트와 SHA도 확인한다. `--website`는 게시 후 홈페이지 원문 저장소의 `desktop/releases/preview.json`도 동기화한다. `site-v10` 빌드는 이 파일과 같은 `desktop-release.js`를 사용한다.
 
 ```powershell
 $publicCheckout = '<공개 저장소 checkout>'

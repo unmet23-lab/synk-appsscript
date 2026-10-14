@@ -1,0 +1,32 @@
+[
+  {
+    "file": "platform.ico",
+    "sha256": "5f85fa1e20d80f9f780a2fd68cd9a53498a5eec57a2b8b6202ce08e7a46fffe7",
+    "unchanged": true
+  },
+  {
+    "file": "world.ico",
+    "sha256": "ad4a6799128bccce5caadb5c6c4ad45c42b1c139f4e1c78bf70f355d1c0d682a",
+    "unchanged": true
+  },
+  {
+    "file": "messenger.ico",
+    "sha256": "d49c0d5e6f65c6ea66a477fa4a3870bd69d1ff09e464efacba02e6e9a789053e",
+    "unchanged": true
+  },
+  {
+    "file": "platform.png",
+    "sha256": "bdaa6a7071c0ec6a8b3b7aa711ada93d3e2e947b6adc52a2cb7aebae80d4a5fe",
+    "unchanged": true
+  },
+  {
+    "file": "world.png",
+    "sha256": "f590318880ad89fe93048982b84fc26a422b61df2342b35fd572f40f4d1be87c",
+    "unchanged": true
+  },
+  {
+    "file": "messenger.png",
+    "sha256": "b39aaca54cdda0369faef5f33bc441c9684fbb2a1a9173c5072c4f8e3c4d4423",
+    "unchanged": true
+  }
+]

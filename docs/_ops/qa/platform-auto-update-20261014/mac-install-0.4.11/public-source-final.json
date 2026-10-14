@@ -1,0 +1,228 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T08:45:25.721Z",
+  "version": "0.4.11",
+  "dispatchedAt": "2026-10-14T08:43:33.6902286Z",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "sourceCommit": "56f27d527dd369b6f0842bca0746e87ffb950f0a",
+  "releaseId": "platform-preview-0.4.11",
+  "workflow": "desktop-platform-unified.yml",
+  "copies": [
+    {
+      "source": "desktop/tools/build-platform-release.cjs",
+      "target": ".github/desktop-preview/unified/tools/build-platform-release.cjs",
+      "sha256": "ae3a73e97e57cc37ee3a923144cb57600cd837d5231b4cb501cf2ec6014680ec"
+    },
+    {
+      "source": "desktop/tools/build-child-release.cjs",
+      "target": ".github/desktop-preview/unified/tools/build-child-release.cjs",
+      "sha256": "3dbfe9a9121e9ec22c0a11abbbe092810380ebf64c3f6a470ac38ea829c2464c"
+    },
+    {
+      "source": "desktop/tools/apply-child-location-overlay.cjs",
+      "target": ".github/desktop-preview/unified/tools/apply-child-location-overlay.cjs",
+      "sha256": "53c353200226a1f8f08897b5670973d1dd341aee80d9a5aad2a133d6b4cb7e78"
+    },
+    {
+      "source": "desktop/tools/freeze-platform-release.cjs",
+      "target": ".github/desktop-preview/unified/tools/freeze-platform-release.cjs",
+      "sha256": "e943093782fc45d1f47c864377b277c9463f45322e690d440d4103e57e6b29bf"
+    },
+    {
+      "source": "desktop/tools/source-hash.cjs",
+      "target": ".github/desktop-preview/unified/tools/source-hash.cjs",
+      "sha256": "61970cf92fa42a3c8da77c571662cb8ea8f765cce0b7e91ff18104a6d6cd3001"
+    },
+    {
+      "source": "desktop/tools/mac-icon-native-qa.cjs",
+      "target": ".github/desktop-preview/unified/tools/mac-icon-native-qa.cjs",
+      "sha256": "cf1e67975a751d48c3ba600de6531b2f2fb10d1b48038a5e864c52997333c9de"
+    },
+    {
+      "source": "desktop/tools/mac-application-location-native-qa.cjs",
+      "target": ".github/desktop-preview/unified/tools/mac-application-location-native-qa.cjs",
+      "sha256": "84a98ba312a1355ced2476e4c9f7007f911277c851bb38abc22ca89e53f24561"
+    },
+    {
+      "source": "desktop/mac-dmg/background.html",
+      "target": ".github/desktop-preview/unified/mac-dmg/background.html",
+      "sha256": "5299a7c8293aefaefbfcdb117fcbca82255bfac1c1cbee1c95d02d91471988b1"
+    },
+    {
+      "source": "desktop/mac-dmg/background.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background.png",
+      "sha256": "5fc539752085962ce5a7c0717f1e5ee4aa2b7d46c37915583005c2630ce5e7a5"
+    },
+    {
+      "source": "desktop/mac-dmg/background@2x.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background@2x.png",
+      "sha256": "48e58cd0574820f91ff437aa8a71b17a7c4c95b21ccfd6b7fbdd8864e5934a72"
+    },
+    {
+      "source": "desktop/mac-dmg/background-world.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background-world.png",
+      "sha256": "2d5f0c707cfc345eb9ff07980a4a06ceff5f1bf42c9ada1239564fd2796970ba"
+    },
+    {
+      "source": "desktop/mac-dmg/background-world@2x.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background-world@2x.png",
+      "sha256": "b2bced3696c6ee240281a34ed314ab7182176c34a047a0f7b96b28e475e910f2"
+    },
+    {
+      "source": "desktop/mac-dmg/background-messenger.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background-messenger.png",
+      "sha256": "dc2c53e922c1d4b62158c2a6191b9d34d6d23d8d285d3acf36f1c7c8da2f6a1a"
+    },
+    {
+      "source": "desktop/mac-dmg/background-messenger@2x.png",
+      "target": ".github/desktop-preview/unified/mac-dmg/background-messenger@2x.png",
+      "sha256": "b6263b5e73a7ac6693be208d1b6244797785a5c50b3f6cb2af0e8d818dc85afc"
+    },
+    {
+      "source": ".tmp/platform-mac-install-20261014/verify-windows-startup-native.cjs",
+      "target": ".github/desktop-preview/unified/tools/verify-windows-startup-native.cjs",
+      "sha256": "2ea20ab0c34ee22383c9611cf4ddbc3480c4cfd519f51a3119bf16e7c21006fe"
+    },
+    {
+      "source": "desktop/installer/Program.cs",
+      "target": ".github/desktop-preview/unified/installer/Program.cs",
+      "sha256": "42efec3c56618502932d1a563026989da6cdbf7a7579e5a203c2853a566eb861"
+    },
+    {
+      "source": "desktop/installer/InstallerEngine.cs",
+      "target": ".github/desktop-preview/unified/installer/InstallerEngine.cs",
+      "sha256": "4285cf45fe21c2fb18215ce59650e01787bcc74d2783455824568d0340a34162"
+    },
+    {
+      "source": "desktop/installer/AutoUpdateEngine.cs",
+      "target": ".github/desktop-preview/unified/installer/AutoUpdateEngine.cs",
+      "sha256": "b82d61805ad540d8197162d7a87c2b0eb67755da365839b44f1bbaac1b8f8f33"
+    },
+    {
+      "source": "desktop/installer/BackendProcess.cs",
+      "target": ".github/desktop-preview/unified/installer/BackendProcess.cs",
+      "sha256": "2c868f5a0f364de77af90d05ac8a1daa452fc1f9853ae9879ed3bf129d0db3de"
+    },
+    {
+      "source": "desktop/installer/InstallTransaction.cs",
+      "target": ".github/desktop-preview/unified/installer/InstallTransaction.cs",
+      "sha256": "48461f79b05f027bc78c673f74f2bbd299205851ea4cbe7c7421f80b460b69f5"
+    },
+    {
+      "source": "desktop/installer/SignalWindow.cs",
+      "target": ".github/desktop-preview/unified/installer/SignalWindow.cs",
+      "sha256": "3ba1e5a90f06aad9c2b362aaf72aa6e86771db661c5b5a88a77c00a5b910b718"
+    },
+    {
+      "source": "desktop/installer/build-signal.cjs",
+      "target": ".github/desktop-preview/unified/installer/build-signal.cjs",
+      "sha256": "0695c958449a11576d63dd856a91c911136ddbcd21dbe43003120a578b7f50ca"
+    },
+    {
+      "source": "desktop/installer/app.manifest",
+      "target": ".github/desktop-preview/unified/installer/app.manifest",
+      "sha256": "dca1ff3ca3f6104bd9ebb4d53c0e633cf931832a2d3903c2304c0de0adb245bf"
+    },
+    {
+      "source": "desktop/installer/signal-safety.nsh",
+      "target": ".github/desktop-preview/unified/installer/signal-safety.nsh",
+      "sha256": "9731948680de270f107a03bd4e6e0cb9c795be7da652f0a6ea1d842a33de10d6"
+    },
+    {
+      "source": "desktop/installer/platform.ico",
+      "target": ".github/desktop-preview/unified/installer/platform.ico",
+      "sha256": "5f85fa1e20d80f9f780a2fd68cd9a53498a5eec57a2b8b6202ce08e7a46fffe7"
+    },
+    {
+      "source": "desktop/installer/world.ico",
+      "target": ".github/desktop-preview/unified/installer/world.ico",
+      "sha256": "ad4a6799128bccce5caadb5c6c4ad45c42b1c139f4e1c78bf70f355d1c0d682a"
+    },
+    {
+      "source": "desktop/installer/messenger.ico",
+      "target": ".github/desktop-preview/unified/installer/messenger.ico",
+      "sha256": "d49c0d5e6f65c6ea66a477fa4a3870bd69d1ff09e464efacba02e6e9a789053e"
+    },
+    {
+      "source": "desktop/installer/tests/test.cjs",
+      "target": ".github/desktop-preview/unified/installer/tests/test.cjs",
+      "sha256": "634595b36fab91a5bcb81b7285a456ccc018474b02c3c9a073c195d885c67439"
+    },
+    {
+      "source": "desktop/installer/tests/Tests.cs",
+      "target": ".github/desktop-preview/unified/installer/tests/Tests.cs",
+      "sha256": "7a381a18a400f9b6e1915627ad2fbfacf302c9d3d0d7c9a0810be8b90e5ca410"
+    },
+    {
+      "source": "desktop/installer/tests/ui-check.cs",
+      "target": ".github/desktop-preview/unified/installer/tests/ui-check.cs",
+      "sha256": "c1d8bfd7e008e9598468e8d4c2571ae642d0ac1e8d1e8b6250f2404162982def"
+    },
+    {
+      "source": "desktop/installer/fonts/SUIT-Medium.otf",
+      "target": ".github/desktop-preview/unified/installer/fonts/SUIT-Medium.otf",
+      "sha256": "204c9e9caad3a1f7cfe45bbec9e71cd679f6f009edfaa9fae85363722f5b333e"
+    },
+    {
+      "source": "desktop/installer/fonts/SUIT-ExtraBold.otf",
+      "target": ".github/desktop-preview/unified/installer/fonts/SUIT-ExtraBold.otf",
+      "sha256": "67e6733beb6192138e4651f4436f0e2be2fe6a519861dd23cb86cf136bac0232"
+    },
+    {
+      "source": "desktop/installer/fonts/SUIT-Heavy.otf",
+      "target": ".github/desktop-preview/unified/installer/fonts/SUIT-Heavy.otf",
+      "sha256": "8873533c970d6f1525a38e0dbd80e772377e85c8e8c9a89a26903f5da4d40611"
+    },
+    {
+      "source": "desktop/installer/fonts/InterTight-Medium.ttf",
+      "target": ".github/desktop-preview/unified/installer/fonts/InterTight-Medium.ttf",
+      "sha256": "04a8f56b61c7c10447693b50074c1e55290069c00509b3656ba9f91f527e36b1"
+    },
+    {
+      "source": "desktop/installer/fonts/InterTight-Bold.ttf",
+      "target": ".github/desktop-preview/unified/installer/fonts/InterTight-Bold.ttf",
+      "sha256": "1ba0c5d0bfd19b5e1171fcbb4e83235331093fb5060bd556ceb1b10c74e4b4ca"
+    },
+    {
+      "source": "desktop/installer/fonts/DMMono-Medium.ttf",
+      "target": ".github/desktop-preview/unified/installer/fonts/DMMono-Medium.ttf",
+      "sha256": "fd327daf461db87b44a87def475d251bf03b997f7c07d9680592d75dbbfaad0b"
+    },
+    {
+      "source": "desktop/installer/fonts/SUIT-LICENSE.txt",
+      "target": ".github/desktop-preview/unified/installer/fonts/SUIT-LICENSE.txt",
+      "sha256": "30d101ee3c35ef629d622d933d261a27b2f60223e0a3b0f36791e569c2b9daa9"
+    },
+    {
+      "source": "desktop/installer/fonts/InterTight-LICENSE.txt",
+      "target": ".github/desktop-preview/unified/installer/fonts/InterTight-LICENSE.txt",
+      "sha256": "50240ab035cf1b6b3307940235481d515c4b6de3ab1fa843dbe59e7892cb9d58"
+    },
+    {
+      "source": "desktop/installer/fonts/DMMono-LICENSE.txt",
+      "target": ".github/desktop-preview/unified/installer/fonts/DMMono-LICENSE.txt",
+      "sha256": "2bada5ea45c3c63b7f1ea1f88ce9672c9e4f0c42b2c3b7378949084fe55a3066"
+    },
+    {
+      "source": "desktop/installer/art/poster-platform.png",
+      "target": ".github/desktop-preview/unified/installer/art/poster-platform.png",
+      "sha256": "e1eb0bbd620c3db57c62725418e059b6353cd15ab6c4aa2413c9afe469a52a88"
+    },
+    {
+      "source": "desktop/installer/art/poster-world.png",
+      "target": ".github/desktop-preview/unified/installer/art/poster-world.png",
+      "sha256": "4431f2c6d702bce568f2c3087a88299b8eced39b2c58f4771133e2cc088c1002"
+    },
+    {
+      "source": "desktop/installer/art/poster-messenger.png",
+      "target": ".github/desktop-preview/unified/installer/art/poster-messenger.png",
+      "sha256": "11ad3e90e42171873bca735a02736e96f80445ba6c0cffed9c4e5157400808f5"
+    },
+    {
+      "source": "desktop/platform-release.workflow.yml",
+      "target": ".github/workflows/desktop-platform-unified.yml",
+      "sha256": "7e13630cf29570b6fdf94e01e3bed671059fe66c11a6c0680ccac76f2976fa24"
+    }
+  ],
+  "appSourceFiles": 131
+}

@@ -1,0 +1,12 @@
+{"at":"2026-10-14T09:18:19.913Z","pid":63838,"event":"started","inside":false,"packaged":true,"executable":"/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/x64/application-location/replacement-accept/SYNKLocationQA-f8939479feedee8f-replacement-accept.app/Contents/MacOS/SYNKPlatformPreview","electron":"44.5.1","arch":"x64"}
+{"at":"2026-10-14T09:18:19.920Z","pid":63838,"event":"dialog","type":"question","message":"SYNK Location QA을(를) Applications 폴더로 옮길까요?","buttons":["Applications로 옮기기","현재 위치에서 열기"]}
+{"at":"2026-10-14T09:18:19.921Z","pid":63838,"event":"replacement-confirmation","message":"Applications에 같은 이름의 앱이 있어요.","defaultId":0,"cancelId":0}
+{"at":"2026-10-14T09:18:19.922Z","pid":63838,"event":"native-move-called"}
+{"at":"2026-10-14T09:18:20.030Z","pid":63838,"event":"native-conflict","type":"exists"}
+{"at":"2026-10-14T09:18:20.782Z","pid":63838,"event":"before-quit"}
+{"at":"2026-10-14T09:18:20.804Z","pid":63838,"event":"will-quit"}
+{"at":"2026-10-14T09:18:20.804Z","pid":63838,"event":"result","inside":false,"continueStartup":false,"status":"moving"}
+{"at":"2026-10-14T09:18:22.606Z","pid":63857,"event":"started","inside":true,"packaged":true,"executable":"/Applications/SYNKLocationQA-f8939479feedee8f-replacement-accept.app/Contents/MacOS/SYNKPlatformPreview","electron":"44.5.1","arch":"x64"}
+{"at":"2026-10-14T09:18:22.613Z","pid":63857,"event":"result","inside":true,"continueStartup":true,"status":"in-applications"}
+{"at":"2026-10-14T09:18:22.613Z","pid":63857,"event":"before-quit"}
+{"at":"2026-10-14T09:18:22.614Z","pid":63857,"event":"will-quit"}

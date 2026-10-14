@@ -90,7 +90,7 @@
 
 **공개(10-13):** 원본을 synk-policy `.github/desktop-preview/mac-dmg-signal/`과 워크플로 `desktop-macos-dmg-signal.yml`로 올리고(`e2c81d55`), macOS 15 CI(Apple 칩·Intel, [실행 38296456890](https://github.com/unmet23-lab/synk-policy/actions/runs/38296456890))가 공개 DMG를 받아 확인값을 맞춘 뒤 다시 포장하고, 앱 트리·서명·Finder 실제 창(밝은·어두운 모드)을 확인했다. 릴리스 작업은 같은 실행의 파일만 기록과 다시 대조해 프리릴리스 [`platform-preview-0.4.3-mac-signal.1-20261013`](https://github.com/unmet23-lab/synk-policy/releases/tag/platform-preview-0.4.3-mac-signal.1-20261013)을 만들었다(arm64 459,131,084 bytes `6515cd82…`, x64 476,792,659 bytes `1b8a9e52…`). 공개 주소 두 개가 200·정확한 크기로 열렸다. 홈페이지 Mac 링크 세 곳(두 칩·확인값)을 공개본에서 바꿔 `d29be3d4`로 올렸고(원본 SYNK-website `557837e`), Pages·「synk.im 배포 점검」 성공, 라이브 3개 파일 바이트 일치. 기존 `platform-preview-0.4.3-20261012` 릴리스는 그대로 둔다. 기록: [Mac 공개 기록](../../_ops/qa/mac-dmg-signal1-20261013/release.json).
 
-**남은 것(제안):** 앱 아이콘이 macOS 모양(둥근 사각형)이 아니라 흰 정사각형이라 Finder·Dock에서 다른 앱과 어긋난다 — 앱 안 파일이라 다음 앱 판에서 바꾼다. 첫 실행 위치가 Applications 밖이면 옮기기 제안, 설치가 한계 시간을 넘기면 실패 화면으로 넘기는 것은 앱·엔진 쪽 일이다. 이 세 가지는 10-14 유호님 결정으로 Platform 공통 배포 세션에 맡겼다(다음 공통 판). Apple 공증을 받으면 창의 「그래도 열기」 줄을 뺀다.
+**남은 것(제안):** 맡긴 세 가지는 공통 **0.4.11 / build20261014.8**에 반영·게시했다. Platform·WORLD·워크스페이스 ICNS는 1024 캔버스 중앙 824×824·반경 185·투명 여백(기존 마크/Windows ICO 보존), Applications 밖 실행의 이동·교체 확인, Windows 10분 NSIS 제한과 종료 확인 후 복구·실패 안내를 포함한다. 두 Mac 칩에서 Finder·Dock·세 DMG 밝은/어두운 화면과 실제 이동·재실행을 검증했고, Windows 설치 회귀 22개·세 제품 108개 렌더를 확인했다. [공통 배포 기록](../../_ops/qa/platform-auto-update-20261014/README.md#mac-install-0411). 물리 Mac 실계정 교체와 정식 서명·Apple 공증은 남아 있다. Apple 공증을 받으면 창의 「그래도 열기」 줄을 뺀다.
 
 <a id="children-signal3-20261013"></a>
 

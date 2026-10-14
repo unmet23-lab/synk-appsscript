@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "releaseId": "platform-preview-0.4.11",
+  "buildId": "20261014.8",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "sourceFiles": 131,
+  "sourceBytes": 24075736,
+  "initialCandidatePreserved": true,
+  "reason": "Prevent Electron privileged mover from bypassing existing-destination confirmation",
+  "changed": [
+    {
+      "path": "src/mac-application-location.cjs",
+      "bytes": 5185,
+      "sha256": "861ff3c45ef7c04b4ce4012bde3642d326cf3fe7d7cf053e91500a2f1d820b98"
+    }
+  ]
+}

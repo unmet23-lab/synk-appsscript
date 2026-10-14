@@ -1,5 +1,17 @@
 # SYNK Platform Preview — Signal Windows installer
 
+## 2026-10-14 common installer update
+
+The Platform, WORLD and Workspace wrappers all compile the same engine. The NSIS stage now has a **10-minute wall-clock limit**. `BackendProcess.cs` starts the verified backend suspended, attaches it to a private Windows Job with kill-on-close and no breakaway permission, and resumes it only after attachment. Success means every process in the job has exited. A deadline stops the job and waits up to 15 seconds for all descendants to leave before restoring files. This follows [Microsoft's Job Objects contract](https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects), checked 2026-10-14.
+
+Manual installs now preserve the application files, product registry entries and two known shortcuts using the same transaction as automatic updates. A confirmed stop restores the prior version, or removes the known partial payload of a fresh installation, then shows **다시 시도 · 닫기** and the resulting state. Account/userData directories are never transaction inputs. If backend exit or restoration cannot be verified, the backup and journal remain, retry is disabled, and a pending marker blocks later installers too. Failure details and the recovery location can be scrolled instead of being truncated. The progress window states the time limit without claiming that an unresponsive process is still progressing.
+
+`tests/test.cjs` exercises real NSIS installation and automatic recovery with independent fixture identities, plus partial-write deadlines, descendant termination, fresh-install cleanup, preserved external profile canaries and the unresolved-transaction barrier. `tests/measure.cjs --payload=<reviewed win-unpacked>` measures the production engine with a full real payload under an isolated identity, without launching the application. The common release QA records the timing sample and final package checks; a fixture does not establish a real-user update result.
+
+The 2026-10-14 sample used a 679,291,638-byte, 75-file payload. Two isolated reinstalls took **147.630 s and 63.733 s for the backend plus its first verification**, with total backup/install/verification times of 550.619 s and 219.700 s. The 600 s backend limit is over four times the slower measured upper bound. Backup and verified recovery are separate stages; this is not a ten-minute limit on the whole window. Stop confirmation adds at most 15 s before safe recovery can begin. This small sample does not establish timings on all supported hardware. See the [common release evidence](../../docs/_ops/qa/platform-auto-update-20261014/README.md#mac-install-0411).
+
+The remaining sections describe the original 0.4.3 Signal package and its reproducible baseline.
+
 This directory builds the Signal installation window for the existing Windows x64 Platform Preview **0.4.3**. The installer revision is **signal.2** (2026-10-13 redesign; signal.1 was published on 2026-10-12); its Windows file version is **0.4.3.2**. The installed application and bundled child installers remain byte-for-byte identical to the pinned public 0.4.3 payload.
 
 The entry screen, installation progress, failure guidance and completion screen are native WPF UI. The executable contains the NSIS installation engine, application payload, approved SYNK artwork and fonts. The installer does not need a browser, WebView or a development server.
@@ -15,7 +27,7 @@ signal.2 follows the platform launcher's Signal 2 grammar (`docs/디자인/플�
 - The installer does not delete account or application data. NSIS is configured with `deleteAppDataOnUninstall: false`; the installer does not log in, log out or change account settings.
 - Installation requires approximately 3 GiB of available space on the destination, local application-data and temporary drives. Linked installation directories are rejected. The embedded engine is extracted into a private, randomly named cache directory and verified before execution.
 - The final application files are checked against the pinned size and SHA-256 inventory before the completion screen appears. Application registration, uninstaller registration and an existing Start-menu shortcut target are also checked. The executable is checked again when **SYNK 열기** is pressed.
-- Closing is disabled while files are being installed or verified. A failed installation shows its error and offers a retry. The installer does not implement a separate rollback transaction.
+- Closing is disabled while files are being installed, stopped or verified. The common engine now restores the previous installation before offering retry; unresolved recovery keeps its backup and blocks retry as described above.
 
 The download remains an unsigned Preview. This UI revision does not add a trusted publisher signature, an automatic update feed or Apple notarization. Mac packages are unchanged.
 

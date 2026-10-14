@@ -1,0 +1,119 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T09:09:16.095Z",
+  "sources": [
+    {
+      "path": "desktop/installer/InstallerEngine.cs",
+      "sha256": "4285cf45fe21c2fb18215ce59650e01787bcc74d2783455824568d0340a34162"
+    },
+    {
+      "path": "desktop/installer/AutoUpdateEngine.cs",
+      "sha256": "b82d61805ad540d8197162d7a87c2b0eb67755da365839b44f1bbaac1b8f8f33"
+    },
+    {
+      "path": "desktop/installer/BackendProcess.cs",
+      "sha256": "2c868f5a0f364de77af90d05ac8a1daa452fc1f9853ae9879ed3bf129d0db3de"
+    },
+    {
+      "path": "desktop/installer/InstallTransaction.cs",
+      "sha256": "48461f79b05f027bc78c673f74f2bbd299205851ea4cbe7c7421f80b460b69f5"
+    },
+    {
+      "path": "desktop/installer/Program.cs",
+      "sha256": "42efec3c56618502932d1a563026989da6cdbf7a7579e5a203c2853a566eb861"
+    },
+    {
+      "path": "desktop/installer/SignalWindow.cs",
+      "sha256": "3ba1e5a90f06aad9c2b362aaf72aa6e86771db661c5b5a88a77c00a5b910b718"
+    }
+  ],
+  "deadline": {
+    "milliseconds": 600000,
+    "scope": "NSIS process tree, measured with Stopwatch from resumed backend until every job process exits",
+    "terminationConfirmationMilliseconds": 15000,
+    "excludes": "backup creation and verified recovery; UI explicitly reports those stages",
+    "basis": "Two full 679291638-byte payload reinstalls; backend plus first verification 147630ms and 63733ms. 600000ms exceeds the slower upper-bound sample by 4.06x; low-end hardware population not measured."
+  },
+  "measurement": {
+    "path": ".tmp/signal-installer-measure-541f858721c6/measurement.json",
+    "sha256": "1a3c025e5a790eeb3647cdf8044bcea508519db88072a13c9019d93a143d9d89",
+    "ok": true,
+    "checkedAt": "2026-10-14T08:52:56.5104929Z",
+    "deadlineMilliseconds": 600000,
+    "runs": [
+      {
+        "kind": "reinstall",
+        "totalMilliseconds": 550619,
+        "backendAndFirstVerificationMilliseconds": 147630,
+        "payloadFiles": 75,
+        "payloadVerified": true,
+        "profileSentinelUnchanged": true
+      },
+      {
+        "kind": "reinstall",
+        "totalMilliseconds": 219700,
+        "backendAndFirstVerificationMilliseconds": 63733,
+        "payloadFiles": 75,
+        "payloadVerified": true,
+        "profileSentinelUnchanged": true
+      }
+    ],
+    "accountSentinelUnchanged": true,
+    "fixtureRegistrationRemoved": true,
+    "sourcePayloadFiles": 75,
+    "sourcePayloadBytes": 679291638,
+    "originalPayloadUnchanged": true,
+    "appLaunched": false,
+    "productionInstallTouched": false,
+    "realProfileTouched": false,
+    "backendSHA256": "43cecd576304e75f202c70009939c1895790a03369cfc3f642e432fb2de8af81",
+    "backendBytes": 400250298,
+    "backendArchiveVerified": true,
+    "buildBlockmapFailure": "Disk exhausted after final NSIS was complete; validated NSIS reused, blockmap not used."
+  },
+  "finalLocalFixture": {
+    "path": ".tmp/signal-installer-test-36f5ec910cd7/test-results.json",
+    "sha256": "51a87b37fa7f63bdbd7f103af4cd99a8c98e34b019111df01ce084c82e5892e3",
+    "checks": 22,
+    "ok": true,
+    "realPlatformInstallationAttempted": false
+  },
+  "ciFixture": {
+    "run": 38537148997,
+    "job": 115762695268,
+    "checks": 22,
+    "ok": true
+  },
+  "previousLocalAttempt": {
+    "path": ".tmp/signal-installer-test-4ce39485ccd3/test-results.json",
+    "sha256": "68f53bc4e9704db75bf192d9b58d7582a3c979b6f23f9d11da1c519ca9c28e27",
+    "ok": false,
+    "failedCheck": "automatic update timeout uses the same bounded backend and restores previous application before recovery launch",
+    "observed": "An automatic-timeout fixture retained a recovery-required transaction instead of relaunching. Underlying local file/shortcut error was not recorded by that assertion; cause remains unconfirmed. No production source was changed to obtain the later pass. The final new isolated fixture and the Windows CI each passed all 22 cases. Earlier fixture backup and pending marker are retained under its unique GUID."
+  },
+  "ui": {
+    "products": [
+      "platform",
+      "world",
+      "messenger"
+    ],
+    "states": 12,
+    "scales": [
+      100,
+      150,
+      200
+    ],
+    "screenshots": 108,
+    "ciRun": 38537148997,
+    "visuallyReviewed": [
+      "ui-platform-timeout-restored-100.png",
+      "ui-platform-timeout-recovery-required-100.png",
+      "ui-world-timeout-restored-100.png",
+      "ui-messenger-timeout-restored-100.png"
+    ],
+    "result": "Retry/close and restored state readable; uncertain state has close only and scrollable recovery path."
+  },
+  "productionAppInstallation": 0,
+  "productionAppLaunch": 0,
+  "realAccountOperations": 0
+}

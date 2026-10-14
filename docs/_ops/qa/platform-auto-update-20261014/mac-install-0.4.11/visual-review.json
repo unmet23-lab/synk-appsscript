@@ -1,0 +1,114 @@
+{
+  "ok": true,
+  "reviewedAt": "2026-10-14T09:25:44.706Z",
+  "method": "Direct visual review of native CI screenshots by primary agent",
+  "reviewed": [
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/finder-dock-light.png",
+      "bytes": 120679,
+      "sha256": "a8ba63c4b7b67e4247867c5a57597f9400ff08e388255bee2ebc0e57c74bcb84"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/finder-dock-dark.png",
+      "bytes": 142930,
+      "sha256": "2b0ba94b4eb213b4eb3484ab1f3dc5996bedcc71baff5cd9439041b2834e7569"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-platform-light.png",
+      "bytes": 467324,
+      "sha256": "7ed0521585fd4eef38c2ed17465b134bf5e88c94904c4a1725af4c1e96ab1120"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-platform-dark.png",
+      "bytes": 468668,
+      "sha256": "f21c28acbebf89a33da56ac58336ea8c7e757516bef17e10313122069e54f98d"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-world-light.png",
+      "bytes": 472258,
+      "sha256": "33f454a46d5d9ea01647c068f1f8c23875db9134425b83824b2983796b8b0dc1"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-world-dark.png",
+      "bytes": 473125,
+      "sha256": "552c3d403f3cd870c0d151c140232420b710ec55f08916300bbee8d8c7f0297d"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-messenger-light.png",
+      "bytes": 425388,
+      "sha256": "6186c5c5590c245204b881379f0d8d1f946ccc68c23d3996b4ee7e893b439a74"
+    },
+    {
+      "path": "mac-arm64-qa/unified-out/arm64/icon-native/dmg-messenger-dark.png",
+      "bytes": 426789,
+      "sha256": "935a6e0d8ed23663b9732c182b095d4d7b0069e0b57b5b380ef92882ba5e0609"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/finder-dock-light.png",
+      "bytes": 152441,
+      "sha256": "be444206e03314e2332804f7a54462b63f84c421667e6c0295e0f058096ea9b3"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/finder-dock-dark.png",
+      "bytes": 175582,
+      "sha256": "e4f8880b9805d19cb4a361a844984ad8c8e925e3d9ffea05a3425f8d57f6074c"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-platform-light.png",
+      "bytes": 520266,
+      "sha256": "8779ad4ec4b9b166e7b4f479be310c9d5799a6e4bb7ab6754872fc90c8fe7d09"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-platform-dark.png",
+      "bytes": 518807,
+      "sha256": "208b782b78e37ec2290a9cf19a14f79b7602f151b887796590e1ba9fa0f887f4"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-world-light.png",
+      "bytes": 522413,
+      "sha256": "ee6dd6d0fdbd891d74a4a98c6143528218df7cb696f54d12c8f9a5acd81a13e2"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-world-dark.png",
+      "bytes": 523854,
+      "sha256": "c2cc16a21a9f11123a4aae3b0c68ab63f939d4e030a0baba6fb5e3292f2108d8"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-messenger-light.png",
+      "bytes": 475738,
+      "sha256": "17adce7c3fd5660e8475bfd67f1b1c76940ee2f54899ab127144b9afa71d6336"
+    },
+    {
+      "path": "mac-x64-qa/unified-out/x64/icon-native/dmg-messenger-dark.png",
+      "bytes": 472092,
+      "sha256": "db8b803d22ea6c2c31737f7c2447083c438083f412ecdd692e5668b1c14b27de"
+    },
+    {
+      "path": "windows-qa/qa-results/win32-x64-installer-ui/ui-platform-timeout-restored-100.png",
+      "bytes": 214824,
+      "sha256": "22b32822a5aaa31ccec321aec875419aa4d78f31827f244e2bb4d4b57928d04b"
+    },
+    {
+      "path": "windows-qa/qa-results/win32-x64-installer-ui/ui-platform-timeout-recovery-required-100.png",
+      "bytes": 216711,
+      "sha256": "63579cd232e81284ac5c557c6924cfd808e97d66f2d8c9d1eba051033afa5c35"
+    },
+    {
+      "path": "windows-qa/qa-results/win32-x64-installer-ui/ui-world-timeout-restored-100.png",
+      "bytes": 242149,
+      "sha256": "290322574422f294644f1896e6fbff2b6edcf5b386eece05f1304842e6288868"
+    },
+    {
+      "path": "windows-qa/qa-results/win32-x64-installer-ui/ui-messenger-timeout-restored-100.png",
+      "bytes": 195060,
+      "sha256": "295ed76023ce6b53f52ded2874bfc2740d96e5ec6ee61142edc7b8cd3c2ac52b"
+    }
+  ],
+  "findings": [
+    "Both Mac architectures: Finder, Dock and all three DMGs show the preserved marks on rounded white surfaces with transparent outer spacing. Light and dark DMG text and drag-to-Applications layout are readable; volume titles identify 0.4.11.",
+    "Dark Dock screenshots contain two question-mark recent-app tiles after the separator from deleted location-test fixtures; the three pinned product icons before the separator are correct. These QA screenshots are not marketing assets.",
+    "Windows restored-timeout screens show failure explanation, retained previous installation and retry/close actions. The uncertain-recovery screen shows remaining-state information and close-only behavior with scrolling."
+  ],
+  "physicalMacTest": false,
+  "realUserProfileTouched": false
+}

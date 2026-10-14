@@ -1,0 +1,41 @@
+{
+  "ok": true,
+  "date": "2026-10-14",
+  "evidence": "Observed successful exec_command output; product packaged checks are recorded separately after builds.",
+  "checks": [
+    {
+      "passed": 42,
+      "failed": 0,
+      "files": [
+        "desktop/tests/release-pipeline.test.cjs",
+        "desktop/tests/assemble-platform-release.test.cjs"
+      ]
+    },
+    {
+      "passed": 89,
+      "failed": 0,
+      "files": [
+        "desktop/tests/mac-application-location.test.cjs",
+        "desktop/tests/platform-startup-update.test.cjs",
+        "desktop/tests/startup-resume.test.cjs",
+        "desktop/tests/startup-update-view.test.cjs",
+        "desktop/tests/platform-update.test.cjs",
+        "desktop/tests/platform-update-recovery.test.cjs",
+        "desktop/tests/draft-exit.test.cjs"
+      ]
+    },
+    {
+      "passed": 56,
+      "failed": 0,
+      "final": true,
+      "files": [
+        "desktop/tests/release-pipeline.test.cjs",
+        "desktop/tests/assemble-platform-release.test.cjs",
+        "desktop/tests/mac-application-location.test.cjs",
+        "desktop/tests/child-location-overlay.test.cjs"
+      ]
+    }
+  ],
+  "realProfileOperations": 0,
+  "installedAppOperations": 0
+}

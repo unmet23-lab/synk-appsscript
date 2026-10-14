@@ -1,0 +1,71 @@
+{
+  "ok": true,
+  "platform": "darwin",
+  "arch": "x64",
+  "version": "0.4.11",
+  "packages": [
+    {
+      "client": "world",
+      "version": "0.4.11",
+      "metadata": {
+        "version": "0.4.11"
+      },
+      "executable": {
+        "sha256": "18b6ec379371a36613dcf4a73013f4e599eb49592327508bbd5b81895a9654c1"
+      },
+      "asar": {
+        "sha256": "c9d00e935df8dad06e8fdea3de2b36bfc99cd5a780def09f54ae47ba9e75c1b6"
+      },
+      "installer": {
+        "path": "unified-out/x64/refreshed-children/world.dmg",
+        "bytes": 159014102,
+        "sha256": "294febfdd9d5880d44f72f91e9088074595dd1fbb710bf18d209f8f82daf1e08"
+      }
+    },
+    {
+      "client": "messenger",
+      "version": "0.4.11",
+      "metadata": {
+        "version": "0.4.11"
+      },
+      "executable": {
+        "sha256": "0934dbbe1c4edb95a8430f98d452090a7b6dc32bd4976fbb6b1feb08c41ec518"
+      },
+      "asar": {
+        "sha256": "3f0f4c6acd0b4c6d4db28d7668f98dc9fbddc01e9b2945ea8efa5cc5f6eeba97"
+      },
+      "installer": {
+        "path": "unified-out/x64/refreshed-children/messenger.dmg",
+        "bytes": 158278961,
+        "sha256": "e21686cb8d4d764e04111c2112c8dae13c1d62e6b1cf68654c7ee852b3416601"
+      }
+    },
+    {
+      "client": "platform",
+      "version": "0.4.11",
+      "metadata": {
+        "clientId": "platform",
+        "mode": "development",
+        "appId": "im.synk.platform.preview",
+        "version": "0.4.11",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+        "releaseId": "platform-preview-0.4.11",
+        "buildId": "20261014.8",
+        "channel": "preview"
+      },
+      "executable": {
+        "sha256": "b95de28bf4818b11d5e47fdf3429f8a466d2adbdfa465ed4c28c7cb7f63b6013"
+      },
+      "asar": {
+        "sha256": "47c40359d7de7775199aea2276565fc02a28d8109f6a4e31b5b69aa8a5ae0d99"
+      },
+      "installer": {
+        "path": "unified-out/x64/dist/SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg",
+        "bytes": 475935605,
+        "sha256": "d9e7ee09573a2a4390e54816461923429f0504865770cf7ce7cee830111b492c"
+      }
+    }
+  ]
+}

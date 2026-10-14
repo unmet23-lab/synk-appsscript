@@ -1,0 +1,975 @@
+check	Set up job	﻿2026-10-14T09:29:43.1244116Z Current runner version: '2.337.0'
+check	Set up job	2026-10-14T09:29:43.1268964Z ##[group]Runner Image Provisioner
+check	Set up job	2026-10-14T09:29:43.1270076Z Hosted Compute Agent
+check	Set up job	2026-10-14T09:29:43.1270655Z Version: 20261002.596
+check	Set up job	2026-10-14T09:29:43.1271236Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+check	Set up job	2026-10-14T09:29:43.1271879Z Build Date: 2026-10-02T22:28:27Z
+check	Set up job	2026-10-14T09:29:43.1272529Z Worker ID: {e40b8336-6c9d-42ff-85a4-f88720138ca8}
+check	Set up job	2026-10-14T09:29:43.1273165Z Region: westus3
+check	Set up job	2026-10-14T09:29:43.1273635Z Cloud: Azure
+check	Set up job	2026-10-14T09:29:43.1274159Z ##[endgroup]
+check	Set up job	2026-10-14T09:29:43.1275829Z ##[group]Operating System
+check	Set up job	2026-10-14T09:29:43.1276461Z Ubuntu
+check	Set up job	2026-10-14T09:29:43.1276927Z 24.04.5
+check	Set up job	2026-10-14T09:29:43.1277376Z LTS
+check	Set up job	2026-10-14T09:29:43.1277863Z ##[endgroup]
+check	Set up job	2026-10-14T09:29:43.1278368Z ##[group]Runner Image
+check	Set up job	2026-10-14T09:29:43.1278915Z Image: ubuntu-24.04
+check	Set up job	2026-10-14T09:29:43.1279426Z Version: 20261004.327.1
+check	Set up job	2026-10-14T09:29:43.1280562Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+check	Set up job	2026-10-14T09:29:43.1282572Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+check	Set up job	2026-10-14T09:29:43.1283450Z ##[endgroup]
+check	Set up job	2026-10-14T09:29:43.1284492Z ##[group]GITHUB_TOKEN Permissions
+check	Set up job	2026-10-14T09:29:43.1286672Z Actions: read
+check	Set up job	2026-10-14T09:29:43.1287253Z Contents: read
+check	Set up job	2026-10-14T09:29:43.1287736Z Metadata: read
+check	Set up job	2026-10-14T09:29:43.1288276Z ##[endgroup]
+check	Set up job	2026-10-14T09:29:43.1290462Z Secret source: Actions
+check	Set up job	2026-10-14T09:29:43.1291371Z Cache mode: write
+check	Set up job	2026-10-14T09:29:43.1292072Z Prepare workflow directory
+check	Set up job	2026-10-14T09:29:43.1626281Z Prepare all required actions
+check	Set up job	2026-10-14T09:29:43.1674404Z Getting action download info
+check	Set up job	2026-10-14T09:29:43.4801083Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+check	Set up job	2026-10-14T09:29:43.5576597Z Download action repository 'actions/setup-node@v7' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+check	Set up job	2026-10-14T09:29:44.3974533Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+check	Set up job	2026-10-14T09:29:45.4288798Z Complete job name: check
+check	Run actions/checkout@v7	﻿2026-10-14T09:29:45.5274151Z ##[group]Run actions/checkout@v7
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5275506Z with:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5276258Z   fetch-depth: 2
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5277135Z   repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5286212Z   token: ***
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5287025Z   ssh-strict: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5287873Z   ssh-user: git
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5288715Z   persist-credentials: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5289603Z   clean: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5290564Z   sparse-checkout-cone-mode: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5291524Z   fetch-tags: false
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5292319Z   show-progress: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5293121Z   lfs: false
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5293871Z   submodules: false
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5294680Z   set-safe-directory: true
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5295593Z   allow-unsafe-pr-checkout: false
+check	Run actions/checkout@v7	2026-10-14T09:29:45.5296850Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6309685Z Syncing repository: unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6314377Z ##[group]Getting Git version info
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6316924Z Working directory is '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6320791Z [command]/usr/bin/git version
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6325718Z git version 2.55.0
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6347052Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6357051Z Temporarily overriding HOME='/home/runner/work/_temp/7a634142-a65c-4e03-b527-968d05e1fce3' before making global git config changes
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6363150Z Adding repository directory to the temporary git global config as a safe directory
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6367808Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6403703Z Deleting the contents of '/home/runner/work/synk-policy/synk-policy'
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6407659Z ##[group]Determining repository object format
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6410867Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6414517Z ##[group]Initializing the repository
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6417555Z [command]/usr/bin/git init /home/runner/work/synk-policy/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6509302Z hint: Using 'master' as the name for the initial branch. This default branch name
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6512771Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6516124Z hint: to use in all of your new repositories, which will suppress this warning,
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6517689Z hint: call:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6518816Z hint:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6520312Z hint: 	git config --global init.defaultBranch <name>
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6522093Z hint:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6524163Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6526414Z hint: 'development'. The just-created branch can be renamed via this command:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6528124Z hint:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6529536Z hint: 	git branch -m <name>
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6531218Z hint:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6532959Z hint: Disable this message with "git config set advice.defaultBranchName false"
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6535576Z Initialized empty Git repository in /home/runner/work/synk-policy/synk-policy/.git/
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6540375Z [command]/usr/bin/git remote add origin https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6582415Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6585020Z ##[group]Disabling automatic garbage collection
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6586836Z [command]/usr/bin/git config --local gc.auto 0
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6613433Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6616050Z ##[group]Setting up auth
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6617904Z Removing SSH command configuration
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6622970Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6653781Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6968209Z Removing HTTP extra header
+check	Run actions/checkout@v7	2026-10-14T09:29:45.6973458Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7006094Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7198039Z Removing includeIf entries pointing to credentials config files
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7200713Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7228106Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7403913Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7435907Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path /home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7464249Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7496043Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7575112Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7602251Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7603561Z ##[group]Fetching the repository
+check	Run actions/checkout@v7	2026-10-14T09:29:45.7608964Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=2 origin +39b432bf95a56727f9a3dce46da091d4c40be5d1:refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5786496Z From https://github.com/unmet23-lab/synk-policy
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5787169Z  * [new ref]         39b432bf95a56727f9a3dce46da091d4c40be5d1 -> origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5801911Z [command]/usr/bin/git branch --list --remote origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5828606Z   origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5838163Z [command]/usr/bin/git rev-parse refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5860352Z 39b432bf95a56727f9a3dce46da091d4c40be5d1
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5868516Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5868944Z ##[group]Determining the checkout info
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5869350Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5870871Z [command]/usr/bin/git sparse-checkout disable
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5914890Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5942213Z ##[group]Checking out the ref
+check	Run actions/checkout@v7	2026-10-14T09:30:05.5946642Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+check	Run actions/checkout@v7	2026-10-14T09:30:06.9991744Z Updating files:  19% (1448/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0030905Z Updating files:  20% (1507/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0193738Z Updating files:  21% (1582/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0307610Z Updating files:  22% (1658/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0426721Z Updating files:  23% (1733/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0519316Z Updating files:  24% (1808/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0585860Z Updating files:  25% (1884/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0711231Z Updating files:  26% (1959/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0870342Z Updating files:  27% (2034/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.0936433Z Updating files:  28% (2110/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1512618Z Updating files:  29% (2185/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1582235Z Updating files:  30% (2260/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1659475Z Updating files:  31% (2336/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1747754Z Updating files:  32% (2411/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1863984Z Updating files:  33% (2486/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.1939538Z Updating files:  34% (2562/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2043743Z Updating files:  35% (2637/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2103097Z Updating files:  36% (2712/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2152620Z Updating files:  37% (2788/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2198872Z Updating files:  38% (2863/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2247884Z Updating files:  39% (2938/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2294185Z Updating files:  40% (3014/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2333134Z Updating files:  41% (3089/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2368843Z Updating files:  42% (3164/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2403881Z Updating files:  43% (3240/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2438800Z Updating files:  44% (3315/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2474564Z Updating files:  45% (3390/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2509043Z Updating files:  46% (3466/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2547227Z Updating files:  47% (3541/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2584201Z Updating files:  48% (3616/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2622662Z Updating files:  49% (3692/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2660301Z Updating files:  50% (3767/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2702027Z Updating files:  51% (3842/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2742220Z Updating files:  52% (3918/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2780236Z Updating files:  53% (3993/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2816223Z Updating files:  54% (4068/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2851745Z Updating files:  55% (4144/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2885067Z Updating files:  56% (4219/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2917164Z Updating files:  57% (4294/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2952046Z Updating files:  58% (4370/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.2985866Z Updating files:  59% (4445/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.3018273Z Updating files:  60% (4520/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.3054334Z Updating files:  61% (4596/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.3192496Z Updating files:  62% (4671/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.3250246Z Updating files:  63% (4746/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.3994692Z Updating files:  64% (4822/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4057421Z Updating files:  65% (4897/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4176460Z Updating files:  66% (4972/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4327698Z Updating files:  67% (5048/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4533404Z Updating files:  68% (5123/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4619723Z Updating files:  69% (5198/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4679575Z Updating files:  70% (5274/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.4910197Z Updating files:  71% (5349/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.5007369Z Updating files:  72% (5424/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.5668852Z Updating files:  73% (5500/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.6033586Z Updating files:  74% (5575/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.6311741Z Updating files:  74% (5614/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.7660496Z Updating files:  75% (5650/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8248519Z Updating files:  76% (5726/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8305112Z Updating files:  77% (5801/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8608501Z Updating files:  78% (5876/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8638323Z Updating files:  79% (5952/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8672704Z Updating files:  80% (6027/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8709992Z Updating files:  81% (6102/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8744067Z Updating files:  82% (6178/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8780643Z Updating files:  83% (6253/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8817116Z Updating files:  84% (6328/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8847537Z Updating files:  85% (6404/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8876349Z Updating files:  86% (6479/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8904584Z Updating files:  87% (6554/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8933649Z Updating files:  88% (6630/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8964345Z Updating files:  89% (6705/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.8995682Z Updating files:  90% (6780/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.9028389Z Updating files:  91% (6856/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.9061327Z Updating files:  92% (6931/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.9095474Z Updating files:  93% (7006/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.9788556Z Updating files:  94% (7082/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:07.9882277Z Updating files:  95% (7157/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0091084Z Updating files:  96% (7232/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0220978Z Updating files:  97% (7308/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0683855Z Updating files:  98% (7383/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0871587Z Updating files:  99% (7458/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0871924Z Updating files: 100% (7533/7533)
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0872238Z Updating files: 100% (7533/7533), done.
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0946423Z Switched to a new branch 'main'
+check	Run actions/checkout@v7	2026-10-14T09:30:08.0950934Z branch 'main' set up to track 'origin/main'.
+check	Run actions/checkout@v7	2026-10-14T09:30:08.1027242Z ##[endgroup]
+check	Run actions/checkout@v7	2026-10-14T09:30:08.1057371Z [command]/usr/bin/git log -1 --format=%H
+check	Run actions/checkout@v7	2026-10-14T09:30:08.1081228Z 39b432bf95a56727f9a3dce46da091d4c40be5d1
+check	Run actions/setup-node@v7	﻿2026-10-14T09:30:08.1317310Z ##[group]Run actions/setup-node@v7
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1317577Z with:
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1317761Z   node-version: 22
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1317963Z   check-latest: false
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1321022Z   token: ***
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1321243Z   package-manager-cache: true
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.1321493Z ##[endgroup]
+check	Run actions/setup-node@v7	2026-10-14T09:30:08.3307935Z Found in cache @ /opt/hostedtoolcache/node/22.23.3/x64
+check	Run actions/setup-node@v7	2026-10-14T09:30:09.1366861Z ##[group]Environment details
+check	Run actions/setup-node@v7	2026-10-14T09:30:10.6502109Z node: v22.23.3
+check	Run actions/setup-node@v7	2026-10-14T09:30:10.6502542Z npm: 10.9.9
+check	Run actions/setup-node@v7	2026-10-14T09:30:10.6502815Z yarn: 1.22.22
+check	Run actions/setup-node@v7	2026-10-14T09:30:10.6503564Z ##[endgroup]
+check	플레이라이트 준비	﻿2026-10-14T09:30:10.6626564Z ##[group]Run npm install --no-save --no-package-lock playwright@1.62.1
+check	플레이라이트 준비	2026-10-14T09:30:10.6627204Z ^[[36;1mnpm install --no-save --no-package-lock playwright@1.62.1^[[0m
+check	플레이라이트 준비	2026-10-14T09:30:10.6627694Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+check	플레이라이트 준비	2026-10-14T09:30:10.6855672Z shell: /usr/bin/bash -e {0}
+check	플레이라이트 준비	2026-10-14T09:30:10.6855997Z ##[endgroup]
+check	플레이라이트 준비	2026-10-14T09:30:13.4259370Z 
+check	플레이라이트 준비	2026-10-14T09:30:13.4265456Z added 2 packages in 3s
+check	플레이라이트 준비	2026-10-14T09:30:14.2451070Z Installing dependencies...
+check	플레이라이트 준비	2026-10-14T09:30:14.2521168Z Switching to root user to install dependencies...
+check	플레이라이트 준비	2026-10-14T09:30:14.3311698Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+check	플레이라이트 준비	2026-10-14T09:30:14.3574869Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+check	플레이라이트 준비	2026-10-14T09:30:14.3732424Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+check	플레이라이트 준비	2026-10-14T09:30:14.3788774Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.3813068Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.3873242Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.4473607Z Get:7 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.4611095Z Get:8 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [576 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.4689705Z Get:9 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [518 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.4747037Z Get:10 https://packages.microsoft.com/ubuntu/24.04/prod noble/main all Packages [640 B]
+check	플레이라이트 준비	2026-10-14T09:30:14.5399812Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1397 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5475731Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [308 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5511990Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1702 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5581323Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [342 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5611301Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5761308Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5780919Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [50.7 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5782430Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [14.0 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.5941496Z Get:19 http://azure.archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [748 B]
+check	플레이라이트 준비	2026-10-14T09:30:14.6338081Z Get:20 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1145 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.6823746Z Get:21 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.6842823Z Get:22 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1221 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.6898176Z Get:23 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.6917624Z Get:24 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.7002630Z Get:25 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.7025744Z Get:26 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [45.4 kB]
+check	플레이라이트 준비	2026-10-14T09:30:14.7035705Z Get:27 http://azure.archive.ubuntu.com/ubuntu noble-security/multiverse Translation-en [12.1 kB]
+check	플레이라이트 준비	2026-10-14T09:30:17.6440145Z Fetched 12.5 MB in 1s (9696 kB/s)
+check	플레이라이트 준비	2026-10-14T09:30:18.5600808Z Reading package lists...
+check	플레이라이트 준비	2026-10-14T09:30:18.5853699Z Reading package lists...
+check	플레이라이트 준비	2026-10-14T09:30:18.7954467Z Building dependency tree...
+check	플레이라이트 준비	2026-10-14T09:30:18.7961359Z Reading state information...
+check	플레이라이트 준비	2026-10-14T09:30:18.9511874Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+check	플레이라이트 준비	2026-10-14T09:30:18.9513259Z libasound2t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9514029Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9514784Z libatk-bridge2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9515519Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9516177Z libatk1.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9516983Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9517466Z libatspi2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9517920Z libcairo2 is already the newest version (1.18.0-3build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9518350Z libcairo2 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9518825Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+check	플레이라이트 준비	2026-10-14T09:30:18.9519286Z libcups2t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9520120Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9521000Z libdbus-1-3 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9521470Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+check	플레이라이트 준비	2026-10-14T09:30:18.9521925Z libdrm2 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9522374Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+check	플레이라이트 준비	2026-10-14T09:30:18.9522805Z libgbm1 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9523493Z libglib2.0-0t64 is already the newest version (2.80.0-6ubuntu3.9).
+check	플레이라이트 준비	2026-10-14T09:30:18.9523971Z libglib2.0-0t64 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9524455Z libnspr4 is already the newest version (2:4.35-1.1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9525102Z libnspr4 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9525899Z libnss3 is already the newest version (2:3.98-1ubuntu0.2).
+check	플레이라이트 준비	2026-10-14T09:30:18.9526570Z libnss3 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9527326Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9528283Z libpango-1.0-0 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9529075Z libxcb1 is already the newest version (1.15-1ubuntu2).
+check	플레이라이트 준비	2026-10-14T09:30:18.9529777Z libxcb1 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9530781Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+check	플레이라이트 준비	2026-10-14T09:30:18.9531723Z libxcomposite1 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9532538Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9533343Z libxdamage1 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9534134Z libxext6 is already the newest version (2:1.3.4-1build2).
+check	플레이라이트 준비	2026-10-14T09:30:18.9535009Z libxext6 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9535830Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9536596Z libxfixes3 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9537445Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9539010Z libxkbcommon0 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9540157Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9540990Z libxrandr2 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9541791Z xvfb is already the newest version (2:21.1.12-1ubuntu1.8).
+check	플레이라이트 준비	2026-10-14T09:30:18.9542898Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+check	플레이라이트 준비	2026-10-14T09:30:18.9543977Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+check	플레이라이트 준비	2026-10-14T09:30:18.9544828Z libfontconfig1 set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9545580Z fonts-liberation is already the newest version (1:2.1.5-3).
+check	플레이라이트 준비	2026-10-14T09:30:18.9546354Z fonts-liberation set to manually installed.
+check	플레이라이트 준비	2026-10-14T09:30:18.9547133Z The following additional packages will be installed:
+check	플레이라이트 준비	2026-10-14T09:30:18.9547940Z   libx11-data libx11-xcb1 xfonts-encodings xfonts-utils
+check	플레이라이트 준비	2026-10-14T09:30:18.9548598Z Recommended packages:
+check	플레이라이트 준비	2026-10-14T09:30:18.9549133Z   fonts-ipafont-mincho fonts-tlwg-loma
+check	플레이라이트 준비	2026-10-14T09:30:18.9714691Z The following NEW packages will be installed:
+check	플레이라이트 준비	2026-10-14T09:30:18.9715307Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+check	플레이라이트 준비	2026-10-14T09:30:18.9724757Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+check	플레이라이트 준비	2026-10-14T09:30:18.9725312Z   xfonts-utils
+check	플레이라이트 준비	2026-10-14T09:30:18.9730006Z The following packages will be upgraded:
+check	플레이라이트 준비	2026-10-14T09:30:18.9735347Z   libfreetype6 libx11-6 libx11-data libx11-xcb1
+check	플레이라이트 준비	2026-10-14T09:30:18.9887079Z 4 upgraded, 9 newly installed, 0 to remove and 31 not upgraded.
+check	플레이라이트 준비	2026-10-14T09:30:18.9887869Z Need to get 22.3 MB of archives.
+check	플레이라이트 준비	2026-10-14T09:30:18.9888579Z After this operation, 79.6 MB of additional disk space will be used.
+check	플레이라이트 준비	2026-10-14T09:30:18.9889405Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+check	플레이라이트 준비	2026-10-14T09:30:19.0701281Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.2022531Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 libx11-6 amd64 2:1.8.7-1ubuntu0.1 [653 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.2780549Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 libx11-xcb1 amd64 2:1.8.7-1ubuntu0.1 [7796 B]
+check	플레이라이트 준비	2026-10-14T09:30:19.3416820Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 libx11-data all 2:1.8.7-1ubuntu0.1 [116 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.4060877Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.5507254Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.6185680Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.7461676Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+check	플레이라이트 준비	2026-10-14T09:30:19.9604401Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libfreetype6 amd64 2.13.2+dfsg-1ubuntu0.2 [403 kB]
+check	플레이라이트 준비	2026-10-14T09:30:20.0311889Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+check	플레이라이트 준비	2026-10-14T09:30:20.1054292Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+check	플레이라이트 준비	2026-10-14T09:30:20.1719192Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+check	플레이라이트 준비	2026-10-14T09:30:20.3366358Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+check	플레이라이트 준비	2026-10-14T09:30:20.5842071Z Fetched 22.3 MB in 1s (16.3 MB/s)
+check	플레이라이트 준비	2026-10-14T09:30:20.6058436Z Selecting previously unselected package fonts-ipafont-gothic.
+check	플레이라이트 준비	2026-10-14T09:30:20.6249302Z (Reading database ... 
+check	플레이라이트 준비	2026-10-14T09:30:20.6249670Z (Reading database ... 5%
+check	플레이라이트 준비	2026-10-14T09:30:20.6250230Z (Reading database ... 10%
+check	플레이라이트 준비	2026-10-14T09:30:20.6250529Z (Reading database ... 15%
+check	플레이라이트 준비	2026-10-14T09:30:20.6251027Z (Reading database ... 20%
+check	플레이라이트 준비	2026-10-14T09:30:20.6251463Z (Reading database ... 25%
+check	플레이라이트 준비	2026-10-14T09:30:20.6251872Z (Reading database ... 30%
+check	플레이라이트 준비	2026-10-14T09:30:20.6252355Z (Reading database ... 35%
+check	플레이라이트 준비	2026-10-14T09:30:20.6254552Z (Reading database ... 40%
+check	플레이라이트 준비	2026-10-14T09:30:20.6255022Z (Reading database ... 45%
+check	플레이라이트 준비	2026-10-14T09:30:20.6255490Z (Reading database ... 50%
+check	플레이라이트 준비	2026-10-14T09:30:20.6292502Z (Reading database ... 55%
+check	플레이라이트 준비	2026-10-14T09:30:20.7649145Z (Reading database ... 60%
+check	플레이라이트 준비	2026-10-14T09:30:20.9684044Z (Reading database ... 65%
+check	플레이라이트 준비	2026-10-14T09:30:21.1702611Z (Reading database ... 70%
+check	플레이라이트 준비	2026-10-14T09:30:21.3694394Z (Reading database ... 75%
+check	플레이라이트 준비	2026-10-14T09:30:21.5145576Z (Reading database ... 80%
+check	플레이라이트 준비	2026-10-14T09:30:21.7168724Z (Reading database ... 85%
+check	플레이라이트 준비	2026-10-14T09:30:21.9628409Z (Reading database ... 90%
+check	플레이라이트 준비	2026-10-14T09:30:22.1308554Z (Reading database ... 95%
+check	플레이라이트 준비	2026-10-14T09:30:22.1309039Z (Reading database ... 100%
+check	플레이라이트 준비	2026-10-14T09:30:22.1309606Z (Reading database ... 203191 files and directories currently installed.)
+check	플레이라이트 준비	2026-10-14T09:30:22.1353447Z Preparing to unpack .../00-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.1435453Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.3881202Z Preparing to unpack .../01-libx11-6_2%3a1.8.7-1ubuntu0.1_amd64.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.3937731Z Unpacking libx11-6:amd64 (2:1.8.7-1ubuntu0.1) over (2:1.8.7-1build1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.4338912Z Preparing to unpack .../02-libx11-xcb1_2%3a1.8.7-1ubuntu0.1_amd64.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.4393842Z Unpacking libx11-xcb1:amd64 (2:1.8.7-1ubuntu0.1) over (2:1.8.7-1build1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.5072566Z Preparing to unpack .../03-libx11-data_2%3a1.8.7-1ubuntu0.1_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.5088559Z Unpacking libx11-data (2:1.8.7-1ubuntu0.1) over (2:1.8.7-1build1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.6295069Z Selecting previously unselected package fonts-freefont-ttf.
+check	플레이라이트 준비	2026-10-14T09:30:22.6409683Z Preparing to unpack .../04-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.6418192Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.7138210Z Selecting previously unselected package fonts-tlwg-loma-otf.
+check	플레이라이트 준비	2026-10-14T09:30:22.7247433Z Preparing to unpack .../05-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.7255576Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.7402416Z Selecting previously unselected package fonts-unifont.
+check	플레이라이트 준비	2026-10-14T09:30:22.7512442Z Preparing to unpack .../06-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.7518365Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+check	플레이라이트 준비	2026-10-14T09:30:22.8448242Z Selecting previously unselected package fonts-wqy-zenhei.
+check	플레이라이트 준비	2026-10-14T09:30:22.8561625Z Preparing to unpack .../07-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:22.8647463Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.3491191Z Preparing to unpack .../08-libfreetype6_2.13.2+dfsg-1ubuntu0.2_amd64.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:23.3512285Z Unpacking libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.2) over (2.13.2+dfsg-1ubuntu0.1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.3704717Z Selecting previously unselected package xfonts-encodings.
+check	플레이라이트 준비	2026-10-14T09:30:23.3818305Z Preparing to unpack .../09-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:23.3827834Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.4031234Z Selecting previously unselected package xfonts-utils.
+check	플레이라이트 준비	2026-10-14T09:30:23.4144489Z Preparing to unpack .../10-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:23.4151498Z Unpacking xfonts-utils (1:7.7+6build3) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.4610009Z Selecting previously unselected package xfonts-cyrillic.
+check	플레이라이트 준비	2026-10-14T09:30:23.4720974Z Preparing to unpack .../11-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:23.4726454Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.4969097Z Selecting previously unselected package xfonts-scalable.
+check	플레이라이트 준비	2026-10-14T09:30:23.5081251Z Preparing to unpack .../12-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5088335Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5445577Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5547706Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5563124Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5576106Z Setting up libfreetype6:amd64 (2.13.2+dfsg-1ubuntu0.2) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5589205Z Setting up libx11-data (2:1.8.7-1ubuntu0.1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5602975Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5615134Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5667567Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+check	플레이라이트 준비	2026-10-14T09:30:23.5677890Z Setting up libx11-6:amd64 (2:1.8.7-1ubuntu0.1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5693394Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5711415Z Setting up libx11-xcb1:amd64 (2:1.8.7-1ubuntu0.1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5724316Z Setting up xfonts-utils (1:7.7+6build3) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5755128Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.5981040Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.6227929Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.6462287Z Processing triggers for man-db (2.12.0-4build2) ...
+check	플레이라이트 준비	2026-10-14T09:30:23.6481341Z Not building database; man-db/auto-update is not 'true'.
+check	플레이라이트 준비	2026-10-14T09:30:23.6492522Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+check	플레이라이트 준비	2026-10-14T09:30:24.3619718Z 
+check	플레이라이트 준비	2026-10-14T09:30:24.3620907Z Running kernel seems to be up-to-date.
+check	플레이라이트 준비	2026-10-14T09:30:24.3621294Z 
+check	플레이라이트 준비	2026-10-14T09:30:24.3621470Z Restarting services...
+check	플레이라이트 준비	2026-10-14T09:30:24.3686435Z  systemctl restart php8.3-fpm.service
+check	플레이라이트 준비	2026-10-14T09:30:24.4422587Z 
+check	플레이라이트 준비	2026-10-14T09:30:24.4423469Z No containers need to be restarted.
+check	플레이라이트 준비	2026-10-14T09:30:24.4423877Z 
+check	플레이라이트 준비	2026-10-14T09:30:24.4424305Z No user sessions are running outdated binaries.
+check	플레이라이트 준비	2026-10-14T09:30:24.4424675Z 
+check	플레이라이트 준비	2026-10-14T09:30:24.4425188Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+check	플레이라이트 준비	2026-10-14T09:30:25.3656560Z Downloading Chrome for Testing 151.0.7922.34 (playwright chromium v1234) from https://cdn.playwright.dev/builds/cft/151.0.7922.34/linux64/chrome-linux64.zip
+check	플레이라이트 준비	2026-10-14T09:30:26.3894354Z |                                                                                |   0% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.5590005Z |■■■■■■■■                                                                        |  10% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.6304796Z |■■■■■■■■■■■■■■■■                                                                |  20% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.6984833Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.7776366Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.8591980Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.9241804Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:26.9965769Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:27.0859076Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:27.1652082Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:27.2300564Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 184.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:29.6848222Z Chrome for Testing 151.0.7922.34 (playwright chromium v1234) downloaded to /home/runner/.cache/ms-playwright/chromium-1234
+check	플레이라이트 준비	2026-10-14T09:30:29.6853009Z Downloading FFmpeg (playwright ffmpeg v1011) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+check	플레이라이트 준비	2026-10-14T09:30:30.6620319Z |                                                                                |   0% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6660544Z |■■■■■■■■                                                                        |  10% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6678737Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6693601Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6705833Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6720546Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6730881Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6752883Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6765548Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6775169Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.6783606Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+check	플레이라이트 준비	2026-10-14T09:30:30.7272517Z FFmpeg (playwright ffmpeg v1011) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1011
+check	플레이라이트 준비	2026-10-14T09:30:30.7275446Z Downloading Chrome Headless Shell 151.0.7922.34 (playwright chromium-headless-shell v1234) from https://cdn.playwright.dev/builds/cft/151.0.7922.34/linux64/chrome-headless-shell-linux64.zip
+check	플레이라이트 준비	2026-10-14T09:30:31.7406328Z |                                                                                |   0% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:31.8948227Z |■■■■■■■■                                                                        |  10% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:31.9395134Z |■■■■■■■■■■■■■■■■                                                                |  20% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:31.9866537Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.0214481Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.0616855Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.1016396Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.1430364Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.1811012Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.2194553Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:32.2572689Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 114.7 MiB
+check	플레이라이트 준비	2026-10-14T09:30:34.0170468Z Chrome Headless Shell 151.0.7922.34 (playwright chromium-headless-shell v1234) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1234
+check	재검사 규칙 회귀 검사	﻿2026-10-14T09:30:34.2169281Z ##[group]Run node --test .github/site-check/*.test.mjs
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:34.2169766Z ^[[36;1mnode --test .github/site-check/*.test.mjs^[[0m
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:34.2207318Z shell: /usr/bin/bash -e {0}
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:34.2207654Z ##[endgroup]
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:34.3079390Z TAP version 13
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9733739Z # Subtest: tracked JavaScript 503 then 200 repeats the full scenario in a fresh anonymous context
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9742975Z ok 1 - tracked JavaScript 503 then 200 repeats the full scenario in a fresh anonymous context
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9743797Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9744176Z   duration_ms: 2208.288092
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9744581Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:36.9744985Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2350124Z # Subtest: tracked MP3 GET 503 then 200 repeats and preserves the audio request evidence
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2354233Z ok 2 - tracked MP3 GET 503 then 200 repeats and preserves the audio request evidence
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2355248Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2355961Z   duration_ms: 263.478564
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2356702Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.2357385Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5173573Z # Subtest: persistent tracked 503 fails after exactly two full attempts
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5175175Z ok 3 - persistent tracked 503 fails after exactly two full attempts
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5180167Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5186123Z   duration_ms: 282.758621
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5186929Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.5187434Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.6506940Z # Subtest: tracked 404 remains a one-attempt failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.6523876Z ok 4 - tracked 404 remains a one-attempt failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.6525346Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.6526247Z   duration_ms: 132.695214
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.6526799Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7852178Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7853123Z # Subtest: a runtime error together with a tracked 503 remains a one-attempt failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7854893Z ok 5 - a runtime error together with a tracked 503 remains a one-attempt failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7855986Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7856818Z   duration_ms: 135.060827
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7857771Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.7858312Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9168952Z # Subtest: a first-attempt POST prevents replay and is sent only once
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9175126Z ok 6 - a first-attempt POST prevents replay and is sent only once
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9193415Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9201194Z   duration_ms: 131.658187
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9201999Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:37.9202569Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1833861Z # Subtest: a POST introduced only on the second attempt is blocked before server receipt and fails
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1835725Z ok 7 - a POST introduced only on the second attempt is blocked before server receipt and fails
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1837184Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1838386Z   duration_ms: 266.422699
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1838996Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.1839502Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3173496Z # Subtest: an untracked JavaScript URL with 503 is not eligible for retry
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3176702Z ok 8 - an untracked JavaScript URL with 503 is not eligible for retry
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3182530Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3183037Z   duration_ms: 133.497884
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3183609Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3184571Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3537520Z # Subtest: clean first scenario runs once without a delay
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3538415Z ok 9 - clean first scenario runs once without a delay
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3539166Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3539653Z   duration_ms: 2.250768
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3646810Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3647230Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3648063Z # Subtest: transient static 503 repeats the whole scenario once and preserves the first failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3649356Z ok 10 - transient static 503 repeats the whole scenario once and preserves the first failure
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3650282Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3650598Z   duration_ms: 1.095786
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3650991Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3651341Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3652491Z # Subtest: persistent 503 remains failed after exactly two attempts
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3653341Z ok 11 - persistent 503 remains failed after exactly two attempts
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3653868Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3654187Z   duration_ms: 0.569125
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3654561Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3654839Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3655332Z # Subtest: HTTP 404 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3655959Z ok 12 - HTTP 404 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3656425Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3656688Z   duration_ms: 0.307318
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3656994Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3657269Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3657830Z # Subtest: HTTP 401 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3658520Z ok 13 - HTTP 401 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3659259Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3659597Z   duration_ms: 0.209781
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3660114Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3660452Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3660956Z # Subtest: HTTP 429 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3661653Z ok 14 - HTTP 429 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3662122Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3662450Z   duration_ms: 0.223941
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3662845Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3663174Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3663651Z # Subtest: HTTP 500 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3664454Z ok 15 - HTTP 500 is a permanent failure for this check
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3664981Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3665312Z   duration_ms: 0.19495
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3665706Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3665987Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3666521Z # Subtest: POST prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3667318Z ok 16 - POST prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3667848Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3668184Z   duration_ms: 0.301167
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3668583Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3668934Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3669562Z # Subtest: cross origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3670533Z ok 17 - cross origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3671110Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3671462Z   duration_ms: 0.421481
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3671827Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3672105Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3672725Z # Subtest: lookalike origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3673623Z ok 18 - lookalike origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3674157Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3674433Z   duration_ms: 0.429527
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3674754Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3675124Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3675703Z # Subtest: document response prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3676605Z ok 19 - document response prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3677154Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3677433Z   duration_ms: 0.279829
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3677761Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3678045Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3678643Z # Subtest: untracked static file prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3679586Z ok 20 - untracked static file prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3680690Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3680960Z   duration_ms: 0.155988
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3681210Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3681417Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3681832Z # Subtest: missing tracked file proof prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3682404Z ok 21 - missing tracked file proof prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3682773Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3682964Z   duration_ms: 0.134732
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3683179Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3683368Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3683726Z # Subtest: runtime error prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3684200Z ok 22 - runtime error prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3684739Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3684926Z   duration_ms: 0.116684
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3685138Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3685335Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3685690Z # Subtest: horizontal overflow prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3686202Z ok 23 - horizontal overflow prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3686540Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3686719Z   duration_ms: 0.121871
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3686924Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3687102Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3687421Z # Subtest: write request prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3687880Z ok 24 - write request prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3688187Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3688367Z   duration_ms: 0.190904
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3688665Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3688851Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3689191Z # Subtest: ordinary timeout prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3689713Z ok 25 - ordinary timeout prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3690273Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3690455Z   duration_ms: 0.130206
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3690665Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3690849Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3691220Z # Subtest: unrelated network failure prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3691764Z ok 26 - unrelated network failure prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3692153Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3692339Z   duration_ms: 0.133242
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3692547Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3692727Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3693119Z # Subtest: matching failed request prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3693788Z ok 27 - matching failed request prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3694153Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3694336Z   duration_ms: 0.116595
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3694542Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3694722Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3695078Z # Subtest: unrelated console error prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3695615Z ok 28 - unrelated console error prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3696243Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3696514Z   duration_ms: 0.170785
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3696832Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3697100Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3697683Z # Subtest: console status mismatch prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3698402Z ok 29 - console status mismatch prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3698742Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3698917Z   duration_ms: 0.137163
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3699120Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3699302Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3699641Z # Subtest: console URL mismatch prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3700341Z ok 30 - console URL mismatch prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3700672Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3700865Z   duration_ms: 0.84316
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3701080Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3701262Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3701615Z # Subtest: console extra error text prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3702141Z ok 31 - console extra error text prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3702477Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3702657Z   duration_ms: 0.1646
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3702859Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3703039Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3703373Z # Subtest: missing error origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3703866Z ok 32 - missing error origin prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3704185Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3704373Z   duration_ms: 0.172318
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3704579Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3704759Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3705105Z # Subtest: missing resource type prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3705617Z ok 33 - missing resource type prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3706097Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3706293Z   duration_ms: 0.145105
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3706507Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3706694Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3707045Z # Subtest: unknown resource type prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3707557Z ok 34 - unknown resource type prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3707891Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3708085Z   duration_ms: 0.118962
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3708292Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3708474Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3708815Z # Subtest: websocket resource prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3709313Z ok 35 - websocket resource prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3709639Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3710036Z   duration_ms: 0.111593
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3710355Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3710547Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3710896Z # Subtest: missing diagnostics prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3711402Z ok 36 - missing diagnostics prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3711726Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3711913Z   duration_ms: 0.112338
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3712114Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3712298Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3712654Z # Subtest: missing exception field prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3713167Z ok 37 - missing exception field prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3713494Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3713683Z   duration_ms: 0.118606
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3713884Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3714058Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3714379Z # Subtest: ambiguous status prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3714855Z ok 38 - ambiguous status prevents a retry even alongside static 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3715175Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3715353Z   duration_ms: 0.206478
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3715564Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3715746Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3716076Z # Subtest: sensitive or ambiguous path is excluded: /api/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3716537Z ok 39 - sensitive or ambiguous path is excluded: /api/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3716846Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3717025Z   duration_ms: 0.163568
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3717242Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3717422Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3717739Z # Subtest: sensitive or ambiguous path is excluded: /auth/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3718211Z ok 40 - sensitive or ambiguous path is excluded: /auth/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3718513Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3718697Z   duration_ms: 0.09586
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3718907Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3719087Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3719415Z # Subtest: sensitive or ambiguous path is excluded: /oauth/token.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3720055Z ok 41 - sensitive or ambiguous path is excluded: /oauth/token.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3720380Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3720567Z   duration_ms: 0.099928
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3720778Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3720975Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3721313Z # Subtest: sensitive or ambiguous path is excluded: /oauth2/client.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3721792Z ok 42 - sensitive or ambiguous path is excluded: /oauth2/client.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3722100Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3722280Z   duration_ms: 0.090947
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3722484Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3722664Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3722986Z # Subtest: sensitive or ambiguous path is excluded: /token/keys.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3723460Z ok 43 - sensitive or ambiguous path is excluded: /token/keys.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3723764Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3723941Z   duration_ms: 0.18476
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3724146Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3724324Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3724624Z # Subtest: sensitive or ambiguous path is excluded: /id/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3725055Z ok 44 - sensitive or ambiguous path is excluded: /id/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3725347Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3725521Z   duration_ms: 0.120401
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3725827Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3726006Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3726346Z # Subtest: sensitive or ambiguous path is excluded: /id-rehearsal/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3726839Z ok 45 - sensitive or ambiguous path is excluded: /id-rehearsal/sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3727171Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3727352Z   duration_ms: 0.065507
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3727563Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3727751Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3728094Z # Subtest: sensitive or ambiguous path is excluded: /identity/client.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3728578Z ok 46 - sensitive or ambiguous path is excluded: /identity/client.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3728908Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3729093Z   duration_ms: 0.052408
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3729297Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3729476Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3729968Z # Subtest: sensitive or ambiguous path is excluded: /assets/auth-sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3730601Z ok 47 - sensitive or ambiguous path is excluded: /assets/auth-sdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3730935Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3731119Z   duration_ms: 0.051529
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3731329Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3731515Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3731843Z # Subtest: sensitive or ambiguous path is excluded: /%61pi/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3732303Z ok 48 - sensitive or ambiguous path is excluded: /%61pi/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3732618Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3732801Z   duration_ms: 0.057118
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3733012Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3733191Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3733541Z # Subtest: sensitive or ambiguous path is excluded: /assets%2Fauth%2Fsdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3734046Z ok 49 - sensitive or ambiguous path is excluded: /assets%2Fauth%2Fsdk.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3734389Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3734573Z   duration_ms: 0.052824
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3734788Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3734974Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3735304Z # Subtest: sensitive or ambiguous path is excluded: /%2561pi/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3735779Z ok 50 - sensitive or ambiguous path is excluded: /%2561pi/data.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3736103Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3736283Z   duration_ms: 0.049219
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3736493Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3736672Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3736998Z # Subtest: sensitive or ambiguous path is excluded: /api%252Fdata.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3737469Z ok 51 - sensitive or ambiguous path is excluded: /api%252Fdata.json
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3737789Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3737967Z   duration_ms: 0.051732
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3738168Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3738349Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3738672Z # Subtest: sensitive or ambiguous path is excluded: /assets/main.html
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3739138Z ok 52 - sensitive or ambiguous path is excluded: /assets/main.html
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3739458Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3739638Z   duration_ms: 0.051304
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3739986Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3740275Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3740804Z # Subtest: sensitive or ambiguous path is excluded: /assets/image
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3741255Z ok 53 - sensitive or ambiguous path is excluded: /assets/image
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3741558Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3741737Z   duration_ms: 0.0484
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3741938Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3742117Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3742462Z # Subtest: sensitive or ambiguous path is excluded: /assets/malformed%ZZ.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3742967Z ok 54 - sensitive or ambiguous path is excluded: /assets/malformed%ZZ.js
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3743300Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3743475Z   duration_ms: 0.067827
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3743681Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3743861Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3744269Z # Subtest: only explicitly supported asset extensions and transient HTTP statuses qualify
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3744884Z ok 55 - only explicitly supported asset extensions and transient HTTP statuses qualify
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3745276Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3745455Z   duration_ms: 0.801862
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3745676Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3745980Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3746412Z # Subtest: Chromium HTTP 502 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3747060Z ok 56 - Chromium HTTP 502 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3747466Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3747647Z   duration_ms: 0.31587
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3747857Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3748040Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3748454Z # Subtest: Chromium HTTP 503 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3749083Z ok 57 - Chromium HTTP 503 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3749475Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3749657Z   duration_ms: 0.245359
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3750095Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3750369Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3750783Z # Subtest: Chromium HTTP 504 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3751423Z ok 58 - Chromium HTTP 504 with an empty status description still requires exact URL and status
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3751831Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3752017Z   duration_ms: 0.171757
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3752231Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3752416Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3752813Z # Subtest: all HTTP failures must be eligible, including failures with no console message
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3753400Z ok 59 - all HTTP failures must be eligible, including failures with no console message
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3753771Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3753957Z   duration_ms: 0.118884
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3754166Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3754353Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3754662Z # Subtest: ambiguous observations and bases fail conservatively
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3755098Z ok 60 - ambiguous observations and bases fail conservatively
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3755403Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3755585Z   duration_ms: 0.216245
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3755792Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3755976Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3756360Z # Subtest: a different error on the second attempt is never hidden by the earlier 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3756933Z ok 61 - a different error on the second attempt is never hidden by the earlier 503
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3757299Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3757482Z   duration_ms: 0.239222
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3757696Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3757876Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3758254Z # Subtest: a second attempt that writes remains failed and cannot cause a third run
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3758829Z ok 62 - a second attempt that writes remains failed and cannot cause a third run
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3759180Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3759372Z   duration_ms: 0.211989
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3759589Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3759772Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3760327Z # Subtest: a second attempt with a write request cannot pass even if its bad list is empty
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3760915Z ok 63 - a second attempt with a write request cannot pass even if its bad list is empty
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3761283Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3761471Z   duration_ms: 0.193756
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3761673Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3761857Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3762249Z # Subtest: a clean first scenario keeps its existing write behavior and is not repeated
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3762824Z ok 64 - a clean first scenario keeps its existing write behavior and is not repeated
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3763183Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3763372Z   duration_ms: 0.145064
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3763575Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3763757Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3764229Z # Subtest: onAttempt is awaited before the delay and next scenario; first snapshot cannot be changed by reuse
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3764957Z ok 65 - onAttempt is awaited before the delay and next scenario; first snapshot cannot be changed by reuse
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3765392Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3765579Z   duration_ms: 0.407966
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3765783Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3765966Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3766290Z # Subtest: an unexpected thrown timeout is recorded and never retried
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3766933Z ok 66 - an unexpected thrown timeout is recorded and never retried
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3767244Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3767433Z   duration_ms: 0.3419
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3767639Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3767819Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3768136Z # Subtest: artifact persistence failure stops before retrying
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3768559Z ok 67 - artifact persistence failure stops before retrying
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3768884Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3769074Z   duration_ms: 0.463936
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3769282Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3769464Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3769944Z # Subtest: an inconsistent empty bad list cannot turn an HTTP error into success
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3770511Z ok 68 - an inconsistent empty bad list cannot turn an HTTP error into success
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3770929Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3771122Z   duration_ms: 0.187978
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3771326Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3771516Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3771853Z # Subtest: malformed observations cannot be reported as a clean pass
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3772340Z ok 69 - malformed observations cannot be reported as a clean pass
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3772663Z   ---
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3772855Z   duration_ms: 0.203539
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773056Z   type: 'test'
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773238Z   ...
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773404Z 1..69
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773569Z # tests 69
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773745Z # suites 0
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3773919Z # pass 69
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3774099Z # fail 0
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3774271Z # cancelled 0
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3774458Z # skipped 0
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3774630Z # todo 0
+check	재검사 규칙 회귀 검사	2026-10-14T09:30:38.3774822Z # duration_ms 4060.450362
+check	점검	﻿2026-10-14T09:30:38.3816700Z ##[group]Run node .github/site-check/check.mjs
+check	점검	2026-10-14T09:30:38.3817087Z ^[[36;1mnode .github/site-check/check.mjs^[[0m
+check	점검	2026-10-14T09:30:38.3852939Z shell: /usr/bin/bash -e {0}
+check	점검	2026-10-14T09:30:38.3853205Z env:
+check	점검	2026-10-14T09:30:38.3853413Z   SITE_BASE: https://synk.im
+check	점검	2026-10-14T09:30:38.3856285Z   GH_TOKEN: ***
+check	점검	2026-10-14T09:30:38.3856481Z ##[endgroup]
+check	점검	2026-10-14T09:30:38.7982212Z 1. synk.im 반영 기다리기
+check	점검	2026-10-14T09:30:40.0563224Z   비교: 마지막 통과 81eec26부터
+check	점검	2026-10-14T09:32:07.9821066Z   바뀐 파일 18개 같음, 지운 파일 0개 404
+check	점검	2026-10-14T09:32:07.9821492Z 2. 제작 도구 이름
+check	점검	2026-10-14T09:32:08.7513501Z   파일 5013개 봄
+check	점검	2026-10-14T09:32:08.8211265Z 3. 페이지
+check	점검	2026-10-14T09:34:20.6928517Z   △ 휴대폰 /world/: 첫 503 /world/world-client.mjs → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:34:20.6963394Z ##[warning]휴대폰 /world/: 첫 503 /world/world-client.mjs → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:34:24.9881593Z   32쪽 × 2기기
+check	점검	2026-10-14T09:34:24.9882212Z 4. LAB 게임
+check	점검	2026-10-14T09:37:12.9667803Z   △ 컴퓨터 /try/entry-check/: 첫 503 /try/entry-check/kit/felt/cushion-butter-wide.webp → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:37:12.9672045Z ##[warning]컴퓨터 /try/entry-check/: 첫 503 /try/entry-check/kit/felt/cushion-butter-wide.webp → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:38:04.5571960Z   △ 컴퓨터 /try/talk-rally/: 첫 503 /try/talk-rally/assets/voice/r05.mp3 → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:38:04.5723020Z ##[warning]컴퓨터 /try/talk-rally/: 첫 503 /try/talk-rally/assets/voice/r05.mp3 → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:40:31.0746490Z   게임 8개 × 2기기
+check	점검	2026-10-14T09:40:31.0770595Z 5. 질문창
+check	점검	2026-10-14T09:40:36.7691214Z   답: SYNK 안내 SYNK LAB은 한국어 교재와 학습 게임, 개인화 학습 앱을 만드는 에듀테크 회사입니다. T…
+check	점검	2026-10-14T09:40:36.9383069Z 
+check	점검	2026-10-14T09:40:36.9384098Z ## synk.im 배포 점검 — 일시 오류 3개 재검사로 복구
+check	점검	2026-10-14T09:40:36.9384475Z 
+check	점검	2026-10-14T09:40:36.9384820Z - 반영, 도구 이름, 페이지, LAB 게임, 질문창 모두 통과
+check	점검	2026-10-14T09:40:36.9385152Z 
+check	점검	2026-10-14T09:40:36.9386113Z - 참고: 휴대폰 /world/: 첫 503 /world/world-client.mjs → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:40:36.9388180Z - 참고: 컴퓨터 /try/entry-check/: 첫 503 /try/entry-check/kit/felt/cushion-butter-wide.webp → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	점검	2026-10-14T09:40:36.9390252Z - 참고: 컴퓨터 /try/talk-rally/: 첫 503 /try/talk-rally/assets/voice/r05.mp3 → 새 화면 전체 재검사 1회 통과 (첫 실패 증거 보존)
+check	첫 실패와 재검사 기록 올리기	﻿2026-10-14T09:40:36.9530248Z ##[group]Run actions/upload-artifact@v7
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9530540Z with:
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9530743Z   name: site-check-screens
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9530978Z   path: site-check-artifacts
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9531212Z   if-no-files-found: ignore
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9531442Z   retention-days: 7
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9531642Z   compression-level: 6
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9531846Z   overwrite: false
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9532045Z   include-hidden-files: false
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9532267Z   archive: true
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:36.9532453Z ##[endgroup]
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:37.0857193Z With the provided path, there will be 10 files uploaded
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:37.0863985Z Artifact name is valid!
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:37.0864566Z Root directory input is valid!
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:37.4448430Z Uploading artifact: site-check-screens.zip
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:37.4486337Z Beginning upload of artifact content to blob storage
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.1416618Z Uploaded bytes 2193266
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.2023646Z Finished uploading artifact content to blob storage!
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.2025210Z SHA256 digest of uploaded artifact is 2817e6930d4d9bda32015a78f445de35ea8f7e0671af7b16646c04155e81163d
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.2026743Z Finalizing artifact upload
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.6049544Z Artifact site-check-screens successfully finalized. Artifact ID 11884240549
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.6050813Z Artifact site-check-screens has been successfully uploaded! Final size is 2193266 bytes. Artifact ID is 11884240549
+check	첫 실패와 재검사 기록 올리기	2026-10-14T09:40:38.6053618Z Artifact download URL: https://github.com/unmet23-lab/synk-policy/actions/runs/38542743116/artifacts/11884240549
+check	Post Run actions/setup-node@v7	﻿2026-10-14T09:40:38.6230313Z Post job cleanup.
+check	Post Run actions/checkout@v7	﻿2026-10-14T09:40:38.7448017Z Post job cleanup.
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8253479Z [command]/usr/bin/git version
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8301330Z git version 2.55.0
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8336032Z Temporarily overriding HOME='/home/runner/work/_temp/3e545f49-efef-4d21-bae5-fb775dfcffe0' before making global git config changes
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8337786Z Adding repository directory to the temporary git global config as a safe directory
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8339660Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/synk-policy/synk-policy
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8367180Z Removing SSH command configuration
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8374436Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8405503Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8600045Z Removing HTTP extra header
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8605792Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8637060Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8863321Z Removing includeIf entries pointing to credentials config files
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8864289Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8890474Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8892179Z includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8893542Z includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8894730Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8899576Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8919812Z /home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8931085Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-8b041013\-595e\-409e\-a2c1\-fba0e3df6f64\.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8959504Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8984742Z /home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.8995584Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/synk-policy/synk-policy/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-8b041013\-595e\-409e\-a2c1\-fba0e3df6f64\.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9023938Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9042382Z /github/runner_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9053005Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-8b041013\-595e\-409e\-a2c1\-fba0e3df6f64\.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9076274Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9096042Z /github/runner_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9104342Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-8b041013\-595e\-409e\-a2c1\-fba0e3df6f64\.config
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9135625Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+check	Post Run actions/checkout@v7	2026-10-14T09:40:38.9326140Z Removing credentials config '/home/runner/work/_temp/git-credentials-8b041013-595e-409e-a2c1-fba0e3df6f64.config'
+check	Complete job	﻿2026-10-14T09:40:38.9453249Z Cleaning up orphan processes

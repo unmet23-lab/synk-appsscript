@@ -1,0 +1,35 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T08:52:56.5104929Z",
+  "deadlineMilliseconds": 600000,
+  "runs": [
+    {
+      "kind": "reinstall",
+      "totalMilliseconds": 550619,
+      "backendAndFirstVerificationMilliseconds": 147630,
+      "payloadFiles": 75,
+      "payloadVerified": true,
+      "profileSentinelUnchanged": true
+    },
+    {
+      "kind": "reinstall",
+      "totalMilliseconds": 219700,
+      "backendAndFirstVerificationMilliseconds": 63733,
+      "payloadFiles": 75,
+      "payloadVerified": true,
+      "profileSentinelUnchanged": true
+    }
+  ],
+  "accountSentinelUnchanged": true,
+  "fixtureRegistrationRemoved": true,
+  "sourcePayloadFiles": 75,
+  "sourcePayloadBytes": 679291638,
+  "originalPayloadUnchanged": true,
+  "appLaunched": false,
+  "productionInstallTouched": false,
+  "realProfileTouched": false,
+  "backendSHA256": "43cecd576304e75f202c70009939c1895790a03369cfc3f642e432fb2de8af81",
+  "backendBytes": 400250298,
+  "backendArchiveVerified": true,
+  "buildBlockmapFailure": "Disk exhausted after final NSIS was complete; validated NSIS reused, blockmap not used."
+}

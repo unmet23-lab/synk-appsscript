@@ -1,0 +1,18 @@
+PASS: ready
+PASS: reinstall
+PASS: prepare
+PASS: prepare-64
+PASS: install-42s
+PASS: verify-80
+PASS: complete
+PASS: failure
+PASS: failure-long
+PASS: timeout-restored
+PASS: timeout-recovery-required
+PASS: restoring
+PASS: install/launch event dispatch and installation close-button guard
+RENDERED FONT: dmmono-medium.ttf / 500
+RENDERED FONT: suit-extrabold.otf / 800
+RENDERED FONT: intertight-bold.ttf / 700
+RENDERED FONT: suit-heavy.otf / 900
+RENDERED FONT: suit-medium.otf / 500

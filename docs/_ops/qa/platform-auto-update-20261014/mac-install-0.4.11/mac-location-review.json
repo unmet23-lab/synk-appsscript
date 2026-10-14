@@ -1,0 +1,47 @@
+{
+  "checkedOn": "2026-10-14",
+  "scope": "Applications location gate for Platform, WORLD and Workspace",
+  "officialSources": [
+    {
+      "url": "https://www.electronjs.org/docs/latest/api/app#appmovetoapplicationsfolderoptions-macos",
+      "finding": "The native move has no initial confirmation dialog. A successful move quits and relaunches the app. conflictHandler can refuse existing and running conflicts."
+    },
+    {
+      "url": "https://raw.githubusercontent.com/electron/electron/v44.5.1/shell/browser/ui/cocoa/electron_bundle_mover.mm",
+      "lineRanges": ["101-114", "312-324", "331-345", "347-371", "391-405"],
+      "findings": [
+        "Location recognition includes all normal Application domains and any path with an Applications component; existing isolated native QA directories satisfy the real API without a stub.",
+        "The move destination is NSApplicationDirectory in NSLocalDomainMask, resolved through symlinks, then the current bundle name. This is /Applications, not a preference for ~/Applications.",
+        "The administrator-authorized branch bypasses conflictHandler and can remove the destination. The helper therefore inspects the destination and write permissions first and routes protected destinations to Finder without invoking native move.",
+        "The ordinary existing/running branches consult conflictHandler. The helper separately confirms replacement and rejects running conflicts.",
+        "Successful native movement schedules opening the destination bundle after original process exit. The original startup gate must return without initializing accounts or windows."
+      ]
+    }
+  ],
+  "behavior": {
+    "eligible": "packaged darwin app, not smoke",
+    "proposal": "once per process while outside Applications",
+    "existingDestination": "explicit confirmation before native call; native conflictHandler retained for later conflicts",
+    "protectedDestination": "manual Finder move guidance, current copy continues",
+    "runningConflict": "refuse move and explain that the existing app must fully quit",
+    "declinedOrFailed": "warn that updates may affect another copy, then continue the current copy",
+    "successful": "Electron handles quit/relaunch; original process does not initialize main",
+    "accountOrUserDataMigration": false,
+    "savedLocationPreference": false
+  },
+  "verification": {
+    "unitAndRelatedTests": {"passed": 59, "failed": 0},
+    "actualFrozenWorldAndMessengerOverlaySyntax": "passed",
+    "newNativeToolSyntax": "passed",
+    "actualMacNativeResult": "pending CI execution",
+    "userPcAppOperations": 0
+  },
+  "files": [
+    "desktop/src/main.cjs",
+    "desktop/src/mac-application-location.cjs",
+    "desktop/tools/apply-child-location-overlay.cjs",
+    "desktop/tools/mac-application-location-native-qa.cjs",
+    "desktop/tests/mac-application-location.test.cjs",
+    "desktop/tests/child-location-overlay.test.cjs"
+  ]
+}

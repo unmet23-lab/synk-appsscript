@@ -1,0 +1,10 @@
+{
+  "targets": "mac",
+  "reason": "Preserve CFBundleName used to locate Electron helper bundles in synthetic movement QA; production source unchanged",
+  "workflow": "desktop-platform-unified.yml",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "releaseId": "platform-preview-0.4.11",
+  "dispatchedAt": "2026-10-14T09:06:30.8734650Z",
+  "sourceCommit": "81eec26a34b4abd578824fa664cae1a8d658ff99",
+  "version": "0.4.11"
+}

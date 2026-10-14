@@ -1,0 +1,48 @@
+{
+  "assets": [
+    {
+      "apiUrl": "https://api.github.com/repos/unmet23-lab/synk-policy/releases/assets/639847176",
+      "contentType": "application/x-apple-diskimage",
+      "createdAt": "2026-10-14T09:11:18Z",
+      "digest": "sha256:a97fd614e4e8132ef26f51ced7e20ab2f5aa2307abfb9c57c6119ee6d69b2ffc",
+      "downloadCount": 0,
+      "id": "RA_kwDOTvY4vc4mI0sI",
+      "label": "",
+      "name": "SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg",
+      "size": 458320039,
+      "state": "uploaded",
+      "updatedAt": "2026-10-14T09:11:38Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/untagged-5310fbe3f45d37f2095f/SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/unmet23-lab/synk-policy/releases/assets/639865966",
+      "contentType": "application/x-apple-diskimage",
+      "createdAt": "2026-10-14T09:19:59Z",
+      "digest": "sha256:d9e7ee09573a2a4390e54816461923429f0504865770cf7ce7cee830111b492c",
+      "downloadCount": 0,
+      "id": "RA_kwDOTvY4vc4mI5Ru",
+      "label": "",
+      "name": "SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg",
+      "size": 475935605,
+      "state": "uploaded",
+      "updatedAt": "2026-10-14T09:20:18Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/untagged-5310fbe3f45d37f2095f/SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg"
+    },
+    {
+      "apiUrl": "https://api.github.com/repos/unmet23-lab/synk-policy/releases/assets/639795222",
+      "contentType": "application/x-msdownload",
+      "createdAt": "2026-10-14T08:49:23Z",
+      "digest": "sha256:a9e76846e54ecff1c3ae128d85a881309f4b59a523937c7e18c065a9e980866a",
+      "downloadCount": 0,
+      "id": "RA_kwDOTvY4vc4mIoAW",
+      "label": "",
+      "name": "SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe",
+      "size": 405961216,
+      "state": "uploaded",
+      "updatedAt": "2026-10-14T08:49:34Z",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/untagged-5310fbe3f45d37f2095f/SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe"
+    }
+  ],
+  "isDraft": true,
+  "tagName": "platform-preview-0.4.11"
+}

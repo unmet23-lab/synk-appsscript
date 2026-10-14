@@ -1,0 +1,979 @@
+{
+  "ok": true,
+  "verifiedAt": "2026-10-14T09:08:21.526Z",
+  "releaseId": "platform-preview-0.4.11",
+  "buildId": "20261014.8",
+  "version": "0.4.11",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "workflow": "https://github.com/unmet23-lab/synk-policy/actions/runs/38537148997",
+  "commit": "56f27d527dd369b6f0842bca0746e87ffb950f0a",
+  "artifact": {
+    "platform": "win32",
+    "arch": "x64",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe",
+    "bytes": 405961216,
+    "sha256": "a9e76846e54ecff1c3ae128d85a881309f4b59a523937c7e18c065a9e980866a",
+    "asarSHA256": "dedeb59e48ce27f66390ffefa6b12732715ee6d019a88ab4b307600a68ad2bf4"
+  },
+  "engineSources": [
+    {
+      "path": "AutoUpdateEngine.cs",
+      "bytes": 29982,
+      "sha256": "b82d61805ad540d8197162d7a87c2b0eb67755da365839b44f1bbaac1b8f8f33"
+    },
+    {
+      "path": "BackendProcess.cs",
+      "bytes": 6714,
+      "sha256": "2c868f5a0f364de77af90d05ac8a1daa452fc1f9853ae9879ed3bf129d0db3de"
+    },
+    {
+      "path": "InstallerEngine.cs",
+      "bytes": 15862,
+      "sha256": "4285cf45fe21c2fb18215ce59650e01787bcc74d2783455824568d0340a34162"
+    },
+    {
+      "path": "InstallTransaction.cs",
+      "bytes": 4398,
+      "sha256": "48461f79b05f027bc78c673f74f2bbd299205851ea4cbe7c7421f80b460b69f5"
+    },
+    {
+      "path": "Program.cs",
+      "bytes": 10841,
+      "sha256": "42efec3c56618502932d1a563026989da6cdbf7a7579e5a203c2853a566eb861"
+    },
+    {
+      "path": "SignalWindow.cs",
+      "bytes": 61677,
+      "sha256": "3ba1e5a90f06aad9c2b362aaf72aa6e86771db661c5b5a88a77c00a5b910b718"
+    }
+  ],
+  "wrappers": [
+    {
+      "product": "platform",
+      "installer": {
+        "file": "SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe",
+        "bytes": 405961216,
+        "sha256": "a9e76846e54ecff1c3ae128d85a881309f4b59a523937c7e18c065a9e980866a"
+      },
+      "backend": {
+        "bytes": 403535061,
+        "sha256": "0fe6f28126981c566a88308e1c938e97504f83f3bf36445ab7a3685f0d67e8dd"
+      },
+      "payloadFiles": 75,
+      "asarSHA256": "dedeb59e48ce27f66390ffefa6b12732715ee6d019a88ab4b307600a68ad2bf4",
+      "executableSHA256": "0339a7009efd77f6c4036dc244670e40e34209775a9bdf2035d6a4882d6b9195",
+      "sourceHashesVerified": true
+    },
+    {
+      "product": "world",
+      "installer": {
+        "file": "SYNK-WORLD-Preview-0.4.11-Signal-win-x64.exe",
+        "bytes": 135987200,
+        "sha256": "6ec73a9cf352ec67c787f29a5949af6f4549fc65f49a3e33c2174af14a758030"
+      },
+      "backend": {
+        "bytes": 133354596,
+        "sha256": "b6897acb07c5b6d345e8574686c241a5a69a89ca83f1860299d05864bc7f441f"
+      },
+      "payloadFiles": 73,
+      "asarSHA256": "c9d00e935df8dad06e8fdea3de2b36bfc99cd5a780def09f54ae47ba9e75c1b6",
+      "executableSHA256": "a8b9346329d3290550322007adeba17a8d3bcdaa4262ac061e065ab51b22d3a4",
+      "sourceHashesVerified": true
+    },
+    {
+      "product": "messenger",
+      "installer": {
+        "file": "SYNK-Workspace-Preview-0.4.11-Signal-win-x64.exe",
+        "bytes": 135726080,
+        "sha256": "f4ae7af2466824e5245c7f2eac8ffedc963ccb5c98b1154fe3e848a10a1d8ac4"
+      },
+      "backend": {
+        "bytes": 133300110,
+        "sha256": "0873b2fb3f72fd51a6bf4036127ea1a3a45d86a510f0a8d9d69dd532ff9d3f15"
+      },
+      "payloadFiles": 73,
+      "asarSHA256": "a399858e110132d25fe9659083692ab5366e69f57020f6cb8c6fbeda53cbfcc8",
+      "executableSHA256": "996f3908a7c17bcb6994182b8b3836efdfe780d758a70292d6e5907151921eab",
+      "sourceHashesVerified": true
+    }
+  ],
+  "helperSHA256": "861ff3c45ef7c04b4ce4012bde3642d326cf3fe7d7cf053e91500a2f1d820b98",
+  "nativeChecks": 25,
+  "nativeNormalQuit": true,
+  "nativePackageBytesPreserved": true,
+  "nativeScreenshots": [
+    {
+      "file": "startup-checking.png",
+      "bytes": 17980,
+      "sha256": "8d4199d9244737ebb505ef8455d2baf89ff4bf322b1b15e8ecdef867e2294d1c",
+      "width": 544,
+      "height": 401
+    },
+    {
+      "file": "platform-home-1280.png",
+      "bytes": 454884,
+      "sha256": "0e79c101cc873eae13ea57fe1afccef432ffea9cb9dbf16ab027b4d04c19c275",
+      "width": 1280,
+      "height": 800
+    },
+    {
+      "file": "platform-home-1024.png",
+      "bytes": 400920,
+      "sha256": "f12afe973d5d08e2ac76ab314ba7bbf8cbbf2c91b7082b9104aefd7f45e70298",
+      "width": 1024,
+      "height": 800
+    },
+    {
+      "file": "platform-signup-dialog.png",
+      "bytes": 212827,
+      "sha256": "0d9801206ccfda11dd3a30b6273a2a0fe756c2d58eede1caeee3f479f99eb54b",
+      "width": 1024,
+      "height": 800
+    },
+    {
+      "file": "platform-update-downloads.png",
+      "bytes": 149913,
+      "sha256": "bc39e0ee3928068e0ea63f6cae8ec3c56cba86a63e2b26379e1012015eb766ab",
+      "width": 1024,
+      "height": 800
+    },
+    {
+      "file": "platform-update-settings.png",
+      "bytes": 127815,
+      "sha256": "9e905936bd36b559ac8c1f169c7ffd1bcb7ffa0a4ad8d6032776730d717f038c",
+      "width": 1024,
+      "height": 800
+    }
+  ],
+  "fixtureChecks": 22,
+  "fixtureNames": [
+    "known-folder shortcut guard accepts Cloud variants but rejects symlinks, junctions and unknown reparse tags",
+    "only exact current-user known-folder shortcut paths get the Cloud exception",
+    "read-only preflight",
+    "incorrect backend digest is rejected before install",
+    "manifest traversal is rejected",
+    "impossible disk requirement is rejected",
+    "fresh partial install timeout removes only its new files registration and shortcuts",
+    "real NSIS install through production engine",
+    "launch uses the verified installed executable",
+    "installed archive tampering is detected",
+    "engine blocks a running application without stopping it",
+    "automatic update rejects the same installed version while preserving its live process",
+    "NSIS race guard returns 20 and preserves the running process",
+    "real reinstall preserves external synthetic account data",
+    "automatic update rejects wrong parent and invalid handoff without mutations",
+    "deadline stops descendants after parent exit then restores files registry shortcuts and preserves external data",
+    "unconfirmed backend stop never rolls back or relaunches and blocks reopening the installer",
+    "automatic update timeout uses the same bounded backend and restores previous application before recovery launch",
+    "real automatic installer READY then normal parent exit rolls failed NSIS verification back and relaunches once",
+    "real automatic installer READY then normal parent exit installs verified upgrade and relaunches without bypass",
+    "fixture uninstall preserves external data and removes its registration",
+    "real SYNK Platform registration remains unchanged"
+  ],
+  "fixtureEvidence": "exact JSON extracted from retained CI log with run commit line and digest",
+  "ui": [
+    {
+      "product": "platform",
+      "states": 12,
+      "fonts": [
+        "dmmono-medium.ttf / 500",
+        "suit-extrabold.otf / 800",
+        "intertight-bold.ttf / 700",
+        "suit-heavy.otf / 900",
+        "suit-medium.otf / 500"
+      ],
+      "screenshots": [
+        {
+          "file": "ui-platform-ready-100.png",
+          "bytes": 215421,
+          "sha256": "d66b66b0bc8609deb4919a8134419a100154b67b6bc4ca4bb103852efe14ad34",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-ready-150.png",
+          "bytes": 441119,
+          "sha256": "ff7875e7d6a353588aa4c81428237be59be15f8a6d928ddef1499f3dc88d1da5",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-ready-200.png",
+          "bytes": 740764,
+          "sha256": "5c7b0ae5f1c355f226f5dfd802727d3c15b10bc69ab0421d2fe39f0339ee8444",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-reinstall-100.png",
+          "bytes": 216200,
+          "sha256": "1b337b043a07ec296caaf2a61264169a5cf65ef04c4f2b6763e48383473fa6fd",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-reinstall-150.png",
+          "bytes": 439684,
+          "sha256": "0eefb9fd4193d3237118bfa94b636a047c308da899308aab6e4a51726f33a2b2",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-reinstall-200.png",
+          "bytes": 739099,
+          "sha256": "55c589b545514a41001fc12fea1186e34b69c0878feb3cefb461a1a59fd018d0",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-prepare-100.png",
+          "bytes": 213699,
+          "sha256": "587e4f1c724b0c5209f17e1176997b181033d66610038420f8776bed8a4dd89d",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-prepare-150.png",
+          "bytes": 440064,
+          "sha256": "4a1c482a36dafead0959492b7af6a52c9e2ff550390ebbadfb7fabb22bbfab1c",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-prepare-200.png",
+          "bytes": 736121,
+          "sha256": "395244782c7dd793282c5adafebde1e5577bc0cce068698b8dd89d24520eb5ad",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-prepare-64-100.png",
+          "bytes": 213380,
+          "sha256": "bc0c2d690f480fac46ac0f09fe7c8bb98bcdef09f3ba094c472fe7cf3ea16c8e",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-prepare-64-150.png",
+          "bytes": 439038,
+          "sha256": "48f2d13c70bfdccb82b6b8370dc46693918055d8c7f86914baf42caa15883610",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-prepare-64-200.png",
+          "bytes": 735007,
+          "sha256": "6125ff726e40a54fa89d1f8403f47b44b8432d84e6182061b96614af3d312eac",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-install-42s-100.png",
+          "bytes": 215226,
+          "sha256": "488cdd0d2ab1eed3f35f0bfa76e0b50dab639b68a2c9109c636c9925ee4c5a62",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-install-42s-150.png",
+          "bytes": 446272,
+          "sha256": "5f4577862bef743831b74edf030426c15c85bfd44d59b5844c8b398bfe086ee4",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-install-42s-200.png",
+          "bytes": 741411,
+          "sha256": "434d171b075a49c30daa3dc0c81e57e601571aa672816f19da0f2807804f4021",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-verify-80-100.png",
+          "bytes": 214034,
+          "sha256": "4d0adac462a8cf15ea4173e8e8bfad3d218ac996f3e28a2da3074db4a8ac2dda",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-verify-80-150.png",
+          "bytes": 440830,
+          "sha256": "58950991fa0848c4c8d73bafcce8a703ca08129064af62a59d3243f00d19ec88",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-verify-80-200.png",
+          "bytes": 737571,
+          "sha256": "6cab58424b072cbcd2d58d732f36c1b1490171dd88edfe1ad3f4c4acacceeffb",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-complete-100.png",
+          "bytes": 215610,
+          "sha256": "b3b745614cd4fd5580986c95dc9dc8bd0a73bf980e6afcafed3dc81ccfb45dfd",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-complete-150.png",
+          "bytes": 440242,
+          "sha256": "2de4d6f648374683c0daded31ee267961075ea670c8b567ca9f45d7a2df2a283",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-complete-200.png",
+          "bytes": 737642,
+          "sha256": "cd0cfada778519d016961c220d2dbceac7696ef050e2156afb630627f1ec4151",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-failure-100.png",
+          "bytes": 212619,
+          "sha256": "60a7de0b49e99744a6571588e5b0081b20fcd69a445b13625511db008efa7ea0",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-failure-150.png",
+          "bytes": 439227,
+          "sha256": "26ba4d0162977dd93ce5a0e8aeaabd6d3ded9503852e14d0306188f5c09fd113",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-failure-200.png",
+          "bytes": 736013,
+          "sha256": "34500cce1a19546665e892c3f60c3141fcfcaab2ca55083d6af9eeaf881e2dc5",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-failure-long-100.png",
+          "bytes": 214943,
+          "sha256": "5d92a3b6921fd934982284fd7216743a3e264dbea461af79ce63cdfec936fbdf",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-failure-long-150.png",
+          "bytes": 453628,
+          "sha256": "3818de2c9ce85de901563bc1f23a840c61a7538680afb9fdbfaa1d4b94992459",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-failure-long-200.png",
+          "bytes": 751336,
+          "sha256": "1fef7b8dd886f2bbf834a61037c48517aef22703b21974875d25c3861c45b934",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-timeout-restored-100.png",
+          "bytes": 214824,
+          "sha256": "22b32822a5aaa31ccec321aec875419aa4d78f31827f244e2bb4d4b57928d04b",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-timeout-restored-150.png",
+          "bytes": 453020,
+          "sha256": "b3997b8449f3b5bb16d1d2583bc02652373958594cd56608c367ec25c50738b2",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-timeout-restored-200.png",
+          "bytes": 750450,
+          "sha256": "4aec23e2b569ecd0fa8d72cd87022422649787eb81e5af8e6b5dedd634b843a0",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-timeout-recovery-required-100.png",
+          "bytes": 216711,
+          "sha256": "63579cd232e81284ac5c557c6924cfd808e97d66f2d8c9d1eba051033afa5c35",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-timeout-recovery-required-150.png",
+          "bytes": 460717,
+          "sha256": "105f8ecb081963dc9f1110ec5ccfe51d75be5500549b30a4518b7567fe3adc4b",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-timeout-recovery-required-200.png",
+          "bytes": 762087,
+          "sha256": "d2249342cfc0da5d384092d44bf153e354a57c0b5e1e28073f6d1d4dee4deaa8",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-platform-restoring-100.png",
+          "bytes": 212343,
+          "sha256": "e8f48d86eb60f80f97b0e76c5fe70d148cceb969a4e27bd077f6aba5dc61ce83",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-platform-restoring-150.png",
+          "bytes": 435317,
+          "sha256": "b75ee0d5a2d00bdaf9c646cec95868c036a248c2b514bfecac0490ca5f197bd6",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-platform-restoring-200.png",
+          "bytes": 730182,
+          "sha256": "a104fd246e0113437ab08668bc9856e89baa28aa5bd4a9582695fa96e8d6574d",
+          "width": 1520,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "product": "world",
+      "states": 12,
+      "fonts": [
+        "dmmono-medium.ttf / 500",
+        "suit-extrabold.otf / 800",
+        "intertight-bold.ttf / 700",
+        "suit-heavy.otf / 900",
+        "suit-medium.otf / 500"
+      ],
+      "screenshots": [
+        {
+          "file": "ui-world-ready-100.png",
+          "bytes": 242981,
+          "sha256": "6709aa0cfeff509af4ce1b0feda90f67b62dfdc673d4d819fe6d49bc1013b2f7",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-ready-150.png",
+          "bytes": 505344,
+          "sha256": "cb2608c124d006752a484c87aec2240416d26a8c1e9397c7be65c799d03a1048",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-ready-200.png",
+          "bytes": 859105,
+          "sha256": "4fe7513292f3b33410bd032c6ef3148de1d788e1003173bd1e345d9c4a2465de",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-reinstall-100.png",
+          "bytes": 244740,
+          "sha256": "b7a2e75d5d4794db8354f92ec1b830f8019df0cf29b7e35e173cc30a57c60299",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-reinstall-150.png",
+          "bytes": 507061,
+          "sha256": "6a351fe969b3b650618ddd24967249713c5d9e0a1d386d234716b8e489778512",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-reinstall-200.png",
+          "bytes": 859748,
+          "sha256": "e63cd1c237b4001e204fed32af9d2509f61f872d93c447f6e85777bd28a00d9d",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-prepare-100.png",
+          "bytes": 240911,
+          "sha256": "ae6935c6c691e1c02f43f86b1d57055a90e8044b879a1bf93c88677a2a32a7d4",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-prepare-150.png",
+          "bytes": 506047,
+          "sha256": "f5d44723e9c1e4bb5ba6ea7df9f6ffba14dd682d80d2829d4f47090dc271174e",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-prepare-200.png",
+          "bytes": 855908,
+          "sha256": "004b9a3fceec3dd0a60791419daeacacc6dc4a1ca2b75124deb082431841413d",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-prepare-64-100.png",
+          "bytes": 240616,
+          "sha256": "020bd82891e97f2f2e36c4a231cc7e858c55250d2013d38bc0c1ef7559b14aa8",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-prepare-64-150.png",
+          "bytes": 505090,
+          "sha256": "be643a7e9f46a1679db7823a36f815e1918bdb93f367b53ff03a22ba0d752384",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-prepare-64-200.png",
+          "bytes": 854602,
+          "sha256": "80c3beec1c359d738d23171df40e1262c4570dc422ed7dcbdb305b90144a3620",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-install-42s-100.png",
+          "bytes": 241181,
+          "sha256": "fc6dd8591a360fa5567bbbfbaf3298657e037a28f9ff8faffcdc08b5b4ffe341",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-install-42s-150.png",
+          "bytes": 509260,
+          "sha256": "c378c9d962789b7e661d93a8432182a6c875e7a0ee30afa039c08780c5605932",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-install-42s-200.png",
+          "bytes": 859655,
+          "sha256": "5a4b9aa2ecc01a4687ad8f37c4bbef4978eb879a8bc38402c43ec911da26a89c",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-verify-80-100.png",
+          "bytes": 241187,
+          "sha256": "362eeecff6c29c2e3200272794ba0751218736653b9bee6e966d9bc3b2b29b29",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-verify-80-150.png",
+          "bytes": 506433,
+          "sha256": "ce8c15648c05ee4a9092050b4e2692e19f000f44fc07903e585559b030c65ed1",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-verify-80-200.png",
+          "bytes": 856761,
+          "sha256": "36114fd650c2286fcef9ff9ed1c85291b79928b179db65c2786e065bf48d0847",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-complete-100.png",
+          "bytes": 244704,
+          "sha256": "0aa7e2424ca721dcf03378ad8c129d08d8dca81713be1f5b702dfbab71b1f24c",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-complete-150.png",
+          "bytes": 507573,
+          "sha256": "6f890e7f8d806b1e7ca962baa951e123c37b25cf33430e6bb799806b57a4136c",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-complete-200.png",
+          "bytes": 858904,
+          "sha256": "3eb9004a372fb071f1eca507faeab85d375276b80677adc8ffb545811189bd89",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-failure-100.png",
+          "bytes": 240021,
+          "sha256": "811baddc2fb24bace8e1032e02fce09d62027741e25d29cefac0b0c5ac06009a",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-failure-150.png",
+          "bytes": 503611,
+          "sha256": "62d2429a17a3a41b3e8c4786d93ae2c356a3fee7f51b200cbc75b88b0e4a76f5",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-failure-200.png",
+          "bytes": 854863,
+          "sha256": "81fefea8a710098d3a5a71ee4dc4a2684695ff24d2b30ee5498455c42f34b94f",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-failure-long-100.png",
+          "bytes": 242421,
+          "sha256": "8d8b26f24ae284e53169842c400b593bfd92283a9c26081107a72e46c57e0696",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-failure-long-150.png",
+          "bytes": 516575,
+          "sha256": "4730728f9bbb183c95a0e805826062eeb6fef93794be19781e8596ccc0a1a8d1",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-failure-long-200.png",
+          "bytes": 870652,
+          "sha256": "2a88db8f1dfb08b8293719c314d9d60918ad0c59994622efca6c84ddc788d718",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-timeout-restored-100.png",
+          "bytes": 242149,
+          "sha256": "290322574422f294644f1896e6fbff2b6edcf5b386eece05f1304842e6288868",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-timeout-restored-150.png",
+          "bytes": 516013,
+          "sha256": "0eb4ebf85495fba543d402f94eebbe37a9146a9375e4086b47c3bc56c426822f",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-timeout-restored-200.png",
+          "bytes": 867843,
+          "sha256": "f552bbb54590ace6385cf9f1d7d39a3a605e86c6d4078d677d6f2501968da440",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-timeout-recovery-required-100.png",
+          "bytes": 243758,
+          "sha256": "6248d2a6fddb7e530972f912715de500c34e4afaf47c48814a0b03e872e863bb",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-timeout-recovery-required-150.png",
+          "bytes": 524512,
+          "sha256": "be1738f73b64edffd709389d8d89530ca5d3884e173502e85e4ce4ff274c9d42",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-timeout-recovery-required-200.png",
+          "bytes": 881765,
+          "sha256": "9b1c2f38627ac27e56a2032c3ea0423f15f8cf6cb8c674f1b7c3e7d4018e2695",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-world-restoring-100.png",
+          "bytes": 239271,
+          "sha256": "85a2cc177b6474d192566f7524347a79fbf4b3c810b49243a26b2ca9a59f51e5",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-world-restoring-150.png",
+          "bytes": 500400,
+          "sha256": "4a1ad59c3dfb14b0e44e8ce09dc93e3429f2a6a57ffcc90408b3f69cd7050109",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-world-restoring-200.png",
+          "bytes": 849992,
+          "sha256": "a0ffc00563635dcae1b9925f94304ac204f14a9645f7702f9ee8ac4d75695c29",
+          "width": 1520,
+          "height": 1024
+        }
+      ]
+    },
+    {
+      "product": "messenger",
+      "states": 12,
+      "fonts": [
+        "dmmono-medium.ttf / 500",
+        "suit-extrabold.otf / 800",
+        "intertight-bold.ttf / 700",
+        "suit-heavy.otf / 900",
+        "suit-medium.otf / 500"
+      ],
+      "screenshots": [
+        {
+          "file": "ui-messenger-ready-100.png",
+          "bytes": 196913,
+          "sha256": "045f2ba22510785813bb549338cea6a256a3005feb563321804c4f56d54570f4",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-ready-150.png",
+          "bytes": 411920,
+          "sha256": "a013a80432c93bc4ee8a364c30a98adcbab0bfa7c857f08ef639f404d536be8e",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-ready-200.png",
+          "bytes": 686227,
+          "sha256": "1f3fa253e403f1e5ce81f720d2a5fcfcdf40a8e87d9e3065b1ce0e3c6dcc9bc4",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-reinstall-100.png",
+          "bytes": 197535,
+          "sha256": "88d09c8499b1da794f032ee9d75e4796fabd1d25ae9cd41c19f9d35d2a92e7e3",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-reinstall-150.png",
+          "bytes": 411768,
+          "sha256": "2b991249e1605d5d2ad05a52a64de5119131ff9db9c6db80cd635cbe5d3b4b2b",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-reinstall-200.png",
+          "bytes": 685137,
+          "sha256": "cf2fa87c3ef1e215c499be4f50ba407af3c86fb450bdcad84c6abb124fe8540e",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-prepare-100.png",
+          "bytes": 194259,
+          "sha256": "eaa434656f56768e00c409dd96ebde3ffa83080c17960fa83bef5a04393e158a",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-prepare-150.png",
+          "bytes": 407296,
+          "sha256": "05e2e4b4ba38ed8e9721815eaf62399d2d591dbcd9772b813c1a1ad9f0373ddd",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-prepare-200.png",
+          "bytes": 680148,
+          "sha256": "ef667eb3df0ef7d969eb89bc46f5437af290801a3576ae51d91bce83a4e57ca3",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-prepare-64-100.png",
+          "bytes": 193939,
+          "sha256": "6cb0976533959d0b261dab5f84fbc90ec86fccdb3e8adac3c3589acc420c8d6f",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-prepare-64-150.png",
+          "bytes": 406365,
+          "sha256": "4243f0f5cc9755881d4ee491ba20db216961074442c1b6b6a7ff616b3383cf6c",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-prepare-64-200.png",
+          "bytes": 679085,
+          "sha256": "82bf25b000db5b5b73fdb672499d42829a812a74c23a07b6f9570a258d827a6c",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-install-42s-100.png",
+          "bytes": 194670,
+          "sha256": "52cb1aa8c3fb27f0e83b8cec59d5d4f8d853635abc486bf74ef243d609042697",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-install-42s-150.png",
+          "bytes": 410720,
+          "sha256": "785ecf8d23e9a45e5a80ecda9fabd3269f1a6efcb638818f98d4fcad884b3804",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-install-42s-200.png",
+          "bytes": 684997,
+          "sha256": "1d1a42d77361cddbb52e0a85315862fd5fa0b86dd9e97d291829188d15d18e77",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-verify-80-100.png",
+          "bytes": 194764,
+          "sha256": "9e66b53dbc3a7899cf059273a098c7ef186daba475337cee0b5becf45fc6240e",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-verify-80-150.png",
+          "bytes": 407276,
+          "sha256": "0888c0af022ec10b7a1fab4c3288489daa7cdded27c7a5a0518a4d279b8d3d0e",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-verify-80-200.png",
+          "bytes": 680947,
+          "sha256": "d4bd526a2f4a5faf2fd785628044d7c974e2e40387ba8c59b90652b294c4e07c",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-complete-100.png",
+          "bytes": 196321,
+          "sha256": "7e15a4f4683b51cf7ad4938177cf44a30b5924201322b5ba3e57f78688cab629",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-complete-150.png",
+          "bytes": 410743,
+          "sha256": "81095428fd33a07f74cc42f9ff92ec5326152fdf4dfb70432600ac0094605024",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-complete-200.png",
+          "bytes": 683334,
+          "sha256": "0777e3d9ea886fe75d05b4575876f80b95a56f213aff93fc5a26d8e6c02f31f2",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-failure-100.png",
+          "bytes": 193052,
+          "sha256": "1dca0c5e2f5b31374d9b5ca70fa4069aaeea93521194df954a64cec48d1a96cc",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-failure-150.png",
+          "bytes": 408011,
+          "sha256": "21847c131259cf98e6731084dbd761768d926fd75cbc87c9d749b7ac92e78a9a",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-failure-200.png",
+          "bytes": 680007,
+          "sha256": "7458efaf6dafa1bef4d13fea4216d856dc693d162ad9c2b79ba759d1c6fee276",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-failure-long-100.png",
+          "bytes": 195579,
+          "sha256": "b00d1da3a8a5a3e87b6cdca1edd5fa1f7968694b48d35c86e401574a75172cd1",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-failure-long-150.png",
+          "bytes": 421330,
+          "sha256": "3f787752574c2f422026b516d5a71941752f559023f406450b30d75049393b35",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-failure-long-200.png",
+          "bytes": 696811,
+          "sha256": "d7fb804f670a2a52d9385f6e960ab8490891932eab4cb4df09ce15e2065020a7",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-timeout-restored-100.png",
+          "bytes": 195060,
+          "sha256": "295ed76023ce6b53f52ded2874bfc2740d96e5ec6ee61142edc7b8cd3c2ac52b",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-timeout-restored-150.png",
+          "bytes": 420737,
+          "sha256": "28101a51163e92e001b8fd908fabe12b182f920200d073cbb1ed0a84439e5cd4",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-timeout-restored-200.png",
+          "bytes": 693496,
+          "sha256": "110f366984987b197418055eae16afc3b7b07bb3a9410a584fd328d2b5932384",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-timeout-recovery-required-100.png",
+          "bytes": 196705,
+          "sha256": "d298efb929b7a91ea5cfb3ba74021eb644e65629427bafa87e7535595ac13b50",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-timeout-recovery-required-150.png",
+          "bytes": 428309,
+          "sha256": "447828e81d7ea199d18f00b7ab5dd71c3f7d6184816ec3fe0e40bc1c6cc18e61",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-timeout-recovery-required-200.png",
+          "bytes": 704387,
+          "sha256": "b627928e3e922d80a9e43d9eecdbb67820cd4633862c9ba1acd316812d7d13d3",
+          "width": 1520,
+          "height": 1024
+        },
+        {
+          "file": "ui-messenger-restoring-100.png",
+          "bytes": 193061,
+          "sha256": "78aff859f8ed5fff4e1e72d6f76730b5f4acdbbb4662fe97e90f52e8b95fdd5f",
+          "width": 760,
+          "height": 512
+        },
+        {
+          "file": "ui-messenger-restoring-150.png",
+          "bytes": 402280,
+          "sha256": "7471e6b8e17bc66d2cc05097826d298df5345bbf5ae4fc1e1a9cfa83e4ff156a",
+          "width": 1140,
+          "height": 768
+        },
+        {
+          "file": "ui-messenger-restoring-200.png",
+          "bytes": 674314,
+          "sha256": "3f542707c8efaf14c7f67245934a52539b6b553ba7f1beeea9933ece522abf53",
+          "width": 1520,
+          "height": 1024
+        }
+      ]
+    }
+  ],
+  "allThreeProductsSameVersion": true,
+  "draftAssetVerifiedByGitHubDigest": true,
+  "fullInstallerDownloaded": false,
+  "publicFeedChanged": false,
+  "installedStateTouched": false,
+  "realProfileTouched": false,
+  "realAuthenticationPerformed": false,
+  "visualReview": "Screenshot files and dimensions checked here; actual visual review recorded separately"
+}

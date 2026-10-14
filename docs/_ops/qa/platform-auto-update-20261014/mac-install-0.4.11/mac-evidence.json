@@ -1,0 +1,177 @@
+{
+  "ok": true,
+  "verifiedAt": "2026-10-14T09:22:32.391Z",
+  "releaseId": "platform-preview-0.4.11",
+  "buildId": "20261014.8",
+  "version": "0.4.11",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "helperSHA256": "861ff3c45ef7c04b4ce4012bde3642d326cf3fe7d7cf053e91500a2f1d820b98",
+  "workflow": "https://github.com/unmet23-lab/synk-policy/actions/runs/38539926490",
+  "commit": "81eec26a34b4abd578824fa664cae1a8d658ff99",
+  "targets": [
+    {
+      "arch": "arm64",
+      "artifact": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg",
+        "bytes": 458320039,
+        "sha256": "a97fd614e4e8132ef26f51ced7e20ab2f5aa2307abfb9c57c6119ee6d69b2ffc",
+        "asarSHA256": "0fd43b9998ce668ca329f7181d987a886dc17c4bf6e143be691425aee3cbde43"
+      },
+      "products": [
+        {
+          "client": "world",
+          "version": "0.4.11",
+          "asarSHA256": "c9d00e935df8dad06e8fdea3de2b36bfc99cd5a780def09f54ae47ba9e75c1b6",
+          "installerSHA256": "1080c49939790496fa14db061066f02761248548025af70972ce7154fb55ab2c"
+        },
+        {
+          "client": "messenger",
+          "version": "0.4.11",
+          "asarSHA256": "3f0f4c6acd0b4c6d4db28d7668f98dc9fbddc01e9b2945ea8efa5cc5f6eeba97",
+          "installerSHA256": "a003f9ee5adb9977f26599a8b7b0cd3ca691971393a5b28036fcdbb12e2ef62a"
+        },
+        {
+          "client": "platform",
+          "version": "0.4.11",
+          "asarSHA256": "0fd43b9998ce668ca329f7181d987a886dc17c4bf6e143be691425aee3cbde43",
+          "installerSHA256": "a97fd614e4e8132ef26f51ced7e20ab2f5aa2307abfb9c57c6119ee6d69b2ffc"
+        }
+      ],
+      "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+      "nativeChecks": 34,
+      "applicationChecks": 18,
+      "locationChecks": 31,
+      "locationCases": [
+        "decline",
+        "move",
+        "replacement-decline",
+        "replacement-accept"
+      ],
+      "iconScreenshots": [
+        {
+          "file": "finder-dock-light.png",
+          "sha256": "a8ba63c4b7b67e4247867c5a57597f9400ff08e388255bee2ebc0e57c74bcb84"
+        },
+        {
+          "file": "dmg-platform-light.png",
+          "sha256": "7ed0521585fd4eef38c2ed17465b134bf5e88c94904c4a1725af4c1e96ab1120"
+        },
+        {
+          "file": "dmg-world-light.png",
+          "sha256": "33f454a46d5d9ea01647c068f1f8c23875db9134425b83824b2983796b8b0dc1"
+        },
+        {
+          "file": "dmg-messenger-light.png",
+          "sha256": "6186c5c5590c245204b881379f0d8d1f946ccc68c23d3996b4ee7e893b439a74"
+        },
+        {
+          "file": "finder-dock-dark.png",
+          "sha256": "2b0ba94b4eb213b4eb3484ab1f3dc5996bedcc71baff5cd9439041b2834e7569"
+        },
+        {
+          "file": "dmg-platform-dark.png",
+          "sha256": "f21c28acbebf89a33da56ac58336ea8c7e757516bef17e10313122069e54f98d"
+        },
+        {
+          "file": "dmg-world-dark.png",
+          "sha256": "552c3d403f3cd870c0d151c140232420b710ec55f08916300bbee8d8c7f0297d"
+        },
+        {
+          "file": "dmg-messenger-dark.png",
+          "sha256": "935a6e0d8ed23663b9732c182b095d4d7b0069e0b57b5b380ef92882ba5e0609"
+        }
+      ],
+      "nativeMoveAndRelaunchVerified": true,
+      "allThreeProductsSameVersion": true,
+      "notarized": false,
+      "realProfileTouched": false,
+      "realAuthenticationPerformed": false
+    },
+    {
+      "arch": "x64",
+      "artifact": {
+        "platform": "darwin",
+        "arch": "x64",
+        "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg",
+        "bytes": 475935605,
+        "sha256": "d9e7ee09573a2a4390e54816461923429f0504865770cf7ce7cee830111b492c",
+        "asarSHA256": "47c40359d7de7775199aea2276565fc02a28d8109f6a4e31b5b69aa8a5ae0d99"
+      },
+      "products": [
+        {
+          "client": "world",
+          "version": "0.4.11",
+          "asarSHA256": "c9d00e935df8dad06e8fdea3de2b36bfc99cd5a780def09f54ae47ba9e75c1b6",
+          "installerSHA256": "294febfdd9d5880d44f72f91e9088074595dd1fbb710bf18d209f8f82daf1e08"
+        },
+        {
+          "client": "messenger",
+          "version": "0.4.11",
+          "asarSHA256": "3f0f4c6acd0b4c6d4db28d7668f98dc9fbddc01e9b2945ea8efa5cc5f6eeba97",
+          "installerSHA256": "e21686cb8d4d764e04111c2112c8dae13c1d62e6b1cf68654c7ee852b3416601"
+        },
+        {
+          "client": "platform",
+          "version": "0.4.11",
+          "asarSHA256": "47c40359d7de7775199aea2276565fc02a28d8109f6a4e31b5b69aa8a5ae0d99",
+          "installerSHA256": "d9e7ee09573a2a4390e54816461923429f0504865770cf7ce7cee830111b492c"
+        }
+      ],
+      "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+      "nativeChecks": 37,
+      "applicationChecks": 18,
+      "locationChecks": 31,
+      "locationCases": [
+        "decline",
+        "move",
+        "replacement-decline",
+        "replacement-accept"
+      ],
+      "iconScreenshots": [
+        {
+          "file": "finder-dock-light.png",
+          "sha256": "be444206e03314e2332804f7a54462b63f84c421667e6c0295e0f058096ea9b3"
+        },
+        {
+          "file": "dmg-platform-light.png",
+          "sha256": "8779ad4ec4b9b166e7b4f479be310c9d5799a6e4bb7ab6754872fc90c8fe7d09"
+        },
+        {
+          "file": "dmg-world-light.png",
+          "sha256": "ee6dd6d0fdbd891d74a4a98c6143528218df7cb696f54d12c8f9a5acd81a13e2"
+        },
+        {
+          "file": "dmg-messenger-light.png",
+          "sha256": "17adce7c3fd5660e8475bfd67f1b1c76940ee2f54899ab127144b9afa71d6336"
+        },
+        {
+          "file": "finder-dock-dark.png",
+          "sha256": "e4f8880b9805d19cb4a361a844984ad8c8e925e3d9ffea05a3425f8d57f6074c"
+        },
+        {
+          "file": "dmg-platform-dark.png",
+          "sha256": "208b782b78e37ec2290a9cf19a14f79b7602f151b887796590e1ba9fa0f887f4"
+        },
+        {
+          "file": "dmg-world-dark.png",
+          "sha256": "c2cc16a21a9f11123a4aae3b0c68ab63f939d4e030a0baba6fb5e3292f2108d8"
+        },
+        {
+          "file": "dmg-messenger-dark.png",
+          "sha256": "db8b803d22ea6c2c31737f7c2447083c438083f412ecdd692e5668b1c14b27de"
+        }
+      ],
+      "nativeMoveAndRelaunchVerified": true,
+      "allThreeProductsSameVersion": true,
+      "notarized": false,
+      "realProfileTouched": false,
+      "realAuthenticationPerformed": false
+    }
+  ],
+  "draftAssetsVerified": true,
+  "publicFeedChanged": false,
+  "installedStateTouched": false,
+  "visualReview": "Screenshot integrity verified here; human/model visual inspection recorded separately"
+}

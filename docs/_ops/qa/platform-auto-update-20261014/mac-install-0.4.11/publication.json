@@ -1,0 +1,50 @@
+{
+  "ok": true,
+  "releaseId": "platform-preview-0.4.11",
+  "sourceCommit": "81eec26a34b4abd578824fa664cae1a8d658ff99",
+  "artifacts": [
+    "SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe",
+    "SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg",
+    "SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg"
+  ],
+  "published": true,
+  "publicArtifacts": [
+    {
+      "bytes": 405961216,
+      "sha256": "a9e76846e54ecff1c3ae128d85a881309f4b59a523937c7e18c065a9e980866a",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-win-x64.exe"
+    },
+    {
+      "bytes": 458320039,
+      "sha256": "a97fd614e4e8132ef26f51ced7e20ab2f5aa2307abfb9c57c6119ee6d69b2ffc",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg"
+    },
+    {
+      "bytes": 475935605,
+      "sha256": "d9e7ee09573a2a4390e54816461923429f0504865770cf7ce7cee830111b492c",
+      "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-mac-x64.dmg"
+    }
+  ],
+  "commit": "39b432bf95a56727f9a3dce46da091d4c40be5d1",
+  "changed": [
+    "desktop/releases/preview.json",
+    "knowledge.json",
+    "en/knowledge.json",
+    "index.html",
+    "en/index.html",
+    "lab/index.html",
+    "en/lab/index.html",
+    "shift/index.html",
+    "en/shift/index.html",
+    "pulse/index.html",
+    "en/pulse/index.html",
+    "path/index.html",
+    "en/path/index.html",
+    "atlas/index.html",
+    "en/atlas/index.html",
+    "founder/index.html",
+    "en/founder/index.html",
+    "llms.txt"
+  ],
+  "siteCommitPending": false
+}

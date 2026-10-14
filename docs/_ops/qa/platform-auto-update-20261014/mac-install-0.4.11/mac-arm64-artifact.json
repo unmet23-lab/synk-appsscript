@@ -1,0 +1,8 @@
+{
+  "platform": "darwin",
+  "arch": "arm64",
+  "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.11/SYNK-Platform-Preview-0.4.11-Signal-mac-arm64.dmg",
+  "bytes": 458320039,
+  "sha256": "a97fd614e4e8132ef26f51ced7e20ab2f5aa2307abfb9c57c6119ee6d69b2ffc",
+  "asarSHA256": "0fd43b9998ce668ca329f7181d987a886dc17c4bf6e143be691425aee3cbde43"
+}

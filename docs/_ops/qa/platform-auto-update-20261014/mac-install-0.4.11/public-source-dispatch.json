@@ -1,0 +1,8 @@
+{
+  "version": "0.4.11",
+  "dispatchedAt": "2026-10-14T08:43:33.6902286Z",
+  "sourceHash": "1e393c54b3ff044c2d879b038016891746ceaaa55c2008f8ff9392ad9840b902",
+  "sourceCommit": "56f27d527dd369b6f0842bca0746e87ffb950f0a",
+  "releaseId": "platform-preview-0.4.11",
+  "workflow": "desktop-platform-unified.yml"
+}
