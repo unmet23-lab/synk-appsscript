@@ -1,10 +1,14 @@
-/* 연결된 WORLD 앱이 그리는 시트 · 시그널 게임판 (2026-10-14)
+/* 연결된 WORLD 앱이 그리는 시트 · 시그널 게임판 3차 (2026-10-14)
  * home.css의 판·흰 알약(.felt-button)·1px 선 알약(.plain-button)·조용한 줄(.quiet-button)을 그대로 쓰고,
- * 여기서는 이 앱만의 부품을 같은 토큰으로 맞춘다: 안내 블록(LED + 모노 라벨 + 제목 + 글, --w-s1),
- * 첫 문장 놀이(4px 진행 · 24px 문장 · A/B/C 줄 선택지), 선물 포스터, 답 확인, 동네·노래 시트, 옷걸이.
- * 펠트 판 그림(felt-butter·button-*·quality-cream·felt-blue)은 쓰지 않는다. */
+ * 여기서는 이 앱만의 부품을 같은 토큰으로 맞춘다: 안내 블록(LED + 모노 라벨 + 제목 + 글),
+ * 내 계정(튜터 초상 한 줄 → 저장 LED → 반 연결 → 저장한 차림), 첫 문장 놀이(4px 진행 · 큰 문장 · 56px 선택지),
+ * 결과 한 장(코랄 포스터 + 얻은 것 + 읽은 문장), 동네 입구(그림 + LED 블록 + 흰 알약), 노래 목록.
+ * 리듬: 코랄 포스터는 결과 한 장에만. 다른 시트는 인화지 한 장·LED 블록·1px 목록 줄로 구성을 바꾼다.
+ * PC 넓은 판(.is-wide)과 오른쪽 680 패널 안의 배치는 컨테이너 쿼리(.ws-wrap · 리드의 #world-panel)로 짠다.
+ * 펠트 판 그림(felt-butter·button-*·quality-cream·felt-blue)은 쓰지 않는다. 움직임은 결과 페이드(200ms) 하나뿐. */
 
-/* ── 공통: 상태 줄 · 단추 묶음 ── */
+/* ── 공통: 상태 줄 · 단추 묶음 · 컨테이너 ── */
+.ws-wrap{container-type:inline-size;min-width:0}
 .world-state{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-height:34px;margin:-8px 0 15px;font-size:13px;line-height:1.5;font-weight:var(--wt-label);color:var(--w-ink-3)}
 .world-state .status-dot{flex-shrink:0}
 .world-state[data-state=offline],.world-state[data-state=conflict]{color:var(--w-check-text)}
@@ -16,6 +20,8 @@
 .world-actions .quiet-button{justify-self:center}
 .world-actions button:disabled{opacity:.5;cursor:wait}
 .panel-dialog .world-actions .felt-button:focus-visible,.world-answer:focus-visible,.world-outfit:focus-visible{outline:2px solid var(--w-ink);outline-offset:3px}
+/* 큰 글 한 줄(시트의 첫 문장) */
+.ws-lead{font-size:20px;line-height:1.45;font-weight:var(--wt-display);letter-spacing:var(--track-title);color:var(--w-ink);text-wrap:balance;word-break:keep-all}
 
 /* ── 안내 블록: LED 점 + 모노 라벨 + 제목 + 글(크림 펠트 상자 대신) ── */
 .world-notice{display:grid;gap:5px;margin:22px 0 0;padding:16px 18px 17px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);font-size:14px;line-height:1.65;color:var(--w-ink-3);text-align:left}
@@ -24,89 +30,166 @@
 .world-notice strong::before{content:'';width:7px;height:7px;flex-shrink:0;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
 .world-notice[data-tone=ok] strong::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
 .world-notice[data-tone=check] strong::before{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+.world-notice[data-tone=alert] strong::before{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
 .world-notice span,.world-notice label{display:block;padding-left:17px;text-wrap:pretty}
 .world-notice label{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink);cursor:pointer}
 /* 동의 칸은 50×30 스위치 */
-.world-notice input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;order:2;flex-shrink:0;width:50px;height:30px;margin:0;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);cursor:pointer;transition:background .18s var(--w-ease)}
-.world-notice input[type=checkbox]::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
-.world-notice input[type=checkbox]:checked{background:var(--w-ink)}
+.world-notice input[type=checkbox]{appearance:none;-webkit-appearance:none;position:relative;order:2;flex-shrink:0;width:50px;height:44px;margin:0;border-radius:999px;background:transparent;cursor:pointer}
+.world-notice input[type=checkbox]::before{content:'';position:absolute;left:0;top:7px;width:50px;height:30px;border-radius:999px;background:var(--w-s3);box-shadow:inset 0 0 0 1px var(--w-line-2);transition:background .18s var(--w-ease)}
+.world-notice input[type=checkbox]::after{content:'';position:absolute;top:10px;left:3px;width:24px;height:24px;border-radius:50%;background:var(--w-ink-2);transition:transform .2s var(--w-ease),background .18s var(--w-ease)}
+.world-notice input[type=checkbox]:checked::before{background:var(--w-ink)}
 .world-notice input[type=checkbox]:checked::after{transform:translateX(20px);background:var(--w-on-ink)}
 .world-notice input[type=checkbox]:disabled{opacity:.45;cursor:default}
-.world-notice>span:first-child:has(input){display:flex;align-items:center;justify-content:space-between;gap:12px;padding-left:0;font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink)}
+/* 스위치가 든 줄은 누르는 자리를 줄 전체로(스위치 그림만 50×30) */
+.world-notice>span:first-child:has(input){display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;padding-left:0;font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink)}
 .world-notice>span:first-child:has(input)~span{padding-left:0}
-/* 안내 블록 안 링크는 흰 알약 대신 1px 선 알약(한 화면에 흰 알약 하나) */
+/* 안내 블록 안 링크는 흰 알약 대신 1px 선 알약(한 화면에 흰 알약 하나) + 바깥으로 나가는 화살표 */
 .world-notice .felt-button{justify-self:stretch;margin-top:10px;min-height:48px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .world-notice .felt-button:hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
+.world-notice a.felt-button span[aria-hidden]{display:none}
+.world-notice a.felt-button::after{content:'';width:15px;height:15px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
 .world-notice .plain-button{margin-top:10px}
 .review-note{display:grid;gap:14px;font-size:15.5px;line-height:1.75;color:var(--w-ink-2);text-wrap:pretty}
 .review-note strong{font-weight:var(--wt-title);color:var(--w-ink)}
 
-/* ── 로그인 · 처음 화면: 계정 연결 인화지 한 장 ── */
+/* ── 계정 연결(나 · 게스트): 왼쪽 큰 글 한 줄, 오른쪽 열쇠 인화지 ── */
+.ws-signin-head{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:2px 0 4px}
+.ws-signin-head .world-account-mascot{width:104px;margin:0 4px 0 0}
 .world-account-mascot{display:block;width:132px;margin:6px auto 22px;transform:rotate(-4deg)}
 img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#fff;box-shadow:0 1px 0 rgba(0,0,0,.04),0 14px 30px rgba(0,0,0,.4),0 3px 8px rgba(0,0,0,.2)}
-.panel-dialog:has(.world-account-mascot) .panel-description,.panel-dialog:has(.welcome-art) .panel-description{text-align:center;text-wrap:balance}
+.ws-signin .world-notice{margin-top:20px}
+.ws-signin .dialog-note{margin-top:18px}
+.panel-dialog:has(.welcome-art) .panel-description{text-align:center;text-wrap:balance}
 .welcome-art{position:relative;display:grid;place-items:center;height:184px;margin:4px 0 6px}
 .welcome-art img{width:168px;height:168px;object-fit:contain;filter:var(--w-cut-shadow)}
 .welcome-art span{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-family:var(--w-mono);font-size:var(--t-mono);letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3);white-space:nowrap}
 .welcome-lead{margin:22px 0 8px;font-size:var(--t-title-l);line-height:1.3;font-weight:var(--wt-display);letter-spacing:var(--track-display);text-align:center;text-wrap:balance}
 
-/* ── 첫 문장 놀이: 진행 → 24px 문장 → A/B/C 줄 선택지(고르면 흰 바탕) ── */
+/* ── 내 계정: 튜터 초상 한 줄 → 저장 LED 블록 → 학습 연결 → 반 연결 카드 → 저장한 차림 → 흰 알약 + 로그아웃 줄 ── */
+.ws-me-id{display:flex;align-items:center;gap:16px;padding:2px 0 4px}
+.ws-me-portrait{display:grid;place-items:center;flex:none;width:72px;height:72px;border-radius:50%;overflow:hidden;background:radial-gradient(circle at 50% 35%,#2a2c33,#15161a);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.ws-me-portrait img{width:88%;height:88%;object-fit:contain;transform:translateY(4px)}
+.ws-me-name{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);text-wrap:balance}
+.ws-me-sub{margin-top:3px;font-size:13.5px;line-height:1.55;color:var(--w-ink-3);text-wrap:pretty}
+.ws-me .world-notice{margin-top:20px}
+.ws-me #world-classroom-entry:empty{display:none}
+.ws-me>.world-actions{margin-top:26px}
+
+/* ── 첫 문장 놀이: 진행 → 큰 문장 → A/B/C 줄 선택지(고르면 흰 바탕) ── */
 .world-game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
 .world-game-top span:last-child{font-family:var(--w-mono);font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--w-ink-2)}
 .world-progress{position:relative;height:4px;margin-top:12px;border-radius:999px;background:var(--w-line-2);overflow:hidden}
 .world-progress i{display:block;height:100%;border-radius:inherit;background:var(--w-ink);transition:width .25s var(--w-ease)}
-.world-prompt{margin:28px 0 22px;font-size:24px;line-height:1.5;font-weight:var(--wt-title);letter-spacing:-.024em;color:var(--w-ink);word-break:keep-all;text-wrap:balance}
+.world-prompt{margin:28px 0 22px;font-size:24px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:-.024em;color:var(--w-ink);word-break:keep-all;text-wrap:balance}
 .world-answers{display:grid;gap:8px}
-.world-answer{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 18px 12px 14px;border-radius:18px;background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:22px;line-height:1.4;font-weight:var(--wt-strong);letter-spacing:-.02em;text-align:left;transition:background .16s var(--w-ease),color .16s var(--w-ease),box-shadow .16s var(--w-ease),transform .12s var(--w-ease)}
+.world-answer{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 18px 12px 14px;border-radius:18px;background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font-size:24px;line-height:1.35;font-weight:var(--wt-strong);letter-spacing:-.02em;text-align:left;transition:background .16s var(--w-ease),color .16s var(--w-ease),box-shadow .16s var(--w-ease),transform .12s var(--w-ease)}
 .world-answer:hover{box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .world-answer:active{transform:scale(.985)}
 .world-answer span{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--w-line-2);font:500 11px/1 var(--w-mono);letter-spacing:.04em;color:var(--w-ink-3)}
 .world-answer.selected{background:var(--w-ink);color:var(--w-on-ink);box-shadow:0 10px 24px rgba(0,0,0,.3)}
 .world-answer.selected span{background:var(--w-on-ink);color:var(--w-ink);box-shadow:none}
+.world-play-panel .world-actions{margin-top:20px}
 .panel-dialog:has(.world-game-top){max-height:92dvh}
+/* PC 오른쪽 680 패널: 문장을 더 크게, 선택지는 넓은 줄 */
+@container (min-width:600px){
+ .world-play-panel .world-prompt{margin:26px 0 20px;font-size:30px;line-height:1.35}
+ .world-play-panel .world-answer{min-height:64px;padding:10px 22px 10px 16px;font-size:26px}
+ .world-play-panel .dialog-note{margin-top:12px}
+ .world-play-panel .world-actions{grid-template-columns:minmax(0,1fr) auto;align-items:center;margin-top:16px}
+ .world-play-panel .world-actions .quiet-button{justify-self:end}
+}
 
-/* ── 선물: 코랄 포스터 한 장(스튜디오 빛 + 결 + 펠트 목도리 + 큰 한글 900 + 모노 라벨). 회전 움직임 없음 ── */
-.world-reward-art{position:relative;isolation:isolate;overflow:hidden;display:block;height:244px;margin:0 0 18px;border-radius:var(--w-r-lg);background:var(--w-studio),var(--w-face);color:var(--w-on-face)}
+/* ── 결과 한 장: 코랄 포스터(스튜디오 빛 + 결 + 흰 인화지 + 큰 한글 900 + 모노 라벨) → 얻은 것 → 읽은 문장 ── */
+.world-reward-art{position:relative;isolation:isolate;overflow:hidden;display:block;height:248px;margin:0;border-radius:var(--w-r-lg);background:var(--w-studio),var(--w-face);color:var(--w-on-face)}
 .world-reward-art::before{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;background:var(--w-grain);opacity:.12;mix-blend-mode:overlay}
-.world-reward-art::after{content:'FIRST GIFT';content:'FIRST GIFT'/'';position:absolute;left:18px;top:16px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);color:rgba(30,14,10,.62)}
-.world-reward-art img{position:absolute;z-index:1;top:4px;right:6px;width:min(56%,190px);height:auto;aspect-ratio:1;object-fit:contain;filter:var(--w-cut-shadow);transform:rotate(-4deg)}
-.world-reward-art .welcome-lead{position:absolute;z-index:2;left:18px;right:18px;bottom:16px;margin:0;font-size:32px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.06em;color:var(--w-on-face);text-align:left;text-wrap:balance}
-.world-reward-panel .panel-description{text-align:left}
+.world-reward-label{position:absolute;z-index:2;left:18px;top:16px;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;color:rgba(30,14,10,.62)}
+.world-reward-print{position:absolute;z-index:1;top:22px;right:20px;width:min(42%,150px)}
+.world-reward-art .welcome-lead{position:absolute;z-index:2;left:18px;right:18px;bottom:18px;margin:0;font-size:40px;line-height:.98;font-weight:var(--wt-poster);letter-spacing:-.07em;color:var(--w-on-face);text-align:left;text-wrap:balance;word-break:keep-all}
+.ws-result{display:grid;gap:18px}
+.ws-result .world-result-side>.game-tutor{margin:0}
+.world-result-side{display:grid;align-content:start;gap:16px;min-width:0}
+.world-result-got{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 12px;align-items:baseline;padding:2px 2px 0}
+.world-result-got::before{content:'';grid-row:1;width:7px;height:7px;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6);transform:translateY(-2px)}
+.world-result-got[data-tone=idle]::before{background:var(--w-led-idle);box-shadow:none}
+.world-result-got strong{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink)}
+.world-result-got span{grid-column:2;font-size:14px;line-height:1.6;color:var(--w-ink-3);text-wrap:pretty}
+.world-result-side .world-actions{margin-top:4px}
+/* 결과가 열릴 때 한 번 200ms 페이드(보상 연출을 끄면 붙지 않는다) */
+.ws-result.is-celebrate .world-reward-art{animation:ws-result-in .2s var(--w-ease) both}
+@keyframes ws-result-in{from{opacity:0}to{opacity:1}}
+@container (min-width:720px){
+ .ws-result{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:28px;align-items:start}
+ .world-reward-art{height:min(520px,calc(var(--shell-height,720px) - 190px));min-height:380px}
+ .world-reward-print{top:56px;right:28px;width:min(48%,230px)}
+ .world-reward-label{left:24px;top:22px}
+ .world-reward-art .welcome-lead{left:24px;right:24px;bottom:26px;font-size:72px}
+ .world-result-side{gap:12px}
+ .world-result-side .world-review p{padding:9px 0 7px}
+ .world-result-side .world-review summary{min-height:46px}
+ .world-result-side .world-actions{gap:4px}
+}
 
-/* ── 답 확인: 접는 줄, 맞힌 답은 메도우 점 ── */
-.world-review{margin-top:22px;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);font-size:14px;line-height:1.65;color:var(--w-ink-3)}
-.world-review summary{display:flex;align-items:center;justify-content:space-between;min-height:56px;font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink);cursor:pointer;list-style:none}
+/* ── 읽은 문장: 1px 선 줄, 맞힌 답은 메도우 점 · 다시 볼 문장은 코랄 점 ── */
+.world-review{margin-top:0;border-top:1px solid var(--w-line);border-bottom:1px solid var(--w-line);font-size:14px;line-height:1.65;color:var(--w-ink-3)}
+.world-review summary{display:flex;align-items:center;justify-content:space-between;min-height:52px;font-size:15.5px;font-weight:var(--wt-strong);color:var(--w-ink);cursor:pointer;list-style:none}
 .world-review summary::-webkit-details-marker{display:none}
 .world-review summary::after{content:'';width:16px;height:16px;background:var(--w-chevron) center/contain no-repeat;transition:transform .2s var(--w-ease)}
 .world-review[open] summary::after{transform:rotate(180deg)}
-.world-review p{display:grid;justify-items:start;gap:4px;margin:0;padding:14px 0 16px;border-top:1px solid var(--w-line)}
-.world-review p strong{font-size:15.5px;line-height:1.55;font-weight:var(--wt-strong);color:var(--w-ink)}
+.world-review p{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:2px 12px;margin:0;padding:12px 0 10px;border-top:1px solid var(--w-line)}
+.world-review p>strong{grid-column:1/-1;font-size:15.5px;line-height:1.55;font-weight:var(--wt-strong);color:var(--w-ink)}
+.world-review p>span{grid-column:1;font-size:14px;color:var(--w-ink-2)}
 .world-review p br{display:none}
-.world-review-mark{display:inline-flex;align-items:center;gap:7px;font-style:normal;font-size:13px;font-weight:var(--wt-label);color:var(--w-ok-text)}
+.world-review-mark{grid-column:1;display:inline-flex;align-items:center;gap:7px;font-style:normal;font-size:13px;font-weight:var(--wt-label);color:var(--w-ok-text)}
 .world-review-mark::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
-.world-review p .plain-button{min-height:44px;margin-top:6px;padding:0 18px;font-size:14px}
+.world-review-mark[data-tone=again]{color:var(--w-alert-text)}
+.world-review-mark[data-tone=again]::before{background:var(--w-led-alert);box-shadow:0 0 8px rgba(249,104,89,.55)}
+.world-review p>.quiet-button,.world-review p>.plain-button{grid-column:2;grid-row:2/4;align-self:center;min-height:44px;padding:0 4px;font-size:13.5px}
 
-/* ── 우리 동네 · 노래 듣기 ── */
-.town-preview{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:16/10;margin:0 0 18px;border-radius:var(--w-r-lg);object-fit:cover;box-shadow:var(--w-card-edge)}
+/* ── 우리 동네 입구: 그림(모노 라벨 + LED 칩) → 한 줄 → LED 블록 → 흰 알약 ── */
+.ws-town{display:grid;gap:18px}
+.ws-town-art{position:relative;margin:0;border-radius:var(--w-r-lg);overflow:hidden;box-shadow:var(--w-card-edge)}
+.town-preview{display:block;width:100%;max-width:100%;height:auto;aspect-ratio:16/10;margin:0;border-radius:0;object-fit:cover}
+.ws-town-art figcaption{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;padding:14px;pointer-events:none;background:linear-gradient(180deg,rgba(8,9,12,.42),transparent 34%,transparent 62%,rgba(8,9,12,.5))}
+.ws-town-label{font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);color:rgba(250,250,249,.86)}
+.ws-chip{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label);white-space:nowrap;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.ws-led{display:inline-block;flex:none;width:7px;height:7px;border-radius:50%;background:var(--w-led-info);box-shadow:0 0 10px rgba(91,134,219,.55)}
+.ws-led[data-tone=ok]{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+.ws-led[data-tone=check]{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
+.ws-town-side{display:grid;align-content:start;min-width:0}
+.ws-town-side .world-notice{margin-top:18px}
+@container (min-width:720px){
+ .ws-town{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:32px;align-items:center}
+ .ws-town .town-preview{aspect-ratio:auto;height:min(520px,calc(var(--shell-height,720px) - 190px));min-height:320px}
+ .ws-town-art figcaption{padding:20px}
+ .ws-town-side .ws-lead{font-size:24px;line-height:1.4}
+}
+
+/* ── 노래 듣기: 카세트 인화지 + 한 줄 → 1px 선 목록 ── */
+.ws-songs-head{display:flex;align-items:center;gap:18px;margin:0 0 18px}
+.ws-songs-print{flex:none;width:76px}
+.ws-songs-head p{font-size:15.5px;line-height:1.6;color:var(--w-ink-2);text-wrap:pretty}
 .world-songs-panel .play-list{display:grid;grid-template-columns:minmax(0,1fr);gap:0;counter-reset:song;border-top:1px solid var(--w-line)}
-.world-songs-panel .play-list button,.world-songs-panel .play-list button:first-child{position:static;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:76px;padding:10px 4px;border-radius:0;background:none;color:var(--w-ink);border-bottom:1px solid var(--w-line);counter-increment:song;transition:none}
+.world-songs-panel .play-list button,.world-songs-panel .play-list button:first-child{position:static;display:flex;flex-direction:row;align-items:center;justify-content:flex-start;gap:14px;min-height:76px;padding:10px 4px;border-radius:0;background:none;color:var(--w-ink);border-bottom:1px solid var(--w-line);counter-increment:song;transition:none;grid-column:auto;grid-row:auto}
 .world-songs-panel .play-list button::before{content:'';position:static;inset:auto;z-index:auto;display:grid;flex-shrink:0;width:48px;height:48px;border-radius:50%;background:var(--w-s2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7.2v9.6a.6.6 0 0 0 .9.5l7.6-4.8a.6.6 0 0 0 0-1L9.9 6.7a.6.6 0 0 0-.9.5z' fill='%23FAFAF9'/%3E%3C/svg%3E") 55% 50%/22px no-repeat;box-shadow:inset 0 0 0 1px var(--w-line-2);opacity:1;mix-blend-mode:normal}
 .world-songs-panel .play-list button::after{content:counter(song,decimal-leading-zero);position:static;inset:auto;z-index:auto;margin-left:auto;padding-right:4px;background:none;opacity:1;mix-blend-mode:normal;font-family:var(--w-mono);font-size:11px;letter-spacing:.08em;color:var(--w-ink-3)}
 .world-songs-panel .play-list button:hover{box-shadow:none}
 .world-songs-panel .play-list button:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
 .world-songs-panel .play-list img{display:none}
 .world-songs-panel .play-list span{display:grid;gap:2px;min-width:0}
-.world-songs-panel .play-list strong{font-size:16px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
+.world-songs-panel .play-list strong{font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
 .world-songs-panel .play-list small{font-size:14px;line-height:1.45;font-weight:var(--wt-body);color:var(--w-ink-3)}
+.world-song-panel .dialog-note{margin-top:14px}
 
-/* ── 나의 코디 행거(내 기록 시트 안) ── */
+/* ── 저장한 차림(내 계정 시트 안): 흰 인화지 사진 + 이름 + 선 알약 「입기」 ── */
 .world-hanger{margin:26px 0 0;padding-top:20px;border-top:1px solid var(--w-line)}
 .world-hanger[hidden]{display:none}
 .world-hanger h2{margin:0 0 4px;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
 .world-hanger>p{margin-bottom:14px;font-size:14px;line-height:1.6;color:var(--w-ink-3)}
-.world-hanger-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.world-hanger article{display:grid;align-content:start;gap:8px;min-width:0;padding:8px 8px 10px;border-radius:var(--w-r-md);background:var(--w-s1);box-shadow:var(--w-card-edge)}
-.world-hanger img{display:block;width:100%;height:96px;object-fit:cover;border-radius:10px;background:var(--w-s2)}
+.world-hanger-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.world-hanger article{display:grid;align-content:start;gap:8px;min-width:0}
+.world-hanger img{display:block;width:100%;height:auto;aspect-ratio:1;object-fit:cover;padding:4px;border-radius:10px;background:#fff;box-shadow:0 10px 22px rgba(0,0,0,.35)}
+.world-hanger article:nth-child(odd) img{transform:rotate(-2deg)}
+.world-hanger article:nth-child(even) img{transform:rotate(2deg)}
 .world-hanger strong{padding:0 2px;font-size:14px;line-height:1.45;font-weight:var(--wt-strong);overflow-wrap:anywhere;word-break:keep-all}
 .world-hanger .felt-button,.world-hanger .plain-button{width:100%;min-width:0;max-width:100%;min-height:44px;padding:0 8px;font-size:14px;white-space:normal;overflow-wrap:anywhere}
 
@@ -127,21 +210,25 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
 @media(max-width:599px){
  .world-state{margin:0 0 12px;max-width:100%}
  .world-prompt{font-size:22px;margin:24px 0 20px}
- .world-answer{min-height:60px}
- .world-reward-art{height:224px}
- .world-hanger img{height:84px}
- .world-hanger strong{font-size:13px}
+ .world-answer{min-height:60px;font-size:22px}
+ .world-reward-art{height:232px}
+ .world-reward-art .welcome-lead{font-size:38px}
 }
 @media(max-width:359px){
  .world-answer{padding:10px 14px 10px 12px;gap:12px}
- .world-reward-art{height:208px}
- .world-reward-art .welcome-lead{font-size:30px}
- .world-hanger-list{gap:6px}
- .world-hanger article{padding:6px 6px 8px}
+ .world-reward-art{height:212px}
+ .world-reward-print{width:118px;top:20px;right:16px}
+ .world-reward-art .welcome-lead{font-size:33px}
+ .ws-signin-head{gap:12px}.ws-signin-head .world-account-mascot{width:84px}
+ .ws-lead{font-size:18px}
+ .ws-me-portrait{width:60px;height:60px}
+ .world-hanger-list{gap:8px}
  .world-hanger .felt-button,.world-hanger .plain-button{font-size:13px;padding:0 4px}
 }
+@media(prefers-reduced-motion:reduce){.ws-result.is-celebrate .world-reward-art{animation:none}}
+:root[data-reduced=true] .ws-result.is-celebrate .world-reward-art{animation:none}
 
-/* Connected Maru: keep decisions and the fitting scene visible on short phones. */
+/* 가로 휴대폰(앱 안 가로 틀): 첫 문장 놀이는 왼쪽 문장·오른쪽 선택지, 옷장 창은 화면 전체(안쪽은 wardrobe-studio.css) */
 @media(orientation:landscape) and (min-width:560px) and (max-height:500px){
  html[data-connected=true] #world-panel.world-play-panel{inset:8px 12px;margin:auto;width:min(920px,calc(100vw - 24px));height:calc(100dvh - 16px);max-height:none;padding:8px 16px 12px;border-radius:20px;overflow:hidden}
  html[data-connected=true] .world-play-panel .sheet-handle,html[data-connected=true] .world-play-panel #panel-eyebrow{display:none}
@@ -149,37 +236,19 @@ img.world-account-mascot{height:auto;padding:5px;border-radius:10px;background:#
  html[data-connected=true] .world-play-panel .panel-header h2{font-size:20px;margin:0}
  html[data-connected=true] .world-play-panel #panel-content{height:calc(100% - 50px);min-height:0;display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);grid-template-rows:auto 18px 4px minmax(0,1fr) auto 50px;grid-template-areas:"tutor answers" "meta answers" "progress answers" "prompt answers" "note answers" "actions actions";gap:7px 22px}
  html[data-connected=true] .world-play-panel .game-tutor{grid-area:tutor;margin:0}
+ html[data-connected=true] .world-play-panel .game-tutor-help,html[data-connected=true] .world-reward-panel .game-tutor-help{min-height:44px}
  html[data-connected=true] .world-play-panel .world-game-top{grid-area:meta;font-size:13px}
  html[data-connected=true] .world-play-panel .world-progress{grid-area:progress;margin:0}
  html[data-connected=true] .world-play-panel .world-prompt{grid-area:prompt;font-size:22px;line-height:1.45;margin:0;align-self:center;max-height:100%;overflow:auto}
- html[data-connected=true] .world-play-panel .world-answers{grid-area:answers;min-height:0;gap:6px;grid-auto-rows:minmax(44px,1fr)}
- html[data-connected=true] .world-play-panel .world-answer{min-height:44px;padding:4px 16px 4px 10px;line-height:1.3;gap:10px}
+ html[data-connected=true] .world-play-panel .world-answers{grid-area:answers;min-height:0;gap:6px;grid-auto-rows:minmax(48px,1fr)}
+ html[data-connected=true] .world-play-panel .world-answer{min-height:48px;padding:4px 16px 4px 10px;line-height:1.3;gap:10px;font-size:22px}
  html[data-connected=true] .world-play-panel .world-answer span{width:28px;height:28px}
  html[data-connected=true] .world-play-panel .dialog-note{grid-area:note;font-size:13px;line-height:1.5;margin:0}
- html[data-connected=true] .world-play-panel .world-actions{grid-area:actions;display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0}
+ html[data-connected=true] .world-play-panel .world-actions{grid-area:actions;display:grid;grid-template-columns:1fr auto;gap:12px;margin:0}
  html[data-connected=true] .world-play-panel .world-actions button{min-height:48px;padding:0 16px;font-size:14px}
 
  html[data-connected=true] #world-panel.wardrobe-dialog{inset:0;width:100vw;height:100dvh;max-height:100dvh;margin:0;padding:8px 14px 0;border-radius:0}
  html[data-connected=true] #world-panel.wardrobe-dialog .panel-header{height:44px;min-height:44px;margin:0 0 6px}
  html[data-connected=true] #world-panel.wardrobe-dialog .panel-header h2{font-size:18px;margin:0;max-width:150px}
- html[data-connected=true] #world-panel.wardrobe-dialog #panel-eyebrow,html[data-connected=true] .wardrobe-dialog .atelier-intro{display:none}
- html[data-connected=true] .wardrobe-dialog .atelier-tabs{position:absolute;top:8px;left:176px;right:72px;height:44px;margin:0;padding:0;border:0;gap:5px}
- html[data-connected=true] .wardrobe-dialog .atelier-tabs button{flex:1;min-width:0;min-height:44px;justify-content:center;padding:7px 8px;font-size:12px;gap:5px}
- html[data-connected=true] .wardrobe-dialog .atelier-workbar{display:flex;flex-wrap:nowrap;gap:5px;margin:0 0 8px}
- html[data-connected=true] .wardrobe-dialog .atelier-workbar button{flex:1;min-width:0;min-height:44px;padding:7px 8px;font-size:11px}
- html[data-connected=true] .wardrobe-dialog .atelier-layout{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;height:calc(100dvh - 180px);min-height:140px;overflow:hidden}
- html[data-connected=true] .wardrobe-dialog .atelier-fitting,html[data-connected=true] .wardrobe-dialog .atelier-browse{display:block;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding-right:3px}
- html[data-connected=true] .wardrobe-dialog .atelier-scene{height:calc(100dvh - 180px);min-height:140px}
- html[data-connected=true] .wardrobe-dialog .atelier-scene-label{left:12px;top:10px;font-size:9px}
- html[data-connected=true] .wardrobe-dialog .atelier-compare{right:7px;bottom:6px;min-height:44px;padding:7px 10px}
- html[data-connected=true] .wardrobe-dialog .atelier-pane-heading{margin-bottom:6px}
- html[data-connected=true] .wardrobe-dialog .atelier-pane-heading h3{font-size:18px}
- html[data-connected=true] .wardrobe-dialog .atelier-pane-heading p{display:none}
- html[data-connected=true] .wardrobe-dialog .atelier-items{grid-auto-flow:row;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:none;grid-auto-columns:auto;max-height:none;overflow:visible}
- html[data-connected=true] .wardrobe-dialog .atelier-footer{display:flex;align-items:center;gap:12px;padding:7px 0 8px;min-height:60px}
- html[data-connected=true] .wardrobe-dialog .atelier-footer>div:first-child{display:block;flex:0 1 170px;margin:0}
- html[data-connected=true] .wardrobe-dialog .atelier-footer strong{font-size:11px}
- html[data-connected=true] .wardrobe-dialog .atelier-sync-note{font-size:11px;max-width:170px;margin-top:3px;line-height:1.4}
- html[data-connected=true] .wardrobe-dialog .atelier-footer-actions{display:flex;flex:1;min-width:0;gap:6px}
- html[data-connected=true] .wardrobe-dialog .atelier-footer-actions button{flex:1;min-width:0;min-height:44px;padding:8px;font-size:11px!important}
+ html[data-connected=true] #world-panel.wardrobe-dialog #panel-eyebrow{display:none}
 }

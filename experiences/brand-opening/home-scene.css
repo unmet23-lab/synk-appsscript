@@ -1,5 +1,7 @@
 /* 3D 방이 화면 전체를 채운다. 물건 입구는 작은 유리 핀, 친구는 직접 누른다(이름표 없음). */
-.maru-scene{position:absolute;inset:0;width:100%;height:100%;background:#e9e3d8;overflow:hidden;--scene-lift:.15;--scene-span-portrait:4.05}
+.maru-scene{position:absolute;inset:0;width:100%;height:100%;background:#17120f;overflow:hidden;--scene-lift:.15;--scene-span-portrait:4.05}
+/* 저녁 방: 가장자리를 살짝 어둡게 해 창과 친구들로 시선을 모은다(정지 효과). */
+.maru-scene::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(120% 95% at 50% 42%,transparent 58%,rgba(8,9,12,.30) 100%)}
 [data-layout=landscape] .maru-scene{--scene-lift:.03;--scene-shift:.15;--scene-span-landscape:8.4}
 @media(max-height:500px){[data-layout=landscape] .maru-scene{--scene-shift:.2;--scene-span-landscape:9}}
 .maru-scene::after{content:'';position:absolute;inset:auto 0 0;height:46%;z-index:1;pointer-events:none;background:linear-gradient(180deg,rgba(8,9,12,0) 0%,rgba(8,9,12,.18) 45%,rgba(8,9,12,.52) 100%)}

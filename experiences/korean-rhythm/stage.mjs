@@ -5,6 +5,8 @@
 // 움직이지 않는 벽·바닥·레인·판정선은 크기가 바뀔 때만 한 장으로 그려 두고, 장면마다 노트·빛·반짝이만 얹는다.
 // 시계는 app.mjs가 넘기는 음악 시각(AudioContext)이다. 카메라는 흔들지 않는다.
 // preview: 입구 그림 — 같은 레인·판정선·배지를 코랄 머리 면 위에 멈춘 채 한 번 그린다(벽·바닥 없이, 움직임 없음).
+// theme 'world'(WORLD 안, 2026-10-14 3차): 어두운 무대 + 흰 판정선 하나 + 흰 노트(검은 O·X), 답 노트만 코랄 테. 반짝이 없음.
+//   레인·판정선 자리(두 단추 가운데로 모임)와 노트 시간·크기 계산은 LAB과 같다. LAB 단독 화면은 theme이 없어 펠트 무대 그대로.
 
 const FELT = 'kit/felt/';
 const SRC = { wall: 'wide-cream', floor: 'tex-coral', cream: 'tex-cream', lane0: 'cushion-lapis-strip', lane1: 'cushion-blush-strip', badge: 'badge-cream', sparkle: 'sparkle' };
@@ -27,9 +29,10 @@ function loadImage(url) {
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
 export class Stage {
-  constructor(canvas, { pads = [], preview = false } = {}) {
+  constructor(canvas, { pads = [], preview = false, theme = 'lab' } = {}) {
     this.canvas = canvas;
     this.preview = preview;
+    this.night = theme === 'world';
     this.ctx = canvas.getContext('2d');
     this.pads = pads;
     this.bg = document.createElement('canvas');
@@ -43,6 +46,7 @@ export class Stage {
     this.ready = Promise.all([
       ...Object.entries(SRC).map(([key, name]) => loadImage(`${FELT}${name}.webp`).then((im) => { this.img[key] = im; })),
       document.fonts?.load?.('900 40px SUIT').catch(() => {}),
+      this.night ? document.fonts?.load?.('600 40px "World Game Latin"').catch(() => {}) : null,
     ]).then(() => this.resize(true));
     new ResizeObserver(() => this.resize()).observe(canvas);
   }
@@ -129,6 +133,7 @@ export class Stage {
     this.bg.width = this.canvas.width; this.bg.height = this.canvas.height;
     const c = this.bg.getContext('2d');
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    if (this.night) { this.paintNight(c, g); this.bgReady = true; return; }
     c.fillStyle = '#efe3d0'; c.fillRect(0, 0, g.W, g.yh + 1);
     c.fillStyle = '#e45a49'; c.fillRect(0, g.yh, g.W, g.H - g.yh);
     if (I.wall) this.paintWall(c, g);
@@ -137,6 +142,31 @@ export class Stage {
     if (I.floor) this.paintHaze(c, g);
     if (I.cream) this.paintJudge(c, g);
     this.bgReady = !!(I.wall && I.floor);
+  }
+
+  /** WORLD 무대: 근사 검정 판 위에 두 레인(한 단계 밝은 면 + 1px 선)이 멀리 한 점으로 모이고, 판정선은 흰 선 하나. */
+  paintNight(c, g) {
+    const bg = c.createLinearGradient(0, 0, 0, g.H);
+    bg.addColorStop(0, '#08090c'); bg.addColorStop(Math.min(0.95, Math.max(0.05, g.yJ / g.H)), '#121317'); bg.addColorStop(1, '#0c0d10');
+    c.fillStyle = bg; c.fillRect(0, 0, g.W, g.H);
+    const top = g.yL, bottom = g.yN, span = g.yJ - g.yh;
+    for (const lane of [0, 1]) {
+      const k0 = (top - g.yh) / span, k1 = (bottom - g.yh) / span;
+      const x0 = g.vx + (g.lx[lane] - g.vx) * k0, x1 = g.vx + (g.lx[lane] - g.vx) * k1, w0 = g.wJ * k0 / 2, w1 = g.wJ * k1 / 2;
+      const face = c.createLinearGradient(0, top, 0, bottom);
+      face.addColorStop(0, 'rgba(255,255,255,0)'); face.addColorStop(0.55, 'rgba(255,255,255,.035)'); face.addColorStop(1, 'rgba(255,255,255,.06)');
+      c.beginPath(); c.moveTo(x0 - w0, top); c.lineTo(x0 + w0, top); c.lineTo(x1 + w1, bottom); c.lineTo(x1 - w1, bottom); c.closePath();
+      c.fillStyle = face; c.fill();
+      const edge = c.createLinearGradient(0, top, 0, bottom);
+      edge.addColorStop(0, 'rgba(255,255,255,0)'); edge.addColorStop(1, 'rgba(255,255,255,.16)');
+      c.strokeStyle = edge; c.lineWidth = 1; c.stroke();
+    }
+    // 판정선: 두 레인을 가로지르는 흰 선 하나(위아래로 옅은 빛)
+    const x0 = g.lx[0] - g.wJ / 2 - 10, x1 = g.lx[1] + g.wJ / 2 + 10;
+    const glow = c.createLinearGradient(0, g.yJ - 18, 0, g.yJ + 18);
+    glow.addColorStop(0, 'rgba(250,250,249,0)'); glow.addColorStop(0.5, 'rgba(250,250,249,.10)'); glow.addColorStop(1, 'rgba(250,250,249,0)');
+    c.fillStyle = glow; c.fillRect(x0, g.yJ - 18, x1 - x0, 36);
+    c.fillStyle = '#fafaf9'; c.beginPath(); c.roundRect(x0, g.yJ - 1.5, x1 - x0, 3, 1.5); c.fill();
   }
 
   paintWall(c, g) {
@@ -244,7 +274,7 @@ export class Stage {
   /** 맞힌 노트: 그 레인의 판정선이 잠깐 밝아지고(효과 줄이기에서는 덜), 반짝이 몇 개가 위로 흩어진다. */
   hit(lane, quality) {
     this.flash[lane] = quality > 0 ? 1 : 0.2;
-    if (this.reduced || quality < 0.8 || !this.g) return;
+    if (this.night || this.reduced || quality < 0.8 || !this.g) return;   // WORLD: 반짝이 없이 판정선 빛만
     const { x, y } = this.judgeAt(lane), n = quality >= 1 ? 4 : 2;
     for (let i = 0; i < n; i += 1) {
       this.sparks.push({ x: x + (Math.random() - 0.5) * this.g.wJ * 0.5, y: y - 6, vx: (Math.random() - 0.5) * 90, vy: -150 - Math.random() * 90,
@@ -281,7 +311,7 @@ export class Stage {
       const p = 1 - (beats[i] - time) / A;
       if (p < 0 || p > 1) continue;
       const s = this.scaleAt(p), fade = Math.min(1, p / 0.15);
-      c.fillStyle = `rgba(255,250,242,${(i % 4 === 0 ? 0.34 : 0.15) * fade})`;
+      c.fillStyle = this.night ? `rgba(250,250,249,${(i % 4 === 0 ? 0.16 : 0.07) * fade})` : `rgba(255,250,242,${(i % 4 === 0 ? 0.34 : 0.15) * fade})`;
       for (const lane of [0, 1]) {
         const { x, y } = this.pointAt(lane, s), w = g.wJ * s * 0.78;
         c.fillRect(x - w / 2, y - Math.max(0.6, 1.6 * s) / 2, w, Math.max(0.6, 1.6 * s));
@@ -298,7 +328,8 @@ export class Stage {
       if (a < 0.01) continue;
       const x = g.lx[lane], r = g.wJ * 0.62;
       const glow = c.createRadialGradient(x, g.yJ, 4, x, g.yJ, r);
-      glow.addColorStop(0, `rgba(255,252,238,${a})`); glow.addColorStop(1, 'rgba(255,252,238,0)');
+      if (this.night) { glow.addColorStop(0, `rgba(250,250,249,${a * 0.7})`); glow.addColorStop(1, 'rgba(250,250,249,0)'); }
+      else { glow.addColorStop(0, `rgba(255,252,238,${a})`); glow.addColorStop(1, 'rgba(255,252,238,0)'); }
       c.fillStyle = glow;
       c.beginPath(); c.ellipse(x, g.yJ, r, r * 0.55, 0, 0, Math.PI * 2); c.fill();
     }
@@ -325,13 +356,13 @@ export class Stage {
     const c = this.ctx, g = this.g;
     const sT = this.scaleAt(pTail), sH = this.scaleAt(pHead);
     const a = this.pointAt(lane, sT), b = this.pointAt(lane, sH), wa = g.wJ * 0.36 * sT, wb = g.wJ * 0.36 * sH;
-    if (!this.ribbonFill) { this.ribbonFill = c.createPattern(this.img.cream, 'repeat'); this.ribbonFill?.setTransform(new DOMMatrix().scaleSelf(0.42, 0.42)); }
+    if (!this.ribbonFill && !this.night) { this.ribbonFill = c.createPattern(this.img.cream, 'repeat'); this.ribbonFill?.setTransform(new DOMMatrix().scaleSelf(0.42, 0.42)); }
     c.save();
     c.globalAlpha = alpha * (holding ? 1 : 0.92);
     c.shadowColor = 'rgba(20,30,70,.3)'; c.shadowBlur = 6; c.shadowOffsetY = 2;
     c.beginPath();
     c.moveTo(a.x - wa / 2, a.y); c.lineTo(a.x + wa / 2, a.y); c.lineTo(b.x + wb / 2, b.y); c.lineTo(b.x - wb / 2, b.y); c.closePath();
-    c.fillStyle = this.ribbonFill || '#f1e8da'; c.fill();
+    c.fillStyle = this.night ? 'rgba(250,250,249,.22)' : this.ribbonFill || '#f1e8da'; c.fill();
     c.restore();
     if (holding) {   // 누르는 동안 몸통이 빛난다
       c.save(); c.globalAlpha = 0.28;
@@ -349,6 +380,7 @@ export class Stage {
     if (d < 2 || alpha <= 0) return;
     c.save();
     c.globalAlpha = alpha;
+    if (this.night) { this.drawDisc(x, y, d, { big, picked, small, glyph: glyph ? GLYPH[lane] : '' }); c.restore(); return; }
     if (picked) { c.fillStyle = '#fffaf2'; c.beginPath(); c.arc(x, y, d / 2 + Math.max(2.5, d * 0.05), 0, Math.PI * 2); c.fill(); }
     if (im) {
       const bw = d / BADGE.d, bh = bw * im.height / im.width;
@@ -363,6 +395,25 @@ export class Stage {
     c.restore();
   }
 
+  /** WORLD 노트: 흰 원 + 검은 O·X(Inter Tight). 답 노트는 코랄 테, 고른 답은 흰 테를 한 겹 더. */
+  drawDisc(x, y, d, { big, picked, small, glyph }) {
+    const c = this.ctx, r = d / 2;
+    if (picked) {
+      c.fillStyle = '#fafaf9'; c.beginPath(); c.arc(x, y, r + Math.max(5, d * 0.1), 0, Math.PI * 2); c.fill();
+      c.fillStyle = '#0c0d10'; c.beginPath(); c.arc(x, y, r + Math.max(2.5, d * 0.055), 0, Math.PI * 2); c.fill();
+    }
+    if (big) { c.fillStyle = '#f96859'; c.beginPath(); c.arc(x, y, r + Math.max(2, d * 0.05), 0, Math.PI * 2); c.fill(); }
+    c.shadowColor = 'rgba(0,0,0,.45)'; c.shadowBlur = Math.min(10, d * 0.16); c.shadowOffsetY = Math.min(4, d * 0.05);
+    c.fillStyle = small ? 'rgba(250,250,249,.7)' : '#fafaf9'; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+    c.shadowColor = 'transparent';
+    if (glyph && d > 16) {
+      c.fillStyle = '#08090c';
+      c.font = `600 ${Math.round(d * (big ? 0.5 : 0.46))}px "World Game Latin", "Inter Tight", SUIT, sans-serif`;
+      c.textAlign = 'center'; c.textBaseline = 'middle';
+      c.fillText(glyph, x, y + d * 0.02);
+    }
+  }
+
   /** 듣기 문제의 답 노트: 답할 때가 되면 두 레인에 큰 O·X 배지가 함께 온다. 고른 답에는 크림 칼선. */
   drawAnswers(round, time) {
     const c = this.ctx, A = round.level.approach;
@@ -374,8 +425,9 @@ export class Stage {
       const s = this.scaleAt(Math.min(p, 1.08));
       for (const lane of [0, 1]) {
         const { x, y } = this.pointAt(lane, s), r = this.g.d * s * 1.05;
-        const halo = c.createRadialGradient(x, y, r * 0.3, x, y, r);   // 답 노트 둘레의 빛(다른 노트와 구분)
-        halo.addColorStop(0, `rgba(255,246,214,${0.75 * alpha})`); halo.addColorStop(1, 'rgba(255,246,214,0)');
+        const halo = c.createRadialGradient(x, y, r * 0.3, x, y, r);   // 답 노트 둘레의 빛(다른 노트와 구분) · WORLD는 옅은 코랄
+        if (this.night) { halo.addColorStop(0, `rgba(249,104,89,${0.32 * alpha})`); halo.addColorStop(1, 'rgba(249,104,89,0)'); }
+        else { halo.addColorStop(0, `rgba(255,246,214,${0.75 * alpha})`); halo.addColorStop(1, 'rgba(255,246,214,0)'); }
         c.fillStyle = halo; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
         this.drawBadge(lane, s, alpha, { big: true, picked: q.intent === lane });
       }

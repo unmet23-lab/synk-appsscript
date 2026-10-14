@@ -1,6 +1,6 @@
 import {TUTORS} from './tutor-profiles.mjs';
 
-const names={'tutor:mongle':'몽글','tutor:kkamong':'까몽','tutor:marin':'마린',book:'책 펼치기',cafe:'카페',town:'우리 동네',memory:'오늘의 액자',photo:'사진 찍기',wardrobe:'옷장'};
+const names={'tutor:mongle':'몽글','tutor:kkamong':'까몽','tutor:marin':'마린',book:'책 펼치기',cafe:'카페',town:'우리 동네',memory:'기억 액자',photo:'사진 찍기',wardrobe:'옷장'};
 // Line icons for the glass pins. Frame, camera and hanger stay icon-only; their names show on hover/focus.
 const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const icons={
@@ -48,7 +48,7 @@ export function createHomeScene({container,onAction=()=>{},onStatus=()=>{}}){
  function showStatus(message,retry=false){status.replaceChildren();const p=document.createElement('p');p.textContent=message;status.append(p);if(retry){const b=document.createElement('button');b.type='button';b.textContent='방 다시 열기';b.addEventListener('click',()=>{engine?.dispose();engine=null;void load();});status.append(b);}status.hidden=!message;}
  async function load(){
   if(disposed||engine||loading||!tutor||!active)return;
-  showStatus('친구들이 있는 방을 열고 있어요.');onStatus('loading');
+  showStatus('방을 불러오고 있어요.');onStatus('loading');
   loading=(async()=>{
    try{
     const {mountLivingHomeScene}=await import('../synk-world-home/living-home-scene.mjs');

@@ -33,7 +33,8 @@ async function context(viewport,options={}){
  const {ctx,page}=await context({width:390,height:844},{isMobile:true,hasTouch:true,reducedMotion:'reduce'});
  await page.goto(base+'/mobile.html?opening=replay');await ready(page);await page.waitForFunction(()=>window.__synkOpening?.stage()==='title');await page.locator('.opening-enter').click();
  await page.locator('.tutor-panel').waitFor();
- check('first Start opens first meeting with no default tutor',await page.locator('[data-tutor-action="confirm"]').isDisabled()&&await page.locator('[data-tutor-id][aria-pressed=true]').count()===0);
+ // 2차 3판(10-14): 첫 만남은 튜터 한 명을 크게 미리 보여 주고(조사 §5-3 「한 장씩 넘겨 보며」), 확정은 「○○과 함께하기」를 누를 때만.
+ check('first Start previews exactly one tutor and stores nothing yet',await page.locator('[data-tutor-id][aria-pressed=true]').count()===1&&await page.evaluate(()=>localStorage.getItem('synk.world.tutor.v1:guest')===null&&window.__synkHome.tutor().tutor===null));
  check('first meeting explains future AI tutor role',await page.locator('.tutor-intro').textContent().then(text=>text.includes('AI 튜터')&&text.includes('앞으로')));
  check('three distinct approved tutors are offered',await page.locator('[data-tutor-id]').count()===3);
  await take(page,'phone390-first-meeting');
@@ -60,13 +61,13 @@ async function context(viewport,options={}){
  await take(page,'phone390-welcome');await page.locator('[data-tutor-action="back"]').click();await complete(page,'marin');
  check('finish stores only a completed tutor choice',await page.evaluate(()=>JSON.parse(localStorage.getItem('synk.world.tutor.v1:guest')).tutor==='marin'&&!document.querySelector('#world-panel').open));
  check('home displays chosen tutor',await page.locator('.place-heading>p:last-child').textContent().then(t=>t.includes('마린'))&&await page.locator('.profile-portrait img').getAttribute('src').then(src=>src.includes('/marin-')));
- check('first Start completion restores keyboard focus to a home action',await page.evaluate(()=>document.activeElement?.id==='life-next-button'));
+ check('first Start completion restores keyboard focus to a home action',await page.evaluate(()=>Boolean(document.activeElement?.closest('.lobby-action'))&&document.activeElement.getClientRects().length>0));
  check('closing the screen stops its audio',await page.evaluate(()=>window.__tutorSounds.every(a=>a.paused)));
  await page.reload();await ready(page);await page.waitForFunction(()=>window.__synkHome.tutor().tutor==='marin');await page.waitForFunction(()=>window.__synkOpening?.stage()==='title');await page.locator('.opening-enter').click();
  check('reload restores selection and skips first meeting',!await page.locator('#world-panel').evaluate(d=>d.open));
  await settings(page);await page.locator('[data-tutor-id="kkamong"]').click();await page.keyboard.press('Escape');
  check('cancelled change preserves chosen Marine',await page.evaluate(()=>window.__synkHome.tutor().tutor==='marin'&&JSON.parse(localStorage.getItem('synk.world.tutor.v1:guest')).tutor==='marin'));
- await page.locator('#life-next-button').click();await page.waitForFunction(()=>window.__synkHome.openPanel().startsWith('life-'));
+ await page.locator('#life-next-button').evaluate(b=>b.click()); /* 3D 방에서는 숨은 입구(1차). 같은 학습 고리를 직접 부른다 */await page.waitForFunction(()=>window.__synkHome.openPanel().startsWith('life-'));
  check('completed first meeting resumes the real learning flow',await page.locator('#panel-content').textContent().then(t=>t.length>0)&&await page.locator('.tutor-panel').count()===0);await page.locator('#panel-close').click();
  // Actual local synthetic account entrance, without touching rewards or inventory.
  await page.locator('[data-view="me"]').first().click();await page.locator('[data-world="login-a"]').click();await page.waitForFunction(()=>window.__synkWorld.client.snapshot);
@@ -80,7 +81,7 @@ async function context(viewport,options={}){
  check('first-sentence Start uses the same tutor entrance',await firstSentence.page.locator('.tutor-panel').count()===1);await complete(firstSentence.page,'marin');await firstSentence.page.locator('[data-world="login-a"]').waitFor();
  check('first-sentence continuation preserves existing account requirement',await firstSentence.page.evaluate(()=>window.__synkHome.tutor().tutor==='marin'));await firstSentence.ctx.close();
  for(const [label,width,height,mobile]of [['phone320',320,740,true],['phone322',322,704,true],['phone430',430,932,true],['landscape740',740,320,true],['landscape844',844,390,true],['desktop',1440,1000,false]]){
-  const {ctx,page}=await context({width,height},{isMobile:mobile,hasTouch:mobile});await page.goto(base+'/mobile.html?opening=off');await ready(page);await page.locator('#life-next-button').click();await page.locator('.tutor-panel').waitFor();await page.locator('[data-tutor-id="marin"]').click();
+  const {ctx,page}=await context({width,height},{isMobile:mobile,hasTouch:mobile});await page.goto(base+'/mobile.html?opening=off');await ready(page);await page.locator('#life-next-button').evaluate(b=>b.click()); /* 3D 방에서는 숨은 입구(1차). 같은 학습 고리를 직접 부른다 */await page.locator('.tutor-panel').waitFor();await page.locator('[data-tutor-id="marin"]').click();
   await page.waitForTimeout(1500);await take(page,label+'-marin');
   const bounds=await page.locator('#world-panel').evaluate(d=>({overflow:d.scrollWidth-d.clientWidth,width:d.getBoundingClientRect().width,scroll:d.scrollHeight>d.clientHeight,buttons:[...d.querySelectorAll('button')].map(el=>({text:el.textContent.trim(),w:el.getBoundingClientRect().width,h:el.getBoundingClientRect().height})).filter(b=>b.w&&b.h)}));
   check(label+': no horizontal overflow',bounds.overflow<=1,bounds);

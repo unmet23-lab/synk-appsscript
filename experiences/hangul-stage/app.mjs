@@ -10,6 +10,32 @@ import {hangulSupport} from '../brand-opening/game-tutor-support.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
+// WORLD 안(같은 출처의 .game-frame iframe)에서만: 공통 소리·진동·연출 설정(world-sound), 「우리 방으로」, 허브 링크 숨김.
+// 단독(LAB) 화면에서는 이 모듈이 없을 수 있어 부르지 않는다. 불러오지 못하면 소리 없이 조용히 넘어간다.
+const IN_WORLD = (() => { try { return !!window.frameElement?.classList?.contains('game-frame'); } catch { return false; } })();
+if (IN_WORLD) document.documentElement.dataset.host = 'world';
+let worldSound = null;
+if (IN_WORLD) import('../brand-opening/world-sound.mjs').then(m => { worldSound = m; m.bindTaps(document); }).catch(() => {});
+// 효과음은 하나로: WORLD 안에서는 world-sound(설정의 효과음 스위치)만, 단독 화면은 브랜드 사운드킷(audio.effect) 그대로.
+const pickSound = () => { if (IN_WORLD) worldSound?.play('select'); };
+function judge(correct, react = null) {
+  if (IN_WORLD) { worldSound?.verdict(correct, { react }); return; }
+  if (correct) audio.effect('earn');
+  try { react?.(correct); } catch { /* 반응은 없어도 된다 */ }
+}
+// 결과 한 장의 연출(200ms 페이드 + 소리 한 번). 설정의 「보상 연출」이 꺼져 있으면 결과만 보인다.
+const celebrate = () => !IN_WORLD || worldSound?.getPref('celebrate') !== false;
+function finishSound(gotSomething) {
+  if (!IN_WORLD) { audio.effect('achieve'); return; }
+  if (!worldSound || !celebrate()) return;
+  worldSound.play(gotSomething ? 'reward' : 'done'); worldSound.haptic('done');
+}
+// 「우리 방으로」: WORLD 놀이 판의 닫기 단추를 대신 누른다(사용자가 닫기를 누른 것과 같은 길 — 진도는 회차 끝에 이미 저장됐다).
+function backToRoom() {
+  try { const close = window.parent.document.getElementById('panel-close'); if (close) { close.click(); return true; } } catch { /* 다른 출처 */ }
+  return false;
+}
+const pad2 = n => String(n).padStart(2, '0');
 
 const $ = id => document.getElementById(id);
 function el(tag, attrs = {}, ...kids) {
@@ -49,7 +75,8 @@ const HUB = !hosted && location.pathname.startsWith('/hangul-stage/') ? '../lear
 if (new URLSearchParams(location.search).get('qa') === 'silent') audio.setSilent(true);
 audio.initAudio();
 
-function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0); if(id==='home')tutorEvent('lobby');else if(id==='session')tutorEvent('playing');else if(id==='finish')tutorEvent('finish'); }
+function show(id) { for (const s of ['home', 'session', 'finish', 'graduation', 'song']) $(s).hidden = s !== id; scrollTo(0, 0);
+  if (id === 'finish' || id === 'graduation') { const m = $(id); m.classList.remove('enter'); if (celebrate() && !still()) { void m.offsetWidth; m.classList.add('enter'); } } if(id==='home')tutorEvent('lobby');else if(id==='session')tutorEvent('playing');else if(id==='finish')tutorEvent('finish'); }
 
 // ── 입구 ──────────────────────────────────────────────
 function tile(l, { onTap = true } = {}) {
@@ -65,19 +92,27 @@ function renderHome() {
   const more = canPlayMore(progress, at), today = sessionsToday(progress, at);
   // 졸업 뒤에는 헷갈리기 쉬운 글자의 짧은 몸풀기다(설계 §8).
   const amount = v.graduated ? Math.min(progress.amount, SETTINGS.warmup) : progress.amount;
-  $('hero-title').textContent = v.graduated ? '한글을 읽어요' : '가나다부터';
-  $('hero-lede').textContent = v.graduated ? '한글 단계를 졸업했어요. 헷갈리기 쉬운 글자를 가끔 짧게 풀어요.' : '소리를 듣고, 글자를 보고, 음절을 만들며 혼자 배워요.';
-  $('start-label').textContent = !more ? '내일 또 만나요' : v.graduated ? '몸풀기' : today ? '한 번 더' : v.started ? '이어서 배우기' : '시작';
-  $('start-sub').textContent = more ? `${amount}문제 · ${{ 5: 2, 10: 3, 15: 4 }[amount]}분쯤` : '오늘은 여기까지 했어요';
+  // 포스터의 큰 글자는 지금 만날 글자 묶음(글을 아직 못 읽어도 무엇을 할지 보인다). 졸업 뒤에는 몸풀기.
+  const nowUnit = v.units.find(u => u.status === 'now');
+  const nowIndex = v.units.indexOf(nowUnit);
+  $('hero-tag').textContent = v.graduated ? 'HANGUL · GRADUATED' : nowUnit ? `HANGUL · ROAD ${pad2(nowIndex + 1)} / ${pad2(v.units.length)}` : 'HANGUL STAGE';
+  const heroWord = v.graduated ? '한글 졸업' : nowUnit ? [...nowUnit.glyphs].slice(0, 3).join(' ') : '한글 만나기';
+  $('hero-title').textContent = heroWord;
+  $('hero-title').dataset.kind = !v.graduated && nowUnit ? 'glyphs' : 'word';
+  $('hero-lede').textContent = v.graduated ? '헷갈리기 쉬운 글자를 짧게 풀어요.' : nowUnit ? `지금 만날 글자: ${nowUnit.label}. 듣고, 고르고, 직접 만들어요.` : '소리를 듣고 글자를 고르고, 직접 만들어요.';
+  $('start-label').textContent = !more ? '오늘 분량 끝' : v.graduated ? '몸풀기 시작하기' : today ? '한 번 더 하기' : v.started ? '이어서 하기' : '시작하기';
+  $('start-sub').textContent = more ? `${amount}문제 · ${{ 5: 2, 10: 3, 15: 4 }[amount]}분쯤` : '하루에 풀 수 있는 회차를 다 했어요';
   $('start').disabled = !more || !audio.voiceReady();
-  $('games').hidden = !(v.graduated && HUB);
+  // 허브 링크는 공통 서버에서 혼자 열었을 때만. WORLD 안에서는 위 놀이 목록을 쓴다(게스트도).
+  $('games').hidden = !(v.graduated && HUB && !IN_WORLD);
   if (HUB) $('games').href = HUB;
-  $('games-note').hidden = !(v.graduated && hosted);
+  $('games-note').hidden = !(v.graduated && (hosted || IN_WORLD));
+  $('effects').hidden = IN_WORLD; // WORLD 안에서는 설정 시트의 효과음 스위치가 정한다
   const STATUS = { done: '다 익힘', now: '지금', started: '배우는 중', next: '다음', later: '준비 중' };
   $('road').replaceChildren(...v.units.map((u, i) => el('li', { class: `${u.status}${u.final ? ' final' : ''}`, 'aria-label': `${i + 1}. ${u.label} · ${STATUS[u.status]}` },
     el('span', { class: 'stop', 'aria-hidden': 'true' }, String(i + 1)), el('span', { class: 'glyphs', 'aria-hidden': 'true' }, [...u.glyphs].slice(0, 3).join('') + (u.glyphs.length > 3 ? '…' : '')))));
   const current = v.units.find(u => u.status === 'now');
-  $('road-now').textContent = v.graduated ? '졸업' : current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '한글 글자를 다 익혔어요' : '';
+  $('road-now').textContent = v.graduated ? '졸업했어요' : current ? `지금: ${current.label}` : v.units.every(u => u.status === 'done' || u.status === 'later') ? '한글 글자를 다 익혔어요' : '';
   // 글자 상자는 모음 · 자음 · 받침으로 나눠 보인다. 받침은 첫소리와 모양이 같아 묶음 이름으로 가른다.
   const GROUPS = [['vowel', '모음'], ['consonant', '자음'], ['final', '받침']];
   $('box').replaceChildren(...GROUPS.map(([role, label]) => el('div', { class: 'box-group' },
@@ -129,10 +164,10 @@ function startSession() {
   S = { plan, sessionNo, sessionId: `${plan.day}#${sessionNo}`, steps: [{ kind: 'reason' }, ...plan.steps], index: 0,
     total: plan.steps.filter(s => s.kind === 'item').length, answered: 0, independent: 0, met: [], practiced: new Set(),
     masteredBefore: new Set(before.letters.filter(l => l.shown === 'mastered').map(l => l.id)), readableBefore: new Set(before.signs.filter(s => s.readable).map(s => s.text)),
-    wrongRun: 0, retries: 0, retried: new Set(), open: [] };
+    wrongRun: 0, retries: 0, retried: new Set(), open: [], missed: new Set() };
   show('session'); renderStep();
 }
-function bar() { $('bar').style.width = `${Math.round((S.answered / Math.max(1, S.total)) * 100)}%`; $('count').textContent = `${S.answered} / ${S.total}`; }
+function bar() { $('bar').style.width = `${Math.round((S.answered / Math.max(1, S.total)) * 100)}%`; $('count').textContent = `${pad2(S.answered)} / ${pad2(S.total)}`; }
 function dock(...kids) { $('dock').replaceChildren(...kids); }
 function cta(label, { tone = 'coral', disc = '', onClick, disabled = false } = {}) {
   return el('button', { class: `felt-cta ${tone}`, type: 'button', disabled, onclick: onClick }, el('span', { class: 'cta-text' }, el('b', {}, label)), el('span', { class: `disc ${disc}`, 'aria-hidden': 'true' }));
@@ -160,7 +195,7 @@ function renderReason() {
     el('img', { class: 'mongle', src: 'assets/brand/mongle-curious.webp', alt: '' }),
     el('p', {}, r.text),
     r.letters.length ? chipRow(r.letters, r.finals) : null));
-  dock(cta('시작', { disc: 'play', onClick: nextStep }));
+  dock(cta('시작하기', { disc: 'play', onClick: nextStep }));
 }
 
 // 만나기 카드(설계 §4): 글자가 크게 놓이고 소리가 두 번 난다 → 따라 쓰기(판정 없음) → 그 글자가 든 음절·낱말.
@@ -345,10 +380,11 @@ function settle(item, { correct, assisted, replays = 0, perLetter = null, confus
     if (again) { S.retried.add(letter); S.retries += 1; S.total += 1; S.steps.splice(Math.min(S.index + 3, S.steps.length), 0, { kind: 'item', item: again }); bar(); }
   }
 }
-function feedback(correct, text, support=[]) {
+function feedback(correct, text, support=[], { reason = '', react = null, quiet = false } = {}) {
   tutorEvent(correct?'success':'retry',{answer:true,support});
-  if (correct) audio.effect('earn');
-  dock(el('p', { class: `say${correct ? ' good' : ''}`, role: 'status' }, text), cta('다음', { onClick: nextStep }));
+  if (!quiet) judge(correct, react);
+  // 판정 띠: 아래에서 올라오는 어두운 띠 하나 — LED 점 + 한 줄 + 이유 한 줄. 문제 칸 전체를 칠하지 않는다.
+  dock(el('p', { class: `say${correct ? ' good' : ''}`, role: 'status' }, el('b', {}, text), reason ? el('span', {}, reason) : null), cta('다음', { onClick: nextStep }));
   setTimeout(() => $('dock').querySelector('.felt-cta')?.focus({ preventScroll: true }), 30);
 }
 // 막힌 순간(설계 §8): 소리 문항에서 이어서 두 번 틀리면 천천히 다시 들을지 한 번 묻는다. 받아들이면 도움받은 문항이 된다.
@@ -411,13 +447,15 @@ function renderListen(item) {
   speak.addEventListener('click', () => hear());
   const options = item.options.map(o => el('button', { class: `opt${o.none ? ' none' : ''}`, type: 'button', 'aria-label': o.none ? `${o.text}, 받침 없음` : o.text }, el('span', { class: `big${item.word ? ' word' : ''}` }, o.text)));
   options.forEach((b, i) => b.addEventListener('click', () => choose(item.options[i], b)));
+  // 문제 글자 자리: 소리만 들리는 동안은 큰 「?」, 답을 내면 정답 글자가 포스터 크기로 남는다(가르쳐 주기는 몽글이 든 글자가 그 자리).
+  const ask = item.type === 'teach' ? null : el('div', { class: `ask${item.word ? ' word' : ''}` }, el('span', { class: 'ask-glyph', 'aria-hidden': 'true' }, '?'), el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak, talker)));
   const head = item.type === 'teach'
     ? el('div', { class: 'teach' }, el('img', { class: 'mongle', src: 'assets/brand/mongle-curious.webp', alt: '' }),
       el('div', { class: 'held', 'aria-label': `몽글이 든 글자 ${item.wrong}` }, el('span', { class: 'big' }, item.wrong), el('span', { class: 'q', 'aria-hidden': 'true' }, '?')))
     : null;
   // 가르쳐 주기는 몽글이 크게 나오니 안내 줄의 작은 몽글은 뺀다. replaceChildren은 null을 글자로 넣어 빈 자리는 걸러 낸다.
   $('stage').replaceChildren(...[prompt(LISTEN_PROMPT[item.type] || (item.word ? '소리를 듣고 맞는 낱말을 골라요' : '소리를 듣고 맞는 글자를 골라요'), { mini: !head }), head,
-    el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak, talker)), el('div', { class: `options${item.type === 'pair' ? ' pair' : ''}` }, options)].filter(Boolean));
+    ask || el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak, talker)), el('div', { class: `options${item.type === 'pair' ? ' pair' : ''}` }, options)].filter(Boolean));
   dock();
   async function choose(o, b) {
     if (state.answered) return;
@@ -426,10 +464,16 @@ function renderListen(item) {
     options.forEach(x => { x.disabled = true; });
     const right = options[item.options.findIndex(x => x.text === item.target.text)];
     right.classList.add('right'); if (!correct) b.classList.add('wrong');
+    if (ask) { ask.querySelector('.ask-glyph').textContent = item.target.text; ask.classList.add('revealed'); }
+    if (!correct) S.missed.add(item.target.letter);
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, confused: correct ? [] : [[item.target.letter, o.letter]] });
-    if (correct && item.type === 'teach') audio.effect('joy');
-    feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : '이 소리예요',correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}));
+    if (correct && item.type === 'teach' && !IN_WORLD) audio.effect('joy');
+    // 가르쳐 주기의 몽글은 맞히면 웃는 얼굴로 한 번 바뀐다(WORLD에서는 설정의 「친구들의 반응」을 따른다).
+    const mongle = head?.querySelector('.mongle');
+    const react = mongle ? ok => { if (ok) mongle.src = 'assets/brand/mongle-smile.webp'; } : null;
+    feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : `정답은 ${item.target.text}`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}),
+      { react, reason: correct ? (item.type === 'teach' ? `‘${item.target.text}’를 들었어요.` : `‘${item.target.text}’ 소리예요.`) : `고른 ‘${o.text}’와 정답 소리를 차례로 들려줘요.` });
     if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }
     // 여러 목소리 음절은 맞혀도 정답 소리를 같은 목소리로 한 번 더(HVPT — 고르자마자 정답 소리를 들려준다)
     else if (audio.talkerCount(item.target.text) > 1) { await audio.wait(250); await audio.say(item.target.text, { talker }); }
@@ -446,7 +490,7 @@ function renderSee(item) {
   const confirm = cta('확인', { disc: 'check', disabled: true, onClick: () => submit() });
   options.forEach((b, i) => b.addEventListener('click', async () => {
     if (state.answered) return;
-    state.picked = i; options.forEach((x, j) => x.classList.toggle('picked', j === i)); confirm.disabled = false;
+    state.picked = i; options.forEach((x, j) => x.classList.toggle('picked', j === i)); confirm.disabled = false; // 고르면 그 소리가 바로 난다(고르기 효과음은 소리와 겹쳐 넣지 않는다)
     if(await play(null, item.options[i].text))state.heardOptions.add(i);
   }));
   $('stage').replaceChildren(prompt('글자를 보고 맞는 소리를 골라요'), el('div', { class: `shown paper${item.word ? ' word' : ''}`, 'aria-label': item.target.text }, item.target.text),
@@ -458,10 +502,11 @@ function renderSee(item) {
     const o = item.options[state.picked], correct = o.text === item.target.text;
     options.forEach(x => { x.disabled = true; x.classList.remove('picked'); });
     options[item.options.findIndex(x => x.text === item.target.text)].classList.add('right');
-    if (!correct) options[state.picked].classList.add('wrong');
+    if (!correct) { options[state.picked].classList.add('wrong'); S.missed.add(item.target.letter); }
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, confused: correct ? [] : [[item.target.letter, o.letter]], listening: false });
-    feedback(correct, correct ? '맞아요' : `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heardOptions.has(state.picked)}));
+    feedback(correct, correct ? '맞아요' : `${item.target.text}${josa(item.target.text, '은', '는')} 이 소리예요`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heardOptions.has(state.picked)}),
+      { reason: correct ? `‘${item.target.text}’ 소리를 한 번 더 들려줘요.` : '고른 소리와 정답 소리를 차례로 들려줘요.' });
     if (!correct) { await audio.say(o.text); await audio.wait(250); }
     await audio.say(item.target.text);
   }
@@ -491,7 +536,7 @@ function renderBuild(item) {
   const ready = () => !!(state.c && state.v && (!withFinal || state.f));
   function select(kind, id) {
     if (state.answered) return;
-    state[kind] = id;
+    state[kind] = id; pickSound();
     const [buttons, ids] = rows[kind];
     buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(ids[i] === id)));
     // 조각을 고르는 대로 글자가 합쳐져 보인다(자음·모음이 서기 전에는 고른 조각만, 받침은 그 아래에 붙는다).
@@ -513,7 +558,10 @@ function renderBuild(item) {
     rec.answer(state.pid, correct);
     settle(item, { correct, assisted: state.assisted, replays: state.replays, perLetter: { [t.consonant]: cOk, [t.vowel]: vOk, ...(withFinal ? { [t.final]: fOk } : {}) },
       confused: [...(cOk ? [] : [[t.consonant, state.c]]), ...(vOk ? [] : [[t.vowel, state.v]]), ...(fOk ? [] : [[t.final, state.f]])] });
-    feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`,correct?[]:hangulSupport({id:item.id,target:t.text,selected:made,options:[made,t.text],heard:state.heard}));
+    const wrongPart = !cOk ? t.consonant : !vOk ? t.vowel : !fOk ? t.final : null;
+    if (wrongPart) S.missed.add(wrongPart);
+    feedback(correct, correct ? '맞아요' : `${made}${josa(made, '이', '가')} 아니라 ${t.text}${josa(t.text, '이에요', '예요')}`,correct?[]:hangulSupport({id:item.id,target:t.text,selected:made,options:[made,t.text],heard:state.heard}),
+      { reason: correct ? `‘${t.text}’를 만들었어요.` : '만든 소리와 정답 소리를 차례로 들려줘요.' });
     if (!correct) { await audio.say(made); await audio.wait(250); await audio.say(t.text); }
   }
   const pieceOf = kind => { const [buttons, ids] = rows[kind]; return buttons[ids.indexOf(t[{ c: 'consonant', v: 'vowel', f: 'final' }[kind]])]; };
@@ -540,6 +588,7 @@ function renderMatch(item) {
     if (p.matched) return;
     for (const b of kind === 'sound' ? soundCards : letterCards) b.setAttribute('aria-pressed', String(b === button));
     state.sel[kind] = { letter, button };
+    if (kind === 'letter') pickSound();
     // 소리가 끝까지 난 뒤에 짝을 본다: 듣기 전에 고른 답은 소리 문항의 근거가 되지 않는다.
     if (kind === 'sound') {
       state.playing = audio.say(pack.byId.get(letter).voice).then(ok => { if(ok)p.delivered=true; if (!p.heard) { p.heard = true; rec.delivered(p.pid, ok); } });
@@ -553,7 +602,7 @@ function renderMatch(item) {
     if (sound.letter === card.letter) {
       const q = pairs.get(card.letter); q.matched = true; state.left -= 1;
       sound.button.classList.add('matched'); card.button.classList.add('matched'); sound.button.disabled = card.button.disabled = true;
-      audio.effect('earn');
+      judge(true);
       tutorEvent('success',{answer:true});
       const firstTry = !q.missed;
       rec.answer(q.pid, firstTry); S.open = S.open.filter(x => x !== q.pid);
@@ -561,6 +610,7 @@ function renderMatch(item) {
       if (!state.left) finishMatch();
     } else {
       tutorEvent('retry',{answer:true,support:hangulSupport({id:item.id+'-'+sound.letter,target:glyph(sound.letter),selected:glyph(card.letter),options:item.cards.map(c=>c.text),glyph:pack.byId.get(sound.letter).voice,heard:pairs.get(sound.letter).delivered===true})});
+      judge(false); S.missed.add(sound.letter);
       pairs.get(sound.letter).missed = true; pairs.get(card.letter).missed = true;
       progress = answer(progress, { focus: [], confused: [[sound.letter, card.letter]], correct: false, at: now(), sessionId: S.sessionId, counts: false }); save();
       for (const b of [sound.button, card.button]) { b.classList.add('nope'); setTimeout(() => b.classList.remove('nope'), 650); }
@@ -572,7 +622,7 @@ function renderMatch(item) {
     progress = answer(progress, { focus: [], correct: clean, assisted: state.assisted, at: now(), sessionId: S.sessionId }); save();
     S.answered += 1; if (clean && !state.assisted) S.independent += 1; bar(); done(item);
     S.wrongRun = clean ? 0 : S.wrongRun + 1;
-    feedback(true, clean ? '다 맞췄어요' : '다 찾았어요');
+    feedback(true, clean ? '다 맞췄어요' : '다 찾았어요', [], { quiet: true, reason: clean ? `짝 ${pairs.size}개를 한 번에 맞췄어요.` : `짝 ${pairs.size}개를 모두 찾았어요.` });
   }
   const first = item.sounds[0].letter;
   withDemo('match', state, () => [{ node: soundCards[0], run: () => audio.say(pack.byId.get(first).voice) }, { node: letterCards[item.cards.findIndex(c => c.letter === first)] }]);
@@ -585,8 +635,13 @@ function endSession() {
   const at = now(), v = view(progress, pack, at);
   const byId = new Map(v.letters.map(l => [l.id, l]));
   const shownToday = S.met.length ? S.met : [...S.practiced].filter(id => byId.has(id)).slice(0, 8);
-  $('finish-title').textContent = S.met.length ? '오늘 만난 글자예요' : '오늘 연습한 글자예요';
+  // 결과 한 장(조사 ⑦): 큰 한글 한 줄 + 오늘 만난 글자(눌러 듣기) + 다시 볼 글자 하나 + 얻은 것 + 흰 알약 하나.
+  $('finish-title').textContent = S.met.length ? `새 글자 ${S.met.length}개, 끝!` : `${S.answered}문제, 끝!`;
+  $('finish-tag').textContent = `RESULT · ${pad2(S.answered)} ITEMS`;
   $('finish-letters').replaceChildren(...shownToday.map(id => tile(byId.get(id))));
+  const missedId = [...S.missed].find(id => byId.has(id) && byId.get(id).state !== 'unmet');
+  $('finish-review').hidden = !missedId;
+  $('finish-review').replaceChildren(...(missedId ? [el('p', {}, '다시 볼 글자'), el('div', { class: 'finish-row-body' }, tile(byId.get(missedId)), el('span', { class: 'finish-row-note' }, '헷갈린 글자예요. 눌러서 소리를 다시 들어 봐요.'))] : []));
   const mastered = v.letters.filter(l => l.shown === 'mastered' && !S.masteredBefore.has(l.id));
   const signs = v.signs.filter(s => s.readable && !S.readableBefore.has(s.text));
   $('finish-extra').replaceChildren(...[
@@ -597,13 +652,14 @@ function endSession() {
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
     : [el('p', {}, v.allMet ? '한글 글자를 다 만났어요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
+  $('done-label').textContent = IN_WORLD ? '우리 방으로' : '처음으로 가기';
   // 노래로 복습: 오늘 겹모음을 다뤘으면 「겹모음 댄스」, 받침이면 「받침 노래」, 자음이면 「그 아 가」, 아니면 「모음 댄스」.
   const today = [...S.met, ...S.practiced].map(id => pack.byId.get(id)).filter(Boolean);
   const todayRoles = new Set(today.map(l => l.role));
   const songId = today.some(l => l.compound) ? 'compound-dance' : todayRoles.has('final') ? 'batchim' : todayRoles.has('consonant') ? 'geu-a-ga' : 'vowel-dance';
   $('finish-song').dataset.song = songId;
-  $('finish-song-label').textContent = `노래로 복습 · ${songById(songId).title} 30초`;
-  audio.effect('achieve');
+  $('finish-song-label').textContent = `노래로 복습하기 · ${songById(songId).title} 30초`;
+  finishSound(mastered.length > 0 || signs.length > 0);
   S = null;
   // 졸업(설계 §8): 조건이 서는 회차 끝에 한 번. 졸업 장면을 먼저 보이고, 그 뒤는 짧은 몸풀기다.
   if (graduationReady(progress, pack)) { progress = graduate(progress, at); save(); return showGraduation(); }
@@ -619,15 +675,17 @@ function showGraduation() {
   const words = readableWords(pack, known).filter(w => w.letters.some(isFinal));
   const shown = [...GRAD_WORDS.map(t => words.find(w => w.text === t)).filter(Boolean), ...words].filter((w, i, all) => all.indexOf(w) === i).slice(0, 4);
   $('grad-words').replaceChildren(...shown.map(w => el('button', { class: 'example', type: 'button', 'aria-label': `${w.text} 듣기`, onclick: () => audio.say(w.text) }, w.text, icon('speaker'))));
-  $('grad-games').hidden = !HUB; if (HUB) $('grad-games').href = HUB;
-  $('grad-note').hidden = !hosted;
+  $('grad-games').hidden = !HUB || IN_WORLD; if (HUB) $('grad-games').href = HUB;
+  $('grad-note').hidden = !(hosted || IN_WORLD);
+  $('grad-done-label').textContent = IN_WORLD ? '우리 방으로' : '처음으로 가기';
   show('graduation');
-  setTimeout(() => audio.effect('joy'), 700);
+  if (IN_WORLD) finishSound(true); else setTimeout(() => audio.effect('joy'), 700);
 }
 $('again').addEventListener('click', () => startSession());
 $('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song, 'review'));
-$('grad-done').addEventListener('click', () => { renderHome(); show('home'); });
-$('done').addEventListener('click', () => { renderHome(); show('home'); });
+// 끝 → 홈: WORLD 안에서는 한 번에 우리 방으로(놀이 판 닫기), 단독 화면에서는 한글 입구로.
+$('grad-done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
+$('done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
   audio.stop();
   for (const pid of S?.open || []) rec.leave(pid);

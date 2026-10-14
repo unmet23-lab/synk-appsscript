@@ -48,7 +48,7 @@ async function closeAndResume(page,name,origin,escape=false){
  check(`${name}: visible main video resumes and advances`,Math.abs(after-before)>.1,{before,after});
 }
 async function panelFlows(page,name){
- for(const [view,title]of [['play','어떤 놀이가 좋을까?'],['wardrobe','오늘의 몽글은 어떤 모습?'],['me','나만의 속도로, 차근차근.']]){
+ for(const [view,title]of [['play','놀이'],['wardrobe','옷장'],['me','내 계정']]){
   const origin=page.locator(`.world-nav [data-view="${view}"]`);await origin.click();await page.locator('#world-panel').waitFor({state:'visible'});
   check(`${name}/${view}: panel heading and navigation state`,await page.locator('#panel-title').textContent()===title&&await origin.getAttribute('aria-current')==='page');
   check(`${name}/${view}: main scene pauses under dialog`,await page.locator('.scene-video').evaluate(v=>v.paused));

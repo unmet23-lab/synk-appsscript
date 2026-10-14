@@ -1,4 +1,4 @@
-/* 「먼저 같이 해 볼까?」 조작 연습 · 시그널 게임판 (2026-10-14)
+/* 조작 연습 · 시그널 게임판 (2026-10-14, 3차: 지시 한 줄 + 자판 + 「시범 다시 보기」 조용한 링크, PC는 자판을 가운데 크게)
  * 근사 검정 판: 모노 라벨 → 24/680 제목 → 얇은 구간 진행(지금 흰색 · 지난 칸 회색 · 남은 칸 선) → 초상 + 흰 말풍선
  * → 깨끗한 무대(세 길 중 튜터가 선 길만 밝게) → 큰 선 자판(누르면 뒤집힘) → 흰 알약 하나 · 조용한 「시범 다시 보기」.
  * 펠트 판 그림(타일·자판·선)은 쓰지 않는다. 시범 움직임은 250ms 안의 짧은 이동뿐이고 움직임 줄이기에서는 멈춘다. */
@@ -15,7 +15,7 @@
 .practice-header>div::before{content:'PRACTICE';content:'PRACTICE'/'';align-self:flex-start;padding-right:38px;background:linear-gradient(var(--w-line-2),var(--w-line-2)) right 55%/28px 1px no-repeat;font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;line-height:1.4;letter-spacing:var(--track-mono);text-transform:uppercase;color:var(--w-ink-3)}
 .practice-header h3{order:1;margin:8px 0 4px;font-size:var(--t-title-l);font-weight:var(--wt-display);line-height:1.25;letter-spacing:var(--track-display);text-wrap:balance}
 .practice-header small{order:2;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
-.practice-exit,.tutor-review-exit{position:relative;display:grid;place-items:center;flex:none;width:40px;height:40px;padding:0;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);color:var(--w-ink);font-size:0;line-height:0;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.practice-exit,.tutor-review-exit{position:relative;display:grid;place-items:center;flex:none;width:44px;height:44px;padding:0;border-radius:50%;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);color:var(--w-ink);font-size:0;line-height:0;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
 .practice-exit::before,.tutor-review-exit::before{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-close) center/contain no-repeat;mask:var(--w-close) center/contain no-repeat}
 .practice-exit:hover,.tutor-review-exit:hover{background:var(--w-s3)}
 .practice-exit:active,.tutor-review-exit:active{transform:scale(.94)}
@@ -26,7 +26,10 @@
 .practice-stops span{display:block;height:4px;overflow:hidden;border-radius:999px;background:var(--w-line-2);color:transparent;font-size:0;line-height:0;transition:background .2s var(--w-ease)}
 .practice-stops .passed{background:var(--w-ink-3)}
 .practice-stops .current,.tutor-practice[data-phase=complete] .practice-stops span{background:var(--w-ink)}
-.practice-count{font-size:14px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink-2)}
+/* 지시 한 줄: 「01 / 05」 모노 숫자 + 이번 동작(20px) */
+.practice-count{display:flex;align-items:baseline;gap:12px;min-width:0}
+.practice-count-n{flex:none;font:500 13px/1 var(--w-mono);letter-spacing:.06em;color:var(--w-ink-3);font-variant-numeric:tabular-nums}
+.practice-count b{min-width:0;font-size:20px;line-height:1.3;font-weight:var(--wt-title);letter-spacing:var(--track-title);color:var(--w-ink);text-wrap:balance}
 
 /* 튜터 한마디: 초상 + 흰 말풍선(위 작은 라벨은 지금 단계) */
 .practice-speech{display:flex;align-items:flex-end;gap:10px;margin:0 0 14px}
@@ -94,11 +97,16 @@
 .tutor-practice[data-practice-game=runner] [data-practice-input=jump] b{transform:rotate(-90deg)}
 .tutor-practice[data-practice-game=runner] [data-practice-input=slide] b{transform:rotate(90deg)}
 .tutor-practice[data-practice-game=runner] [data-practice-input=next] b{width:auto;height:auto;font-size:17px;background:none;-webkit-mask:none;mask:none;transform:none}
+.practice-pad[data-practice-input=next]{flex-direction:row;gap:10px}
+.practice-pad[data-practice-input=next]::after{content:'';width:18px;height:18px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .tutor-practice[data-practice-game=first] .practice-pad b{font-size:22px;line-height:1.3}
 .practice-controls:has([data-practice-input=next]){grid-template-columns:1fr}
 .practice-controls:has([data-practice-input=next]) .practice-pad{min-height:60px}
 .practice-controls:has([data-practice-input=next]) .practice-pad b{font-size:17px}
 .practice-key-hint{margin:2px 0 0;font-size:13px;line-height:1.55;color:var(--w-ink-3);text-align:center;text-wrap:balance}
+.practice-key-hint:empty{display:none}
+/* 손가락으로 쓰는 기기에서는 키보드 안내를 숨긴다(지시는 한 줄로) */
+@media(hover:none) and (pointer:coarse){.practice-key-hint{display:none}}
 
 /* 아래: 흰 알약 하나 + 조용한 「시범 다시 보기」 */
 .practice-footer{display:grid;justify-items:stretch;gap:4px;margin-top:16px}
@@ -115,10 +123,8 @@
 .tutor-practice[data-phase=complete] .practice-performer{display:block;left:50%;bottom:22px;transform:translateX(-50%)}
 .tutor-practice[data-phase=complete] .practice-road,.tutor-practice[data-phase=complete] .practice-beat,.tutor-practice[data-phase=complete] .practice-example,.tutor-practice[data-phase=complete] .practice-pose-label,.tutor-practice[data-phase=complete] .practice-controls,.tutor-practice[data-phase=complete] .practice-key-hint{display:none}
 
-/* 반응 몸짓(회전 없음) */
-.tutor-practice[data-tutor=mongle][data-feedback=success] .practice-speech .game-tutor-portrait{animation:game-tutor-hop .6s var(--w-ease)}
-.tutor-practice[data-tutor=kkamong][data-feedback=success] .practice-speech .game-tutor-portrait{animation:game-tutor-proud .6s ease-in-out}
-.tutor-practice[data-tutor=marin][data-feedback=success] .practice-speech .game-tutor-face{animation:game-tutor-lens 1s ease-out}
+/* 반응 몸짓: 해냈을 때 한 번, 회전 없이 220ms(「친구들의 반응」이 꺼져 있으면 없음) */
+.tutor-practice:not([data-reactions=false])[data-feedback=success] .practice-speech .game-tutor-portrait{animation:game-tutor-nod .22s var(--w-ease) 1}
 .tutor-practice[data-reduced=true],.tutor-practice[data-reduced=true] *{animation:none!important;transition:none!important}
 
 /* 휴대폰 세로: 아래에서 올라오는 판 */
@@ -168,5 +174,23 @@
  .practice-progress{margin:10px 0}
  .practice-stage{height:150px}
  .practice-pad{min-height:56px}
+}
+/* PC 넓은 틀: 창을 키우고 자판을 가운데 크게 */
+@media(min-width:1100px) and (min-height:600px){
+ .tutor-practice{width:min(820px,calc(100vw - 48px));padding:28px 32px 22px}
+ .practice-count b{font-size:24px}
+ .practice-speech>.game-tutor-portrait{width:72px;height:72px}
+ .practice-line{font-size:16px}
+ .practice-stage{height:236px}
+ .practice-performer .game-tutor-portrait{width:120px;height:120px}
+ .practice-performer[data-pose=jump]{bottom:84px}
+ .practice-hit-line{top:160px}.practice-note{top:calc(var(--beat-y,0) * 168px)}
+ .practice-controls{width:min(100%,600px);margin:0 auto;gap:12px}
+ .practice-pad{min-height:96px;border-radius:24px}
+ .practice-pad b{font-size:36px}
+ .tutor-practice[data-practice-game=runner] .practice-pad b{width:32px;height:32px}
+ .tutor-practice:is([data-practice-game=hangul],[data-practice-game=first]) .practice-performer .game-tutor-portrait{width:104px;height:104px}
+ .tutor-practice:is([data-practice-game=hangul],[data-practice-game=first]) .practice-performer{bottom:60px}
+ .practice-footer{width:min(100%,600px);margin:16px auto 0}
 }
 @media(prefers-reduced-motion:reduce){.tutor-practice,.tutor-practice *{animation:none!important;transition:none!important}}

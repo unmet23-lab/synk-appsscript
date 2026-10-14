@@ -1,5 +1,6 @@
 import {getTutor,tutorFace} from './game-tutor-lines.mjs';
 import {lifeTutorKind,lifeTutorLine,lifeTutorDifficulties,lifeTutorExercise} from './life-tutor-lines.mjs';
+import {getPref} from './world-sound.mjs';
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL('assets/tutors/'+path,import.meta.url).href;
 export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],practised=[],getExercise,onHint=()=>{},onPause=()=>{},onPreparePractice=()=>{},onPracticeSuccess=null,onPracticeComplete=()=>{},onHelp=null,lineForState=lifeTutorLine,reduced=()=>false}){
@@ -11,18 +12,15 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  const portrait=(face='기본')=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${asset(tutor.images.기본)}" alt="${tutor.name}" width="480" height="480"><img class="game-tutor-face" src="${asset(tutor.images[face]||tutor.images.기본)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor life-tutor';element.dataset.tutor=tutor.id;
  element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
- element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b> · 함께하는 AI 튜터</small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
+ element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b><span class="life-tutor-role"> · 함께하는 AI 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite"></p></div><button class="game-tutor-help life-tutor-help" type="button">표현 도움</button>`;
  container.prepend(element);
  const helpButton=element.querySelector('.life-tutor-help'),face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),body=element.querySelector('.game-tutor-portrait');
  const motion=matchMedia('(prefers-reduced-motion:reduce)'),isReduced=()=>reduced()||motion.matches;
  const stopSound=()=>{clip?.pause();clip=null;};
  function restFace(){face.src=asset(tutor.images.기본);element.dataset.face='기본';element.dataset.reduced=String(isReduced());delete body.dataset.reaction;}
  function quiet(){clearTimeout(timer);clearTimeout(blink);stopSound();restFace();}
- function idle(){
-  clearTimeout(timer);clearTimeout(blink);restFace();
-  if(disposed||!active||document.hidden||isReduced()||guide||practice)return;
-  timer=setTimeout(()=>{if(disposed||!active||document.hidden||isReduced()||guide||practice)return;face.src=asset(tutor.images.잔잔감음||tutor.images.기본);element.dataset.face=tutor.images.잔잔감음?'잔잔감음':'기본';blink=setTimeout(()=>{if(disposed||!active)return;idle();},130);},5600+Math.random()*1200);
- }
+ // 기다리는 동안은 정지(스스로 깜박이거나 움직이지 않는다). 표정은 입력 직후에만 한 번 바뀌고 잠시 뒤 기본으로 돌아온다.
+ function idle(){clearTimeout(timer);clearTimeout(blink);restFace();}
  function playReaction(emotion){
   stopSound();if(!sound||!active||state.listening||state.requiresHearing||practice||guide||document.hidden)return;
   const bank=tutor.sounds[emotion]||tutor.sounds.기본;if(!bank?.length)return;
@@ -32,7 +30,8 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   if(disposed)return;state=next;const nextKind=lifeTutorKind(state);element.dataset.scope=state.scope||'life';
   const text=lineForState(tutor.id,nextKind,state);if(state.listening)stopSound();if(kind===nextKind&&line.textContent===text){if(element.dataset.reduced!==String(isReduced()))idle();return;}
   quiet();kind=nextKind;const reaction=['success','assisted','complete','practiceSuccess'].includes(kind)?'success':kind==='retry'?'retry':kind==='listen'?'listening':'ready';
-  const emotion=tutorFace(tutor.id,reaction);element.dataset.reaction=reaction;element.dataset.face=emotion;element.dataset.reduced=String(isReduced());body.dataset.reaction=reaction;
+  // 「친구들의 반응」이 꺼져 있으면 정답·오답에도 자세를 바꾸지 않는다(설정 시트 스위치).
+  const emotion=['success','retry'].includes(reaction)&&!getPref('reactions')?'기본':tutorFace(tutor.id,reaction);element.dataset.reaction=reaction;element.dataset.face=emotion;element.dataset.reduced=String(isReduced());body.dataset.reaction=reaction;
   face.src=asset(tutor.images[emotion]||tutor.images.기본);line.textContent=text;
   if(reaction==='success')playReaction('기쁨');else if(reaction==='retry')playReaction('안심');
   if(!active||document.hidden||guide||practice){quiet();return;}
@@ -43,7 +42,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   if(disposed||practice||guide)return;onPause();quiet();
   guide=document.createElement('dialog');guide.className='game-tutor-guide life-tutor-guide';guide.setAttribute('aria-label',`${tutor.name}과 표현 도움`);
   const current=state.question;
-  guide.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name} · 나의 AI 튜터</small><h3>헷갈린 표현, 같이 다시</h3><p>${esc(lifeTutorLine(tutor.id,'help'))}</p></div></div>${current?`<section class="life-tutor-current"><h4>지금 만난 표현</h4><p>${esc(state.requiresHearing?'직원 질문을 듣고 주문해요.':current.prompt)}</p><button type="button" class="game-tutor-sound life-tutor-hint">${state.requiresHearing?'글자 도움으로 같이 보기':'이번 표현 힌트 열기'}</button>${state.answered?`<button class="tutor-support-retry" type="button" data-life-expression="${esc(state.questionId)}">이 표현, 다른 상황에서 연습</button>`:''}</section>`:''}<section class="tutor-support-list life-tutor-difficulties"><h4>함께 다시 볼 표현</h4>${difficulties.length?difficulties.map(item=>`<article class="tutor-support-item"><small>${esc(item.lessonTitle)}${practised.includes(item.id)?' · 함께 연습했어요':''}</small><h4>${esc(item.title)}</h4><button class="tutor-support-retry" type="button" data-life-expression="${esc(item.id)}">다른 상황에서 연습</button></article>`).join(''):'<p>헷갈렸거나 도움을 본 표현이 여기에 모여요.</p>'}</section><div class="game-tutor-guide-footer"><button type="button" class="game-tutor-continue life-tutor-resume">하던 자리로 돌아가기</button><button type="button" class="game-tutor-sound life-tutor-sound" aria-pressed="${sound}">반응 소리 ${sound?'켜짐':'꺼짐'}</button><small>카페 질문을 들을 때는 튜터 소리를 쉬어요.</small></div>`;
+  guide.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name} · 나의 AI 튜터</small><h3>표현 도움</h3><p>${esc(lifeTutorLine(tutor.id,'help'))}</p></div></div>${current?`<section class="life-tutor-current"><h4>지금 문제</h4><p>${esc(state.requiresHearing?'직원 질문을 듣고 주문해요.':current.prompt)}</p><button type="button" class="game-tutor-sound life-tutor-hint">${state.requiresHearing?'글자로 같이 보기':'이 문제 힌트 보기'}</button>${state.answered?`<button class="tutor-support-retry" type="button" data-life-expression="${esc(state.questionId)}">다른 장면으로 연습하기</button>`:''}</section>`:''}<section class="tutor-support-list life-tutor-difficulties"><h4>다시 볼 표현</h4>${difficulties.length?difficulties.map(item=>`<article class="tutor-support-item"><small>${esc(item.lessonTitle)}${practised.includes(item.id)?' · 연습했어요':''}</small><h4>${esc(item.title)}</h4><button class="tutor-support-retry" type="button" data-life-expression="${esc(item.id)}">연습하기</button></article>`).join(''):'<p>틀렸거나 도움을 받은 표현이 여기에 모여요.</p>'}</section><div class="game-tutor-guide-footer"><button type="button" class="game-tutor-continue life-tutor-resume">돌아가기</button><button type="button" class="game-tutor-sound life-tutor-sound" aria-pressed="${sound}">반응 소리 ${sound?'켜짐':'꺼짐'}</button><small>직원 말을 듣는 동안에는 튜터 소리가 나지 않아요.</small></div>`;
   container.append(guide);guide.addEventListener('cancel',event=>{event.preventDefault();closeGuide();});
   guide.querySelector('.life-tutor-resume').addEventListener('click',()=>closeGuide());
   guide.querySelector('.life-tutor-hint')?.addEventListener('click',()=>{closeGuide({focus:false});onHint();});
@@ -62,7 +61,7 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
   // Guided transfer is a rehearsal; only the scheduled life-review flow grades it.
   if(onPreparePractice(id)===false||disposed)return;onPause();quiet();closeGuide({focus:false,resume:false});exercise=value;selected=null;correct=false;
   practice=document.createElement('dialog');practice.className='game-tutor-guide life-expression-practice';practice.setAttribute('aria-label',`${tutor.name}과 표현 다시 연습`);
-  practice.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name}과 · 다른 상황을 읽고 골라요</small><h3>다른 상황에서 써 보기</h3><p class="life-expression-tutor" role="status">${esc(lifeTutorLine(tutor.id,'practice'))}</p></div></div><section class="life-expression-question"><h4>${esc(value.prompt)}</h4><p>${esc(value.context)}</p><div class="life-expression-options">${value.choices.map(c=>`<button class="life-choice" type="button" data-expression-choice="${esc(c.id)}">${esc(c.text)}</button>`).join('')}</div><div class="life-expression-feedback" hidden><p></p></div></section><div class="game-tutor-guide-footer"><button class="game-tutor-continue life-expression-return" type="button" disabled>연습을 마치고 돌아가기</button><button class="game-tutor-sound life-expression-cancel" type="button">연습은 나중에 할게요</button></div>`;
+  practice.innerHTML=`<div class="game-tutor-guide-top">${portrait()}<div><small>${tutor.name}과 연습</small><h3>다른 장면에서 골라 보기</h3><p class="life-expression-tutor" role="status">${esc(lifeTutorLine(tutor.id,'practice'))}</p></div></div><section class="life-expression-question"><h4>${esc(value.prompt)}</h4><p>${esc(value.context)}</p><div class="life-expression-options">${value.choices.map(c=>`<button class="life-choice" type="button" data-expression-choice="${esc(c.id)}">${esc(c.text)}</button>`).join('')}</div><div class="life-expression-feedback" hidden><p></p></div></section><div class="game-tutor-guide-footer"><button class="game-tutor-continue life-expression-return" type="button" disabled>돌아가기</button><button class="game-tutor-sound life-expression-cancel" type="button">나중에 하기</button></div>`;
   container.append(practice);practice.addEventListener('cancel',event=>{event.preventDefault();closePractice();});
   practice.querySelector('.life-expression-cancel').addEventListener('click',()=>closePractice());
   practice.querySelector('.life-expression-return').addEventListener('click',()=>{if(correct)closePractice({completed:true});});
@@ -84,5 +83,11 @@ export function createLifeTutor({tutorId,container,state={},snapshot,lessons=[],
  helpButton.addEventListener('click',()=>{if(onHelp)onHelp();else openGuide();});
  const visibility=()=>{quiet();if(!document.hidden)idle();};document.addEventListener('visibilitychange',visibility);motion.addEventListener('change',visibility);
  update(state);
- return {element,update,openGuide,openPractice,setActive(value){if(active===!!value&&element.dataset.reduced===String(isReduced()))return;active=!!value;if(!active)quiet();else idle();},metrics:()=>({tutor:tutor.id,scope:state.scope,kind,face:element.dataset.face,guideOpen:!!guide,practice:exercise?{id:exercise.id,selected,correct}:null,practised:[...practised],reactionAudioPlaying:!!clip&&!clip.paused}),dispose(){disposed=true;quiet();closeGuide({focus:false});closePractice({focus:false});element.remove();document.removeEventListener('visibilitychange',visibility);motion.removeEventListener('change',visibility);}};
+ // 판정 직후 한 번(world-sound verdict가 「친구들의 반응」이 켜져 있을 때만 부른다): 자세를 바꾸고 잠시 뒤 기본으로.
+ function react(correct){
+  if(disposed||!active||guide||practice)return;clearTimeout(timer);
+  const emotion=tutorFace(tutor.id,correct?'success':'retry');face.src=asset(tutor.images[emotion]||tutor.images.기본);element.dataset.face=emotion;
+  timer=setTimeout(()=>{if(!disposed)idle();},tutor.id==='kkamong'?2800:2300);
+ }
+ return {element,update,react,openGuide,openPractice,setActive(value){if(active===!!value&&element.dataset.reduced===String(isReduced()))return;active=!!value;if(!active)quiet();else idle();},metrics:()=>({tutor:tutor.id,scope:state.scope,kind,face:element.dataset.face,guideOpen:!!guide,practice:exercise?{id:exercise.id,selected,correct}:null,practised:[...practised],reactionAudioPlaying:!!clip&&!clip.paused}),dispose(){disposed=true;quiet();closeGuide({focus:false});closePractice({focus:false});element.remove();document.removeEventListener('visibilitychange',visibility);motion.removeEventListener('change',visibility);}};
 }

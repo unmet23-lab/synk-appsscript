@@ -2,7 +2,10 @@
  * 놀이 위에는 어두운 띠 하나: 40px 원 초상 → 이름 라벨(LED) + 한마디 → 1px 선 알약(조작법·힌트).
  * 안내 창은 근사 검정 판: 모노 라벨 → 24/680 제목 → 초상 + 흰 말풍선 → 1px 선 목록 → 흰 알약 하나.
  * 홈 카드(#home-tutor)는 home.css가 ID 선택자로 따로 펼친다. 여기 기본값은 그 카드에 새지 않는 속성만 쓴다.
- * 펠트 판 그림은 쓰지 않는다. 반응 몸짓은 회전 없이 작게, 움직임 줄이기에서는 멈춘다. */
+ * 펠트 판 그림은 쓰지 않는다. 반응 몸짓은 회전 없이 작게, 움직임 줄이기에서는 멈춘다.
+ * 3차(10-14): 놀이 위 튜터는 「작은 스티커」가 아니라 장면 속 대화 상대(조사 ⑤) — 정본 컷을 오리지 않고 넉넉히 세우고, 한마디는 흰 말풍선.
+ * 대기 중에는 스스로 움직이지 않는다(눈 깜빡임 반복 없음). 정·오답 때만 얼굴을 한 번 바꾸고 220ms 살짝 들린다(「친구들의 반응」 스위치를 따른다).
+ * 홈 카드(.home-tutor-companion)와 생활 레슨 띠(.life-tutor)는 각자 CSS가 있어 이 띠 규칙은 [data-tutor-game]에만 건다. */
 
 /* ── 동행 띠 ── */
 .game-tutor{position:relative;z-index:1;display:flex;align-items:center;gap:12px;flex:none;min-width:0;padding:8px;border-radius:var(--w-r-lg);background:var(--w-s1);box-shadow:var(--w-card-edge);color:var(--w-ink);font:var(--wt-body) 14px/1.45 var(--w-sans);word-break:keep-all;text-align:left}
@@ -27,6 +30,17 @@
 .game-tutor:is([data-reaction=success],[data-reaction=combo],[data-reaction=finish],[data-reaction=assisted]) .game-tutor-message small::before{background:var(--w-led-ok);box-shadow:0 0 9px rgba(125,180,90,.6)}
 .game-tutor:is([data-reaction=retry],[data-reaction=obstacle],[data-reaction=timing],[data-reaction=unanswered]) .game-tutor-message small::before{background:var(--w-led-check);box-shadow:0 0 9px rgba(245,196,69,.5)}
 .game-tutor:is([data-reaction=listening],[data-reaction=picked]) .game-tutor-message small::before{background:var(--w-led-info);box-shadow:0 0 9px rgba(91,134,219,.55)}
+/* 놀이 위 튜터 띠: 오리지 않은 정본 컷 + 흰 말풍선(이름 · LED 라벨은 말풍선 위 작은 줄) */
+.game-tutor[data-tutor-game]:not(.home-tutor-companion){align-items:flex-end;gap:10px;padding:4px 2px 0;border-radius:0;background:none;box-shadow:none}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion)>.game-tutor-portrait{width:58px;height:58px;margin-bottom:-2px;border-radius:0;overflow:visible;background:none;box-shadow:none;filter:drop-shadow(0 10px 12px rgba(0,0,0,.42))}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion)>.game-tutor-portrait img{transform:none}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message{position:relative;align-self:center;padding:8px 14px 9px;border-radius:18px 18px 18px 6px;background:#FAFAF9;color:#08090C;box-shadow:0 10px 24px rgba(0,0,0,.3)}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message::before{content:'';position:absolute;left:-5px;bottom:11px;width:12px;height:12px;border-radius:3px;background:inherit;transform:rotate(45deg)}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message small{position:relative;color:rgba(8,9,12,.56)}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message b{color:#08090C}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-line{position:relative;margin-top:1px;min-height:2.9em;font-size:14.5px;font-weight:var(--wt-strong);color:#08090C}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message small::before{background:rgba(8,9,12,.22)}
+.game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-help{align-self:center}
 /* 조작법 · 힌트 · 표현 도움: 1px 선 알약 */
 .game-tutor-help{flex:none;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:0 16px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14px;font-weight:var(--wt-strong);line-height:normal;letter-spacing:-.005em;cursor:pointer;transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
 .game-tutor-help:hover{background:var(--w-s2)}
@@ -36,7 +50,7 @@
 
 /* ── 놀이 판 안 배치: 머리 아래 띠, 그 아래 놀이 ── */
 .game-panel #panel-content.has-game-tutor{display:flex;flex-direction:column;background:var(--w-panel)}
-.game-panel #panel-content.has-game-tutor>.game-tutor{margin:0 10px 10px}
+.game-panel #panel-content.has-game-tutor>.game-tutor{margin:0 12px 10px}
 .game-panel #panel-content.has-game-tutor>.game-frame{flex:1;height:auto;min-height:0;border-radius:var(--w-r-lg) var(--w-r-lg) 0 0}
 .world-play-panel .game-tutor,.world-reward-panel .game-tutor{margin:0 0 20px}
 
@@ -87,14 +101,15 @@
 .game-tutor-sound[aria-pressed=true]::before{background:var(--w-led-ok);box-shadow:0 0 8px rgba(125,180,90,.6)}
 .game-tutor-sound[aria-pressed=true]{color:var(--w-ink)}
 
-/* 반응 몸짓: 회전 없이 작게(멀미 기준) */
-.game-tutor [data-character=mongle][data-reaction=success],.game-tutor [data-character=mongle][data-reaction=combo]{animation:game-tutor-hop .6s var(--w-ease)}
-.game-tutor [data-character=kkamong][data-reaction=success],.game-tutor [data-character=kkamong][data-reaction=combo]{animation:game-tutor-proud .6s ease-in-out}
-.game-tutor [data-character=marin][data-reaction=success] .game-tutor-face,.game-tutor [data-character=marin][data-reaction=combo] .game-tutor-face{animation:game-tutor-lens 1s ease-out}
+/* 반응 몸짓: 정·오답 순간 한 번, 회전 없이 3px 들렸다 내려온다(220ms). 얼굴(정본 컷)은 game-tutor.mjs가 한 번 바꾼다.
+ * 「친구들의 반응」이 꺼져 있거나 움직임 줄이기면 data-reaction이 붙지 않아 가만히 있다. */
+.game-tutor .game-tutor-portrait[data-reaction]{animation:game-tutor-nod .22s var(--w-ease) 1}
 .game-tutor[data-reduced=true] .game-tutor-portrait,.game-tutor[data-reduced=true] .game-tutor-face{animation:none!important}
-@keyframes game-tutor-hop{0%,100%{transform:translateY(0)}35%{transform:translateY(-5px)}70%{transform:translateY(-1px)}}
-@keyframes game-tutor-proud{0%,100%{transform:scale(1)}45%{transform:translateY(-2px) scale(1.04)}}
-@keyframes game-tutor-lens{30%{filter:brightness(1.16)}100%{filter:brightness(1)}}
+@keyframes game-tutor-nod{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+/* 예전 이름(연습 창 등에서 부를 수 있다)도 같은 한 번짜리로 */
+@keyframes game-tutor-hop{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+@keyframes game-tutor-proud{0%,100%{transform:none}50%{transform:translateY(-3px)}}
+@keyframes game-tutor-lens{0%,100%{filter:none}50%{filter:brightness(1.08)}}
 @keyframes game-tutor-sheet{from{opacity:.5;transform:translateY(18px)}to{opacity:1;transform:none}}
 
 /* ── 휴대폰 세로: 안내 창은 아래에서 올라오는 판 ── */
@@ -103,6 +118,9 @@
 }
 @media(max-width:359px){
  .game-tutor{gap:10px;padding:7px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion){gap:8px;padding:4px 0 0}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion)>.game-tutor-portrait{width:48px;height:48px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message{padding:7px 11px 8px}
  .game-tutor-line{font-size:13px}
  .game-tutor-help{padding:0 13px}
  .game-tutor-guide{padding-left:16px;padding-right:16px}
@@ -122,7 +140,12 @@
  .game-tutor:not(.home-tutor-companion) .game-tutor-message small::before{margin:0 8px 0 1px}
  .game-tutor:not(.home-tutor-companion) .game-tutor-message small b{font-size:13px}
  .game-tutor-line{-webkit-line-clamp:1;min-height:0;margin:0;font-size:14px}
- .game-tutor-help{min-height:40px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion){align-items:center;padding:0}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion)>.game-tutor-portrait{width:40px;height:40px;margin:0}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message{padding:6px 12px 7px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message::before{bottom:auto;top:calc(50% - 6px)}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-line{min-height:0;font-size:14px}
+ .game-tutor-help{min-height:44px}
  .game-tutor-guide{padding:16px 22px}
  .game-tutor-guide-top h3{margin:4px 0 10px;font-size:20px}
  .game-tutor-guide-top .game-tutor-portrait,#home-tutor .game-tutor-guide-top .game-tutor-portrait{width:52px;height:52px}
@@ -147,6 +170,14 @@
  .game-tutor-guide-footer{grid-area:footer;align-content:end;margin:0;gap:6px}
  .game-tutor-sound,.game-tutor-practice{min-height:44px;padding:0 10px;font-size:13px}
  .game-tutor-guide-footer>small{font-size:13px;line-height:1.45}
+}
+/* PC 넓은 놀이 판: 튜터를 더 크게 세우고 말풍선은 한 줄로 읽히게 */
+@media(min-width:1100px) and (min-height:600px){
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion)>.game-tutor-portrait{width:72px;height:72px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-message{flex:0 1 auto;max-width:min(760px,100%);padding:10px 18px 11px}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-line{min-height:0;font-size:15.5px;-webkit-line-clamp:2}
+ .game-tutor[data-tutor-game]:not(.home-tutor-companion) .game-tutor-help{margin-left:auto}
+ .game-panel #panel-content.has-game-tutor>.game-tutor{margin:0 18px 12px}
 }
 @media(prefers-reduced-motion:reduce){.game-tutor *,.game-tutor-guide,.game-tutor-guide *{animation:none!important;transition:none!important}}
 .game-tutor-guide[data-reduced=true],.game-tutor-guide[data-reduced=true] *{animation:none!important}

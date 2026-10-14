@@ -6016,7 +6016,7 @@ var require_topik_i2 = __commonJS({
     "use strict";
     var words = require_topik_i_words();
     var WORD_PREFIX = "ko.word.";
-    var wordNodes = (rows) => rows.map(([id, word, pos, band]) => ({
+    var wordNodes = (rows2) => rows2.map(([id, word, pos, band]) => ({
       id: `${WORD_PREFIX}${id}`,
       kind: "word",
       label_ko: word,
@@ -6212,8 +6212,8 @@ var require_trail2 = __commonJS({
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
-        const meet = (p, at, verdict) => {
-          if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict });
+        const meet = (p, at, verdict2) => {
+          if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
         visible.forEach((event, index) => {
@@ -6286,7 +6286,7 @@ var require_trail2 = __commonJS({
       function createIndex({ scope, prior = null }) {
         const scopeId = key(scope);
         const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), deliveries = /* @__PURE__ */ new Map(), audioCover = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
-        const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
+        const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows2 = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
         for (const [k, bits] of Object.entries(prior?.keys || {})) {
           if (bits & BITS.attempt) {
             seen.add(`attempt|${k}`);
@@ -6362,7 +6362,7 @@ var require_trail2 = __commonJS({
             seen.add(k);
           }
           for (const target of [event.id, p.id, p.decisionId]) cover(target, row);
-          rows.set(event.id, row);
+          rows2.set(event.id, row);
           return row;
         }
         return {
@@ -6370,7 +6370,7 @@ var require_trail2 = __commonJS({
           get exact() {
             return exact2;
           },
-          attempt: (eventId) => rows.get(eventId) || null,
+          attempt: (eventId) => rows2.get(eventId) || null,
           met: (itemKey, familyKey) => seen.has(`item:${itemKey}`) || familyKey != null && seen.has(`family:${familyKey}`)
         };
       }
@@ -6615,7 +6615,7 @@ var require_engine2 = __commonJS({
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-        const rows = [];
+        const rows2 = [];
         let sorted = true, last = null;
         for (const e of events) {
           const known = admitted.get(e);
@@ -6623,13 +6623,13 @@ var require_engine2 = __commonJS({
           const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
           if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
           if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
-          rows.push({ e, at: row.at, recordedAt: row.recordedAt });
+          rows2.push({ e, at: row.at, recordedAt: row.recordedAt });
           last = row;
         }
-        if (!sorted) rows.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
-        const ordered = rows.map((row) => row.e);
+        if (!sorted) rows2.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
+        const ordered = rows2.map((row) => row.e);
         const excluded = new Set(ordered.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
-        const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
+        const context2 = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
         for (const event of ordered) {
           if (event.type === "context.set") latest[event.field] = event;
           if (event.type === "signal.observed") latestSignal[`${event.kind}:${event.key}`] = event;
@@ -6641,7 +6641,7 @@ var require_engine2 = __commonJS({
             expired.push(field);
             continue;
           }
-          context[field] = event.value;
+          context2[field] = event.value;
           evidence[field] = event.id;
           lines.push({ key: `declared:${field}`, kind: "declared", source: "declared", value: event.value, at: event.at, until: event.until || null, evidence: [event.id], status: "confirmed", usable: true });
         }
@@ -6695,7 +6695,7 @@ var require_engine2 = __commonJS({
           scope: copy3(scope),
           asOf,
           recordedAsOf,
-          context,
+          context: context2,
           evidence,
           expired,
           feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
@@ -7121,10 +7121,10 @@ var require_vellum = __commonJS({
     var SUPPORTS = ["choose", "step", "independent"];
     var VERDICTS = ["correct", "incorrect", "unassessed", "skipped"];
     var STUCK = Object.freeze({ afterMs: 4e4, misses: 2 });
-    function reviewOpen({ verdict, support = "choose", retried = false, hasCue = false, unsure = false }) {
-      if (!VERDICTS.includes(verdict) || !SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid review state");
-      if (verdict === "correct") return unsure ? "answer" : null;
-      if (verdict === "unassessed" || retried || support === "choose" || !hasCue) return "answer";
+    function reviewOpen({ verdict: verdict2, support = "choose", retried = false, hasCue = false, unsure = false }) {
+      if (!VERDICTS.includes(verdict2) || !SUPPORTS.includes(support)) throw new TypeError("Vellum: invalid review state");
+      if (verdict2 === "correct") return unsure ? "answer" : null;
+      if (verdict2 === "unassessed" || retried || support === "choose" || !hasCue) return "answer";
       return "cue";
     }
     function offerCue({ support = "choose", elapsedMs = 0, misses = 0, offered = false, declined = false, hasCue = false, stuck = STUCK }) {
@@ -7201,15 +7201,15 @@ var require_temper = __commonJS({
         ] : null
       ]);
       function summaries(input) {
-        const rows = Array.isArray(input) ? input : [input];
+        const rows2 = Array.isArray(input) ? input : [input];
         const seen = /* @__PURE__ */ new Set();
-        for (const row of rows) {
+        for (const row of rows2) {
           if (!row || row.version !== TRAIL || !row.scope || !Array.isArray(row.attempts) || !Array.isArray(row.presentations) || !Array.isArray(row.help)) throw new TypeError("Temper: use a Trail practice summary");
           const key = scopeKey(row.scope);
           if (seen.has(key)) throw new TypeError("Temper: duplicate scope would double-count evidence");
           seen.add(key);
         }
-        return rows;
+        return rows2;
       }
       const bucket = () => ({ evaluated: 0, correct: 0, incorrect: 0, accuracy: null });
       const close = (b) => {
@@ -7218,9 +7218,9 @@ var require_temper = __commonJS({
       };
       const counted = (a) => a.independent === true && !a.exclusionReason && a.assisted === false && a.exposure === "new" && ["correct", "incorrect"].includes(a.verdict) && (!a.measure || !a.measure.confounded && (!a.measure.audioRequired || a.audio === "completed"));
       function measure(input) {
-        const rows = summaries(input);
+        const rows2 = summaries(input);
         const result = {
-          scopes: rows.length,
+          scopes: rows2.length,
           presented: 0,
           attempts: 0,
           independent: bucket(),
@@ -7234,7 +7234,7 @@ var require_temper = __commonJS({
           skipped: 0,
           excludedAttempts: 0
         };
-        for (const row of rows) {
+        for (const row of rows2) {
           result.presented += row.presentations.length;
           result.excludedAttempts += row.excludedAttempts || 0;
           const seen = /* @__PURE__ */ new Set();
@@ -7291,7 +7291,7 @@ var require_temper = __commonJS({
       }
       function compare({ before, after } = {}) {
         const left = summaries(before), right = summaries(after);
-        const tasks = (rows) => new Map(rows.map((row) => [scopeKey(row.scope), row.presentations.map(taskKey).sort()]));
+        const tasks = (rows2) => new Map(rows2.map((row) => [scopeKey(row.scope), row.presentations.map(taskKey).sort()]));
         const l = tasks(left), r = tasks(right), reasons2 = [];
         if (JSON.stringify([...l.keys()].sort()) !== JSON.stringify([...r.keys()].sort())) reasons2.push("scope_mismatch");
         else for (const [scope, set] of l) if (JSON.stringify(set) !== JSON.stringify(r.get(scope))) {
@@ -7319,8 +7319,8 @@ var require_temper = __commonJS({
       }
       const MINIMUM_PER_CELL = 30;
       const label = (value) => typeof value === "string" && /^[a-zA-Z0-9_.+-]{1,40}$/.test(value);
-      function groups({ rows, labels, arms, minimum = MINIMUM_PER_CELL, tolerance = 0 } = {}) {
-        const input = summaries(rows);
+      function groups({ rows: rows2, labels, arms, minimum = MINIMUM_PER_CELL, tolerance = 0 } = {}) {
+        const input = summaries(rows2);
         if (!labels || typeof labels !== "object" || Array.isArray(labels)) throw new TypeError("Temper: labels by scope are required");
         if (!Array.isArray(arms) || arms.length !== 2 || !arms.every(label) || arms[0] === arms[1]) throw new TypeError("Temper: name the baseline and candidate arms");
         if (!Number.isSafeInteger(minimum) || minimum < 1) throw new TypeError("Temper: minimum must be a positive integer");
@@ -7416,11 +7416,11 @@ var require_learning_ledger = __commonJS({
       return kinds.some((kind) => bits & BITS[kind]);
     };
     var helpedAt = (h) => Array.isArray(h) ? h[1] : h;
-    function rows(cell) {
+    function rows2(cell) {
       if (!cell) return { rows: [], unassessed: 0 };
       const iso3 = (ms) => new Date(ms).toISOString();
       return { unassessed: cell.unassessed, rows: [
-        ...cell.ind.map(([eventId, at, verdict, familyKey]) => ({ eventId, at: iso3(at), verdict, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
+        ...cell.ind.map(([eventId, at, verdict2, familyKey]) => ({ eventId, at: iso3(at), verdict: verdict2, independent: true, assisted: false, exclusionReason: null, measure: { familyKey } })),
         ...cell.helped.map((h) => ({ eventId: Array.isArray(h) ? h[0] : null, at: iso3(helpedAt(h)), verdict: "correct", independent: false, assisted: true, exclusionReason: null, measure: { familyKey: null } }))
       ] };
     }
@@ -7545,7 +7545,7 @@ var require_learning_ledger = __commonJS({
       }
       return next;
     }
-    module.exports = { VERSION, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows, cellOf, contentOf, fold, plan, folded, stray, compare, demote };
+    module.exports = { VERSION, BITS, FOLDABLE, empty: empty2, validate: validate2, before, rows: rows2, cellOf, contentOf, fold, plan, folded, stray, compare, demote };
   }
 });
 
@@ -7558,15 +7558,15 @@ var require_learning = __commonJS({
     var { learningReason, activityReason, SUPPORTS } = require_vellum();
     var Ledger = require_learning_ledger();
     var DAY2 = 864e5;
-    function formatEvidence(rows, { now, complete, difficulty, responseFormat, base = null }) {
-      if (base) rows = [...base.rows, ...rows];
+    function formatEvidence(rows2, { now, complete, difficulty, responseFormat, base = null }) {
+      if (base) rows2 = [...base.rows, ...rows2];
       const unique = /* @__PURE__ */ new Map();
-      for (const a of rows) if (complete && a.independent && !unique.has(a.measure.familyKey)) unique.set(a.measure.familyKey, a);
+      for (const a of rows2) if (complete && a.independent && !unique.has(a.measure.familyKey)) unique.set(a.measure.familyKey, a);
       const valid = [...unique.values()].filter((a) => Date.parse(a.at) <= now).sort((a, b) => Date.parse(a.at) - Date.parse(b.at));
       const recent = valid.filter((a) => now - Date.parse(a.at) <= POLICY.recentDays * DAY2).slice(-12);
       const n = recent.length, correct = recent.filter((a) => a.verdict === "correct").length, incorrect = n - correct;
       const lastAt = valid.at(-1)?.at || null;
-      const helped = rows.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY2);
+      const helped = rows2.filter((a) => !a.exclusionReason && a.assisted === true && a.verdict === "correct" && Date.parse(a.at) <= now && now - Date.parse(a.at) <= POLICY.recentDays * DAY2);
       let status = "unseen", priority = 0.65;
       if (lastAt && now - Date.parse(lastAt) > POLICY.reviewDays * DAY2) {
         status = "review";
@@ -7597,7 +7597,7 @@ var require_learning = __commonJS({
         assisted: helped.length,
         evidence: recent.map((a) => a.eventId),
         reasonEvidence: reasonEvidence.map((a) => a.eventId),
-        unassessed: rows.filter((a) => a.verdict === "unassessed" || a.verdict === "skipped").length + (base?.unassessed || 0)
+        unassessed: rows2.filter((a) => a.verdict === "unassessed" || a.verdict === "skipped").length + (base?.unassessed || 0)
       };
     }
     function summarizeLearning({ summary, map, complete = true, prior = null }) {
@@ -7606,11 +7606,11 @@ var require_learning = __commonJS({
         const all = summary.attempts.filter((a) => a.measure?.skillId === node.id);
         const levels = {};
         for (const difficulty of [1, 2, 3]) {
-          const rows = all.filter((a) => a.measure.difficulty === difficulty);
+          const rows2 = all.filter((a) => a.measure.difficulty === difficulty);
           const formats = Object.fromEntries(RESPONSE_FORMATS.map((responseFormat) => {
             const cell = Ledger.cellOf(prior, `${node.id}|${difficulty}|${responseFormat}`);
             return [responseFormat, formatEvidence(
-              rows.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat),
+              rows2.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat),
               { now, complete, difficulty, responseFormat, base: cell ? Ledger.rows(cell) : null }
             )];
           }));
@@ -7796,10 +7796,10 @@ var require_learning = __commonJS({
     }
     var CONTENT = Object.freeze(["word", "grammar_point"]);
     function summarizeConcepts({ summary, map, complete = true, prior = null }) {
-      const now = Date.parse(summary.asOf), rows = /* @__PURE__ */ new Map();
+      const now = Date.parse(summary.asOf), rows2 = /* @__PURE__ */ new Map();
       for (const key of Object.keys(prior?.content || {})) {
         const id = key.slice(0, key.lastIndexOf("|")), node = map.getNode(id);
-        if (node && CONTENT.includes(node.kind) && !rows.has(id)) rows.set(id, { node, list: [] });
+        if (node && CONTENT.includes(node.kind) && !rows2.has(id)) rows2.set(id, { node, list: [] });
       }
       for (const a of summary.attempts) {
         if (!a.measure) continue;
@@ -7807,11 +7807,11 @@ var require_learning = __commonJS({
           if (id === a.measure.skillId) continue;
           const node = map.getNode(id);
           if (!node || !CONTENT.includes(node.kind)) continue;
-          if (!rows.has(id)) rows.set(id, { node, list: [] });
-          rows.get(id).list.push(a);
+          if (!rows2.has(id)) rows2.set(id, { node, list: [] });
+          rows2.get(id).list.push(a);
         }
       }
-      return [...rows.values()].map(({ node, list }) => {
+      return [...rows2.values()].map(({ node, list }) => {
         const formats = {};
         for (const responseFormat of RESPONSE_FORMATS) {
           const own2 = list.filter((a) => (a.measure.responseFormat || "unknown") === responseFormat);
@@ -8449,7 +8449,7 @@ var require_temper_flow = __commonJS({
         let at = Date.parse("2026-10-02T00:00:00.000Z");
         const stamp = () => new Date(at).toISOString();
         let flow = Flow.start({ spec, now: stamp(), declared: adaptive ? {} : { mode: "fixed" } });
-        const rows = [];
+        const rows2 = [];
         let offered = -Infinity;
         for (let step = 1; step <= steps; step += 1) {
           if (self.pause && step === self.pause.at) {
@@ -8474,52 +8474,52 @@ var require_temper_flow = __commonJS({
             offered = step;
             if (rng() < (self.accepts ?? 0.6)) change = flow.acceptLessHelp();
           }
-          rows.push({ step, outcome, assisted, truth: chance.success, indices: before.indices, change });
+          rows2.push({ step, outcome, assisted, truth: chance.success, indices: before.indices, change });
           if (success && !assisted) {
             self.content += self.growth;
             self.speed += self.growth / 2;
           }
           at += 2e4;
         }
-        return { rows, final: flow.settings() };
+        return { rows: rows2, final: flow.settings() };
       }
-      function metrics(spec, rows, target) {
-        const half = rows.slice(Math.floor(rows.length / 2));
+      function metrics(spec, rows2, target) {
+        const half = rows2.slice(Math.floor(rows2.length / 2));
         const off = (row) => Math.abs(row.truth - target);
         const adjustable = spec.knobs.filter((knob) => knob.follows !== "declared");
         const dimensions = [adjustable.filter((k) => k.kind !== "pace"), adjustable.filter((k) => k.kind === "pace")].filter((list) => list.length);
         const atFloor = (row) => dimensions.some((list) => list.every((k) => row.indices[k.id] === 0));
         const runLength = (test) => {
           let best = 0, current = 0;
-          for (const row of rows) {
+          for (const row of rows2) {
             current = test(row) ? current + 1 : 0;
             best = Math.max(best, current);
           }
           return best;
         };
         let settleAt = null;
-        for (let i = 0; i + 5 < rows.length && settleAt === null; i += 1) if (rows.slice(i, i + 6).every((row) => off(row) <= 0.2)) settleAt = rows[i].step;
-        const changes = rows.map((row) => row.change).filter(Boolean);
+        for (let i = 0; i + 5 < rows2.length && settleAt === null; i += 1) if (rows2.slice(i, i + 6).every((row) => off(row) <= 0.2)) settleAt = rows2[i].step;
+        const changes = rows2.map((row) => row.change).filter(Boolean);
         let bounces = 0, undone = 0;
-        for (let i = 2; i < rows.length; i += 1) {
-          const a = rows[i - 2].change, b = rows[i].change || rows[i - 1].change;
+        for (let i = 2; i < rows2.length; i += 1) {
+          const a = rows2[i - 2].change, b = rows2[i].change || rows2[i - 1].change;
           if (a && b && a !== b && a.knob === b.knob && a.direction === -b.direction) bounces += 1;
         }
-        rows.forEach((row, i) => {
+        rows2.forEach((row, i) => {
           const c = row.change;
-          if (c && c.direction < 0 && row.outcome === "success" && rows.slice(Math.max(0, i - 2), i).some((r) => r.change?.knob === c.knob && r.change.direction > 0)) undone += 1;
+          if (c && c.direction < 0 && row.outcome === "success" && rows2.slice(Math.max(0, i - 2), i).some((r) => r.change?.knob === c.knob && r.change.direction > 0)) undone += 1;
         });
         return {
           inBand: Math.round(half.filter((row) => off(row) <= 0.15).length / half.length * 100) / 100,
           meanError: Math.round(half.reduce((sum, row) => sum + off(row), 0) / half.length * 1e3) / 1e3,
-          successRate: Math.round(rows.filter((row) => row.outcome === "success").length / rows.length * 100) / 100,
-          timeouts: rows.filter((row) => row.outcome === "timeout").length,
+          successRate: Math.round(rows2.filter((row) => row.outcome === "success").length / rows2.length * 100) / 100,
+          timeouts: rows2.filter((row) => row.outcome === "timeout").length,
           settleAt,
           changes: changes.length,
           bounces,
           undone,
           maxJump: changes.reduce((max, c) => Math.max(max, Math.abs(c.to - c.from)), 0),
-          helpRaises: rows.filter((row) => row.assisted && row.outcome === "success" && row.change?.direction > 0).length,
+          helpRaises: rows2.filter((row) => row.assisted && row.outcome === "success" && row.change?.direction > 0).length,
           floorTooHard: runLength((row) => atFloor(row) && row.truth < target - 0.15),
           ceilingTooEasy: runLength((row) => adjustable.every((k) => row.indices[k.id] === k.values.length - 1) && row.truth > target + 0.15)
         };
@@ -9580,8 +9580,8 @@ var require_game_learning = __commonJS({
         const known = provenance();
         if (!known.index.exact) return profileOf(view()).skills.find((s) => s.id === measure.skillId).levels[measure.difficulty].formats[measure.responseFormat];
         const key2 = `${measure.skillId}|${measure.difficulty}|${measure.responseFormat}`, cell = Ledger.cellOf(ledger, key2);
-        const rows = (known.buckets.get(key2) || []).filter((row) => !row.omitted);
-        return Learning.formatEvidence(rows, {
+        const rows2 = (known.buckets.get(key2) || []).filter((row) => !row.omitted);
+        return Learning.formatEvidence(rows2, {
           now: Date.parse(monotonicClock()),
           complete: complete && readable && writable,
           difficulty: measure.difficulty,
@@ -9770,9 +9770,9 @@ var require_game_learning = __commonJS({
             target: { verdict: target.verdict, assisted: target.assisted, independent: target.independent }
           };
         },
-        present(item, context = {}) {
+        present(item, context2 = {}) {
           refresh();
-          if (!context || typeof context !== "object" || Object.keys(context).some((k) => k !== "flow") || context.flow != null && (typeof context.flow !== "object" || Array.isArray(context.flow))) throw new TypeError("Atlas: invalid presentation context");
+          if (!context2 || typeof context2 !== "object" || Object.keys(context2).some((k) => k !== "flow") || context2.flow != null && (typeof context2.flow !== "object" || Array.isArray(context2.flow))) throw new TypeError("Atlas: invalid presentation context");
           const node = map.getNode(item?.skillId);
           if (!node || node.domain !== item.modality || !identifier(item.id) || !identifier(item.itemKey) || !identifier(item.familyKey || item.itemKey) || ![1, 2, 3].includes(item.difficulty) || !Learning.RESPONSE_FORMATS.includes(item.responseFormat ?? "unknown")) throw new TypeError("Atlas: invalid measured item");
           const measure = {
@@ -9798,7 +9798,7 @@ var require_game_learning = __commonJS({
               state: basis.status,
               evidence: basis.evidence
             },
-            ...context.flow ? { flow: JSON.parse(JSON.stringify(context.flow)) } : {}
+            ...context2.flow ? { flow: JSON.parse(JSON.stringify(context2.flow)) } : {}
           }]);
           const content = item.conceptIds ?? [];
           if (!Array.isArray(content) || content.length > 31 || new Set(content).size !== content.length || content.some((id) => !identifier(id) || !Learning.CONTENT.includes(map.getNode(id)?.kind))) throw new TypeError("Atlas: invalid measured item");
@@ -9980,8 +9980,8 @@ var require_ask = __commonJS({
         }
         return canonical(a) === canonical(b) ? 0 : 1;
       }
-      function decisionValue(evaluate, context) {
-        const value = evaluate(context);
+      function decisionValue(evaluate, context2) {
+        const value = evaluate(context2);
         if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some((key) => !["utility", "loss"].includes(key)) || !owns(value, "utility") && !owns(value, "loss") || owns(value, "utility") && !finite(value.utility) || owns(value, "loss") && (!finite(value.loss) || value.loss < 0)) throw new TypeError("Ask: evaluate must return finite utility and/or nonnegative loss");
         const result = (value.utility ?? 0) - (value.loss ?? 0);
         if (!finite(result)) throw new TypeError("Ask: nonfinite decision value");
@@ -10015,8 +10015,8 @@ var require_ask = __commonJS({
             outcomes[option.id] = decided;
             impact += chances[index] * difference(current, decided);
             if (valued && chances[index] > 0) {
-              const context = { answers: scenario, question: q, option };
-              const gain = decisionValue(evaluate, { ...context, decision: decided }) - decisionValue(evaluate, { ...context, decision: current });
+              const context2 = { answers: scenario, question: q, option };
+              const gain = decisionValue(evaluate, { ...context2, decision: decided }) - decisionValue(evaluate, { ...context2, decision: current });
               if (!finite(gain)) throw new TypeError("Ask: nonfinite decision gain");
               expectedGain += chances[index] * gain;
             }
@@ -10143,19 +10143,19 @@ var require_game_browser = __commonJS({
 var choices = (texts) => texts.map((text, index) => ({ id: ["a", "b", "c"][index], text }));
 var scene = (speaker, text) => ({ speaker, text });
 var expression = (id, korean, meaning) => ({ id, korean, meaning });
-var transfer = (prompt, context, texts, answerId, explanation) => ({
+var transfer = (prompt, context2, texts, answerId, explanation) => ({
   prompt,
-  context,
+  context: context2,
   choices: choices(texts),
   answerId,
   explanation
 });
-var question = (id, skillId, expressionId, prompt, context, texts, answerId, explanation, review) => ({
+var question = (id, skillId, expressionId, prompt, context2, texts, answerId, explanation, review) => ({
   id,
   skillId,
   expressionId,
   prompt,
-  context,
+  context: context2,
   choices: choices(texts),
   answerId,
   explanation,
@@ -10969,8 +10969,8 @@ var require_trail = __commonJS2({
           }
         });
         const presentations = [], help = [], attempts = [], met = /* @__PURE__ */ new Map(), audioByPresentation = /* @__PURE__ */ new Map();
-        const meet = (p, at, verdict) => {
-          if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict });
+        const meet = (p, at, verdict2) => {
+          if (!met.has(p.itemKey)) met.set(p.itemKey, { itemKey: p.itemKey, conceptIds: [...p.conceptIds], at, verdict: verdict2 });
         };
         let excludedAttempts = 0;
         visible.forEach((event, index) => {
@@ -11043,7 +11043,7 @@ var require_trail = __commonJS2({
       function createIndex({ scope, prior = null }) {
         const scopeId = key(scope);
         const presentations = /* @__PURE__ */ new Map(), audio = /* @__PURE__ */ new Map(), deliveries = /* @__PURE__ */ new Map(), audioCover = /* @__PURE__ */ new Map(), arms = /* @__PURE__ */ new Map(), excluded = /* @__PURE__ */ new Set();
-        const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
+        const helped = /* @__PURE__ */ new Set(), seen = /* @__PURE__ */ new Set(), rows2 = /* @__PURE__ */ new Map(), covering = /* @__PURE__ */ new Map();
         for (const [k, bits] of Object.entries(prior?.keys || {})) {
           if (bits & BITS.attempt) {
             seen.add(`attempt|${k}`);
@@ -11119,7 +11119,7 @@ var require_trail = __commonJS2({
             seen.add(k);
           }
           for (const target of [event.id, p.id, p.decisionId]) cover(target, row);
-          rows.set(event.id, row);
+          rows2.set(event.id, row);
           return row;
         }
         return {
@@ -11127,7 +11127,7 @@ var require_trail = __commonJS2({
           get exact() {
             return exact2;
           },
-          attempt: (eventId) => rows.get(eventId) || null,
+          attempt: (eventId) => rows2.get(eventId) || null,
           met: (itemKey, familyKey) => seen.has(`item:${itemKey}`) || familyKey != null && seen.has(`family:${familyKey}`)
         };
       }
@@ -11370,7 +11370,7 @@ var require_engine = __commonJS2({
       }
       function read(events, scope, asOf, recordedAsOf = asOf) {
         const key = scopeKey(scope), cutoff = ms(asOf), recordedCutoff = ms(recordedAsOf);
-        const rows = [];
+        const rows2 = [];
         let sorted = true, last = null;
         for (const e of events) {
           const known = admitted.get(e);
@@ -11378,13 +11378,13 @@ var require_engine = __commonJS2({
           const row = known || { key: scopeKey(e.scope), at: ms(e.at), recordedAt: ms(e.recordedAt) };
           if (row.key !== key || row.at > cutoff || row.recordedAt > recordedCutoff) continue;
           if (last && (row.at < last.at || row.at === last.at && row.recordedAt < last.recordedAt)) sorted = false;
-          rows.push({ e, at: row.at, recordedAt: row.recordedAt });
+          rows2.push({ e, at: row.at, recordedAt: row.recordedAt });
           last = row;
         }
-        if (!sorted) rows.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
-        const ordered = rows.map((row) => row.e);
+        if (!sorted) rows2.sort((a, b) => a.at - b.at || a.recordedAt - b.recordedAt);
+        const ordered = rows2.map((row) => row.e);
         const excluded = new Set(ordered.filter((e) => e.type === "record.excluded").map((e) => e.targetId));
-        const context = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
+        const context2 = {}, evidence = {}, expired = [], latest = {}, latestSignal = {}, latestAnswer = {}, lines = [];
         for (const event of ordered) {
           if (event.type === "context.set") latest[event.field] = event;
           if (event.type === "signal.observed") latestSignal[`${event.kind}:${event.key}`] = event;
@@ -11396,7 +11396,7 @@ var require_engine = __commonJS2({
             expired.push(field);
             continue;
           }
-          context[field] = event.value;
+          context2[field] = event.value;
           evidence[field] = event.id;
           lines.push({ key: `declared:${field}`, kind: "declared", source: "declared", value: event.value, at: event.at, until: event.until || null, evidence: [event.id], status: "confirmed", usable: true });
         }
@@ -11450,7 +11450,7 @@ var require_engine = __commonJS2({
           scope: copy3(scope),
           asOf,
           recordedAsOf,
-          context,
+          context: context2,
           evidence,
           expired,
           feedback: [...responses.values()].filter((e) => !excluded.has(e.id)),
@@ -11832,7 +11832,7 @@ var require_domain = __commonJS2({
       function project(contract, scope, observations, at) {
         const fields = validateContract(contract), owner = scopeKey(scope), cutoff = time3(at);
         if (!Array.isArray(observations) || observations.length > 1e4) fail2("invalid observations");
-        const byId = /* @__PURE__ */ new Map(), rows = [], replaced = /* @__PURE__ */ new Set();
+        const byId = /* @__PURE__ */ new Map(), rows2 = [], replaced = /* @__PURE__ */ new Set();
         for (const row of observations) {
           if (!keys(row, ["id", "scope", "contract", "field", "value", "source", "independentKey", "at", "recordedAt", "until", "refs", "quality", "supersedes"]) || !token(row.id) || scopeKey(row.scope) !== owner || !fields.has(row.field) || !SOURCES.includes(row.source)) fail2("invalid or foreign observation");
           if (!keys(row.contract, ["id", "version", "purpose"]) || row.contract.id !== contract.id || row.contract.version !== contract.version || row.contract.purpose !== contract.purpose) fail2("observation belongs to another contract or purpose");
@@ -11853,9 +11853,9 @@ var require_domain = __commonJS2({
             continue;
           }
           byId.set(row.id, row);
-          if (happened <= cutoff && recorded <= cutoff) rows.push(row);
+          if (happened <= cutoff && recorded <= cutoff) rows2.push(row);
         }
-        for (const row of rows) {
+        for (const row of rows2) {
           for (const ref of row.source === "inferred" ? row.refs : []) {
             const source = byId.get(ref);
             if (!source || source.id === row.id || source.source === "inferred" || time3(source.recordedAt ?? source.at) > time3(row.recordedAt ?? row.at) || time3(source.at) > time3(row.at)) fail2("invalid proposal source");
@@ -11867,7 +11867,7 @@ var require_domain = __commonJS2({
           }
         }
         const checked = /* @__PURE__ */ new Set();
-        for (const start of rows) {
+        for (const start of rows2) {
           let row = start;
           const path = /* @__PURE__ */ new Set();
           while (row && !checked.has(row.id)) {
@@ -11877,9 +11877,9 @@ var require_domain = __commonJS2({
           }
           for (const id of path) checked.add(id);
         }
-        rows.sort((a, b) => time3(a.at) - time3(b.at) || time3(a.recordedAt ?? a.at) - time3(b.recordedAt ?? b.at));
+        rows2.sort((a, b) => time3(a.at) - time3(b.at) || time3(a.recordedAt ?? a.at) - time3(b.recordedAt ?? b.at));
         const byField = /* @__PURE__ */ new Map(), orderedKeys = /* @__PURE__ */ new Map(), latestDeclarations = /* @__PURE__ */ new Map(), latestIndependent = /* @__PURE__ */ new Map();
-        for (const row of rows) if (!replaced.has(row.id)) {
+        for (const row of rows2) if (!replaced.has(row.id)) {
           if (row.source !== "inferred") {
             const key = canonical([row.field, row.source, row.source === "observed" ? row.independentKey : "", time3(row.at), time3(row.recordedAt ?? row.at)]);
             const previous = orderedKeys.get(key);
@@ -12455,9 +12455,9 @@ var require_personalization = __commonJS2({
           }
           return { values, provenance, ...expired2.length ? { expired: expired2 } : {} };
         };
-        const baseline = readLayer(ongoing), context = readLayer(once.get(encounterId) || []);
-        const effective = { values: { ...baseline.values, ...context.values }, provenance: { ...baseline.provenance, ...context.provenance } };
-        const expired = [...baseline.expired || [], ...context.expired || []];
+        const baseline = readLayer(ongoing), context2 = readLayer(once.get(encounterId) || []);
+        const effective = { values: { ...baseline.values, ...context2.values }, provenance: { ...baseline.provenance, ...context2.provenance } };
+        const expired = [...baseline.expired || [], ...context2.expired || []];
         if (expired.length) effective.expired = expired;
         const projection = {
           version: PREFERENCE_VERSION,
@@ -12475,7 +12475,7 @@ var require_personalization = __commonJS2({
         return { projection, layers: {
           version: "core-preference-layers-1",
           baseline,
-          context: { encounterId, ...context, closed: closed.has(encounterId) },
+          context: { encounterId, ...context2, closed: closed.has(encounterId) },
           effective: projection
         }, events: unique };
       }
@@ -13129,36 +13129,48 @@ var drinkNames = { cold: "\uCC28\uAC00\uC6B4 \uC8FC\uC2A4", warm: "\uB530\uB73B\
 function cafeDrink(kind, count = 1) {
   return kind ? `<span class="cafe-cups" aria-label="${esc(drinkNames[kind])} ${count}\uC794">${Array.from({ length: count }, () => `<span class="cafe-drink cafe-drink-${kind}" aria-hidden="true">${kind === "coldtea" ? '<span class="cafe-ice"></span>' : ""}</span>`).join("")}</span>` : "";
 }
-var actions = (text, attribute, extra = "") => `<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text} <span aria-hidden="true">\u2192</span></button>${extra}<button class="quiet-button" data-life-pause>\uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`;
+function cafeSpeechLabel({ available = true, phase = "idle", heard = false } = {}) {
+  return !available ? "\uC18C\uB9AC \uB2E4\uC2DC \uC900\uBE44" : phase === "playing" ? "\uBA48\uCD94\uAE30" : phase === "paused" ? "\uC774\uC5B4 \uB4E3\uAE30" : heard ? "\uB2E4\uC2DC \uB4E3\uAE30" : "\uB4E3\uAE30";
+}
+var two = (n) => String(n).padStart(2, "0");
+var actions = (text, attribute, extra = "") => `<div class="life-actions cafe-actions"><button class="felt-button" ${attribute}>${text} <span aria-hidden="true">\u2192</span></button>${extra}<button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
 var cast = (photo) => `<div class="cafe-friends">${["mongle", "kkamong", "marine"].map((id) => photo(id)).join("")}</div>`;
-var speakerName = (id) => ({ mongle: "\uBABD\uAE00", kkamong: "\uAE4C\uBABD", marine: "\uB9C8\uB9B0", narrator: "\uC791\uC740 \uC774\uC57C\uAE30" })[id] || "\uCE5C\uAD6C";
+var speakerName = (id) => ({ mongle: "\uBABD\uAE00", kkamong: "\uAE4C\uBABD", marine: "\uB9C8\uB9B0", narrator: "\uC774\uC57C\uAE30" })[id] || "\uCE5C\uAD6C";
 var progress = (done, total) => `<span class="life-progress" aria-hidden="true"><i style="width:${Math.round(Math.max(0, Math.min(1, done / total)) * 100)}%"></i></span>`;
+function sceneMarkup(state, receipt, photo, message, kind = "counter") {
+  return `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" aria-label="${kind === "table" ? "\uCE5C\uAD6C\uC640 \uC549\uC740 \uC790\uB9AC" : "\uCE74\uD398 \uCE74\uC6B4\uD130"}"><div class="cafe-place-label">\uAD6C\uB984 \uD55C \uC794 <span>\uB3D9\uB124 \uCE74\uD398</span></div>${cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink || "empty"}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink, receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
+}
 function cafeMarkup(state, { photo, print = () => "", helped = false, firstAnswer = null, retryButton = () => "", lessonId = CAFE_LESSON_ID, speechAvailable = false, speechPhase = "idle" } = {}) {
   const visit = cafeVisitById(lessonId), receipt = cafeReceipt(state, lessonId), step = visit.steps[state.step];
-  const receiptHtml = `<div class="cafe-ticket"><small>\uB098\uC758 \uC8FC\uBB38\uD45C</small><strong>${esc(receipt.label)}</strong><span>${esc(receipt.place)}</span></div>`;
-  const scene2 = (message, kind = "counter") => `<section class="cafe-scene cafe-scene-${kind}" data-cafe-seat="${state.seat}" aria-label="${kind === "table" ? "\uCE5C\uAD6C\uC640 \uC549\uC740 \uC790\uB9AC" : "\uCE74\uD398 \uC8FC\uBB38\uB300"}"><div class="cafe-place-label">\uAD6C\uB984 \uD55C \uC794 <span>\uB3D9\uB124 \uCE74\uD398</span></div>${cast(photo)}<div class="cafe-tray" data-cafe-drink="${receipt.drink || "empty"}" data-cafe-count="${receipt.count}" data-cafe-received="${receipt.received}">${cafeDrink(receipt.drink, receipt.count)}</div><p class="cafe-scene-caption">${esc(message)}</p></section>`;
-  if (state.phase === "welcome") return `<div class="cafe-welcome cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}">${scene2(visit.caption)}<div class="cafe-welcome-copy"><small>${visit.number}\uBC88\uC9F8 \uBC29\uBB38 \xB7 \uCE74\uD398\uC5D0\uC11C \uBCF4\uB0B4\uB294 \uC791\uC740 \uD558\uB8E8</small><h3>${esc(visit.title)}</h3><p>${esc(visit.description)}</p>${lessonId !== CAFE_LESSON_ID ? `<div class="cafe-opening-lines">${lessonById(lessonId).scenes.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}${speechAvailable ? `<fieldset class="cafe-input-modes"><legend>\uC5B4\uB5BB\uAC8C \uC8FC\uBB38\uD574 \uBCFC\uAE4C\uC694?</legend><button class="plain-button" data-life-cafe-mode="listen" aria-pressed="${state.listen?.mode === "listen"}">\uB4E3\uACE0 \uC8FC\uBB38\uD558\uAE30</button><button class="plain-button" data-life-cafe-mode="read" aria-pressed="${state.listen?.mode !== "listen"}">\uC77D\uACE0 \uC8FC\uBB38\uD558\uAE30</button></fieldset>` : ""}<p class="cafe-soft-note">\uC11C\uB450\uB974\uC9C0 \uC54A\uC544\uB3C4 \uAD1C\uCC2E\uC544\uC694. \uC9C1\uC6D0\uACFC \uB2E4\uC2DC \uD655\uC778\uD560 \uC218 \uC788\uC5B4\uC694.</p></div></div>${actions("\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30", "data-life-cafe-next")}`;
-  if (state.phase === "break") return `<div class="cafe-break cafe-focus" tabindex="-1">${scene2(`${CAFE_SEATS[state.seat]}\uC5D0 \uC8FC\uC2A4 \uB450 \uC794\uC744 \uB193\uC558\uC5B4\uC694.`, "table")}<div class="cafe-break-copy"><small>\uC7A0\uAE50, \uC6B0\uB9AC \uC790\uB9AC</small><h3>\uB124 \uCEF5 \uD558\uB098, \uB0B4 \uCEF5 \uD558\uB098.</h3><p><b>\uBABD\uAE00</b> \u201C\uC6B0\uC640! \uAC19\uC774 \uB9C8\uC2DC\uB2C8\uAE4C \uB354 \uC2DC\uC6D0\uD574!\u201D</p><p><b>\uAE4C\uBABD</b> \u201C\uC774 \uBAB8 \uC790\uB9AC\uB3C4 \uC788\uC9C0. \u2026\uC5EC\uAE30 \uC7A0\uAE50 \uC549\uC744\uAC8C.\u201D</p><p><b>\uB9C8\uB9B0</b> \u201C\uD559\uAD50 \uAC08 \uC2DC\uAC04 \uD655\uC778. \uB530\uB73B\uD55C \uCC28, \uD55C \uC794 \uD544\uC694.\u201D</p>${receiptHtml}</div></div>${actions("\uB9C8\uB9B0\uC758 \uCC28 \uD3EC\uC7A5\uD558\uAE30", "data-life-cafe-next")}`;
+  const ticket = `<div class="cafe-ticket"><small>\uC8FC\uBB38\uD45C</small><strong>${esc(receipt.label)}</strong><span>${esc(receipt.place)}</span></div>`;
+  if (state.phase === "welcome") return `<div class="cafe-welcome cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}">${sceneMarkup(state, receipt, photo, visit.caption)}<div class="cafe-welcome-copy"><p class="life-section-label">VISIT ${two(visit.number)}</p><h3>${esc(visit.title)}</h3><p>${esc(visit.description)}</p>${lessonId !== CAFE_LESSON_ID ? `<div class="cafe-opening-lines">${lessonById(lessonId).scenes.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}${speechAvailable ? `<fieldset class="cafe-input-modes"><legend>\uC8FC\uBB38 \uBC29\uBC95</legend><button class="plain-button" data-life-cafe-mode="listen" aria-pressed="${state.listen?.mode === "listen"}">\uB4E3\uACE0 \uC8FC\uBB38\uD558\uAE30</button><button class="plain-button" data-life-cafe-mode="read" aria-pressed="${state.listen?.mode !== "listen"}">\uC77D\uACE0 \uC8FC\uBB38\uD558\uAE30</button></fieldset>` : ""}<p class="cafe-soft-note">\uCC9C\uCC9C\uD788 \uD574\uB3C4 \uB3FC\uC694. \uC9C1\uC6D0\uC774 \uC8FC\uBB38\uC744 \uD55C \uBC88 \uB354 \uD655\uC778\uD574 \uC918\uC694.</p></div></div>${actions("\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30", "data-life-cafe-next")}`;
+  if (state.phase === "break") return `<div class="cafe-break cafe-focus" tabindex="-1">${sceneMarkup(state, receipt, photo, `${CAFE_SEATS[state.seat]}\uC5D0 \uC8FC\uC2A4 \uB450 \uC794\uC744 \uB193\uC558\uC5B4\uC694.`, "table")}<div class="cafe-break-copy"><p class="life-section-label">BREAK</p><h3>\uB124 \uCEF5 \uD558\uB098, \uB0B4 \uCEF5 \uD558\uB098.</h3><p><b>\uBABD\uAE00</b> \u201C\uC6B0\uC640! \uAC19\uC774 \uB9C8\uC2DC\uB2C8\uAE4C \uB354 \uC2DC\uC6D0\uD574!\u201D</p><p><b>\uAE4C\uBABD</b> \u201C\uC774 \uBAB8 \uC790\uB9AC\uB3C4 \uC788\uC9C0. \u2026\uC5EC\uAE30 \uC7A0\uAE50 \uC549\uC744\uAC8C.\u201D</p><p><b>\uB9C8\uB9B0</b> \u201C\uD559\uAD50 \uAC08 \uC2DC\uAC04 \uD655\uC778. \uB530\uB73B\uD55C \uCC28, \uD55C \uC794 \uD544\uC694.\u201D</p>${ticket}</div></div>${actions("\uB9C8\uB9B0\uC758 \uCC28 \uD3EC\uC7A5\uD558\uAE30", "data-life-cafe-next")}`;
   const q = cafeQuestion(state.step, lessonId), selection = state.choiceId ? step.options[state.choiceId] : null;
   const ready = state.phase === "response", repair = state.phase === "repair";
   const composed = step.compose && state.choiceId;
   const dialogue = composed ? state.phase === "response" ? "\uB124, \uB530\uB73B\uD55C \uCC28 \uB450 \uC794 \uC8FC\uBB38\uBC1B\uC558\uC5B4\uC694. \uC218\uB7C9\uB3C4 \uB2E4\uC2DC \uD655\uC778\uD560\uAC8C\uC694." : `\uB9D0\uC500\uD558\uC2E0 \uC8FC\uBB38\uC740 ${cafeOrderText(state.order)} \uCE5C\uAD6C\uC640 \uB9C8\uC2E4 \uB530\uB73B\uD55C \uCC28 \uB450 \uC794\uC774 \uB9DE\uC744\uAE4C\uC694?` : selection ? selection.response : step.staff, friend = selection ? selection.friend : step.friend;
   const listening = state.listen?.mode === "listen", needsHearing = listening && !state.listen.heard && !state.listen.textShown;
   const hiddenQuestion = listening && !state.listen.textShown && !state.choiceId;
-  const speechControls = speechAvailable || listening ? `<div class="cafe-speech-controls"><button class="plain-button" data-life-cafe-speech data-phase="${speechAvailable ? esc(speechPhase) : "unavailable"}">${!speechAvailable ? "\uC9C8\uBB38 \uC18C\uB9AC \uB2E4\uC2DC \uC900\uBE44\uD558\uAE30" : speechPhase === "playing" ? "\uC9C8\uBB38 \uB4E3\uAE30 \uC7A0\uAE50 \uBA48\uCD94\uAE30" : speechPhase === "paused" ? "\uC9C8\uBB38 \uC774\uC5B4 \uB4E3\uAE30" : state.listen?.heard ? "\uC9C1\uC6D0 \uC9C8\uBB38 \uB2E4\uC2DC \uB4E3\uAE30" : "\uC9C1\uC6D0 \uC9C8\uBB38 \uB4E3\uAE30"}</button>${listening ? `<button class="quiet-button" data-life-cafe-transcript>${state.listen.textShown ? "\uAE00\uC790 \uB3C4\uC6C0\uC744 \uBD24\uC5B4\uC694" : "\uAE00\uC790 \uB3C4\uC6C0 \uBCF4\uAE30"}</button>` : ""}</div><p class="cafe-speech-status" role="status">${speechPhase === "error" ? "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB4E3\uAE30\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694." : needsHearing ? "\uC9C8\uBB38\uC744 \uB05D\uAE4C\uC9C0 \uB4E4\uC740 \uB4A4 \uB9D0\uC744 \uACE8\uB77C \uC8FC\uC138\uC694." : listening ? "\uC9C8\uBB38\uC744 \uB4E3\uACE0, \uB0B4 \uB9D0\uB85C \uB2F5\uD574\uC694." : "\uAE00\uC744 \uC77D\uACE0 \uC8FC\uBB38\uD574\uC694."}</p>` : "";
-  const trayMessage = ready ? state.step === 2 ? "\uCEF5\uC774 \uC900\uBE44\uB410\uC5B4\uC694. \uC774\uC81C \uC74C\uB8CC\uB97C \uBC1B\uC544\uC694." : "\uC8FC\uBB38\uD45C\uB97C \uD655\uC778\uD588\uC5B4\uC694. \uB2E4\uC74C \uBD80\uD0C1\uC744 \uC774\uC5B4\uAC00\uC694." : repair ? "\uC8FC\uBB38\uC744 \uD655\uC778\uD558\uACE0 \uC788\uC5B4\uC694. \uC544\uC9C1 \uC74C\uB8CC\uB97C \uBC1B\uC9C0 \uC54A\uC558\uC5B4\uC694." : "\uB9D0\uC744 \uACE0\uB974\uBA74 \uC8FC\uBB38\uD45C\uAC00 \uBC14\uB00C\uC5B4\uC694.";
+  const speechControls = speechAvailable || listening ? `<div class="cafe-speech-controls"><button class="plain-button" data-life-cafe-speech data-phase="${speechAvailable ? esc(speechPhase) : "unavailable"}">${cafeSpeechLabel({ available: speechAvailable, phase: speechPhase, heard: state.listen?.heard })}</button><button class="plain-button cafe-slow" data-life-cafe-slow ${speechAvailable ? "" : "disabled"}>\uB290\uB9AC\uAC8C</button></div><p class="cafe-speech-status" role="status">${speechPhase === "error" ? "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694." : needsHearing ? "\uB05D\uAE4C\uC9C0 \uB4E4\uC740 \uB4A4 \uB2F5\uC744 \uACE8\uB77C\uC694." : ""}</p>` : "";
+  const trayMessage = ready ? state.step === 2 ? "\uC794\uC774 \uC900\uBE44\uB410\uC5B4\uC694. \uBC1B\uC544 \uAC00\uC694." : "\uC8FC\uBB38\uD45C\uB97C \uD655\uC778\uD588\uC5B4\uC694." : repair ? "\uC8FC\uBB38\uC744 \uD655\uC778\uD558\uB294 \uC911\uC774\uC5D0\uC694. \uC544\uC9C1 \uBC1B\uC9C0 \uC54A\uC558\uC5B4\uC694." : "\uB9D0\uC744 \uACE0\uB974\uBA74 \uC8FC\uBB38\uD45C\uAC00 \uBC14\uB00C\uC5B4\uC694.";
   const menu = lessonId === CAFE_LESSON_ID ? state.step === 0 : step.menu;
   const optionHtml = step.compose ? cafeComposer(state, ready) : q.choices.map((c) => {
     const o = step.options[c.id], kind = lessonId === CAFE_LESSON_ID ? state.step === 2 ? o.drink : "cold" : o.previewDrink || o.drink;
-    return `<button class="cafe-option ${state.choiceId === c.id ? "is-chosen" : ""}" data-life-cafe-choice="${c.id}" ${ready || needsHearing ? "disabled" : ""} aria-label="${esc(c.text)}">${cafeDrink(state.step === 0 && lessonId === CAFE_LESSON_ID ? o.drink : kind, menu ? Math.max(o.count, 1) : 1)}<span>${esc(c.text)}</span>${menu ? `<small>${o.previewDrink ? "\uD488\uC808 \uBA54\uB274" : `${o.count}\uC794`}</small>` : ""}</button>`;
+    return `<button class="cafe-option ${state.choiceId === c.id ? "is-chosen" : ""}" data-life-cafe-choice="${c.id}" ${ready || needsHearing ? "disabled" : ""} aria-label="${esc(c.text)}">${cafeDrink(state.step === 0 && lessonId === CAFE_LESSON_ID ? o.drink : kind, menu ? Math.max(o.count, 1) : 1)}<span>${esc(c.text)}</span>${menu ? `<small>${o.previewDrink ? "\uD488\uC808" : `${o.count}\uC794`}</small>` : ""}</button>`;
   }).join("");
-  const primary = step.compose && !ready ? actions(isCafeOrder(state.order, { complete: true }) ? "\uC774 \uC8FC\uBB38\uC73C\uB85C \uBD80\uD0C1\uD558\uAE30" : "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-submit ${needsHearing || !isCafeOrder(state.order, { complete: true }) ? "disabled" : ""}`) : actions(ready ? step.next : repair ? "\uC8FC\uBB38\uC744 \uB2E4\uC2DC \uD655\uC778\uD574 \uC8FC\uC138\uC694" : "\uC9C1\uC6D0\uC5D0\uAC8C \uB9D0\uC744 \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-next ${ready ? "" : "disabled"}`);
-  const seats = ready && state.step === visit.seatStep ? `<fieldset class="cafe-seats"><legend>\uC5B4\uB290 \uC790\uB9AC\uC5D0 \uC549\uC744\uAE4C\uC694?</legend>${Object.entries(CAFE_SEATS).map(([id, label]) => `<button class="plain-button" data-life-cafe-seat="${id}" aria-pressed="${state.seat === id}">${label}</button>`).join("")}</fieldset>` : "";
-  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}">${progress(state.step + (ready ? 1 : 0), 3)}<span>${visit.number}\uBC88\uC9F8 \uCE74\uD398 \uBC29\uBB38 \xB7 ${step.name}</span><span><b class="life-count">${state.step + 1} / 3</b></span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${scene2(trayMessage)}${receiptHtml}</div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>${step.name}</small><h3>${esc(step.goal || q.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0${hiddenQuestion ? " \xB7 \uADC0 \uAE30\uC6B8\uC5EC \uB4E4\uC5B4\uC694" : ""}</small><p ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uB2E4\uC2DC \uB9D0\uD574 \uBCFC\uAE4C\uC694? \uC9C1\uC6D0\uC774 \uC8FC\uBB38\uC744 \uBC14\uAFD4 \uC904 \uAC70\uC608\uC694.</p>' : ""}<div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uC8FC\uBB38 \uD45C\uD604 \uB3C4\uC6C0</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? '<p class="cafe-review-note">\uB3C4\uC6C0\uC774 \uD544\uC694\uD588\uB358 \uD45C\uD604\uC740 \uBCF5\uC2B5\uC5D0 \uB0A8\uACA8 \uB458\uAC8C\uC694.</p>' : ""}${repair || helped || firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? retryButton(q) : ""}</section></div>${primary}`;
+  const primary = step.compose && !ready ? actions(isCafeOrder(state.order, { complete: true }) ? "\uC774 \uC8FC\uBB38\uC73C\uB85C \uB9D0\uD558\uAE30" : "\uC74C\uB8CC\xB7\uC628\uB3C4\xB7\uC794 \uC218\uB97C \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-submit ${needsHearing || !isCafeOrder(state.order, { complete: true }) ? "disabled" : ""}`) : actions(ready ? step.next : repair ? "\uB2E4\uC2DC \uACE8\uB77C \uC8FC\uC138\uC694" : "\uD560 \uB9D0\uC744 \uACE8\uB77C \uC8FC\uC138\uC694", `data-life-cafe-next ${ready ? "" : "disabled"}`);
+  const seats = ready && state.step === visit.seatStep ? `<fieldset class="cafe-seats"><legend>\uC549\uC744 \uC790\uB9AC</legend>${Object.entries(CAFE_SEATS).map(([id, label]) => `<button class="plain-button" data-life-cafe-seat="${id}" aria-pressed="${state.seat === id}">${label}</button>`).join("")}</fieldset>` : "";
+  return `<div class="cafe-session-meta" data-cafe-visit="${lessonId}">${progress(state.step + (ready ? 1 : 0), 3)}<span>${visit.number}\uBC88\uC9F8 \uBC29\uBB38 \xB7 ${step.name}</span><span><b class="life-count">${state.step + 1} / 3</b></span></div><div class="cafe-play-layout ${step.compose ? "is-composing" : ""}"><div class="cafe-world">${sceneMarkup(state, receipt, photo, `\uC8FC\uBB38\uD45C \xB7 ${receipt.label} \xB7 ${receipt.place}`)}<p class="cafe-tray-note">${esc(trayMessage)}</p></div><section class="cafe-conversation" aria-label="\uC9C1\uC6D0\uACFC \uC8FC\uBB38\uD558\uAE30"><div class="cafe-focus" tabindex="-1"><small>\uD560 \uC77C</small><h3>${esc(step.goal || q.prompt)}</h3>${step.goal || step.compose ? "" : `<p class="cafe-goal">${esc(q.context)}</p>`}</div>${step.notice ? `<p class="cafe-menu-notice">${esc(step.notice)}</p>` : ""}<div class="cafe-staff" role="status"><small>\uCE74\uD398 \uC9C1\uC6D0</small>${hiddenQuestion ? `<div class="cafe-staff-hidden"><span>\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E4\uC5B4 \uBCF4\uC138\uC694.</span><button class="quiet-button" data-life-cafe-transcript>\uAE00\uC790\uB85C \uBCF4\uAE30</button></div>` : ""}<p tabindex="-1" ${hiddenQuestion ? "hidden" : ""}>${esc(dialogue)}</p>${speechControls}</div><p class="cafe-friend-line"><b>${speakerName(step.speaker)}</b> ${esc(friend)}</p>${repair ? '<p class="cafe-repair-note">\uC9C1\uC6D0\uC758 \uB9D0\uC744 \uB4E3\uACE0 \uB2E4\uC2DC \uACE8\uB77C\uC694.</p>' : ""}<p class="cafe-reply-label">${step.compose ? "\uCE74\uC6B4\uD130\uC5D0\uC11C \uACE8\uB77C\uC694" : "\uB0B4\uAC00 \uD560 \uB9D0"}</p><div class="cafe-options ${step.compose ? "cafe-compose-options" : menu ? "cafe-menu" : "cafe-responses"}" aria-label="${step.compose ? "\uC8FC\uBB38 \uACE0\uB974\uAE30" : "\uC9C1\uC6D0\uC5D0\uAC8C \uD560 \uB9D0"}">${optionHtml}</div>${seats}<button class="quiet-button cafe-help" data-life-cafe-help aria-expanded="${helped}">\uD78C\uD2B8 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${esc(step.hint)}</p>${repair || helped || firstAnswer && (!firstAnswer.correct || firstAnswer.helped) ? retryButton(q) : ""}</section></div>${primary}`;
 }
 function cafeComposer(state, ready) {
-  const fields = [["drink", "\uC74C\uB8CC", [["juice", "\uC8FC\uC2A4"], ["tea", "\uCC28"]]], ["temperature", "\uC628\uB3C4", [["warm", "\uB530\uB73B\uD558\uAC8C"], ["cold", "\uCC28\uAC11\uAC8C"]]], ["count", "\uC794 \uC218", [[1, "\uD55C \uC794"], [2, "\uB450 \uC794"], [3, "\uC138 \uC794"]]]];
-  return `<div class="cafe-composer">${fields.map(([field, title, options]) => `<fieldset><legend>${title}</legend><div>${options.map(([value, label]) => `<button class="plain-button" data-life-cafe-word="${field}" data-cafe-value="${value}" aria-pressed="${state.order[field] === value}" ${ready ? "disabled" : ""}>${label}</button>`).join("")}</div></fieldset>`).join("")}<p class="cafe-my-sentence" aria-live="polite" data-complete="${isCafeOrder(state.order, { complete: true })}"><small>\uB0B4\uAC00 \uB9CC\uB4E0 \uC8FC\uBB38</small><strong>${esc(cafeOrderText(state.order))}</strong></p></div>`;
+  const order2 = state.order, drink = order2.drink || "juice", temperature = order2.temperature;
+  const cup = (d, t) => d === "tea" ? t === "cold" ? "coldtea" : "tea" : t === "warm" ? "warm" : "cold";
+  const fields = [
+    ["drink", "\uC74C\uB8CC", [["juice", "\uC8FC\uC2A4", cup("juice", temperature)], ["tea", "\uCC28", cup("tea", temperature)]]],
+    ["temperature", "\uC628\uB3C4", [["warm", "\uB530\uB73B\uD558\uAC8C", cup(drink, "warm")], ["cold", "\uCC28\uAC11\uAC8C", cup(drink, "cold")]]],
+    ["count", "\uC794 \uC218", [[1, "\uD55C \uC794"], [2, "\uB450 \uC794"], [3, "\uC138 \uC794"]].map(([value, label]) => [value, label, cup(drink, temperature)])]
+  ];
+  return `<div class="cafe-composer">${fields.map(([field, title, options]) => `<fieldset data-cafe-field="${field}"><legend>${title}</legend><div>${options.map(([value, label, kind]) => `<button class="plain-button cafe-pick" data-life-cafe-word="${field}" data-cafe-value="${value}" aria-pressed="${order2[field] === value}" ${ready ? "disabled" : ""}>${cafeDrink(kind, field === "count" ? value : 1)}<span>${label}</span></button>`).join("")}</div></fieldset>`).join("")}<p class="cafe-my-sentence" aria-live="polite" data-complete="${isCafeOrder(order2, { complete: true })}"><small>\uB0B4\uAC00 \uB9CC\uB4E0 \uC8FC\uBB38</small><strong>${esc(cafeOrderText(order2))}</strong></p></div>`;
 }
 function createCafeSpeech({ asset, onChange = () => {
 }, audioFactory = (url) => new Audio(url), fetcher = fetch }) {
@@ -13202,8 +13214,8 @@ function createCafeSpeech({ asset, onChange = () => {
       return false;
     }
   }
-  async function play(id, onEnded) {
-    if (disposed || !available || !clips[id]) throw Error("\uC9C8\uBB38 \uC74C\uC131\uC744 \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694.");
+  async function play2(id, onEnded, { rate = 1, restart = false } = {}) {
+    if (disposed || !available || !clips[id]) throw Error("\uC9C1\uC6D0 \uB9D0 \uC18C\uB9AC\uB97C \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694.");
     if (currentId !== id || phase === "error") {
       stop();
       currentId = id;
@@ -13211,7 +13223,12 @@ function createCafeSpeech({ asset, onChange = () => {
       current.preload = "auto";
       current.volume = 0.85;
     }
-    if (current.ended) current.currentTime = 0;
+    if (current.ended || restart) current.currentTime = 0;
+    try {
+      current.preservesPitch = true;
+      current.playbackRate = rate;
+    } catch {
+    }
     const token = ++serial;
     endCallback = onEnded;
     current.onended = () => {
@@ -13238,7 +13255,7 @@ function createCafeSpeech({ asset, onChange = () => {
         phase = "error";
         notify();
       }
-      throw Error("\uC9C8\uBB38 \uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB4E3\uAE30\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.");
+      throw Error("\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694.");
     }
   }
   function pause() {
@@ -13252,15 +13269,134 @@ function createCafeSpeech({ asset, onChange = () => {
     if (document.hidden) pause();
   };
   document.addEventListener("visibilitychange", visibility);
-  return { prepare, play, pause, stop, available: () => available, metrics: () => ({ available, phase, lineId: currentId, currentTime: current?.currentTime || 0, paused: current?.paused ?? true }), dispose() {
+  return { prepare, play: play2, pause, stop, available: () => available, metrics: () => ({ available, phase, lineId: currentId, currentTime: current?.currentTime || 0, paused: current?.paused ?? true, rate: current?.playbackRate || 1 }), dispose() {
     disposed = true;
     stop();
     document.removeEventListener("visibilitychange", visibility);
   } };
 }
-function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = CAFE_LESSON_ID, state, adaptive = false }) {
-  const visit = cafeVisitById(lessonId), ending = visit.ending, receipt = state ? cafeReceipt(state, lessonId) : null, two = (n) => String(n).padStart(2, "0");
-  return `<div class="cafe-complete cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}"><section class="life-poster life-complete-poster">${print("complete")}<small class="life-poster-label">CAFE VISIT \xB7 ${two(visit.number)}</small><strong class="life-poster-word" aria-hidden="true">\uC624\uB298\uC758 \uCE74\uD398, \uC798 \uB2E4\uB140\uC654\uC5B4\uC694</strong><span class="life-poster-sub">${visit.number}\uBC88\uC9F8 \uCE74\uD398 \uAE30\uB85D \xB7 ${esc(visit.title)}</span></section><div class="cafe-complete-copy"><h3>${esc(ending.title)}</h3><p>${esc(ending.text)}</p></div><section class="cafe-receipt" aria-label="\uBC1B\uC740 \uC74C\uB8CC"><p class="life-section-label">RECEIPT</p><div class="cafe-complete-orders ${ending.orders.length === 1 ? "is-single" : ""}">${ending.orders.map((o) => `<div data-cafe-drink="${o.drink}" data-cafe-count="${o.count}" data-cafe-received="true">${cafeDrink(o.drink, o.count)}<strong>${esc(visit.seatStep === 2 ? receipt?.place || o.place : o.place)}</strong><span>${esc(o.label)}</span></div>`).join("")}</div></section>${ending.lines ? `<div class="cafe-ending-lines">${ending.lines.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}<p class="cafe-soft-note">\uD544\uC694\uD55C \uD45C\uD604\uC740 \uC0C8 \uC0C1\uD669\uC73C\uB85C \uBCF5\uC2B5\uD574\uC694.</p></div><div class="life-actions cafe-actions"><button class="felt-button" data-life-home>\uB9C8\uB8E8\uB85C \uB3CC\uC544\uAC00\uAE30 <span aria-hidden="true">\u2192</span></button>${adaptive ? '<button class="plain-button" data-life-next>\uB098\uC5D0\uAC8C \uB9DE\uB294 \uB2E4\uC74C \uC5F0\uC2B5</button>' : nextLesson ? `<button class="plain-button" data-life-lesson="${nextLesson.id}">${nextLesson.type === "compose" ? "\uB0B4 \uB9D0\uB85C \uC8FC\uBB38\uD558\uAE30" : nextLesson.type === "visit" ? "\uB2E4\uC74C \uCE74\uD398 \uC774\uC57C\uAE30" : "\uCE74\uD398 \uD45C\uD604 \uB354 \uC775\uD788\uAE30"}</button>` : '<button class="plain-button" data-life-review>\uB0B4 \uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30</button>'}<button class="quiet-button" data-life-lesson="${lessonId}">\uC774\uBC88 \uBC29\uBB38 \uB2E4\uC2DC \uBCF4\uAE30</button></div>`;
+function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = CAFE_LESSON_ID, state, adaptive = false, answers = {} }) {
+  const visit = cafeVisitById(lessonId), ending = visit.ending, receipt = state ? cafeReceipt(state, lessonId) : null, lesson2 = lessonById(lessonId);
+  const fixes = visit.steps.map((step, i) => ({ step, q: cafeQuestion(i, lessonId) })).filter(({ q }) => {
+    const a = q && answers[q.id];
+    return a && (!a.correct || a.helped);
+  });
+  const again = fixes[0], againText = again ? lesson2?.expressions.find((e) => e.id === again.q.expressionId)?.korean || again.q.choices.find((c) => c.id === again.q.answerId)?.text || "" : "";
+  const next = adaptive ? '<button class="quiet-button" data-life-next>\uB2E4\uC74C \uC5F0\uC2B5</button>' : nextLesson ? `<button class="quiet-button" data-life-lesson="${nextLesson.id}">${nextLesson.type === "compose" ? "\uB2E4\uC74C: \uB0B4 \uB9D0\uB85C \uC8FC\uBB38\uD558\uAE30" : nextLesson.type === "visit" ? "\uB2E4\uC74C \uBC29\uBB38" : "\uB2E4\uC74C \uB808\uC2A8"}</button>` : '<button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30</button>';
+  return `<div class="cafe-complete life-result cafe-focus" tabindex="-1" data-cafe-visit="${lessonId}"><section class="life-poster life-complete-poster">${print("cafe")}<small class="life-poster-label">RESULT \xB7 VISIT ${two(visit.number)}</small><strong class="life-poster-word">\uCE74\uD398 \uC8FC\uBB38, \uB05D!</strong><span class="life-poster-sub">${esc(ending.title)} ${esc(ending.text)}</span></section><section class="cafe-receipt" aria-label="\uBC1B\uC740 \uC74C\uB8CC"><p class="life-section-label">GOT</p><div class="cafe-complete-orders ${ending.orders.length === 1 ? "is-single" : ""}">${ending.orders.map((o) => `<div data-cafe-drink="${o.drink}" data-cafe-count="${o.count}" data-cafe-received="true">${cafeDrink(o.drink, o.count)}<strong>${esc(o.label)}</strong><span>${esc(visit.seatStep === 2 ? receipt?.place || o.place : o.place)}</span></div>`).join("")}</div></section>${lesson2 ? `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">LEARNED</p><ul>${lesson2.expressions.map((e) => `<li><strong>${esc(e.korean)}</strong></li>`).join("")}</ul></section>` : ""}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${esc(againText)}</strong><small>\u300C${esc(again.step.name)}\u300D${fixes.length > 1 ? ` \uB4F1 ${fixes.length}\uACF3` : ""}\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB790\uC5B4\uC694. \uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uBCF5\uC2B5\uD574\uC694.</small></section>` : ""}${ending.lines ? `<div class="cafe-ending-lines">${ending.lines.map((line) => `<p><b>${speakerName(line.speaker)}</b> ${esc(line.text)}</p>`).join("")}</div>` : ""}</div><div class="life-actions cafe-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uBC29\uC73C\uB85C <span aria-hidden="true">\u2192</span></button>${next}</div>`;
+}
+
+// experiences/brand-opening/world-sound.mjs
+var PREF_KEYS = Object.freeze({ sound: "synk.world.sound", haptic: "synk.world.haptic", celebrate: "synk.world.celebrate", reactions: "synk.world.reactions" });
+var PREF_LABELS = Object.freeze({
+  sound: { title: "\uD6A8\uACFC\uC74C", note: "\uB2E8\uCD94\xB7\uC815\uB2F5\xB7\uC644\uB8CC\uC758 \uC9E7\uC740 \uC18C\uB9AC\uC608\uC694. \uBAA9\uC18C\uB9AC\uBCF4\uB2E4 \uC791\uAC8C \uC6B8\uB824\uC694." },
+  haptic: { title: "\uC9C4\uB3D9", note: "\uC815\uB2F5\uACFC \uC644\uB8CC \uB54C \uC544\uC8FC \uC9E7\uAC8C \uD55C \uBC88 \uC6B8\uB824\uC694." },
+  celebrate: { title: "\uBCF4\uC0C1 \uC5F0\uCD9C", note: "\uB05D\uB0AC\uC744 \uB54C \uD55C \uC7A5\uC73C\uB85C \uBCF4\uC5EC \uC8FC\uB294 \uC9E7\uC740 \uCD95\uD558\uC608\uC694. \uAEBC\uB3C4 \uACB0\uACFC\uB294 \uB611\uAC19\uC774 \uBCF4\uC5EC\uC694." },
+  reactions: { title: "\uCE5C\uAD6C\uB4E4\uC758 \uBC18\uC751", note: "\uC815\uB2F5\xB7\uC624\uB2F5\uC5D0 \uCE5C\uAD6C\uB4E4\uC774 \uC790\uC138\uB97C \uD55C \uBC88 \uBC14\uAFD4\uC694. \uB044\uBA74 \uAC00\uB9CC\uD788 \uC788\uC5B4\uC694." }
+});
+var DEFAULTS = { sound: true, haptic: true, celebrate: true, reactions: true };
+function getPref(name) {
+  if (!(name in DEFAULTS)) return true;
+  try {
+    const raw = localStorage.getItem(PREF_KEYS[name]);
+    if (raw === "true") return true;
+    if (raw === "false") return false;
+  } catch {
+  }
+  return DEFAULTS[name];
+}
+var VOICES = {
+  tap: [{ f: 330, t: "triangle", d: 0.045, g: 0.05 }],
+  select: [{ f: 392, t: "triangle", d: 0.06, g: 0.06 }, { f: 523, t: "sine", d: 0.07, g: 0.04, at: 0.03 }],
+  open: [{ f: 262, t: "sine", d: 0.11, g: 0.06, slide: 330 }],
+  close: [{ f: 330, t: "sine", d: 0.1, g: 0.05, slide: 247 }],
+  ok: [{ f: 440, t: "triangle", d: 0.09, g: 0.07 }, { f: 659, t: "sine", d: 0.16, g: 0.06, at: 0.07 }],
+  miss: [{ f: 196, t: "sine", d: 0.2, g: 0.07, slide: 165 }],
+  done: [{ f: 392, t: "triangle", d: 0.1, g: 0.06 }, { f: 523, t: "triangle", d: 0.1, g: 0.06, at: 0.09 }, { f: 659, t: "sine", d: 0.26, g: 0.07, at: 0.18 }],
+  reward: [{ f: 523, t: "sine", d: 0.12, g: 0.06 }, { f: 659, t: "sine", d: 0.12, g: 0.06, at: 0.1 }, { f: 784, t: "sine", d: 0.3, g: 0.07, at: 0.2 }],
+  tick: [{ f: 880, t: "sine", d: 0.02, g: 0.025 }]
+};
+var context = null;
+var master = null;
+var unlocked = false;
+function ensure() {
+  if (context) return context;
+  const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (!AC) return null;
+  try {
+    context = new AC({ latencyHint: "interactive" });
+  } catch {
+    return null;
+  }
+  master = context.createGain();
+  master.gain.value = 0.9;
+  const low = context.createBiquadFilter();
+  low.type = "lowpass";
+  low.frequency.value = 2400;
+  low.Q.value = 0.6;
+  master.connect(low);
+  low.connect(context.destination);
+  return context;
+}
+function unlock() {
+  if (unlocked) return;
+  const ctx = ensure();
+  if (!ctx) return;
+  unlocked = true;
+  if (ctx.state === "suspended") ctx.resume().catch(() => {
+  });
+}
+for (const type of ["pointerdown", "keydown", "touchstart"]) {
+  try {
+    addEventListener(type, unlock, { capture: true, passive: true });
+  } catch {
+  }
+}
+function play(name) {
+  if (!getPref("sound")) return false;
+  const voice = VOICES[name];
+  if (!voice) return false;
+  const ctx = ensure();
+  if (!ctx) return false;
+  if (ctx.state === "suspended") {
+    ctx.resume().catch(() => {
+    });
+    if (ctx.state === "suspended") return false;
+  }
+  const now = ctx.currentTime;
+  for (const n of voice) {
+    const osc = ctx.createOscillator(), gain = ctx.createGain(), start = now + (n.at || 0), end = start + n.d;
+    osc.type = n.t;
+    osc.frequency.setValueAtTime(n.f, start);
+    if (n.slide) osc.frequency.exponentialRampToValueAtTime(n.slide, end);
+    gain.gain.setValueAtTime(1e-4, start);
+    gain.gain.exponentialRampToValueAtTime(n.g, start + 8e-3);
+    gain.gain.exponentialRampToValueAtTime(1e-4, end);
+    osc.connect(gain);
+    gain.connect(master);
+    osc.start(start);
+    osc.stop(end + 0.02);
+  }
+  return true;
+}
+function haptic(kind = "ok") {
+  if (!getPref("haptic")) return false;
+  const pattern = kind === "done" ? [14, 40, 18] : kind === "miss" ? [22] : [10];
+  try {
+    return Boolean(navigator.vibrate?.(pattern));
+  } catch {
+    return false;
+  }
+}
+function verdict(correct, { react = null } = {}) {
+  play(correct ? "ok" : "miss");
+  haptic(correct ? "ok" : "miss");
+  if (react && getPref("reactions")) {
+    try {
+      react(correct);
+    } catch {
+    }
+  }
 }
 
 // experiences/synk-world-app/life-ui.mjs
@@ -13272,30 +13408,59 @@ if (!document.querySelector("[data-life-style]")) {
   document.head.append(style);
 }
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp" } };
-var phaseNames = { expressions: "\uD45C\uD604 \uB9CC\uB098\uAE30", story: "\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30", apply: "\uC0DD\uD65C\uC5D0\uC11C \uC368 \uBCF4\uAE30", visit: "\uB2E4\uC74C \uCE74\uD398 \uC774\uC57C\uAE30", compose: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30" };
+var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
+var phaseNames = { expressions: "\uD45C\uD604 \uC775\uD788\uAE30", story: "\uC774\uC57C\uAE30 \uC77D\uAE30", apply: "\uC0DD\uD65C\uC5D0\uC11C \uC368 \uBCF4\uAE30", visit: "\uCE74\uD398 \uBC29\uBB38", compose: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30" };
+var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
 var dayLabel = (at) => Number.isFinite(at) ? new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(at)) : "";
+var ago = (at) => {
+  if (!Number.isFinite(at)) return "";
+  const minutes = Math.floor(Math.max(0, Date.now() - at) / 6e4);
+  if (minutes < 1) return "\uBC29\uAE08 \uC804";
+  if (minutes < 60) return `${minutes}\uBD84 \uC804`;
+  const hours = Math.floor(minutes / 60);
+  return hours < 24 ? `${hours}\uC2DC\uAC04 \uC804` : `${Math.floor(hours / 24)}\uC77C \uC804`;
+};
+var placeAt = { greetings: "\uCCAB \uBAA8\uC784\uC5D0\uC11C", cafe: "\uCE74\uD398\uC5D0\uC11C", store: "\uD3B8\uC758\uC810\uC5D0\uC11C", directions: "\uAE38\uC5D0\uC11C", transit: "\uBC84\uC2A4\uC5D0\uC11C", plans: "\uC57D\uC18D\uC744 \uC815\uD558\uBA70" };
 var packWords = { greetings: ["\uC778\uC0AC", "GREETINGS"], cafe: ["\uCE74\uD398", "CAFE"], store: ["\uD3B8\uC758\uC810", "STORE"], directions: ["\uAE38 \uCC3E\uAE30", "DIRECTIONS"], transit: ["\uBC84\uC2A4", "TRANSIT"], plans: ["\uC57D\uC18D", "PLANS"] };
+var packShapes = ["wide", "tall", "low", "wide-left", "tall", "low"];
 var pad = (value) => String(value).padStart(2, "0");
 var percent = (done, total) => total ? Math.round(Math.max(0, Math.min(1, done / total)) * 100) : 0;
 var progressLine = (done, total) => `<span class="life-progress" aria-hidden="true"><i style="width:${percent(done, total)}%"></i></span>`;
 var meter = (done, total, label = `${done} / ${total}`) => `<span class="life-meter" aria-hidden="true"><span><i style="width:${percent(done, total)}%"></i></span><b>${label}</b></span>`;
+var expressionOf = (lesson2, q) => lesson2?.expressions.find((e) => e.id === q?.expressionId) || { korean: q?.choices?.find((c) => c.id === q.answerId)?.text || "", meaning: "" };
 function createLifeExperience({ home, getProgress, show = (title, html, options) => home.showPanel(title, html, options), asset, onSummary = () => {
 }, onNext = null }) {
   const panel = document.querySelector("#world-panel"), content = document.querySelector("#panel-content");
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life";
+  let context2 = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life";
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
+  let sittingSince = Date.now(), hiddenSince = 0, restKey = null;
+  const sitting = () => {
+    if (document.hidden) {
+      hiddenSince = Date.now();
+      return;
+    }
+    if (hiddenSince && Date.now() - hiddenSince > 6e5) {
+      sittingSince = Date.now();
+      restKey = null;
+    }
+    hiddenSince = 0;
+  };
+  document.addEventListener("visibilitychange", sitting);
+  function restLine(key) {
+    if (restKey === null && Date.now() - sittingSince >= 36e5) restKey = key;
+    return restKey === key ? '<p class="life-rest" role="status">\uD55C \uC2DC\uAC04 \uB118\uAC8C \uD588\uC5B4\uC694. \uC7A0\uAE50 \uC26C\uC5B4\uB3C4 \uB3FC\uC694. \uD558\uB358 \uC790\uB9AC\uB294 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.</p>' : "";
+  }
   const speech = createCafeSpeech({ asset, onChange() {
-    if (ended || !shown || context?.phase !== "cafe") return;
+    if (ended || !shown || context2?.phase !== "cafe") return;
     const metrics = speech.metrics(), button = content.querySelector("[data-life-cafe-speech]"), status = content.querySelector(".cafe-speech-status");
     if (button) {
-      button.textContent = !metrics.available ? "\uC9C8\uBB38 \uC18C\uB9AC \uB2E4\uC2DC \uC900\uBE44\uD558\uAE30" : metrics.phase === "playing" ? "\uC9C8\uBB38 \uB4E3\uAE30 \uC7A0\uAE50 \uBA48\uCD94\uAE30" : metrics.phase === "paused" ? "\uC9C8\uBB38 \uC774\uC5B4 \uB4E3\uAE30" : cafeRun.listen?.heard ? "\uC9C1\uC6D0 \uC9C8\uBB38 \uB2E4\uC2DC \uB4E3\uAE30" : "\uC9C1\uC6D0 \uC9C8\uBB38 \uB4E3\uAE30";
+      button.textContent = cafeSpeechLabel({ available: metrics.available, phase: metrics.phase, heard: cafeRun.listen?.heard });
       button.dataset.phase = !metrics.available ? "unavailable" : metrics.phase;
     }
-    if (status && metrics.phase === "error") status.textContent = "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB4E3\uAE30\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.";
+    if (status && metrics.phase === "error") status.textContent = "\uC18C\uB9AC\uB97C \uC7AC\uC0DD\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB20C\uB7EC \uC8FC\uC138\uC694.";
     companion?.update(tutorState());
   } });
   void speech.prepare();
@@ -13308,6 +13473,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     }
   };
   const photo = (speaker, size = "") => friends[speaker] ? `<img class="life-friend ${size}" src="${asset("home/" + friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">` : "";
+  const cut = (speaker) => friends[speaker] ? `<img class="life-friend" src="${asset("tutors/" + friends[speaker].cut + "-\uAE30\uBCF8.webp")}" alt="${friends[speaker].name}" width="480" height="480" decoding="async">` : "";
   function updateHome() {
     if (ended) return;
     try {
@@ -13345,14 +13511,14 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return `<p class="life-save-status" data-save-phase="${escape(s.phase)}" role="status">${escape(s.message)}</p>`;
   }
   function tutorState() {
-    const l = lessonById(context?.lessonId), cafe = context?.phase === "cafe";
-    const original = context?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context.reviewQuestion?.id) : l?.questions[context?.questionIndex];
-    const q = context?.phase === "review" ? context.reviewQuestion : original;
-    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context?.phase);
+    const l = lessonById(context2?.lessonId), cafe = context2?.phase === "cafe";
+    const original = context2?.phase === "review" ? l?.questions.find((q2) => q2.review.id === context2.reviewQuestion?.id) : l?.questions[context2?.questionIndex];
+    const q = context2?.phase === "review" ? context2.reviewQuestion : original;
+    const current = cafe ? ["choose", "repair", "response"].includes(cafeRun.phase) : ["questions", "review"].includes(context2?.phase);
     const requiresHearing = cafe && current && cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown;
     return {
       scope: place,
-      phase: cafe ? cafeRun.phase : context?.phase,
+      phase: cafe ? cafeRun.phase : context2?.phase,
       question: current ? q : null,
       questionId: original?.id,
       answered: cafe ? !!cafeRun.choiceId : !!lastFeedback,
@@ -13360,24 +13526,24 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped,
       requiresHearing,
       listening: cafe && speech.metrics().phase === "playing",
-      compose: cafe && context.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0
+      compose: cafe && context2.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0
     };
   }
   function tutorHint() {
     speech.pause();
-    if (!context) return;
-    if (context.phase === "cafe") {
+    if (!context2) return;
+    if (context2.phase === "cafe") {
       if (tutorState().requiresHearing) cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
       persistCafe();
       renderCafe();
       return;
     }
-    if (!["questions", "review"].includes(context.phase)) return;
+    if (!["questions", "review"].includes(context2.phase)) return;
     if (!lastFeedback) {
       helped = true;
-      if (context.phase === "questions") persistStage();
-      else getProgress().markReviewHelp(context.reviewId);
+      if (context2.phase === "questions") persistStage();
+      else getProgress().markReviewHelp(context2.reviewId);
     }
     const hint = content.querySelector(".life-hint");
     if (hint) hint.hidden = false;
@@ -13388,11 +13554,11 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const value = tutorState();
     if (value.questionId !== id || value.answered) return;
     helped = true;
-    if (context.phase === "cafe") persistCafe();
-    else if (context.phase === "questions") persistStage();
-    else if (context.phase === "review") getProgress().markReviewHelp(context.reviewId);
+    if (context2.phase === "cafe") persistCafe();
+    else if (context2.phase === "questions") persistStage();
+    else if (context2.phase === "review") getProgress().markReviewHelp(context2.reviewId);
   }
-  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">\uD29C\uD130\uC640 \uC774 \uD45C\uD604 \uB2E4\uC2DC \uC5F0\uC2B5</button>` : "";
+  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false } = {}) {
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     generation++;
@@ -13415,7 +13581,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
           });
         } catch {
         }
-        context = null;
+        context2 = null;
         reviewRun = null;
         lastFeedback = null;
       }
@@ -13427,19 +13593,25 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     content.querySelector(focus)?.focus({ preventScroll: true });
     updateHome();
   }
+  const judge = (correct) => verdict(correct, { react: (value) => companion?.react?.(value) });
+  function celebrate() {
+    const result = content.querySelector(".life-result"), on = getPref("celebrate");
+    if (result && on && !home.state?.reduced) result.classList.add("is-arriving");
+    if (on) play("done");
+    haptic("done");
+  }
   function revealFeedback() {
-    const feedback = content.querySelector(".life-feedback"), choices2 = content.querySelector(".life-choices");
-    if (!feedback) return;
-    const view = content.getBoundingClientRect(), style = getComputedStyle(content), padTop = parseFloat(style.scrollPaddingTop) || 0, padBottom = parseFloat(style.scrollPaddingBottom) || 0;
-    const need = feedback.getBoundingClientRect().bottom - (view.bottom - padBottom);
+    const marked = [...content.querySelectorAll(".life-choice.is-correct,.life-choice.is-chosen")], actions2 = content.querySelector(".life-actions"), target = marked[marked.length - 1] || content.querySelector(".life-choices");
+    if (!actions2 || !target) return;
+    const box = target.getBoundingClientRect(), need = box.bottom + 10 - actions2.getBoundingClientRect().top;
     if (need <= 0) return;
-    const room = choices2 ? choices2.getBoundingClientRect().top - (view.top + padTop) : need;
-    content.scrollTop += Math.max(0, Math.min(need, room));
+    const top = (content.querySelector(".life-session-meta") || content).getBoundingClientRect().bottom;
+    content.scrollTop += Math.max(0, Math.min(need, box.top - top - 10));
   }
   function ensureReadable() {
     const s = getProgress().status();
     if (s.phase !== "unreadable") return true;
-    paint("\uC9C4\uB3C4\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694", `<p class="panel-description">${escape(s.message)}</p><p class="dialog-note">\uAE30\uC874 \uAE30\uB85D\uC740 \uC720\uC9C0\uD558\uACE0 \uC788\uC5B4\uC694. \uB098\uC758 \uACF5\uAC04\uC5D0\uC11C \uC5F0\uACB0 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p>`);
+    paint("\uC9C4\uB3C4\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694", `<p class="panel-description">${escape(s.message)}</p><p class="dialog-note">\uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694. \uB0B4 \uACC4\uC815\uC5D0\uC11C \uC5F0\uACB0 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p>`);
     return false;
   }
   const stateOf = (id) => {
@@ -13447,62 +13619,66 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     return status === "completed" ? "completed" : status === "started" ? "started" : "new";
   };
   const packDone = (pack2) => pack2.lessons.filter((l) => getProgress().lessonState(l.id).status === "completed").length;
-  function packPoster(pack2, index, current = null) {
+  function packCard(pack2, index, current = null) {
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
-    const state = done === total ? "done" : done || started ? "active" : "new";
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}"${pack2.id === current ? ' data-current="true"' : ""} aria-label="${escape(`${pack2.title} \xB7 ${pack2.subtitle} \xB7 ${done} / ${total} \uB2E8\uACC4${state === "done" ? " \uC644\uB8CC" : ""}`)}">${print(pack2.id, "life-pack-print")}${pack2.id === current ? '<span class="life-pack-now" aria-hidden="true"><i class="w-led ok"></i>\uC9C0\uAE08</span>' : ""}<span class="life-pack-copy"><small class="life-poster-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word" style="--len:${[...word].length}">${escape(word)}</strong><span class="life-pack-title">${escape(pack2.title)}</span></span>${meter(done, total)}</button>`;
+    const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
+    const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? '<span class="life-pack-done"><i class="w-led ok"></i>\uB2E4 \uB9C8\uCCE4\uC5B4\uC694</span>' : meter(done, total);
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape(`${pack2.title} \xB7 ${pack2.subtitle} \xB7 ${done} / ${total} \uB808\uC2A8${state === "done" ? " \uC644\uB8CC" : ""}`)}">${now ? '<span class="life-pack-now"><i class="w-led ok"></i>\uC9C0\uAE08 \uD558\uB294 \uD329</span>' : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word">${escape(word)}</strong><span class="life-pack-title">${escape(pack2.title)}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   function nowPoster(s) {
     const lesson2 = s.nextLesson;
     if (lesson2 && (s.resume || !s.dueCount)) {
-      const pack2 = packById(lesson2.packId), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"}</small><strong class="life-poster-word">${escape(lesson2.title)}</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${phaseNames[lesson2.type]}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${started ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></section>` };
+      const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
+      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word">${escape(lesson2.title)}</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${phaseNames[lesson2.type]}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${started ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></section>` };
     }
-    if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(s.dueCount)}</small><strong class="life-poster-word">\uB3CC\uC544\uC628 \uD45C\uD604</strong><span class="life-poster-sub">${s.dueCount}\uAC1C\uC758 \uD45C\uD604\uC774 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uAE30\uB2E4\uB824\uC694.</span><button class="felt-button" data-life-review>\uB3CC\uC544\uC628 \uD45C\uD604 \uB9CC\uB098\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
+    if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(s.dueCount)}</small><strong class="life-poster-word">\uB3CC\uC544\uC628 \uD45C\uD604</strong><span class="life-poster-sub">\uBC30\uC6B4 \uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uB3CC\uC544\uC654\uC5B4\uC694.</span><button class="felt-button" data-life-review>\uBCF5\uC2B5\uD558\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">\uBAA8\uB450 \uB9C8\uCCE4\uC5B4\uC694</strong><span class="life-poster-sub">${future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape(future)}\uBD80\uD130 \uC5F4\uB824\uC694.` : "\uB9C8\uC74C\uC5D0 \uB4DC\uB294 \uD329\uC744 \uACE8\uB77C \uB2E4\uC2DC \uC5F0\uC2B5\uD574\uC694."}</span><button class="felt-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">\uD329\uC744 \uBAA8\uB450 \uB9C8\uCCE4\uC5B4\uC694</strong><span class="life-poster-sub">${future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB2E4\uC2DC \uD558\uACE0 \uC2F6\uC740 \uD329\uC744 \uACE8\uB77C\uC694."}</span><button class="felt-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function reviewRow(s) {
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>\uB098\uC758 \uBCF5\uC2B5</strong><small>${s.dueCount ? `${s.dueCount}\uAC1C\uC758 \uD45C\uD604\uC774 \uAE30\uB2E4\uB824\uC694.` : future ? `\uB2E4\uC74C \uBCF5\uC2B5 ${escape(future)}` : "\uC0DD\uD65C \uD329\uC744 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uC774 \uC0DD\uACA8\uC694."}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${s.dueCount}\uAC1C</span>` : ""}</button>`;
+    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>\uBCF5\uC2B5</strong><small>${s.dueCount ? `\uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uB3CC\uC544\uC654\uC5B4\uC694.` : `\uB2E4\uC74C \uBCF5\uC2B5 ${escape(future)}`}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${s.dueCount}\uAC1C</span>` : ""}</button>`;
   }
   function packs() {
     if (!ensureReadable()) return;
     place = "life";
-    context = null;
-    const s = summary(), now = nowPoster(s);
-    paint("\uC791\uC740 \uB9D0\uB85C \uC2DC\uC791\uD558\uB294 \uD55C\uAD6D \uC0DD\uD65C", `<div class="life-hub"><div class="life-heading" tabindex="-1"><p>\uC778\uC0AC\uBD80\uD130 \uC57D\uC18D\uAE4C\uC9C0, \uCE5C\uAD6C\uB4E4\uACFC \uD55C \uD329\uC529.</p></div>${now.html}<section class="life-pack-section" aria-label="\uC0DD\uD65C \uD329"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${PACKS.length}\uAC1C \uC0DD\uD65C \uD329 \xB7 ${LESSONS.length}\uAC1C \uC9E7\uC740 \uD559\uC2B5</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packPoster(p, i, now.kind === "lesson" ? s.nextLesson?.packId : null)).join("")}</div></section><section class="life-rows" aria-label="\uB354 \uB458\uB7EC\uBCF4\uAE30"><p class="life-section-label">MORE</p><button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><small>\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC758 \uC791\uC740 \uD558\uB8E8</small></span></button>${now.kind === "lesson" ? reviewRow(s) : ""}</section></div>`);
+    context2 = null;
+    const s = summary(), now = nowPoster(s), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt);
+    const episodes = PACKS.filter((p) => p.lessons.some((l) => l.type === "story")).length;
+    const rows2 = [`<button class="life-row" data-life-stories>${print("stories", "life-row-print")}<span class="life-row-copy"><strong>\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><small>\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC774 \uB098\uC624\uB294 \uC774\uC57C\uAE30 ${episodes}\uD3B8</small></span></button>`];
+    if (now.kind === "lesson" && hasReviews) rows2.push(reviewRow(s));
+    paint("\uBC30\uC6B0\uAE30", `<div class="life-hub life-heading" tabindex="-1">${now.html}<section class="life-pack-section" aria-label="\uC0DD\uD65C \uD329"><div class="life-section-head"><p class="life-section-label">LIFE PACKS</p><small class="life-library-note">${s.completed ? `\uB808\uC2A8 ${s.total}\uAC1C \uC911 ${s.completed}\uAC1C \uB9C8\uCCE4\uC5B4\uC694` : `\uD329 ${PACKS.length}\uAC1C \xB7 \uB808\uC2A8 ${LESSONS.length}\uAC1C`}</small></div><div class="life-pack-grid">${PACKS.map((p, i) => packCard(p, i, now.kind === "lesson" ? now.packId : null)).join("")}</div></section><section class="life-rows" aria-label="\uB354 \uBCF4\uAE30"><p class="life-section-label">MORE</p>${rows2.join("")}</section></div>`);
   }
-  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseNames[l.type], labels = ["\uC644\uB8CC \xB7 \uB2E4\uC2DC \uD558\uAE30", "\uC774\uC5B4\uC11C \uD558\uAE30", "\uC2DC\uC791"] } = {}) {
-    const state = stateOf(l.id);
-    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${l.id === nowId ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape(kicker)}</small><strong>${escape(l.title)}</strong><span>${escape(l.goal)}</span></span><em>${state === "completed" ? labels[0] : state === "started" ? labels[1] : labels[2]}</em></button>`;
+  function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseNames[l.type], labels = ["\uC644\uB8CC", "\uD558\uB294 \uC911", ""] } = {}) {
+    const state = stateOf(l.id), now = l.id === nowId, text = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? "\uC9C0\uAE08" : labels[2];
+    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape(kicker)}</small><strong>${escape(l.title)}</strong><span>${escape(l.goal)}</span></span>${text ? `<em>${escape(text)}</em>` : ""}</button>`;
   }
   const nowIn = (lessons) => (lessons.find((l) => stateOf(l.id) === "started") || lessons.find((l) => stateOf(l.id) !== "completed"))?.id || null;
   function cafeVisitCards(nowId = null) {
     return CAFE_VISITS.map((visit) => {
-      const state = stateOf(visit.id);
-      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${visit.id === nowId ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${visit.number}\uBC88\uC9F8 \uCE74\uD398 \uBC29\uBB38</small><strong>${escape(visit.title)}</strong><span>${escape(visit.description)}</span></span><em>${state === "completed" ? "\uB2E4\uB140\uC654\uC5B4\uC694 \xB7 \uB2E4\uC2DC \uBCF4\uAE30" : state === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uB4E4\uB974\uAE30"}</em></button>`;
+      const state = stateOf(visit.id), now = visit.id === nowId, text = state === "completed" ? "\uC644\uB8CC" : state === "started" ? "\uD558\uB294 \uC911" : now ? "\uC9C0\uAE08" : "";
+      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${visit.number}\uBC88\uC9F8 \uBC29\uBB38</small><strong>${escape(visit.title)}</strong><span>${escape(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
     }).join("");
   }
   function stories() {
     if (!ensureReadable()) return;
     place = "life";
-    context = null;
+    context2 = null;
     const episodes = PACKS.map((p) => ({ pack: p, episode: p.lessons.find((l) => l.type === "story") })).filter((e) => e.episode);
-    paint("\uAE4C\uBABD\xB7\uBABD\uAE00\xB7\uB9C8\uB9B0\uC758 \uC791\uC740 \uD558\uB8E8", `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><span class="life-poster-sub">\uC8FC\uBB38\uD558\uACE0, \uAE38\uC744 \uCC3E\uACE0, \uC57D\uC18D\uC744 \uC9C0\uCF1C\uC694. \uC138 \uCE5C\uAD6C\uC640 \uC77D\uACE0 \uACE0\uB974\uB294 \uC0DD\uD65C \uC774\uC57C\uAE30.</span></section></div><section class="life-list" aria-label="\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: pack2.title, labels: ["\uC77D\uC740 \uC774\uC57C\uAE30 \xB7 \uB2E4\uC2DC \uBCF4\uAE30", "\uD568\uAED8 \uC77D\uACE0 \uACE8\uB77C\uC694", "\uD568\uAED8 \uC77D\uACE0 \uACE8\uB77C\uC694"] })).join("")}</div></section><section class="life-list" aria-label="\uCE74\uD398 \uC774\uC57C\uAE30"><p class="life-section-label">CAFE VISITS</p><h3 class="cafe-library-title">\uB0B4\uAC00 \uD568\uAED8 \uB9CC\uB4DC\uB294 \uCE74\uD398 \uC774\uC57C\uAE30</h3><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
+    paint("\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30", `<div class="life-heading" tabindex="-1"><section class="life-poster life-stories-poster">${print("stories")}<small class="life-poster-label">STORIES \xB7 ${pad(episodes.length)}</small><strong class="life-poster-word">\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30</strong><span class="life-poster-sub">\uC774\uC57C\uAE30\uB97C \uC77D\uACE0, \uC774\uC57C\uAE30 \uC18D \uD45C\uD604\uC744 \uACE8\uB77C\uC694.</span></section></div><section class="life-list" aria-label="\uC138 \uCE5C\uAD6C \uC774\uC57C\uAE30"><p class="life-section-label">EPISODES</p><div class="life-lesson-list">${episodes.map(({ pack: pack2, episode }) => lessonRow(episode, 0, { className: "life-story-card", lead: print(pack2.id, "life-row-print"), kicker: pack2.title, labels: ["\uB2E4\uC2DC \uC77D\uAE30", "\uC77D\uB294 \uC911", ""] })).join("")}</div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">CAFE VISITS</p><small class="life-library-note">\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88</small></div><div class="life-lesson-list">${cafeVisitCards()}</div></section>`);
   }
   function pack(id) {
     if (!ensureReadable()) return;
     const value = packById(id);
     if (!value) return;
     place = id === "cafe" ? "cafe" : "life";
-    context = null;
-    const p = getProgress(), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
+    context2 = null;
+    const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
-    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small>\uC6B0\uB9AC\uC758 \uCE74\uD398 \xB7 ${visited} / ${CAFE_VISITS.length}\uBC88\uC758 \uC791\uC740 \uD558\uB8E8</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uCE74\uD398\uC5D0\uC11C \uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uCE74\uD398 \uC774\uC57C\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694</small></div><h3 class="cafe-library-title">\uB2E4\uC2DC \uC62C \uB54C\uB9C8\uB2E4 \uB2E4\uB978 \uD558\uB8E8</h3><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><p class="life-section-label">LESSONS</p><p class="life-pack-description">${escape(value.subtitle)}</p><p class="life-library-note">${escape(value.level)} \xB7 \uC8FC\uBB38 \uC804\uC5D0 \uD45C\uD604\uACFC \uC774\uC57C\uAE30\uB3C4 \uB9CC\uB098 \uBCF4\uC138\uC694.</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" style="--len:${[...word].length}">${escape(word)}</strong><span class="life-poster-sub life-pack-description">${escape(value.subtitle)}</span>${meter(done, value.lessons.length)}</section><p class="life-library-note">${escape(value.level)} \xB7 \uD45C\uD604 \u2192 \uC774\uC57C\uAE30 \u2192 \uC0DD\uD65C \uC801\uC6A9</p></div>`;
+    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uBC29\uBB38 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? `${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694` : `\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88`}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">\uC8FC\uBB38 \uC804\uC5D0 \uBA3C\uC800 \uBD10\uB3C4 \uC88B\uC544\uC694</small></div><p class="life-pack-description">${escape(value.subtitle)}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" style="--len:${[...word].length}">${escape(word)}</strong><span class="life-poster-sub life-pack-description">${escape(value.title)} \xB7 ${escape(value.subtitle)}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
-    paint(value.title, `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>\uC804\uCCB4 \uC0DD\uD65C \uD329</button><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30</button></div>`);
+    paint(value.title, `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>\uD329 \uBAA9\uB85D\uC73C\uB85C</button>${hasReviews ? '<button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uBCF4\uAE30</button>' : ""}</div>`);
   }
   function next() {
     if (!ensureReadable()) return;
@@ -13521,7 +13697,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const p = getProgress();
     p.summary(PACKS, LESSONS);
     const previous = p.lessonState(id), state = p.startLesson(lesson2, { replay: previous.status === "completed" && previous.cursor === previous.total });
-    context = { lessonId: id, phase: state.stage.phase, sceneIndex: state.stage.sceneIndex, questionIndex: state.cursor };
+    context2 = { lessonId: id, phase: state.stage.phase, sceneIndex: state.stage.sceneIndex, questionIndex: state.cursor };
     reviewRun = null;
     lastFeedback = null;
     helped = state.stage.helped === true;
@@ -13531,65 +13707,67 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       cafeRun = resumeCafe(state, id);
       if (!cafeRun.listen) cafeRun = { ...cafeRun, listen: { mode: preferences().audio !== "off" && cafeRun.phase === "welcome" && speech.available() ? "listen" : "read", heard: false, textShown: false } };
       if (preferences().audio === "off") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, mode: "read" } };
-      context.phase = "cafe";
+      context2.phase = "cafe";
       if (cafeRun.phase === "complete") return finishCafe();
       persistCafe();
       return renderCafe();
     }
     if (state.cursor >= lesson2.questions.length) return finish();
-    if (state.cursor > 0) context.phase = "questions";
+    if (state.cursor > 0) context2.phase = "questions";
     renderLesson();
   }
   function cafeStage(value = cafeRun) {
     return { phase: "questions", sceneIndex: value.step, questionIndex: value.step, helped, cafe: value };
   }
   function persistCafe() {
-    getProgress().setStage(context.lessonId, cafeStage());
+    getProgress().setStage(context2.lessonId, cafeStage());
   }
   function renderCafe() {
-    context.phase = "cafe";
-    context.questionIndex = cafeRun.step;
-    const q = cafeQuestion(cafeRun.step, context.lessonId), first = q ? getProgress().lessonState(context.lessonId).answers[q.id] : null;
+    context2.phase = "cafe";
+    context2.questionIndex = cafeRun.step;
+    const q = cafeQuestion(cafeRun.step, context2.lessonId), first = q ? getProgress().lessonState(context2.lessonId).answers[q.id] : null;
     if (!first && !helped && preferences().support === "step" && ["choose", "repair", "response"].includes(cafeRun.phase)) {
       helped = true;
       if (cafeRun.listen?.mode === "listen") cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       persistCafe();
     }
-    const view = `${context.lessonId}:${cafeRun.step}:${["welcome", "break"].includes(cafeRun.phase) ? cafeRun.phase : "talk"}`, keepScroll = view === cafeView;
+    const view = `${context2.lessonId}:${cafeRun.step}:${["welcome", "break"].includes(cafeRun.phase) ? cafeRun.phase : "talk"}`, keepScroll = view === cafeView;
     cafeView = view;
-    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, print, helped, firstAnswer: first, retryButton, lessonId: context.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE", keepScroll });
+    paint("\uAD6C\uB984 \uD55C \uC794, \uCE74\uD398", cafeMarkup(cafeRun, { photo, print, helped, firstAnswer: first, retryButton, lessonId: context2.lessonId, speechAvailable: speech.available(), speechPhase: speech.metrics().phase }), { type: "life-cafe", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE", keepScroll });
   }
   function ensureHeard() {
-    if (cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown) throw Error("\uC9C1\uC6D0 \uC9C8\uBB38\uC744 \uB05D\uAE4C\uC9C0 \uB4E3\uAC70\uB098 \uAE00\uC790 \uB3C4\uC6C0\uC744 \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
+    if (cafeRun.listen?.mode === "listen" && !cafeRun.listen.heard && !cafeRun.listen.textShown) throw Error("\uC9C1\uC6D0 \uB9D0\uC744 \uB05D\uAE4C\uC9C0 \uB4E3\uAC70\uB098 \u300C\uAE00\uC790\uB85C \uBCF4\uAE30\u300D\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.");
   }
   function cafeChoose(choiceId) {
     ensureHeard();
     speech.stop();
-    const id = context.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id);
-    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct: choiceId === q.answerId, helped, stage: cafeStage(next2), input: cafeRun.listen });
+    const id = context2.lessonId, next2 = chooseCafe(cafeRun, choiceId, id), p = getProgress(), q = cafeQuestion(cafeRun.step, id), correct = choiceId === q.answerId;
+    if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId, correct, helped, stage: cafeStage(next2), input: cafeRun.listen });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
+    judge(correct);
   }
   function cafeSubmit() {
     ensureHeard();
-    const id = context.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
+    const id = context2.lessonId, next2 = submitCafeOrder(cafeRun), p = getProgress(), q = cafeQuestion(0, id);
     speech.stop();
     if (!p.lessonState(id).answers[q.id]) p.recordAnswer({ lessonId: id, questionId: q.id, choiceId: next2.choiceId, correct: next2.choiceId === q.answerId, helped, order: cafeRun.order, input: cafeRun.listen, stage: cafeStage(next2) });
     else p.setStage(id, cafeStage(next2));
     cafeRun = next2;
     renderCafe();
+    judge(next2.choiceId === q.answerId);
   }
-  async function cafeSpeech() {
-    if (!speech.available() && !await speech.prepare()) throw Error("\uC9C8\uBB38 \uC18C\uB9AC\uB97C \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uC900\uBE44\uD558\uAC70\uB098 \uAE00\uC790 \uB3C4\uC6C0\uC744 \uC5F4\uC5B4 \uC8FC\uC138\uC694.");
+  async function cafeSpeech({ slow = false } = {}) {
+    if (!speech.available() && !await speech.prepare()) throw Error("\uC9C1\uC6D0 \uB9D0 \uC18C\uB9AC\uB97C \uC900\uBE44\uD558\uC9C0 \uBABB\uD588\uC5B4\uC694. \uB2E4\uC2DC \uB204\uB974\uAC70\uB098 \u300C\uAE00\uC790\uB85C \uBCF4\uAE30\u300D\uB97C \uB20C\uB7EC \uC8FC\uC138\uC694.");
     const state = speech.metrics();
-    if (state.phase === "playing") {
+    if (!slow && state.phase === "playing") {
       speech.pause();
       return;
     }
-    const id = context.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`;
+    const id = context2.lessonId, step = cafeRun.step, lineId = `${id}-${step + 1}`;
     await speech.play(lineId, () => {
-      if (ended || !shown || context?.phase !== "cafe" || context.lessonId !== id || cafeRun.step !== step) return;
+      if (ended || !shown || context2?.phase !== "cafe" || context2.lessonId !== id || cafeRun.step !== step) return;
       try {
         cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, heard: true } };
         persistCafe();
@@ -13597,66 +13775,72 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       } catch {
         speech.stop();
       }
-    });
+    }, slow ? { rate: 0.75, restart: true } : {});
   }
   function cafeNext() {
     speech.stop();
-    const next2 = advanceCafe(cafeRun, context.lessonId);
+    const next2 = advanceCafe(cafeRun, context2.lessonId);
     helped = false;
-    getProgress().setStage(context.lessonId, cafeStage(next2));
+    getProgress().setStage(context2.lessonId, cafeStage(next2));
     cafeRun = next2;
     if (next2.phase === "complete") finishCafe();
     else renderCafe();
   }
   function finishCafe() {
     const p = getProgress();
-    p.finishLesson(context.lessonId);
-    context.phase = "complete";
-    context.questionIndex = 3;
+    p.finishLesson(context2.lessonId);
+    context2.phase = "complete";
+    context2.questionIndex = 3;
     const nextId = CAFE_LESSON_IDS.find((id) => p.lessonState(id).status !== "completed"), nextLesson = nextId ? lessonById(nextId) : packById("cafe").lessons.find((l) => p.lessonState(l.id).status !== "completed");
     cafeView = "";
-    paint("\uC624\uB298\uC758 \uCE74\uD398, \uC798 \uB2E4\uB140\uC654\uC5B4\uC694", cafeCompletionMarkup({ photo, print, nextLesson, lessonId: context.lessonId, state: cafeRun, adaptive: !!onNext }), { type: "life-cafe-complete", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
+    paint("\uCE74\uD398 \uBC29\uBB38 \uACB0\uACFC", cafeCompletionMarkup({ photo, print, nextLesson, lessonId: context2.lessonId, state: cafeRun, adaptive: !!onNext, answers: p.lessonState(context2.lessonId).answers }), { type: "life-cafe-complete", focus: ".cafe-focus", eyebrow: "LIFE IN KOREA \xB7 CAFE" });
+    celebrate();
     const ticket = generation;
     p.flush().catch(() => {
-      if (shown && ticket === generation) home.toast("\uCE74\uD398 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uD654\uBA74\uC758 \uC9C4\uD589\uC740 \uC720\uC9C0\uB3FC\uC694.");
+      if (shown && ticket === generation) home.toast("\uCE74\uD398 \uAE30\uB85D\uC744 \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uD654\uBA74\uC758 \uC9C4\uD589\uC740 \uADF8\uB300\uB85C\uC608\uC694.");
     });
   }
   function persistStage() {
     const p = getProgress();
-    if (context) p.setStage(context.lessonId, { phase: context.phase, sceneIndex: context.sceneIndex, questionIndex: context.questionIndex, helped });
+    if (context2) p.setStage(context2.lessonId, { phase: context2.phase, sceneIndex: context2.sceneIndex, questionIndex: context2.questionIndex, helped });
   }
   function lessonHeader(l) {
-    const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context.phase;
-    const done = phase === "story" ? context.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
-    const count = phase === "questions" ? `${Math.min(context.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context.sceneIndex + 1, scenes)} / ${scenes}` : "";
-    return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${progressLine(done, scenes + questions)}<span>${escape(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : "\uCE5C\uAD6C\uC640 \uC900\uBE44\uD558\uAE30"}</span></div>`;
+    const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context2.phase;
+    const done = phase === "story" ? context2.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context2.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
+    const count = phase === "questions" ? `${Math.min(context2.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context2.sceneIndex + 1, scenes)} / ${scenes}` : "";
+    return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context2.questionIndex}">${progressLine(done, scenes + questions)}<span>${escape(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
   }
-  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC624\uB298 \uB9CC\uB0A0 \uD45C\uD604" : "\uC774\uBC88\uC5D0 \uB9CC\uB09C \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape(e.korean)}</strong><p>${escape(e.meaning)}</p></div></article>`).join("")}</section>`;
+  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC774\uBC88\uC5D0 \uBC30\uC6B8 \uD45C\uD604" : "\uBC30\uC6B4 \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape(e.korean)}</strong><p>${escape(e.meaning)}</p></div></article>`).join("")}</section>`;
+  const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong>${escape(e.korean)}</strong>${e.note ? `<small>${escape(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
+  const doneWord = (title) => {
+    const words = String(title).split(" "), tail = words.pop();
+    return `${escape(words.join(" "))}${words.length ? " " : ""}<span class="life-nowrap">${escape(tail)}, \uB05D!</span>`;
+  };
   function renderLesson() {
-    if (!context) return;
-    const l = lessonById(context.lessonId);
+    if (!context2) return;
+    const l = lessonById(context2.lessonId);
     if (!l) return;
     const header = lessonHeader(l);
-    if (context.phase === "intro") {
-      paint(l.title, `${header}<div class="life-intro"><div class="life-heading" tabindex="-1"><small class="life-kicker">\uC77D\uACE0 \uACE0\uB974\uB294 \uAE30\uCD08 \uC0DD\uD65C \uD55C\uAD6D\uC5B4</small><p class="life-goal">${escape(l.goal)}</p></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uCE5C\uAD6C\uC640 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB9C8\uB8E8\uC5D0\uC11C \uC7A0\uAE50 \uC26C\uAE30</button></div>`, { type: "life-lesson" });
+    if (context2.phase === "intro") {
+      paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape(l.goal)}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-lesson" });
       return;
     }
-    if (context.phase === "story") {
-      const scene2 = l.scenes[context.sceneIndex];
+    if (context2.phase === "story") {
+      const scene2 = l.scenes[context2.sceneIndex];
       if (!scene2) {
-        context.phase = "questions";
+        context2.phase = "questions";
         persistStage();
         renderLesson();
         return;
       }
-      const friend = friends[scene2.speaker], speaker = friend ? scene2.speaker : "narrator";
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}"><div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${photo(f)}<small>${friends[f].name}</small></div>`).join("")}</div><div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${escape(scene2.text)}</p></div></div><div class="life-actions"><button class="felt-button" data-life-scene-next>${context.sceneIndex + 1 === l.scenes.length ? "\uC774\uC81C \uB0B4\uAC00 \uACE8\uB77C \uBCFC\uAC8C\uC694" : "\uB2E4\uC74C \uC7A5\uBA74"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uC774\uC57C\uAE30 \uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`, { type: "life-story" });
+      const friend = friends[scene2.speaker], speaker = friend ? scene2.speaker : "narrator", last = context2.sceneIndex + 1 === l.scenes.length;
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}"><div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div><div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${escape(scene2.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story" });
       return;
     }
     renderQuestion();
   }
   function renderQuestion() {
-    const l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
+    const l = lessonById(context2.lessonId), q = l.questions[context2.questionIndex];
     if (!q) return finish();
     const previous = getProgress().lessonState(l.id).answers[q.id];
     if (previous && !lastFeedback) lastFeedback = { correct: previous.correct, choiceId: previous.choiceId, question: q, helped: previous.helped };
@@ -13664,48 +13848,61 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped = true;
       persistStage();
     }
-    paint(l.title, `${lessonHeader(l)}${questionMarkup(q, lastFeedback, { lesson: l })}`, { type: "life-question", focus: ".life-question-title" });
+    paint(l.title, `${lessonHeader(l)}${questionMarkup(q, lastFeedback, { lesson: l, packId: l.packId, rest: restLine(`question:${l.id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
-  function questionMarkup(q, feedback, { lesson: lesson2 = null, reviewIndex = 0, reviewTotal = 0 } = {}) {
+  function questionMarkup(q, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
     const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape(c.text)}</span></button>`).join("");
     const result = feedback ? feedback.correct && !feedback.helped ? "ok" : feedback.correct ? "assisted" : "retry" : "";
-    return `<div class="life-question-layout"><section class="life-question-copy"><div class="life-question-title" tabindex="-1"><small>${lesson2 ? "\uC77D\uACE0 \uC0C1\uD669\uC5D0 \uB9DE\uAC8C \uACE8\uB77C\uC694" : `\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694 \xB7 ${reviewIndex + 1} / ${reviewTotal}`}</small><h3>${escape(q.prompt)}</h3></div><p class="life-context">${escape(q.context || "")}</p><button class="quiet-button life-help" data-life-help ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape(q.explanation)}</p></section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div>${feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${feedback.correct && !feedback.helped ? "\uC798 \uACE8\uB790\uC5B4\uC694." : "\uD568\uAED8 \uD655\uC778\uD574\uC694."}</strong><details class="life-explanation" ${preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720 \uB354 \uBCF4\uAE30</summary><p>${escape(q.explanation)}</p></details>${!feedback.correct || feedback.helped ? "<small>\uC774 \uD45C\uD604\uC740 \uC7A0\uC2DC \uB4A4 \uC0C8 \uC0C1\uD669\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694.</small>" + retryButton(q) : ""}</div>` : ""}</section></div><div class="life-actions"><button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C\uC73C\uB85C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uC9C4\uB3C4 \uC800\uC7A5\uD558\uACE0 \uC26C\uAE30</button></div>`;
+    const answer = q.choices.find((c) => c.id === q.answerId)?.text || "";
+    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small>${retryButton(q)}</div>` : ""}</div>` : "";
+    const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape(q.context || lesson2?.title || "")}</p></div>` : "";
+    return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape(origin)}</small>` : ""}<h3>${escape(q.prompt)}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape(q.explanation)}</p>${rest}</section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div></section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
   }
   function choose(choiceId) {
     if (lastFeedback) return;
-    const p = getProgress(), l = lessonById(context.lessonId), q = l.questions[context.questionIndex];
+    const p = getProgress(), l = lessonById(context2.lessonId), q = l.questions[context2.questionIndex];
     const correct = choiceId === q.answerId;
     p.recordAnswer({ lessonId: l.id, questionId: q.id, choiceId, correct, helped });
     lastFeedback = { question: q, choiceId, correct, helped };
     renderQuestion();
+    judge(correct);
   }
+  const nextLink = (nextLesson) => `<button class="quiet-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${onNext ? "\uB2E4\uC74C \uC5F0\uC2B5" : nextLesson ? "\uB2E4\uC74C \uB808\uC2A8" : "\uD329 \uBAA9\uB85D \uBCF4\uAE30"}</button>`;
   function finish() {
-    const p = getProgress(), l = lessonById(context.lessonId);
+    const p = getProgress(), l = lessonById(context2.lessonId);
     p.finishLesson(l.id);
-    const s = summary(), done = p.lessonState(l.id), right = Object.values(done.answers).filter((a) => a.correct && !a.helped).length;
-    context.phase = "complete";
-    const pack2 = packById(l.packId), packDone2 = s.packs.find((x) => x.id === pack2.id), nextLesson = s.nextLesson;
-    paint("\uC791\uC740 \uD55C \uAC78\uC74C\uC774 \uC313\uC600\uC5B4\uC694", `<div class="life-complete life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("complete")}<small class="life-poster-label">LESSON COMPLETE</small><strong class="life-poster-word" aria-hidden="true">\uC791\uC740 \uD55C \uAC78\uC74C\uC774 \uC313\uC600\uC5B4\uC694</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${packDone2.completed} / ${packDone2.total} \uB2E8\uACC4 \uC644\uB8CC</span></section><div class="life-complete-copy"><h3>${escape(l.title)}</h3><p class="life-complete-score">\uCC98\uC74C\uC5D0 \uB3C4\uC6C0 \uC5C6\uC774 \uACE0\uB978 \uB2F5 <b>${right} / ${l.questions.length}</b></p>${packDone2.completed === packDone2.total ? '<p class="life-pack-stamp">\uC774 \uC0DD\uD65C \uD329\uC744 \uC218\uC9D1\uCCA9\uC5D0 \uC644\uC131\uD588\uC5B4\uC694.</p>' : ""}</div>${expressionList(l, "LEARNED")}<p class="life-complete-note">\uBC30\uC6B4 \uD45C\uD604\uC740 \uBCF5\uC2B5 \uC77C\uC815\uC5D0 \uB0A8\uACA8 \uB450\uC5C8\uC5B4\uC694.</p></div><div class="life-actions"><button class="felt-button" data-life-home>\uB9C8\uB8E8\uB85C \uB3CC\uC544\uAC00\uAE30 <span aria-hidden="true">\u2192</span></button><button class="plain-button" ${onNext ? "data-life-next" : nextLesson ? `data-life-lesson="${nextLesson.id}"` : "data-life-packs"}>${onNext ? "\uB098\uC5D0\uAC8C \uB9DE\uB294 \uB2E4\uC74C \uC5F0\uC2B5" : nextLesson ? `${phaseNames[nextLesson.type]}\uB85C \uC774\uC5B4\uAC00\uAE30` : "\uC0DD\uD65C \uD329 \uBAA8\uB450 \uBCF4\uAE30"}</button><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30</button></div>`, { type: "life-complete" });
+    const s = summary(), done = p.lessonState(l.id);
+    context2.phase = "complete";
+    const pack2 = packById(l.packId), packState = s.packs.find((x) => x.id === pack2.id), complete = packState.completed === packState.total, [word] = packWords[pack2.id] || [pack2.title];
+    const missed = l.questions.find((q) => {
+      const a = done.answers[q.id];
+      return a && (!a.correct || a.helped);
+    }), again = missed ? expressionOf(l, missed) : null;
+    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${learnedList(l.expressions)}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${escape(again.korean)}</strong><div><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815</button></div></section>` : ""}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape(word)} \uD329 \uB3C4\uC7A5` : `${escape(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uBC29\uC73C\uB85C <span aria-hidden="true">\u2192</span></button>${nextLink(s.nextLesson)}</div>`, { type: "life-complete" });
+    celebrate();
     const ticket = generation;
     p.flush().catch(() => {
-      if (shown && ticket === generation) home.toast("\uC9C4\uB3C4 \uC800\uC7A5\uC744 \uAE30\uB2E4\uB9AC\uACE0 \uC788\uC5B4\uC694. \uBCF5\uC2B5 \uC77C\uC815\uC740 \uD654\uBA74\uC5D0 \uB0A8\uACA8 \uB450\uC5C8\uC5B4\uC694.");
+      if (shown && ticket === generation) home.toast("\uC9C4\uB3C4\uB97C \uC800\uC7A5\uD558\uACE0 \uC788\uC5B4\uC694. \uBCF5\uC2B5 \uC77C\uC815\uC740 \uADF8\uB300\uB85C \uB0A8\uC544\uC694.");
     });
+  }
+  function reviewOrigin(record2, snapshot = getProgress().exportSnapshot()) {
+    const at = snapshot.lessons[record2.lessonId]?.answers?.[record2.questionId]?.at ?? record2.lastAt;
+    return [ago(at), placeAt[record2.packId]].filter(Boolean).join(" \xB7 ");
   }
   function review() {
     if (!ensureReadable()) return;
     place = "life";
-    context = null;
+    context2 = null;
     lastFeedback = null;
     helped = false;
     reviewRun = null;
-    const s = summary(), future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    const topics = /* @__PURE__ */ new Map();
-    for (const r of s.dueReviews) {
-      const title = packById(r.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4";
-      topics.set(title, (topics.get(title) || 0) + 1);
-    }
-    paint("\uC624\uB298 \uB3CC\uC544\uC628 \uD45C\uD604", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `${s.dueCount}\uAC1C\uC758 \uD45C\uD604\uC774 \uAE30\uB2E4\uB824\uC694.` : future ? "\uBC30\uC6B4 \uD45C\uD604\uC774 \uC798 \uC26C\uACE0 \uC788\uC5B4\uC694." : "\uCCAB \uD45C\uD604\uC744 \uB9CC\uB098\uB7EC \uAC08\uAE4C\uC694?"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uB2F5\uC744 \uC678\uC6B0\uB294 \uB300\uC2E0, \uC0C8\uB85C\uC6B4 \uC0DD\uD65C \uC7A5\uBA74\uC5D0\uC11C \uACE8\uB77C\uC694." : future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape(future)}\uBD80\uD130 \uC5F4\uB824\uC694.` : "\uC0DD\uD65C \uD329\uC744 \uB9C8\uCE58\uBA74 \uB098\uC5D0\uAC8C \uD544\uC694\uD55C \uBCF5\uC2B5\uC774 \uC0DD\uACA8\uC694."}</p></section>${s.dueCount ? `<div class="life-review-topics" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604\uC758 \uD329">${[...topics].map(([title, count]) => `<span>${escape(title)}${count > 1 ? ` <b>${count}</b>` : ""}</span>`).join("")}</div>` : ""}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uB3CC\uC544\uC628 \uD45C\uD604 \uC5F0\uC2B5\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="plain-button" data-life-next>\uB2E4\uC74C \uD559\uC2B5 \uC774\uC5B4 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uD559\uC2B5 \uC774\uC5B4 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button>'}<button class="quiet-button" data-life-home>\uB9C8\uB8E8\uB85C \uB3CC\uC544\uAC00\uAE30</button></div>`, { type: "life-review" });
+    const s = summary(), future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "", snapshot = getProgress().exportSnapshot();
+    const items = s.dueReviews.map((r) => {
+      const l = lessonById(r.lessonId), q = l?.questions.find((x) => x.id === r.questionId);
+      return { korean: expressionOf(l, q).korean, origin: reviewOrigin(r, snapshot) };
+    }).filter((i) => i.korean);
+    paint("\uBCF5\uC2B5", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `\uB3CC\uC544\uC628 \uD45C\uD604 ${s.dueCount}\uAC1C` : future ? "\uB2E4\uC74C \uBCF5\uC2B5" : "\uC544\uC9C1 \uBCF5\uC2B5\uC774 \uC5C6\uC5B4\uC694"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C\uC694." : future ? `${escape(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB808\uC2A8\uC744 \uD558\uB098 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uD560 \uD45C\uD604\uC774 \uC0DD\uACA8\uC694."}</p></section>${items.length ? `<section class="life-review-list" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong>${escape(i.korean)}</strong><small>${escape(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uBCF5\uC2B5 \uC2DC\uC791\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>\uC6B0\uB9AC \uBC29\uC73C\uB85C</button>'}</div>`, { type: "life-review" });
   }
   function reviewStart(lessonId = null, requestedIds = null) {
     const p = getProgress(), ids = Array.isArray(requestedIds) ? requestedIds : null;
@@ -13723,35 +13920,41 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const index = run.ids.findIndex((id2) => !run.answers[id2]);
     if (index < 0) {
       summary();
-      paint("\uC624\uB298\uC758 \uBCF5\uC2B5\uC744 \uB9C8\uCCE4\uC5B4\uC694", `<div class="life-complete life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("complete")}<small class="life-poster-label">REVIEW COMPLETE</small><strong class="life-poster-word" aria-hidden="true">\uC624\uB298\uC758 \uBCF5\uC2B5\uC744 \uB9C8\uCCE4\uC5B4\uC694</strong><h3 class="life-poster-sub">${run.ids.length}\uAC1C \uD45C\uD604\uC744 \uB2E4\uC2DC \uB9CC\uB0AC\uC5B4\uC694.</h3></section><p class="life-complete-note">\uC798 \uC775\uD78C \uD45C\uD604\uC740 \uB354 \uAE34 \uAC04\uACA9\uC73C\uB85C,<br>\uC5B4\uB824\uC6B4 \uD45C\uD604\uC740 \uC7A0\uC2DC \uB4A4 \uB2E4\uC2DC \uB3CC\uC544\uC640\uC694.</p></div><div class="life-actions"><button class="felt-button" data-life-home>\uB9C8\uB8E8\uB85C \uB3CC\uC544\uAC00\uAE30 <span aria-hidden="true">\u2192</span></button><button class="plain-button" data-life-next>\uB2E4\uC74C \uD559\uC2B5 \uC774\uC5B4 \uD558\uAE30</button></div>`, { type: "life-review-complete" });
+      const snapshot = getProgress().exportSnapshot(), items = run.ids.map((id2) => {
+        const r = snapshot.reviews[id2], l2 = lessonById(r?.lessonId), q2 = l2?.questions.find((x) => x.id === r.questionId), a = run.answers[id2];
+        return { korean: expressionOf(l2, q2).korean, note: a && a.correct && !a.helped ? "\uC798 \uAE30\uC5B5\uD588\uC5B4\uC694. \uB2E4\uC74C\uC5D0\uB294 \uB354 \uC624\uB798 \uC788\uB2E4\uAC00 \uB098\uC640\uC694." : "\uC870\uAE08 \uB4A4 \uB2E4\uC2DC \uB098\uC640\uC694." };
+      }).filter((i) => i.korean);
+      paint("\uBCF5\uC2B5 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print("review")}<small class="life-poster-label">RESULT \xB7 REVIEW</small><strong class="life-poster-word">\uBCF5\uC2B5, \uB05D!</strong><h3 class="life-poster-sub">\uD45C\uD604 ${run.ids.length}\uAC1C\uB97C \uB2E4\uC2DC \uB9CC\uB0AC\uC5B4\uC694.</h3></section>${learnedList(items, "BACK AGAIN")}</div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uBC29\uC73C\uB85C <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8</button></div>`, { type: "life-review-complete" });
+      celebrate();
       return;
     }
     const id = run.ids[index], record2 = getProgress().exportSnapshot().reviews[id], l = lessonById(record2.lessonId), original = l.questions.find((q2) => q2.id === record2.questionId), q = original.review;
     if (!lastFeedback) helped = run.pendingHelp?.[id] === true;
-    context = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
+    context2 = { lessonId: l.id, phase: "review", questionIndex: index, reviewId: id, reviewQuestion: q };
     if (!lastFeedback && !helped && preferences().support === "step") {
       helped = true;
       getProgress().markReviewHelp(id);
     }
-    paint("\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694", `<div class="life-session-meta" data-life-review-id="${escape(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { reviewIndex: index, reviewTotal: run.ids.length })}`, { type: "life-question", focus: ".life-question-title" });
+    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${escape(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { packId: record2.packId, origin: `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604`, rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
     if (lastFeedback) return;
-    const q = context.reviewQuestion, p = getProgress();
-    p.answerReview({ id: context.reviewId, runId: reviewRun.id, correct: id === q.answerId, helped });
-    helped = p.exportSnapshot().activeReview.answers[context.reviewId].helped;
-    lastFeedback = { question: q, choiceId: id, correct: id === q.answerId, helped };
-    const html = questionMarkup(q, lastFeedback, { reviewIndex: context.questionIndex, reviewTotal: reviewRun.ids.length });
-    paint("\uB2E4\uB978 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB9CC\uB098\uC694", `<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex + 1, reviewRun.ids.length)}<span>\uD45C\uD604 \uBCF5\uC2B5</span><span><b class="life-count">${context.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    const q = context2.reviewQuestion, p = getProgress(), correct = id === q.answerId;
+    p.answerReview({ id: context2.reviewId, runId: reviewRun.id, correct, helped });
+    helped = p.exportSnapshot().activeReview.answers[context2.reviewId].helped;
+    lastFeedback = { question: q, choiceId: id, correct, helped };
+    const record2 = p.exportSnapshot().reviews[context2.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context2.reviewId}`) });
+    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context2.reviewId}" data-life-phase="review" data-life-step="${context2.questionIndex}">${progressLine(context2.questionIndex + 1, reviewRun.ids.length)}<span>${escape(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context2.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
+    judge(correct);
   }
   function pause() {
-    if (context?.phase === "cafe") persistCafe();
-    else if (context && ["intro", "story", "questions"].includes(context.phase)) persistStage();
+    if (context2?.phase === "cafe") persistCafe();
+    else if (context2 && ["intro", "story", "questions"].includes(context2.phase)) persistStage();
     home.closePanel();
     updateHome();
-    home.toast("\uD558\uB358 \uC790\uB9AC\uC640 \uBCF5\uC2B5 \uC77C\uC815\uC744 \uB0A8\uACBC\uC5B4\uC694.");
+    home.toast("\uD558\uB358 \uC790\uB9AC\uB97C \uC800\uC7A5\uD588\uC5B4\uC694.");
   }
   const handlers = {
     packs,
@@ -13765,25 +13968,25 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     pack: (el) => pack(el.dataset.lifePack),
     lesson: (el) => start(el.dataset.lifeLesson),
     begin: () => {
-      context.phase = "story";
-      context.sceneIndex = 0;
+      context2.phase = "story";
+      context2.sceneIndex = 0;
       persistStage();
       renderLesson();
     },
     "scene-next": () => {
-      context.sceneIndex++;
-      if (context.sceneIndex >= lessonById(context.lessonId).scenes.length) context.phase = "questions";
+      context2.sceneIndex++;
+      if (context2.sceneIndex >= lessonById(context2.lessonId).scenes.length) context2.phase = "questions";
       persistStage();
       renderLesson();
     },
-    choice: (el) => context.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
+    choice: (el) => context2.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
     "question-next": () => {
-      if (context.phase === "review") {
+      if (context2.phase === "review") {
         lastFeedback = null;
         helped = false;
         renderReview();
       } else {
-        context.questionIndex++;
+        context2.questionIndex++;
         lastFeedback = null;
         helped = false;
         persistStage();
@@ -13799,30 +14002,36 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       cafeRun = updateCafeOrder(cafeRun, field, value);
       persistCafe();
       renderCafe();
+      play("select");
       content.querySelector(`[data-life-cafe-word="${field}"][data-cafe-value="${value}"]`)?.focus({ preventScroll: true });
     },
     "cafe-submit": cafeSubmit,
     "cafe-speech": () => {
       void cafeSpeech().catch((error2) => home.toast(error2.message));
     },
+    "cafe-slow": () => {
+      void cafeSpeech({ slow: true }).catch((error2) => home.toast(error2.message));
+    },
     "cafe-mode": (el) => {
       if (cafeRun.phase !== "welcome") return;
       cafeRun = { ...cafeRun, listen: { mode: el.dataset.lifeCafeMode, heard: false, textShown: false } };
       persistCafe();
       renderCafe();
+      play("select");
     },
     "cafe-transcript": () => {
       cafeRun = { ...cafeRun, listen: { ...cafeRun.listen, textShown: true } };
       helped = true;
       persistCafe();
       renderCafe();
-      content.querySelector("[data-life-cafe-transcript]")?.focus({ preventScroll: true });
+      content.querySelector(".cafe-staff>p")?.focus({ preventScroll: true });
     },
     "cafe-seat": (el) => {
-      const next2 = chooseCafeSeat(cafeRun, el.dataset.lifeCafeSeat, context.lessonId);
-      getProgress().setStage(context.lessonId, cafeStage(next2));
+      const next2 = chooseCafeSeat(cafeRun, el.dataset.lifeCafeSeat, context2.lessonId);
+      getProgress().setStage(context2.lessonId, cafeStage(next2));
       cafeRun = next2;
       renderCafe();
+      play("select");
     },
     "cafe-help": () => {
       helped = true;
@@ -13849,11 +14058,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   document.addEventListener("click", click);
   timer = setInterval(updateHome, 15e3);
   updateHome();
-  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context?.lessonId || null, phase: context?.phase || null, step: context?.questionIndex ?? null, cafe: isCafeLesson(context?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
+  return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context2?.lessonId || null, phase: context2?.phase || null, step: context2?.questionIndex ?? null, cafe: isCafeLesson(context2?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
     ended = true;
     speech.dispose();
     clearInterval(timer);
     document.removeEventListener("click", click);
+    document.removeEventListener("visibilitychange", sitting);
     if (shown) home.closePanel();
   } };
 }
@@ -14179,24 +14389,24 @@ function buildWorldLearningCandidates({ progress: progress2 = {}, settings = {},
     if (!groups.has(review.lessonId)) groups.set(review.lessonId, []);
     groups.get(review.lessonId).push(review);
   }
-  for (const [lessonId, rows] of groups) {
-    rows.sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id));
-    const need = rows.map((review) => practiceNeed(review, source, at)).filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
+  for (const [lessonId, rows2] of groups) {
+    rows2.sort((a, b) => a.dueAt - b.dueAt || a.id.localeCompare(b.id));
+    const need = rows2.map((review) => practiceNeed(review, source, at)).filter(Boolean).sort((a, b) => Date.parse(b.at) - Date.parse(a.at))[0];
     candidates.push({
       id: `world.review.${lessonId}`,
-      label: `${rows[0].lesson.title} \xB7 \uC0C8 \uC0C1\uD669 \uBCF5\uC2B5`,
+      label: `${rows2[0].lesson.title} \xB7 \uC0C8 \uC0C1\uD669 \uBCF5\uC2B5`,
       route: "review",
       lessonId,
-      packId: rows[0].packId,
-      minutes: Math.max(1, Math.ceil(rows.length / 3)),
+      packId: rows2[0].packId,
+      minutes: Math.max(1, Math.ceil(rows2.length / 3)),
       minutesEstimated: true,
       targets: [],
-      goals: [...PACK_GOALS[rows[0].packId]],
+      goals: [...PACK_GOALS[rows2[0].packId]],
       supports: [...supports],
       audioRequired: false,
       modality: "reading",
-      reviewIds: rows.map((review) => review.id),
-      reviewAt: iso2(rows[0].dueAt),
+      reviewIds: rows2.map((review) => review.id),
+      reviewAt: iso2(rows2[0].dueAt),
       presentation: presentationFor(settings),
       ...need ? { practiceNeed: need } : {}
     });
@@ -14330,10 +14540,11 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
 
 // experiences/synk-world-app/world-learning-ui.mjs
 var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-var reasons = { travel: "\uC5EC\uD589\uC5D0\uC11C \uB9D0\uD558\uAE30", life: "\uD55C\uAD6D \uC0DD\uD65C\uC5D0 \uC801\uC751\uD558\uAE30", people: "\uC0AC\uB78C\uB4E4\uACFC \uC774\uC57C\uAE30\uD558\uAE30", exam: "TOPIK \uAE30\uCD08 \uC900\uBE44", study: "\uD559\uAD50\uC5D0\uC11C \uACF5\uBD80\uD558\uAE30", work: "\uC9C1\uC7A5\uC5D0\uC11C \uB9D0\uD558\uAE30", career: "\uC9C4\uB85C \uC900\uBE44\uD558\uAE30", culture: "\uD55C\uAD6D \uBB38\uD654 \uC990\uAE30\uAE30", hobby: "\uCDE8\uBBF8\uB85C \uBC30\uC6B0\uAE30", other: "\uC544\uC9C1 \uCC3E\uC544\uBCF4\uB294 \uC911" };
-var supportNames = { choose: "\uD574 \uBCF4\uBA74\uC11C \uB9DE\uCD94\uAE30", step: "\uD55C \uB2E8\uACC4\uC529 \uB3C4\uC6C0\uBC1B\uAE30", independent: "\uBA3C\uC800 \uD63C\uC790 \uD574 \uBCF4\uAE30" };
-var stateNames = { practice: "\uB2E4\uC2DC \uC5F0\uC2B5\uD560 \uBD80\uBD84", supported: "\uB3C4\uC6C0\uACFC \uD568\uAED8 \uC5F0\uC2B5\uD55C \uBD80\uBD84", review: "\uB2E4\uC2DC \uD655\uC778\uD560 \uB54C", checking: "\uC0C8 \uBB38\uC81C\uB85C \uD655\uC778\uD558\uB294 \uC911", "recent-independent": "\uCD5C\uADFC \uC0C8 \uBB38\uC81C\uB97C \uD63C\uC790 \uD480\uC5C8\uC5B4\uC694" };
-var radios = (name, options, value) => Object.entries(options).map(([id, label]) => `<label class="study-option"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span>${label}</span></label>`).join("");
+var reasons = { travel: "\uC5EC\uD589", life: "\uD55C\uAD6D \uC0DD\uD65C", people: "\uC0AC\uB78C\uB4E4\uACFC \uB300\uD654", exam: "TOPIK \uAE30\uCD08", study: "\uD559\uAD50 \uACF5\uBD80", work: "\uC9C1\uC7A5", career: "\uC9C4\uB85C \uC900\uBE44", culture: "\uD55C\uAD6D \uBB38\uD654", hobby: "\uCDE8\uBBF8", other: "\uC544\uC9C1 \uCC3E\uB294 \uC911" };
+var supportNames = { choose: ["\uACE8\uB77C \uBCF4\uBA70 \uC775\uD788\uAE30", "\uBA3C\uC800 \uACE8\uB77C \uBCF4\uACE0, \uD2C0\uB9AC\uBA74 \uC774\uC720\uB97C \uBD10\uC694."], step: ["\uD55C \uB2E8\uACC4\uC529 \uB3C4\uC6C0\uBC1B\uAE30", "\uBB38\uC81C\uB9C8\uB2E4 \uD45C\uD604 \uB3C4\uC6C0\uC744 \uBA3C\uC800 \uD3BC\uCCD0 \uB46C\uC694."], independent: ["\uBA3C\uC800 \uD63C\uC790 \uD480\uAE30", "\uB3C4\uC6C0\uC740 \uB0B4\uAC00 \uB204\uB97C \uB54C\uB9CC \uC5F4\uB824\uC694."] };
+var stateNames = { practice: "\uB2E4\uC2DC \uC5F0\uC2B5\uD560 \uBD80\uBD84", supported: "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uC5F0\uC2B5\uD55C \uBD80\uBD84", review: "\uB2E4\uC2DC \uD655\uC778\uD560 \uB54C", checking: "\uC0C8 \uBB38\uC81C\uB85C \uD655\uC778\uD558\uB294 \uC911", "recent-independent": "\uCD5C\uADFC \uC0C8 \uBB38\uC81C\uB97C \uD63C\uC790 \uD480\uC5C8\uC5B4\uC694" };
+var radios = (name, options, value) => (Array.isArray(options) ? options : Object.entries(options)).map(([id, label]) => `<label class="study-pill"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span>${label}</span></label>`).join("");
+var rows = (name, options, value) => Object.entries(options).map(([id, [label, note]]) => `<label class="study-option"><input type="radio" name="${name}" value="${id}" ${value === id ? "checked" : ""}><span><strong>${label}</strong><small>${note}</small></span></label>`).join("");
 function createWorldEducation({ home, getProgress, engine, createPlan, launchGame, startLesson, startReview, prepare = async () => {
 }, target = globalThis }) {
   let stopped = false, coach = null, coachHost = null, current = null, refreshing = false, applied = null;
@@ -14418,7 +14629,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     check3();
     const plan = refresh(), selected = plan?.selected;
     if (!selected) {
-      home.toast(plan?.reason || "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC5F0\uC2B5\uC744 \uCC3E\uC9C0 \uBABB\uD588\uC5B4\uC694. \uD559\uC2B5 \uC124\uC815\uC5D0\uC11C \uC2DC\uAC04\uACFC \uC18C\uB9AC\uB97C \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694.");
+      home.toast(plan?.reason || "\uC9C0\uAE08 \uC870\uAC74\uC5D0 \uB9DE\uB294 \uC5F0\uC2B5\uC774 \uC5C6\uC5B4\uC694. \uD559\uC2B5 \uBAA9\uD45C\uC5D0\uC11C \uC2DC\uAC04\uACFC \uC18C\uB9AC\uB97C \uBC14\uAFD4 \uBCF4\uC138\uC694.");
       return;
     }
     if (applyPreferences() === false) {
@@ -14439,20 +14650,23 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     } catch {
     }
     const observed = summary.evidenceComplete ? summary.skills.filter((s) => stateNames[s.status]).slice(0, 4) : [];
-    const option = (id, label) => `<option value="${id}" ${values.primaryReason === id || !values.primaryReason && values.reasons?.[0] === id ? "selected" : ""}>${label}</option>`;
-    home.showPanel("\uB098\uC5D0\uAC8C \uB9DE\uB294 \uD55C\uAD6D\uC5B4", `<form id="world-study-form" class="study-form">
-   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">\uD559\uC2B5 \uBAA9\uD45C</strong><p class="study-intro life-poster-sub">\uC9C0\uAE08 \uD544\uC694\uD55C \uD55C\uAD6D\uC5B4\uBD80\uD130 \uC2DC\uC791\uD574\uC694. \uC5B8\uC81C\uB4E0 \uBC14\uAFC0 \uC218 \uC788\uACE0, \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uBC30\uC6B8 \uC218 \uC788\uC5B4\uC694.</p></div>
-   <label class="study-field"><strong>\uC9C0\uAE08 \uAC00\uC7A5 \uBC30\uC6B0\uACE0 \uC2F6\uC740 \uC774\uC720</strong><select name="reason"><option value="">\uC544\uC9C1 \uACE0\uB974\uC9C0 \uC54A\uC744\uAC8C\uC694</option>${Object.entries(reasons).map(([id, label]) => option(id, label)).join("")}</select></label>
-   <fieldset><legend>\uC5B4\uB5BB\uAC8C \uB3C4\uC640\uC904\uAE4C\uC694?</legend><div class="study-options">${radios("support", supportNames, values.support || "choose")}</div></fieldset>
-   <fieldset><legend>\uC124\uBA85\uC740 \uC5B4\uB290 \uC815\uB3C4\uAC00 \uD3B8\uD574\uC694?</legend><div class="study-options">${radios("explanation", { brief: "\uC9E7\uAC8C \uBCF4\uACE0, \uD544\uC694\uD558\uBA74 \uB354 \uBCF4\uAE30", standard: "\uAE30\uBCF8 \uC124\uBA85 \uBCF4\uAE30", detailed: "\uC774\uC720\uB3C4 \uD3BC\uCCD0\uC11C \uBCF4\uAE30" }, values.explanation || "brief")}</div></fieldset>
-   <div class="study-today"><strong>\uC624\uB298\uC758 \uC0C1\uD669</strong><p>\uC2DC\uAC04\uACFC \uC18C\uB9AC \uC124\uC815\uC740 \uC624\uB298\uB9CC \uBC18\uC601\uD574\uC694.</p><div class="study-two-fields"><label>\uACF5\uBD80\uD560 \uC2DC\uAC04<select name="minutes"><option value="">\uC815\uD558\uC9C0 \uC54A\uC558\uC5B4\uC694</option>${[3, 5, 10].map((n) => `<option value="${n}" ${values.minutes === n ? "selected" : ""}>${n}\uBD84 \uC815\uB3C4</option>`).join("")}</select></label><label>\uC18C\uB9AC \uB4E3\uAE30<select name="audio"><option value="available" ${values.audio !== "off" ? "selected" : ""}>\uB4E4\uC744 \uC218 \uC788\uC5B4\uC694</option><option value="off" ${values.audio === "off" ? "selected" : ""}>\uC9C0\uAE08\uC740 \uC5B4\uB824\uC6CC\uC694</option></select></label></div></div>
-   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span>\uBAA9\uD45C\uC640 \uB3C4\uC6C0 \uC120\uD638\uB97C ${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uAE30\uC5B5\uD558\uACE0 \uB9DE\uCDA4 \uCD94\uCC9C\uC5D0 \uC0AC\uC6A9\uD558\uAE30</span></label>
-   <p class="study-scope">\uC131\uACA9\uC774\uB098 \uAE09\uC218\uB97C \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uC124\uC815\uC744 \uC9C0\uC6CC\uB3C4 \uAE30\uC874 \uD559\uC2B5 \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
+    const reason = values.primaryReason || values.reasons?.[0] || "";
+    home.showPanel("\uD559\uC2B5 \uBAA9\uD45C", `<form id="world-study-form" class="study-form">
+   <div class="life-poster study-poster"><span class="w-print study-print" aria-hidden="true"><i></i></span><small class="life-poster-label">MY GOALS</small><strong class="life-poster-word">\uD559\uC2B5 \uBAA9\uD45C</strong><p class="study-intro life-poster-sub">\uC815\uD574 \uB450\uBA74 \uB2E4\uC74C \uC5F0\uC2B5\uC744 \uC5EC\uAE30\uC5D0 \uB9DE\uCDB0 \uACE8\uB77C\uC694. \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uBC30\uC6B8 \uC218 \uC788\uACE0, \uC5B8\uC81C\uB4E0 \uBC14\uAFC0 \uC218 \uC788\uC5B4\uC694.</p></div>
+   <fieldset class="study-group"><legend>\uBC30\uC6B0\uB294 \uC774\uC720</legend><div class="study-pills study-wrap">${radios("reason", [["", "\uC548 \uC815\uD568"], ...Object.entries(reasons)], reason)}</div></fieldset>
+   <fieldset class="study-group"><legend>\uB3C4\uC6C0 \uBC29\uC2DD</legend><div class="study-options">${rows("support", supportNames, values.support || "choose")}</div></fieldset>
+   <fieldset class="study-group"><legend>\uC124\uBA85 \uAE38\uC774</legend><div class="study-pills study-segment">${radios("explanation", { brief: "\uC9E7\uAC8C", standard: "\uBCF4\uD1B5", detailed: "\uC790\uC138\uD788" }, values.explanation || "brief")}</div></fieldset>
+   <div class="study-today"><p class="life-section-label">TODAY</p><p>\uC2DC\uAC04\uACFC \uC18C\uB9AC\uB294 \uC624\uB298\uB9CC \uC801\uC6A9\uB3FC\uC694.</p>
+    <fieldset class="study-group"><legend>\uACF5\uBD80\uD560 \uC2DC\uAC04</legend><div class="study-pills study-segment">${radios("minutes", [["", "\uC0C1\uAD00\uC5C6\uC74C"], ["3", "3\uBD84"], ["5", "5\uBD84"], ["10", "10\uBD84"]], values.minutes ? String(values.minutes) : "")}</div></fieldset>
+    <fieldset class="study-group"><legend>\uC18C\uB9AC</legend><div class="study-pills study-segment">${radios("audio", { available: "\uB4E4\uC744 \uC218 \uC788\uC5B4\uC694", off: "\uC9C0\uAE08\uC740 \uBABB \uB4E4\uC5B4\uC694" }, values.audio === "off" ? "off" : "available")}</div></fieldset>
+   </div>
+   <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD558\uAE30</strong><small>\uBAA9\uD45C\uC640 \uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uAE30\uC5B5\uD574 \uCD94\uCC9C\uC5D0 \uC368\uC694.</small></span></label>
+   <p class="study-scope">\uAE09\uC218\uB098 \uC131\uACA9\uC744 \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uC124\uC815\uC744 \uC9C0\uC6CC\uB3C4 \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
    <p class="study-save-status" role="status">${escape2(progress2.status().message)}</p>
-   <div class="life-actions"><button class="felt-button" type="submit">\uC800\uC7A5\uD558\uACE0 ${continueAfter ? "\uC2DC\uC791\uD558\uAE30" : "\uCD94\uCC9C \uBCF4\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status === "new" ? "\uC9C0\uAE08\uC740 \uAC74\uB108\uB6F0\uAE30" : "\uB3CC\uC544\uAC00\uAE30"}</button></div>
-   ${profile.status === "active" ? '<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">\uBAA9\uD45C\xB7\uC120\uD638 \uC0AC\uC6A9 \uB044\uAE30</button><button type="button" class="quiet-button" data-study-clear="delete">\uBAA9\uD45C\uC640 \uC120\uD638 \uC9C0\uC6B0\uAE30</button></div>' : ""}
-   <section class="study-understanding"><h3>\uC5F0\uC2B5\uC5D0\uC11C \uD655\uC778\uD55C \uAC83</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape2(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join("")}</ul>` : "<p>\uC0C8 \uBB38\uC81C\uB97C \uD480\uBA74\uC11C \uC870\uAE08\uC529 \uD655\uC778\uD574\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uB294 \uC774\uC720\uB85C \uC57D\uD558\uB2E4\uACE0 \uD310\uB2E8\uD558\uC9C0 \uC54A\uC544\uC694.</p>"}<p>\uD63C\uC790 \uD47C \uB2F5\uACFC \uB3C4\uC6C0\uBC1B\uC740 \uB2F5, \uC870\uC791\xB7\uC18C\uB9AC \uBB38\uC81C\uB97C \uAD6C\uBD84\uD574\uC11C \uB2E4\uC74C \uC5F0\uC2B5\uC5D0 \uBC18\uC601\uD574\uC694.</p></section>
-  </form>`, { type: "world-study", eyebrow: "MY KOREAN", nav: "me" });
+   <div class="life-actions"><button class="felt-button" type="submit">${continueAfter ? "\uC800\uC7A5\uD558\uACE0 \uC2DC\uC791\uD558\uAE30" : "\uC800\uC7A5\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status === "new" ? "\uAC74\uB108\uB6F0\uAE30" : "\uB2EB\uAE30"}</button></div>
+   ${profile.status === "active" ? '<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">\uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAE30</button><button type="button" class="quiet-button" data-study-clear="delete">\uBAA9\uD45C \uC9C0\uC6B0\uAE30</button></div>' : ""}
+   <section class="study-understanding"><h3>\uC5F0\uC2B5\uC5D0\uC11C \uBCF8 \uAC83</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape2(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join("")}</ul>` : "<p>\uC0C8 \uBB38\uC81C\uB97C \uD480\uBA74\uC11C \uC870\uAE08\uC529 \uC54C\uC544\uAC00\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uACE0 \uC57D\uD558\uB2E4\uACE0 \uBCF4\uC9C0 \uC54A\uC544\uC694.</p>"}<p>\uD63C\uC790 \uD47C \uB2F5, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB2F5, \uC870\uC791\xB7\uC18C\uB9AC \uBB38\uC81C\uB97C \uB098\uB220\uC11C \uB2E4\uC74C \uC5F0\uC2B5\uC5D0 \uBC18\uC601\uD574\uC694.</p></section>
+  </form>`, { type: "world-study", eyebrow: "GOALS", nav: "me" });
     const form = target.document.querySelector("#world-study-form");
     if (!form) return;
     const status = form.querySelector(".study-save-status");
@@ -14475,7 +14689,7 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
         refresh();
         home.closePanel();
         if (continueAfter) await next();
-        else home.toast("\uC9C0\uAE08 \uBAA9\uD45C\uC640 \uD559\uC2B5 \uAE30\uB85D\uC73C\uB85C \uCD94\uCC9C\uC744 \uBC14\uAFE8\uC5B4\uC694.");
+        else home.toast("\uBAA9\uD45C\uC5D0 \uB9DE\uCDB0 \uB2E4\uC74C \uC5F0\uC2B5\uC744 \uBC14\uAFE8\uC5B4\uC694.");
       } catch (error2) {
         if (form.isConnected) status.textContent = error2.message || "\uC800\uC7A5\uC744 \uD655\uC778\uD55C \uB4A4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.";
       } finally {
@@ -14486,11 +14700,11 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       if (!form.elements.consent.checked) {
-        status.textContent = "\uAE30\uC5B5\uD574\uB3C4 \uAD1C\uCC2E\uB2E4\uBA74 \uC120\uD0DD\uD574 \uC8FC\uC138\uC694. \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uAE30\uBCF8 \uC5F0\uC2B5\uC744 \uD560 \uC218 \uC788\uC5B4\uC694.";
+        status.textContent = "\uC800\uC7A5\uD558\uB824\uBA74 \u300C\uC800\uC7A5\uD558\uAE30\u300D \uC2A4\uC704\uCE58\uB97C \uCF1C \uC8FC\uC138\uC694. \uAC74\uB108\uB6F0\uC5B4\uB3C4 \uAE30\uBCF8 \uC5F0\uC2B5\uC740 \uD560 \uC218 \uC788\uC5B4\uC694.";
         return;
       }
-      const reason = form.elements.reason.value, minutes = Number(form.elements.minutes.value);
-      void run(() => progress2.updateLearningProfile({ consent: true, expectedRevision: revision2, values: { reasons: reason ? [reason] : null, primaryReason: reason || null, goal: null, support: form.elements.support.value, explanation: form.elements.explanation.value }, today: { ...minutes ? { minutes } : {}, audio: form.elements.audio.value } }));
+      const reason2 = form.elements.reason.value, minutes = Number(form.elements.minutes.value);
+      void run(() => progress2.updateLearningProfile({ consent: true, expectedRevision: revision2, values: { reasons: reason2 ? [reason2] : null, primaryReason: reason2 || null, goal: null, support: form.elements.support.value, explanation: form.elements.explanation.value }, today: { ...minutes ? { minutes } : {}, audio: form.elements.audio.value } }));
     });
     form.querySelector("[data-study-skip]").addEventListener("click", () => {
       if (profile.status === "new") void run(() => progress2.clearLearningProfile({ mode: "skip", expectedRevision: revision2 }));

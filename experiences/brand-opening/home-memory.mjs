@@ -11,7 +11,7 @@ export function homeMemoryExpression({owner,summary,snapshot,lessons=[],now=Date
   if(['unreadable','conflict'].includes(summary.status?.phase)||summary.status?.rejected||summary.status?.code==='LIFE_PROGRESS_REJECTED')return {...empty,status:'unavailable'};
   const today=homeTutorDays(snapshot,lessons,now).today,item=today.items[0];
   if(!item)return {...empty,date:today.date};
-  return {text:item.title,label:item.kind==='retry'?'오늘 다시 살필 표현':'오늘 만난 표현',date:today.date,kind:item.kind,expressionId:item.expressionId,questionId:item.id,lessonId:item.lessonId,status:'ready'};
+  return {text:item.title,label:item.kind==='retry'?'다시 볼 표현':'오늘 배운 표현',date:today.date,kind:item.kind,expressionId:item.expressionId,questionId:item.id,lessonId:item.lessonId,status:'ready'};
 }
 
 /** An owner-scoped projection of existing progress and the existing local wardrobe album.
@@ -55,7 +55,7 @@ export function createHomeMemory({onChange=()=>{},now=Date.now,createAlbum=creat
       const photoUrl=current.photoId===photo.id&&current.photoUrl?current.photoUrl:url?.createObjectURL?.(photo.blob);
       if(!photoUrl){clearPhoto('unavailable');return snapshot();}
       const previous=current.photoUrl;
-      publish({photoUrl,photoId:photo.id,photoLabel:photo.preview?'앨범의 시착 사진':'앨범의 사진',photoDate:homeDayKey(photo.createdAt),photoMode:photo.localStatus==='session'?'session':'device',photoStatus:'ready'});
+      publish({photoUrl,photoId:photo.id,photoLabel:photo.preview?'앨범의 입어 본 사진':'앨범의 사진',photoDate:homeDayKey(photo.createdAt),photoMode:photo.localStatus==='session'?'session':'device',photoStatus:'ready'});
       if(previous&&previous!==photoUrl)url?.revokeObjectURL?.(previous);
     }catch{
       if(active())clearPhoto('unavailable');

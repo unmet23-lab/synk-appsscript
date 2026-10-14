@@ -3,6 +3,8 @@
  * 주 행동은 흰 알약 하나, 고르면 바탕을 뒤집는다. 펠트 판 그림을 단추·칩·카드 바탕에 깔지 않는다 — 펠트 물건 사진은 흰 인화지로만 붙인다.
  * 토큰은 brand-opening/world-ui.css와 같은 값을 이 문서에 둔다(WORLD 밖 단독 미리보기에서도 열리는 페이지다).
  * 움직임은 누를 때의 짧은 전환뿐이고, 움직임 줄이기(기기 설정 · WORLD 설정)에서는 멈춘다. 따라 쓰기 칸만 밝은 종이다(쓰는 면).
+ * 3차(10-14): 문제 글자가 화면의 주인공(포스터 900) · HUD는 닫기 + 「03 / 10」 · 판정은 아래에서 올라오는 어두운 띠 하나 ·
+ * 결과는 한 장(도장 카드 인화지 + 큰 한글 한 줄 + 오늘 만난 글자 + 다시 볼 글자 하나 + 얻은 것 + 흰 알약 하나) · PC는 두 단.
  */
 @font-face{font-family:SUIT;src:url(assets/fonts/SUIT-Variable.woff2) format("woff2");font-weight:100 900;font-display:swap}
 /* 라틴·숫자는 synk.im·WORLD와 같은 Inter Tight(SYNK Latin). 가운뎃점(U+00B7)은 한글 높이에 맞는 SUIT로 둔다. */
@@ -83,7 +85,7 @@ p{text-wrap:pretty}
 .felt-cta.cream{min-height:52px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2)}
 .felt-cta.cream .disc{display:none}
 /* 둥근 단추: 닫기 · 효과음 */
-.round-btn{position:relative;display:grid;place-items:center;width:40px;height:40px;flex:none;border:0;padding:0;border-radius:50%;background:var(--w-s2);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.round-btn{position:relative;display:grid;place-items:center;width:44px;height:44px;flex:none;border:0;padding:0;border-radius:50%;background:var(--w-s2);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
 .round-btn::before{content:"";width:19px;height:19px;background:currentColor;-webkit-mask:var(--i-speaker) center/contain no-repeat;mask:var(--i-speaker) center/contain no-repeat}
 .round-btn.close::before{width:18px;height:18px;-webkit-mask-image:var(--i-close);mask-image:var(--i-close)}
 .round-btn[aria-pressed=false]::before{-webkit-mask-image:var(--i-speaker-off);mask-image:var(--i-speaker-off)}
@@ -102,6 +104,7 @@ p{text-wrap:pretty}
 .hero-print img{width:100%;height:auto;aspect-ratio:1;border-radius:6px;object-fit:cover}
 .hero-body{position:relative;z-index:2;margin-top:calc(var(--print) + 26px)}
 .hero h1{font-size:clamp(40px,14.6vw,64px);font-weight:var(--wt-poster);line-height:.98;letter-spacing:-.05em;text-wrap:balance}
+.hero h1[data-kind=glyphs]{font-size:clamp(64px,22vw,96px);line-height:1;letter-spacing:.02em;white-space:nowrap}
 .lede{max-width:34ch;margin:12px 0 0;font-size:15.5px;line-height:1.5;font-weight:var(--wt-label);color:var(--w-on-face-2)}
 .hero #start{position:relative;z-index:2;margin-top:20px;min-height:58px;background:var(--w-ink);color:var(--w-on-ink);box-shadow:inset 0 -2px 0 rgba(0,0,0,.12),0 10px 24px rgba(30,14,10,.16)}
 .hero #start .disc{display:block;width:18px;height:18px}
@@ -212,7 +215,9 @@ p{text-wrap:pretty}
 .session-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:14px;padding:12px 16px 10px;background:var(--w-panel)}
 .progress{position:relative;flex:1;height:4px;border-radius:999px;background:var(--w-line-2);overflow:hidden}
 .progress span{display:block;height:100%;width:0;border-radius:inherit;background:var(--w-ink);transition:width .25s var(--w-ease)}
-.count{min-width:46px;font:500 11px/1 var(--w-mono);letter-spacing:var(--track-mono);color:var(--w-ink-3);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.count{min-width:46px;font:500 13px/1 var(--w-mono);letter-spacing:.06em;color:var(--w-ink-2);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+#session .session-top{justify-content:space-between}
+#session .progress{display:none}
 .count:empty{display:none}
 .stage{flex:1;display:flex;flex-direction:column;align-items:center;gap:20px;padding:12px 16px 16px}
 .prompt{align-self:stretch;display:block;margin:0;font-size:17px;line-height:1.45;font-weight:var(--wt-title);letter-spacing:-.02em;color:var(--w-ink);text-align:center;text-wrap:balance}
@@ -227,9 +232,12 @@ p{text-wrap:pretty}
 .dock{position:sticky;bottom:0;z-index:3;display:grid;gap:10px;padding:16px 16px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(rgba(12,13,16,0),var(--w-panel) 22px)}
 .dock:empty{display:none}
 /* 판정: 어두운 띠 하나 — 점(메도우 · 코랄) + 한 줄. 문제 칸 전체를 칠하지 않는다. */
-.dock .say{display:flex;align-items:center;gap:12px;margin:0;padding:14px 16px;border-radius:16px;background:var(--w-s2);box-shadow:var(--w-card-edge);font-size:16px;line-height:1.45;font-weight:var(--wt-strong);color:var(--w-ink);text-align:left}
-.dock .say::before{content:"";width:8px;height:8px;flex:none;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6)}
+.dock .say{display:grid;grid-template-columns:8px minmax(0,1fr);align-items:baseline;column-gap:12px;row-gap:3px;margin:0;padding:14px 18px 13px;border-radius:18px;background:var(--w-bg);box-shadow:inset 0 0 0 1px var(--w-line-2),0 -10px 30px rgba(0,0,0,.35);color:var(--w-ink);text-align:left;animation:say-in .2s var(--w-ease)}
+.dock .say::before{content:"";grid-row:1;width:8px;height:8px;border-radius:50%;background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.6);transform:translateY(-2px)}
 .dock .say.good::before{background:var(--w-led-ok);box-shadow:0 0 10px rgba(125,180,90,.6)}
+.dock .say b{grid-column:2;font-size:17px;line-height:1.4;font-weight:var(--wt-title);letter-spacing:-.02em}
+.dock .say span{grid-column:2;font-size:14px;line-height:1.5;font-weight:var(--wt-body);color:var(--w-ink-3);text-wrap:pretty}
+@keyframes say-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
 /* 듣기 단추: 둥근 판 + 선 스피커. 소리가 나는 동안만 코랄 테가 둘린다(스스로 움직이지 않는다). */
 .speak{position:relative;display:grid;place-items:center;width:92px;height:92px;flex:none;margin:0;border:0;padding:0;border-radius:50%;background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge),0 14px 30px rgba(0,0,0,.32);transition:background .18s var(--w-ease),box-shadow .2s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
@@ -240,6 +248,12 @@ p{text-wrap:pretty}
 .slow{display:inline-flex;align-items:center;gap:8px;min-height:44px;margin:0;border:0;padding:0 16px;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font-size:14px;font-weight:var(--wt-strong);transition:background .18s var(--w-ease)}
 .slow .icon{width:17px;height:17px}
 
+/* 문제 글자 자리(듣고 고르기 · 짝 고르기): 소리만 들리는 동안은 큰 「?」, 답을 내면 정답 글자가 포스터 900으로 남는다. */
+.ask{align-self:stretch;display:grid;justify-items:center;align-content:center;gap:14px}
+.ask-glyph{display:grid;place-items:center;min-height:128px;font-size:124px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.02em;color:var(--w-ink-4);transition:color .2s var(--w-ease)}
+.ask.revealed .ask-glyph{color:var(--w-ink)}
+.ask.word .ask-glyph{min-height:96px;font-size:68px;letter-spacing:-.04em}
+.ask .speak{width:80px;height:80px}.ask .speak::before{width:32px;height:32px}
 /* 보기: 큰 판(64px 이상, 글자 32px 이상). 고르면 흰 바탕으로 뒤집히고, 답을 낸 뒤 맞는 칸은 흰 바탕 + 초록 점 */
 .options{align-self:stretch;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .opt{position:relative;display:grid;place-items:center;align-content:center;min-height:104px;margin:0;border:0;padding:10px 8px;border-radius:20px;background:var(--w-s1);color:var(--w-ink);box-shadow:var(--w-card-edge);transition:background .18s var(--w-ease),color .18s var(--w-ease),box-shadow .2s var(--w-ease),opacity .2s var(--w-ease),transform .12s var(--w-ease)}
@@ -259,8 +273,9 @@ p{text-wrap:pretty}
 .options.pair{gap:12px}
 .options.pair .opt{min-height:120px}
 /* 보고 고르기의 큰 글자 */
-.shown{display:grid;place-items:center;min-width:200px;min-height:168px;padding:14px 28px;font-size:96px;line-height:1;font-weight:var(--wt-display);letter-spacing:-.01em;color:var(--w-ink)}
-.shown.word{font-size:64px;letter-spacing:-.02em}
+.shown{display:grid;place-items:center;min-width:200px;min-height:168px;padding:8px 28px;font-size:136px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.02em;color:var(--w-ink)}
+.shown.paper{background:none;box-shadow:none}
+.shown.word{font-size:76px;letter-spacing:-.04em}
 
 /* 이유 한 줄(회차 첫 장): 코랄 포스터 — 오늘 만날 글자를 흰 칩으로 */
 .reason{position:relative;isolation:isolate;overflow:hidden;align-self:stretch;display:grid;justify-items:start;gap:18px;padding:22px 20px 22px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);box-shadow:none;text-align:left}
@@ -275,7 +290,7 @@ p{text-wrap:pretty}
 
 /* 만나기 카드: 글자가 주인공 */
 .meet{align-self:stretch;display:grid;justify-items:center;gap:16px;padding:22px 16px 20px}
-.meet .glyph{font-size:120px;line-height:1;font-weight:var(--wt-display);letter-spacing:0;color:var(--w-ink)}
+.meet .glyph{font-size:128px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.01em;color:var(--w-ink)}
 .meet>.speak{width:72px;height:72px;margin-top:-4px}
 .meet>.speak::before{width:30px;height:30px}
 .meet .role-tag{display:inline-flex;align-items:center;gap:8px;min-height:30px;padding:0 12px;border-radius:999px;background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line);font-size:13px;font-weight:var(--wt-label);color:var(--w-ink)}
@@ -304,7 +319,7 @@ p{text-wrap:pretty}
 /* 따라 쓰기: 밝은 종이 한 장(쓰는 면) — 판정하지 않는다 */
 .trace-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:min(260px,72vw);margin:6px auto 0}
 .trace-head span{font-size:14px;line-height:1.4;font-weight:var(--wt-strong);color:var(--w-ink-2)}
-.redo{position:relative;display:grid;place-items:center;width:40px;height:40px;flex:none;margin:0;border:0;padding:0;border-radius:50%;background:var(--w-s2);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
+.redo{position:relative;display:grid;place-items:center;width:44px;height:44px;flex:none;margin:0;border:0;padding:0;border-radius:50%;background:var(--w-s2);color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line);transition:background .18s var(--w-ease),transform .12s var(--w-ease)}
 .redo::before{content:"";width:18px;height:18px;background:currentColor;-webkit-mask:var(--i-redo) center/contain no-repeat;mask:var(--i-redo) center/contain no-repeat}
 .redo:active{transform:scale(.94)}
 .trace{position:relative;width:min(260px,72vw);aspect-ratio:1;border-radius:20px;background:var(--paper);box-shadow:inset 0 0 0 1px rgba(8,9,12,.06),0 0 0 1px rgba(255,255,255,.08),0 16px 36px rgba(0,0,0,.38);touch-action:none}
@@ -330,7 +345,7 @@ p{text-wrap:pretty}
 .held .q{position:absolute;right:-11px;top:-12px;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--w-face);color:var(--w-on-face);font-size:17px;line-height:1;font-weight:var(--wt-display);transform:rotate(4deg);box-shadow:0 6px 14px rgba(0,0,0,.3)}
 
 /* 음절 만들기: 소리 · 만든 글자를 나란히, 그 아래 조각 */
-.slot{display:grid;place-items:center;min-width:132px;height:132px;padding:0 14px;font-size:84px;line-height:1;font-weight:var(--wt-display);color:var(--w-ink)}
+.slot{display:grid;place-items:center;min-width:132px;height:132px;padding:0 14px;font-size:96px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.02em;color:var(--w-ink)}
 .slot.empty{color:var(--w-ink-4)}
 .stage:has(>.pieces){display:grid;grid-template-columns:minmax(0,1fr) auto auto minmax(0,1fr);align-content:center;align-items:center;gap:20px 22px}
 .stage:has(>.pieces)>*{margin:0}
@@ -361,15 +376,30 @@ button.piece:not(:disabled):active{transform:scale(.95)}
 
 /* ── 마무리: 요약 포스터 한 장 + 1px 선 줄 ─────────────────────────────── */
 .finish-card,.graduation-card{flex:1;display:grid;align-content:start;margin:12px 16px 0;padding:0}
-.finish-poster{position:relative;isolation:isolate;overflow:hidden;display:grid;justify-items:start;gap:14px;padding:20px 20px 22px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);text-align:left}
+.finish-poster{--print:clamp(92px,27vw,124px);position:relative;isolation:isolate;overflow:hidden;display:grid;justify-items:start;gap:14px;padding:20px 20px 22px;border-radius:var(--w-r-lg);background:var(--w-face);color:var(--w-on-face);text-align:left}
+/* 도장 카드 인화지(brand-opening/assets/world-felt/complete.webp의 사본) — 학습 끝 */
+.finish-print{position:absolute;z-index:1;top:16px;right:18px;width:var(--print);padding:5px;border-radius:10px;background:#fff;box-shadow:var(--w-print-shadow);transform:rotate(-4deg);pointer-events:none}
+.finish-print img{width:100%;height:auto;aspect-ratio:1;border-radius:6px;object-fit:cover}
+.finish-poster>.eyebrow,.finish-poster>h1,.finish-poster>.grad-line{position:relative;z-index:2;max-width:calc(100% - var(--print) - 14px)}
+.finish-poster>.finish-letters{position:relative;z-index:2;margin-top:4px}
 .finish-poster::before{content:"";position:absolute;inset:0;z-index:-1;background:var(--w-studio);pointer-events:none}
 .finish-poster::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:var(--w-grain);opacity:.1;mix-blend-mode:overlay}
 .finish-poster .eyebrow{color:var(--w-on-face-3)}
 .finish-poster .eyebrow::after{background:var(--w-face-line)}
-.finish-poster h1{font-size:clamp(32px,9.6vw,44px);line-height:1.04;font-weight:var(--wt-poster);letter-spacing:-.055em}
+.finish-poster h1{font-size:clamp(34px,10.4vw,48px);line-height:1.02;font-weight:var(--wt-poster);letter-spacing:-.06em;text-wrap:balance}
 .finish-letters{display:flex;flex-wrap:wrap;justify-content:flex-start;gap:8px}
 .finish-letters .tile{width:56px;font-size:28px}
 .finish-poster .finish-letters .tile{background:#FAFAF9;color:var(--w-on-ink);box-shadow:0 10px 22px rgba(30,14,10,.22)}
+/* 오늘 만난 글자는 눌러 듣는 단추: 오른쪽 아래 작은 선 스피커 */
+.finish-card .tile:not(.unmet)::after{content:"";position:absolute;right:5px;bottom:5px;width:12px;height:12px;background:currentColor;opacity:.45;-webkit-mask:var(--i-speaker) center/contain no-repeat;mask:var(--i-speaker) center/contain no-repeat}
+/* 다시 볼 글자 하나: 1px 선 줄(라벨 · 글자 · 한 줄) */
+.finish-row{display:grid;gap:10px;padding:18px 2px;border-bottom:1px solid var(--w-line)}
+.finish-row>p{margin:0;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+.finish-row-body{display:flex;align-items:center;gap:14px}
+.finish-row-body .tile{width:56px;flex:none;font-size:28px;background:transparent;box-shadow:inset 0 0 0 1.5px rgba(255,180,169,.6);color:var(--w-face-text)}
+.finish-row-note{font-size:14px;line-height:1.55;color:var(--w-ink-2);text-wrap:pretty}
+#finish.enter,#graduation.enter{animation:finish-in .2s var(--w-ease)}
+@keyframes finish-in{from{opacity:0}to{opacity:1}}
 .grad-line{margin:0;font-size:16px;line-height:1.55;font-weight:var(--wt-label);color:var(--w-on-face-2)}
 .finish-extra{display:grid;justify-items:start;gap:12px;padding:20px 2px;border-bottom:1px solid var(--w-line)}
 .finish-extra:empty{display:none}
@@ -385,10 +415,11 @@ button.piece:not(:disabled):active{transform:scale(.95)}
 .song-review .note-mark::before{content:"";width:20px;height:20px;background:var(--w-face-text);-webkit-mask:var(--i-note) center/contain no-repeat;mask:var(--i-note) center/contain no-repeat}
 .song-review #finish-song-label{flex:1;min-width:0}
 .song-review::after{content:"";width:16px;height:16px;flex:none;background:var(--w-ink-3);-webkit-mask:var(--i-arrow) center/contain no-repeat;mask:var(--i-arrow) center/contain no-repeat}
-#finish .dock{grid-auto-flow:column;grid-auto-columns:minmax(0,1fr)}
+#finish .dock{grid-template-columns:1fr;justify-items:stretch;gap:2px}
+#finish .again-link{justify-self:center;padding:0 12px;font-size:14px}
 
 /* 졸업 */
-.grad-poster h1{font-size:clamp(30px,9vw,42px)}
+.grad-poster h1{font-size:clamp(32px,9.6vw,44px)}
 .graduation-card>.plate{margin-top:20px}
 .grad-words{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:16px}
 .graduation-card>.fine{margin:18px 2px 0;text-align:center}
@@ -477,6 +508,7 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   button.piece:not(:disabled):not([aria-pressed=true]):hover{background:var(--w-s2)}
   .card:not(.matched):not([aria-pressed=true]):hover{background:var(--w-s2)}
   .song-review:hover #finish-song-label{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
+  .finish-row-body .tile:hover{background:var(--w-s1)}
 }
 
 /* ── 넓은 화면 ─────────────────────────────── */
@@ -505,6 +537,44 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   .box{grid-template-columns:repeat(8,minmax(0,1fr))}
   .tile{font-size:26px}
 }
+/* PC(넓은 놀이 판): 회차는 두 단 — 왼쪽 큰 글자(물음 · 보고 고르기 · 만들기 칸), 오른쪽 안내와 선택지. 판정 띠와 다음은 오른쪽 단 아래. */
+@media (min-width:900px) and (min-height:501px){
+  #app:has(>#session:not([hidden]),>#finish:not([hidden]),>#graduation:not([hidden])){max-width:1120px;padding:0 32px}
+  #session{position:relative}
+  .stage{padding:8px 0 16px}
+  .stage:has(>.options),.stage:has(>.pieces){display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);align-items:center;align-content:center;column-gap:56px;row-gap:18px}
+  .stage:has(>.options)>.prompt,.stage:has(>.pieces)>.prompt{grid-column:2;grid-row:1;align-self:end;text-align:left;font-size:20px}
+  .stage:has(>.options)>.options,.stage:has(>.pieces)>.pieces{grid-column:2;grid-row:2;align-self:start}
+  .stage:has(>.options)>:is(.ask,.shown,.speak-row){grid-column:1;grid-row:1/3;justify-self:center}
+  .stage:has(>.teach){grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto minmax(0,1fr)}
+  .stage:has(>.teach)>.teach{grid-column:1;grid-row:1/3}
+  .stage:has(>.teach)>.speak-row{grid-column:1;grid-row:3;flex-direction:row;align-self:start}
+  .stage:has(>.teach)>.prompt{grid-column:2;grid-row:1}
+  .stage:has(>.teach)>.options{grid-column:2;grid-row:2/4}
+  .stage:has(>.pieces)>.speak-row{grid-column:1;grid-row:1;align-self:end;flex-direction:row}
+  .stage:has(>.pieces)>.slot{grid-column:1;grid-row:2;align-self:start;justify-self:center}
+  .ask-glyph{min-height:180px;font-size:180px}
+  .ask.word .ask-glyph{min-height:120px;font-size:96px}
+  .shown{font-size:180px;min-height:200px}.shown.word{font-size:104px}
+  .slot{height:160px;font-size:128px}
+  .meet .glyph{font-size:160px}
+  .options{gap:12px}.opt{min-height:112px}.opt .big{font-size:52px}
+  .piece{width:76px;height:76px;font-size:36px}
+  .match{max-width:720px;margin:0 auto;width:100%}
+  .reason{max-width:720px;margin:0 auto;padding:28px 28px}
+  .reason p{font-size:30px}
+  #session .dock{width:min(100%,calc(50% - 28px));margin-left:auto;padding-left:0;padding-right:0;background:none}
+  #session:has(#stage>.reason,#stage>.match,#stage>.meet) .dock{margin-right:auto;width:min(100%,480px)}
+  /* 결과 · 졸업: 포스터 왼쪽, 줄과 흰 알약 오른쪽 */
+  #finish,#graduation{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);column-gap:40px;align-content:center;min-height:100vh}
+  .finish-card,.graduation-card{display:contents}
+  .finish-poster{--print:150px;grid-column:1;grid-row:1/span 6;align-self:center;min-height:380px;align-content:start;padding:28px 28px 30px;margin:20px 0}
+  .finish-poster h1{font-size:56px}
+  .finish-letters .tile{width:64px;font-size:32px}
+  .finish-card>:not(.finish-poster),.graduation-card>:not(.finish-poster){grid-column:2}
+  #finish>.dock,#graduation>.dock{grid-column:2;width:100%;margin:0;padding:16px 0 20px}
+  .graduation-card>.plate{margin-top:0}
+}
 @media (min-width:600px) and (max-height:620px) and (orientation:landscape){
   .stage{gap:16px;padding-top:8px}
   .speak{width:84px;height:84px}.speak::before{width:32px;height:32px}
@@ -513,6 +583,18 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   .slot{min-width:112px;height:112px;font-size:72px}
   .meet .glyph{font-size:96px}
   .song-stage{min-height:236px}
+}
+/* 짧은 세로 화면(320×640 · WORLD 안 놀이 판 등): 물음 글자와 듣기 단추를 한 줄에 놓아 판정 띠가 떠도 보기가 가려지지 않게 */
+@media (max-height:700px) and (orientation:portrait){
+  .stage{gap:14px}
+  .ask{grid-template-columns:auto auto;align-items:center;justify-content:center;gap:8px 18px}
+  .ask-glyph{min-height:0;font-size:96px}.ask.word .ask-glyph{font-size:56px}
+  .ask .speak{width:68px;height:68px}.ask .speak::before{width:28px;height:28px}
+  .ask .speak-row{flex-direction:column;gap:8px}
+  .shown{min-height:116px;font-size:104px}
+  .opt{min-height:84px}
+  .dock{gap:8px;padding-top:12px}
+  .dock .say{padding:11px 16px 10px}.dock .say b{font-size:16px}.dock .say span{font-size:13.5px}
 }
 @media (max-width:359px){
   .hero{margin:10px 12px 0;padding:14px 14px 16px}
@@ -565,12 +647,16 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   .stage:has(>.options){display:grid;grid-template-columns:minmax(110px,.7fr) minmax(200px,1.3fr);grid-template-rows:auto minmax(110px,1fr);align-items:center;align-content:start;gap:8px 14px}
   .stage:has(>.options)>.prompt{grid-column:1/-1;grid-row:1}
   .stage:has(>.options)>.options{grid-column:2;grid-row:2;gap:8px;align-self:center}
-  .stage:has(>.options)>.speak-row,.stage:has(>.options)>.shown{grid-column:1;grid-row:2;justify-self:center}
+  .stage:has(>.options)>.speak-row,.stage:has(>.options)>.shown,.stage:has(>.options)>.ask{grid-column:1;grid-row:2;justify-self:center}
+  .ask{grid-template-columns:auto auto;align-items:center;gap:6px 12px}
+  .ask-glyph{min-height:0;font-size:72px}.ask.word .ask-glyph{font-size:44px}
+  .ask .speak{width:64px;height:64px}.ask .speak::before{width:26px;height:26px}
+  .ask .speak-row{flex-direction:column}
   .speak{width:72px;height:72px}
   .speak::before{width:28px;height:28px}
   .speak-row{flex-wrap:wrap;justify-content:center;gap:8px}
-  .shown{min-width:120px;min-height:104px;font-size:70px;padding:8px 14px}
-  .shown.word{font-size:46px}
+  .shown{min-width:120px;min-height:104px;font-size:84px;padding:8px 14px}
+  .shown.word{font-size:48px}
   .opt,.options.pair .opt{min-height:70px;padding:6px}
   .opt .big{font-size:36px}.opt .big.word{font-size:26px}
   .opt.sound{gap:4px}.opt.sound .icon{width:24px;height:24px}
@@ -610,9 +696,10 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   .song-tile,.song-row.n10 .song-tile{width:44px;height:44px;font-size:24px;border-radius:12px}.song-tile.result{width:58px;height:58px;font-size:32px;border-radius:16px}
   .song-row{gap:6px}.song-vowel{gap:12px}.move .arrow{width:32px;height:32px}.song-mn{width:44px;height:44px;padding:3px}
   #finish,#graduation{grid-template-rows:minmax(0,1fr)}
-  #finish .dock,#graduation .dock{grid-row:1;grid-auto-flow:row;grid-template-columns:1fr}
-  .finish-card,.graduation-card{grid-column:1;grid-row:1;min-height:0;overflow:auto;margin:10px 4px 10px 14px;padding:0;align-content:start}
-  .finish-poster{padding:14px 16px 16px;gap:10px}.finish-poster h1{font-size:28px}
+  #finish .dock,#graduation .dock{grid-row:1;grid-auto-flow:row;grid-template-columns:1fr;align-content:center}
+  .finish-card,.graduation-card{grid-column:1;grid-row:1;min-height:0;overflow:auto;margin:10px 4px 10px 14px;padding:0;align-content:start;grid-auto-rows:max-content}
+  .finish-poster{--print:84px;padding:14px 16px 16px;gap:10px}.finish-poster h1{font-size:30px}
+  .finish-row{padding:12px 2px}
   .finish-letters .tile{width:48px;font-size:24px}
   .finish-extra,.tomorrow{padding:14px 2px}
   .sheet-card{max-height:100dvh;overflow:auto;padding:10px 18px 16px}.sheet-actions{grid-template-columns:1fr 1fr}

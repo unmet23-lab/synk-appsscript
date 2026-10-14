@@ -1,10 +1,30 @@
 import { createDayScene } from './day-scene.mjs';
 import { createWalkControls } from './walk-controls.mjs';
-import { movePoint, nearbyPlace } from './walk.mjs';
+import { movePoint, nearbyPlace, WALK_SPAWNS } from './walk.mjs';
 
 const $ = id => document.getElementById(id);
 const surfaceId = crypto.randomUUID(), reduced = matchMedia('(prefers-reduced-motion: reduce)');
 const names = { home: '나의 집', cafe: '찻집', workshop: '공방', greenhouse: '온실' };
+// 우리 동네 HUD(2026-10-14 3차): 가장 작은 지도 한 장 + 할 일 한 줄. 표시만 하고 이동·저장·권한 논리는 건드리지 않는다.
+const MAP_BOUNDS = { minX: -9, maxX: 9, minZ: -6.5, maxZ: 6 };
+const mapX = x => Math.max(4, Math.min(96, (x - MAP_BOUNDS.minX) / (MAP_BOUNDS.maxX - MAP_BOUNDS.minX) * 100));
+const mapY = z => Math.max(8, Math.min(88, (z - MAP_BOUNDS.minZ) / (MAP_BOUNDS.maxZ - MAP_BOUNDS.minZ) * 100));
+let mapSignature = '';
+function todoLine(visited) {
+  const job = snapshot?.view.day?.job?.status;
+  if (job === 'ready') return '공방에서 준비된 받침 확인하기';
+  if (job === 'preparing') return '받침이 준비되는 동안 다른 곳 둘러보기';
+  const next = ['cafe', 'workshop', 'greenhouse'].find(id => !visited.has(id));
+  return next ? `${names[next]}에 들러 이야기하기` : '집에 돌아가 쉬기';
+}
+function paintMap(place) {
+  const me = $('town-map-me'); if (!me) return;
+  if (walkPoint) { const left = mapX(walkPoint.x).toFixed(1) + '%', top = mapY(walkPoint.z).toFixed(1) + '%'; if (me.style.left !== left) me.style.left = left; if (me.style.top !== top) me.style.top = top; }
+  const visited = new Set((snapshot?.state.day?.history || []).map(h => h.location).filter(Boolean));
+  const signature = [place, [...visited].join(','), snapshot?.view.day?.job?.status].join('|'); if (signature === mapSignature) return; mapSignature = signature;
+  for (const node of document.querySelectorAll('.town-map-place')) { const p = WALK_SPAWNS[node.dataset.place]; if (p) { node.style.left = mapX(p.x) + '%'; node.style.top = mapY(p.z) + '%'; } node.dataset.near = String(node.dataset.place === place); node.dataset.visited = String(visited.has(node.dataset.place)); }
+  text('town-map-place', place ? `${names[place]} 앞` : '동네 산책'); text('town-todo', todoLine(visited));
+}
 const roleNames = { 'cafe-owner': '찻집 주인', 'workshop-owner': '공방 주인', researcher: '연구원' };
 const stepLines = { 'guest-walk': '손님이 고른 자리로 걸어와요.', 'guest-sit': '손님이 자리에 앉아요.', 'owner-walk': '주인이 차를 가져와요.', 'owner-serve': '주인이 차를 놓아요.', 'tea-place': '차가 자리에 놓였어요.', 'guest-walk-sign': '손님이 안내판으로 걸어와요.', 'guest-read-sign': '손님이 안내판 그림을 봐요.', 'guest-follow-sign': '손님이 그림이 알려 준 자리로 가요.', 'guest-sit-sign': '손님이 자리에 앉아요.' };
 const worldHostRequested = globalThis.__SYNK_WORLD_TOWN__?.accountScoped === true && (globalThis.__SYNK_WORLD_TOWN__?.rehearsal === true || globalThis.__SYNK_WORLD_TOWN__?.mode === 'account');
@@ -36,12 +56,13 @@ function applyWalkView(force = false) {
   document.body.classList.toggle('walk-mode', enabled); document.body.classList.toggle('walk-engaged', enabled && walkPanel);
   $('walk-hud').hidden = !enabled; $('walk-close').hidden = !enabled; $('destinations').hidden = enabled;
   if (!enabled) return;
+  document.body.dataset.walkInput = walkInputMode; paintMap(place);
   const button = $('walk-interact');
   text('scene-badge', place ? names[place] : '동네 산책');
   button.disabled = !place || busy || !connected;
-  text('walk-interact', place ? `${walkInputMode === 'touch' ? '' : walkInputMode === 'gamepad' ? 'A · ' : 'E · '}${place === 'home' ? '우리 집 살펴보기' : `${names[place]} 이야기`}` : '가까이 가서 이야기해요');
-  text('walk-status', place ? `${names[place]} 가까이에 있어요. 원할 때 말을 걸어요.` : '길을 따라 자유롭게 걸어 보세요.');
-  text('walk-help', walkInputMode === 'gamepad' ? '왼쪽 스틱 · 방향 패드 이동 / A 이야기 / B 닫기' : walkInputMode === 'touch' ? '왼쪽 조이스틱으로 걷기 · 가까이에서 이야기하기' : 'WASD · 방향키로 걷기 / E 이야기 / Esc 닫기');
+  text('walk-interact', place ? `${walkInputMode === 'touch' ? '' : walkInputMode === 'gamepad' ? 'A · ' : 'E · '}${place === 'home' ? '집 살펴보기' : `${names[place]}에서 이야기하기`}` : '가까이 가면 이야기해요');
+  text('walk-status', place ? `${names[place]} 앞이에요. 원할 때 이야기해요.` : '길을 따라 걸어 보세요.');
+  text('walk-help', walkInputMode === 'gamepad' ? '왼쪽 스틱 · 방향 패드 이동 / A 이야기 / B 닫기' : walkInputMode === 'touch' ? '조이스틱으로 걷고, 가까이 가면 이야기해요' : 'WASD · 방향키로 걷기 / E 이야기 / Esc 닫기');
 }
 function reconcileWalk() {
   if (!walking()) return;
@@ -104,7 +125,7 @@ function walkFrame(now) {
       walkSegmentOrigins.set(segment, previous); walkPending.push(segment);
     }
   }
-  renderer?.setPlayerPose?.({ ...walkPoint, heading: walkHeading, moving: walkMoving });
+  renderer?.setPlayerPose?.({ ...walkPoint, heading: walkHeading, moving: walkMoving }); paintMap(nearby(walkPoint));
   if (walkPending.length && (now - walkSentAt >= 150 || !walkInputActive || walkPending.length >= 32 || pendingMs + stepMs >= 240)) flushWalk();
   applyWalkView();
 }
@@ -300,7 +321,7 @@ function accept(data) {
 function renderJournal() {
   const lines = [...(snapshot?.view.notebook || []), ...(snapshot?.view.day?.history || []).map(row => row.summary), ...(snapshot?.view.bazaar?.history || []).map(row => row.summary)];
   $('journal-list').replaceChildren(...[...new Set(lines.filter(Boolean))].map(line => { const li = document.createElement('li'); li.textContent = line; return li; }));
-  if (!$('journal-list').children.length) { const li = document.createElement('li'); li.textContent = '아직 함께한 일이 없어요. 어디부터 둘러볼까요?'; $('journal-list').append(li); }
+  if (!$('journal-list').children.length) { const li = document.createElement('li'); li.textContent = '아직 함께한 일이 없어요. 찻집부터 들러 보세요.'; $('journal-list').append(li); }
 }
 function currentObservation() {
   if (!bazaarActive()) return snapshot?.view.day?.observation;
@@ -450,6 +471,8 @@ try {
       },
       onError: error => { connected = false; pauseWalkInput(); showError(error?.message || '홈의 연결을 다시 확인해 주세요.'); },
     });
+    // WORLD 안에서만 홈과 같은 짧은 누름 소리(리드 모듈). 없으면 조용히 넘어간다.
+    import(new URL((globalThis.__SYNK_WORLD_TOWN__?.basePath || '/') + 'brand-opening/world-sound.mjs', location.origin).href).then(module => module.bindTaps?.(document)).catch(() => {});
   }
   await document.fonts.ready;
   await Promise.all([...document.images].map(img => img.complete && img.naturalWidth ? Promise.resolve() : img.decode()));

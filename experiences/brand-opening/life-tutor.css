@@ -47,6 +47,8 @@
 }
 @media(max-height:500px){
  .life-tutor .game-tutor-message{display:block}
+ .life-tutor .life-tutor-role{display:none}
+ .life-tutor .game-tutor-help,.life-tutor-guide button,.life-expression-practice button{min-height:44px}
  .life-tutor .game-tutor-line{-webkit-line-clamp:2;min-height:0;margin-top:1px;font-size:14px}
  .life-tutor-guide[open],.life-expression-practice[open]{display:block}
  .life-tutor-guide .game-tutor-guide-top .game-tutor-portrait,.life-expression-practice .game-tutor-guide-top .game-tutor-portrait{width:52px;height:52px}

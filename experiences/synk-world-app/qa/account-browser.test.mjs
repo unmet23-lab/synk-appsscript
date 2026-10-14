@@ -105,8 +105,9 @@ test('actual Chromium account-mode Maru preserves life progress, guarded games, 
   // The published WORLD player stays in the shell and writes its own bounded
   // record through the same verified PlayHost transport as the existing games.
   // This compact case uses real choices; it does not inject a completed record.
-  // A game opened for the first time on this device shows the tutor's control practice (10-10); its exit closes the game panel too.
-  async function closeGamePanel(){if(await page.locator('dialog.tutor-practice[open] .practice-exit').count())await page.locator('dialog.tutor-practice[open] .practice-exit').click();else await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel').open);}
+  // A game opened for the first time on this device shows the tutor's control practice (10-10). Its exit closes only the practice
+  // and returns to that game's start screen (10-14), so the panel's own close button then closes the game panel.
+  async function closeGamePanel(){if(await page.locator('dialog.tutor-practice[open] .practice-exit').count()){await page.locator('dialog.tutor-practice[open] .practice-exit').click();await page.waitForFunction(()=>!document.querySelector('dialog.tutor-practice[open]'));}if(await page.evaluate(()=>document.querySelector('#world-panel').open))await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel').open);}
   // The 3D room hides the old next-lesson pill (10-12). Its path now is the 배우기 tab's 「지금 할 일」 poster,
   // which opens the same summary.nextLesson (10-14 redesign).
   // Each owner (account or guest) chooses a tutor once; pass that gate when it appears.

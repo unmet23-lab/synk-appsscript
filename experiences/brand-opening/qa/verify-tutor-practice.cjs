@@ -86,7 +86,9 @@ async function actualPlaying(game,frame){
  // Exit during the first lesson never grants completion.
  {
   const ctx=await context('marin');await open('runner');await page.waitForFunction(()=>window.__synkGameTutor.metrics().practice.phase==='try');await page.keyboard.press('ArrowLeft');await page.locator('.practice-exit').click();
-  check('leaving unfinished practice closes the frame and companion',await page.locator('.game-frame,.tutor-practice,.game-tutor').count()===0);
+  // 10-14: 연습의 ×는 연습만 닫고 같은 게임 시작 화면으로 돌아간다. 놀이 판은 판의 닫기로 닫는다.
+  check('leaving unfinished practice keeps the same game and companion open',await page.locator('.tutor-practice').count()===0&&await page.locator('.game-frame').count()===1&&await page.locator('.game-tutor').count()===1);
+  await page.locator('#panel-close').click();await page.waitForFunction(()=>!document.querySelector('#world-panel').open);
   await open('runner');check('returning after cancellation starts from the uncompleted first step',(await page.evaluate(()=>window.__synkGameTutor.metrics().practice)).index===0);await page.locator('.practice-exit').click();await ctx.close();
  }
  // Every layout shows a complete practice, without an overflowing tap target.

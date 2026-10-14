@@ -12,6 +12,16 @@ import { sceneryLayout, TILE, TILES, LOOP, VIEW, PALETTE, SIGNS } from './scener
 const FELT = 'kit/felt/';
 // 판 뒤 크림 펠트 벽(kit .arena)의 지평선 언저리 색. 먼 길과 마을이 이 색으로 녹아 벽과 이어진다.
 export const FOG_COLOR = 0xf1e8de;
+// WORLD 안(theme 'world', 2026-10-14 3차): 한강 노을 하늘 · 어두운 길 · 표시는 코랄 하나. 몽글·마을·장애물(펠트 소품)은 그대로 두고
+// 빛과 바닥 색만 해 질 녘으로 바꾼다. 하늘은 WORLD 홈 창밖과 같은 한강 그림(assets/world/hangang-dusk.webp)을 지평선 뒤에 세운
+// 판 하나로, 카메라처럼 움직이지 않는다. LAB 단독 화면은 theme이 없어 위의 크림 펠트 장면 그대로다.
+export const DUSK = Object.freeze({
+  sky: 'assets/world/hangang-dusk.webp', top: 0x2f3f6e, fog: 0xb98a86, fogNear: 54, fogFar: 172,
+  ground: 0x6d7860, road: '#3a3940', dash: '#f96859',
+  hemi: [0xffd9c8, 0x4b4052, 1.45], sun: [0xffbf8f, 2.35], sunAt: [-14, 11, 9],
+  horizon: 0.27,   // 그림 아래에서 다리·물가 선까지(그림 높이 비율): 이 선이 땅의 먼 끝(y≈0)에 오게 세운다
+  center: 0.6,     // 화면 가운데에 올 그림 가로 자리(남산 쪽)
+});
 const GROUND = Object.freeze({ width: 150, length: 190, centerZ: -78, meters: 2.6 });   // 크림 땅: Z +17 ~ −173
 const PATH = Object.freeze({ half: 3.7, meters: 7.4 });                                 // 모래빛 길(폭 7.4m), 펠트 한 장이 7.4m를 덮는다
 const CURB = Object.freeze({ width: 0.36, height: 0.13, meters: 2.2 });
@@ -77,9 +87,10 @@ function mergeParts(parts) {
   return g;
 }
 
-export async function createWorld(canvas, { reduced = () => false } = {}) {
+export async function createWorld(canvas, { reduced = () => false, theme = 'lab' } = {}) {
+  const dusk = theme === 'world';
   await document.fonts?.load?.('800 64px SUIT').catch(() => {});
-  const [creamImg, coralImg, badgeImg] = await Promise.all(['tex-cream', 'tex-coral', 'badge-cream'].map((n) => loadImg(`${FELT}${n}.webp`)));
+  const [creamImg, coralImg, badgeImg, skyImg] = await Promise.all([...['tex-cream', 'tex-coral', 'badge-cream'].map((n) => loadImg(`${FELT}${n}.webp`)), dusk ? loadImg(DUSK.sky) : null]);
 
   // WebGL을 만들 수 없으면 여기서 오류가 난다. 부른 쪽(app.mjs)이 안내하고 입구로 돌아간다
   const renderer = new T.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -90,13 +101,16 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
   const budget = createFrameBudget();
 
   const scene = new T.Scene();
-  scene.fog = new T.Fog(FOG_COLOR, VIEW.fogNear, VIEW.fogFar);
+  scene.fog = dusk ? new T.Fog(DUSK.fog, DUSK.fogNear, DUSK.fogFar) : new T.Fog(FOG_COLOR, VIEW.fogNear, VIEW.fogFar);
+  if (dusk) scene.background = new T.Color(DUSK.top);
   const camera = new T.PerspectiveCamera(50, 1, 0.1, 400);
 
   // 빛: 부드러운 하늘빛 + 왼쪽 위 뒤에서 오는 햇빛 하나(그림자는 몽글 앞쪽으로 길게 눕는다). 반들거림 없음(거칠기 1)
-  scene.add(new T.HemisphereLight(0xfffaf3, 0xe4d2bc, 1.75));
-  const sun = new T.DirectionalLight(0xfff4e4, 2.55);
-  sun.position.set(-13, 15, 5); sun.target.position.set(0, 0, -6);
+  // WORLD: 노을빛(복숭아색 하늘빛 · 보랏빛 땅 반사) + 낮게 비치는 주황 햇빛
+  scene.add(dusk ? new T.HemisphereLight(...DUSK.hemi) : new T.HemisphereLight(0xfffaf3, 0xe4d2bc, 1.75));
+  const sun = dusk ? new T.DirectionalLight(...DUSK.sun) : new T.DirectionalLight(0xfff4e4, 2.55);
+  if (dusk) sun.position.set(...DUSK.sunAt); else sun.position.set(-13, 15, 5);
+  sun.target.position.set(0, 0, -6);
   sun.castShadow = true;
   Object.assign(sun.shadow.camera, { left: -17, right: 17, top: 26, bottom: -20, near: 1, far: 70 });
   sun.shadow.radius = 4; sun.shadow.bias = -0.0006; sun.shadow.normalBias = 0.03;
@@ -117,25 +131,30 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
     t.wrapS = t.wrapT = T.RepeatWrapping; t.repeat.set(rx, ry); return t; };
 
   // ── 바닥: 크림 펠트 땅 · 모래빛 펠트 길(가운데 두 줄은 크림 펠트 점선) · 코랄 펠트 연석. 결을 옮겨 흐르게 한다 ──
-  const groundTex = feltTex(creamImg, GROUND.width / GROUND.meters, GROUND.length / GROUND.meters);
-  const ground = new T.Mesh(new T.PlaneGeometry(GROUND.width, GROUND.length), new T.MeshStandardMaterial({ map: groundTex, color: 0xfffdf8, roughness: 1 }));
+  // WORLD: 땅을 옆으로 넓혀(지평선 끝까지) 하늘 그림의 물가와 이어지게 하고, 펠트 결에 해 질 녘 흙빛을 곱한다
+  const groundWidth = dusk ? 420 : GROUND.width;
+  const groundTex = feltTex(creamImg, groundWidth / GROUND.meters, GROUND.length / GROUND.meters);
+  const ground = new T.Mesh(new T.PlaneGeometry(groundWidth, GROUND.length), new T.MeshStandardMaterial({ map: groundTex, color: dusk ? DUSK.ground : 0xfffdf8, roughness: 1 }));
   ground.rotation.x = -Math.PI / 2; ground.position.set(0, -0.03, GROUND.centerZ); ground.receiveShadow = true; scene.add(ground);
 
   const pathTex = canvasTex(512, 512, (g, w, h) => {
     tile(g, creamImg, w, h, w / 3);                                     // 펠트 한 장 ≈ 2.5m
-    g.globalCompositeOperation = 'multiply'; g.fillStyle = '#f0dcbb'; g.fillRect(0, 0, w, h);   // 모래빛
+    g.globalCompositeOperation = 'multiply'; g.fillStyle = dusk ? DUSK.road : '#f0dcbb'; g.fillRect(0, 0, w, h);   // 모래빛(WORLD: 어두운 길)
     g.globalCompositeOperation = 'source-over';
     const px = w / (PATH.half * 2);
-    for (const lx of [-1.175, 1.175]) {                                 // 칸 사이 크림 점선(2.2m 줄 + 1.5m 틈)
+    for (const lx of [-1.175, 1.175]) {                                 // 칸 사이 크림 점선(2.2m 줄 + 1.5m 틈) · WORLD는 코랄 점선
       const x = w / 2 + lx * px;
       for (let k = 0; k < 2; k++) {
         const y0 = k * h / 2, y1 = y0 + h / 2 * (2.2 / 3.7);
         g.save(); g.beginPath(); g.roundRect(x - 4.5, y0, 9, y1 - y0, 4.5); g.clip();
-        tile(g, creamImg, w, h, w / 3); g.fillStyle = 'rgba(255,251,242,.55)'; g.fillRect(0, 0, w, h); g.restore();
+        if (dusk) { tile(g, coralImg || creamImg, w, h, w / 3); g.fillStyle = 'rgba(249,104,89,.45)'; g.fillRect(0, 0, w, h); }
+        else { tile(g, creamImg, w, h, w / 3); g.fillStyle = 'rgba(255,251,242,.55)'; g.fillRect(0, 0, w, h); }
+        g.restore();
       }
     }
     const edge = g.createLinearGradient(0, 0, w, 0);                     // 연석 쪽 가장자리를 살짝 어둡게(길이 깊어 보이게)
-    edge.addColorStop(0, 'rgba(150,110,70,.18)'); edge.addColorStop(0.06, 'rgba(150,110,70,0)'); edge.addColorStop(0.94, 'rgba(150,110,70,0)'); edge.addColorStop(1, 'rgba(150,110,70,.18)');
+    const shade = dusk ? '10,8,14' : '150,110,70', a = dusk ? 0.32 : 0.18;
+    edge.addColorStop(0, `rgba(${shade},${a})`); edge.addColorStop(0.06, `rgba(${shade},0)`); edge.addColorStop(0.94, `rgba(${shade},0)`); edge.addColorStop(1, `rgba(${shade},${a})`);
     g.fillStyle = edge; g.fillRect(0, 0, w, h);
   });
   pathTex.wrapS = pathTex.wrapT = T.RepeatWrapping; pathTex.repeat.set(1, GROUND.length / PATH.meters);
@@ -196,6 +215,20 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
     const tints = [0xb9d79c, 0xf7cfc3, 0xd9e8c6];
     for (const [x, z, r, h, c] of hills) parts.push({ geo: placed('ball', [x, -1, z], [r, h, r * 0.55]), tint: color(tints[c]) });
     const far = new T.Mesh(mergeParts(parts), feltMat); far.name = 'far-hills'; scene.add(far);
+    if (dusk) far.visible = false;   // WORLD: 먼 언덕 대신 한강 그림의 남산·도시가 지평선을 맡는다
+  }
+  // WORLD 하늘: 지평선 뒤에 세운 판 하나(안개·빛을 받지 않는다). 위쪽 끝은 하늘색으로 녹여 화면 위 빈 곳(scene.background)과 잇는다.
+  let sky = null, skyAspect = 1;
+  if (dusk && skyImg) {
+    const cv = document.createElement('canvas'); cv.width = skyImg.width; cv.height = skyImg.height;
+    const g = cv.getContext('2d'); g.drawImage(skyImg, 0, 0);
+    g.globalCompositeOperation = 'destination-in';
+    const fade = g.createLinearGradient(0, 0, 0, cv.height * 0.22); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, 'rgba(0,0,0,1)');
+    g.fillStyle = fade; g.fillRect(0, 0, cv.width, cv.height);
+    const tex = new T.CanvasTexture(cv); tex.colorSpace = T.SRGBColorSpace; tex.anisotropy = aniso;
+    skyAspect = skyImg.width / skyImg.height;
+    sky = new T.Mesh(new T.PlaneGeometry(1, 1), new T.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, fog: false, color: 0xe6e0e4 }));
+    sky.name = 'hangang-sky'; sky.renderOrder = -1; sky.position.z = -186; scene.add(sky);
   }
 
   // ── 몽글: 팔 없는 종 모양·물결 밑단(이전 바람길 몽글 형상), 코랄 펠트 + 크림 밑단 + 검은 구슬 눈 ──
@@ -305,6 +338,12 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
     const want = portrait ? 0.79 : 0.74;
     camera.setViewOffset(W, H, 0, -(want - 0.5) * H, W, H);
     camera.updateProjectionMatrix();
+    if (sky) {   // 하늘 판: 화면 폭을 다 덮는 크기로, 그림의 물가 선이 땅의 먼 끝 높이(y≈0)에 오게
+      const dist = camera.position.z - sky.position.z, half = dist * tanH;
+      const width = Math.max(260, (2 * half) / (1 - 2 * Math.abs(DUSK.center - 0.5)) * 1.06), height = width / skyAspect;
+      sky.scale.set(width, height, 1);
+      sky.position.set(-(DUSK.center - 0.5) * width, height * (0.5 - DUSK.horizon) - 0.6, sky.position.z);
+    }
   }
   function resize() {
     const r = canvas.getBoundingClientRect();
@@ -366,6 +405,18 @@ export async function createWorld(canvas, { reduced = () => false } = {}) {
       if (best && gap < 3) best.userData.knock = 0;
     },
     clear() { for (const [e, g] of objects) dropEvent(e, g); place(0); },
+    /** WORLD 결과의 「그날의 한 장」: 지금 장면을 한 번 그린 그 자리에서 몽글을 아래쪽에 둔 4:5로 잘라 JPEG로 돌려준다(그 판의 마지막 모습). */
+    snapshot(model, maxWidth = 640) {
+      try {
+        render(0, model ? { ...model, events: [] } : null);   // 지나가는 장애물·표시선 없이 몽글과 길·마을·하늘만(다음 판은 clear()로 다시 시작한다)
+        const k = canvas.width / Math.max(1, W), at = project(model ? model.x : 0, 0.7, VIEW.playerZ);
+        const cw = Math.min(canvas.width, canvas.height * 0.8), ch = cw * 1.25;
+        const x0 = Math.max(0, Math.min(canvas.width - cw, at.x * k - cw / 2)), y0 = Math.max(0, Math.min(canvas.height - ch, at.y * k - ch * 0.86));
+        const out = document.createElement('canvas'); out.width = Math.round(Math.min(maxWidth, cw)); out.height = Math.round(out.width * 1.25);
+        out.getContext('2d').drawImage(canvas, x0, y0, cw, ch, 0, 0, out.width, out.height);
+        return out.toDataURL('image/jpeg', 0.86);
+      } catch { return null; }
+    },
     /** 확인용(?qa): 흐름 표본 — 길 결·풍경 칸·사건이 같은 거리만큼 +Z로 왔는지, 몽글이 어디를 보는지 */
     motion(model) {
       const sample = 0.37, road = { repeat: pathTex.repeat.y, length: GROUND.length, centerZ: GROUND.centerZ };
