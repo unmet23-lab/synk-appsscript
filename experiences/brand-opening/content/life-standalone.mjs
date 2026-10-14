@@ -13415,6 +13415,26 @@ function verdict(correct, { react = null } = {}) {
   }
 }
 
+// experiences/brand-opening/story-signs.mjs
+var STORY_SIGNS = {
+  // 「입구에는 이름표 세 장이 놓여 있어요」 — 탁자 위 세 이름표(빨강·초록·파랑 고리)
+  greetings: [
+    { text: "\uBABD\uAE00", kind: "tag", voice: "mongle", box: [21.6, 76.2, 32.7, 81.8] },
+    { text: "\uAE4C\uBABD", kind: "tag", voice: "kkamong", box: [43.2, 76.2, 55, 81.8] },
+    { text: "\uB9C8\uB9B0", kind: "tag", voice: "marin", box: [65, 76.2, 77.6, 81.8] }
+  ],
+  // 「안내판에는 ‘공원: 갈림길에서 오른쪽. 은행 옆.’」 — 오른쪽을 가리키는 아래 판이 공원
+  directions: [
+    { text: "\uC815\uB958\uC7A5", kind: "board", voice: "stop", box: [76.5, 5.5, 94.5, 14.5] },
+    { text: "\uACF5\uC6D0", kind: "board", voice: "park", box: [80.5, 17, 95.5, 25.8] }
+  ],
+  // 「안내문에는 ‘다음 정류장: 꽃길 공원’」 — 창 위 안내 화면(실제 버스의 LED 안내기처럼). 왼쪽 위는 튜터 알약 자리라 오른쪽 절반에 둔다
+  transit: [
+    { text: "\uB2E4\uC74C \uC815\uB958\uC7A5 \uAF43\uAE38 \uACF5\uC6D0", kind: "led", voice: "next-stop", box: [46, 2.4, 94, 9.8] }
+  ]
+};
+var storySigns = (pack) => STORY_SIGNS[pack] || [];
+
 // experiences/synk-world-app/life-ui.mjs
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
@@ -13424,6 +13444,7 @@ if (!document.querySelector("[data-life-style]")) {
   document.head.append(style);
 }
 var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var sayMarks = (html) => html.replace(/‘([^‘’]{1,80})’/g, '\u2018<mark class="life-say">$1</mark>\u2019');
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseNames = { expressions: "\uD45C\uD604 \uC775\uD788\uAE30", story: "\uC774\uC57C\uAE30 \uC77D\uAE30", apply: "\uC0DD\uD65C\uC5D0\uC11C \uC368 \uBCF4\uAE30", visit: "\uCE74\uD398 \uBC29\uBB38", compose: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30" };
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
@@ -13450,7 +13471,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   for (const [variable, file] of Object.entries({ "--cafe-room": "home/cafe-room-v1.webp", "--cafe-drinks": "home/cafe-drinks-v2.png", "--cafe-ice": "home/cafe-ice.webp", "--life-print-goals": "world-felt/goals.webp" })) panel.style.setProperty(variable, `url("${asset(file)}")`);
   for (const kind of ["counter", "window", "garden"]) if (hasCafePhoto(kind)) panel.style.setProperty("--cafe-" + kind, `url("${asset(cafePhotoFile(kind))}")`);
   const print = (name, className = "") => `<span class="w-print ${className}" aria-hidden="true"><img src="${asset("world-felt/" + name + ".webp")}" alt="" width="640" height="640" decoding="async"></span>`;
-  let context2 = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life";
+  let context2 = null, shown = false, rendering = false, ended = false, reviewRun = null, lastFeedback = null, helped = false, generation = 0, timer, cafeRun = null, cafeView = "", companion = null, place = "life", signClip = null;
   const practised = /* @__PURE__ */ new Set();
   const exposedTransfers = /* @__PURE__ */ new Set();
   let sittingSince = Date.now(), hiddenSince = 0, restKey = null;
@@ -13576,7 +13597,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     else if (context2.phase === "review") getProgress().markReviewHelp(context2.reviewId);
   }
   const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
-  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false } = {}) {
+  function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
     const scroll = keepScroll && shown ? content.scrollTop : 0;
     generation++;
     rendering = true;
@@ -13586,11 +13607,20 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       companion?.update({ ...tutorState(), practiceCompleted: true });
     } });
     companion = tutor;
+    if (tutorSlot && tutor?.element) {
+      const slot = content.querySelector(tutorSlot);
+      if (slot) {
+        tutor.element.dataset.layout = "scene";
+        slot.append(tutor.element);
+      }
+    }
     home.attachPanelResource({ dispose() {
       tutor?.dispose();
       if (companion === tutor) companion = null;
       if (!rendering) {
         speech.stop();
+        signClip?.pause();
+        signClip = null;
         shown = false;
         generation++;
         try {
@@ -13855,7 +13885,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         const img = new Image();
         img.src = asset(storyPhotoFile(l.packId, who));
       }
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${hasStoryPhoto(l.packId) ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74" width="768" height="512" decoding="async"></figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${escape(scene2.text)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story" });
+      const photo2 = hasStoryPhoto(l.packId), signs = photo2 ? storySigns(l.packId) : [];
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape(s.text)} \uC18C\uB9AC \uB4E3\uAE30" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${sayMarks(escape(scene2.text))}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
       return;
     }
     renderQuestion();
@@ -14062,7 +14093,18 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       content.querySelector("[data-life-cafe-help]")?.focus({ preventScroll: true });
     },
     help: tutorHint,
-    "tutor-retry": (el) => companion?.openPractice(el.dataset.lifeTutorRetry)
+    "tutor-retry": (el) => companion?.openPractice(el.dataset.lifeTutorRetry),
+    // 이야기 사진 속 이름표·안내판을 누르면 그 낱말을 한 번 읽어 준다
+    sign: (el) => {
+      const name = el.dataset.lifeSign;
+      if (!/^[a-z-]+$/.test(name || "")) return;
+      signClip?.pause();
+      const clip = new Audio(asset("story-voice/" + name + ".mp3"));
+      signClip = clip;
+      clip.play().catch(() => {
+        if (signClip === clip) signClip = null;
+      });
+    }
   };
   function click(event) {
     const button = event.target.closest("button");

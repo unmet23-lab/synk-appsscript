@@ -76,9 +76,9 @@ svg{width:24px;height:24px;flex-shrink:0}
 #home-tutor .game-tutor-portrait img{object-fit:cover}
 #home-tutor .game-tutor-message{grid-column:2;display:block;min-width:0;margin:0;padding:0;background:none;border:0;box-shadow:none}
 #home-tutor .game-tutor-message::before,#home-tutor .game-tutor-message::after{display:none}
-#home-tutor .game-tutor-message small{display:block;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
-#home-tutor .game-tutor-message small b{font-weight:var(--wt-strong);color:var(--w-ink-2)}
-#home-tutor .game-tutor-line{margin:3px 0 0;min-height:0;max-height:none;font-size:15px;line-height:1.5;font-weight:var(--wt-body);color:var(--w-ink);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+#home-tutor .game-tutor-message small{display:flex;align-items:center;gap:7px;font-size:13px;line-height:1.4;font-weight:var(--wt-label);color:var(--w-ink-3)}
+#home-tutor .game-tutor-message small b:not(.w-name){font-weight:var(--wt-strong);color:var(--w-ink-2)}
+#home-tutor .game-tutor-line{margin:3px 0 0;min-height:0;max-height:none;font-size:16px;line-height:1.5;font-weight:500;color:var(--w-ink);text-wrap:pretty;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 #home-tutor .home-tutor-context,#home-tutor .game-tutor-sound,#home-tutor .game-tutor-name{display:none}
 #home-tutor .game-tutor-help,#home-tutor .home-tutor-action,.home-tutor-choose{grid-column:1/-1;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:54px;margin:4px 0 2px;padding:0 22px;border-radius:999px;background:var(--w-ink);color:var(--w-on-ink);font-size:16px;font-weight:var(--wt-strong);letter-spacing:-.01em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12);transition:transform .12s var(--w-ease),box-shadow .2s var(--w-ease)}
 #home-tutor .home-tutor-action::after,.home-tutor-choose::after{content:'';width:16px;height:16px;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
@@ -143,7 +143,7 @@ svg{width:24px;height:24px;flex-shrink:0}
 .felt-button:active,.plain-button:active{transform:scale(.98)}
 .felt-button:disabled,.plain-button:disabled{opacity:.45;cursor:default;transform:none}
 .felt-button span[aria-hidden],.plain-button span[aria-hidden]{font-weight:400}
-.panel-note,.dialog-note{font-size:13px;line-height:1.65;color:var(--w-ink-3);margin-top:16px;text-wrap:pretty}
+.panel-note,.dialog-note{font-size:14px;line-height:1.65;color:var(--w-ink-3);margin-top:16px;text-wrap:pretty}
 .panel-note{text-align:center}
 .profile-view{text-align:center;padding:0 8px 18px}
 .profile-view>img{display:block;width:104px;margin:0 auto;filter:var(--w-cut-shadow)}
@@ -174,7 +174,7 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .play-label{font-family:var(--w-mono);font-size:var(--t-mono);font-weight:500;letter-spacing:var(--track-mono);text-transform:uppercase;color:rgba(30,14,10,.62)}
 .play-copy strong{display:block;font-size:27px;line-height:1;font-weight:var(--wt-poster);letter-spacing:-.06em;word-break:keep-all}
 .play-list button:first-child .play-copy strong{font-size:52px;letter-spacing:-.065em}
-.play-copy small:last-child{font-size:13.5px;line-height:1.45;font-weight:var(--wt-label);color:rgba(30,14,10,.74);text-wrap:balance}
+.play-copy small:last-child{font-size:14px;line-height:1.45;font-weight:var(--wt-label);color:rgba(30,14,10,.74);text-wrap:balance}
 .play-list .arrow{position:absolute;top:14px;left:14px;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:0;background:rgba(30,14,10,.1);box-shadow:inset 0 0 0 1px rgba(30,14,10,.16)}
 .play-list .arrow::before{content:'';width:13px;height:13px;background:currentColor;-webkit-mask:var(--w-arrow-up-right) center/contain no-repeat;mask:var(--w-arrow-up-right) center/contain no-repeat}
 /* 리듬(2차): 코랄 포스터는 첫 게임 하나. 나머지 게임은 어두운 카드 + 흰 인화지(기울기·자리를 달리한다) */
@@ -196,7 +196,7 @@ dialog .home-toast{position:sticky;bottom:12px;left:auto;transform:none;margin:1
 .play-more img{width:48px;height:48px;flex-shrink:0;border-radius:10px;background:#fff;object-fit:cover;transform:rotate(-3deg);box-shadow:0 6px 14px rgba(0,0,0,.3)}
 .play-more span{display:grid;gap:2px;min-width:0;flex:1}
 .play-more strong{font-size:16px;font-weight:var(--wt-title);letter-spacing:var(--track-title)}
-.play-more small{font-size:13.5px;color:var(--w-ink-3)}
+.play-more small{font-size:14px;color:var(--w-ink-3)}
 .play-more button::after{content:'';width:16px;height:16px;flex-shrink:0;background:var(--w-ink-3);-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .play-more button:hover strong{text-decoration:underline;text-underline-offset:4px;text-decoration-color:var(--w-ink-4)}
 .life-menu-entry{display:none}
@@ -309,7 +309,7 @@ noscript{position:fixed;inset:auto 20px 100px;background:var(--w-panel);color:va
  [data-layout=landscape] .world-nav button{font-size:13px}
  [data-layout=landscape] .nav-object svg{width:20px;height:20px}
  [data-layout=landscape] .life-home-board{padding:10px 10px 4px}
- [data-layout=landscape] #home-tutor .game-tutor-line{font-size:13.5px}
+ [data-layout=landscape] #home-tutor .game-tutor-line{font-size:14px}
  [data-layout=landscape] #home-tutor .home-tutor-action{min-height:46px}
 }
 @media(min-width:600px) and (min-height:600px) and (pointer:fine){

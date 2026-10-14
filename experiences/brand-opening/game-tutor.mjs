@@ -42,7 +42,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${photo()}" alt="${tutor.name}" width="288" height="288"><img class="game-tutor-face" src="${photo()}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor';element.dataset.tutor=tutor.id;element.dataset.tutorGame=game;element.dataset.phase=phase;
  element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
- element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b> · <span class="game-tutor-label">함께하는 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite">${escape(tutorLine(tutor.id,'ready'))}</p></div><button class="game-tutor-help" type="button" aria-label="${tutor.name}에게 조작법 다시 보기">조작법</button>`;
+ element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b class="w-name" data-who="${tutor.id}">${tutor.name}</b><span class="game-tutor-label">함께하는 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite">${escape(tutorLine(tutor.id,'ready'))}</p></div><button class="game-tutor-help" type="button" aria-label="${tutor.name}에게 조작법 다시 보기">조작법</button>`;
  container.classList.add('has-game-tutor');container.prepend(element);
  const help=document.createElement('dialog');help.className='game-tutor-guide';help.setAttribute('aria-label',`${tutor.name}과 ${guide.title} 조작법`);
  help.dataset.explanation=preferences.explanation;

@@ -76,6 +76,11 @@
 .w-led.check{background:var(--w-led-check);box-shadow:0 0 10px rgba(245,196,69,.5)}
 .w-led.alert{background:var(--w-led-alert);box-shadow:0 0 10px rgba(249,104,89,.55)}
 .w-chip{display:inline-flex;align-items:center;gap:7px;min-height:28px;padding:0 11px;border-radius:999px;background:rgba(8,9,12,.62);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label);letter-spacing:-.005em;white-space:nowrap;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+/* 친구 이름표: 튜터 띠·이야기 화자·튜터 고르기 말풍선의 이름은 그 친구 색 알약(몽글 코랄 · 까몽 코코아 · 마린 남색+버터, 글자 대비 6.4 · 5.1 · 6.9) */
+.w-name{display:inline-flex;align-items:center;flex:none;height:22px;padding:0 9px;border-radius:999px;background:var(--w-s3);color:var(--w-ink);font-family:var(--w-sans);font-size:13px;font-weight:650;line-height:1;letter-spacing:-.005em;white-space:nowrap}
+.w-name[data-who=mongle]{background:#F96859;color:#1E0E0A}
+.w-name[data-who=kkamong]{background:#8B5E3C;color:#FFF3EA}
+.w-name:is([data-who=marin],[data-who=marine]){background:#2D3F8E;color:#FFD86B}
 .w-btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:48px;padding:0 22px;border:0;border-radius:999px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:var(--wt-strong) var(--t-body)/1.2 var(--w-sans);letter-spacing:-.01em;text-align:center;text-decoration:none;white-space:nowrap;cursor:pointer;transition:background .18s var(--w-ease),box-shadow .2s var(--w-ease),color .18s var(--w-ease),transform .12s var(--w-ease)}
 .w-btn:hover{background:var(--w-s2)}
 .w-btn:active{transform:scale(.975)}
