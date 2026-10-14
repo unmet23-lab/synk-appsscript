@@ -265,6 +265,76 @@ test('leaving during startup defers the first connection until the page actually
   f.lifecycle.get('pageshow')();await settle();assert.equal(f.calls.filter(row=>row.operation==='platformLoad').length,1);assert.equal(f.writes().length,0);
 });
 
+test('public connection and a concurrent button click share one verified library read and subscription', async t => {
+  const gate=deferred();let preparations=0,subscriptions=0,identityReads=0;
+  const f=await fixture(t,{records:new Map([['A',{revision:3,state:state(['care'])}]]),ensureReady:()=>{preparations++;return gate.promise;}});
+  const subscribe=f.host.onAuthChanged,identity=f.host.authStatus;
+  f.host.onAuthChanged=fn=>{subscriptions++;return subscribe(fn);};f.host.authStatus=()=>{identityReads++;return identity();};
+  const first=f.view.connect();await f.view.connect();await f.root.querySelector('[data-connect-button]').onclick();await settle();
+  assert.equal(preparations,1);assert.equal(f.calls.length,0);
+  gate.resolve();await first;await settle();await f.view.connect();await settle();
+  assert.equal(subscriptions,1);assert.equal(identityReads,1);assert.deepEqual(f.calls.map(row=>[row.operation,row.owner]),[['platformLoad','A']]);
+  assert.deepEqual(f.view.projection().favorites,['care']);assert.equal(f.writes().length,0);assert.equal(f.confirms.length,0);
+});
+
+test('public reconnect after remount reads the account and preserves earlier unsent records without submitting them', async t => {
+  const storage=memoryStorage(),records=new Map([['A',{revision:2,state:state(['care'])}]]),first=await fixture(t,{storage,records});
+  await first.view.connect();await settle();first.setFail(true);await first.view.dispatch({type:'favorite',id:'world'});
+  await until(()=>first.writes().length===1);await settle();assert.equal(first.view.hasPending(),true);first.view.dispose();
+  const preserved=new Map(storage.data);assert.ok(preserved.size>0);
+  const second=await fixture(t,{storage,records});await second.view.connect();await settle();
+  assert.deepEqual(second.calls.map(row=>[row.operation,row.owner]),[['platformLoad','A']]);assert.deepEqual(second.view.projection().favorites,['care']);
+  assert.equal(second.view.hasPending(),false);assert.equal(second.writes().length,0);assert.equal(second.confirms.length,0);
+  assert.equal(second.mount.querySelector('[data-notebook-drafts]').hidden,false);
+  for(const [key,raw] of preserved)assert.equal(storage.getItem(key),raw);
+  assert.deepEqual(records.get('A'),{revision:2,state:state(['care'])});
+});
+
+test('public connection neither logs guests in nor enables account storage for absent or disabled records', async t => {
+  const guest=await fixture(t,{initial:{configured:true,status:'signed-out',signedIn:false,sessionGeneration:1}});let oauth=0,logout=0;
+  guest.host.authSignIn=async()=>{oauth++;};guest.host.authSignOut=async()=>{logout++;};
+  await guest.view.connect();await settle();await guest.view.connect();
+  assert.equal(guest.calls.length,0);assert.equal(oauth,0);assert.equal(logout,0);assert.equal(guest.view.connected(),false);assert.equal(guest.view.projection(),null);
+  for(const document of [null,emptyPlatformLibrary()]){
+    const records=new Map([['A',{revision:4,state:document}]]),f=await fixture(t,{records,device:{favorites:['world'],recent:[{id:'world',at:1,mode:'client'}]}});
+    await f.view.connect();await settle();await f.view.connect();
+    assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.equal(f.view.connected(),false);assert.equal(f.view.projection(),null);
+    assert.equal(f.writes().length,0);assert.equal(f.confirms.length,0);assert.deepEqual(records.get('A'),{revision:4,state:document});
+    assert.ok(f.content.querySelector('[data-cloud="enable"]'));
+  }
+});
+
+test('public connection waiting for readiness uses the latest owner and cannot read the account after logout', async t => {
+  const records=new Map([['A',{revision:1,state:state(['world'])}],['B',{revision:1,state:state(['care'])}]]);
+  const changedGate=deferred(),changed=await fixture(t,{records,ensureReady:()=>changedGate.promise}),first=changed.view.connect();
+  await changed.auth(signed('B',2));changedGate.resolve();await first;await settle();
+  assert.deepEqual(changed.calls.map(row=>[row.operation,row.owner]),[['platformLoad','B']]);assert.deepEqual(changed.view.projection().favorites,['care']);assert.equal(changed.writes().length,0);
+  const logoutGate=deferred(),out=await fixture(t,{records,ensureReady:()=>logoutGate.promise}),pending=out.view.connect();let oauth=0;
+  out.host.authSignIn=async()=>{oauth++;};await out.auth({configured:true,status:'signed-out',signedIn:false,sessionGeneration:2});
+  logoutGate.resolve();await pending;await settle();
+  assert.equal(out.calls.length,0);assert.equal(out.view.connected(),false);assert.equal(out.view.projection(),null);assert.equal(oauth,0);assert.equal(out.confirms.length,0);
+});
+
+test('repeated public connection after same-account verification preserves the live unsaved note without a fresh document read', async t => {
+  const f=await fixture(t,{records:new Map([['A',{revision:1,state:state(['world'])}]])});await f.view.connect();await settle();
+  f.input('자동 연결 뒤에도 이어 쓸 입력');const field=f.content.querySelector('[name=title]');
+  await f.auth({configured:true,status:'error',signedIn:false,sessionGeneration:2,error:{code:'AUTH_SERVER_UNAVAILABLE',retryable:true}});
+  assert.equal(f.content.hidden,true);assert.equal(f.view.hasUnsavedDraft(),true);await f.view.connect();
+  f.records.set('A',{revision:2,state:state(['care'])});await f.auth(signed('A',3));await f.view.connect();await settle();
+  assert.equal(f.content.hidden,false);assert.equal(f.content.querySelector('[name=title]'),field);assert.equal(field.value,'자동 연결 뒤에도 이어 쓸 입력');
+  assert.equal(f.view.hasUnsavedDraft(),true);assert.deepEqual(f.view.projection().favorites,['world']);
+  assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.equal(f.writes().length,0);assert.equal(f.confirms.length,0);
+});
+
+test('public connection retries failed readiness and disposal fences a still-pending automatic connection', async t => {
+  let failed=true;const f=await fixture(t,{ensureReady:async()=>{if(failed)throw Error('합성 시작 준비 실패');}});
+  await f.view.connect();await settle();assert.equal(f.calls.length,0);assert.match(f.root.querySelector('[data-library-detail]').textContent,/합성 시작 준비 실패/);
+  failed=false;await f.view.connect();await settle();assert.deepEqual(f.calls.map(row=>row.operation),['platformLoad']);assert.equal(f.writes().length,0);
+  const gate=deferred(),disposed=await fixture(t,{ensureReady:()=>gate.promise}),pending=disposed.view.connect();
+  disposed.view.dispose();gate.resolve();await pending;await disposed.view.connect();await settle();
+  assert.equal(disposed.calls.length,0);assert.equal(disposed.view.projection(),null);
+});
+
 test('the compact library chooses an unfinished note and keeps editing controls collapsed until opened', async t => {
   const record=state();record.notes=[{id:'done',appId:'world',title:'이미 끝낸 메모',done:true,createdAt:2},{id:'next',appId:'rehearsal',title:'다음 대화 이어쓰기',done:false,createdAt:1}];
   const f=await fixture(t,{records:new Map([['A',{revision:1,state:record}]])});await f.connect();

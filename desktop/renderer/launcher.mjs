@@ -60,6 +60,7 @@ function setAuth(snapshot,{environmentOnly=false}={}){
     if(ownerChanged){prefs=parsePreferences(readPrefs());personal=createPersonal();}
   }
   applyPersonalization();reconcileSelection();continuity?.render();renderLibrary();renderSelected();renderDownloads();renderAuth();renderBenefits();convenience?.refresh();
+  if(bridge&&auth.signedIn&&library.owner)void continuity?.connect();
 }
 async function refreshAuth({reload=false}={}){
   if(!bridge)return;const revision=authRevision;

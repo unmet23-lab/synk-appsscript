@@ -245,7 +245,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     }
     return true;
   }
-  connect.onclick = async () => {
+  async function connectLibrary() {
     if (notebook || connecting || disposed) return;
     connecting = true;
     message = "";
@@ -327,7 +327,8 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
         summary();
       }
     }
-  };
+  }
+  connect.onclick = connectLibrary;
   toggle.onclick = () => {
     capture();
     initialExpansionPending = false;
@@ -482,7 +483,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
     render();
     if (connectOnResume) {
       connectOnResume = false;
-      void connect.onclick();
+      void connectLibrary();
     }
   };
   const beforeUnload = (event) => {
@@ -496,6 +497,7 @@ export function mountPlatformLibrary(root, { getHost, ensureReady = async () => 
   globalThis.addEventListener("pageshow", resume);
   globalThis.addEventListener("beforeunload", beforeUnload);
   return {
+    connect: connectLibrary,
     connected: () => !!notebook?.active && doc.consent,
     projection() {
       return notebook?.active && notebook.canEdit && doc.consent ? projectPlatformLibrary(doc, { appIds: entryIds() }) : null;
