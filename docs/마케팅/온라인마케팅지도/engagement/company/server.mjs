@@ -105,6 +105,14 @@ const HYPE_RECENT_MS=7*86400000,HYPE_RETENTION_MS=8*86400000;
 const recentFields=value=>Object.fromEntries(Object.entries(value).map(([key,val])=>['recent'+key[0].toUpperCase()+key.slice(1),val]));
 const safeError=message=>String(message||'처리하지 못했습니다.').replace(/(?:Bearer\s+|access_token=|refresh_token=)[^\s&]+/gi,'[보호된 값]').slice(0,400);
 const httpError=(message,status=400)=>Object.assign(new Error(message),{status});
+// Why stored channel credentials must not be used right now; the code lets publishers show the reason instead of a generic failure.
+export function credentialHoldReason(live,channel,connectedBy){
+  if(!live?.active)return ['CHANNEL_INACTIVE','이 계정이 비활성이라 연결 정보를 쓰지 않았어요. 계정을 다시 켠 뒤 시도해 주세요.'];
+  if(live.collectionDisabled)return ['COLLECTION_DISABLED','이 계정의 연결이 꺼져 있어요. 계정 관리에서 다시 연결한 뒤 시도해 주세요.'];
+  if((live.connectionVersion||0)!==(channel.connectionVersion||0))return ['CONNECTION_CHANGED','계정 연결이 바뀌었어요. 새 연결로 다시 시도해 주세요.'];
+  if(connectedBy!==undefined&&!connectedBy?.active)return ['CONNECTION_OWNER_INACTIVE','이 계정을 연결한 사람의 회사 계정이 비활성이에요. 지금 담당자가 계정을 다시 연결해 주세요.'];
+  return null;
+}
 const text=(value,max=200)=>String(value??'').trim().slice(0,max);
 const count=value=>typeof value==='number'&&Number.isSafeInteger(value)&&value>=0?value:null;
 const isLocalHost=host=>['127.0.0.1','localhost','::1'].includes(host);
@@ -270,7 +278,7 @@ export function createCompanyApp(options={}) {
     publicationInboxTick=Promise.resolve().then(()=>publicationInbox.scan()).then(result=>{finishRuntime(inboxRuntime,true);return result;},()=>{finishRuntime(inboxRuntime,false);});
     return publicationInboxTick;
   }
-  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list']);
+  const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list','observations']);
   socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
   const socialProvider=options.socialProvider??createSocialProvider({store,clock,resolveMedia:socialMarketing.resolveMedia,authorizePublish:input=>socialPublishing.assertExecution(input),allowedBaseUrls:(process.env.SYNK_SOCIAL_PROVIDER_ALLOWED_URLS||'').split(',').map(x=>x.trim()).filter(Boolean),...options.socialProviderOptions});
   let socialReview;
@@ -314,10 +322,10 @@ export function createCompanyApp(options={}) {
   function scanSocialPublishing(){
     if(stopRequested||socialRuntime.running)return socialTick;
     beginRuntime(socialRuntime);
-    const before=store.all('socialPublishJobs').map(job=>job.id+':'+job.updatedAt+':'+job.status).join('|');
+    const jobsWritten=()=>typeof store.generation==='function'?store.generation('socialPublishJobs'):store.all('socialPublishJobs').map(job=>job.id+':'+job.updatedAt+':'+job.status).join('|'),before=jobsWritten();
     socialTick=Promise.resolve().then(async()=>{
       const result=await socialPublishing.tick({signal:socialAbort.signal});
-      const after=store.all('socialPublishJobs').map(job=>job.id+':'+job.updatedAt+':'+job.status).join('|');
+      const after=jobsWritten();
       if(before!==after)notifySocialChanges();return result;
     }).then(result=>{finishRuntime(socialRuntime,true);void scanSocialExtras();return result;},()=>{finishRuntime(socialRuntime,false);void scanSocialExtras();});
     return socialTick;
@@ -581,8 +589,8 @@ export function createCompanyApp(options={}) {
     if(credentials.accessToken){
       credentials={...credentials,...await refreshCredentials(c.platform,credentials,provider)};
       const live=store.get('channels',c.id);
-      if(!live?.active||live.collectionDisabled||(live.connectionVersion||0)!==(c.connectionVersion||0)||
-        (credentials.connectedBy&&!store.get('users',credentials.connectedBy)?.active))throw httpError('채널 연결이 변경되어 갱신된 연결 정보를 저장하지 않았습니다.');
+      const hold=credentialHoldReason(live,c,credentials.connectedBy?store.get('users',credentials.connectedBy)||null:undefined);
+      if(hold)throw Object.assign(httpError(hold[1]),{code:hold[0]});
       store.setSecret('channel:'+c.id,credentials);
     }
     return {...provider,...credentials};

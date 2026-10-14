@@ -291,3 +291,14 @@ test('collection leaves replies their share of the hourly budget and scheduled s
   {const f=fixture(t);f.enable();fill(f,61);const result=await f.provider.scanDue();assert.equal(result.checked,0);assert.equal(f.calls.length,0);assert.equal(f.store.get('socialInboxConnections','channel').lastStatus,undefined,'a skipped scan records no error');}
   {const f=fixture(t);f.enable();fill(f,60);const result=await f.provider.scanDue();assert.equal(result.checked,1);assert.equal(result.failed,0);assert.ok(f.calls.length>0);}
 });
+
+test('the recent lane reads the first page of every new post before a busy post goes deeper',async t=>{
+  const f=fixture(t);f.enable();
+  f.setHandler((path,url)=>{if(path==='100/media')return json({data:Array.from({length:10},(_,i)=>({id:String(200+i),permalink:'https://www.instagram.com/p/P'+i+'/'}))});
+    const m=/^(\d+)\/comments$/.exec(path);if(!m)return null;const post=Number(m[1]);
+    if(post===200){const page=Number(url.searchParams.get('after')||0);return json({data:Array.from({length:50},(_,i)=>({id:String(20000+page*50+i),text:'댓글 '+(page*50+i),from:{id:'900'}})),...(page<7?{paging:{next:'unused',cursors:{after:String(page+1)}}}:{})});}
+    return json({data:[{id:String(900000+post),text:'게시물 '+post+'의 문의',from:{id:'901'}}]});});
+  await f.sync();const seen=new Set(f.store.all('socialInbox').map(row=>row.nativePostId));
+  for(let post=201;post<=209;post++)assert.ok(seen.has(String(post)),'post '+post+' is read on the first scan');
+  assert.ok(f.store.all('socialInbox').filter(row=>row.nativePostId==='200').length>=50,'the busy post still gets its pages');
+});

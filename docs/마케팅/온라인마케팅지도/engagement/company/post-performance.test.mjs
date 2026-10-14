@@ -275,3 +275,10 @@ test('a caller losing channel access during collection cannot save another creat
   f.store.put('users', f.other.id, { ...f.other, role: 'member' }); release(); await assert.rejects(job, { status: 401 });
   assert.equal(f.service.list(f.owner).entries[0].checkpoints[0].metrics.views, null);
 });
+
+test('observations carry the checkpoints without the comparison with every other post or any lease token', t => {
+  const f = fixture(t); f.register(); const listed = f.service.list(f.owner).entries[0], seen = f.service.observations(f.owner).entries[0];
+  assert.equal(seen.id, listed.id); assert.equal(seen.url, listed.url); assert.equal(seen.checkpoints.length, listed.checkpoints.length);
+  assert.ok(seen.checkpoints.every(cp => cp.comparison === undefined && cp.leaseToken === undefined && cp.leaseUntil === undefined)); assert.ok(listed.checkpoints.every(cp => cp.comparison !== undefined));
+  assert.deepEqual(seen.checkpoints.map(cp => cp.hours), listed.checkpoints.map(cp => cp.hours)); assert.deepEqual(f.service.observations(f.other).entries, []);
+});

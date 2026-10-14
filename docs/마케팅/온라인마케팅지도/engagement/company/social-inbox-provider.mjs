@@ -235,7 +235,10 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
           if(next.after)expanded.push({...task,after:next.after,cursors:next.cursors,identityComplete});
           else if(!next.complete)expanded.push({...task,after:task.after,cursors:task.cursors});
           else if(task.kind==='replies')expanded.push({kind:'reply-end',parentId:task.parentId,postId:task.post.id,scanId:task.scanId,scanLane:task.scanLane,observedAt,startedAt:task.startedAt,complete:identityComplete});
-          tasks.splice(0,1,...expanded);drain();
+          // The recent lane reads the first page of every new post before any post's next page, so one busy post cannot use up
+          // the lane while the next posts' new comments wait for the history lane.
+          const later=lane==='recent'&&task.kind==='comments'&&expanded.at(-1)?.kind==='comments'&&expanded.at(-1).post?.id===task.post.id?expanded.pop():null;
+          tasks.splice(0,1,...expanded);if(later){const before=tasks.findIndex(next=>next.kind==='posts');tasks.splice(before<0?tasks.length:before,0,later);}drain();
           if(result.paging?.next&&!next.after)break;
         }
         return tasks;

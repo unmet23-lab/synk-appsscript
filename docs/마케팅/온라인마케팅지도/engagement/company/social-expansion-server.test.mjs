@@ -27,8 +27,8 @@ test('HTTP autosave is private and encrypted, survives reload, detects stale tab
   assert.equal((await f.api(f.writer,'/api/social/recovery/save',input,{'X-CSRF-Token':'bad'})).status,403);
   const saved=await f.api(f.writer,'/api/social/recovery/save',input);assert.equal(saved.status,200);assert.equal(saved.data.recovery.revision,1);
   assert.equal((await f.api(f.writer,'/api/social/recovery/save',input)).status,409);
-  const mine=(await f.api(f.writer,'/api/social/workspace')).data,other=(await f.api(f.other,'/api/social/workspace')).data;
-  assert.equal(mine.recovery.drafts[0].draft.body,input.draft.body);assert.equal(other.recovery.drafts.length,0);assert.ok(!JSON.stringify(f.app.store.all('socialRecoveryDrafts')).includes(input.draft.body));
+  const mine=(await f.api(f.writer,'/api/social/workspace')).data,other=(await f.api(f.other,'/api/social/workspace')).data,full=(await f.api(f.writer,'/api/social/recovery')).data;
+  assert.equal(mine.recovery.summary,true);assert.equal(mine.recovery.drafts[0].draft,undefined);assert.equal(mine.recovery.drafts[0].draftKey,full.drafts[0].draftKey);assert.equal(full.drafts[0].draft.body,input.draft.body);assert.equal(other.recovery.drafts.length,0);assert.ok(!JSON.stringify(f.app.store.all('socialRecoveryDrafts')).includes(input.draft.body));
   assert.equal(f.app.store.get('socialPosts',post.id).body,f.draft.body);assert.equal(f.app.store.all('socialPublishJobs').length,0);
   await f.api(f.admin,`/api/social/posts/${post.id}/action`,{action:'approve',revision:post.revision});assert.equal((await f.api(f.writer,'/api/social/recovery')).data.drafts[0].conflict,true);
   assert.equal((await f.api(f.writer,'/api/social/recovery/discard',{draftKey:'working-copy',revision:1})).status,200);assert.equal((await f.api(f.writer,'/api/social/recovery')).data.drafts.length,0);

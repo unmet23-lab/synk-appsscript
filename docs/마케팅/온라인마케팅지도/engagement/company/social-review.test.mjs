@@ -195,3 +195,9 @@ test('a passing file read error keeps the review link, a changed file still reti
   f.setBytes(Buffer.from('changed file'));await assert.rejects(f.review.open(link.token,context),{status:410});assert.equal(typeof f.store.get('socialReviewLinks',link.link.id).invalidatedAt,'string');
   const guesses={...context,clientKey:'guesser-2'};for(let i=0;i<120;i++)await assert.rejects(f.review.open('bad',guesses),{status:410});await assert.rejects(f.review.open('bad',guesses),error=>error.status===429&&!/로그인/.test(error.message));
 });
+
+test('opening and answering a review checks media records without reading files, while viewing a file reads and verifies it',async t=>{
+  const f=await fixture(t),post=f.create(),link=await f.link(post),reads=[];f.mediaHook(async(_ref,args)=>{reads.push(args.read);});
+  await f.review.open(link.token,context);await f.respond(link.token,{decision:'comment',comment:'좋아요'});assert.ok(reads.length>=2);assert.ok(reads.every(read=>read===false),JSON.stringify(reads));
+  reads.length=0;await f.review.media(link.token,{mediaKey:'v0m0'},context);assert.deepEqual(reads,[true]);
+});

@@ -12,7 +12,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
   function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('열람 계정은 예약을 바꿀 수 없어요.',403);return live;}
   function state(user){
     user=current(user);const view=publishing.workspace(user),visible=new Set(view.jobs.map(job=>job.id));
-    const jobs=store.all('socialPublishJobs').filter(job=>{const c=store.get('channels',job.channelId);return visible.has(job.id)&&job.status==='scheduled'&&c?.active!==false&&c?.hidden!==true;});
+    const jobs=(typeof store.allWhere==='function'?store.allWhere('socialPublishJobs','status','scheduled'):store.all('socialPublishJobs')).filter(job=>{const c=store.get('channels',job.channelId);return visible.has(job.id)&&job.status==='scheduled'&&c?.active!==false&&c?.hidden!==true;});
     const settings=provider.settings(user),limit=settings.rateLimit?.requests||30,reserve=Math.min(6,Math.max(1,limit-1)),planningLimit=limit-reserve;
     const records=jobs.map(job=>{
       const channel=store.get('channels',job.channelId),post=store.get('socialPosts',job.postId),variant=job.snapshot?.variant||{},cap=provider.capability(channel);
