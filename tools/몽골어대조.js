@@ -24,6 +24,7 @@
 // 쓰는 법:  node tools/몽골어대조.js "<한국어 원문>" "<몽골어 번역문>"
 //          node tools/몽골어대조.js --파일 <경로>   ← 실제 카피(여러 줄·따옴표)는 이쪽
 //          --한증인 은 옛 호출과의 호환용이다. 뜻 검토는 항상 공식 앱에서 별도로 한다.
+//          --구독 을 붙이면 같은 픽을 Google AI Pro 구독 통로(lib/제미나이구독호출.js)로 부른다.
 //          파일 형식 = 한국어 원문 블록 / 단독 줄 `---` / 몽골어 번역 블록
 // 종료코드: 0=정상(그래도 대외 확정본은 사람 검수) · 2=검수 필요(어색·파손·판정불능·역번역 실패) · 1=실행 오류
 // 키:      C:\Users\q1212\SYNK_보안\제미나이.txt (git 밖 · env GEMINI_KEY_PATH 로 대체)
@@ -66,8 +67,51 @@ const { 제미나이, 재시도가능 } = require('./lib/제미나이호출.js')
  *   실제로 붙으면서(프로브 초록) **그 벽 없이 대량으로 돌릴 자리**가 생겼다.
  * 대량 유료 실행도 기본으로 승격하지 않고 손잡이로만 남긴다. */
 const 열쇠용도 = process.argv.includes('--글') ? '글' : (process.argv.includes('--돈') ? '돈' : 정책.기본용도());
+/* 🆕 10-14 — `--구독`: 같은 픽을 **Google AI Pro 구독 통로**(`lib/제미나이구독호출.js`)로 부른다.
+ *   왜: 무료 API 몫(하루 20발)이 10-14 아침 9시에 풀리자마자 다시 차서 LAB 몽골어판 검문이 두 번 막혔다.
+ *   API 키·Vertex·결제를 쓰지 않고, 그 통로가 서빙 모델이 요청과 같은지 확인한다(다르면 멈춘다 · 자동 대체 없음).
+ *   기본 문은 그대로 무료 API다 — 이 손잡이를 준 실행만 구독으로 간다. */
+const 구독문 = process.argv.includes('--구독');
 const 제미나이픽 = 정책.제미나이설정(); // 기본 = gemini-3.8-flash / thinking_level=high (유호 지시 09-03)
 const 기본모델 = 제미나이픽.model;
+
+/* 구독 통로는 **자식 프로세스로** 부른다 — 그 통로가 agy 를 동기로 기다리므로, 여기서 바로 부르면
+ * 먼저 띄워 둔 맞춤법 요청까지 그동안 멈춘다. 인자·출력 계약은 그 파일 머리말이 정본이다.
+ * child_process·os 는 이 길에서만 가져온다(검문 판정 시험은 정해 둔 의존만 허용한다). */
+function 구독으로부르기(model, prompt, { schema, thinking } = {}) {
+  const { spawn } = require('child_process');
+  const os = require('os');
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-mn-sub-'));
+  const 출력 = path.join(방, 'answer.json');
+  const args = [path.join(__dirname, 'lib', '제미나이구독호출.js'),
+    '--model', model, '--thinking', thinking || 'high', '-o', 출력];
+  if (schema) {
+    const 스키마 = path.join(방, 'schema.json');
+    fs.writeFileSync(스키마, JSON.stringify(schema), 'utf8');
+    args.push('--schema', 스키마);
+  }
+  return new Promise((resolve, reject) => {
+    const p = spawn(process.execPath, args, { windowsHide: true, stdio: ['pipe', 'ignore', 'pipe'] });
+    let 진단 = '';
+    p.stderr.setEncoding('utf8');
+    p.stderr.on('data', (d) => { 진단 += d; });
+    p.on('error', reject);
+    p.on('close', (code) => {
+      try {
+        if (code !== 0) {
+          const 끝 = 진단.trim().split(/\r?\n/).filter(Boolean).slice(-2).join(' / ');
+          return reject(new Error(`구독 통로 실패(종료 ${code}) — ${끝 || '진단 없음'}`));
+        }
+        resolve(String(JSON.parse(fs.readFileSync(출력, 'utf8')).text || ''));
+      } catch (e) {
+        reject(e);
+      } finally {
+        fs.rmSync(방, { recursive: true, force: true });
+      }
+    });
+    p.stdin.end(prompt, 'utf8');
+  });
+}
 
 // 키 파일에서 키만 뽑는다. 아는 접두어(AIza·AQ.·sk-)를 우선하고,
 // 못 알아보는데 토큰이 여럿이면 — 아무거나 집어 조용히 401을 만드느니 — 크게 실패한다.
@@ -279,11 +323,16 @@ async function main() {
     console.error('        node tools/몽골어대조.js --파일 <경로>   (한국어 / --- / 몽골어)');
     console.error('        node tools/몽골어대조.js --원문없음 "<몽골어>"   (짝이 없을 때 · 문법·맞춤법 두 겹만 · 반쪽)');
     console.error('        뒤에 --돈 --유료-api 를 붙인 실행만 Vertex 종량제 문으로 간다.');
+    console.error('        뒤에 --구독 을 붙이면 Google AI Pro 구독 통로로 간다(API 키·결제 없음).');
     process.exit(1);
   }
-  if (열쇠용도 === '돈') 정책.유료API요구('몽골어 검문의 Gemini Vertex AI');
+  if (구독문 && (argv.includes('--돈') || argv.includes('--글'))) {
+    console.error('실행 오류: --구독 은 --돈·--글 과 함께 줄 수 없다 — 문은 하나만 고른다');
+    process.exit(1);
+  }
+  if (!구독문 && 열쇠용도 === '돈') 정책.유료API요구('몽골어 검문의 Gemini Vertex AI');
   let key = null;
-  if (열쇠용도 === '글') {
+  if (!구독문 && 열쇠용도 === '글') {
     const keyPath = 정책.제미나이키경로('글');
     if (!fs.existsSync(keyPath)) {
       console.error('실행 오류: ' + 정책.제미나이키안내('글'));
@@ -304,22 +353,28 @@ async function main() {
   const 맞춤법약속 = 맞춤법검사(mn).catch(() => null);
 
   // 직렬 호출 — 무료 티어 분당 상한을 나란히 때리지 않는다. 문법(판정층)이 먼저다.
-  const 문법답 = await 제미나이(key, model,
+  // 프롬프트는 문과 상관없이 같다 — 문을 바꿔도 «같은 시험»이어야 장부의 결과끼리 견줄 수 있다.
+  const 부르기 = (prompt, 옵션) => (구독문
+    ? 구독으로부르기(model, prompt, 옵션)
+    : 제미나이(key, model, prompt, { ...옵션, 용도: 열쇠용도 }));
+  const 문법답 = await 부르기(
     `다음 몽골어 글의 문법과 자연스러움만 평가해라. 원문·의도는 모른다고 가정한다.\n여러 문장이면 전부 보고 가장 나쁜 문장 기준으로 판정한다.\n문제가 있으면 문제문장 필드에 그 문장을 원문 그대로 담아라.\n\n${mn}`,
-    { schema: 문법스키마, thinking, 용도: 열쇠용도 });
+    { schema: 문법스키마, thinking });
   /* 원문이 없으면 역번역을 «부르지 않는다» — 되돌려 놓고 견줄 원문이 없으니 한 발이 통째로 낭비다.
    * 아래 층들은 `역실패` 를 보고 스스로 미실행로 남는다(원문 대조·말투·뜻). */
-  const 역번역 = 원문없음 ? '' : await 제미나이(key, model,
+  const 역번역 = 원문없음 ? '' : await 부르기(
     `다음 몽골어를 한국어로 "직역"해라. 자연스럽게 다듬지 말고 어색하면 어색한 채로, 문장 수와 순서를 그대로 유지해 옮겨라. 번역문만 출력.\n\n${mn}`,
-    { thinking, 용도: 열쇠용도 });
+    { thinking });
 
   const 문법 = 문법파싱(문법답);
   const 역실패 = !역번역;
 
   /* 「어느 문으로 갔나」를 화면이 말한다 — 안 적으면 대량으로 돌린 뒤 「공짜로 돈 줄 알았다」가 된다. */
-  console.log(`모델: ${model}${thinking ? ' · thinking=' + thinking : ''} · ${열쇠용도 === '돈'
-    ? '유료 문(Vertex · 무료 크레딧이 낸다 · 하루 몫 벽 없음)'
-    : '무료 몫(하루 20발 · 학생 개인정보 금지)'}`);
+  console.log(`모델: ${model}${thinking ? ' · thinking=' + thinking : ''} · ${구독문
+    ? '구독 문(Google AI Pro · API 키·결제 없음 · 서빙 모델 확인 · 학생 개인정보 금지)'
+    : 열쇠용도 === '돈'
+      ? '유료 문(Vertex · 무료 크레딧이 낸다 · 하루 몫 벽 없음)'
+      : '무료 몫(하루 20발 · 학생 개인정보 금지)'}`);
   console.log('\n■ 문법·자연스러움 (원문 안 보여주고 채점)');
   if (문법) {
     console.log(`  판정: ${문법.판정}${문법.이유 ? ' — ' + 문법.이유 : ''}`);
@@ -414,6 +469,7 @@ async function main() {
     대상, 대상지문,
     번역지문: 지문(Buffer.from(String(mn), 'utf8')),
     모델: model, 사고: thinking || null,
+    문: 구독문 ? '구독' : 열쇠용도,
     통과, 사유,
     층: {
       문법: 문법 ? 문법.판정 : null,            // null = 판정불능(안 잰 것)

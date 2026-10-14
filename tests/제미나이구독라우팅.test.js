@@ -32,6 +32,20 @@ test('구독 자식에는 API 비밀값과 유료 API 허용 변수를 넘기지
   assert.deepEqual(env, { PATH: 'ok' });
 });
 
+test('agy 백그라운드 업데이터가 임시방을 잡고 있어도 받은 답을 버리지 않는다', () => {
+  const 방 = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-agy-review-'));
+  try {
+    const 잠김 = Object.assign(new Error('Permission denied'), { code: 'EPERM' });
+    assert.equal(구독.임시방지우기(방, () => { throw 잠김; }), false);
+    assert.equal(fs.existsSync(방), true);
+    assert.equal(구독.임시방지우기(방), true);
+    assert.equal(fs.existsSync(방), false);
+  } finally {
+    fs.rmSync(방, { recursive: true, force: true });
+  }
+  assert.throws(() => 구독.임시방지우기(path.join(os.tmpdir(), '다른-방')), /경계 밖/);
+});
+
 test('Antigravity는 구독 기본 몫만 허용하고 크레딧·API 키 제공자 설정을 거절한다', () => {
   const d = fs.mkdtempSync(path.join(os.tmpdir(), 'synk-agy-settings-'));
   const p = path.join(d, 'settings.json');
