@@ -1,0 +1,20 @@
+{
+  "checkedAt": "2026-10-14T05:34:30.1870237Z",
+  "surface": "installed SYNK Platform 0.4.7/build20261014.4",
+  "status": "real-account-installed-ui-verified",
+  "method": "Existing installed app and existing signed-in account; member benefits to insight through visible UI",
+  "newInsightScreenVerified": true,
+  "preferenceAndLearningRegionsVisible": true,
+  "connectedPracticeSummaryVisible": true,
+  "matchesPublicAccountSummary": true,
+  "emptyDeclaredInformationExplained": true,
+  "recordUnitsAndLimitsExplained": true,
+  "visualLayoutChecked": true,
+  "accountSettingsChanged": false,
+  "profileEdited": false,
+  "notesEdited": false,
+  "credentialsRead": false,
+  "personalIdentifiersOrRecordContentsStored": false,
+  "installReceipt": ".tmp/platform-complete-20261014/receipts/apply.json",
+  "publicReceipt": ".tmp/platform-insight-20261014/real-account-public.json"
+}

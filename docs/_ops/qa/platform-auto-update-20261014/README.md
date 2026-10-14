@@ -32,7 +32,7 @@
 
 현재 PC 적용 전 복구 가능한 앱 payload·설치 등록 백업을 검증했다. 기존 프로세스가 정상 종료되어 강제 종료는 실행하지 않았다. 현재 설치기 SHA는 `7fb377ab1722a505d6fb690e7abd50a314aa22222950087250ea2b27ec2463ee`, 설치 ASAR SHA는 `5f3947ce4dfb39d411ecd2c154b3721ba558dfffd584f7540cd06c88aa10e418`다.
 
-**내 성향 웹 후속 공개:** 담당 작업이 `account/` 4파일만 공개 커밋 `47fb0b72dddbf82bbbc8928f57b412beadf7badc`에 반영했다. Pages `38514869493`·전체 사이트 점검 `38514869666` 성공과 공개 4파일의 HTTP200·크기·전체 SHA 일치를 확인했고, 공통 0.4.7 feed·한영 홈페이지는 이전 공개 바이트 그대로다. [공개 증거](member-insight-web-publication.json), [화면 입구](https://synk.im/account/platform.html#benefits/insight). 배포 전 합성 브라우저 검사 55/55에 이어 14:29 KST [실제 계정 웹 UI](member-insight-real-web.json)의 두 영역·연결된 학습 요약·근거 펼침·새로고침 성공도 확인했다. 계정 설정·프로필·노트 변경 및 인증 정보 읽기 0. 설치 앱의 새 성향 UI 확인은 담당 작업에서 별도로 진행한다.
+**내 성향 웹 후속 공개:** 담당 작업이 `account/` 4파일만 공개 커밋 `47fb0b72dddbf82bbbc8928f57b412beadf7badc`에 반영했다. Pages `38514869493`·전체 사이트 점검 `38514869666` 성공과 공개 4파일의 HTTP200·크기·전체 SHA 일치를 확인했고, 공통 0.4.7 feed·한영 홈페이지는 이전 공개 바이트 그대로다. [공개 증거](member-insight-web-publication.json), [화면 입구](https://synk.im/account/platform.html#benefits/insight). 배포 전 합성 브라우저 검사 55/55에 이어 14:29 KST [실제 계정 웹 UI](member-insight-real-web.json)의 두 영역·연결된 학습 요약·근거 펼침·새로고침 성공도 확인했다. 이후 [설치된 0.4.7의 성향 화면](member-insight-real-installed.json)도 기존 로그인 상태에서 두 영역·실제 Atlas 요약·기록 범위 안내가 웹과 일치함을 확인했다. 두 성향 검증의 계정 설정·프로필·노트 변경 및 인증 정보 읽기는 0이다.
 
 <a id="storage-integration-046"></a>
 
