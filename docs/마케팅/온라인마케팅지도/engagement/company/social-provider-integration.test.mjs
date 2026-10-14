@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname,resolve} from 'node:path';
 import {randomUUID,createHash} from 'node:crypto';
 import {createCompanyApp} from './server.mjs';
+import {createSocialProvider} from './social-provider.mjs';
 
 const json=(value,status=200)=>new Response(JSON.stringify(value),{status,headers:{'content-type':'application/json'}});
 const PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=','base64');
@@ -18,7 +19,7 @@ async function fixture(t,{platform='threads',inboxFetch}={}){
     if(url.endsWith('/posts')&&init.method==='POST'){const data=JSON.parse(init.body);posts.push({id:'post-'+posts.length,content:data.posts[0].value[0].content,integration:{id:integration.id},state:'PUBLISHED',publishDate:at,releaseURL:platform==='youtube'?'https://www.youtube.com/watch?v=abcdefghijk':'https://www.threads.com/@synk/post/SYNK123'});if(mode==='unknown')throw Error('synthetic timeout');return json([{postId:posts.at(-1).id,integration:integration.id}]);}
     if(url.includes('/posts?'))return json({posts});throw Error('Unexpected fake endpoint');
   };
-  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,origin:'http://127.0.0.1:4191',schedule:false,clock:()=>at,socialProviderOptions:{fetchImpl:fakeFetch},socialInboxOptions:{fetchImpl:inboxFetch||(()=>{throw Error('Unexpected fake Meta endpoint');}),getCredentials:async channel=>app.store.secret('channel:'+channel.id)},synkIdentityConfig:null,teachingConfig:null,synkCustomerIdentityConfig:null,workNotificationsEnabled:false,webPushEnabled:false,messengerDriveStorage:{active:async()=>null,status:async()=>({provider:'local'})}});
+  const app=createCompanyApp({dataDir:directory,port:0,allowTestHost:true,origin:'http://127.0.0.1:4191',schedule:false,clock:()=>at,socialProviderFactory:createSocialProvider,socialProviderOptions:{fetchImpl:fakeFetch},socialInboxOptions:{fetchImpl:inboxFetch||(()=>{throw Error('Unexpected fake Meta endpoint');}),getCredentials:async channel=>app.store.secret('channel:'+channel.id)},synkIdentityConfig:null,teachingConfig:null,synkCustomerIdentityConfig:null,workNotificationsEnabled:false,webPushEnabled:false,messengerDriveStorage:{active:async()=>null,status:async()=>({provider:'local'})}});
   t.after(async()=>{await app.stop();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));rmSync(directory,{recursive:true,force:true});});
   const admin=app.store.createUser({email:'admin@bridge.test',name:'검증용 관리자',role:'admin'}),member=app.store.createUser({email:'member@bridge.test',name:'검증용 작성자',role:'member',teamId:'a'}),outsider=app.store.createUser({email:'outsider@bridge.test',name:'다른 팀',role:'member',teamId:'b'});
   app.store.put('channels','test-channel',{id:'test-channel',platform,handle:'synk',displayName:'검증용 계정',ownerIds:[member.id],teamId:'a',active:true});

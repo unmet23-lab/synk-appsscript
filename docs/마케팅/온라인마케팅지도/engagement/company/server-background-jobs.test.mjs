@@ -32,9 +32,9 @@ function assertScheduledTimers(timers, { background = false, push = false, local
   const independent = { checkResearch: 30000, scanDeliveryChecks: 60000,
     ...(localInbox ? { scanPublicationInbox: 5000 } : {}),
     ...(background ? { collectPublicationPerformance: 60000, scanPublicationLinks: 60000,
-      scanWeeklySummary: 60000, scanAutomationHealthScheduled: 60000 } : {}),
+      scanWeeklySummary: 60000, scanAutomationHealthScheduled: 60000, scanSocialPublishing: 15000 } : {}),
   };
-  const named = new Set(['checkResearch', 'scanDeliveryChecks', 'scanPublicationInbox', 'collectPublicationPerformance', 'scanPublicationLinks', 'scanWeeklySummary', 'scanAutomationHealthScheduled']);
+  const named = new Set(['checkResearch', 'scanDeliveryChecks', 'scanPublicationInbox', 'collectPublicationPerformance', 'scanPublicationLinks', 'scanWeeklySummary', 'scanAutomationHealthScheduled', 'scanSocialPublishing']);
   const actual = timers.filter(row => named.has(row.callback.name)).map(row => [row.callback.name, row.milliseconds]);
   assert.deepEqual(actual.sort(), Object.entries(independent).sort(), 'only the permitted service schedules start');
   assert.deepEqual(timers.filter(row => !named.has(row.callback.name)).map(row => row.milliseconds).sort((a,b)=>a-b),

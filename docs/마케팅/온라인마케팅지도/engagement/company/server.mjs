@@ -9,8 +9,8 @@ import { Store, now, today, token, hash, publicUser, passwordMatches, passwordHa
 import { createClientAddress, createAttemptLimiter, reserveAttempts, createConcurrencyGuard, publicRequestError } from './request-security.mjs';
 import { normalizeChannelUrl, collectChannel, PLATFORM_CAPABILITIES } from './collectors.mjs';
 import { analyze, companyOverview, analyticsCsv, shiftDate, dateRange, METRICS, metricPoint, compareMetric, metricIndex } from '../analytics.mjs';
-import { providers, createAuthorization, exchangeCode, refreshCredentials } from './oauth.mjs';
-import {createMetaConnectionService,verifyMetaConnection} from './meta-connection.mjs';
+import { providers, createAuthorization, exchangeCode, refreshCredentials, verifyYouTubePublishingConnection } from './oauth.mjs';
+import {createMetaConnectionService,verifyMetaConnection,hasVerifiedMetaComments,metaCommentScopes} from './meta-connection.mjs';
 import { canReadChannel,canWriteChannel,canManageOwners,visibleMembers,seedOwnership,recordOwnershipChange,ownerAt } from './organization.mjs';
 import { planFailure,shouldCollect,collectionHealth,recentPolicyChannel,recentNextCheckAt,shouldCollectRecent,RECENT_INTERVAL_MINUTES } from './collection-policy.mjs';
 import { recordsForOwner } from './ownership-report.mjs';
@@ -54,7 +54,8 @@ import { createPublicationLearningService } from './publication-learning.mjs';
 import { createPublicationReviewService } from './publication-review.mjs';
 import { createPublicationLinkCheckService } from './publication-link-check.mjs';
 import { createSocialPublishingService } from './social-publishing.mjs';
-import { createSocialProvider } from './social-provider.mjs';
+import { createSocialPublishingProvider } from './social-publishing-provider.mjs';
+import { createSocialPublishMedia } from './social-publish-media.mjs';
 import { createSocialMarketingService } from './social-marketing.mjs';
 import { createSocialRoutes } from './social-routes.mjs';
 import { createSocialSourceDistribution } from './social-source-distribution.mjs';
@@ -280,7 +281,9 @@ export function createCompanyApp(options={}) {
   }
   const postPerformance=automationReadScope.service(createPostPerformanceService({store,clock,collector:options.postPerformanceCollector??collector,getCredentials:credentialsFor,isConnected:hasConnection}),['list','observations']);
   socialMarketing=createSocialMarketingService({store,studio,publicationPackages,clientProjects,performance:postPerformance,clock,...options.socialMarketingOptions});
-  const socialProvider=options.socialProvider??createSocialProvider({store,clock,resolveMedia:socialMarketing.resolveMedia,authorizePublish:input=>socialPublishing.assertExecution(input),allowedBaseUrls:(process.env.SYNK_SOCIAL_PROVIDER_ALLOWED_URLS||'').split(',').map(x=>x.trim()).filter(Boolean),...options.socialProviderOptions});
+  const authorizeSocialPublish=input=>{socialProvider.assertUnique?.(input.channel);return socialPublishing.assertExecution({...input,continuation:input.continuation===true||input.phase==='media-fetch'});};
+  const socialPublishMedia=createSocialPublishMedia({store,clock,origin,resolveMedia:socialMarketing.resolveMedia,authorizePublish:authorizeSocialPublish,...options.socialPublishMediaOptions});
+  const socialProvider=options.socialProvider??(options.socialProviderFactory||createSocialPublishingProvider)({store,clock,getProviderConfig:providerConfig,getCredentials:credentialsFor,resolveMedia:socialMarketing.resolveMedia,issueMediaUrl:(ref,input)=>socialPublishMedia.issue(ref,input),authorizePublish:authorizeSocialPublish,allowedBaseUrls:(process.env.SYNK_SOCIAL_PROVIDER_ALLOWED_URLS||'').split(',').map(x=>x.trim()).filter(Boolean),...options.socialProviderOptions});
   let socialReview;
   socialPublishing=createSocialPublishingService({store,clock,provider:socialProvider,validateSource:socialMarketing.validateSource,onApproved:args=>socialReview?.recordApproval(args),validateReview:args=>socialReview?.validateReview(args),onPublished({post,variant,job,channel,actor}){
     const registered=postPerformance.register(actor,{channelId:channel.id,url:job.publicationUrl,publishedAt:job.publishedAt,title:variant.title||post.title,publicationPackageId:post.source?.packageId||null,...(post.source?.packageId&&variant.publicationFormat?{publicationFormat:variant.publicationFormat}:{})});
@@ -765,6 +768,7 @@ export function createCompanyApp(options={}) {
     }
     const demoRequest=path==='/api/demo'||path.startsWith('/api/demo/')||req.headers['x-synk-demo']==='1'||url.searchParams.get('demo')==='1';
     if(demoRequest&&!['GET','HEAD'].includes(method)&&path!=='/api/logout')throw httpError('데모 화면에서는 조회만 가능합니다. 실제 화면으로 돌아가 변경해 주세요.',403);
+    if(path.startsWith('/social-publish-media/')&&await socialPublishMedia.handle(req,res,{url,signal:socialAbort.signal}))return;
     if(await socialPublicRoutes(req,res,{url}))return;
     if(await customerRoutes(req,res,url))return;
     const identityControl=['/api/logout','/api/synk-id/renew','/api/synk-id/status'].includes(path);
@@ -1310,17 +1314,28 @@ export function createCompanyApp(options={}) {
     }
     const oauth=path.match(/^\/api\/oauth\/(youtube|instagram|facebook|tiktok)\/(start|callback)$/);
     if(method==='GET'&&oauth){if(!auth)throw httpError('로그인 후 계정을 연결해 주세요.',401);const platform=oauth[1];
-      if(oauth[2]==='start'){const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널 플랫폼이 다릅니다.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 앱을 먼저 설정해야 합니다.');const comments=['instagram','facebook'].includes(platform)&&url.searchParams.get('comments')==='1';const previous=connection(c),existingGrantedScopes=previous?.permissionsVerifiedAt&&typeof previous.scope==='string'?previous.scope.split(/[ ,]+/):[];const state=store.mint('oauth',user.id,{channelId:c.id,sessionHash:hash(auth.raw),platform,comments},10);const dest=createAuthorization(platform,{...cfg,state,comments,existingGrantedScopes});res.writeHead(302,{Location:dest,'Referrer-Policy':'no-referrer'});return res.end();}
+      if(oauth[2]==='start'){
+        const c=channelFor(user,url.searchParams.get('channelId'),'connect');if(c.platform!==platform)throw httpError('채널 플랫폼이 다릅니다.');const cfg=providerConfig(platform);if(!cfg.clientId||!cfg.clientSecret)throw httpError('관리자가 플랫폼 앱을 먼저 설정해야 합니다.');
+        const meta=['instagram','facebook'].includes(platform),publishing=['instagram','facebook','youtube'].includes(platform)&&url.searchParams.get('publishing')==='1';
+        const previous=connection(c),existingGrantedScopes=previous?.permissionsVerifiedAt&&typeof previous.scope==='string'?previous.scope.split(/[ ,]+/):[],inbox=store.get('socialInboxConnections',c.id);
+        const preserveComments=publishing&&meta&&(inbox?.enabled===true||hasVerifiedMetaComments(c,previous)||Boolean(previous?.permissionsVerifiedAt)&&metaCommentScopes(platform,previous.authType).every(scope=>existingGrantedScopes.includes(scope)));
+        const comments=meta&&(url.searchParams.get('comments')==='1'||preserveComments);
+        const inboxBinding=publishing&&meta?{enabled:inbox?.enabled===true,version:inbox?.version||null,connectionVersion:inbox?.connectionVersion??null}:null;
+        const state=store.mint('oauth',user.id,{channelId:c.id,sessionHash:hash(auth.raw),platform,comments,publishing,preserveComments,inboxBinding,connectionVersion:c.connectionVersion||0},10);
+        const dest=createAuthorization(platform,{...cfg,state,comments,publishing,existingGrantedScopes});res.writeHead(302,{Location:dest,'Referrer-Policy':'no-referrer'});return res.end();
+      }
       const state=store.consume(url.searchParams.get('state'),'oauth');if(!state||state.userId!==user.id||state.body.platform!==platform||state.body.sessionHash!==hash(auth.raw))throw httpError('연결 확인이 만료됐습니다. 다시 계정 연결을 눌러 주세요.',403);
       try{
         if(url.searchParams.has('error'))throw httpError('계정 연결이 취소됐습니다.');
         const c=channelFor(user,state.body.channelId,'connect');
-        const cfg=providerConfig(platform),cfgPin=JSON.stringify(cfg),comments=state.body.comments===true;
-        const assertCurrent=()=>{const latest=session(req);if(!latest?.user?.active||latest.hash!==auth.hash)throw httpError('크루 로그인이 해제됐습니다.',401);const live=channelFor(latest.user,c.id,'connect');if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0)||JSON.stringify(providerConfig(platform))!==cfgPin)throw httpError('계정 또는 앱 연결이 변경됐습니다. 다시 연결해 주세요.',409);if(stopRequested)throw httpError('서버가 종료 중입니다.',503);};
+        const cfg=providerConfig(platform),cfgPin=JSON.stringify(cfg),comments=state.body.comments===true,publishing=state.body.publishing===true;if(state.body.connectionVersion!=null&&state.body.connectionVersion!==(c.connectionVersion||0))throw httpError('계정 연결이 변경됐습니다. 다시 연결해 주세요.',409);
+        const assertCurrent=()=>{const latest=session(req);if(!latest?.user?.active||latest.hash!==auth.hash)throw httpError('크루 로그인이 해제됐습니다.',401);const live=channelFor(latest.user,c.id,'connect');if(!live.active||(live.connectionVersion||0)!==(c.connectionVersion||0)||JSON.stringify(providerConfig(platform))!==cfgPin)throw httpError('계정 또는 앱 연결이 변경됐습니다. 다시 연결해 주세요.',409);if(state.body.inboxBinding){const inbox=store.get('socialInboxConnections',c.id),binding={enabled:inbox?.enabled===true,version:inbox?.version||null,connectionVersion:inbox?.connectionVersion??null};if(JSON.stringify(binding)!==JSON.stringify(state.body.inboxBinding))throw httpError('댓글 수집 설정이 변경됐습니다. 현재 설정을 확인하고 다시 연결해 주세요.',409);}if(stopRequested)throw httpError('서버가 종료 중입니다.',503);};
+        assertCurrent();
         let creds=await exchangeCode(platform,{...cfg,code:url.searchParams.get('code')},{fetchImpl:options.oauthFetch});assertCurrent();
         let verified;
-        if(['instagram','facebook'].includes(platform)){verified=await verifyMetaConnection({channel:c,credentials:creds,provider:cfg,purpose:comments?'comments':'statistics',fetchImpl:options.metaConnectionFetch,clock,signal:socialAbort.signal,authorize:assertCurrent,trustedExpiry:true,trustedGrant:true});creds=verified.credentials;}
-        const result=comments?null:await collector(c,{...cfg,...creds});assertCurrent();
+        if(['instagram','facebook'].includes(platform)){verified=await verifyMetaConnection({channel:c,credentials:creds,provider:cfg,purpose:publishing?'publishing':comments?'comments':'statistics',requireComments:publishing&&comments,fetchImpl:options.metaConnectionFetch,clock,signal:socialAbort.signal,authorize:assertCurrent,trustedExpiry:true,trustedGrant:true});creds=verified.credentials;}
+        if(platform==='youtube'&&publishing){verified=await verifyYouTubePublishingConnection({channel:c,credentials:creds,fetchImpl:options.youtubeConnectionFetch,clock,signal:socialAbort.signal,authorize:assertCurrent});creds=verified.credentials;}
+        const result=comments||publishing?null:await collector(c,{...cfg,...creds});assertCurrent();
         const externalId=verified?.identity.id||result.channel.externalId;
         const currentAuth=session(req),currentUser=currentAuth?.user;
         if(!currentUser?.active||currentAuth.raw!==auth.raw||currentUser.id!==user.id)throw httpError('크루 로그인이 해제됐습니다.');
@@ -1333,13 +1348,17 @@ export function createCompanyApp(options={}) {
         }
         const runId=randomUUID();
         store.transaction(()=>{
+          assertCurrent();
           if(result)store.put('runs',runId,{id:runId,channelId:c.id,channelName:c.displayName,status:'running',startedAt:clock(),requestedBy:user.id});
           if(h&&h.toOwnerIds.includes(user.id))live=completeHandoff(live,currentUser);
           if(result)saveCollection(live,result,runId,true);
           store.setSecret('channel:'+c.id,{...creds,connectedBy:user.id,connectedAt:clock()});
-          store.put('channels',c.id,{...store.get('channels',c.id),externalId,collectionDisabled:false,...(comments?{status:'ready',lastError:null,requiresReconnect:false,failureKind:null,failureCode:null}:{}),connectionVersion:(live.connectionVersion||0)+1});
+          store.put('channels',c.id,{...store.get('channels',c.id),externalId,collectionDisabled:false,...((comments||publishing)?{status:'ready',lastError:null,requiresReconnect:false,failureKind:null,failureCode:null}:{}),connectionVersion:(live.connectionVersion||0)+1});
+          if(publishing&&state.body.preserveComments&&state.body.inboxBinding?.enabled&&state.body.inboxBinding.connectionVersion===(c.connectionVersion||0)){
+            const inbox=store.get('socialInboxConnections',c.id);store.put('socialInboxConnections',c.id,{...inbox,version:randomUUID(),connectionVersion:(live.connectionVersion||0)+1,updatedAt:clock(),progress:null,lastError:null,lastErrorCode:null});
+          }
           audit(user,'oauth-connected',c.id);
-        });res.writeHead(302,{Location:'/?connected='+encodeURIComponent(c.id)+(comments?'&connectionPurpose=comments':'')});return res.end();
+        });res.writeHead(302,{Location:'/?connected='+encodeURIComponent(c.id)+(publishing?'&connectionPurpose=publishing':comments?'&connectionPurpose=comments':'')});return res.end();
       }catch(error){const failure=publicRequestError(error,{production});res.writeHead(302,{Location:'/?connectionError='+encodeURIComponent(safeError(failure.message))});return res.end();}
     }
     const creatorAssetRoute=path.match(/^\/api\/creator-sources\/assets\/([a-z0-9-]+)$/);
@@ -1603,7 +1622,7 @@ export function createCompanyApp(options={}) {
     ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([socialPublishMedia.stop(),socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();
@@ -1637,7 +1656,7 @@ export function createCompanyApp(options={}) {
     return startTask;
   }
   async function stop(){ready=false;stopRequested=true;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();if(startTask)await startTask.catch(()=>{});await shutdown();}
-  return {server,store,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([socialExtras,socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
+  return {server,store,socialPublishMedia,socialPublishing,socialMarketing,socialProvider,socialDistribution,socialInboxProvider,socialAi,socialRecovery,socialTracking,socialWorkflows,socialReview,socialReplies,socialCapacity,socialCopyInsights,socialFollowups,scanSocialPublishing,clientProjects,clientDelivery,messenger,deviceNotifications,dailyTrends,creativeResearch,creativeResearchSync,computerInterpretation,publicationPackages,publicationInbox,postPerformance,publicationLinks,weeklySummary,scanWeeklySummary,automationHealth,automationNotifications,scanAutomationHealth,scanAutomationHealthScheduled,scanDeliveryChecks,origin,host,port,importLegacy,scheduledTick,collectPublicationPerformance,scanPublicationInbox,scanPublicationLinks,report,enqueueCollection,waitForIdle:async()=>{await socialTick;await Promise.all([socialExtras,socialPublishMedia.waitForIdle(),socialPublishing.waitForIdle(),socialReplies.waitForIdle(),socialProvider.waitForHealthIdle?.(),socialReview.waitForIdle(),socialDistribution.waitForIdle(),socialAi.waitForIdle(),socialInboxProvider.waitForIdle(),queue,deliveryCheckTick,automationHealthTick,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.waitForIdle(),publicationInbox.waitForIdle(),postPerformance.waitForIdle(),publicationPackages.waitForIdle(),dailyTrends.waitForIdle(),creativeResearch.waitForIdle(),creativeResearchSync.waitForIdle(),computerInterpretation.waitForIdle()]);},start,stop};
 }
 if(process.argv[1]&&resolve(process.argv[1])===fileURLToPath(import.meta.url)){
   let app;

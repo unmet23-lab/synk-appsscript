@@ -31,7 +31,7 @@ test('workroom opt-in starts local scheduled checks and SNS runtime while unconn
   for(const id of ['links','weekly']){assert.notEqual(card(report,id).status,'paused');assert.ok(card(report,id).lastSuccessAt,id);}
   assert.equal(card(report,'performance').status,'paused');
   const weekly=await f.get('/api/weekly-summary');assert.equal(weekly.schedule.enabled,true);assert.ok(f.app.store.all('weeklyWorkSummaries').length);
-  const social=await f.get('/api/social/workspace');assert.equal(social.runtime.enabled,true);assert.ok(social.runtime.lastAttemptAt);assert.equal(social.provider.configured,false);assert.equal(social.ai.canUse,false);
+  const social=await f.get('/api/social/workspace');assert.equal(social.runtime.enabled,true);assert.ok(social.runtime.lastAttemptAt);assert.equal(social.provider.provider,'direct');assert.equal(social.provider.configured,true);assert.ok(social.provider.channels.every(channel=>channel.enabled===false&&channel.connected===false));assert.equal(social.ai.canUse,false);
   await f.app.scheduledTick();assert.equal(f.calls(),0);
 });
 test('unset or explicit disabled workroom flag preserves stopped background defaults',async t=>{

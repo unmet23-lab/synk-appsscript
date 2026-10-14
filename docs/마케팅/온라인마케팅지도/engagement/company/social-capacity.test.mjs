@@ -15,7 +15,7 @@ async function fixture(t){
   const clock=()=>at,publishing=createSocialPublishingService({store,provider,clock}),capacity=createSocialCapacity({store,publishing,provider,clock});
   let n=0;function add({time='2026-10-13T01:00:00.000Z',channelId='a',mode='queue',media=[],notifyOnly=false}={}){let post=publishing.savePost(admin,{title:'예약 '+(++n),variants:[{channelId,format:'text',text:'게시문 '+n,media,options:{notifyOnly}}]}).post;post=publishing.action(admin,post.id,{action:'approve',revision:post.revision}).post;const job=publishing.action(admin,post.id,{action:'schedule',revision:post.revision,scheduledAt:time}).jobs[0];if(mode!=='fixed')store.put('socialPublishJobs',job.id,{...store.get('socialPublishJobs',job.id),mode});return store.get('socialPublishJobs',job.id);}
   t.after(async()=>{await publishing.stop();store.close();assert.equal(dirname(resolve(directory)),resolve(tmpdir()));await rm(directory,{recursive:true,force:true});});
-  return {store,admin,manager,viewer,other,publishing,capacity,add,setTime:value=>at=value,get sent(){return sent;}};
+  return {store,provider,admin,manager,viewer,other,publishing,capacity,add,setTime:value=>at=value,get sent(){return sent;}};
 }
 
 test('rolling congestion warns across clock hours and spreads only after an explicit apply',async t=>{
@@ -24,6 +24,14 @@ test('rolling congestion warns across clock hours and spreads only after an expl
   const preview=f.capacity.preview(f.admin,{jobIds:jobs.map(j=>j.id)});assert.ok(preview.validCount>0);assert.equal(preview.canApply,true);assert.equal(f.store.get('socialPublishJobs',jobs[0].id).scheduledAt,jobs[0].scheduledAt);
   assert.throws(()=>f.capacity.apply(f.admin,{previewId:preview.previewId}),{status:400});
   const applied=f.capacity.apply(f.admin,{previewId:preview.previewId,confirmed:true});assert.ok(applied.jobs.length>0);assert.equal(f.capacity.apply(f.admin,{previewId:preview.previewId,confirmed:true}).existing,true);assert.equal(f.capacity.workspace(f.admin).windows.some(w=>w.overLimit),false);assert.equal(f.sent,0);
+});
+
+test('direct request budgets replace the legacy Postiz history including its retry delay',async t=>{
+  const f=await fixture(t);f.provider.settings=()=>({rateLimit:{requests:120}});f.provider.requestBudgetSnapshot=()=>({times:[],retryAfter:0});
+  f.store.put('socialProviderRequests','postiz',{times:Array(120).fill(Date.parse('2026-10-13T00:00:00Z')),retryAfter:Date.parse('2026-10-14T00:00:00Z')});
+  const jobs=[f.add(),f.add()],view=f.capacity.workspace(f.admin);assert.equal(view.limit,120);assert.equal(view.warnings.length,0);
+  const plan=f.capacity.preview(f.admin,{jobIds:jobs.map(j=>j.id)});assert.equal(plan.canApply,true);assert.ok(plan.changes.every(c=>c.to<'2026-10-14T00:00:00Z'));
+  assert.ok(f.capacity.apply(f.admin,{previewId:plan.previewId,confirmed:true}).jobs.length);
 });
 
 test('fixed appointments stay protected unless individually selected',async t=>{

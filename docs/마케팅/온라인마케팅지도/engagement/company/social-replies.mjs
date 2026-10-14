@@ -61,12 +61,25 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
   function assertUnblocked(row){if(blockingAttempt(row))throw fail('REPLY_PENDING','이 원댓글에 보내는 중이거나 전송 여부를 모르는 답장이 있어요. 그 답장의 결과부터 확인해 주세요.');}
   function workspace(user){
     const live=store.get('users',user?.id);if(!live?.active)return {items:[],attempts:[]};
-    const items=store.all('socialInbox').filter(row=>{const c=store.get('channels',row.channelId);return c&&c.active!==false&&!c.hidden&&canReadChannel(live,c);});
-    const visible=new Set(items.map(row=>row.id)),attempts=store.all(K.attempts).filter(row=>visible.has(row.inboxId)).map(normalizeLease);
+    // These snapshots live only for this synchronous response. Submission still
+    // rechecks current permissions, credentials and every blocking attempt.
+    const channels=new Map(),credentials=new Map(),targets=new Map(),latestByInbox=new Map(),knownByInbox=new Map();
+    const channelFor=id=>{if(!channels.has(id))channels.set(id,store.get('channels',id));return channels.get(id);};
+    function target(row,create=false){let accounts=targets.get(row.channelId);if(!accounts&&create)targets.set(row.channelId,accounts=new Map());let comments=accounts?.get(row.sourceAccountId);if(!comments&&create)accounts.set(row.sourceAccountId,comments=new Map());let group=comments?.get(row.externalId);if(!group&&create)comments.set(row.externalId,group={blocked:null});return group;}
+    const items=store.all('socialInbox').filter(row=>{const c=channelFor(row.channelId);return c&&c.active!==false&&!c.hidden&&canReadChannel(live,c);});
+    const visible=new Set(items.map(row=>row.id)),attempts=[];for(const row of items)target(row,true);
+    for(const original of store.all(K.attempts)){
+      const group=target(original),isVisible=visible.has(original.inboxId);if(!isVisible&&!group)continue;
+      const row=normalizeLease(original);
+      if(group&&!group.blocked&&['preparing','submitting','unknown'].includes(row.status))group.blocked=row;
+      if(!isVisible)continue;attempts.push(row);latestByInbox.set(row.inboxId,row);
+      if(row.status==='sent'){if(!knownByInbox.has(row.inboxId))knownByInbox.set(row.inboxId,new Set());knownByInbox.get(row.inboxId).add(row.remoteReplyId);}
+    }
     return {items:items.map(row=>{
-      const c=store.get('channels',row.channelId),issue=itemIssue(row,c,credentialsFor(c)),blocked=blockingAttempt(row),latest=attempts.filter(a=>a.inboxId===row.id).at(-1),writable=canWriteChannel(live,c);
-      const replyState=inboxReplyState(row,c),knownIds=new Set(attempts.filter(a=>a.inboxId===row.id&&a.status==='sent').map(a=>a.remoteReplyId));
-      return {inboxId:row.id,...replyState,observedReply:replyState.observedReply?{...replyState.observedReply,knownLocal:replyState.observedReply.replyCount===replyState.observedReply.replyIds.length&&replyState.observedReply.replyIds.every(value=>knownIds.has(value))}:null,canReply:writable&&!issue&&!blocked,canReconcile:writable&&!issue&&blocked?.status==='unknown',reason:issue?.[1]||(blocked?'이 원댓글의 기존 전송 결과를 먼저 확인해 주세요.':!writable?'이 계정으로 답장할 권한이 없어요.':null),requiredScopes:scopesFor(c,credentialsFor(c),true),missingScopes:issue?.[2]||[],latestAttempt:latest?attemptView(latest):null};
+      const c=channelFor(row.channelId);if(!credentials.has(c.id))credentials.set(c.id,credentialsFor(c));const credential=credentials.get(c.id);
+      const issue=itemIssue(row,c,credential),blocked=target(row).blocked,latest=latestByInbox.get(row.id),writable=canWriteChannel(live,c);
+      const replyState=inboxReplyState(row,c),knownIds=knownByInbox.get(row.id);
+      return {inboxId:row.id,...replyState,observedReply:replyState.observedReply?{...replyState.observedReply,knownLocal:replyState.observedReply.replyCount===replyState.observedReply.replyIds.length&&replyState.observedReply.replyIds.every(value=>knownIds?.has(value))}:null,canReply:writable&&!issue&&!blocked,canReconcile:writable&&!issue&&blocked?.status==='unknown',reason:issue?.[1]||(blocked?'이 원댓글의 기존 전송 결과를 먼저 확인해 주세요.':!writable?'이 계정으로 답장할 권한이 없어요.':null),requiredScopes:scopesFor(c,credential,true),missingScopes:issue?.[2]||[],latestAttempt:latest?attemptView(latest):null};
     }),attempts:attempts.map(attemptView)};
   }
   function run(fn,outerSignal){if(closed)return Promise.reject(fail('REPLY_STOPPED','답장 서비스가 멈췄어요. 잠시 후 다시 시도해 주세요.',503));if(pending.size>=8)return Promise.reject(fail('REPLY_BUSY','처리 중인 요청이 많아요. 잠시 후 다시 시도해 주세요.',429));const controller=new AbortController();controllers.add(controller);const signal=outerSignal?AbortSignal.any([outerSignal,controller.signal]):controller.signal;const task=Promise.resolve().then(()=>fn(signal)).finally(()=>{pending.delete(task);controllers.delete(controller);});pending.add(task);return task;}

@@ -64,6 +64,13 @@ test('Facebook OAuth matches an official Page link without username and rejects 
   assert.equal((await verifyMetaConnection({channel:{platform:'facebook',externalId:'200'},credentials:{accessToken:'synthetic-page',authType:'facebook-page',accountId:'200'},provider,clock,fetchImpl})).identity.id,'200');
 });
 
+test('Facebook publishing upgrade requires retained comment grants and moderation task before returning replacement credentials',async()=>{
+  const provider={clientId:'app',clientSecret:'synthetic-secret'},channel={platform:'facebook',externalId:'200'},credentials={accessToken:'synthetic-user',authType:'facebook-user'},scopes=['pages_show_list','pages_read_engagement','pages_manage_posts','pages_read_user_content','pages_manage_engagement'];
+  for(const kind of ['complete','missing-comment-grant','missing-moderation-task']){const fetchImpl=async raw=>{const path=new URL(raw).pathname;if(path.endsWith('/debug_token'))return json({data:{is_valid:true,app_id:'app',expires_at:0,scopes:kind==='missing-comment-grant'?scopes.filter(s=>s!=='pages_manage_engagement'):scopes}});if(path.endsWith('/me/accounts'))return json({data:[{id:'200',access_token:'synthetic-page',tasks:kind==='missing-moderation-task'?['CREATE_CONTENT']:['CREATE_CONTENT','MODERATE']}]});return json({id:'200',name:'Synthetic Page'});};
+    const result=verifyMetaConnection({channel,credentials,provider,clock,fetchImpl,purpose:'publishing',requireComments:true,trustedGrant:true});if(kind==='complete')assert.equal((await result).identity.id,'200');else await assert.rejects(result,{code:kind==='missing-comment-grant'?'META_SCOPES_REQUIRED':'META_PAGE_ACCESS_REQUIRED'});
+  }
+});
+
 test('verified manual capability supports collect, author fallback and explicit reply without scope invention or token refresh',async t=>{
   const f=fixture(t);await f.service.connect(f.admin,'ig',input);const calls=[];
   const fetchImpl=async(raw,init)=>{const url=new URL(raw),path=url.pathname.replace(/^\/v[\d.]+\//,'');calls.push({url,init});

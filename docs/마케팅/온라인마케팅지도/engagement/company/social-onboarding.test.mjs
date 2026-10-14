@@ -34,3 +34,19 @@ test('local server is never presented as remote operation, stale and future runt
 test('empty or inactive account list never produces fabricated progress',()=>{
   const d=base();d.channels[0].active=false;assert.equal(setup(d).empty,true);assert.deepEqual(setup(d).channels,[]);
 });
+test('direct publishing needs this account consent and explicit enable, not global configured state',()=>{
+  const d=base();d.provider={mode:'direct',configured:true,channels:[{channelId:'ig',supported:true,connected:false,enabled:false}]};
+  assert.equal(get(d,'connection').status,'pending');assert.equal(get(d,'publishing').status,'pending');
+  d.provider.channels[0].connected=true;assert.equal(get(d,'connection').status,'configured');assert.equal(get(d,'publishing').status,'pending');
+  d.provider.channels[0].enabled=true;d.channels[0].capability={mode:'automatic',canPublish:true};
+  d.connectionHealth={api:{state:'connected'},channels:[{channelId:'ig',state:'connected',checkedAt:'2026-10-14T00:00:00Z'}]};
+  assert.equal(get(d,'publishing').status,'checked');assert.equal(get(d,'publication').status,'pending');
+  d.connectionHealth.channels[0].checkedAt=null;assert.equal(get(d,'publishing').status,'checking');
+  d.connectionHealth.channels[0].checkedAt='2026-10-13T23:00:00Z';assert.equal(get(d,'publishing').status,'checking');
+  d.connectionHealth.channels[0].checkedAt='2026-10-14T01:00:00Z';assert.equal(get(d,'publishing').status,'checking');
+});
+test('unsupported direct channels skip connection steps and retain the manual publishing path',()=>{
+  const d=base();d.channels[0].platform='tiktok';d.provider={provider:'direct',configured:true,channels:[{channelId:'ig',supported:false}]};
+  assert.equal(get(d,'connection').status,'unsupported');assert.equal(get(d,'publishing').status,'unsupported');
+  assert.match(get(d,'publishing').detail,/앱에서 마무리/);assert.equal(setup(d).channels[0].nextStepId,'publication');
+});

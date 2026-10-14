@@ -5,8 +5,8 @@ const HOUR=3600000,MINUTE=60000,PLANS='socialCapacityPlans';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
-// This is the workspace's conservative request budget, not Postiz's advertised
-// create-post quota. Media cache hits and shared status polls can lower usage.
+// This is the workspace's conservative planning budget, not an SNS quota.
+// Direct adapters separately enforce their per-account request budgets.
 export function createSocialCapacity({store,publishing,provider,clock=()=>new Date().toISOString()}){
   const now=()=>new Date(clock()).toISOString();
   function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('열람 계정은 예약을 바꿀 수 없어요.',403);return live;}
@@ -21,7 +21,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
       const canMove=job.attempts===0&&channel?.active!==false&&channel?.hidden!==true&&post?.approval?.hash===job.approvalHash&&post?.contentVersion===job.contentVersion&&post?.variants?.every(v=>canManageOwners(user,store.get('channels',v.channelId)));
       return {jobId:job.id,channelId:job.channelId,title:job.snapshot?.post?.title||post?.title||'게시물',scheduledAt:job.scheduledAt,mode:job.mode,estimatedRequests,canMove:!!canMove,reason:!automatic?'자동 발행 대상이 아니므로 호출량에서 제외':!canMove?'승인 버전·발행 권한·시도 이력을 확인해 주세요.':null};
     }).sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt)||a.jobId.localeCompare(b.jobId));
-    const stamp=Date.parse(now()),requests=store.get('socialProviderRequests','postiz')||{};
+    const stamp=Date.parse(now()),requests=provider.requestBudgetSnapshot?.(user)||store.get('socialProviderRequests','postiz')||{};
     const recent=(requests.times||[]).filter(at=>Number.isFinite(at)&&at>stamp-HOUR).map(at=>({at,cost:1}));
     const events=records.filter(row=>row.estimatedRequests>0).map(row=>({at:Date.parse(row.scheduledAt),cost:row.estimatedRequests,jobId:row.jobId,channelId:row.channelId}));
     const signature=hash({jobs:jobs.map(j=>[j.id,j.updatedAt,j.scheduledAt,j.scheduleRevision,j.attempts,j.status,j.approvalHash]),channels:view.channels.map(c=>[c.id,c.active,c.canPublish,c.capability]),policies:store.all('socialQueuePolicies'),requests,limit,reserve});
@@ -35,7 +35,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     const warnings=[];if(windows.some(row=>row.overLimit))warnings.push('한 시간 안의 예상 호출량이 계획 한도를 넘어요. 예약 분산을 확인해 주세요.');
     if(data.retryAfter>Date.parse(now()))warnings.push('발행 서비스의 재시도 대기 시간이 아직 남아 있어요. 그 뒤로 예약을 분산해 주세요.');
     if(data.user.role!=='admin')warnings.push('볼 수 있는 예약만 기준으로 계산했어요. 다른 팀 예약까지 함께 보려면 관리자가 전체 화면에서 확인해야 해요.');
-    return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 더한 계획용 추정이에요.','파일 캐시·공동 조회로 줄거나 재시도로 늘 수 있어요. 실제로 보낼 때 서버 호출 한도를 다시 적용해요.','지금 만들어진 예약만 계산에 넣었어요. 아직 만들어지지 않은 반복 예약은 빠져 있어요.'],jobs:records,windows,warnings};
+    return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['SYNK의 보수적인 계획 기준이며 SNS가 보장하는 공식 할당량은 아니에요.','게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 더한 계획용 추정이에요.','파일 캐시·공동 조회로 줄거나 재시도로 늘 수 있어요. 실제로 보낼 때 서버 호출 한도를 다시 적용해요.','지금 만들어진 예약만 계산에 넣었어요. 아직 만들어지지 않은 반복 예약은 빠져 있어요.'],jobs:records,windows,warnings};
   }
   // apply checks every change before writing any, so all of them can share the state it already built.
   function validateMove(user,change,data=state(user)){
@@ -94,7 +94,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
       if(plan.appliedAt){if(plan.jobIds.some(id=>!visible.has(id)))throw fail('예약 접근 권한이 바뀌었어요.',403);return {jobs:view.jobs.filter(j=>plan.jobIds.includes(j.id)),existing:true};}
       const current=state(user);if(plan.expiresAt<=now()||!plan.canApply||current.signature!==plan.signature)throw fail('미리보기가 만료됐거나 예약·연결 상태가 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
       const changes=plan.changes.filter(c=>!c.excluded&&c.from!==c.to);changes.forEach(change=>validateMove(user,change,current));
-      if(changes.some(c=>Date.parse(c.to)<(store.get('socialProviderRequests','postiz')?.retryAfter||0)))throw fail('발행 서비스의 대기 시간이 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
+      if(changes.some(c=>Date.parse(c.to)<((provider.requestBudgetSnapshot?.(user)||store.get('socialProviderRequests','postiz')||{}).retryAfter||0)))throw fail('발행 서비스의 대기 시간이 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
       const result=publishing.rescheduleApply(user,{changes});
       store.put(PLANS,plan.id,{id:plan.id,ownerId:user.id,jobIds:result.jobs.map(j=>j.id),appliedAt:now(),expiresAt:plan.expiresAt});return {...result,existing:false};
     });
