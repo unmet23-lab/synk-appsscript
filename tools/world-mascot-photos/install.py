@@ -42,7 +42,8 @@ for place, size in PLACES.items():
                     tutor.setdefault(place, {}).setdefault(tid, {})[emo] = v
 
 profile = {}
-for key, cell in [('mongle', 'mongle'), ('kkamong', 'kkamong'), ('marin', 'marin'), ('default', 'mongle-기본')]:
+# 몽글 계정 사진은 3D 방의 몽글과 같은 구슬 눈 칸(10-14 유호님 「계정 사진 몽글은 구슬 눈으로」)
+for key, cell in [('mongle', 'mongle-기본'), ('kkamong', 'kkamong'), ('marin', 'marin'), ('default', 'mongle-기본')]:
     v = save(os.path.join(ROOT, 'cut/profile', cell + '.png'), os.path.join(DEST, 'profile', key + '.webp'), 256)
     if v:
         profile[key] = v
