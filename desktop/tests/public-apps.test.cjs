@@ -5,7 +5,7 @@ const {PLATFORM_ENTRY,DEV_URLS}=require('../src/catalog.cjs');
 const {externalDestination,allowedNavigation}=require('../src/security.cjs');
 
 test('only the development Platform capability exposes the four fixed public destinations',async()=>{
-  assert.deepEqual(publicAppsAvailable({clientId:'platform',mode:'development'}),['care','fortune','rehearsal','path']);
+  assert.deepEqual(publicAppsAvailable({clientId:'platform',mode:'development'}),['care','fortune','rehearsal','family-album','path']);
   for(const values of [{clientId:'platform',mode:'release'},{clientId:'world',mode:'development'},{clientId:'messenger',mode:'development'},{clientId:'platform',mode:'Development'},{}]){
     let calls=0;const service=createPublicApps({...values,openExternal:()=>{calls++;}});
     assert.deepEqual(service.available(),[]);assert.equal((await service.open('care')).code,'PUBLIC_APP_UNAVAILABLE');assert.equal(calls,0);
@@ -15,7 +15,7 @@ test('only the development Platform capability exposes the four fixed public des
 
 test('public opening takes only a known ID and returns success after the browser promise resolves',async()=>{
   let complete;const calls=[],service=createPublicApps({clientId:'platform',mode:'development',openExternal:url=>{calls.push(url);return new Promise(resolve=>{complete=resolve;});}});
-  const available=service.available();available.push('world');assert.deepEqual(service.available(),['care','fortune','rehearsal','path']);
+  const available=service.available();available.push('world');assert.deepEqual(service.available(),['care','fortune','rehearsal','family-album','path']);
   let settled=false;const first=service.open('fortune');first.then(()=>{settled=true;});assert.equal(service.open('fortune'),first);
   await Promise.resolve();assert.deepEqual(calls,['https://synk.im/fortune/']);assert.equal(settled,false);complete();
   assert.deepEqual(await first,{ok:true,id:'fortune',externalBrowser:true});
@@ -110,10 +110,10 @@ test('signup IPC refuses connected and changing sessions, sibling clients and un
 
 test('packaged development Platform wires the real public capability without account or company requests',async()=>{
   const f=await mainFixture(),environment=await f.handlers.get('synk:environment')(f.event);
-  assert.deepEqual(environment.publicAppsAvailable,['care','fortune','rehearsal','path']);
+  assert.deepEqual(environment.publicAppsAvailable,['care','fortune','rehearsal','family-album','path']);
   for(const [id,url]of Object.entries(PUBLIC_APP_URLS)){assert.equal((await f.handlers.get('synk:open-public-app')(f.event,id)).ok,true);assert.equal(f.calls.at(-1),url);}
   assert.equal(f.accountCalls,0);
-  assert.equal((await f.handlers.get('synk:open-public-app')(f.event,'__proto__')).code,'UNKNOWN_PUBLIC_APP');assert.equal(f.calls.length,4);
+  assert.equal((await f.handlers.get('synk:open-public-app')(f.event,'__proto__')).code,'UNKNOWN_PUBLIC_APP');assert.equal(f.calls.length,5);
 });
 
 test('main rejects release, other client, foreign window, subframe and foreign-document public IPC',async()=>{

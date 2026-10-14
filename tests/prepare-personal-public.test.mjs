@@ -19,11 +19,51 @@ const config = (product, target = `https://synk.im/${product}/`) => ({ version: 
     care: { clientId: 'unrelated-client', redirectUri: 'https://synk.im/care/' } },
   authorizationClients: [{ product: 'world', clientId: 'unrelated-world', redirectUris: ['https://synk.im/world/'] }],
 });
-let fortune, rehearsal;
+// 앨범 묶음은 모듈 최상위 await를 쓴다. 고전 스크립트 vm에서는 async 함수로 감싸 돌리고, 끌어올려진 계정 연결 함수만 꺼내 둔다.
+const runModuleBundle = (bundle, context) => vm.runInContext(`(async () => {\nglobalThis.createProductAccount = createProductAccount;\n${bundle}\n})()`, context);
+const albumConfig = () => {
+  const value = config('rehearsal', 'https://synk.im/album/');
+  value.clients = { 'family-album': { clientId: 'synthetic-public-album', redirectUri: 'https://synk.im/album/' }, care: value.clients.care };
+  return value;
+};
+let fortune, rehearsal, album;
 before(async () => {
   await fs.mkdir(temporary, { recursive: true });
   fortune = await preparePersonalPublic({ product: 'fortune', out: path.join(temporary, 'fortune'), config: config('fortune') });
   rehearsal = await preparePersonalPublic({ product: 'rehearsal', out: path.join(temporary, 'rehearsal'), config: config('rehearsal') });
+  album = await preparePersonalPublic({ product: 'album', out: path.join(temporary, 'album'), config: albumConfig() });
+});
+
+test('album publishes one bundled module with Core globals, its book CSS and a CSP that allows only data: photos and blob:/data: voices', async () => {
+  for (const row of album.manifest.sourceFiles) assert.equal(sha(await fs.readFile(path.join(ROOT, row.file))), row.sha256, row.file);
+  for (const row of album.manifest.files) {
+    const bytes = await fs.readFile(path.join(album.output, row.name));
+    assert.equal(sha(bytes), row.sha256, row.name);
+    assert.ok(!/(?:^|\/)(?:server|tests?|qa|\.env)(?:[./]|$)/.test(row.name), row.name);
+  }
+  assert.equal(album.targetUrl, 'https://synk.im/album/');
+  assert.equal(album.manifest.files.filter(row => /\.(?:mjs|js)$/.test(row.name)).length, 1);
+  const publicConfig = JSON.parse(await fs.readFile(path.join(album.output, 'config.json'), 'utf8'));
+  assert.deepEqual(publicConfig.clients, { 'family-album': { clientId: 'synthetic-public-album', redirectUri: 'https://synk.im/album/' } });
+  assert.deepEqual(publicConfig.authorizationClients, [{ product: 'platform', clientId: 'synthetic-public-album', redirectUris: ['https://synk.im/album/'] }]);
+  const html = await fs.readFile(path.join(album.output, 'index.html'), 'utf8');
+  assert.match(html, /img-src 'self' data:; font-src 'self'; connect-src 'self' https:\/\/synthetic-auth.example https:\/\/synthetic-account.example; media-src blob: data:;/);
+  assert.doesNotMatch(html, /core\/(?:ask|domain)\.js|unsafe-inline|unsafe-eval|<(?:style|base|iframe)\b|\bstyle=/i);
+  for (const [, value] of html.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
+    if (value.startsWith('#')) continue;
+    assert.ok(value.startsWith('./'), value); await fs.access(path.join(album.output, value.slice(2).split('?')[0]));
+  }
+  const { BOOK_CSS } = await import('../experiences/family-album/takehome.mjs');
+  assert.equal(await fs.readFile(path.join(album.output, 'takehome.css'), 'utf8'), BOOK_CSS);
+  const bundle = await fs.readFile(path.join(album.output, 'app.mjs'), 'utf8');
+  assert.doesNotMatch(bundle, /\b(?:import|export)\s+(?:\{|\*|[\w$]+\s+from)|import\s*\(/);
+  assert.match(bundle, /configUrl = "\.\/config.json"/);
+  assert.ok(!/["'](?:\/api\/account-config|\/synk-account\/src\/|\/member-signal\/)/.test(bundle), 'No runtime requests to local-only config/modules');
+  const stop = new Error('Synthetic DOM boundary'), context = vm.createContext({ document: { querySelector() { throw stop; }, querySelectorAll() { throw stop; } }, window: {}, location: { hash: '' },
+    localStorage: { getItem: () => null }, TextEncoder, TextDecoder, URL, console, crypto: webcrypto });
+  await assert.rejects(runModuleBundle(bundle, context), error => error === stop);
+  assert.equal(typeof context.SynkAsk.choose, 'function');
+  assert.equal(typeof context.SynkAtlasDomain, 'object');
 });
 after(async () => {
   // The fixed fixture is created under this workspace. Never follow a computed path outside it for cleanup.
@@ -92,15 +132,17 @@ test('rehearsal bundle preserves Core Ask execution and changes only its built a
 });
 
 test('actual bundled account connectors read only their subdirectory config and create an exact public PKCE callback without contacting a provider', async () => {
-  for (const result of [fortune, rehearsal]) {
+  for (const result of [fortune, rehearsal, album]) {
     const bundle = await fs.readFile(path.join(result.output, 'app.mjs'), 'utf8');
     const publicConfig = JSON.parse(await fs.readFile(path.join(result.output, result.manifest.configFile), 'utf8'));
+    const resource = result.product === 'album' ? 'family-album' : result.product;
     const stop = new Error('Synthetic DOM boundary'), requests = [], redirects = [], saved = new Map();
     const storage = { getItem: key => saved.get(key) ?? null, setItem: (key, value) => saved.set(key, value), removeItem: key => saved.delete(key) };
     const document = { querySelector() { throw stop; }, querySelectorAll() { throw stop; }, getElementById() { throw stop; } };
     const context = vm.createContext({ document, window: {}, TextEncoder, TextDecoder, URL, URLSearchParams, console, AbortController,
-      setTimeout, clearTimeout, crypto: webcrypto, btoa, atob, structuredClone });
-    assert.throws(() => vm.runInContext(bundle, context), error => error === stop);
+      setTimeout, clearTimeout, crypto: webcrypto, btoa, atob, structuredClone, ...(result.product === 'album' ? { location: { hash: '' } } : {}) });
+    if (result.product === 'album') await assert.rejects(runModuleBundle(bundle, context), error => error === stop);
+    else assert.throws(() => vm.runInContext(bundle, context), error => error === stop);
     const fetcher = async value => {
       const url = new URL(value, result.targetUrl).href; requests.push(url);
       assert.equal(url, result.targetUrl + result.manifest.configFile);
@@ -108,7 +150,7 @@ test('actual bundled account connectors read only their subdirectory config and 
     };
     const account = result.product === 'fortune'
       ? context.createFortuneAccount({ storage, fetcher, location: { href: result.targetUrl + 'index.html', assign: url => redirects.push(url) } })
-      : context.createProductAccount({ clientKey: 'rehearsal', endpoint: 'synk-personal', scope: 'synk-personal', resource: 'rehearsal',
+      : context.createProductAccount({ clientKey: resource, endpoint: 'synk-personal', scope: 'synk-personal', resource,
         storage, fetcher, getUrl: () => result.targetUrl + 'index.html', navigate: url => redirects.push(url), validateState: value => value, cryptoAPI: webcrypto });
     try {
       await account.start(); await account.signIn();
