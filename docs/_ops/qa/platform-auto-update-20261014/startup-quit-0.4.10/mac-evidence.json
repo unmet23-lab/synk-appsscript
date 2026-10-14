@@ -1,0 +1,52 @@
+{
+  "ok": true,
+  "verifiedAt": "2026-10-14T07:09:14.181Z",
+  "releaseId": "platform-preview-0.4.10",
+  "buildId": "20261014.7",
+  "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+  "workflow": "https://github.com/unmet23-lab/synk-policy/actions/runs/38525733231",
+  "commit": "f5e1d5877a37b70eb653498eac4d8fa04ac46a5d",
+  "targets": [
+    {
+      "arch": "arm64",
+      "artifact": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.10/SYNK-Platform-Preview-0.4.10-Signal-mac-arm64.dmg",
+        "bytes": 461999004,
+        "sha256": "f2671350baa15dfecd12a93370ef55f43ef86f5bf0d485027fbdc1584ce58b22",
+        "asarSHA256": "c9b48886c269732dcd83f8281fd60f2aa57f7401558e1ee5fcc93417662cf43e"
+      },
+      "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+      "nativeQA": true,
+      "nativeChecks": 34,
+      "applicationQA": true,
+      "applicationChecks": 18,
+      "notarized": false,
+      "realProfileTouched": false,
+      "realAuthenticationPerformed": false
+    },
+    {
+      "arch": "x64",
+      "artifact": {
+        "platform": "darwin",
+        "arch": "x64",
+        "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.10/SYNK-Platform-Preview-0.4.10-Signal-mac-x64.dmg",
+        "bytes": 479686226,
+        "sha256": "baae762ce07acd654c7392126a37f1ca0d409c0214725ef7bafd9b8cc76602f7",
+        "asarSHA256": "e6193f6f5ea1c43c024c45904247fcadcc10d4917b8fb99b2e804a646a1a9ee4"
+      },
+      "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+      "nativeQA": true,
+      "nativeChecks": 37,
+      "applicationQA": true,
+      "applicationChecks": 18,
+      "notarized": false,
+      "realProfileTouched": false,
+      "realAuthenticationPerformed": false
+    }
+  ],
+  "draftAssetsVerified": true,
+  "publicFeedChanged": false,
+  "installedStateTouched": false
+}

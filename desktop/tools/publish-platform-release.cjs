@@ -99,8 +99,7 @@ async function main(){
     run('gh',['release','edit',manifest.releaseId,'--repo',REPO,'--draft=false'],publicDir);
   }
   // Read the public bytes, not just a successful upload response, before advancing links.
-  report.publicArtifacts=[];
-  for(const artifact of manifest.artifacts)report.publicArtifacts.push(await verifyPublicArtifact(artifact));
+  report.publicArtifacts=await Promise.all(manifest.artifacts.map(verifyPublicArtifact));
   assert(run('git',['ls-remote','origin','refs/heads/main'],publicDir).split(/\s/)[0]===head,'Public site changed during upload; refresh before advancing feed');
   const changed=stageSite({publicDir,manifest,clientFile:path.resolve(get('client'))});
   if(changed.length){run('git',['add','--sparse','--',...changed],publicDir);run('git',['commit','-m','Publish unified Platform '+manifest.version+' downloads and update feed'],publicDir);report.commit=run('git',['rev-parse','HEAD'],publicDir);report.changed=changed;report.siteCommitPending=true;json(path.join(artifactDir,'publication.json'),report);run('git',['push','origin','HEAD:main'],publicDir);report.siteCommitPending=false;}

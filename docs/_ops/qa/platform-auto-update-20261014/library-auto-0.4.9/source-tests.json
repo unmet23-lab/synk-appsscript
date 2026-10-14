@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-10-14T06:09:32Z",
+  "evidenceType": "observed-tool-execution",
+  "description": "Earlier completed test execution recorded without rerunning. Full stdout was not saved as a local log; the command result was observed through the execution tool.",
+  "workingDirectory": "C:\\Users\\q1212\\Documents\\SYNK-appsscript",
+  "command": "node --test experiences/synk-account/tests/platform-account.test.mjs experiences/synk-account/tests/platform-library.test.mjs experiences/synk-account/tests/platform-library-view.test.mjs experiences/synk-account/tests/platform-library-recovery.test.mjs desktop/tests/platform-continuity-auth.test.cjs desktop/tests/auth.test.cjs",
+  "testFiles": [
+    "experiences/synk-account/tests/platform-account.test.mjs",
+    "experiences/synk-account/tests/platform-library.test.mjs",
+    "experiences/synk-account/tests/platform-library-view.test.mjs",
+    "experiences/synk-account/tests/platform-library-recovery.test.mjs",
+    "desktop/tests/platform-continuity-auth.test.cjs",
+    "desktop/tests/auth.test.cjs"
+  ],
+  "result": {
+    "exitCode": 0,
+    "tests": 171,
+    "suites": 0,
+    "pass": 171,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0,
+    "durationMs": 14494.9908,
+    "viewTests": 61
+  },
+  "executionEvidence": {
+    "sessionId": 37686,
+    "initialChunkId": "a231fd",
+    "completionChunkId": "fc633a",
+    "stdoutFile": null
+  },
+  "canonicalView": {
+    "path": "experiences/synk-account/src/platform-library-view.mjs",
+    "sha256": "493cf523a576eb4af9882d3ba46139a136ae2a9141aa3bd22d6e60ed1487dd8e",
+    "hashObservedAt": "2026-10-14T06:09:32Z",
+    "note": "Current canonical view hash read for this record; no source modifications after the completed test run were made by this agent. This is not a hash or verification of the later release bundle graft."
+  },
+  "newReadyCases": [
+    "ready waits for the remote library before applying a launcher favorite and resolves every waiter",
+    "ready distinguishes a successfully read absent or disabled library from an unavailable account document",
+    "ready rejects a failed first account read instead of treating the initial device candidate as a loaded library",
+    "ready preserves editing and the outbox after a verified library save goes offline",
+    "ready remains pending for the new owner when an earlier account read finishes late",
+    "logout releases ready waiters to the guest path without accepting a late account read",
+    "suspension and disposal release ready waiters with false even while the account read is still pending"
+  ],
+  "newReadyCasesObserved": { "tests": 7, "pass": 7, "fail": 0 },
+  "scope": {
+    "syntheticTestsOnly": true,
+    "realAccountAccess": false,
+    "realApplicationLaunch": false,
+    "deployment": false,
+    "rerunForThisRecord": false
+  }
+}

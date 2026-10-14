@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "schemaVersion": 1,
+  "product": "platform",
+  "channel": "preview",
+  "version": "0.4.10",
+  "releaseId": "platform-preview-0.4.10",
+  "buildId": "20261014.7",
+  "builtAt": "2026-10-14T07:03:50.657Z",
+  "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+  "artifact": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.10/SYNK-Platform-Preview-0.4.10-Signal-mac-arm64.dmg",
+    "bytes": 461999004,
+    "sha256": "f2671350baa15dfecd12a93370ef55f43ef86f5bf0d485027fbdc1584ce58b22",
+    "asarSHA256": "c9b48886c269732dcd83f8281fd60f2aa57f7401558e1ee5fcc93417662cf43e"
+  },
+  "artifactFile": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/unified-out/arm64/dist/SYNK-Platform-Preview-0.4.10-Signal-mac-arm64.dmg",
+  "memberCount": 132,
+  "bundled": [
+    {
+      "id": "world",
+      "version": "0.4.1",
+      "platform": "darwin",
+      "arch": "arm64",
+      "installer": {
+        "relativePath": "world.dmg",
+        "sha256": "2dbc3da604fbd146db3bd4a2d5db945c768e5862b517c0715b5351f720723f06",
+        "bytes": 154556952
+      },
+      "asarSHA256": "caf935982a9d3942e2c6c415dab51f16f9bfe79985c1ec2d865adaffcc69bc1c"
+    },
+    {
+      "id": "messenger",
+      "version": "0.4.1",
+      "platform": "darwin",
+      "arch": "arm64",
+      "installer": {
+        "relativePath": "messenger.dmg",
+        "sha256": "738e6ea5b32c799d7f32283143283c85c9ec633f7e3e03e2f9ead7d47ceb63a0",
+        "bytes": 153870831
+      },
+      "asarSHA256": "2003613e112717fef00c008929f8adb27f263fa574ee9fa0e29826e38e1ed01b"
+    }
+  ],
+  "metadata": {
+    "clientId": "platform",
+    "mode": "development",
+    "appId": "im.synk.platform.preview",
+    "version": "0.4.10",
+    "arch": "arm64",
+    "platform": "darwin",
+    "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+    "releaseId": "platform-preview-0.4.10",
+    "buildId": "20261014.7",
+    "channel": "preview"
+  },
+  "unsignedPreview": false,
+  "adHocSigned": true,
+  "notarized": false,
+  "installedStateTouched": false,
+  "published": false
+}

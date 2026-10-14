@@ -1,4 +1,47 @@
-# Platform 0.4.7 자동 업데이트·저장 복구·내 성향 통합 검증 · 2026-10-14
+# Platform 자동 업데이트·계정 라이브러리 연결 검증 · 2026-10-14
+
+<a id="startup-quit-0410"></a>
+
+## 0.4.10 정상 종료 보완 · 공개·PC 설치 완료, 실제 UI 검증은 사용자 요청으로 중단
+
+**상태: 패키지 검증·공개·현재 PC 설치·설치 직후 기록 보존 확인 완료. 실제 앱 자동 연결·재실행 검증은 사용자의 ‘앱 조작은 여기서 멈춰줘’ 지시로 중단했으며 미확인 상태다.** 검증 중 바꾼 ‘닫으면 트레이로’는 꺼짐(`false`), 원래 켜짐(`true`)으로 복원하지 않았다. 사용자가 16:02경 직접 종료·설치하여 PC는 먼저 0.4.9가 됐고, 이후 정상 종료·백업 뒤 0.4.10 공통 설치기로 교체했다. 이를 구버전의 자동 업데이트 성공으로 기록하지 않는다. 0.4.10 / build20261014.7의 sourceHash는 `ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb`다. [동결 입력](startup-quit-0.4.10/release-input.json)·[범위](startup-quit-0.4.10/integration-scope.json)대로 0.4.9에서 `src/main.cjs`·`src/platform-startup-window.cjs`만 수정했다. 계정 자동 연결 renderer와 다른 128파일은 그대로다.
+
+`before-quit`가 시작 창의 닫힘을 허용하고 늦은 installing 알림에도 이를 유지한다. 초안 취소·인계 실패·새 창에서는 일반 닫힘 정책을 복구한다. 메인 창의 작성 내용 확인과 `will-quit` 이후 설치기 인계는 유지한다. [기존 버그 재현](startup-quit-0.4.10/old-startup-quit-reproduction.json), [관련 시험79/79](startup-quit-0.4.10/source-tests.txt), [실제 Electron53/53](startup-quit-0.4.10/startup-native.json)을 보존한다. 네이티브 검사는 실제 시작 창·gate/updater·원문 main 종료 핸들러를 연결해 정상 시작13개, 초안 취소 후 재시도20개, 인계 실패 후 오류 창·재시도20개를 확인했다. 세 경우 모두 인계 응답1회·정상 종료·합성 자식의 부모 종료 확인에 통과했으며, 실제 계정·설치 실행은 없다.
+
+| 최종 패키지 근거 | 결과 |
+| --- | --- |
+| [Windows 빌드](startup-quit-0.4.10/windows-build.json), [내장 payload 대조](startup-quit-0.4.10/windows-wrapper.json), [패키지 실행](startup-quit-0.4.10/windows-native.json) | 75파일 일치, packaged25/25, 정상 종료·ASAR 바이트 보존. |
+| [Mac 검증](startup-quit-0.4.10/mac-evidence.json) | ARM34/34·Intel37/37, 각 패키지18/18, CI38525733231 성공. |
+| [조립 manifest](startup-quit-0.4.10/preview.json) | 세 대상 sourceHash·버전·build 일치, Windows 원본과 Mac GitHub 자산 바이트/SHA 검증. |
+| [공개 영수증](startup-quit-0.4.10/publication.json), [실제 공개 대조](startup-quit-0.4.10/public-verification.json) | 공개 커밋 `130b323072befae0dad6a05a520e6670fee3f9db`. 한영 홈페이지·feed·client.js와 세 공개 설치파일 전체 바이트/SHA 일치, Pages38528726382 성공. 독립 파일 다운로드는 병렬로 검증하되 세 파일 모두 통과한 뒤에만 feed를 전환한다. 관련 게시 시험3/3. |
+| [공개 CI](startup-quit-0.4.10/public-ci.json) | 같은 공개 커밋의 Pages38528726382·전체 사이트 점검38528726787 모두 성공. |
+| [PC 사전 검사](startup-quit-0.4.10/pc-preflight.json), [실제 설치](startup-quit-0.4.10/pc-apply.json), [설치 updater](startup-quit-0.4.10/pc-installed-update.json) | 실행 프로세스0에서 공개 파일과 같은 설치기 적용. 75파일·ASAR·metadata/sourceHash 일치. 설치된 updater가 `current / 0.4.10 / 20261014.7` 응답. 이 도구의 사용자 프로필 작업0·앱 실행0. |
+| [기록·프로필 백업](../platform-real-account-20261010/installed-auto-connect-20261014/profile-backup-before-install.json), [프로그램 백업](../platform-real-account-20261010/installed-auto-connect-20261014/program-backup-049.json), [설치 직후 기록 대조](../platform-real-account-20261010/installed-auto-connect-20261014/profile-preservation-after-install.json) | 최신 Platform318+Suite1파일, 기존 프로그램77파일·등록6위치·바로가기2를 보존. 설치 직후319파일의 변경·누락·추가0. 계정·메모 내용을 보고하지 않는다. |
+| [실제 UI 중단 기록](../platform-real-account-20261010/installed-auto-connect-20261014/actual-ui.json) | 마지막 실행 도구가 Esc 중지를 감지했고 이후 사용자가 앱 조작 중단을 명시했다. 최종 0.4.10 첫 실행·라이브러리 자동 연결·재실행은 미확인, 추가 앱 조작0. ‘닫으면 트레이로’는 꺼짐 상태로 복원하지 않았다. |
+
+<a id="library-auto-049"></a>
+
+## 0.4.9 계정 라이브러리 자동 연결 · 공개 후 실제 업데이트 정체 발견
+
+**당시 상태: 세 대상 최종 검증·공개 완료 뒤 기존 0.4.7의 실제 시작 업데이트가 설치 중에 정체했다.** 이 항목은 0.4.9 당시의 이력이며, 최종 0.4.10 반영 결과는 위 절을 따른다.
+
+2026-10-14 15:41 실행한 기존 0.4.7은 0.4.9 다운로드를 끝냈으나 설치 중 화면에 남았다. `setClosable(false)`인 업데이트 창이 Windows의 `app.quit()`도 거부해 `will-quit` 설치기 인계에 도달하지 못했다. 격리 Electron44.5.1에서 같은 실패를 재현했고, 닫힘을 허용하면 정상 종료되는 것을 확인했다. 0.4.9에도 같은 원문이 남아 있으므로 공개 파일을 교체하지 않고 0.4.10으로 수정한다. 기존 current-feed 패키지 검사와 plain-window 인계 검사는 실제 업데이트 창의 이 상태를 거치지 않아 놓쳤다.
+
+0.4.9 / build20261014.6의 동결 원문은 `8e677fc7e09e8738002c8bb13909a596ce2c643d9df8cbf152bf6251a5a354a1`이다. [동결 입력](library-auto-0.4.9/release-input.json)과 [추가 범위](library-auto-0.4.9/integration-scope.json)대로 기존 0.4.7에서 `renderer/launcher.mjs`·`renderer/platform-continuity.mjs` 두 파일만 변경했다. [번들 범위 검증](library-auto-0.4.9/reviewed-bundle-proof.json)은 기존 의존 모듈을 그대로 보존하고 최종 view 원문을 반영했음을 확인한다. 다른 작업의 가족 앨범·개인 데이터 변경은 이 릴리스에 섞지 않았다. 0.4.8은 지연 조회 중 동작 유실을 발견해 공개하지 않은 후보로 보존한다.
+
+검증된 기존 로그인 뒤 라이브러리를 자동 시작하며, 중복 계정 이벤트는 추가 연결을 만들지 않는다. 조회 중의 즐겨찾기·정렬·성공한 앱 실행 기록은 준비 완료와 같은 계정을 확인한 뒤 순서대로 반영한다. 대기 동작이 있으면 종료·업데이트·로그아웃을 안내와 함께 보류한다. 읽기 실패를 빈 문서로 취급해 덮어쓰지 않으며, 이미 불러온 문서의 기존 오프라인 저장은 유지한다. 저장 동의·OAuth·기기 기록 가져오기·복구본 선택은 자동 변경하지 않는다.
+
+| 근거 | 결과와 범위 |
+| --- | --- |
+| [원문 시험](library-auto-0.4.9/source-tests.json) | 관련 6파일171/171. 도구 실행 결과를 관찰한 기록이며 전체 stdout 파일은 별도로 저장되지 않았다. |
+| [동결 후보 renderer](library-auto-0.4.9/renderer-auth.txt), [입력 대조](library-auto-0.4.9/renderer-input-proof.json) | 정확한 후보86/86. 느린 읽기·실패·동의 꺼짐·계정 교체·동시 입력·저장 중 종료 보호 포함. |
+| [실제 Electron 라이브러리 흐름](library-auto-0.4.9/library-auto-native.json) | 격리 프로필26/26. 최초·reload·새 창에서 연결 클릭0, 지연 저장 중 실제 창 닫기 방지와 저장 후 정상 종료. 합성 계정이며 실제 계정 시험과 구분한다. |
+| [Windows 빌드](library-auto-0.4.9/windows-build.json), [설치기 내부 대조](library-auto-0.4.9/windows-wrapper.json), [패키지 실행](library-auto-0.4.9/windows-native.json) | 실제 설치본25/25. 정상 종료·ASAR 바이트 보존, 내장 payload75파일 일치, 허용16/거절4의 설치 변형 확인. 사용자 PC 설치는 별도다. |
+| [Mac 공통 검증](library-auto-0.4.9/mac-evidence.json) | ARM34/34·Intel37/37 설치 QA 및 각 실제 패키지 흐름18/18. sourceHash·버전·build와 GitHub 자산 SHA 일치. 물리 Mac 교체·실계정 로그인은 별도다. |
+| [공개 영수증](library-auto-0.4.9/publication.json), [공개 파일 대조](library-auto-0.4.9/public-verification.json) | 한영 홈페이지 세 링크·feed·client.js와 공개 설치파일 전체 다운로드 바이트/SHA 일치. 공개 커밋 `021e7d8ebbf972638076b816fff898a1372c2708`. |
+| [공개 CI](library-auto-0.4.9/public-ci.json) | Pages38522638973·사이트 점검38522638912 모두 성공. 홈페이지 정본 manifest도 같은 바이트로 반영했다. |
+
+## 0.4.7 통합본 · 이전 공개·PC 반영 이력
 
 **상태: 0.4.7 최종 검증·공개 배포·현재 PC 설치·공개 feed 확인·실제 저장/재실행 QA 완료.** 담당 채팅의 [실제 UI 증거](../platform-real-account-20261010/installed-storage-fix-20261014/actual-ui.json)를 인수했다. 계정 라이브러리는 재실행 후 수동 연결했으며 앱 내부 특정 작업 위치 복귀까지 확인한 것은 아니다. 이전 [0.4.4 공개·PC 반영](../platform-unified-20261014/README.md) 및 아래 선행 0.4.5·0.4.6 검증과 구분한다.
 

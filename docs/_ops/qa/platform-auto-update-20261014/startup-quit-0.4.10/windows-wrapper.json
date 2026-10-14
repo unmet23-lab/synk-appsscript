@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "verifiedAt": "2026-10-14T07:05:28.9522549Z",
+  "wrapper": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\windows\\signal\\SYNK-Platform-Preview-0.4.10-Signal-win-x64.exe",
+  "wrapperBytes": 402704896,
+  "wrapperSHA256": "010743380cdc319b0debb62d60c26d3afc6f94fb68c4a9908335b9df9e3afd2b",
+  "embeddedBackendBytes": 400284707,
+  "embeddedBackendSHA256": "b28981973d604670f692b7ccb260d995ec16291dd39304b858f5a7d36f67f40a",
+  "embeddedFiles": 75,
+  "embeddedSpecExactSidecar": true,
+  "compiledCloudVariantsAccepted": 16,
+  "compiledNonCloudTagsRejected": 4,
+  "installationExecuted": false
+}

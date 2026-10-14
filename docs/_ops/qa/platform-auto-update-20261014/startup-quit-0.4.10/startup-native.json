@@ -1,0 +1,423 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "ok": true,
+      "scenario": "cold",
+      "checks": [
+        {
+          "name": "real-startup-renderer-ready-1",
+          "ok": true
+        },
+        {
+          "name": "installing-keeps-manual-close-disabled-1",
+          "ok": true
+        },
+        {
+          "name": "gate-reaches-installing-1",
+          "ok": true
+        },
+        {
+          "name": "manual-close-did-not-destroy-startup-1",
+          "ok": true
+        },
+        {
+          "name": "all-existing-windows-accepted-close-before-handoff",
+          "ok": true
+        },
+        {
+          "name": "automatic-install-contract",
+          "ok": true
+        },
+        {
+          "name": "installer-handshake-once",
+          "ok": true
+        },
+        {
+          "name": "main-guards-retained",
+          "ok": true
+        },
+        {
+          "name": "no-unexpected-main-init",
+          "ok": true
+        },
+        {
+          "name": "no-network-or-console-errors",
+          "ok": true
+        },
+        {
+          "name": "only-owned-hidden-windows",
+          "ok": true
+        },
+        {
+          "name": "handoff-before-final-normal-quit",
+          "ok": true
+        },
+        {
+          "name": "product-source-unchanged",
+          "ok": true
+        }
+      ],
+      "events": [
+        {
+          "updater": "checking",
+          "code": null
+        },
+        {
+          "updater": "available",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "ready",
+          "code": null
+        },
+        {
+          "updater": "opening",
+          "code": null
+        },
+        "before-quit",
+        "will-quit",
+        "READY",
+        "before-quit",
+        "will-quit"
+      ],
+      "errors": [],
+      "requests": [],
+      "prompts": 0,
+      "handoffs": 1,
+      "handoffAttempts": 1,
+      "proceeds": 0,
+      "quitRequests": 1,
+      "hashes": {
+        "src/main.cjs": "faee665116d987b3a67db4716e2b8db19a27c707edb72976023c78b26e6837b3",
+        "src/platform-startup-window.cjs": "002c33cfcd94101f3bfc6a21229e8a4819b52745541d27251d386ab9f4e98329"
+      },
+      "host": {
+        "executable": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "pid": 54968,
+        "profile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\native-final\\cold\\profile"
+      },
+      "normalExit": true,
+      "child": {
+        "parentExited": true
+      }
+    },
+    {
+      "ok": true,
+      "scenario": "draft",
+      "checks": [
+        {
+          "name": "real-startup-renderer-ready-1",
+          "ok": true
+        },
+        {
+          "name": "installing-keeps-manual-close-disabled-1",
+          "ok": true
+        },
+        {
+          "name": "gate-reaches-installing-1",
+          "ok": true
+        },
+        {
+          "name": "manual-close-did-not-destroy-startup-1",
+          "ok": true
+        },
+        {
+          "name": "draft-cancel-observed",
+          "ok": true
+        },
+        {
+          "name": "draft-cancel-preserved-main-and-prevented-handoff",
+          "ok": true
+        },
+        {
+          "name": "cancel-resets-quitting-state",
+          "ok": true
+        },
+        {
+          "name": "real-startup-renderer-ready-2",
+          "ok": true
+        },
+        {
+          "name": "installing-keeps-manual-close-disabled-2",
+          "ok": true
+        },
+        {
+          "name": "gate-reaches-installing-2",
+          "ok": true
+        },
+        {
+          "name": "manual-close-did-not-destroy-startup-2",
+          "ok": true
+        },
+        {
+          "name": "all-existing-windows-accepted-close-before-handoff",
+          "ok": true
+        },
+        {
+          "name": "automatic-install-contract",
+          "ok": true
+        },
+        {
+          "name": "installer-handshake-once",
+          "ok": true
+        },
+        {
+          "name": "main-guards-retained",
+          "ok": true
+        },
+        {
+          "name": "no-unexpected-main-init",
+          "ok": true
+        },
+        {
+          "name": "no-network-or-console-errors",
+          "ok": true
+        },
+        {
+          "name": "only-owned-hidden-windows",
+          "ok": true
+        },
+        {
+          "name": "handoff-before-final-normal-quit",
+          "ok": true
+        },
+        {
+          "name": "product-source-unchanged",
+          "ok": true
+        }
+      ],
+      "events": [
+        {
+          "updater": "checking",
+          "code": null
+        },
+        {
+          "updater": "available",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "ready",
+          "code": null
+        },
+        {
+          "updater": "opening",
+          "code": null
+        },
+        "before-quit",
+        {
+          "updater": "ready",
+          "code": "UPDATE_EXIT_CANCELLED"
+        },
+        {
+          "updater": "checking",
+          "code": null
+        },
+        {
+          "updater": "ready",
+          "code": null
+        },
+        {
+          "updater": "opening",
+          "code": null
+        },
+        "before-quit",
+        "will-quit",
+        "READY",
+        "before-quit",
+        "will-quit"
+      ],
+      "errors": [],
+      "requests": [],
+      "prompts": 2,
+      "handoffs": 1,
+      "handoffAttempts": 1,
+      "proceeds": 1,
+      "quitRequests": 2,
+      "hashes": {
+        "src/main.cjs": "faee665116d987b3a67db4716e2b8db19a27c707edb72976023c78b26e6837b3",
+        "src/platform-startup-window.cjs": "002c33cfcd94101f3bfc6a21229e8a4819b52745541d27251d386ab9f4e98329"
+      },
+      "host": {
+        "executable": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "pid": 31764,
+        "profile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\native-final\\draft\\profile"
+      },
+      "normalExit": true,
+      "child": {
+        "parentExited": true
+      }
+    },
+    {
+      "ok": true,
+      "scenario": "handoff-retry",
+      "checks": [
+        {
+          "name": "real-startup-renderer-ready-1",
+          "ok": true
+        },
+        {
+          "name": "installing-keeps-manual-close-disabled-1",
+          "ok": true
+        },
+        {
+          "name": "gate-reaches-installing-1",
+          "ok": true
+        },
+        {
+          "name": "manual-close-did-not-destroy-startup-1",
+          "ok": true
+        },
+        {
+          "name": "all-existing-windows-accepted-close-before-handoff",
+          "ok": true
+        },
+        {
+          "name": "automatic-install-contract",
+          "ok": true
+        },
+        {
+          "name": "failed-handoff-restores-startup-window",
+          "ok": true
+        },
+        {
+          "name": "failed-handoff-resets-quit-state-and-close-policy",
+          "ok": true
+        },
+        {
+          "name": "recovery-actions-reach-real-renderer",
+          "ok": true
+        },
+        {
+          "name": "installing-keeps-manual-close-disabled-2",
+          "ok": true
+        },
+        {
+          "name": "manual-close-did-not-destroy-startup-2",
+          "ok": true
+        },
+        {
+          "name": "all-existing-windows-accepted-close-before-handoff",
+          "ok": true
+        },
+        {
+          "name": "automatic-install-contract",
+          "ok": true
+        },
+        {
+          "name": "installer-handshake-once",
+          "ok": true
+        },
+        {
+          "name": "main-guards-retained",
+          "ok": true
+        },
+        {
+          "name": "no-unexpected-main-init",
+          "ok": true
+        },
+        {
+          "name": "no-network-or-console-errors",
+          "ok": true
+        },
+        {
+          "name": "only-owned-hidden-windows",
+          "ok": true
+        },
+        {
+          "name": "handoff-before-final-normal-quit",
+          "ok": true
+        },
+        {
+          "name": "product-source-unchanged",
+          "ok": true
+        }
+      ],
+      "events": [
+        {
+          "updater": "checking",
+          "code": null
+        },
+        {
+          "updater": "available",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "downloading",
+          "code": null
+        },
+        {
+          "updater": "ready",
+          "code": null
+        },
+        {
+          "updater": "opening",
+          "code": null
+        },
+        "before-quit",
+        "will-quit",
+        {
+          "updater": "error",
+          "code": "UPDATE_HANDOFF_FAILED"
+        },
+        {
+          "updater": "checking",
+          "code": null
+        },
+        {
+          "updater": "ready",
+          "code": null
+        },
+        {
+          "updater": "opening",
+          "code": null
+        },
+        "before-quit",
+        "will-quit",
+        "READY",
+        "before-quit",
+        "will-quit"
+      ],
+      "errors": [],
+      "requests": [],
+      "prompts": 0,
+      "handoffs": 1,
+      "handoffAttempts": 2,
+      "proceeds": 0,
+      "quitRequests": 2,
+      "hashes": {
+        "src/main.cjs": "faee665116d987b3a67db4716e2b8db19a27c707edb72976023c78b26e6837b3",
+        "src/platform-startup-window.cjs": "002c33cfcd94101f3bfc6a21229e8a4819b52745541d27251d386ab9f4e98329"
+      },
+      "host": {
+        "executable": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\node_modules\\electron\\dist\\electron.exe",
+        "pid": 53912,
+        "profile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\native-final\\handoff-retry\\profile"
+      },
+      "normalExit": true,
+      "child": {
+        "parentExited": true
+      }
+    }
+  ]
+}

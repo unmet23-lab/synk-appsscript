@@ -1,0 +1,53 @@
+{
+  "ok": true,
+  "createdAt": "2026-10-14T06:09:23.505Z",
+  "baseRelease": "platform-preview-0.4.7",
+  "baseSource": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\frozen\\source",
+  "baseSourceHash": "5d52702262a1f68f832b07d63d53cb20a7f3f05e1ebc9ac363038ba37e3971cc",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\source",
+  "sourceHash": "8e677fc7e09e8738002c8bb13909a596ce2c643d9df8cbf152bf6251a5a354a1",
+  "files": 130,
+  "bytes": 24809937,
+  "allowedOverlay": [
+    "renderer/launcher.mjs",
+    "renderer/platform-continuity.mjs"
+  ],
+  "changed": [
+    {
+      "path": "renderer/launcher.mjs",
+      "from": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\renderer\\launcher.mjs",
+      "before": {
+        "path": "renderer/launcher.mjs",
+        "bytes": 63795,
+        "sha256": "6effbf4816d2678a81cc841a737eaec8f64858be69f0cb4bd2d3c31c22b88f9b"
+      },
+      "after": {
+        "path": "renderer/launcher.mjs",
+        "bytes": 64951,
+        "sha256": "c797d9000d137e0715a4785608682591d6b2f5643e1cdb64a66fe520199c701c"
+      }
+    },
+    {
+      "path": "renderer/platform-continuity.mjs",
+      "from": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\reviewed\\platform-continuity.mjs",
+      "before": {
+        "path": "renderer/platform-continuity.mjs",
+        "bytes": 539785,
+        "sha256": "5d0f91669df3890b15e68f3ea512aeac1304b5c0d5247490169b631e6d7f558b"
+      },
+      "after": {
+        "path": "renderer/platform-continuity.mjs",
+        "bytes": 541065,
+        "sha256": "b05c15902fee6125a2e12e62454d2a44da87b9312bba7b751d86647f3ed7e718"
+      }
+    }
+  ],
+  "added": [],
+  "removed": [],
+  "reviewedBundleProof": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\reviewed-bundle-proof.json",
+  "unrelatedFamilyModulesExcluded": true,
+  "signalSnapshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\signal",
+  "signalUnchanged": true,
+  "installedStateTouched": false,
+  "frozen": false
+}

@@ -1,0 +1,51 @@
+{
+  "events": [
+    {
+      "name": "locked-app-quit-request",
+      "phase": "locked",
+      "at": 1791960516736
+    },
+    {
+      "name": "before-quit",
+      "phase": "locked",
+      "at": 1791960516741
+    },
+    {
+      "name": "locked-still-alive",
+      "phase": "locked",
+      "at": 1791960517746
+    },
+    {
+      "name": "unlocked-app-quit-request",
+      "phase": "unlock",
+      "at": 1791960517746
+    },
+    {
+      "name": "before-quit",
+      "phase": "unlock",
+      "at": 1791960517746
+    },
+    {
+      "name": "window-close",
+      "phase": "unlock",
+      "at": 1791960517746
+    },
+    {
+      "name": "window-closed",
+      "phase": "unlock",
+      "at": 1791960517787
+    },
+    {
+      "name": "will-quit",
+      "phase": "unlock",
+      "at": 1791960517787
+    },
+    {
+      "name": "quit",
+      "phase": "unlock",
+      "at": 1791960517787
+    }
+  ],
+  "lockedQuitReachedWillQuit": false,
+  "rescueNeeded": true
+}

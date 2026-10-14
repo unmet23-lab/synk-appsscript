@@ -1,0 +1,51 @@
+{
+  "ok": true,
+  "createdAt": "2026-10-14T06:59:27.375Z",
+  "baseRelease": "platform-preview-0.4.9",
+  "baseSource": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\frozen\\source",
+  "baseSourceHash": "8e677fc7e09e8738002c8bb13909a596ce2c643d9df8cbf152bf6251a5a354a1",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\source",
+  "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+  "files": 130,
+  "bytes": 24810455,
+  "allowedOverlay": [
+    "src/main.cjs",
+    "src/platform-startup-window.cjs"
+  ],
+  "changed": [
+    {
+      "path": "src/main.cjs",
+      "from": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\src\\main.cjs",
+      "before": {
+        "path": "src/main.cjs",
+        "bytes": 36625,
+        "sha256": "cafbf541c4162f406284baae2583a2c0c55ec1642407ff1b24a394ada88b8587"
+      },
+      "after": {
+        "path": "src/main.cjs",
+        "bytes": 36713,
+        "sha256": "faee665116d987b3a67db4716e2b8db19a27c707edb72976023c78b26e6837b3"
+      }
+    },
+    {
+      "path": "src/platform-startup-window.cjs",
+      "from": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\src\\platform-startup-window.cjs",
+      "before": {
+        "path": "src/platform-startup-window.cjs",
+        "bytes": 3101,
+        "sha256": "8cafd31dc123474dc11a114c6eb84de2307e2846dc924704e1c4c566f86ae9b4"
+      },
+      "after": {
+        "path": "src/platform-startup-window.cjs",
+        "bytes": 3531,
+        "sha256": "002c33cfcd94101f3bfc6a21229e8a4819b52745541d27251d386ab9f4e98329"
+      }
+    }
+  ],
+  "added": [],
+  "removed": [],
+  "signalSnapshot": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\signal",
+  "signalUnchanged": true,
+  "installedStateTouched": false,
+  "frozen": false
+}

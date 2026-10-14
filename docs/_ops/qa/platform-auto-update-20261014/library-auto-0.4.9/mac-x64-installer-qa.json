@@ -1,0 +1,273 @@
+{
+  "checkedAt": "2026-10-14T06:22:49.772Z",
+  "ok": true,
+  "host": {
+    "platform": "darwin",
+    "arch": "x64",
+    "node": "v24.19.0",
+    "runnerArch": "X64"
+  },
+  "manifest": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/unified-out/x64/mac-package-x64.json",
+  "checks": [
+    {
+      "name": "manifest is current native macOS architecture",
+      "ok": true,
+      "detail": {
+        "host": "x64",
+        "arch": "x64"
+      }
+    },
+    {
+      "name": "world package exists",
+      "ok": true
+    },
+    {
+      "name": "world DMG digest and byte size",
+      "ok": true
+    },
+    {
+      "name": "world DMG contains one app",
+      "ok": true,
+      "detail": [
+        "SYNKWorldPreview.app"
+      ]
+    },
+    {
+      "name": "world mounted executable and ASAR match frozen manifest",
+      "ok": true
+    },
+    {
+      "name": "world metadata matches host and client",
+      "ok": true,
+      "detail": {
+        "clientId": "world",
+        "mode": "development",
+        "appId": "im.synk.world.preview",
+        "version": "0.4.1",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "26023cc3715fcdf199ab8df8630adab1d664252f49b0a578d634058bb2e01ebd"
+      }
+    },
+    {
+      "name": "world ad-hoc code signature verifies",
+      "ok": true,
+      "detail": [
+        "Identifier=im.synk.world.preview",
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ]
+    },
+    {
+      "name": "world executable CPU architecture",
+      "ok": true,
+      "detail": "x86_64"
+    },
+    {
+      "name": "world signed Intel graphics loader and license included",
+      "ok": true,
+      "detail": {
+        "sha256": "daf2f1ad1568234642fe6304fca19fad0fef087d619964e14a4fac6283d55acc",
+        "provenance": {
+          "headersCommit": "6802bb4733b63ed5efd3adb308a6c885ef180ea1",
+          "loaderCommit": "fa218055ff4948b159f31d43f800c808a13d51df",
+          "arch": "x64",
+          "minimumSystemVersion": "13.0",
+          "sha256": "2e13dd3f0919a5ee1112f0f416074cd95dcd046bb6f161b63c15b1a2d6f56d3d"
+        }
+      }
+    },
+    {
+      "name": "messenger package exists",
+      "ok": true
+    },
+    {
+      "name": "messenger DMG digest and byte size",
+      "ok": true
+    },
+    {
+      "name": "messenger DMG contains one app",
+      "ok": true,
+      "detail": [
+        "SYNKMessengerPreview.app"
+      ]
+    },
+    {
+      "name": "messenger mounted executable and ASAR match frozen manifest",
+      "ok": true
+    },
+    {
+      "name": "messenger metadata matches host and client",
+      "ok": true,
+      "detail": {
+        "clientId": "messenger",
+        "mode": "development",
+        "appId": "im.synk.messenger.preview",
+        "version": "0.4.1",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "e5e29cac7499f1bd6480190e1fd3385a473673161b9158efe14bb1dfe382f179"
+      }
+    },
+    {
+      "name": "messenger ad-hoc code signature verifies",
+      "ok": true,
+      "detail": [
+        "Identifier=im.synk.messenger.preview",
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ]
+    },
+    {
+      "name": "messenger executable CPU architecture",
+      "ok": true,
+      "detail": "x86_64"
+    },
+    {
+      "name": "messenger signed Intel graphics loader and license included",
+      "ok": true,
+      "detail": {
+        "sha256": "daf2f1ad1568234642fe6304fca19fad0fef087d619964e14a4fac6283d55acc",
+        "provenance": {
+          "headersCommit": "6802bb4733b63ed5efd3adb308a6c885ef180ea1",
+          "loaderCommit": "fa218055ff4948b159f31d43f800c808a13d51df",
+          "arch": "x64",
+          "minimumSystemVersion": "13.0",
+          "sha256": "2e13dd3f0919a5ee1112f0f416074cd95dcd046bb6f161b63c15b1a2d6f56d3d"
+        }
+      }
+    },
+    {
+      "name": "platform package exists",
+      "ok": true
+    },
+    {
+      "name": "platform DMG digest and byte size",
+      "ok": true
+    },
+    {
+      "name": "platform DMG contains one app",
+      "ok": true,
+      "detail": [
+        "SYNKPlatformPreview.app"
+      ]
+    },
+    {
+      "name": "platform mounted executable and ASAR match frozen manifest",
+      "ok": true
+    },
+    {
+      "name": "platform metadata matches host and client",
+      "ok": true,
+      "detail": {
+        "clientId": "platform",
+        "mode": "development",
+        "appId": "im.synk.platform.preview",
+        "version": "0.4.9",
+        "arch": "x64",
+        "platform": "darwin",
+        "sourceHash": "8e677fc7e09e8738002c8bb13909a596ce2c643d9df8cbf152bf6251a5a354a1",
+        "releaseId": "platform-preview-0.4.9",
+        "buildId": "20261014.6",
+        "channel": "preview"
+      }
+    },
+    {
+      "name": "platform ad-hoc code signature verifies",
+      "ok": true,
+      "detail": [
+        "Identifier=im.synk.platform.preview",
+        "Signature=adhoc",
+        "TeamIdentifier=not set"
+      ]
+    },
+    {
+      "name": "platform executable CPU architecture",
+      "ok": true,
+      "detail": "x86_64"
+    },
+    {
+      "name": "platform signed Intel graphics loader and license included",
+      "ok": true,
+      "detail": {
+        "sha256": "daf2f1ad1568234642fe6304fca19fad0fef087d619964e14a4fac6283d55acc",
+        "provenance": {
+          "headersCommit": "6802bb4733b63ed5efd3adb308a6c885ef180ea1",
+          "loaderCommit": "fa218055ff4948b159f31d43f800c808a13d51df",
+          "arch": "x64",
+          "minimumSystemVersion": "13.0",
+          "sha256": "2e13dd3f0919a5ee1112f0f416074cd95dcd046bb6f161b63c15b1a2d6f56d3d"
+        }
+      }
+    },
+    {
+      "name": "WORLD uses live HTTPS entry",
+      "ok": true
+    },
+    {
+      "name": "Workspace uses live HTTPS entry",
+      "ok": true
+    },
+    {
+      "name": "Platform has bundled local renderer",
+      "ok": true
+    },
+    {
+      "name": "world Platform executable/ASAR pins",
+      "ok": true
+    },
+    {
+      "name": "world bundled DMG pin and exact bytes",
+      "ok": true
+    },
+    {
+      "name": "messenger Platform executable/ASAR pins",
+      "ok": true
+    },
+    {
+      "name": "messenger bundled DMG pin and exact bytes",
+      "ok": true
+    },
+    {
+      "name": "platform actual native process exited successfully",
+      "ok": true,
+      "detail": {
+        "status": 0
+      }
+    },
+    {
+      "name": "platform native report passed",
+      "ok": true,
+      "detail": {
+        "checks": 18,
+        "passed": 18
+      }
+    },
+    {
+      "name": "world QA preserved candidate bytes",
+      "ok": true
+    },
+    {
+      "name": "messenger QA preserved candidate bytes",
+      "ok": true
+    },
+    {
+      "name": "platform QA preserved candidate bytes",
+      "ok": true
+    }
+  ],
+  "failure": null,
+  "scope": "platform",
+  "limitations": {
+    "worldGameRetested": false,
+    "installedFromActualDmg": true,
+    "location": "private temporary Applications",
+    "notarized": false,
+    "gatekeeperApprovalTested": false,
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "physicalUserMac": false,
+    "platformManagedLaunchPerformed": false,
+    "offlineSimulation": "initial HTTPS canceled; actual native retry after unblocking"
+  }
+}

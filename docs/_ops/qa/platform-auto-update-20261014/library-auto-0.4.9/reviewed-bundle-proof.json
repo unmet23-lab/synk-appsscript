@@ -1,0 +1,96 @@
+{
+  "ok": true,
+  "createdAt": "2026-10-14T06:08:56.024Z",
+  "baselineFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-complete-20261014\\frozen\\source\\renderer\\platform-continuity.mjs",
+  "baselineSHA256": "5d0f91669df3890b15e68f3ea512aeac1304b5c0d5247490169b631e6d7f558b",
+  "generatedFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\renderer\\platform-continuity.mjs",
+  "generatedSHA256": "9a1aa8725a5caa69a05e67548e1a0581400dcd9229c7d49cc20f6d46a4babdbd",
+  "canonicalViewSource": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\experiences\\synk-account\\src\\platform-library-view.mjs",
+  "canonicalViewSourceSHA256": "493cf523a576eb4af9882d3ba46139a136ae2a9141aa3bd22d6e60ed1487dd8e",
+  "output": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\reviewed\\platform-continuity.mjs",
+  "reviewedSHA256": "b05c15902fee6125a2e12e62454d2a44da87b9312bba7b751d86647f3ed7e718",
+  "baselinePrefixBytes": 505829,
+  "baselinePrefixSHA256": "0d93fa5a8b813f7b8b7c711b07d9856bc2e85476eeedf3ea30c673314567240c",
+  "reviewedPrefixSHA256": "0d93fa5a8b813f7b8b7c711b07d9856bc2e85476eeedf3ea30c673314567240c",
+  "generatedSectionSHA256": "6a7e0d04ccaee22b07955fe6ce91227cad5195f75fdcd88ecc459665a28f9ff0",
+  "reviewedSectionSHA256": "6a7e0d04ccaee22b07955fe6ce91227cad5195f75fdcd88ecc459665a28f9ff0",
+  "moduleHeaderOrderUnchanged": true,
+  "moduleHeaders": [
+    "// experiences/synk-account/src/platform-entry.mjs",
+    "// experiences/synk-account/src/core.mjs",
+    "// experiences/path-vr/model.mjs",
+    "// experiences/conversation-rehearsal/domain.mjs",
+    "// experiences/family-album/model.mjs",
+    "// experiences/synk-account/src/platform-library-data.mjs",
+    "// experiences/path-travel/real-places.mjs",
+    "// experiences/path-travel/places-v2.mjs",
+    "// experiences/path-travel/real-conditions.mjs",
+    "// experiences/path-travel/planner.mjs",
+    "// experiences/path-travel/real-places.mjs?v=20261007-halfday1",
+    "// experiences/path-travel/real-conditions.mjs?v=20261007-halfday1",
+    "// experiences/path-travel/real-guide.mjs",
+    "// experiences/path-travel/planner-feedback.mjs",
+    "// experiences/path-travel/planner-storage.mjs",
+    "// experiences/path-travel/planner-account.mjs",
+    "// experiences/synk-account/src/personal-data.mjs",
+    "// experiences/synk-account/src/personal-media.mjs",
+    "// experiences/synk-account/src/product-account.mjs",
+    "// experiences/synk-account/src/document-sync.mjs",
+    "// experiences/synk-account/src/account-notebook.mjs",
+    "// experiences/synk-account/src/platform-library-view.mjs",
+    "// experiences/synk-account/src/platform-library-account.mjs",
+    "// experiences/synk-account/src/platform-library-recovery.mjs",
+    "// experiences/synk-account/src/platform-library-view.mjs"
+  ],
+  "viewTopLevelBindings": [
+    "esc",
+    "librarySequence",
+    "mountPlatformLibrary",
+    "names"
+  ],
+  "dependencyBindings": [
+    "ACTIVE_PLATFORM_APP_IDS",
+    "PLATFORM_APP_IDS",
+    "PLATFORM_NOTE_LIMIT",
+    "createAccountNotebook",
+    "createLibraryRecovery",
+    "emptyPlatformLibrary",
+    "platformAppId",
+    "platformDisplayAppIds",
+    "platformLibraryAccount",
+    "projectPlatformLibrary",
+    "updatePlatformLibrary",
+    "validatePlatformLibrary"
+  ],
+  "externalGlobals": [
+    "Boolean",
+    "Date",
+    "Error",
+    "Math",
+    "Number",
+    "Promise",
+    "Set",
+    "String",
+    "globalThis",
+    "queueMicrotask",
+    "structuredClone"
+  ],
+  "addedStandardGlobals": [
+    "Promise"
+  ],
+  "excludedConcurrentModules": [
+    {
+      "module": "// experiences/family-album/model.mjs",
+      "baselineSHA256": "95cdda9b453a1c4da639850302b3088e3078c190b3878eb44aa75d4abe572d97",
+      "generatedSHA256": "4d980ba726f17e50dc3972342aab2685629e9b78bbc9c4f7c302f1cbdacf35cf"
+    },
+    {
+      "module": "// experiences/synk-account/src/personal-data.mjs",
+      "baselineSHA256": "bd94985ff9c7e1e1240a6e8aac6ad9c8279e0cb936808c4d545164d26fb5f6f3",
+      "generatedSHA256": "02ea32aa66adf7b6965e571ae56b2b21faa4e8d8e5e44e8ea752e123373355b8"
+    }
+  ],
+  "nodeSyntaxPassed": true,
+  "sourceInputsUnchanged": true,
+  "frozen": false
+}

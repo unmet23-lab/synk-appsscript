@@ -1,0 +1,198 @@
+{
+  "ok": true,
+  "checkedAt": "2026-10-14T06:14:47.891Z",
+  "source": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\source",
+  "scope": "Production renderer and generated bundle in an isolated hidden Electron host; synthetic account and memory-only records; no real account, installer, network request or user profile.",
+  "host": {
+    "executable": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\desktop\\node_modules\\electron\\dist\\electron.exe",
+    "pid": 9248,
+    "profile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-library-ready-20261014\\auto-connect-native-final\\isolated-dVPvmm",
+    "packaged": false
+  },
+  "hashes": {
+    "renderer/launcher.mjs": "c797d9000d137e0715a4785608682591d6b2f5643e1cdb64a66fe520199c701c",
+    "renderer/platform-continuity.mjs": "b05c15902fee6125a2e12e62454d2a44da87b9312bba7b751d86647f3ed7e718"
+  },
+  "checks": [
+    {
+      "name": "startup-renderer-ready",
+      "ok": true
+    },
+    {
+      "name": "startup-loads-saved-library-without-click",
+      "ok": true
+    },
+    {
+      "name": "startup-keeps-library-panel-compact",
+      "ok": true
+    },
+    {
+      "name": "duplicate-verified-events-do-not-load-again",
+      "ok": true
+    },
+    {
+      "name": "reload-renderer-ready",
+      "ok": true
+    },
+    {
+      "name": "reload-restores-library-without-click",
+      "ok": true
+    },
+    {
+      "name": "reload-local-images-finish-decoding",
+      "ok": true
+    },
+    {
+      "name": "isolated-window-closes-normally",
+      "ok": true
+    },
+    {
+      "name": "fresh-window-renderer-ready",
+      "ok": true
+    },
+    {
+      "name": "fresh-window-restores-library-without-click",
+      "ok": true
+    },
+    {
+      "name": "fresh-owned-window-closes-normally",
+      "ok": true
+    },
+    {
+      "name": "signed-out-renderer-ready",
+      "ok": true
+    },
+    {
+      "name": "signed-out-does-not-load-or-expose-saved-library",
+      "ok": true
+    },
+    {
+      "name": "restoring-does-not-load-library",
+      "ok": true
+    },
+    {
+      "name": "verified-restoration-connects-without-click",
+      "ok": true
+    },
+    {
+      "name": "hydration-never-writes-or-opens-OAuth",
+      "ok": true,
+      "loadCount": 4,
+      "saveCount": 0,
+      "OAuthCount": 0,
+      "automatedClicks": 0
+    },
+    {
+      "name": "read-only-hydration-leaves-no-unsaved-draft-guard",
+      "ok": true
+    },
+    {
+      "name": "hydrated-owned-window-closes-normally",
+      "ok": true
+    },
+    {
+      "name": "pending-explicit-favorite-renderer-ready",
+      "ok": true
+    },
+    {
+      "name": "explicit-action-pending-hydration-guards-native-unload",
+      "ok": true
+    },
+    {
+      "name": "pending-explicit-action-keeps-owned-native-window-open",
+      "ok": true
+    },
+    {
+      "name": "released-hydration-saves-explicit-favorite-and-keeps-note",
+      "ok": true
+    },
+    {
+      "name": "acknowledged-explicit-action-releases-native-unload-guard",
+      "ok": true
+    },
+    {
+      "name": "no-external-requests-or-console-errors",
+      "ok": true,
+      "requests": [],
+      "errors": []
+    },
+    {
+      "name": "tested-production-files-unchanged",
+      "ok": true
+    },
+    {
+      "name": "final-owned-window-closes-normally",
+      "ok": true
+    }
+  ],
+  "calls": [
+    {
+      "phase": "startup",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "startup",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "startup",
+      "operation": "platformLoad"
+    },
+    {
+      "phase": "reload",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "reload",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "reload",
+      "operation": "platformLoad"
+    },
+    {
+      "phase": "fresh-window",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "fresh-window",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "fresh-window",
+      "operation": "platformLoad"
+    },
+    {
+      "phase": "signed-out",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "verified-restoration",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "verified-restoration",
+      "operation": "platformLoad"
+    },
+    {
+      "phase": "pending-explicit-favorite",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "pending-explicit-favorite",
+      "operation": "authStatus"
+    },
+    {
+      "phase": "pending-explicit-favorite",
+      "operation": "platformLoad"
+    },
+    {
+      "phase": "pending-explicit-favorite",
+      "operation": "platformSave"
+    }
+  ],
+  "errors": [],
+  "requests": [],
+  "normalExit": true,
+  "exitCode": 0
+}

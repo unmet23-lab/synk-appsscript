@@ -68,6 +68,8 @@ if(!process.versions.electron){
       publish(signedIn);publish(signedIn);await pause(100);check('duplicate-verified-events-do-not-load-again',count('platformLoad')===1);
       phase='reload';const loaded=new Promise(resolve=>win.webContents.once('did-finish-load',resolve));win.reload();await loaded;
       check('reload-renderer-ready',await until("document.documentElement.dataset.ready==='true'"));check('reload-restores-library-without-click',await until(connected)&&count('platformLoad')===2);
+      check('reload-local-images-finish-decoding',await run("Promise.all([...document.images].filter(image=>image.getAttribute('src')).map(image=>image.decode().then(()=>image.naturalWidth>0,()=>false))).then(results=>results.length>0&&results.every(Boolean))"));
+      await run('document.fonts.ready.then(()=>true)');
       await pause(100);fs.writeFileSync(path.join(out,'automatic-after-reload.png'),(await win.webContents.capturePage()).toPNG());
       check('isolated-window-closes-normally',await closeOwned());
       phase='fresh-window';await open();check('fresh-window-restores-library-without-click',await until(connected)&&count('platformLoad')===3);

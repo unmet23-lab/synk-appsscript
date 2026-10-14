@@ -1,0 +1,264 @@
+{
+  "ok": true,
+  "recordedAt": "2026-10-14T06:15:40.2362552Z",
+  "sourceCommit": "737e56a3578f8322289b4af6ee54c0ce5ca54897",
+  "remoteMain": "737e56a3578f8322289b4af6ee54c0ce5ca54897\trefs/heads/main",
+  "committed": true,
+  "pushed": true,
+  "scopedFiles": [
+    ".github/desktop-preview/unified/release-input.json",
+    ".github/desktop-preview/unified/source/renderer/launcher.mjs",
+    ".github/desktop-preview/unified/source/renderer/platform-continuity.mjs"
+  ],
+  "sourceHash": "8e677fc7e09e8738002c8bb13909a596ce2c643d9df8cbf152bf6251a5a354a1",
+  "draft": {
+    "assets": [],
+    "isDraft": true,
+    "isPrerelease": true,
+    "tagName": "platform-preview-0.4.9",
+    "targetCommitish": "737e56a3578f8322289b4af6ee54c0ce5ca54897",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/tag/untagged-2e5dc31c53afd1dfc7cc"
+  },
+  "workflow": {
+    "conclusion": "",
+    "createdAt": "2026-10-14T06:15:14Z",
+    "databaseId": 38521126608,
+    "headSha": "737e56a3578f8322289b4af6ee54c0ce5ca54897",
+    "jobs": [
+      {
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "databaseId": 115710818417,
+        "name": "Platform macOS arm64",
+        "startedAt": "2026-10-14T06:15:24Z",
+        "status": "in_progress",
+        "steps": [
+          {
+            "completedAt": "2026-10-14T06:15:26Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-14T06:15:24Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-14T06:15:26Z",
+            "status": "in_progress"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run actions/setup-node@v7",
+            "number": 3,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run npm ci --no-audit --no-fund",
+            "number": 4,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run node node_modules/electron/install.js",
+            "number": 5,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Prepare Intel graphics compatibility",
+            "number": 6,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Build the frozen common release",
+            "number": 7,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Verify the mounted installer and native application",
+            "number": 8,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save the immutable checked installer",
+            "number": 9,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Upload checked DMG to the existing draft release",
+            "number": 10,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save small release metadata for common publication",
+            "number": 11,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save native verification evidence",
+            "number": 12,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Post Run actions/checkout@v7",
+            "number": 24,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          }
+        ],
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38521126608/job/115710818417"
+      },
+      {
+        "completedAt": "0001-01-01T00:00:00Z",
+        "conclusion": "",
+        "databaseId": 115710818652,
+        "name": "Platform macOS x64",
+        "startedAt": "2026-10-14T06:15:20Z",
+        "status": "in_progress",
+        "steps": [
+          {
+            "completedAt": "2026-10-14T06:15:21Z",
+            "conclusion": "success",
+            "name": "Set up job",
+            "number": 1,
+            "startedAt": "2026-10-14T06:15:16Z",
+            "status": "completed"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run actions/checkout@v7",
+            "number": 2,
+            "startedAt": "2026-10-14T06:15:21Z",
+            "status": "in_progress"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run actions/setup-node@v7",
+            "number": 3,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run npm ci --no-audit --no-fund",
+            "number": 4,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Run node node_modules/electron/install.js",
+            "number": 5,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Prepare Intel graphics compatibility",
+            "number": 6,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Build the frozen common release",
+            "number": 7,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Verify the mounted installer and native application",
+            "number": 8,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save the immutable checked installer",
+            "number": 9,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Upload checked DMG to the existing draft release",
+            "number": 10,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save small release metadata for common publication",
+            "number": 11,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Save native verification evidence",
+            "number": 12,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          },
+          {
+            "completedAt": "0001-01-01T00:00:00Z",
+            "conclusion": "",
+            "name": "Post Run actions/checkout@v7",
+            "number": 24,
+            "startedAt": "0001-01-01T00:00:00Z",
+            "status": "pending"
+          }
+        ],
+        "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38521126608/job/115710818652"
+      }
+    ],
+    "status": "in_progress",
+    "url": "https://github.com/unmet23-lab/synk-policy/actions/runs/38521126608"
+  },
+  "homepageAndFeedPublished": false,
+  "installedStateTouched": false
+}

@@ -1,0 +1,64 @@
+{
+  "ok": true,
+  "schemaVersion": 1,
+  "product": "platform",
+  "channel": "preview",
+  "version": "0.4.10",
+  "releaseId": "platform-preview-0.4.10",
+  "buildId": "20261014.7",
+  "builtAt": "2026-10-14T07:03:14.046Z",
+  "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+  "artifact": {
+    "platform": "win32",
+    "arch": "x64",
+    "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.10/SYNK-Platform-Preview-0.4.10-Signal-win-x64.exe",
+    "bytes": 402704896,
+    "sha256": "010743380cdc319b0debb62d60c26d3afc6f94fb68c4a9908335b9df9e3afd2b",
+    "asarSHA256": "b334f89607bba597c23db4cfceeeb52496099c9df7c40b56455f65239a3ddc0c"
+  },
+  "artifactFile": "C:\\Users\\q1212\\Documents\\SYNK-appsscript\\.tmp\\platform-startup-quit-20261014\\windows\\signal\\SYNK-Platform-Preview-0.4.10-Signal-win-x64.exe",
+  "memberCount": 132,
+  "bundled": [
+    {
+      "id": "world",
+      "version": "0.4.1",
+      "platform": "win32",
+      "arch": "x64",
+      "installer": {
+        "relativePath": "world.exe",
+        "sha256": "91d478cbd17744440d422c5e2fcf22e9d281befcb11ebd1418926744e7f03a5a",
+        "bytes": 134938624
+      },
+      "asarSHA256": "1cce12377fb2ec81de0f57ac86063894e9ab220ae56d38deab37d84143769208"
+    },
+    {
+      "id": "messenger",
+      "version": "0.4.0",
+      "platform": "win32",
+      "arch": "x64",
+      "installer": {
+        "relativePath": "messenger.exe",
+        "sha256": "6ec90f99d6d84bca24eb4a883bab64801b6cd9f495a983b751ba237a52288a17",
+        "bytes": 134678016
+      },
+      "asarSHA256": "dfb167708db8cbe60ccfc532fc4192e14c0c3ad8c13c3c12b0c98718245b1d1a"
+    }
+  ],
+  "metadata": {
+    "clientId": "platform",
+    "mode": "development",
+    "appId": "im.synk.platform.preview",
+    "version": "0.4.10",
+    "arch": "x64",
+    "platform": "win32",
+    "sourceHash": "ca6651aa30f34d98142425c5c7e545e1d7645a601c9e42322a004636e0b310cb",
+    "releaseId": "platform-preview-0.4.10",
+    "buildId": "20261014.7",
+    "channel": "preview"
+  },
+  "unsignedPreview": true,
+  "adHocSigned": false,
+  "notarized": false,
+  "installedStateTouched": false,
+  "published": false
+}

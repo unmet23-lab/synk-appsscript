@@ -1,0 +1,8 @@
+{
+  "platform": "win32",
+  "arch": "x64",
+  "url": "https://github.com/unmet23-lab/synk-policy/releases/download/platform-preview-0.4.10/SYNK-Platform-Preview-0.4.10-Signal-win-x64.exe",
+  "bytes": 402704896,
+  "sha256": "010743380cdc319b0debb62d60c26d3afc6f94fb68c4a9908335b9df9e3afd2b",
+  "asarSHA256": "b334f89607bba597c23db4cfceeeb52496099c9df7c40b56455f65239a3ddc0c"
+}

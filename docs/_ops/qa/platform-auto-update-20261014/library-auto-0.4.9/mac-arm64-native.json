@@ -1,0 +1,206 @@
+{
+  "checkedAt": "2026-10-14T06:17:33.847Z",
+  "ok": true,
+  "asarSha256": "8d87dbce27757548b938e97747cf1d111b719f188e5fc6937f466972fd5ebfe6",
+  "packageBytesUnchanged": true,
+  "code": 0,
+  "error": null,
+  "result": {
+    "ok": true,
+    "mode": "platform",
+    "packaged": true,
+    "arch": "arm64",
+    "electron": "44.5.1",
+    "archive": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/arm64/Applications/SYNKPlatformPreview.app/Contents/Resources/app.asar",
+    "visible": true,
+    "profileIsolated": true,
+    "installationRoot": "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/arm64/Applications",
+    "checks": [
+      {
+        "name": "startup renderer receives its isolated checking IPC",
+        "ok": true,
+        "detail": {
+          "status": {
+            "state": "checking",
+            "code": null,
+            "platform": "darwin",
+            "progress": 0,
+            "currentVersion": "0.4.9",
+            "latestVersion": null,
+            "canRetry": false,
+            "canOpenCurrent": false,
+            "canInstall": false
+          },
+          "desktop": "undefined",
+          "node": "undefined"
+        }
+      },
+      {
+        "name": "actual packaged native architecture",
+        "ok": true
+      },
+      {
+        "name": "profile isolated before app initialization",
+        "ok": true
+      },
+      {
+        "name": "window visibility matches requested QA mode",
+        "ok": true
+      },
+      {
+        "name": "startup gate checks the candidate before opening Platform",
+        "ok": true,
+        "detail": {
+          "states": [
+            "checking",
+            "current"
+          ],
+          "syntheticFeedRequests": 1
+        }
+      },
+      {
+        "name": "Platform local renderer and native environment",
+        "ok": true
+      },
+      {
+        "name": "Platform empty configured account stays signed out",
+        "ok": true
+      },
+      {
+        "name": "world managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "world",
+          "name": "SYNK WORLD",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.1",
+          "latestVersion": "0.4.1",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.1",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 154556952,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "world embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "world real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.1",
+          "progress": 100,
+          "transferredBytes": 154556952,
+          "totalBytes": 154556952,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "messenger managed DMG copy recognized by real hash verifier",
+        "ok": true,
+        "detail": {
+          "id": "messenger",
+          "name": "SYNK Workspace",
+          "canLaunch": true,
+          "status": "installed",
+          "reason": null,
+          "version": "0.4.1",
+          "latestVersion": "0.4.1",
+          "updateAvailable": false,
+          "installer": {
+            "status": "idle",
+            "available": true,
+            "source": "local-development",
+            "version": "0.4.1",
+            "progress": 0,
+            "transferredBytes": 0,
+            "totalBytes": 153870831,
+            "canPrepare": true,
+            "canOpen": false,
+            "error": null
+          }
+        }
+      },
+      {
+        "name": "messenger embedded DMG preparation starts",
+        "ok": true
+      },
+      {
+        "name": "messenger real DMG bytes copied and hash verified",
+        "ok": true,
+        "detail": {
+          "status": "ready",
+          "available": true,
+          "source": "local-development",
+          "version": "0.4.1",
+          "progress": 100,
+          "transferredBytes": 153870831,
+          "totalBytes": 153870831,
+          "canPrepare": false,
+          "canOpen": true,
+          "error": null
+        }
+      },
+      {
+        "name": "visible installation help matches the OS",
+        "ok": true,
+        "detail": {
+          "text": "개발 미리보기 배포\n\n포함된 설치 파일을 이 기기에 복사하고 확인합니다. Mac에서는 설치 파일을 열고 앱을 Applications 폴더로 옮겨 주세요. 설치 완료 후 라이브러리에서 실행할 수 있어요.",
+          "width": 699,
+          "height": 102.59375,
+          "visible": true
+        }
+      },
+      {
+        "name": "Platform boot requires no network",
+        "ok": true
+      },
+      {
+        "name": "no account provider request with empty vault",
+        "ok": true
+      },
+      {
+        "name": "no localhost development server requests",
+        "ok": true
+      },
+      {
+        "name": "QA window visibility matches requested mode",
+        "ok": true
+      }
+    ],
+    "errors": [],
+    "pageErrors": [],
+    "requests": [],
+    "localhostDevelopmentRequests": [],
+    "providerRequests": [],
+    "openRequestsSuppressed": [],
+    "screenshots": [
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/arm64/platform/platform-installation-help.png",
+      "/Users/runner/work/synk-policy/synk-policy/.github/desktop-preview/qa-results/arm64/platform/platform-library.png"
+    ],
+    "realAuthenticationPerformed": false,
+    "realProfileTouched": false,
+    "managedChildLaunched": false,
+    "unlimitedFrames": false,
+    "graphicsBackend": "default",
+    "runnerArch": "ARM64",
+    "translated": false
+  }
+}
