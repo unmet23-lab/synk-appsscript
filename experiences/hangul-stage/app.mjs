@@ -450,7 +450,7 @@ function renderListen(item) {
   // 문제 글자 자리: 소리만 들리는 동안은 큰 「?」, 답을 내면 정답 글자가 포스터 크기로 남는다(가르쳐 주기는 몽글이 든 글자가 그 자리).
   const ask = item.type === 'teach' ? null : el('div', { class: `ask${item.word ? ' word' : ''}` }, el('span', { class: 'ask-glyph', 'aria-hidden': 'true' }, '?'), el('div', { class: 'speak-row' }, speak, slowOffer(state, item.target.text, speak, talker)));
   const head = item.type === 'teach'
-    ? el('div', { class: 'teach' }, el('img', { class: 'mongle', src: 'assets/brand/mongle-curious.webp', alt: '' }),
+    ? el('div', { class: 'teach' }, el('img', { class: 'mongle', src: 'assets/brand/teach-curious.webp', alt: '', width: 320, height: 320 }),
       el('div', { class: 'held', 'aria-label': `몽글이 든 글자 ${item.wrong}` }, el('span', { class: 'big' }, item.wrong), el('span', { class: 'q', 'aria-hidden': 'true' }, '?')))
     : null;
   // 가르쳐 주기는 몽글이 크게 나오니 안내 줄의 작은 몽글은 뺀다. replaceChildren은 null을 글자로 넣어 빈 자리는 걸러 낸다.
@@ -471,7 +471,7 @@ function renderListen(item) {
     if (correct && item.type === 'teach' && !IN_WORLD) audio.effect('joy');
     // 가르쳐 주기의 몽글은 맞히면 웃는 얼굴로 한 번 바뀐다(WORLD에서는 설정의 「친구들의 반응」을 따른다).
     const mongle = head?.querySelector('.mongle');
-    const react = mongle ? ok => { if (ok) mongle.src = 'assets/brand/mongle-smile.webp'; } : null;
+    const react = mongle ? ok => { if (ok) mongle.src = 'assets/brand/teach-smile.webp'; } : null;
     feedback(correct, correct ? (item.type === 'teach' ? '몽글이 알았어요' : '맞아요') : `정답은 ${item.target.text}`,correct?[]:hangulSupport({id:item.id,target:item.target.text,selected:o.text,options:item.options,heard:state.heard}),
       { react, reason: correct ? (item.type === 'teach' ? `‘${item.target.text}’를 들었어요.` : `‘${item.target.text}’ 소리예요.`) : `고른 ‘${o.text}’와 정답 소리를 차례로 들려줘요.` });
     if (!correct) { await audio.say(o.text, { talker }); await audio.wait(250); await audio.say(item.target.text, { talker }); }

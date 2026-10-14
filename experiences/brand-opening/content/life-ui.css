@@ -206,6 +206,10 @@
 .life-story-stage{display:grid;gap:16px;align-content:start}
 .life-story-photo{display:block;margin:0;aspect-ratio:3/2;border-radius:var(--w-r-lg);overflow:hidden;background:var(--w-s2);box-shadow:var(--w-card-edge)}
 .life-story-photo img{display:block;width:100%;height:100%;object-fit:cover}
+/* 사진 속 자리(왼쪽부터 몽글·까몽·마린)를 말풍선 꼬리가 가리킨다 */
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=mongle]::before{left:21%}
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=kkamong]::before{left:45%}
+.life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=marine]::before{left:73%}
 .life-cast{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.6fr) minmax(0,.8fr);grid-template-areas:"a main b";align-items:end;gap:4px;min-height:236px;padding:18px 10px 14px;border-radius:var(--w-r-lg);background:radial-gradient(70% 80% at 50% 105%,rgba(255,255,255,.08),transparent 70%),var(--w-s1);box-shadow:var(--w-card-edge);overflow:hidden}
 .life-cast>div{grid-area:b;min-width:0;text-align:center;opacity:.5;transition:opacity .2s var(--w-ease)}
 .life-cast>div:first-child:not(.is-speaking),.life-cast>div.is-speaking:first-child+div{grid-area:a}
@@ -535,6 +539,7 @@ h3.life-poster-sub{margin-bottom:0}
   .w-print.life-intro-print{width:120px}
   .life-story-stage{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
   .life-dialogue::before{top:50%;left:-6px;margin:-7px 0 0}
+  .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker]::before{left:-6px}
   .life-complete,.life-review-summary,.cafe-complete{grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:20px 32px;align-items:start}
   .life-complete>.life-poster,.life-review-summary>.life-poster,.cafe-complete>.life-poster{grid-row:1 / span 6;position:sticky;top:0}
   .cafe-play-layout{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:28px;align-items:start}

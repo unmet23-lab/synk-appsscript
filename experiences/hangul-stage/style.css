@@ -330,9 +330,9 @@ p{text-wrap:pretty}
 .example:active{transform:scale(.97)}
 .example .icon{width:16px;height:16px;color:var(--w-ink-3)}
 
-/* 몽글에게 가르쳐 주기: 몽글이 든 글자(흰 인화지)를 바로잡아 준다 — 몽글이 문제 속 인물이라 여기만 그림을 둔다 */
+/* 몽글에게 가르쳐 주기: 몽글이 든 글자(흰 인화지)를 바로잡아 준다 — 몽글이 문제 속 인물이라 여기만 사진을 둔다(한지 책상에서 구운 몽글, 갸웃 → 알았다) */
 .teach{display:flex;align-items:center;justify-content:center;gap:14px}
-.teach .mongle{width:96px;height:auto;filter:drop-shadow(0 12px 14px rgba(0,0,0,.42))}
+.teach .mongle{width:96px;height:96px;object-fit:cover;border-radius:18px;box-shadow:0 0 0 1.5px rgba(255,255,255,.14),0 12px 22px rgba(0,0,0,.4)}
 .held{position:relative;display:grid;place-items:center;min-width:88px;min-height:88px;padding:8px 14px;border-radius:14px;background:#FAFAF9;color:var(--w-on-ink);transform:rotate(-4deg);box-shadow:0 14px 30px rgba(0,0,0,.36)}
 .held .big{font-size:40px;line-height:1;font-weight:var(--wt-title)}
 /* 몽글이 든 글자와 듣기 단추를 한 줄에 — 보기 네 칸까지 한 화면에 든다 */
@@ -665,7 +665,7 @@ button.piece:not(:disabled):active{transform:scale(.95)}
   .stage:has(>.teach)>.teach{grid-column:1;grid-row:2;gap:8px}
   .stage:has(>.teach)>.speak-row{grid-row:3}
   .stage:has(>.teach)>.options{grid-row:2/4}
-  .teach .mongle{width:54px}.held{min-width:52px;min-height:52px;padding:5px 8px}.held .big{font-size:28px}.held .q{width:24px;height:24px;font-size:14px;right:-9px;top:-10px}
+  .teach .mongle{width:54px;height:54px;border-radius:12px}.held{min-width:52px;min-height:52px;padding:5px 8px}.held .big{font-size:28px}.held .q{width:24px;height:24px;font-size:14px;right:-9px;top:-10px}
   .reason{padding:14px 16px;gap:10px}.reason p{font-size:19px}
   .chip{width:46px;height:46px;font-size:24px;border-radius:12px}
   .meet{width:100%;grid-template-columns:minmax(0,1fr) minmax(150px,1fr);align-items:center;gap:8px 14px;padding:12px}

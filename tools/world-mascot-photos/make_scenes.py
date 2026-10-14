@@ -76,7 +76,7 @@ Light and set are identical in all frames. {STYLE} {NOTEXT}
 
 {{{{MASCOTS}}}}
 {REFNOTE}
-''', faces=['narrator', 'mongle', 'kkamong', 'marine'], grid=[2, 2], split=['--size=768', '--thr=24'])
+''', faces=['narrator', 'mongle', 'kkamong', 'marine'], grid=[2, 2], split=['--free', '--size=768'])  # 말하는 친구가 고개·팔까지 움직여 얼굴만 합치면 섞인다 → 칸 그대로
 
 # 한글 무대 「몽글에게 가르쳐 주기」: 몽글이 빈 카드를 보며 갸웃 → 알았다
 job('teach_mongle', f'''Image to generate: a stop-motion contact sheet. Landscape 3:2 image made of exactly TWO equal portrait frames side by side, separated by one thin straight pure-white gutter line about 12 pixels wide. No outer border, no text.
