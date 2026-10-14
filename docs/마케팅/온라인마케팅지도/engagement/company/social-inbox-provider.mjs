@@ -1,6 +1,7 @@
 import {createHash,randomUUID} from 'node:crypto';
 import {canReadChannel,canWriteChannel,canManageOwners} from './organization.mjs';
 import {instagramIdentity,hasVerifiedMetaComments} from './meta-connection.mjs';
+import {inboxProgressBinding,loadInboxProgress,newInboxTraversal,nextInboxPage,inboxProgressView} from './social-inbox-progress.mjs';
 
 // Read-only Graph API contract checked 2026-10-13. No reply, DM, hide or delete call.
 // https://developers.facebook.com/docs/instagram-platform/instagram-api-with-instagram-login/comment-moderation
@@ -56,7 +57,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
   function configure(user,input={},context={}){
     const {channel}=authorized(user,input.channelId,context,true);if(input.enabled!==true&&input.enabled!==false)throw fail('INVALID_SETTINGS','댓글 수집 사용 여부를 선택해 주세요.',400);
     if(!['instagram','facebook'].includes(channel.platform))throw fail('UNSUPPORTED_PLATFORM','Instagram·Facebook 페이지만 연결할 수 있어요.',400);
-    const previous=store.get(SETTINGS,channel.id)||{};store.put(SETTINGS,channel.id,{...previous,id:channel.id,enabled:input.enabled,version:randomUUID(),connectionVersion:channel.connectionVersion||0,updatedBy:user.id,updatedAt:now(),lastError:null,lastErrorCode:null});return {channelId:channel.id,...capability(channel)};
+    const previous=store.get(SETTINGS,channel.id)||{};store.put(SETTINGS,channel.id,{...previous,id:channel.id,enabled:input.enabled,version:randomUUID(),connectionVersion:channel.connectionVersion||0,updatedBy:user.id,updatedAt:now(),lastError:null,lastErrorCode:null,progress:null});return {channelId:channel.id,...capability(channel)};
   }
   function reserveRequest(channelId){transaction(()=>{const at=Date.parse(now()),row=store.get(BUDGET,channelId)||{},times=(row.times||[]).filter(t=>t>at-3600000);if(times.length>=120||row.retryAt>at)throw fail('RATE_LIMIT','댓글 조회 한도를 다 썼어요. 잠시 후 다시 확인해 주세요.',429,{retryable:true,nextRetryAt:new Date(Math.max(row.retryAt||0,(times[0]||at)+3600000)).toISOString()});store.put(BUDGET,channelId,{times:[...times,at],retryAt:row.retryAt||null});});}
   async function sync(user,input={},context={}){
@@ -67,11 +68,15 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
     const maxPosts=input.maxPosts??10,maxComments=input.maxComments??200;
     if(!Number.isInteger(maxPosts)||maxPosts<1||maxPosts>25||!Number.isInteger(maxComments)||maxComments<1||maxComments>1000)throw fail('INVALID_LIMIT','한 번에 게시물 1~25개, 댓글 1~1000개까지 확인할 수 있어요.',400);
     const controller=new AbortController();controllers.add(controller);context={...context,signal:context.signal?AbortSignal.any([context.signal,controller.signal]):controller.signal};
-    inFlight.add(channel.id);let tokenFingerprint,requests=0,partial=false,postCount=0;const warnings=[],collected=[],seen=new Set();
+    inFlight.add(channel.id);let tokenFingerprint,requests=0,partial=false,progress=null,expectedRevision=state.progress?.revision||0;
+    const warnings=[],counts={recentPosts:0,historyPosts:0,recentComments:0,historyComments:0};let imported=0,updated=0,unchanged=0;
+    const initialAuthority=hash(JSON.stringify([channel.ownerIds,channel.teamId,initial.user.role,initial.user.teamId]));
     function check(){
       const live=authorized(user,channel.id,context).channel,config=store.get(SETTINGS,channel.id);
       if(!config?.enabled||config.version!==state.version||(live.connectionVersion||0)!==(channel.connectionVersion||0))throw fail('CONNECTION_CHANGED','댓글을 읽는 동안 담당이나 연결 설정이 바뀌었어요. 읽은 결과는 저장하지 않았어요.');
       if(tokenFingerprint&&hash(store.secret('channel:'+channel.id)?.accessToken||'')!==tokenFingerprint)throw fail('CONNECTION_CHANGED','댓글 조회 연결이 바뀌었어요. 읽은 결과는 저장하지 않았어요.');
+      const actor=store.get('users',user.id);
+      if(hash(JSON.stringify([live.ownerIds,live.teamId,actor?.role,actor?.teamId]))!==initialAuthority)throw fail('CONNECTION_CHANGED','댓글 수집 권한이 바뀌었어요. 마지막으로 저장한 위치에서 다시 확인해 주세요.');
       if(context.signal?.aborted)throw fail('CANCELLED','댓글 수집이 취소됐어요.');
     }
     try{
@@ -86,14 +91,14 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         let data;try{if(Number(response.headers?.get?.('content-length')||0)>2*1024*1024)throw Error();const body=await response.text();if(Buffer.byteLength(body)>2*1024*1024)throw Error();data=JSON.parse(body);}catch{throw fail('INVALID_RESPONSE','Meta 댓글 응답을 읽을 수 없어요.',502);}check();
         const code=Number(data?.error?.code);if(response.status===429||[4,17,32,613,80001].includes(code)){const retryAt=Date.parse(now())+3600000;const budget=store.get(BUDGET,channel.id)||{};store.put(BUDGET,channel.id,{...budget,retryAt});throw fail('RATE_LIMIT','Meta 댓글 조회 한도를 다 썼어요. 잠시 후 다시 확인해 주세요.',429,{retryable:true,nextRetryAt:new Date(retryAt).toISOString()});}
         if([401,403].includes(response.status)||[102,190,200,283,459].includes(code))throw fail('AUTH_REQUIRED','댓글 조회 토큰이나 권한이 만료됐어요. 다시 연결해 주세요.',409);
-        if(response.status<200||response.status>=300||data?.error)throw fail('PROVIDER_REJECTED','Meta가 댓글 조회 요청을 거절했어요. 계정·권한·게시물 상태를 확인해 주세요.',502);
+        if(response.status<200||response.status>=300||data?.error){if(params.after&&code===100)throw fail('CURSOR_REJECTED','Meta의 이어받기 위치가 만료됐어요. 최근 목록부터 다시 확인해요.',502);throw fail('PROVIDER_REJECTED','Meta가 댓글 조회 요청을 거절했어요. 계정·권한·게시물 상태를 확인해 주세요.',502);}
         return data;
       }
       async function pages(path,params,limit,onRow,firstAfter){
         let after=firstAfter,count=0;const cursors=new Set();
         do{const result=await api(path,{...params,limit:Math.min(50,limit-count),after});if(!Array.isArray(result.data))throw fail('INVALID_RESPONSE','Meta 목록 응답이 올바르지 않아요.',502);
           for(const row of result.data){if(count>=limit){partial=true;break;}count++;await onRow(row);}
-          if(!result.paging?.next)break;const next=result.paging?.cursors?.after;if(typeof next!=='string'||!next||next.length>2000||cursors.has(next)){partial=true;warnings.push('다음 목록을 이어서 불러오지 못했어요.');break;}if(count>=limit||collected.length>=maxComments||requests>=39){partial=true;break;}after=next;cursors.add(next);
+          if(!result.paging?.next)break;const next=result.paging?.cursors?.after;if(typeof next!=='string'||!next||next.length>2000||/[\s\x00-\x1f\x7f]/.test(next)||cursors.has(next)){partial=true;warnings.push('다음 목록을 이어서 불러오지 못했어요.');break;}if(count>=limit||requests>=39){partial=true;break;}after=next;cursors.add(next);
         }while(true);
       }
       let account;
@@ -104,36 +109,141 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
       account=await api(channel.platform==='instagram'&&!direct?(credentials.accountId||channel.externalId):'me',{fields:channel.platform==='instagram'?(direct?'id,user_id,username':'id,username'):'id,name'});
       if(direct)account=instagramIdentity(account,{requireUserId:credentials.metaIdentityVersion===1});
       if(!id(account?.id)||channel.externalId&&account.id!==channel.externalId||channel.platform==='instagram'&&channel.handle&&clean(account.username).toLowerCase()!==channel.handle.replace(/^@/,'').toLowerCase())throw fail('ACCOUNT_MISMATCH','연결한 SNS 계정이 SYNK 채널과 달라요.');
-      const accountId=account.id,ownedPosts=[];await pages(accountId+(channel.platform==='instagram'?'/media':'/posts'),{fields:channel.platform==='instagram'?'id,permalink,timestamp':'id,permalink_url,created_time'},maxPosts,row=>{if(!id(row.id)||channel.platform==='facebook'&&!row.id.startsWith(accountId+'_'))throw fail('ACCOUNT_MISMATCH','연결한 계정의 게시물인지 확인할 수 없어요.');ownedPosts.push(row);});
-      const fields=channel.platform==='instagram'?'id,text,timestamp,username,from,parent_id,replies.limit(50){id,text,timestamp,username,from,parent_id}':'id,message,created_time,from,parent';
-      function add(comment,post,parentExternalId=null){
-        if(!id(comment?.id)){partial=true;warnings.push('식별자가 없는 댓글은 가져오지 않았습니다.');return;}
-        if(seen.has(comment.id)||collected.length>=maxComments){if(collected.length>=maxComments)partial=true;return;}seen.add(comment.id);
-        const postUrl=sourceUrl(post.permalink||post.permalink_url,channel.platform),body=typeof comment.text==='string'?comment.text:typeof comment.message==='string'?comment.message:'';
-        collected.push({externalId:comment.id,nativePostId:post.id,parentExternalId:id(parentExternalId||comment.parent_id||comment.parent?.id),author:clean(comment.username||comment.from?.username||comment.from?.name,120),text:clean(body,10000),remoteCreatedAt:instant(comment.timestamp||comment.created_time),url:postUrl,contentTruncated:body.length>10000});
+      const accountId=account.id,ownIds=new Set([accountId,account.appScopedId].filter(Boolean));
+      const binding=inboxProgressBinding(channel,state,credentials,store.get('users',state.updatedBy));
+      progress=loadInboxProgress(state.progress,binding,now());
+      const seedHistory=!progress.history?.length;
+      const replyFields=channel.platform==='instagram'?'id,text,timestamp,username,from,user,parent_id,hidden':'id,message,created_time,from,parent,is_hidden,is_private';
+      const fields=channel.platform==='instagram'?replyFields+',replies.limit(50){'+replyFields+'}':replyFields;
+      const rowKey=externalId=>'meta:'+hash(channel.platform+':'+accountId+':'+externalId);
+      const coverage=()=>({scope:'recent-and-history',postLimit:maxPosts,commentLimit:maxComments,postsChecked:counts.recentPosts+counts.historyPosts,commentsReceived:counts.recentComments+counts.historyComments,status:partial||progress.history?.length?'partial':'scanned',includesReplies:true,includesMessages:false,completeHistory:false,progress:inboxProgressView(progress,counts)});
+      function normalize(comment,post,parentId=null){
+        if(!id(comment?.id))throw fail('INVALID_RESPONSE','댓글 응답의 ID가 올바르지 않아요.',502);
+        const body=typeof comment.text==='string'?comment.text:typeof comment.message==='string'?comment.message:'';
+        const parent=id(parentId||comment.parent_id||comment.parent?.id),authors=[comment.from?.id,comment.user?.id].filter(value=>id(value));
+        const ownAuthor=Boolean(parent&&authors.length&&authors.every(value=>ownIds.has(value))),hidden=comment.hidden===true||comment.is_hidden===true||comment.is_private===true;
+        return {externalId:comment.id,nativePostId:post.id,parentExternalId:parent,author:clean(comment.username||comment.from?.username||comment.from?.name,120),text:clean(body,10000),remoteCreatedAt:instant(comment.timestamp||comment.created_time),url:sourceUrl(post.url,channel.platform),contentTruncated:body.length>10000,authorKnown:authors.length>0&&!(authors.some(value=>ownIds.has(value))&&authors.some(value=>!ownIds.has(value))),accountReply:ownAuthor&&!hidden,hiddenAccountReply:ownAuthor&&hidden};
       }
-      for(const post of ownedPosts){
-        if(collected.length>=maxComments||requests>=39){partial=true;break;}postCount++;
-        await pages(post.id+'/comments',{fields,...(channel.platform==='facebook'?{filter:'stream',order:'reverse_chronological'}:{})},maxComments-collected.length,async comment=>{
-          add(comment,post);if(channel.platform!=='instagram'||!id(comment.id))return;
-          for(const reply of comment.replies?.data||[])add(reply,post,comment.id);
-          if(comment.replies?.paging?.next){const after=comment.replies.paging.cursors?.after;if(typeof after==='string'&&after.length<=2000&&collected.length<maxComments&&requests<39)await pages(comment.id+'/replies',{fields:'id,text,timestamp,username,from,parent_id'},maxComments-collected.length,reply=>add(reply,post,comment.id),after);else partial=true;}
-        });
+      function updateEvidence(parentId,postId,lane,scanId,complete,at,startedAt=at){
+        const parent=store.get(ROWS,rowKey(parentId));
+        if(!parent||parent.channelId!==channel.id||parent.sourceAccountId!==accountId||parent.nativePostId!==postId||parent.parentExternalId)return;
+        if(parent.metaReplyCompleteAt&&parent.metaReplyCompleteAt>at)return;
+        if(parent.metaReplyCompleteAt&&parent.metaReplyCompleteAt>startedAt)complete=false;
+        const prior=parent.externalReplyEvidence,children=store.all(ROWS).filter(row=>row.channelId===channel.id&&row.sourceAccountId===accountId&&row.nativePostId===postId&&row.parentExternalId===parentId&&row.metaAccountReply?.connectionVersion===(channel.connectionVersion||0));
+        // Complete scans replace the observed set; partial scans retain earlier proof.
+        const observed=children.filter(row=>scanId===null||row.metaAccountReply?.[lane+'ScanId']===scanId);
+        const rows=(complete?observed:children).filter(row=>row.metaAccountReply?.confirmed!==false&&row.metaAccountReply?.hidden!==true);
+        if(!complete&&!observed.length)return;
+        const priorBound=prior?.sourceAccountId===accountId&&prior.connectionVersion===(channel.connectionVersion||0);
+        if(!complete&&priorBound&&prior.replyCount>20&&!Array.isArray(parent.metaReplyProofIds))return;
+        const hiddenIds=new Set(children.filter(row=>row.metaAccountReply?.hidden===true).map(row=>row.externalId));
+        const priorIds=priorBound?(Array.isArray(parent.metaReplyProofIds)?parent.metaReplyProofIds:prior?.replyIds||[]).filter(value=>id(value)&&!hiddenIds.has(value)):[];
+        const ids=[...new Set([...rows.map(row=>row.externalId),...(!complete?priorIds:[])])].sort();
+        const candidates=[...rows];if(!complete&&ids.includes(prior?.latestReplyExternalId))candidates.push({externalId:prior.latestReplyExternalId,remoteCreatedAt:prior.latestReplyAt});
+        const latest=candidates.sort((a,b)=>(b.remoteCreatedAt||'').localeCompare(a.remoteCreatedAt||'')||b.externalId.localeCompare(a.externalId))[0];
+        if(complete)for(const child of children)store.put(ROWS,child.id,{...child,metaAccountReply:{...child.metaAccountReply,confirmed:ids.includes(child.externalId)}});
+        const observedAt=scanId===null?observed.map(row=>row.lastCollectedAt).filter(Boolean).sort().at(-1)||at:at;
+        const evidence={source:'meta-read',method:'author-id-match',connectionVersion:channel.connectionVersion||0,sourceAccountId:accountId,replyIds:ids.slice(0,20),replyCount:ids.length,replySetHash:hash(JSON.stringify(ids)),latestReplyExternalId:latest?.externalId||null,latestReplyAt:latest?.remoteCreatedAt||null,observedAt,complete};
+        if(!ids.length&&!prior){if(complete)store.put(ROWS,parent.id,{...parent,metaReplyCompleteAt:at,metaReplyProofIds:[]});return;}
+        const changed=!prior||['replySetHash','complete','connectionVersion','sourceAccountId','latestReplyAt'].some(key=>prior[key]!==evidence[key]);
+        store.put(ROWS,parent.id,{...parent,externalReplyEvidence:evidence,metaReplyProofIds:ids,metaReplyCompleteAt:complete?at:parent.metaReplyCompleteAt||null,revision:parent.revision+(changed?1:0),updatedAt:changed?at:parent.updatedAt});
       }
-      check();const at=now(),coverage={scope:'recent-owned-posts',postLimit:maxPosts,commentLimit:maxComments,postsChecked:postCount,commentsReceived:collected.length,status:partial?'partial':'scanned',includesReplies:true,includesMessages:false,completeHistory:false};let imported=0,updated=0;
-      transaction(()=>{check();for(const item of collected){
-        const key='meta:'+hash(channel.platform+':'+accountId+':'+item.externalId),old=store.get(ROWS,key);if(old&&old.channelId!==channel.id)throw fail('DUPLICATE_ACCOUNT','같은 SNS 댓글이 다른 채널에 연결돼 있어요.');
+      function saveItem(task,lane,at){
+        const {accountReply,hiddenAccountReply,authorKnown,...item}=task.item,key=rowKey(item.externalId),old=store.get(ROWS,key);
+        if(old&&old.channelId!==channel.id)throw fail('DUPLICATE_ACCOUNT','같은 SNS 댓글이 다른 채널에 연결돼 있어요.');
+        const observedAt=task.observedAt||at;
+        if(old?.lastCollectedAt>observedAt){unchanged++;return;}
         const collector=store.all('posts').find(p=>p.channelId===channel.id&&p.externalId===item.nativePostId&&p.source==='api:'+channel.platform);
         const matches=item.url?store.all('socialPublishJobs').filter(j=>j.channelId===channel.id&&j.status==='published'&&comparableUrl(j.publicationUrl)===comparableUrl(item.url)):[];
-        const postId=old?.postId||(matches.length===1?matches[0].postId:'');
-        const unchanged=old&&Object.entries(item).every(([k,v])=>old[k]===v)&&old.postId===postId&&old.collectorPostId===(collector?.id||null);
-        const row={...old,...item,id:key,channelId:channel.id,postId,collectorPostId:collector?.id||null,kind:'comment',source:'api:'+channel.platform,sourceAccountId:accountId,revision:(old?.revision||0)+(unchanged?0:1),status:old?.status||'open',assigneeId:old?.assigneeId||initial.user.id,replyDraft:old?.replyDraft||'',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||at,updatedAt:unchanged?old.updatedAt:at,importedAt:old?.importedAt||at,lastCollectedAt:at};
-        store.put(ROWS,key,row);if(!old)imported++;else if(!unchanged)updated++;
-      }store.put(SETTINGS,channel.id,{...store.get(SETTINGS,channel.id),lastSyncedAt:at,lastStatus:coverage.status,lastError:null,lastErrorCode:null,coverage});});
-      return {channelId:channel.id,status:coverage.status,imported,updated,unchanged:collected.length-imported-updated,coverage,warnings:[...new Set(warnings)],outboundSent:false};
+        const postId=old?.postId||(matches.length===1?matches[0].postId:''),same=old&&Object.entries(item).every(([k,v])=>old[k]===v)&&old.postId===postId&&old.collectorPostId===(collector?.id||null);
+        const parent=item.parentExternalId?store.get(ROWS,rowKey(item.parentExternalId)):null;
+        const currentAuthorProof=accountReply&&!(parent?.metaReplyCompleteAt>observedAt&&!old?.metaAccountReply?.confirmed);
+        const currentHiddenProof=hiddenAccountReply&&!(parent?.metaReplyCompleteAt>observedAt);
+        const metaAccountReply=currentAuthorProof||currentHiddenProof?{...(old?.metaAccountReply||{}),connectionVersion:channel.connectionVersion||0,[lane+'ScanId']:task.scanId,confirmed:!currentHiddenProof,hidden:currentHiddenProof===true}:old?.metaAccountReply||null;
+        const row={...old,...item,id:key,channelId:channel.id,postId,collectorPostId:collector?.id||null,kind:'comment',source:'api:'+channel.platform,sourceAccountId:accountId,revision:(old?.revision||0)+(same?0:1),status:old?.status||'open',assigneeId:old?.assigneeId||initial.user.id,replyDraft:old?.replyDraft||'',outboundSent:old?.outboundSent===true,createdBy:old?.createdBy||user.id,createdAt:old?.createdAt||at,updatedAt:same?old.updatedAt:at,importedAt:old?.importedAt||at,lastCollectedAt:observedAt,metaAccountReply};
+        store.put(ROWS,key,row);if(!old)imported++;else if(!same)updated++;else unchanged++;
+        if(currentAuthorProof||currentHiddenProof)updateEvidence(item.parentExternalId,item.nativePostId,lane,task.scanId,false,observedAt,task.startedAt||observedAt);
+        if(!item.parentExternalId&&!old?.externalReplyEvidence)updateEvidence(item.externalId,item.nativePostId,lane,null,false,at);
+      }
+      function checkpoint(tasks,lane,{items=[],ends=[],done=false}={}){
+        const at=now();
+        transaction(()=>{
+          check();const current=store.get(SETTINGS,channel.id);
+          if((current.progress?.revision||0)!==expectedRevision)throw fail('PROGRESS_CHANGED','다른 수집이 먼저 진행 위치를 갱신했어요. 저장된 위치에서 다시 이어가요.');
+          for(const task of items)saveItem(task,task.scanLane||lane,at);
+          for(const task of ends)updateEvidence(task.parentId,task.postId,task.scanLane||lane,task.scanId,task.complete,task.observedAt||at,task.startedAt||at);
+          if(lane==='history'||seedHistory)progress.history=tasks;
+          if(done&&lane==='history')progress.historyCompletedAt=at;
+          progress={...progress,revision:expectedRevision+1,lastCheckpointAt:at};
+          store.put(SETTINGS,channel.id,{...current,progress,coverage:coverage()});
+        });expectedRevision=progress.revision;
+      }
+      async function traverse(lane,start,{postLimit,commentLimit,requestLimit}){
+        const tasks=structuredClone(start),posts=new Set();let comments=0;
+        function drain(){
+          const items=[],ends=[];
+          while(tasks.length){const task=tasks[0];if(task.kind==='reply-end'){ends.push(tasks.shift());continue;}if(task.kind!=='item'||comments>=commentLimit)break;if(!posts.has(task.item.nativePostId)){if(posts.size>=postLimit)break;posts.add(task.item.nativePostId);counts[lane+'Posts']++;}items.push(tasks.shift());comments++;}
+          counts[lane+'Comments']+=items.length;
+          checkpoint(tasks,lane,{items,ends,done:!tasks.length});
+        }
+        while(tasks.length){
+          check();drain();if(!tasks.length||comments>=commentLimit||requests>=requestLimit)break;
+          const task=tasks[0];
+          if(task.kind==='item')break;
+          if(task.kind!=='posts'&&!posts.has(task.post.id)){if(posts.size>=postLimit)break;posts.add(task.post.id);counts[lane+'Posts']++;}
+          if(task.kind==='posts'&&posts.size>=postLimit)break;
+          const path=task.kind==='posts'?accountId+(channel.platform==='instagram'?'/media':'/posts'):task.kind==='comments'?task.post.id+'/comments':task.parentId+'/replies';
+          const params=task.kind==='posts'?{fields:channel.platform==='instagram'?'id,permalink,timestamp':'id,permalink_url,created_time',limit:Math.min(25,postLimit-posts.size)}:{fields:task.kind==='replies'?replyFields:fields,limit:Math.min(50,commentLimit-comments),...(channel.platform==='facebook'&&task.kind==='comments'?{filter:'stream',order:'reverse_chronological'}:{})};
+          let result;try{result=await api(path,{...params,after:task.after??undefined});}catch(error){if(error.code==='CURSOR_REJECTED'){tasks[0]={...task,after:null,cursors:[]};progress.resetReason='expired-cursor';partial=true;checkpoint(tasks,lane);break;}throw error;}
+          if(!Array.isArray(result.data)||result.data.length>50)throw fail('INVALID_RESPONSE','Meta 목록 응답이 올바르지 않아요.',502);
+          const next=nextInboxPage(result,task),expanded=[],observedAt=now();let identityComplete=task.identityComplete!==false;
+          if(result.paging?.next&&!next.after){partial=true;warnings.push('다음 목록 커서를 확인하지 못해 마지막 위치부터 다시 확인해요.');}
+          if(task.kind==='posts'){
+            for(const post of result.data){if(!id(post.id)||channel.platform==='facebook'&&!post.id.startsWith(accountId+'_'))throw fail('ACCOUNT_MISMATCH','연결한 계정의 게시물인지 확인할 수 없어요.');expanded.push({kind:'comments',post:{id:post.id,url:sourceUrl(post.permalink||post.permalink_url,channel.platform)},after:null,cursors:[]});}
+          }else{
+            for(const comment of result.data){
+              const scanId=task.scanId||randomUUID(),scanLane=task.scanLane||(seedHistory?'history':lane),startedAt=task.startedAt||observedAt,item=normalize(comment,task.post,task.kind==='replies'?task.parentId:null);
+              if(task.kind==='replies'&&!item.authorKnown)identityComplete=false;
+              expanded.push({kind:'item',item,scanId,scanLane,observedAt,startedAt});
+              if(task.kind==='comments'&&channel.platform==='instagram'&&!item.parentExternalId){
+                const replies=comment.replies;
+                if(replies&&!Array.isArray(replies.data)||replies?.data?.length>50)throw fail('INVALID_RESPONSE','Meta 답글 목록을 확인하지 못했어요.',502);
+                let replyIdentityComplete=true;
+                for(const reply of replies?.data||[]){const replyItem=normalize(reply,task.post,item.externalId);if(!replyItem.authorKnown)replyIdentityComplete=false;expanded.push({kind:'item',item:replyItem,scanId,scanLane,observedAt,startedAt});}
+                const following=replies?nextInboxPage(replies,{after:null,cursors:[]}):{after:null,complete:false,cursors:[]};
+                if(!replies||following.after||!following.complete)expanded.push({kind:'replies',post:task.post,parentId:item.externalId,scanId,scanLane,startedAt,identityComplete:replyIdentityComplete,after:following.after,cursors:following.cursors});
+                else expanded.push({kind:'reply-end',parentId:item.externalId,postId:task.post.id,scanId,scanLane,observedAt,startedAt,complete:following.complete&&replyIdentityComplete});
+              }
+            }
+          }
+          if(next.after)expanded.push({...task,after:next.after,cursors:next.cursors,identityComplete});
+          else if(!next.complete)expanded.push({...task,after:task.after,cursors:task.cursors});
+          else if(task.kind==='replies')expanded.push({kind:'reply-end',parentId:task.parentId,postId:task.post.id,scanId:task.scanId,scanLane:task.scanLane,observedAt,startedAt:task.startedAt,complete:identityComplete});
+          tasks.splice(0,1,...expanded);drain();
+          if(result.paging?.next&&!next.after)break;
+        }
+        return tasks;
+      }
+      // Reserve half the bounded work for a fresh head poll before historical work.
+      // A single-post/comment test remains useful; production defaults are 10/200.
+      const recentPosts=Math.max(1,Math.floor(maxPosts/2)),recentComments=Math.max(1,Math.floor(maxComments/2));
+      const hadHistory=Boolean(progress.history?.length);
+      if(hadHistory&&(maxPosts===1||maxComments===1)&&progress.smallTurn!=='recent'){
+        progress.smallTurn='recent';await traverse('history',progress.history,{postLimit:maxPosts,commentLimit:maxComments,requestLimit:40});
+      }else{
+        progress.smallTurn='history';
+        const recent=await traverse('recent',newInboxTraversal(),{postLimit:hadHistory?recentPosts:maxPosts,commentLimit:hadHistory?recentComments:maxComments,requestLimit:hadHistory?Math.min(20,requests+18):40});
+        if(recent.length)partial=true;
+        if(!hadHistory){progress.history=recent;checkpoint(recent,'history',{done:!recent.length});}
+        else if(counts.recentPosts<maxPosts&&counts.recentComments<maxComments&&requests<40){
+          await traverse('history',progress.history,{postLimit:maxPosts-counts.recentPosts,commentLimit:maxComments-counts.recentComments,requestLimit:40});
+        }
+      }
+      check();const finalCoverage=coverage(),at=now();transaction(()=>{check();store.put(SETTINGS,channel.id,{...store.get(SETTINGS,channel.id),lastSyncedAt:at,lastStatus:finalCoverage.status,lastError:null,lastErrorCode:null,coverage:finalCoverage});});
+      return {channelId:channel.id,status:finalCoverage.status,imported,updated,unchanged,coverage:finalCoverage,warnings:[...new Set(warnings)],outboundSent:false};
     }catch(error){
       const safe=error.inboxSafe?error:fail('PROVIDER_ERROR','댓글 수집을 마치지 못했어요. 연결 상태를 확인해 주세요.',502);
-      try{check();store.put(SETTINGS,channel.id,{...store.get(SETTINGS,channel.id),lastStatus:'error',lastError:safe.message,lastErrorCode:safe.code});}catch{}
+      try{transaction(()=>{check();const current=store.get(SETTINGS,channel.id);if((current.progress?.revision||0)===expectedRevision)store.put(SETTINGS,channel.id,{...current,lastStatus:'error',lastError:safe.message,lastErrorCode:safe.code});});}catch{}
       throw safe;
     }finally{inFlight.delete(channel.id);controllers.delete(controller);settleIdle();}
   }

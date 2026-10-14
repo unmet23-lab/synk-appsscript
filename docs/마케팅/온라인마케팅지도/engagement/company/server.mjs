@@ -59,6 +59,7 @@ import { createSocialMarketingService } from './social-marketing.mjs';
 import { createSocialRoutes } from './social-routes.mjs';
 import { createSocialSourceDistribution } from './social-source-distribution.mjs';
 import { createSocialInboxProvider } from './social-inbox-provider.mjs';
+import { createSocialInboxRecovery } from './social-inbox-recovery.mjs';
 import { createSocialAiCopy } from './social-ai-copy.mjs';
 import { createSocialRecovery } from './social-recovery.mjs';
 import { createSocialTracking } from './social-tracking.mjs';
@@ -286,6 +287,7 @@ export function createCompanyApp(options={}) {
   const socialHealthRuntime=runtimeJob('socialHealth',socialSchedule,3600000);
   const socialDistribution=createSocialSourceDistribution({store,studio,publicationPackages,marketing:socialMarketing,publishing:socialPublishing,clock});
   const socialInboxProvider=createSocialInboxProvider({store,clock,getCredentials:credentialsFor,...options.socialInboxOptions});
+  const socialInboxRecovery=createSocialInboxRecovery({store,inboxProvider:socialInboxProvider,clock,getProviderConfig:providerConfig,fetchImpl:options.metaConnectionFetch});
   const socialReplies=createSocialReplies({store,clock,getCredentials:credentialsFor,...options.socialInboxOptions,...options.socialReplyOptions});
   const socialAi=createSocialAiCopy({store,clock,...options.socialAiOptions});
   const socialRecovery=createSocialRecovery({store,publishing:socialPublishing,marketing:socialMarketing,clock});
@@ -341,7 +343,7 @@ export function createCompanyApp(options={}) {
     return socialExtras;
   }
   const publicationLinks=createPublicationLinkCheckService({store,studio,publicationPackages,postPerformance,clock,...(options.publicationLinkProbe?{probe:options.publicationLinkProbe}:{})});
-  const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
+  const socialRoutes=createSocialRoutes({store,publishing:socialPublishing,marketing:socialMarketing,provider:socialProvider,distribution:socialDistribution,inboxProvider:socialInboxProvider,inboxRecovery:socialInboxRecovery,replies:socialReplies,capacity:socialCapacity,copyInsights:socialCopyInsights,followups:socialFollowups,ai:socialAi,recovery:socialRecovery,tracking:socialTracking,workflows:socialWorkflows,review:socialReview,publicationLinks,signal:socialAbort.signal,session,origin,body,send,isStopped:()=>stopRequested,runtime:()=>({...socialRuntime,sources:{...socialSourceRuntime},inbox:{...socialInboxRuntime},health:{...socialHealthRuntime}}),onChange:notifySocialChanges});
   const socialPublicRoutes=createSocialPublicRoutes({review:socialReview,tracking:socialTracking,body,send,origin,signal:socialAbort.signal,clientAddress,isStopped:()=>stopRequested,onReviewChange:notifySocialChanges});
   const publicationLinkSchedule=options.publicationLinkSchedule??(workroomScheduleEnabled&&options.schedule!==false);
   const publicationPerformanceSchedule=backgroundJobsEnabled&&options.schedule!==false;
@@ -1581,7 +1583,7 @@ export function createCompanyApp(options={}) {
     files['/notification-sw.js']=['public/notification-sw.js','text/javascript; charset=utf-8'];
     if(['GET','HEAD'].includes(method)&&files[path]){const [file,type]=files[path];messenger.disconnectRevoked();const headers=responseHeaders(type);if(['/social-review','/social-review.js','/social-review.css'].includes(path))headers['Content-Security-Policy']="default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' blob:; media-src 'self' blob:; base-uri 'none'; frame-ancestors 'none'; form-action 'self'";if(path==='/teacher-world/'){headers['X-Frame-Options']='SAMEORIGIN';headers['Content-Security-Policy']=headers['Content-Security-Policy'].replace("frame-ancestors 'none'","frame-ancestors 'self'");}return await respondStatic(req,res,{path:join(here,file),type,headers});}
     throw httpError('페이지를 찾을 수 없습니다.',404);
-  }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)?{code:e.code}:{})});}});
+  }catch(e){const failure=publicRequestError(e,{production});if(res.headersSent){res.destroy();return;}writeResponse(res,failure.status,{error:safeError(failure.message),...(typeof e.code==='string'&&(/^(?:SYNK|TEACHING)_[A-Z0-9_]{1,80}$/.test(e.code)||e.replySafe&&['EXISTING_REPLY_REQUIRES_CONFIRMATION','REPLY_HISTORY_CHANGED'].includes(e.code))?{code:e.code}:{})});}});
   function listen(listener,listenPort,listenHost){
     return new Promise((resolve,reject)=>{
       const failed=error=>{listener.off('listening',started);reject(error);};
@@ -1593,7 +1595,7 @@ export function createCompanyApp(options={}) {
     ready=false;clearInterval(timer);clearInterval(pushTimer);clearInterval(researchSyncTimer);clearInterval(publicationTimer);clearInterval(publicationInboxTimer);clearInterval(publicationLinkTimer);clearInterval(weeklySummaryTimer);clearInterval(automationHealthTimer);clearInterval(deliveryCheckTimer);clearInterval(socialTimer);socialAbort.abort();publicationAbort.abort();creativeResearchEvents.stop();pulseLiveEvents.stop();clientNotifications.close();const identityStopped=synkIdentity.close(),customerIdentityStopped=customerIdentity.close(),teachingStopped=teaching.close();
     if(shutdownTask)return shutdownTask;
     shutdownTask=(async()=>{
-      await Promise.all([socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
+      await Promise.all([socialPublishing.stop?.(),socialReplies.stop(),socialProvider.stopHealth?.(),socialReview.stop(),socialAi.stop(),socialInboxRecovery.stop(),socialInboxProvider.stop(),socialTick,socialExtras,socialDistribution.waitForIdle(),deliveryFileInspector.close(),deliveryCheckTick,automationHealthTick,identityStopped,customerIdentityStopped,teachingStopped,queue,publicationTick,publicationInboxTick,publicationLinkTick,publicationLinks.stop(),publicationInbox.stop(),postPerformance.stop(),publicationPackages.stop(),dailyTrends.stop(),creativeResearchSync.stop(),creativeResearch.stop(),computerInterpretation.stop(),deviceNotifications.stop()]);messenger.endConnections();
       for(const listener of [redirectServer,server])if(listener?.listening)await new Promise(resolve=>{listener.close(resolve);listener.closeIdleConnections();});
       try{await messenger.close();}finally{synkIdentity.dispose();customerIdentity.dispose();teaching.dispose();store.close();}
     })();

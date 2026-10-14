@@ -1,0 +1,951 @@
+/* SNS·마케팅 — 싱ㅋ 시그널(워크스페이스 판) · 2026-10-13 Claude 리디자인
+   틀: 흰 본문 판 위에 화면마다 검은 포스터(워크스페이스 면 #17181C + 옅은 청금석 큰 한글 + 그 화면을 설명하는 펠트 물건),
+   1px 계기판, 점 + 글자 상태 칩, 번호 구역 머리. 글자는 PULSE 고객 화면 글자 2판 단계(680·650·600·550·450, 한글 13px 이상).
+   선택자는 :root .synk-workspace .sw-workspace 로 시작해 signal.css(뒤에 읽힘)의 공통 단추·입력 규칙보다 앞선다. */
+@font-face{font-family:'SNS Latin';src:url('/messenger/assets/InterTight-Medium.ttf') format('truetype');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E}
+@font-face{font-family:'SNS Latin';src:url('/messenger/assets/InterTight-Bold.ttf') format('truetype');font-weight:600 1000;font-display:swap;unicode-range:U+0020-007E}
+.workspace-rail .rail-item[data-tab=social]>span{letter-spacing:-.05em;white-space:nowrap}
+
+/* ── 토큰 ── */
+:root .synk-workspace .sw-workspace{
+  --sw-ink:#08090C;--sw-ink-2:rgba(8,9,12,.76);--sw-ink-3:rgba(8,9,12,.58);--sw-ink-4:rgba(8,9,12,.42);--sw-ink-5:rgba(8,9,12,.2);
+  --sw-line:rgba(8,9,12,.08);--sw-line-2:rgba(8,9,12,.14);--sw-line-3:rgba(8,9,12,.22);
+  --sw-paper:#fff;--sw-paper-2:#F7F7F6;--sw-surface:#F5F5F4;--sw-surface-2:#EDEDEB;--sw-surface-3:#E2E2E0;
+  --sw-face:#17181C;--sw-on-face:#C5D6F5;
+  --sw-lapis:#3D6BC9;--sw-lapis-deep:#24448C;--sw-lapis-wash:#EEF3FC;
+  --sw-green:#2E9E66;--sw-green-ink:#1F7A4D;--sw-butter:#F5C445;--sw-butter-ink:#7A5600;--sw-butter-wash:#FFF6DB;
+  --sw-coral:#F96859;--sw-coral-ink:#B23A2D;--sw-coral-wash:#FFF0EE;
+  --w-display:680;--w-title:650;--w-strong:600;--w-label:550;--w-body:450;
+  --sw-sans:'SNS Latin',SUIT,'Inter Tight',system-ui,sans-serif;
+  --sw-mono:'Signal Mono',ui-monospace,monospace;
+  --sw-ease:cubic-bezier(.2,.75,.2,1);
+  --sw-grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --sw-chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  --sw-arrow:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E");
+  --sw-grip:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 18'%3E%3Cg fill='%2308090C' fill-opacity='.42'%3E%3Ccircle cx='3' cy='3' r='1.6'/%3E%3Ccircle cx='9' cy='3' r='1.6'/%3E%3Ccircle cx='3' cy='9' r='1.6'/%3E%3Ccircle cx='9' cy='9' r='1.6'/%3E%3Ccircle cx='3' cy='15' r='1.6'/%3E%3Ccircle cx='9' cy='15' r='1.6'/%3E%3C/g%3E%3C/svg%3E");
+  container:sw/inline-size;min-width:0;padding-bottom:56px;color:var(--sw-ink);font-family:var(--sw-sans);font-weight:var(--w-body);-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+:root .synk-workspace .sw-workspace *,:root .synk-workspace .sw-workspace *::before,:root .synk-workspace .sw-workspace *::after{box-sizing:border-box}
+:root .synk-workspace .sw-workspace :is(h1,h2,h3,h4,h5,p,dl,dd,blockquote,figure){margin:0}
+:root .synk-workspace .sw-workspace :is(h1,h2,h3,h4,h5){font-family:var(--sw-sans);color:var(--sw-ink);word-break:keep-all;text-wrap:balance}
+:root .synk-workspace .sw-workspace p{text-wrap:pretty}
+:root .synk-workspace .sw-workspace .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+:root .synk-workspace .sw-workspace code{font:500 12.5px/1.4 var(--sw-mono);background:var(--sw-surface);padding:2px 6px;border-radius:6px;overflow-wrap:anywhere;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace :is(button,a,input,select,textarea,summary):focus-visible{outline:2px solid var(--sw-lapis);outline-offset:2px}
+
+/* ── 머리 · 포스터 ── */
+:root .synk-workspace .sw-workspace .sw-heading{display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,440px);gap:24px 36px;align-items:stretch;margin:0 0 28px}
+:root .synk-workspace .sw-workspace .sw-heading-copy{display:flex;flex-direction:column;justify-content:flex-end;min-width:0;padding:4px 0 2px}
+:root .synk-workspace .sw-workspace .sw-kicker{display:inline-flex;align-items:center;gap:10px;font:500 11px/1 var(--sw-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-kicker::after{content:'';width:32px;height:1px;background:currentColor;opacity:.5}
+:root .synk-workspace .sw-workspace .sw-kicker.is-plain::after{content:none}
+:root .synk-workspace .sw-workspace .sw-heading h1{margin-top:16px;font-size:clamp(32px,3.4vw,46px);line-height:1.1;font-weight:var(--w-display);letter-spacing:-.042em}
+:root .synk-workspace .sw-workspace .sw-heading-copy>p{margin-top:12px;max-width:42ch;font-size:16px;line-height:1.6;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-heading .sw-actions{margin-top:22px}
+:root .synk-workspace .sw-workspace .sw-poster{position:relative;isolation:isolate;overflow:hidden;min-height:214px;border-radius:24px;color:#fff;background:radial-gradient(120% 90% at 16% -14%,rgba(255,255,255,.16),transparent 58%),linear-gradient(180deg,transparent 46%,rgba(0,0,0,.34)),var(--sw-face);box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 26px 48px -34px rgba(8,9,12,.9)}
+:root .synk-workspace .sw-workspace .sw-poster::after{content:'';position:absolute;inset:0;z-index:1;background:var(--sw-grain);opacity:.32;mix-blend-mode:overlay;pointer-events:none}
+:root .synk-workspace .sw-workspace .sw-poster-label{position:absolute;left:22px;top:20px;z-index:3;font:500 11px/1 var(--sw-mono);letter-spacing:.08em;color:rgba(197,214,245,.78)}
+:root .synk-workspace .sw-workspace .sw-poster-stats{position:absolute;left:22px;top:44px;z-index:3;display:flex;gap:18px}
+:root .synk-workspace .sw-workspace .sw-poster-stats>div{display:flex;flex-direction:column;gap:5px;min-width:0}
+:root .synk-workspace .sw-workspace .sw-poster-stats dt{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:var(--w-label);color:rgba(255,255,255,.66);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-poster-stats dt::before{content:'';width:6px;height:6px;border-radius:50%;background:rgba(197,214,245,.5)}
+:root .synk-workspace .sw-workspace .sw-poster-stats [data-tone=alert] dt::before{background:var(--sw-coral);box-shadow:0 0 0 3px rgba(249,104,89,.22)}
+:root .synk-workspace .sw-workspace .sw-poster-stats [data-tone=wait] dt::before{background:var(--sw-butter);box-shadow:0 0 0 3px rgba(245,196,69,.2)}
+:root .synk-workspace .sw-workspace .sw-poster-stats [data-tone=ok] dt::before{background:#5FD39A;box-shadow:0 0 0 3px rgba(95,211,154,.18)}
+:root .synk-workspace .sw-workspace .sw-poster-stats dd{font-size:22px;line-height:1;font-weight:var(--w-title);letter-spacing:-.02em;color:#fff;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-poster-word{position:absolute;left:16px;bottom:-.02em;z-index:2;font:900 104px/.9 SUIT,var(--sw-sans);letter-spacing:-.065em;color:var(--sw-on-face);pointer-events:none;user-select:none;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-poster-art{position:absolute;right:18px;bottom:16px;z-index:3;display:block;width:188px;height:168px;object-fit:contain;object-position:50% 100%;transform:rotate(-3deg);filter:drop-shadow(0 18px 18px rgba(0,0,0,.5)) drop-shadow(0 4px 6px rgba(0,0,0,.35));pointer-events:none;user-select:none}
+:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster=settings] .sw-poster-art,:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster=bulk] .sw-poster-art{width:214px;height:150px}
+
+/* ── 화면 안 메뉴(왼쪽 공통 메뉴가 펼쳐져 있으면 숨긴다 — 메뉴는 한 곳) ── */
+:root .synk-workspace .sw-workspace .sw-nav{display:flex;gap:4px;overflow-x:auto;margin:0 0 24px;padding:4px;border-radius:999px;background:var(--sw-surface);scrollbar-width:none;scroll-padding-inline:8px}
+:root .synk-workspace .sw-workspace .sw-nav::-webkit-scrollbar{display:none}
+:root .synk-workspace .sw-workspace .sw-nav button{flex:none;min-height:38px;padding:0 15px;border:0;border-radius:999px;background:transparent;color:var(--sw-ink-2);font:var(--w-label) 14px/1 var(--sw-sans);letter-spacing:-.01em;white-space:nowrap;cursor:pointer;transition:background .16s var(--sw-ease),color .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-nav button:hover{background:rgba(8,9,12,.06);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-nav button[aria-current=page]{background:var(--sw-ink);color:#fff}
+@media(min-width:701px){:root .synk-workspace[data-sidebar-open="true"] .sw-workspace .sw-nav{display:none}}
+
+/* ── 알림 줄 ── */
+:root .synk-workspace .sw-workspace .sw-notice{display:flex;align-items:center;gap:10px;margin:0 0 20px;padding:12px 16px;border-radius:14px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);line-height:1.5;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-notice::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sw-green);box-shadow:0 0 0 3px rgba(46,158,102,.16)}
+:root .synk-workspace .sw-workspace .sw-notice:empty{display:none}
+:root .synk-workspace .sw-workspace :is(.sw-error,.sw-warning){display:block;margin:0 0 20px;padding:14px 18px;border-radius:14px;font-size:14.5px;line-height:1.6;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-error{display:flex;align-items:center;justify-content:space-between;gap:14px;background:var(--sw-coral-wash);color:var(--sw-coral-ink);box-shadow:inset 0 0 0 1px rgba(249,104,89,.28)}
+:root .synk-workspace .sw-workspace .sw-warning{background:var(--sw-butter-wash);color:var(--sw-butter-ink);box-shadow:inset 0 0 0 1px rgba(245,196,69,.42)}
+:root .synk-workspace .sw-workspace .sw-warning strong{font-weight:var(--w-strong);color:#5C4100}
+:root .synk-workspace .sw-workspace .sw-warning p{margin:6px 0 0}
+:root .synk-workspace .sw-workspace .sw-warning .sw-actions{margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-note{margin:8px 0 0;font-size:13.5px;line-height:1.65;color:var(--sw-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-empty{display:flex;flex-direction:column;gap:6px;margin:6px 0 0;padding:18px 20px;border-radius:16px;background:var(--sw-surface)}
+:root .synk-workspace .sw-workspace .sw-empty strong{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:var(--w-strong);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-empty strong::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sw-green);box-shadow:0 0 0 3px rgba(46,158,102,.15)}
+:root .synk-workspace .sw-workspace .sw-empty p{padding-left:16px;font-size:14px;line-height:1.6;color:var(--sw-ink-3)}
+
+/* ── 단추 ── */
+:root .synk-workspace .sw-workspace .sw-actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+:root .synk-workspace .sw-workspace .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;max-width:100%;padding:0 16px;border:1px solid var(--sw-line-2);border-radius:999px;background:var(--sw-paper);color:var(--sw-ink);font:var(--w-strong) 14px/1.2 var(--sw-sans);letter-spacing:-.01em;white-space:normal;text-align:center;box-shadow:none;cursor:pointer;transition:background .16s var(--sw-ease),border-color .16s var(--sw-ease),box-shadow .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .btn:hover:not(:disabled){background:var(--sw-surface);border-color:var(--sw-line-3)}
+:root .synk-workspace .sw-workspace .btn.primary{min-height:44px;padding:0 20px;border:0;background:var(--sw-ink)!important;color:#fff;box-shadow:0 10px 22px -14px rgba(8,9,12,.7)}
+:root .synk-workspace .sw-workspace .btn.primary:hover:not(:disabled){background:#1A1B20!important;box-shadow:0 0 0 4px rgba(61,107,201,.18),0 10px 22px -14px rgba(8,9,12,.7)}
+:root .synk-workspace .sw-workspace .btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
+:root .synk-workspace .sw-workspace .btn[data-sw-action=refresh]{color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .btn[data-sw-action=refresh]::before{content:'';width:15px;height:15px;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11a8 8 0 1 0-2.3 5.7'/%3E%3Cpath d='M20 4v7h-7'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 11a8 8 0 1 0-2.3 5.7'/%3E%3Cpath d='M20 4v7h-7'/%3E%3C/svg%3E") center/contain no-repeat}
+:root .synk-workspace .sw-workspace .sw-text-link{display:inline-flex;align-items:center;gap:4px;color:var(--sw-lapis-deep);font-size:14px;font-weight:var(--w-label);text-decoration:none;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-text-link:hover{text-decoration:underline;text-underline-offset:3px}
+:root .synk-workspace .sw-workspace .sw-title-link{display:block;padding:0;border:0;background:none;color:var(--sw-ink);font:var(--w-strong) 16px/1.4 var(--sw-sans);letter-spacing:-.015em;text-align:left;cursor:pointer;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .sw-workspace .sw-title-link:hover{text-decoration:underline;text-decoration-color:var(--sw-ink-5);text-underline-offset:4px}
+:root .synk-workspace .sw-workspace .sw-round{display:inline-grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid var(--sw-line-2);border-radius:50%;background:var(--sw-paper);color:var(--sw-ink);font:var(--w-strong) 20px/1 var(--sw-sans);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-round:hover{background:var(--sw-surface)}
+:root .synk-workspace .sw-workspace .sw-more-link{margin-top:10px;padding:8px 0;border:0;background:none;color:var(--sw-ink-2);font:var(--w-label) 14px/1.4 var(--sw-sans);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-more-link:hover{color:var(--sw-ink);text-decoration:underline;text-underline-offset:3px}
+
+/* ── 상태 칩(점 + 글자) ── */
+:root .synk-workspace .sw-workspace .sw-badge{--led:rgba(8,9,12,.32);display:inline-flex;flex:none;align-items:center;gap:7px;max-width:100%;min-height:26px;padding:0 10px 0 9px;border-radius:999px;background:var(--sw-surface);color:var(--sw-ink-2);font-size:13px;font-weight:var(--w-label);line-height:1.2;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-badge::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--led)}
+:root .synk-workspace .sw-workspace .sw-badge:is([data-status=published],[data-status=connected],[data-status=resolved],[data-status=recorded]){--led:var(--sw-green);color:var(--sw-green-ink)}
+:root .synk-workspace .sw-workspace .sw-badge:is([data-status=approved],[data-status=scheduled],[data-status=publishing],[data-status=accepted],[data-status=processing],[data-status=assigned]){--led:var(--sw-lapis);color:var(--sw-lapis-deep)}
+:root .synk-workspace .sw-workspace .sw-badge:is([data-status=review],[data-status=unknown],[data-status=manual],[data-status=open],[data-status=manual-required]){--led:var(--sw-butter);background:var(--sw-butter-wash);color:var(--sw-butter-ink)}
+:root .synk-workspace .sw-workspace .sw-badge:is([data-status=failed],[data-status=missed]){--led:var(--sw-coral);background:var(--sw-coral-wash);color:var(--sw-coral-ink)}
+
+/* ── 플랫폼 글리프 · 썸네일 · 꼬리표 ── */
+:root .synk-workspace .sw-workspace .sw-glyph{display:inline-grid;flex:none;place-items:center;width:28px;height:28px;border-radius:9px;background:var(--sw-ink);color:#fff;font:650 11px/1 var(--sw-sans);letter-spacing:.02em}
+:root .synk-workspace .sw-workspace .sw-glyph.is-sm{width:20px;height:20px;border-radius:6px;font-size:9px}
+:root .synk-workspace .sw-workspace .sw-glyph.is-lg{width:44px;height:44px;border-radius:14px;font-size:15px}
+:root .synk-workspace .sw-workspace .sw-thumb{position:relative;display:block;flex:none;width:48px;height:60px;overflow:hidden;border-radius:10px;background:var(--sw-surface-2)}
+:root .synk-workspace .sw-workspace .sw-thumb :is(img,video){display:block;width:100%;height:100%;object-fit:cover;pointer-events:none}
+:root .synk-workspace .sw-workspace .sw-thumb.is-video::after{content:'';position:absolute;right:5px;bottom:5px;width:14px;height:14px;border-radius:50%;background:rgba(8,9,12,.72) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M9 7v10l8-5z' fill='white'/%3E%3C/svg%3E") center/10px no-repeat}
+:root .synk-workspace .sw-workspace .sw-thumb.is-empty{background:repeating-linear-gradient(135deg,var(--sw-surface) 0 6px,var(--sw-surface-2) 6px 12px)}
+:root .synk-workspace .sw-workspace .sw-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-tags>span{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0 10px 0 4px;border-radius:999px;background:var(--sw-surface);color:var(--sw-ink-2);font-size:13px;font-weight:var(--w-label);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-tags.is-formats>span{padding:0 10px}
+
+/* ── 구역(번호 머리) ── */
+:root .synk-workspace .sw-workspace .sw-block{min-width:0;margin:0 0 34px}
+:root .synk-workspace .sw-workspace .sw-block-head{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 14px;padding:0 0 12px;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-num{font:500 11px/1 var(--sw-mono);letter-spacing:.08em;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-num:empty{display:none}
+:root .synk-workspace .sw-workspace .sw-block-head h2{font-size:20px;line-height:1.3;font-weight:var(--w-title);letter-spacing:-.02em}
+:root .synk-workspace .sw-workspace .sw-count{display:inline-grid;place-items:center;min-width:26px;height:24px;padding:0 8px;border-radius:999px;background:var(--sw-surface);font:var(--w-strong) 13px/1 var(--sw-sans);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-count:empty{display:none}
+:root .synk-workspace .sw-workspace .sw-block-head>p{flex-basis:100%;font-size:14px;line-height:1.6;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-block-tools{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto}
+:root .synk-workspace .sw-workspace .sw-stack{display:flex;flex-direction:column;gap:10px}
+:root .synk-workspace .sw-workspace .sw-stack.is-tight{gap:2px}
+:root .synk-workspace .sw-workspace .sw-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+:root .synk-workspace .sw-workspace .sw-row>div{min-width:0}
+:root .synk-workspace .sw-workspace .sw-section-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:0 0 20px}
+:root .synk-workspace .sw-workspace .sw-section-bar>.sw-note{margin:0;max-width:62ch}
+:root .synk-workspace .sw-workspace details>summary{cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-more,:root .synk-workspace .sw-workspace .sw-form-toggle{margin-top:14px}
+:root .synk-workspace .sw-workspace :is(.sw-more,.sw-form-toggle)>summary{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px 0 12px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none}
+:root .synk-workspace .sw-workspace :is(.sw-more,.sw-form-toggle)>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace :is(.sw-more,.sw-form-toggle)>summary::before{content:'';width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.7;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace :is(.sw-more,.sw-form-toggle)[open]>summary::before{transform:none}
+:root .synk-workspace .sw-workspace :is(.sw-more,.sw-form-toggle)[open]>summary{margin-bottom:14px}
+:root .synk-workspace .sw-workspace .sw-form-toggle>summary::after{content:'';display:none}
+
+/* ── 계기판 ── */
+:root .synk-workspace .sw-workspace .sw-meter{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));margin:0 0 34px;border-block:1px solid var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-meter>button{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:10px;min-width:0;padding:16px 18px 18px;border:0;border-left:1px solid var(--sw-line);background:none;text-align:left;cursor:pointer;transition:background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-meter>button:first-child{border-left:0;padding-left:2px}
+:root .synk-workspace .sw-workspace .sw-meter>button:hover{background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-meter span{display:flex;align-items:center;gap:7px;font-size:13.5px;font-weight:var(--w-label);color:var(--sw-ink-3);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-meter [data-tone=alert] span::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-coral);box-shadow:0 0 0 3px rgba(249,104,89,.18)}
+:root .synk-workspace .sw-workspace .sw-meter [data-tone=wait] span::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-butter);box-shadow:0 0 0 3px rgba(245,196,69,.2)}
+:root .synk-workspace .sw-workspace .sw-meter strong{font-size:34px;line-height:1;font-weight:var(--w-title);letter-spacing:-.03em;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-meter>button::after{content:'';position:absolute;right:14px;top:16px;width:14px;height:14px;background:var(--sw-arrow) center/14px no-repeat;opacity:0;transition:opacity .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-meter>button:hover::after{opacity:.6}
+
+/* ── 운영 현황 ── */
+:root .synk-workspace .sw-workspace .sw-overview{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:0 36px;align-items:start}
+:root .synk-workspace .sw-workspace :is(.sw-overview-main,.sw-overview-side){min-width:0}
+:root .synk-workspace .sw-workspace .sw-day{margin:0 0 18px}
+:root .synk-workspace .sw-workspace .sw-day>h3{display:flex;align-items:baseline;gap:8px;margin:0 0 6px;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-day>h3 b{font-size:15px;font-weight:var(--w-strong);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace :is(.sw-agenda,.sw-post-row){display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:10px 12px 10px 4px;border-radius:14px;transition:background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-post-row{grid-template-columns:auto minmax(0,1fr) auto}
+:root .synk-workspace .sw-workspace :is(.sw-agenda,.sw-post-row):hover{background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-agenda>time{width:52px;font-size:17px;font-weight:var(--w-strong);letter-spacing:-.01em;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-agenda-copy{min-width:0}
+:root .synk-workspace .sw-workspace .sw-agenda-copy .sw-title-link{width:100%;max-width:100%;font-size:15.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-agenda-copy>p{display:flex;align-items:center;gap:6px;margin-top:5px;font-size:13.5px;color:var(--sw-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .synk-workspace .sw-workspace .sw-agenda-copy>p .sw-glyph{margin-right:1px}
+:root .synk-workspace .sw-workspace .sw-post-row .sw-thumb{width:40px;height:50px;border-radius:9px}
+:root .synk-workspace .sw-workspace .sw-link-list{display:flex;flex-direction:column}
+:root .synk-workspace .sw-workspace .sw-link-list a{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 2px;border-bottom:1px solid var(--sw-line);color:var(--sw-ink);font-size:15px;font-weight:var(--w-label);text-decoration:none}
+:root .synk-workspace .sw-workspace .sw-link-list a::after{content:'';flex:none;width:14px;height:14px;background:var(--sw-arrow) center/14px no-repeat;opacity:.55;transition:transform .16s var(--sw-ease),opacity .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-link-list a:hover::after{opacity:1;transform:translate(2px,-2px)}
+:root .synk-workspace .sw-workspace .sw-link-list a:last-child{border-bottom:0}
+
+/* ── 발행 카드 ── */
+:root .synk-workspace .sw-workspace .sw-job{min-width:0;padding:16px 18px;border-radius:18px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-job-main{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:14px}
+:root .synk-workspace .sw-workspace .sw-when{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:52px}
+:root .synk-workspace .sw-workspace .sw-when b{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-when span{font-size:17px;font-weight:var(--w-strong);letter-spacing:-.01em;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-job-copy{min-width:0}
+:root .synk-workspace .sw-workspace .sw-job-copy strong{display:block;font-size:16px;line-height:1.4;font-weight:var(--w-strong);letter-spacing:-.015em;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .sw-workspace .sw-job-copy p{margin-top:4px;font-size:13.5px;color:var(--sw-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-job-message{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:12px 0 0;padding:10px 14px;border-radius:12px;background:var(--sw-surface);font-size:14px;line-height:1.55;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-job[data-status=failed] .sw-job-message{background:var(--sw-coral-wash);color:var(--sw-coral-ink)}
+:root .synk-workspace .sw-workspace .sw-job-link{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:12px;font-size:13.5px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-job>.sw-actions{margin-top:14px}
+:root .synk-workspace .sw-workspace .sw-job>.sw-actions .btn{min-height:36px;padding:0 14px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-job>.sw-actions .btn.primary{min-height:36px}
+:root .synk-workspace .sw-workspace .sw-job>.sw-warning{margin:12px 0 0;padding:9px 12px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-job.is-compact{padding:12px 14px}
+:root .synk-workspace .sw-workspace .sw-job[data-status=scheduled]{padding:12px 16px}
+:root .synk-workspace .sw-workspace .sw-job[data-status=scheduled]>.sw-actions{margin-top:10px;gap:4px}
+:root .synk-workspace .sw-workspace .sw-job[data-status=scheduled]>.sw-actions .btn{min-height:32px;padding:0 12px;border-color:transparent;background:var(--sw-surface);font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-job[data-status=scheduled]>.sw-actions .btn:hover:not(:disabled){background:var(--sw-surface-2)}
+:root .synk-workspace .sw-workspace .sw-composer-flow .sw-stack{gap:8px}
+:root .synk-workspace .sw-workspace .sw-job .sw-note{font-size:13px}
+:root .synk-workspace .sw-workspace .sw-job-select{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:start;gap:10px}
+:root .synk-workspace .sw-workspace .sw-job-select>.sw-job:only-child{grid-column:1/-1}
+:root .synk-workspace .sw-workspace .sw-select-job{display:grid;place-items:center;width:28px;height:28px;margin-top:18px;cursor:pointer}
+:root .synk-workspace .sw-workspace input[type=checkbox]{width:18px;height:18px;min-width:18px;margin:0;accent-color:var(--sw-ink);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-publication-evidence{margin-top:12px;padding-top:12px;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-publication-evidence .sw-actions{margin-top:10px}
+:root .synk-workspace .sw-workspace .sw-handoff{margin:14px 0 0;padding:18px;border-radius:16px;background:var(--sw-paper-2);box-shadow:inset 0 0 0 1px var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-handoff h4{font-size:16px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-handoff>strong{display:block;margin:10px 0;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-handoff textarea{background:#fff}
+:root .synk-workspace .sw-workspace .sw-handoff-files{display:grid;gap:8px;margin:12px 0}
+:root .synk-workspace .sw-workspace .sw-handoff-files>div{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:12px;background:#fff;font-size:14px;font-weight:var(--w-label)}
+:root .synk-workspace .sw-workspace .sw-inline-form{margin-top:14px;padding:16px;border-radius:16px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-inline-form h4{margin:0 0 12px;font-size:15.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace fieldset{min-width:0;min-inline-size:0;margin:0;padding:0;border:0}
+:root .synk-workspace .sw-workspace .sw-editor fieldset[disabled]{opacity:.7}
+
+/* ── 입력 ── */
+:root .synk-workspace .sw-workspace .sw-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 16px}
+:root .synk-workspace .sw-workspace .sw-field{display:flex;flex-direction:column;gap:7px;min-width:0;margin:0 0 16px;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace :is(.sw-field input:not([type=checkbox]):not([type=file]),.sw-field select,.sw-field textarea,.sw-filter input,.sw-filter select,.sw-preview-head select,input[data-sw-media-url]){width:100%;max-width:100%;min-height:44px;padding:0 14px;border:1px solid var(--sw-line-2);border-radius:12px;background:var(--sw-paper);color:var(--sw-ink);font:var(--w-body) 15px/1.4 var(--sw-sans);box-shadow:none;transition:border-color .16s var(--sw-ease),box-shadow .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace :is(.sw-field select,.sw-filter select,.sw-preview-head select){appearance:none;-webkit-appearance:none;padding-right:38px;background:var(--sw-paper) var(--sw-chev) right 12px center/16px no-repeat}
+:root .synk-workspace .sw-workspace .sw-field textarea{min-height:0;padding:12px 14px;line-height:1.65;resize:vertical}
+:root .synk-workspace .sw-workspace :is(.sw-field input,.sw-field select,.sw-field textarea,.sw-filter input,.sw-filter select):hover{border-color:var(--sw-line-3)}
+:root .synk-workspace .sw-workspace :is(.sw-field input,.sw-field select,.sw-field textarea,.sw-filter input,.sw-filter select,input[data-sw-media-url]):focus{border-color:var(--sw-lapis);box-shadow:0 0 0 3px rgba(61,107,201,.16);outline:none}
+:root .synk-workspace .sw-workspace .sw-field input[type=file]{padding:10px;border:1px dashed var(--sw-line-3);border-radius:12px;background:var(--sw-paper-2);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-field small{font-size:13px;font-weight:var(--w-body);line-height:1.55;color:var(--sw-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-check{display:flex;align-items:flex-start;gap:10px;margin:0 0 14px;font-size:14px;font-weight:var(--w-label);line-height:1.5;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-check input{margin-top:2px}
+:root .synk-workspace .sw-workspace progress{width:100%;height:6px;accent-color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace fieldset.sw-account-picker{margin:0 0 16px;padding:0;border:0}
+:root .synk-workspace .sw-workspace fieldset.sw-account-picker>legend{margin:0 0 8px;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace fieldset.sw-account-picker>label{display:inline-flex;align-items:center;gap:8px;min-height:36px;margin:0 6px 6px 0;padding:0 12px 0 10px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);cursor:pointer}
+
+/* ── 필터 ── */
+:root .synk-workspace .sw-workspace .sw-filter{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 20px}
+:root .synk-workspace .sw-workspace .sw-filter>label{display:block;min-width:0}
+:root .synk-workspace .sw-workspace .sw-filter .sw-search{flex:1 1 220px}
+:root .synk-workspace .sw-workspace .sw-filter .sw-search input{padding-left:40px;border-radius:999px;background:var(--sw-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-opacity='.5' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='10.5' cy='10.5' r='6.5'/%3E%3Cpath d='m16 16 4.5 4.5'/%3E%3C/svg%3E") 14px center/17px no-repeat;border-color:transparent}
+:root .synk-workspace .sw-workspace .sw-filter .sw-select{flex:0 1 150px}
+:root .synk-workspace .sw-workspace .sw-filter .sw-select select{border-radius:999px;min-height:42px;font-size:14px}
+:root .synk-workspace .sw-workspace .sw-filter-more{position:relative}
+:root .synk-workspace .sw-workspace .sw-filter-more>summary{display:inline-flex;align-items:center;gap:6px;min-height:42px;padding:0 14px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none}
+:root .synk-workspace .sw-workspace .sw-filter-more>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-filter-more>summary b{display:inline-grid;place-items:center;min-width:20px;height:20px;border-radius:999px;background:var(--sw-ink);color:#fff;font-size:12px}
+:root .synk-workspace .sw-workspace .sw-filter-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:20;display:grid;gap:4px;width:min(320px,80vw);padding:16px 16px 4px;border-radius:18px;background:#fff;box-shadow:0 0 0 1px var(--sw-line-2),0 20px 44px -20px rgba(8,9,12,.4)}
+:root .synk-workspace .sw-workspace .sw-filter .btn{min-height:42px}
+
+/* ── 달력 ── */
+:root .synk-workspace .sw-workspace .sw-cal-toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px}
+:root .synk-workspace .sw-workspace .sw-cal-nav{display:flex;align-items:center;gap:8px}
+:root .synk-workspace .sw-workspace .sw-cal-nav h2{min-width:120px;margin:0 4px;font-size:22px;font-weight:var(--w-title);letter-spacing:-.025em;text-align:center}
+:root .synk-workspace .sw-workspace .sw-segments{display:inline-flex;flex-wrap:wrap;gap:3px;padding:3px;border-radius:999px;background:var(--sw-surface)}
+:root .synk-workspace .sw-workspace .sw-segments button{min-width:48px;min-height:36px;padding:0 14px;border:0;border-radius:999px;background:transparent;color:var(--sw-ink-2);font:var(--w-label) 14px/1 var(--sw-sans);cursor:pointer;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-segments button b{margin-left:4px;font-weight:var(--w-strong);color:inherit;opacity:.72}
+:root .synk-workspace .sw-workspace .sw-segments button[aria-pressed=true]{background:var(--sw-ink);color:#fff}
+:root .synk-workspace .sw-workspace .sw-cal-layout{display:block}
+:root .synk-workspace .sw-workspace .sw-cal-main{min-width:0}
+:root .synk-workspace .sw-workspace .sw-cal-side{position:sticky;top:12px;min-width:0;padding:18px;border-radius:20px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-cal-side .sw-block-head{margin-bottom:8px;border-bottom-color:var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-cal-side .sw-block-head h2{font-size:16px}
+:root .synk-workspace .sw-workspace .sw-cal-side .sw-post-row{padding:8px 6px;gap:10px}
+:root .synk-workspace .sw-workspace .sw-cal-side .sw-post-row .sw-title-link{font-size:14.5px}
+:root .synk-workspace .sw-workspace .sw-cal-side .sw-post-row .sw-badge{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));margin:0 0 12px;border-top:1px solid var(--sw-line-2);border-left:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-calendar-weekday{padding:10px 8px;border-right:1px solid var(--sw-line);border-bottom:1px solid var(--sw-line-2);font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3);text-align:left}
+:root .synk-workspace .sw-workspace .sw-calendar-day{min-width:0;min-height:128px;padding:8px 6px 10px;border-right:1px solid var(--sw-line);border-bottom:1px solid var(--sw-line);background:var(--sw-paper)}
+:root .synk-workspace .sw-workspace .sw-calendar-day.is-outside{background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-calendar-day.is-outside h3{opacity:.45}
+:root .synk-workspace .sw-workspace .sw-calendar-day h3{display:flex;align-items:center;gap:6px;margin:0 0 8px;padding-left:2px;font-size:14px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-calendar-day h3 time{display:inline-grid;place-items:center;min-width:26px;height:26px;border-radius:999px;font-size:14px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-calendar-day h3 small{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day h3 small{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar-day.is-today h3 time{background:var(--sw-ink);color:#fff}
+:root .synk-workspace .sw-workspace .sw-calendar-day.is-drop-target{background:var(--sw-lapis-wash);box-shadow:inset 0 0 0 2px var(--sw-lapis)}
+:root .synk-workspace .sw-workspace .sw-calendar-event-wrap{position:relative;min-width:0;margin:0 0 6px}
+:root .synk-workspace .sw-workspace .sw-calendar-event{display:flex;flex-direction:column;align-items:stretch;gap:5px;width:100%;min-height:0;margin:0;padding:8px 9px;border:0;border-radius:10px;background:var(--sw-surface);text-align:left;cursor:pointer;transition:background .16s var(--sw-ease),box-shadow .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-calendar-event:hover{background:var(--sw-surface-2)}
+:root .synk-workspace .sw-workspace .sw-calendar-event-wrap:is([data-status=failed],[data-status=missed]) .sw-calendar-event{background:var(--sw-coral-wash)}
+:root .synk-workspace .sw-workspace .sw-calendar-meta{display:flex;align-items:center;gap:5px;min-width:0}
+:root .synk-workspace .sw-workspace .sw-calendar-meta time{font-size:13px;font-weight:var(--w-strong);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-calendar-meta i{min-width:0;overflow:hidden;font-style:normal;font-size:13px;color:var(--sw-ink-3);white-space:nowrap;text-overflow:ellipsis}
+:root .synk-workspace .sw-workspace .sw-calendar-event strong{display:-webkit-box;overflow:hidden;font-size:13.5px;line-height:1.35;font-weight:var(--w-strong);color:var(--sw-ink);-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow-wrap:anywhere;word-break:keep-all}
+:root .synk-workspace .sw-workspace .sw-calendar-event .sw-badge{align-self:flex-start;min-height:22px;padding:0 8px 0 7px;font-size:13px;background:rgba(255,255,255,.7)}
+:root .synk-workspace .sw-workspace .sw-calendar-event em{font-style:normal;font-size:13px;color:var(--sw-butter-ink)}
+:root .synk-workspace .sw-workspace .sw-calendar-drag-handle{position:absolute;right:4px;top:6px;z-index:2;display:block;width:22px;height:24px;border-radius:7px;background:var(--sw-grip) center/8px 12px no-repeat;cursor:grab;user-select:none;-webkit-user-drag:element}
+:root .synk-workspace .sw-workspace .sw-calendar-drag-handle:hover{background-color:rgba(8,9,12,.07)}
+:root .synk-workspace .sw-workspace .sw-calendar-drag-handle:active{cursor:grabbing}
+:root .synk-workspace .sw-workspace .sw-calendar-move-button{margin:4px 0 0;padding:4px 8px;border:0;border-radius:8px;background:none;color:var(--sw-ink-3);font:var(--w-label) 13px/1.3 var(--sw-sans);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-calendar-move-button:hover{background:var(--sw-surface);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-move-button{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-meta i{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar-event-wrap:has(.sw-calendar-drag-handle) .sw-calendar-meta{padding-right:22px}
+:root .synk-workspace .sw-workspace .sw-calendar-day-count{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar.is-week{grid-template-columns:repeat(7,minmax(0,1fr))}
+:root .synk-workspace .sw-workspace .sw-calendar.is-week .sw-calendar-day{min-height:300px}
+:root .synk-workspace .sw-workspace .sw-calendar.is-day{grid-template-columns:1fr}
+:root .synk-workspace .sw-workspace .sw-calendar.is-day .sw-calendar-day{min-height:240px;padding:14px}
+:root .synk-workspace .sw-workspace .sw-calendar.is-day .sw-calendar-event-wrap{max-width:520px}
+:root .synk-workspace .sw-workspace :is(.sw-calendar.is-week,.sw-calendar.is-day) .sw-calendar-day>.sw-note{font-size:13px;color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-calendar-move{margin:0 0 20px;padding:18px 20px;border-radius:20px;background:var(--sw-lapis-wash);box-shadow:inset 0 0 0 1px rgba(61,107,201,.24)}
+:root .synk-workspace .sw-workspace .sw-calendar-move h3{font-size:17px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-calendar-move>p{margin:6px 0 12px;font-size:14px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-calendar-move .sw-field{max-width:340px}
+:root .synk-workspace .sw-workspace .sw-move-preview{margin-top:14px;padding:14px 16px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-move-preview h4{margin:0 0 8px;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-move-preview p{margin:0 0 6px;font-size:14px;line-height:1.6}
+:root .synk-workspace .sw-workspace .sw-move-preview .btn{margin-top:6px}
+:root .synk-workspace .sw-workspace .sw-slot-ghost{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;align-items:center;gap:10px;min-height:52px;margin:0 0 6px;padding:8px 10px 8px 12px;border-radius:14px;background:repeating-linear-gradient(135deg,transparent 0 7px,rgba(8,9,12,.025) 7px 14px);box-shadow:inset 0 0 0 1px var(--sw-line-2);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-slot-ghost>time{font-size:14px;font-weight:var(--w-strong);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-slot-ghost>span{min-width:0;overflow:hidden;font-size:13.5px;font-weight:var(--w-label);white-space:nowrap;text-overflow:ellipsis}
+:root .synk-workspace .sw-workspace .sw-slot-fill{min-height:32px;padding:0 12px;border:0;border-radius:999px;background:var(--sw-paper);color:var(--sw-ink);box-shadow:inset 0 0 0 1px var(--sw-line-2);font:var(--w-strong) 13px/1 var(--sw-sans);white-space:nowrap;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-slot-fill:hover{box-shadow:inset 0 0 0 1px var(--sw-line-3);background:var(--sw-surface)}
+:root .synk-workspace .sw-workspace .sw-calendar .sw-slot-ghost{grid-template-columns:auto minmax(0,1fr);gap:4px 6px;padding:7px 8px;min-height:0;border-radius:10px}
+:root .synk-workspace .sw-workspace .sw-calendar .sw-slot-ghost>time{font-size:13px}
+:root .synk-workspace .sw-workspace .sw-calendar .sw-slot-ghost>.sw-glyph{display:none}
+:root .synk-workspace .sw-workspace .sw-calendar .sw-slot-ghost>span{grid-column:1/-1;white-space:normal;font-size:13px}
+:root .synk-workspace .sw-workspace .sw-calendar .sw-slot-fill{grid-column:1/-1;justify-self:start;min-height:28px;padding:0 10px}
+
+/* ── 작성 ── */
+:root .synk-workspace .sw-workspace .sw-compose-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin:0 0 18px}
+:root .synk-workspace .sw-workspace .sw-compose-head h2{font-size:24px;font-weight:var(--w-title);letter-spacing:-.025em}
+:root .synk-workspace .sw-workspace .sw-compose-head .sw-note{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px}
+:root .synk-workspace .sw-workspace .sw-dirty{display:inline-flex;align-items:center;gap:6px;font-weight:var(--w-strong);color:var(--sw-butter-ink)}
+:root .synk-workspace .sw-workspace .sw-dirty::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-butter)}
+:root .synk-workspace .sw-workspace .sw-composer{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(330px,1fr);gap:32px;align-items:start}
+:root .synk-workspace .sw-workspace .sw-composer>form,:root .synk-workspace .sw-workspace .sw-composer>aside{min-width:0}
+:root .synk-workspace .sw-workspace .sw-editor .sw-panel{margin:0 0 30px}
+:root .synk-workspace .sw-workspace .sw-editor .sw-panel>details{margin-top:4px}
+:root .synk-workspace .sw-workspace .sw-editor .sw-panel>details>summary,:root .synk-workspace .sw-workspace .sw-utm>summary,:root .synk-workspace .sw-workspace .sw-variant details>summary{display:inline-flex;align-items:center;gap:8px;min-height:34px;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none}
+:root .synk-workspace .sw-workspace :is(.sw-editor .sw-panel>details,.sw-utm,.sw-variant details)>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace :is(.sw-editor .sw-panel>details,.sw-utm,.sw-variant details)>summary::before{content:'';width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace :is(.sw-editor .sw-panel>details,.sw-utm,.sw-variant details)[open]>summary::before{transform:none}
+:root .synk-workspace .sw-workspace :is(.sw-editor .sw-panel>details,.sw-utm,.sw-variant details)[open]>summary{margin-bottom:12px}
+:root .synk-workspace .sw-workspace .sw-account-picker{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,210px),1fr));gap:8px}
+:root .synk-workspace .sw-workspace .sw-account-chip{position:relative;display:block;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-account-chip>input{position:absolute;inset:0;z-index:2;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-account-chip>span{display:flex;align-items:center;gap:10px;min-height:58px;padding:9px 14px 9px 10px;border-radius:16px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2);transition:box-shadow .16s var(--sw-ease),background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-account-chip>span>span{min-width:0}
+:root .synk-workspace .sw-workspace .sw-account-chip strong{display:block;overflow:hidden;font-size:14.5px;font-weight:var(--w-strong);white-space:nowrap;text-overflow:ellipsis}
+:root .synk-workspace .sw-workspace .sw-account-chip small{display:block;margin-top:2px;font-size:13px;color:var(--sw-ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:root .synk-workspace .sw-workspace .sw-account-chip:hover>span{box-shadow:inset 0 0 0 1px var(--sw-line-3)}
+:root .synk-workspace .sw-workspace .sw-account-chip>input:checked+span{background:var(--sw-ink);box-shadow:none;color:#fff}
+:root .synk-workspace .sw-workspace .sw-account-chip>input:checked+span small{color:rgba(255,255,255,.66)}
+:root .synk-workspace .sw-workspace .sw-account-chip>input:checked+span .sw-glyph{background:#fff;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-account-chip>input:focus-visible+span{outline:2px solid var(--sw-lapis);outline-offset:2px}
+:root .synk-workspace .sw-workspace .sw-account-chip>input:checked+span::after{content:'';flex:none;width:18px;height:18px;margin-left:auto;border-radius:50%;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2308090C' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12 4 4 8-8'/%3E%3C/svg%3E") center/12px no-repeat}
+:root .synk-workspace .sw-workspace .sw-media-list{display:grid;gap:10px;margin:4px 0 14px}
+:root .synk-workspace .sw-workspace .sw-media-list article{display:grid;grid-template-columns:84px minmax(0,1fr);gap:14px;padding:10px;border-radius:16px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-media-list article>:is(img,video){width:84px;height:104px;border-radius:10px;object-fit:cover;background:var(--sw-surface-2)}
+:root .synk-workspace .sw-workspace .sw-media-list article strong{display:block;font-size:14px;font-weight:var(--w-strong);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-media-list .sw-field{margin:8px 0}
+:root .synk-workspace .sw-workspace .sw-media-list .btn{min-height:34px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-variant{margin:0 0 12px;padding:14px 16px 6px;border-radius:18px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-variant>summary{display:flex;align-items:center;gap:10px;min-height:36px;font-size:15.5px;font-weight:var(--w-strong);list-style:none}
+:root .synk-workspace .sw-workspace .sw-variant>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-variant>summary::after{content:'';width:14px;height:14px;margin-left:auto;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-variant:not([open])>summary::after{transform:rotate(-90deg)}
+:root .synk-workspace .sw-workspace .sw-variant[open]>summary{margin-bottom:12px}
+:root .synk-workspace .sw-workspace .sw-variant>details{margin:0 0 10px}
+:root .synk-workspace .sw-workspace .sw-utm{margin:0 0 10px}
+:root .synk-workspace .sw-workspace .sw-utm-preview{margin:10px 0;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-ai-panel{margin-top:16px;padding:18px;border-radius:18px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-ai-panel h4{font-size:16px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-ai-panel .sw-inline-form{background:#fff}
+:root .synk-workspace .sw-workspace .sw-suggestions{margin-top:16px}
+:root .synk-workspace .sw-workspace .sw-suggestions h4{margin:0 0 8px;font-size:15.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-suggestions article{margin:8px 0;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-suggestions p{margin:8px 0;font-size:14.5px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-source-context{margin:12px 0;padding:14px 16px;border-radius:16px;background:var(--sw-paper-2);box-shadow:inset 0 0 0 1px var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-source-context>strong{font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-source-context>p{margin:6px 0;font-size:14px;line-height:1.6;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-sticky-actions{position:sticky;bottom:12px;z-index:6;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:10px 10px 10px 18px;border-radius:999px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);box-shadow:0 0 0 1px var(--sw-line-2),0 18px 40px -22px rgba(8,9,12,.5)}
+:root .synk-workspace .sw-workspace .sw-sticky-actions>span{margin-right:auto;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-composer-preview{display:flex;flex-direction:column;gap:20px}
+:root .synk-workspace .sw-workspace .sw-composer-preview>.sw-panel{padding:18px;border-radius:24px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-composer-preview .sw-block-head{margin-bottom:12px}
+:root .synk-workspace .sw-workspace .sw-composer-preview .sw-block-head h2{font-size:17px}
+:root .synk-workspace .sw-workspace .sw-preview-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:0 0 14px}
+:root .synk-workspace .sw-workspace .sw-preview-head strong{font-size:16px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-preview-head select{width:auto;max-width:100%;min-height:38px;border-radius:999px;font-size:14px}
+:root .synk-workspace .sw-workspace .sw-social-preview{overflow:hidden;max-width:420px;margin:0 auto;border-radius:24px;background:#fff;box-shadow:0 0 0 1px var(--sw-line-2),0 24px 50px -30px rgba(8,9,12,.45)}
+:root .synk-workspace .sw-workspace .sw-social-preview>header{display:flex;align-items:center;gap:10px;padding:14px 16px}
+:root .synk-workspace .sw-workspace .sw-account-avatar{display:grid;flex:none;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--sw-ink);color:#fff;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-social-preview header strong{display:block;font-size:14.5px;font-weight:var(--w-strong);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-social-preview header small{display:block;margin-top:2px;font-size:13px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-preview-stage{position:relative;width:100%;aspect-ratio:1;overflow:hidden;background:#0C0D10}
+:root .synk-workspace .sw-workspace .sw-preview-stage>:is(img,video){position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+:root .synk-workspace .sw-workspace .sw-preview-stage>.sw-preview-placeholder{position:absolute;inset:0;display:grid;place-content:center;padding:20px;color:rgba(255,255,255,.6);font-size:14px;text-align:center}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-vertical{max-width:300px}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-vertical .sw-preview-stage{aspect-ratio:9/16}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-landscape .sw-preview-stage{aspect-ratio:16/9}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-feed .sw-preview-stage:has(>img){aspect-ratio:auto}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-feed .sw-preview-stage>img{position:static;display:block;width:100%;height:auto}
+:root .synk-workspace .sw-workspace .sw-social-preview .sw-preview-ratio{margin:0;padding:8px 16px 0;font-size:13px;color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-carousel-controls{display:flex;align-items:center;justify-content:center;gap:10px;padding:10px 12px 0}
+:root .synk-workspace .sw-workspace .sw-carousel-controls .btn{min-height:34px;padding:0 12px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-carousel-controls span{font-size:14px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-social-preview>h3{padding:12px 16px 0;font-size:15.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-social-preview>p,:root .synk-workspace .sw-workspace .sw-preview-comment p{margin:0;padding:8px 16px 16px;font-size:14.5px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-social-preview.is-text>p{min-height:150px;font-size:16px;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-preview-comment{border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-preview-comment strong{display:block;padding:12px 16px 0;font-size:13px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-preview-panel>.sw-note{text-align:center}
+:root .synk-workspace .sw-workspace .sw-checks{margin-top:14px;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-checks>strong{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-checks>strong::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--sw-green);box-shadow:0 0 0 3px rgba(46,158,102,.16)}
+:root .synk-workspace .sw-workspace .sw-checks.is-blocked>strong::before{background:var(--sw-coral);box-shadow:0 0 0 3px rgba(249,104,89,.18)}
+:root .synk-workspace .sw-workspace .sw-checks ul{margin:8px 0 0;padding-left:18px;font-size:14px;line-height:1.7;color:var(--sw-coral-ink)}
+:root .synk-workspace .sw-workspace .sw-comment{padding:12px 0;border-bottom:1px solid var(--sw-line);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-comment strong{font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-comment p{margin:6px 0;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-comment small{font-size:13px;color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-workflow-status{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px}
+
+/* ── 대기열 ── */
+:root .synk-workspace .sw-workspace .sw-queue,:root .synk-workspace .sw-workspace .sw-results,:root .synk-workspace .sw-workspace .sw-inbox,:root .synk-workspace .sw-workspace .sw-bulk{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(290px,1fr);gap:32px;align-items:start}
+:root .synk-workspace .sw-workspace :is(.sw-queue,.sw-results,.sw-inbox,.sw-bulk)>*{min-width:0}
+:root .synk-workspace .sw-workspace .sw-move-bar{margin:0 0 28px;padding:16px 18px;border-radius:20px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-move-copy{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;margin:0 0 12px}
+:root .synk-workspace .sw-workspace .sw-move-copy strong{font-size:16px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-move-copy span{font-size:14px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-move-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 14px}
+:root .synk-workspace .sw-workspace .sw-move-fields .sw-field{width:170px;margin:0}
+:root .synk-workspace .sw-workspace .sw-move-fields .sw-check{margin:0 0 12px}
+:root .synk-workspace .sw-workspace .sw-move-bar>.sw-note{margin-top:10px}
+:root .synk-workspace .sw-workspace .sw-week-slots{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin:0 0 14px}
+:root .synk-workspace .sw-workspace .sw-week-slots>div{display:flex;flex-direction:column;gap:4px;min-width:0;min-height:76px;padding:8px 4px;border-radius:12px;background:var(--sw-paper-2);text-align:center}
+:root .synk-workspace .sw-workspace .sw-week-slots b{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-week-slots span{display:block;padding:3px 0;border-radius:7px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2);color:var(--sw-ink);font-size:13px;font-weight:var(--w-strong);letter-spacing:-.03em}
+:root .synk-workspace .sw-workspace .sw-slot{padding:14px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-slot>strong{font-size:15px;font-weight:var(--w-strong);margin-right:8px}
+:root .synk-workspace .sw-workspace .sw-slot>p{margin:6px 0;font-size:14px;line-height:1.6;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-slot .sw-tags>span{padding:0 10px}
+:root .synk-workspace .sw-workspace .sw-slot>.btn{margin-top:10px;min-height:34px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-distribution-status{margin-top:10px}
+:root .synk-workspace .sw-workspace .sw-distribution-status .sw-warning{padding:9px 12px;font-size:13.5px}
+
+/* ── 대량 편성 ── */
+:root .synk-workspace .sw-workspace .sw-bulk-row{padding:12px 0;border-bottom:1px solid var(--sw-line);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-bulk-row strong{font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-bulk textarea[data-sw-bulk]{font:500 13.5px/1.6 var(--sw-mono);background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-help{margin-top:16px;font-size:14px;line-height:1.7}
+:root .synk-workspace .sw-workspace .sw-help>summary{display:inline-flex;align-items:center;gap:8px;min-height:34px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-help p{margin:8px 0}
+:root .synk-workspace .sw-workspace .sw-bulk-side{padding:20px;border-radius:24px;background:var(--sw-paper-2)}
+
+/* ── 계정 ── */
+:root .synk-workspace .sw-workspace .sw-account-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:16px}
+:root .synk-workspace .sw-workspace .sw-account-card{display:flex;flex-direction:column;min-width:0;padding:20px;border-radius:24px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-account-card>header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:start;gap:12px}
+:root .synk-workspace .sw-workspace .sw-account-card h3{margin-top:6px;font-size:18px;line-height:1.3;font-weight:var(--w-strong);letter-spacing:-.02em;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-handle{margin-top:3px;font-size:14px;color:var(--sw-ink-3);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;margin:16px 0 0;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-facts>div{padding:10px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-facts>div:nth-child(odd){padding-right:12px}
+:root .synk-workspace .sw-workspace .sw-facts dt{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-facts dd{margin-top:3px;font-size:15px;font-weight:var(--w-strong);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-card-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:14px}
+:root .synk-workspace .sw-workspace .sw-account-card .sw-form-toggle{margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-account-card form{margin-top:2px}
+
+/* ── 캠페인·성과 ── */
+:root .synk-workspace .sw-workspace .sw-campaign{margin:0 0 14px;padding:18px 20px;border-radius:22px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-campaign>header{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px}
+:root .synk-workspace .sw-workspace .sw-campaign h3{font-size:18px;font-weight:var(--w-strong);letter-spacing:-.02em}
+:root .synk-workspace .sw-workspace .sw-campaign>header p{margin-top:4px;font-size:14.5px;line-height:1.55;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-campaign-meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:13.5px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-campaign-meta>span{display:inline-flex;align-items:center;gap:6px}
+:root .synk-workspace .sw-workspace .sw-mini-meter{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:14px 0 0;border-block:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-mini-meter>div{padding:12px 12px 12px 14px;border-left:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-mini-meter>div:first-child{padding-left:0;border-left:0}
+:root .synk-workspace .sw-workspace .sw-mini-meter dt{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-mini-meter dd{display:flex;align-items:baseline;gap:6px;margin-top:6px;font-size:24px;line-height:1;font-weight:var(--w-title);letter-spacing:-.02em}
+:root .synk-workspace .sw-workspace .sw-mini-meter dd small{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-4);letter-spacing:0}
+:root .synk-workspace .sw-workspace .sw-mini-meter [data-unknown] dd{color:var(--sw-ink-5)}
+:root .synk-workspace .sw-workspace .sw-result-entry{padding:12px 0;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-result-entry strong{font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-result-entry p{margin-top:6px;font-size:14px;line-height:1.6;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-record{margin:0 0 14px;padding:18px 20px;border-radius:22px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-record h3{font-size:17px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-checkpoint-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}
+:root .synk-workspace .sw-workspace .sw-checkpoint-grid>section{min-width:0;padding:14px 16px;border-radius:16px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-checkpoint-grid h4{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-metric-list{margin:10px 0 0;font-size:14px}
+:root .synk-workspace .sw-workspace .sw-metric-list>div{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-metric-list>div:last-child{border-bottom:0}
+:root .synk-workspace .sw-workspace .sw-metric-list dt{color:var(--sw-ink-3);font-weight:var(--w-label)}
+:root .synk-workspace .sw-workspace .sw-metric-list dd{margin:0;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-metric-list small{grid-column:1/-1;font-size:13px;line-height:1.5;color:var(--sw-ink-4);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-side-card{margin:0 0 20px;padding:20px;border-radius:24px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-side-card .sw-block-head{border-bottom-color:var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-side-card .sw-block-head h2{font-size:17px}
+:root .synk-workspace .sw-workspace .sw-results details>summary{font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+
+/* ── 댓글·문의 ── */
+:root .synk-workspace .sw-workspace .sw-inbox-provider{margin:0 0 28px}
+:root .synk-workspace .sw-workspace .sw-inbox-connections{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:10px}
+:root .synk-workspace .sw-workspace .sw-connection{padding:14px 16px;border-radius:18px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-connection>.sw-row strong{display:flex;align-items:center;gap:8px;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-connection .sw-actions{margin-top:10px}
+:root .synk-workspace .sw-workspace .sw-connection .btn{min-height:36px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-inbox-item{margin:0 0 12px;padding:16px 18px;border-radius:22px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-inbox-item[data-status=resolved]{background:var(--sw-paper-2);box-shadow:none}
+:root .synk-workspace .sw-workspace .sw-inbox-item>header{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:12px}
+:root .synk-workspace .sw-workspace .sw-avatar{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--sw-surface-2);font-size:15px;font-weight:var(--w-strong);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-inbox-item header strong{display:block;font-size:15.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-inbox-item header p{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;margin-top:3px;font-size:13.5px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-inbox-text{margin:12px 0 0 50px;padding:12px 16px;border-radius:4px 18px 18px 18px;background:var(--sw-surface);font-size:15.5px;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-inbox-item>.sw-text-link{margin:10px 0 0 50px}
+:root .synk-workspace .sw-workspace .sw-reply-draft{margin:12px 0 0 50px}
+:root .synk-workspace .sw-workspace .sw-reply-draft>summary{display:inline-flex;align-items:center;gap:8px;min-height:34px;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none}
+:root .synk-workspace .sw-workspace .sw-reply-draft>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-reply-draft>summary::before{content:'';width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg)}
+:root .synk-workspace .sw-workspace .sw-reply-draft[open]>summary::before{transform:none}
+:root .synk-workspace .sw-workspace .sw-reply-draft form{margin-top:8px}
+:root .synk-workspace .sw-workspace .sw-reply-draft .btn.primary{min-height:40px}
+
+/* ── 연결·자동화 ── */
+:root .synk-workspace .sw-workspace .sw-settings{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,1fr);gap:36px;align-items:start}
+:root .synk-workspace .sw-workspace .sw-settings>*{min-width:0}
+:root .synk-workspace .sw-workspace .sw-setting-row{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:14px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-setting-row>div{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;min-width:0}
+:root .synk-workspace .sw-workspace .sw-setting-row h3{font-size:16px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-setting-row strong{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:var(--w-strong);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-setting-row .btn{flex:none;min-height:36px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-setting-row.is-global{padding:16px 18px;margin:0 0 6px;border:0;border-radius:18px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-setting-label{margin:18px 0 2px;font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-4)}
+:root .synk-workspace .sw-workspace .sw-provider{padding:20px;border-radius:24px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-provider form{margin-top:14px}
+
+/* ── 폭에 따라(본문 판 너비 기준) ── */
+@container sw (max-width:900px){
+  :root .synk-workspace .sw-workspace .sw-overview{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace :is(.sw-queue,.sw-results,.sw-inbox,.sw-bulk,.sw-settings){grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-composer{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-week{grid-template-columns:repeat(7,minmax(118px,1fr));overflow-x:auto}
+}
+@container sw (max-width:820px){
+  :root .synk-workspace .sw-workspace .sw-heading{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-poster{min-height:178px}
+  :root .synk-workspace .sw-workspace .sw-poster-word{font-size:84px}
+  :root .synk-workspace .sw-workspace .sw-poster-art{width:150px;height:130px;bottom:12px}
+  :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(3,minmax(0,1fr))}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(4){border-left:0;padding-left:2px}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n+4){border-top:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-calendar-day{min-height:104px;padding:6px 4px}
+  :root .synk-workspace .sw-workspace .sw-calendar-meta i{display:none}
+}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-heading{margin-bottom:20px}
+  :root .synk-workspace .sw-workspace .sw-heading h1{margin-top:12px;font-size:32px}
+  :root .synk-workspace .sw-workspace .sw-heading-copy>p{font-size:15px}
+  :root .synk-workspace .sw-workspace .sw-heading .sw-actions{margin-top:16px}
+  :root .synk-workspace .sw-workspace .sw-poster{min-height:150px;border-radius:20px}
+  :root .synk-workspace .sw-workspace .sw-poster-label{left:16px;top:16px}
+  :root .synk-workspace .sw-workspace .sw-poster-stats{left:16px;top:38px;gap:14px}
+  :root .synk-workspace .sw-workspace .sw-poster-stats dd{font-size:19px}
+  :root .synk-workspace .sw-workspace .sw-poster-word{left:12px;font-size:64px}
+  :root .synk-workspace .sw-workspace .sw-poster-art,:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster] .sw-poster-art{right:10px;bottom:10px;width:112px;height:100px}
+  :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :root .synk-workspace .sw-workspace .sw-meter>button{padding:14px 12px 14px 14px}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(4){border-left:1px solid var(--sw-line);padding-left:14px}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(odd){border-left:0;padding-left:2px}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n+3){border-top:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-meter>button:last-child:nth-child(odd){grid-column:1/-1}
+  :root .synk-workspace .sw-workspace .sw-meter strong{font-size:28px}
+  :root .synk-workspace .sw-workspace .sw-fields{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-job{padding:14px}
+  :root .synk-workspace .sw-workspace .sw-job-main{grid-template-columns:auto minmax(0,1fr) auto;gap:10px 12px}
+  :root .synk-workspace .sw-workspace .sw-job-main>.sw-glyph{display:none}
+  :root .synk-workspace .sw-workspace .sw-job-main>.sw-badge{grid-column:2/-1;justify-self:start}
+  :root .synk-workspace .sw-workspace .sw-job>.sw-actions .btn{flex:1 1 auto}
+  :root .synk-workspace .sw-workspace .sw-agenda{grid-template-columns:auto auto minmax(0,1fr);gap:12px}
+  :root .synk-workspace .sw-workspace .sw-agenda>.sw-badge{display:none}
+  :root .synk-workspace .sw-workspace .sw-agenda>time{width:46px;font-size:16px}
+  :root .synk-workspace .sw-workspace .sw-post-row>.sw-badge{display:none}
+  :root .synk-workspace .sw-workspace .sw-cal-toolbar{flex-direction:column;align-items:stretch}
+  :root .synk-workspace .sw-workspace .sw-cal-nav h2{flex:1;min-width:0;font-size:20px}
+  :root .synk-workspace .sw-workspace .sw-segments{align-self:flex-start}
+  :root .synk-workspace .sw-workspace .sw-calendar{border-left:0}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day{min-height:68px;padding:5px 2px;text-align:center}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day h3{justify-content:center;margin:0 0 4px;padding:0}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-month :is(.sw-calendar-event-wrap,.sw-slot-ghost){display:none}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day-count{display:block;width:100%;min-height:30px;padding:0;border:0;border-radius:8px;background:var(--sw-surface-2);color:var(--sw-ink);font:var(--w-strong) 13px/1 var(--sw-sans);cursor:pointer}
+  :root .synk-workspace .sw-workspace .sw-calendar-weekday{padding:8px 0;border-right:0;text-align:center}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day{border-right:0}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-week{grid-template-columns:minmax(0,1fr);overflow:visible}
+  :root .synk-workspace .sw-workspace .sw-calendar.is-week .sw-calendar-day{min-height:0;padding:12px 4px;border-right:0}
+  :root .synk-workspace .sw-workspace :is(.sw-calendar.is-week,.sw-calendar.is-day) .sw-calendar-move-button{min-height:40px}
+  :root .synk-workspace .sw-workspace .sw-calendar-drag-handle{display:none}
+  :root .synk-workspace .sw-workspace .sw-sticky-actions{border-radius:22px;padding:12px}
+  :root .synk-workspace .sw-workspace .sw-sticky-actions>span{flex-basis:100%;margin:0 0 2px 4px}
+  :root .synk-workspace .sw-workspace .sw-sticky-actions .btn{flex:1}
+  :root .synk-workspace .sw-workspace .sw-account-picker{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-mini-meter{grid-template-columns:repeat(2,minmax(0,1fr))}
+  :root .synk-workspace .sw-workspace .sw-mini-meter>div:nth-child(3){padding-left:0;border-left:0}
+  :root .synk-workspace .sw-workspace .sw-mini-meter>div:nth-child(n+3){border-top:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-checkpoint-grid{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace :is(.sw-inbox-text,.sw-reply-draft,.sw-inbox-item>.sw-text-link){margin-left:0}
+  :root .synk-workspace .sw-workspace .sw-account-card>header{grid-template-columns:auto minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-account-card>header>.sw-badge{grid-column:1/-1;justify-self:start}
+  :root .synk-workspace .sw-workspace .sw-setting-row{flex-wrap:wrap}
+  :root .synk-workspace .sw-workspace .sw-slot-ghost{grid-template-columns:auto minmax(0,1fr) auto}
+  :root .synk-workspace .sw-workspace .sw-slot-ghost>.sw-glyph{display:none}
+  :root .synk-workspace .sw-workspace .sw-filter .sw-select{flex:1 1 30%}
+}
+@media(max-width:700px){
+  :root .synk-workspace .sw-workspace .sw-nav{margin:0 -4px 20px;position:sticky;top:0;z-index:8;box-shadow:0 8px 20px -18px rgba(8,9,12,.5)}
+  :root .synk-workspace .sw-workspace .sw-field :is(input:not([type=checkbox]):not([type=file]),select,textarea){font-size:16px}
+  :root .synk-workspace .sw-workspace .sw-error{flex-direction:column;align-items:flex-start}
+}
+@media(prefers-reduced-motion:reduce){:root .synk-workspace .sw-workspace *{transition:none!important;scroll-behavior:auto!important}}
+@media(forced-colors:active){:root .synk-workspace .sw-workspace :is(.sw-job,.sw-badge,.sw-nav button,.sw-calendar-day,.sw-calendar-event,.sw-meter>button,.sw-account-chip>span,.sw-poster){border:1px solid CanvasText}:root .synk-workspace .sw-workspace .btn.primary{background:ButtonFace!important;color:ButtonText}}
+
+/* ── 2차 다듬기 ── */
+:root .synk-workspace .sw-workspace .sw-account-card>header{grid-template-columns:auto minmax(0,1fr)}
+:root .synk-workspace .sw-workspace .sw-account-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+:root .synk-workspace .sw-workspace .sw-account-card h3{margin-top:8px}
+:root .synk-workspace .sw-workspace .sw-handle{overflow-wrap:anywhere;word-break:break-all}
+:root .synk-workspace .sw-workspace .sw-connection-rest{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-connection-rest>span:last-child{margin-left:4px}
+:root .synk-workspace .sw-workspace .sw-reply-bar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:end;gap:0 12px}
+:root .synk-workspace .sw-workspace .sw-reply-bar .sw-field{margin-bottom:0}
+:root .synk-workspace .sw-workspace .sw-reply-bar .btn.primary{min-height:44px}
+:root .synk-workspace .sw-workspace .sw-checkpoint-empty{display:flex;align-items:flex-start;gap:8px;line-height:1.5;margin:10px 0 0;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-checkpoint-empty::before{content:'';flex:none;width:7px;height:7px;margin-top:7px;border-radius:50%;background:rgba(8,9,12,.28)}
+:root .synk-workspace .sw-workspace .sw-checkpoint-grid .sw-more{margin-top:8px}
+:root .synk-workspace .sw-workspace .sw-day .sw-job .sw-when b{display:none}
+:root .synk-workspace .sw-workspace .sw-day .sw-job .sw-when{justify-content:center;min-height:40px}
+:root .synk-workspace .sw-workspace .sw-field input[type=file]::file-selector-button{margin-right:12px;padding:8px 14px;border:0;border-radius:999px;background:var(--sw-ink);color:#fff;font:var(--w-strong) 13.5px/1 var(--sw-sans);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-variant>summary small{font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-empty:not([data-tone=ok]) strong::before{background:rgba(8,9,12,.28);box-shadow:none}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-reply-bar{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-reply-bar .sw-field{margin-bottom:12px}
+  :root .synk-workspace .sw-workspace .sw-reply-bar .btn.primary{grid-column:1/-1}
+}
+
+/* ── 3차: 브랜드별 계정 묶음 · 원고 분류 접기 · 휴대폰 필터 ── */
+:root .synk-workspace .sw-workspace .sw-brand-group{margin:0 0 26px}
+:root .synk-workspace .sw-workspace .sw-group-label{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:15px;font-weight:var(--w-strong);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-group-label b{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 7px;border-radius:999px;background:var(--sw-surface);font-size:13px;font-weight:var(--w-strong);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-group-label::after{content:'';flex:1;height:1px;background:var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-meta-fold{margin:0 0 16px;padding:0;border-radius:16px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-meta-fold>summary{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;min-height:48px;margin:0;padding:10px 16px;border-radius:16px;background:transparent;font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-meta-fold[open]>summary{margin:0}
+:root .synk-workspace .sw-workspace .sw-meta-fold>summary em{font-style:normal;font-weight:var(--w-body);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-meta-fold>.sw-fields,:root .synk-workspace .sw-workspace .sw-meta-fold>.sw-field{padding:0 16px}
+:root .synk-workspace .sw-workspace .sw-meta-fold>.sw-field{padding-bottom:4px}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-filter{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px}
+  :root .synk-workspace .sw-workspace .sw-filter .sw-search{grid-column:1/-1}
+  :root .synk-workspace .sw-workspace .sw-filter :is(.sw-select select,.sw-filter-more>summary,.btn){min-height:40px;width:100%}
+  :root .synk-workspace .sw-workspace .sw-filter-more>summary{justify-content:center}
+}
+
+/* ── GPT 확장 기능 패널(템플릿·복구·번갈아 쓸 문구·고객 검토·추적·대기열 정책·대량 도구·CSV 편집)도 같은 문법으로 ── */
+:root .synk-workspace .sw-workspace :is(.sw-tools,.sw-copy-variants,[data-sw-queue-policy],[data-sw-tracking-compose],[data-sw-tracking-settings],[data-sw-csv-editor]){margin:0 0 16px;padding:14px 18px;border:0;border-radius:18px;background:var(--sw-paper-2);box-shadow:none}
+:root .synk-workspace .sw-workspace :is(.sw-tools,.sw-copy-variants,[data-sw-queue-policy],[data-sw-tracking-compose],[data-sw-tracking-settings],[data-sw-csv-editor])>summary{display:flex;align-items:center;gap:10px;min-height:32px;font-size:15.5px;font-weight:var(--w-strong);color:var(--sw-ink);list-style:none}
+:root .synk-workspace .sw-workspace :is(.sw-tools,.sw-copy-variants,[data-sw-queue-policy],[data-sw-tracking-compose],[data-sw-tracking-settings],[data-sw-csv-editor])>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace :is(.sw-tools,.sw-copy-variants,[data-sw-queue-policy],[data-sw-tracking-compose],[data-sw-tracking-settings],[data-sw-csv-editor])>summary::after{content:'';width:14px;height:14px;margin-left:auto;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace :is(.sw-tools,.sw-copy-variants,[data-sw-queue-policy],[data-sw-tracking-compose],[data-sw-tracking-settings],[data-sw-csv-editor])[open]>summary::after{transform:none}
+:root .synk-workspace .sw-workspace .sw-variant .sw-copy-variants{margin:0 0 10px;padding:10px 14px;background:#fff}
+:root .synk-workspace .sw-workspace :is(.sw-tools form,.sw-copy-variants form,.sw-review-record,.sw-tracking-link){margin-top:14px}
+:root .synk-workspace .sw-workspace :is(.sw-template-list>article,.sw-recovery-row,.sw-copy-row,.sw-change-row,.sw-csv-row){padding:14px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace :is(.sw-template-list>article,.sw-recovery-row,.sw-copy-row,.sw-change-row,.sw-csv-row):last-child{border-bottom:0}
+:root .synk-workspace .sw-workspace .sw-csv-row>strong{display:block;margin-bottom:10px;font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-change-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+:root .synk-workspace .sw-workspace .sw-change-grid>div{min-width:0}
+:root .synk-workspace .sw-workspace pre{margin:8px 0 0;padding:12px 14px;max-height:240px;overflow:auto;border-radius:12px;background:var(--sw-surface);font:500 13px/1.6 var(--sw-mono);white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-bulk-select{display:grid;gap:6px;max-height:380px;margin:14px 0;overflow:auto}
+:root .synk-workspace .sw-workspace .sw-bulk-select>label{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-bulk-select>label>span{flex:1;min-width:0;font-size:14.5px;font-weight:var(--w-label);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-bulk-select small{display:block;margin-top:4px;font-size:13px;font-weight:var(--w-body);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-bulk-select .btn{flex:none;min-height:34px;font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-recovery{padding:0 0 14px}
+:root .synk-workspace .sw-workspace .sw-recovery details{padding:12px 16px;border-radius:16px;background:var(--sw-butter-wash);box-shadow:inset 0 0 0 1px rgba(245,196,69,.42)}
+:root .synk-workspace .sw-workspace .sw-recovery details>summary{font-size:14.5px;font-weight:var(--w-strong);color:var(--sw-butter-ink)}
+:root .synk-workspace .sw-workspace .sw-review-record blockquote{margin:10px 0;padding:12px 16px;border:0;border-radius:4px 18px 18px 18px;background:var(--sw-surface);font-size:14.5px;line-height:1.65;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace :is(.sw-review-link,.sw-tracking-secret){margin-top:14px;padding:16px;border:0;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-tracking-secret input{font-family:var(--sw-mono)}
+:root .synk-workspace .sw-workspace .sw-tracking-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+:root .synk-workspace .sw-workspace .sw-tracking-grid>article{min-width:0;padding:16px;border:0;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-tracking-grid dl>div{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--sw-line);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-tracking-grid dd{margin:0;font-weight:var(--w-strong);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-url{font-size:13.5px;overflow-wrap:anywhere;color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-workflow-preview{margin-top:16px;padding:16px;border-radius:18px;background:var(--sw-lapis-wash);box-shadow:none}
+:root .synk-workspace .sw-workspace .sw-copy-row .btn{margin-top:8px}
+:root .synk-workspace .sw-workspace [data-sw-tracking-settings] details{margin-top:16px}
+:root .synk-workspace .sw-workspace .sw-preserve{font-size:14px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-workflow-summary{min-width:0;padding:12px 14px;border-radius:14px;background:var(--sw-surface)}
+:root .synk-workspace .sw-workspace .sw-workflow-summary details{margin:8px 0}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-change-grid{grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-bulk-select>label{flex-wrap:wrap}
+  :root .synk-workspace .sw-workspace .sw-bulk-select .btn{width:100%}
+  :root .synk-workspace .sw-workspace .sw-template-list .sw-actions>.btn{flex:1;min-width:120px}
+}
+
+/* ── 4차: 페이블 검수 반영(2026-10-13) — 본업 먼저 · 화면마다 강조 하나 · 휴대폰 첫 화면 ── */
+/* 카드 단추: 지금 할 동사 하나 + 원문·이력 글자 링크 + ⋯ 메뉴 */
+:root .synk-workspace .sw-workspace button.sw-text-link{padding:0;border:0;background:none;font-family:var(--sw-sans);cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-job>.sw-actions{gap:6px 14px}
+:root .synk-workspace .sw-workspace .sw-job>.sw-actions>.sw-text-link{font-size:13.5px}
+:root .synk-workspace .sw-workspace .sw-menu{position:relative}
+:root .synk-workspace .sw-workspace .sw-menu>summary{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:50%;color:var(--sw-ink-2);font:var(--w-strong) 18px/1 var(--sw-sans);list-style:none;cursor:pointer;transition:background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-menu>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-menu>summary:hover,:root .synk-workspace .sw-workspace .sw-menu[open]>summary{background:var(--sw-surface);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-menu-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;display:grid;gap:2px;min-width:184px;padding:6px;border-radius:16px;background:#fff;box-shadow:0 0 0 1px var(--sw-line-2),0 20px 44px -20px rgba(8,9,12,.45)}
+:root .synk-workspace .sw-workspace .sw-job .sw-menu .sw-menu-pop .btn{justify-content:flex-start;width:100%;min-height:38px;padding:0 12px;border:0;border-radius:10px;background:none;box-shadow:none;font-size:14px;font-weight:var(--w-label);text-align:left}
+:root .synk-workspace .sw-workspace .sw-job .sw-menu .sw-menu-pop .btn:hover:not(:disabled){background:var(--sw-surface)}
+/* 대기열의 예약됨 줄: 단추는 마우스를 올리거나 초점이 올 때만(터치 화면은 늘) */
+@media (hover:hover){
+  :root .synk-workspace .sw-workspace .sw-queue .sw-job[data-status=scheduled]{position:relative}
+  :root .synk-workspace .sw-workspace .sw-queue .sw-job[data-status=scheduled]>.sw-actions{position:absolute;right:12px;top:50%;z-index:3;margin:0;padding:4px 4px 4px 14px;border-radius:999px;background:var(--sw-paper);box-shadow:0 0 0 1px var(--sw-line-2),0 12px 26px -14px rgba(8,9,12,.45);transform:translateY(-50%);opacity:0;pointer-events:none;transition:opacity .16s var(--sw-ease)}
+  :root .synk-workspace .sw-workspace .sw-queue .sw-job[data-status=scheduled]:is(:hover,:focus-within)>.sw-actions{opacity:1;pointer-events:auto}
+}
+/* 앱에서 마무리할 내용: 대기열에서는 접어 둔다 */
+:root .synk-workspace .sw-workspace .sw-handoff-fold{margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-handoff-fold>summary{display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:0 14px 0 12px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none}
+:root .synk-workspace .sw-workspace .sw-handoff-fold>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-handoff-fold>summary::before{content:'';width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.7;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-handoff-fold[open]>summary::before{transform:none}
+:root .synk-workspace .sw-workspace .sw-handoff-fold>.sw-handoff{margin-top:10px}
+
+/* 같은 글의 계정들: 글리프를 겹친다 */
+:root .synk-workspace .sw-workspace .sw-glyph-stack{display:inline-flex;flex:none;align-items:center;margin-right:2px}
+:root .synk-workspace .sw-workspace .sw-agenda-copy>p .sw-glyph-stack>.sw-glyph{margin-right:0;box-shadow:0 0 0 2px var(--sw-paper)}
+:root .synk-workspace .sw-workspace .sw-glyph-stack>.sw-glyph+.sw-glyph{margin-left:-6px}
+
+/* 운영 현황: 오른쪽 칸의 예약 줄은 상태 칩을 뺀다(모두 예약됨) */
+:root .synk-workspace .sw-workspace .sw-overview-side .sw-agenda[data-status=scheduled]>.sw-badge{display:none}
+:root .synk-workspace .sw-workspace .sw-overview-side .sw-agenda{grid-template-columns:auto auto minmax(0,1fr)}
+:root .synk-workspace .sw-workspace .sw-overview-side .sw-agenda:has(>.sw-badge:not([data-status=scheduled])){grid-template-columns:auto auto minmax(0,1fr) auto}
+
+/* 달력: 일정 없는 게시물은 도구 줄의 서랍으로, 칩 바탕은 회색 하나(실패·지남만 코랄) */
+:root .synk-workspace .sw-workspace .sw-cal-tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+:root .synk-workspace .sw-workspace .sw-cal-tray{position:relative}
+:root .synk-workspace .sw-workspace .sw-cal-tray>summary{display:inline-flex;align-items:center;gap:8px;min-height:42px;padding:0 8px 0 14px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2);list-style:none;cursor:pointer;white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-cal-tray>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-cal-tray>summary b{display:inline-grid;place-items:center;min-width:26px;height:26px;padding:0 7px;border-radius:999px;background:var(--sw-paper);box-shadow:inset 0 0 0 1px var(--sw-line-2);font-size:13px;font-weight:var(--w-strong);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-cal-tray[open]>summary{background:var(--sw-surface-2);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop{position:absolute;right:0;top:calc(100% + 8px);z-index:25;width:min(380px,calc(100vw - 48px));max-height:min(460px,70vh);overflow:auto;padding:14px 10px 8px;border-radius:20px;background:#fff;box-shadow:0 0 0 1px var(--sw-line-2),0 24px 50px -24px rgba(8,9,12,.45)}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop>.sw-note{margin:0 6px 8px}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop .sw-post-row{padding:8px 6px;gap:10px}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop .sw-post-row .sw-title-link{font-size:14.5px}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop .sw-post-row>.sw-badge{display:none}
+:root .synk-workspace .sw-workspace .sw-cal-tray-pop .sw-post-row{grid-template-columns:auto minmax(0,1fr)}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-event strong{-webkit-line-clamp:1}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day-count[data-tone=alert]{background:var(--sw-coral-wash);color:var(--sw-coral-ink);box-shadow:inset 0 0 0 1px rgba(249,104,89,.42)}
+:root .synk-workspace .sw-workspace .sw-calendar.is-month .sw-calendar-day-count[data-tone=wait]{background:var(--sw-butter-wash);color:var(--sw-butter-ink)}
+
+/* 대기열: 예약을 고른 뒤에만 나타나는 아래 고정 옮기기 막대 */
+:root .synk-workspace .sw-workspace .sw-move-bar{position:sticky;bottom:12px;z-index:7;margin:4px 0 0;padding:14px 16px 14px 18px;border-radius:22px;background:rgba(255,255,255,.94);-webkit-backdrop-filter:blur(16px) saturate(1.6);backdrop-filter:blur(16px) saturate(1.6);box-shadow:0 0 0 1px var(--sw-line-2),0 18px 40px -22px rgba(8,9,12,.5)}
+:root .synk-workspace .sw-workspace .sw-move-copy{margin:0 0 10px}
+:root .synk-workspace .sw-workspace .sw-move-fields .btn{min-height:44px}
+:root .synk-workspace .sw-workspace .sw-move-bar .sw-move-preview{max-height:40vh;overflow:auto}
+
+/* 작성기: 아래 막대 왼쪽에 글 상태, 두 칸일 때 오른쪽 칸이 붙어 다닌다 */
+:root .synk-workspace .sw-workspace .sw-sticky-actions>.sw-bar-state{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;min-width:0}
+:root .synk-workspace .sw-workspace .sw-sticky-actions>.sw-bar-state .sw-badge{min-height:24px}
+@container sw (min-width:901px){
+  :root .synk-workspace .sw-workspace .sw-composer-preview{position:sticky;top:16px;max-height:calc(100dvh - 112px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:0 4px 4px 0}
+}
+
+/* 댓글·문의: 수집 카드는 오른쪽 칸 한 줄씩, 답변 저장은 글을 적었을 때만 검게 */
+:root .synk-workspace .sw-workspace .sw-inbox-provider .sw-inbox-connections{grid-template-columns:minmax(0,1fr)}
+:root .synk-workspace .sw-workspace .sw-inbox-provider .sw-connection{background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-inbox-provider .sw-count{min-width:0;font-size:13px}
+:root .synk-workspace .sw-workspace .sw-reply-draft form:has(textarea:not(:placeholder-shown)) .sw-reply-bar .btn{border-color:transparent;background:var(--sw-ink);color:#fff}
+
+/* 연결·자동화: 상태 점 + 글자 + 스위치 */
+:root .synk-workspace .sw-workspace .sw-state{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:var(--w-label);color:var(--sw-ink-3);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-state::before{content:'';flex:none;width:7px;height:7px;border-radius:50%;background:var(--sw-green)}
+:root .synk-workspace .sw-workspace .sw-state[data-tone=alert]{color:var(--sw-coral-ink)}
+:root .synk-workspace .sw-workspace .sw-state[data-tone=alert]::before{background:var(--sw-coral);box-shadow:0 0 0 3px rgba(249,104,89,.18)}
+:root .synk-workspace .sw-workspace .sw-switch{position:relative;flex:none;width:46px;height:28px;padding:0;border:0;border-radius:999px;background:var(--sw-surface-3);cursor:pointer;transition:background .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-switch::after{content:'';position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(8,9,12,.3);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-switch[aria-checked=true]{background:#9ED7B8}
+:root .synk-workspace .sw-workspace .sw-switch[aria-checked=true]::after{transform:translateX(18px)}
+:root .synk-workspace .sw-workspace .sw-switch:hover{box-shadow:0 0 0 4px rgba(8,9,12,.06)}
+:root .synk-workspace .sw-workspace .sw-switch:disabled{opacity:.42;cursor:not-allowed}
+:root .synk-workspace .sw-workspace .sw-setting-row{min-height:56px}
+:root .synk-workspace .sw-workspace .sw-setting-fold{margin-top:18px}
+:root .synk-workspace .sw-workspace .sw-setting-fold[open]>summary{margin-bottom:4px}
+:root .synk-workspace .sw-workspace .sw-link-list>button{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:13px 2px;border:0;border-bottom:1px solid var(--sw-line);background:none;color:var(--sw-ink);font:var(--w-label) 15px/1.4 var(--sw-sans);text-align:left;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-link-list>button::after{content:'';flex:none;width:14px;height:14px;background:var(--sw-arrow) center/14px no-repeat;opacity:.55;transition:transform .16s var(--sw-ease),opacity .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-link-list>button:hover::after{opacity:1;transform:translate(2px,-2px)}
+
+/* 대량 편성: 단계 띠 */
+:root .synk-workspace .sw-workspace .sw-steps{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 22px;padding:0;list-style:none}
+:root .synk-workspace .sw-workspace .sw-steps>li{display:inline-flex;align-items:center;gap:10px;min-height:40px;padding:0 16px 0 6px;border-radius:999px;background:var(--sw-surface);font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-steps>li>span{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--sw-paper);font:500 11px/1 var(--sw-mono);letter-spacing:.04em;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-steps>li[data-state=now]{background:var(--sw-paper);box-shadow:inset 0 0 0 1.5px var(--sw-ink);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-steps>li[data-state=now]>span{background:var(--sw-surface);color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-steps>li[data-state=done]{color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-steps>li[data-state=done]>span{background:var(--sw-green);color:#fff}
+:root .synk-workspace .sw-workspace .sw-help.sw-more{margin-top:18px}
+
+/* 휴대폰: 첫 화면에 「먼저 확인할 일」이 보이게 머리·포스터·계기판을 줄인다 */
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-heading-copy>p{display:none}
+  :root .synk-workspace .sw-workspace .sw-heading .btn[data-sw-action=refresh]{width:44px;min-width:44px;height:44px;min-height:44px;padding:0;gap:0;font-size:0}
+  :root .synk-workspace .sw-workspace .sw-heading .btn[data-sw-action=refresh]::before{width:17px;height:17px}
+  :root .synk-workspace .sw-workspace .sw-poster{min-height:132px}
+  :root .synk-workspace .sw-workspace .sw-poster-word{font-size:58px}
+  :root .synk-workspace .sw-workspace .sw-poster-art,:root .synk-workspace .sw-workspace .sw-poster[data-sw-poster] .sw-poster-art{width:100px;height:88px}
+  :root .synk-workspace .sw-workspace .sw-meter{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:26px}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(5){display:none}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n){grid-column:auto;padding:12px 4px 12px 10px;border-top:0;border-left:1px solid var(--sw-line)}
+  :root .synk-workspace .sw-workspace .sw-meter>button:nth-child(n):first-child{padding-left:0;border-left:0}
+  :root .synk-workspace .sw-workspace .sw-meter span{gap:5px;font-size:13px;line-height:1.25;white-space:normal;word-break:keep-all}
+  :root .synk-workspace .sw-workspace .sw-meter strong{font-size:24px}
+  :root .synk-workspace .sw-workspace .sw-meter>button::after{content:none}
+  :root .synk-workspace .sw-workspace div.sw-account-picker{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  :root .synk-workspace .sw-workspace .sw-account-chip>span{min-height:48px;padding:7px 10px 7px 8px;gap:8px;border-radius:14px}
+  :root .synk-workspace .sw-workspace .sw-account-chip small{display:none}
+  :root .synk-workspace .sw-workspace .sw-account-chip strong{font-size:14px}
+  :root .synk-workspace .sw-workspace .sw-account-chip .sw-glyph{width:24px;height:24px;border-radius:7px;font-size:10px}
+  :root .synk-workspace .sw-workspace .sw-account-chip>input:checked+span::after{display:none}
+  :root .synk-workspace .sw-workspace .sw-cal-tray-pop{left:0;right:auto}
+  :root .synk-workspace .sw-workspace .sw-move-bar{bottom:8px;padding:12px 14px}
+  :root .synk-workspace .sw-workspace .sw-move-fields .sw-field{width:100%}
+  :root .synk-workspace .sw-workspace .sw-move-fields .btn{flex:1}
+  :root .synk-workspace .sw-workspace .sw-steps>li{padding-right:12px;font-size:13.5px}
+}
+/* 4차 보정: 작성기 안 채널별 결과에서는 「원문·이력」을 빼고(지금 보고 있는 글), 사이트 반응 판에 숨 쉴 자리 */
+:root .synk-workspace .sw-workspace .sw-composer-flow .sw-job>.sw-actions>.sw-text-link[data-sw-action=edit]{display:none}
+:root .synk-workspace .sw-workspace [data-sw-tracking-results]{margin:0 0 34px;padding:18px 20px;border-radius:22px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace [data-sw-tracking-results]>h2{font-size:18px;line-height:1.35;font-weight:var(--w-title);letter-spacing:-.02em}
+/* 4차 보정 2: 댓글 작성자 줄은 글자 흐름으로(글리프만 한 줄에 남지 않게), 휴대폰 포스터 숫자와 큰 글자 사이를 띄우고 단계 띠·상태 단추를 한 줄로 */
+:root .synk-workspace .sw-workspace .sw-inbox-item header p{display:block;line-height:1.55}
+:root .synk-workspace .sw-workspace .sw-inbox-item header p .sw-glyph{margin-right:6px;vertical-align:-5px}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace .sw-poster{min-height:142px}
+  :root .synk-workspace .sw-workspace .sw-poster-word{font-size:52px}
+  :root .synk-workspace .sw-workspace .sw-steps{gap:4px}
+  :root .synk-workspace .sw-workspace .sw-steps>li{gap:8px;min-height:36px;padding:0 12px 0 4px;font-size:13.5px}
+  :root .synk-workspace .sw-workspace .sw-steps>li>span{width:26px;height:26px}
+  :root .synk-workspace .sw-workspace .sw-block-tools{max-width:100%;margin-left:0}
+  :root .synk-workspace .sw-workspace .sw-block-tools .sw-segments{flex-wrap:nowrap;max-width:100%;overflow-x:auto;scrollbar-width:none}
+  :root .synk-workspace .sw-workspace .sw-block-tools .sw-segments button{min-width:0;padding:0 10px;font-size:13.5px}
+}
+
+/* 4차 보정 3: 2차 검수 — 작성기 칸 나눔(오른쪽은 미리보기만 붙어 다님), 대량 편성 GPT 패널, 누를 수 없는 주 단추 */
+:root .synk-workspace .sw-workspace .sw-composer{grid-template-areas:"form aside" "flow aside"}
+:root .synk-workspace .sw-workspace .sw-composer>.sw-editor{grid-area:form}
+:root .synk-workspace .sw-workspace .sw-composer>.sw-composer-preview{grid-area:aside}
+:root .synk-workspace .sw-workspace .sw-composer>.sw-composer-flow{grid-area:flow;min-width:0}
+:root .synk-workspace .sw-workspace .sw-composer-flow>.sw-panel{margin:0 0 30px}
+:root .synk-workspace .sw-workspace .sw-composer-flow>[data-sw-review-panel]{padding:18px 20px;border-radius:22px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-composer-flow>[data-sw-review-panel]>h3{font-size:18px;line-height:1.35;font-weight:var(--w-title);letter-spacing:-.02em}
+@container sw (max-width:900px){
+  :root .synk-workspace .sw-workspace .sw-composer{grid-template-areas:"form" "aside" "flow"}
+}
+:root .synk-workspace .sw-workspace .sw-bulk-saved [data-sw-bulk-tools]{padding:0;background:none;box-shadow:none}
+:root .synk-workspace .sw-workspace .sw-bulk-saved [data-sw-bulk-tools]>h2{display:none}
+:root .synk-workspace .sw-workspace .sw-bulk-saved [data-sw-bulk-tools]>.sw-note:first-of-type{margin:0 0 12px}
+:root .synk-workspace .sw-workspace .sw-bulk-select{max-height:min(440px,60vh);padding:2px;background:linear-gradient(#fff 30%,rgba(255,255,255,0)) top/100% 36px no-repeat local,linear-gradient(rgba(255,255,255,0),#fff 70%) bottom/100% 36px no-repeat local,radial-gradient(farthest-side at 50% 0,rgba(8,9,12,.16),rgba(8,9,12,0)) top/100% 12px no-repeat scroll,radial-gradient(farthest-side at 50% 100%,rgba(8,9,12,.16),rgba(8,9,12,0)) bottom/100% 12px no-repeat scroll}
+:root .synk-workspace .sw-workspace .btn.primary:disabled{background:var(--sw-surface)!important;color:var(--sw-ink-3);box-shadow:inset 0 0 0 1px var(--sw-line-2);opacity:1}
+
+/* ── 5차: GPT 「four」(연결 점검·예약 몰림·답장·문구 성과)·「launch」(처음 시작하기·후속 업무·연결된 문의) 패널을 같은 문법으로 ── */
+:root .synk-workspace .sw-workspace .sw-section-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:10px 16px;margin:0 0 12px}
+:root .synk-workspace .sw-workspace .sw-section-head>div{min-width:0;flex:1 1 260px}
+:root .synk-workspace .sw-workspace .sw-section-head :is(h2,h3){font-size:17px;line-height:1.35;font-weight:var(--w-title);letter-spacing:-.02em}
+:root .synk-workspace .sw-workspace .sw-section-head .sw-note{margin-top:6px}
+/* 발행 API 연결 점검(계정 관리 위) · 계정 카드 안 연결 상태 */
+:root .synk-workspace .sw-workspace [data-sw-health]{margin:0 0 24px;padding:18px 20px;border-radius:22px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-health-state .sw-badge{margin-right:6px}
+:root .synk-workspace .sw-workspace .sw-health-details details{margin:12px 0 0;padding-top:12px;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-health-details summary{font-size:14px;font-weight:var(--w-label);color:var(--sw-ink-2)}
+:root .synk-workspace .sw-workspace .sw-health-details .sw-text-link{display:block;margin-top:10px}
+/* 예약 몰림 확인·분산(대기열 오른쪽 칸) */
+:root .synk-workspace .sw-workspace [data-sw-capacity]{margin:0 0 20px;padding:18px 20px;border-radius:24px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace [data-sw-capacity]>details{margin-top:16px}
+:root .synk-workspace .sw-workspace .sw-capacity-windows{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:8px;margin:14px 0}
+:root .synk-workspace .sw-workspace .sw-capacity-windows article{display:grid;gap:4px;min-width:0;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2);font-size:13.5px;line-height:1.5}
+:root .synk-workspace .sw-workspace .sw-capacity-windows .is-congested{background:var(--sw-butter-wash);box-shadow:inset 0 0 0 1px rgba(245,196,69,.5)}
+:root .synk-workspace .sw-workspace .sw-capacity-jobs{max-height:380px;margin:16px 0;overflow:auto;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace :is(.sw-capacity-jobs article,.sw-capacity-change){padding:12px 0;border-bottom:1px solid var(--sw-line);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-capacity-jobs small{display:block;font-size:13px;line-height:1.6;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-fixed-consent{margin-left:28px;font-size:13.5px}
+/* 공식 댓글 답장(댓글 카드 안) */
+:root .synk-workspace .sw-workspace .sw-reply{margin:14px 0 0 50px;padding-top:14px;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-reply>h4{font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-reply blockquote{margin:10px 0;padding:12px 16px;border:0;border-radius:4px 18px 18px 18px;background:var(--sw-surface);font-size:14.5px;line-height:1.65;color:var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-reply-confirm{margin-top:14px;padding:16px 18px;border:0;border-radius:18px;background:var(--sw-paper-2);box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-reply-confirm h4{font-size:15.5px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-reply-confirm dt{margin-top:12px;font-size:13px;font-weight:var(--w-label);color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-reply-confirm dd{margin:4px 0 10px;font-size:14.5px;overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-reply-attempt{margin:10px 0;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-reply-attempt strong{font-size:14px;font-weight:var(--w-strong)}
+/* 문구별 실제 반응 비교(캠페인·성과 맨 위) */
+:root .synk-workspace .sw-workspace [data-sw-copy-insights]{margin:0 0 34px;padding:18px 20px;border-radius:22px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace [data-sw-copy-insights] form>details{margin:14px 0}
+:root .synk-workspace .sw-workspace .sw-copy-group{margin-top:20px;padding-top:16px;border-top:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-copy-group>details{margin:10px 0}
+:root .synk-workspace .sw-workspace .sw-copy-comparison{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px}
+:root .synk-workspace .sw-workspace .sw-copy-result{min-width:0;padding:16px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-copy-result>.sw-actions{margin-top:14px}
+:root .synk-workspace .sw-workspace .sw-copy-stats{margin:12px 0}
+:root .synk-workspace .sw-workspace .sw-copy-stats>div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--sw-line);font-size:14px}
+:root .synk-workspace .sw-workspace .sw-copy-stats dd{margin:0;font-weight:var(--w-strong);white-space:nowrap}
+:root .synk-workspace .sw-workspace .sw-copy-observation{padding:12px 0;border-bottom:1px solid var(--sw-line)}
+:root .synk-workspace .sw-workspace .sw-copy-observation .sw-note{overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-copy-tracking{margin:10px 0}
+/* 처음 시작하기(운영 현황·연결·자동화 머리 아래) */
+:root .synk-workspace .sw-workspace .sw-setup{margin:0 0 28px;padding:14px 20px;border-radius:22px;background:var(--sw-paper-2)}
+:root .synk-workspace .sw-workspace .sw-setup>summary{display:flex;align-items:center;gap:12px;min-height:40px;font-size:16px;font-weight:var(--w-strong);letter-spacing:-.015em;color:var(--sw-ink);list-style:none;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-setup>summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-setup>summary::before{content:'SETUP';font:500 11px/1 var(--sw-mono);letter-spacing:.08em;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-setup>summary::after{content:'';flex:none;width:14px;height:14px;margin-left:auto;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-setup[open]>summary::after{transform:none}
+:root .synk-workspace .sw-workspace .sw-setup[open]>summary{margin-bottom:6px}
+:root .synk-workspace .sw-workspace .sw-setup-server{margin:14px 0;padding:12px 14px;border-radius:14px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-setup-server strong{font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-setup .sw-field{max-width:360px}
+:root .synk-workspace .sw-workspace .sw-setup-steps{display:grid;gap:8px;margin:12px 0 4px;padding:0;list-style:none;counter-reset:setup}
+:root .synk-workspace .sw-workspace .sw-setup-steps>li{counter-increment:setup;display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;padding:14px 16px;border-radius:16px;background:#fff;box-shadow:inset 0 0 0 1px var(--sw-line-2)}
+:root .synk-workspace .sw-workspace .sw-setup-steps>li.is-next{box-shadow:inset 0 0 0 1.5px var(--sw-ink)}
+:root .synk-workspace .sw-workspace .sw-setup-steps>li>div{flex:1;min-width:0}
+:root .synk-workspace .sw-workspace .sw-setup-steps strong{font-size:15px;font-weight:var(--w-strong)}
+:root .synk-workspace .sw-workspace .sw-setup-steps strong::before{content:counter(setup,decimal-leading-zero);margin-right:10px;font:500 11px/1 var(--sw-mono);letter-spacing:.06em;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-setup-steps .sw-badge{margin-left:8px;vertical-align:1px}
+:root .synk-workspace .sw-workspace .sw-setup-steps p{margin:6px 0 0;font-size:14px;line-height:1.6;color:var(--sw-ink-2);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-setup-steps small{display:block;margin-top:4px;font-size:13px;color:var(--sw-ink-3)}
+:root .synk-workspace .sw-workspace .sw-setup-steps .btn{flex:none;min-height:36px;font-size:13.5px}
+/* 후속 업무(댓글 카드 안) · 업무에서 연결한 문의 */
+:root .synk-workspace .sw-workspace .sw-followup{margin:14px 0 0 50px;padding-top:14px;border-top:1px solid var(--sw-line);overflow-wrap:anywhere}
+:root .synk-workspace .sw-workspace .sw-followup form{margin-top:12px}
+:root .synk-workspace .sw-workspace .sw-inbox-return{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin:0 0 18px;padding:12px 14px;border-radius:16px;background:var(--sw-lapis-wash)}
+:root .synk-workspace .sw-workspace .sw-inbox-return p{margin:0}
+:root .synk-workspace .sw-workspace [data-sw-inbox-selected]{scroll-margin-top:16px}
+:root .synk-workspace .sw-workspace [data-sw-inbox-selected]:focus{outline:2px solid var(--sw-lapis);outline-offset:3px}
+@container sw (max-width:560px){
+  :root .synk-workspace .sw-workspace :is(.sw-reply,.sw-followup){margin-left:0}
+  :root .synk-workspace .sw-workspace .sw-setup{padding:12px 14px}
+  :root .synk-workspace .sw-workspace .sw-setup-steps>li{flex-direction:column;align-items:stretch;gap:10px}
+  :root .synk-workspace .sw-workspace .sw-setup-steps .btn{align-self:flex-start;max-width:100%}
+  :root .synk-workspace .sw-workspace :is(.sw-capacity-windows,.sw-copy-comparison){grid-template-columns:minmax(0,1fr)}
+  :root .synk-workspace .sw-workspace .sw-fixed-consent{margin-left:0}
+  :root .synk-workspace .sw-workspace :is(.sw-reply-confirm,.sw-copy-result) .btn{width:100%}
+}
+/* 5차 보정: 답장·후속 업무는 카드의 작업 칸 안(들여쓰기 한 번), 계정 카드의 연결 상태 접기는 꺾쇠로 */
+:root .synk-workspace .sw-workspace .sw-reply-draft :is(.sw-reply,.sw-followup){margin-left:0}
+:root .synk-workspace .sw-workspace .sw-health-details summary{display:inline-flex;align-items:center;gap:8px;list-style:none;cursor:pointer}
+:root .synk-workspace .sw-workspace .sw-health-details summary::-webkit-details-marker{display:none}
+:root .synk-workspace .sw-workspace .sw-health-details summary::before{content:'';flex:none;width:14px;height:14px;background:var(--sw-chev) center/14px no-repeat;opacity:.6;transform:rotate(-90deg);transition:transform .16s var(--sw-ease)}
+:root .synk-workspace .sw-workspace .sw-health-details details[open]>summary::before{transform:none}

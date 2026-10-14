@@ -1,6 +1,7 @@
 import {createHash,randomBytes,randomUUID} from 'node:crypto';
 import {canReadChannel,canWriteChannel} from './organization.mjs';
 import {instagramIdentity,hasVerifiedMetaComments} from './meta-connection.mjs';
+import {inboxReplyState,observedReplyAcknowledgmentKey,replySetHash} from './social-reply-observations.mjs';
 
 // Meta's generated official SDK confirms POST /{comment-id}/replies (IG) and
 // POST /{comment-id}/comments (Page), both with the final message parameter.
@@ -63,7 +64,8 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     const visible=new Set(items.map(row=>row.id)),attempts=store.all(K.attempts).filter(row=>visible.has(row.inboxId)).map(normalizeLease);
     return {items:items.map(row=>{
       const c=store.get('channels',row.channelId),issue=itemIssue(row,c,credentialsFor(c)),blocked=blockingAttempt(row),latest=attempts.filter(a=>a.inboxId===row.id).at(-1),writable=canWriteChannel(live,c);
-      return {inboxId:row.id,canReply:writable&&!issue&&!blocked,canReconcile:writable&&!issue&&blocked?.status==='unknown',reason:issue?.[1]||(blocked?'이 원댓글의 기존 전송 결과를 먼저 확인해 주세요.':!writable?'이 계정으로 답장할 권한이 없어요.':null),requiredScopes:scopesFor(c,credentialsFor(c),true),missingScopes:issue?.[2]||[],latestAttempt:latest?attemptView(latest):null};
+      const replyState=inboxReplyState(row,c),knownIds=new Set(attempts.filter(a=>a.inboxId===row.id&&a.status==='sent').map(a=>a.remoteReplyId));
+      return {inboxId:row.id,...replyState,observedReply:replyState.observedReply?{...replyState.observedReply,knownLocal:replyState.observedReply.replyCount===replyState.observedReply.replyIds.length&&replyState.observedReply.replyIds.every(value=>knownIds.has(value))}:null,canReply:writable&&!issue&&!blocked,canReconcile:writable&&!issue&&blocked?.status==='unknown',reason:issue?.[1]||(blocked?'이 원댓글의 기존 전송 결과를 먼저 확인해 주세요.':!writable?'이 계정으로 답장할 권한이 없어요.':null),requiredScopes:scopesFor(c,credentialsFor(c),true),missingScopes:issue?.[2]||[],latestAttempt:latest?attemptView(latest):null};
     }),attempts:attempts.map(attemptView)};
   }
   function run(fn,outerSignal){if(closed)return Promise.reject(fail('REPLY_STOPPED','답장 서비스가 멈췄어요. 잠시 후 다시 시도해 주세요.',503));if(pending.size>=8)return Promise.reject(fail('REPLY_BUSY','처리 중인 요청이 많아요. 잠시 후 다시 시도해 주세요.',429));const controller=new AbortController();controllers.add(controller);const signal=outerSignal?AbortSignal.any([outerSignal,controller.signal]):controller.signal;const task=Promise.resolve().then(()=>fn(signal)).finally(()=>{pending.delete(task);controllers.delete(controller);});pending.add(task);return task;}
@@ -108,15 +110,49 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     const owned=owner===session.account.id||ig&&session.account.appScopedId&&owner===session.account.appScopedId;
     if(post.id!==row.nativePostId||!owned||!ig&&!row.nativePostId.startsWith(channel.externalId+'_'))throw fail('ACCOUNT_MISMATCH','발신 계정의 게시물인지 확인할 수 없어요.');session.check();return comment;
   }
+  async function inspectExistingReplies(session,row,channel){
+    const ig=channel.platform==='instagram',owners=new Set([session.account.id,session.account.appScopedId].filter(Boolean)),replies=new Map(),cursors=new Set();let after;
+    for(let page=0;page<4;page++){
+      const result=await session.api(row.externalId+(ig?'/replies':'/comments'),{fields:ig?'id,from,user,parent_id,timestamp,hidden':'id,from,parent,created_time,is_hidden,is_private',limit:50,after});
+      if(!Array.isArray(result.data)||result.data.length>50)throw fail('REPLY_HISTORY_INVALID','기존 답장 목록을 확인하지 못했어요. 다시 확인해 주세요.');
+      for(const reply of result.data){
+        if(!id(reply?.id))throw fail('REPLY_HISTORY_INVALID','기존 답장의 식별자를 확인하지 못했어요.');
+        const parent=ig?reply.parent_id:reply.parent?.id;if(parent&&parent!==row.externalId)throw fail('REPLY_HISTORY_INVALID','기존 답장이 이 원댓글에 속하는지 확인하지 못했어요.');
+        const authors=[reply.from?.id,reply.user?.id].filter(value=>id(value));
+        if(!authors.length)throw fail('REPLY_AUTHOR_UNVERIFIED','기존 답장의 발신 계정을 확인하지 못했어요. SNS 원문에서 답장을 확인해 주세요.');
+        if(authors.some(value=>owners.has(value))){
+          if(authors.some(value=>!owners.has(value)))throw fail('REPLY_AUTHOR_UNVERIFIED','기존 답장의 발신 계정 정보가 서로 달라요. SNS 원문을 확인해 주세요.');
+          if(!reply.hidden&&!reply.is_hidden&&!reply.is_private){const at=ig?reply.timestamp:reply.created_time;replies.set(reply.id,{id:reply.id,at:Number.isFinite(Date.parse(at))?new Date(at).toISOString():null});}
+        }
+      }
+      if(!result.paging?.next){
+        const sorted=[...replies.values()].sort((a,b)=>(b.at||'').localeCompare(a.at||'')||b.id.localeCompare(a.id)),ids=sorted.map(value=>value.id);
+        return {source:'meta-read',method:'author-id-match',connectionVersion:channel.connectionVersion,sourceAccountId:channel.externalId,latestReplyExternalId:sorted[0]?.id||null,latestReplyAt:sorted[0]?.at||null,observedAt:now(),replyCount:ids.length,replyIds:ids.slice(0,20),replySetHash:replySetHash(ids),complete:true,verifiedReplyIds:ids};
+      }
+      const cursor=result.paging?.cursors?.after;if(typeof cursor!=='string'||!cursor||cursor.length>2000||/[\u0000-\u001f\u007f]/.test(cursor)||cursors.has(cursor))throw fail('REPLY_HISTORY_INCOMPLETE','기존 답장 목록을 끝까지 확인하지 못했어요. SNS 원문을 확인해 주세요.');after=cursor;cursors.add(cursor);
+    }
+    throw fail('REPLY_HISTORY_INCOMPLETE','기존 답장이 많아 이번 확인 범위를 넘었어요. SNS 원문에서 확인해 주세요.');
+  }
+  function recordObservation(user,row,channel,evidence,generation,context){
+    return store.transaction(()=>{actor(user,channel.id,context);const live=store.get('socialInbox',row.id);if(!live||live.revision!==row.revision||hash(fieldsOf(live))!==hash(fieldsOf(row))||binding(channel.id)!==generation)throw fail('PREVIEW_CHANGED','댓글이나 계정이 바뀌었어요. 다시 확인해 주세요.');
+      const {verifiedReplyIds,...publicEvidence}=evidence,ids=new Set(verifiedReplyIds);
+      for(const child of store.all('socialInbox'))if(child.channelId===channel.id&&child.sourceAccountId===channel.externalId&&child.nativePostId===row.nativePostId&&child.parentExternalId===row.externalId&&child.metaAccountReply?.connectionVersion===channel.connectionVersion)store.put('socialInbox',child.id,{...child,metaAccountReply:{...child.metaAccountReply,confirmed:ids.has(child.externalId),hidden:ids.has(child.externalId)?false:child.metaAccountReply.hidden===true}});
+      const next={...live,externalReplyEvidence:publicEvidence,metaReplyProofIds:[...ids],metaReplyCompleteAt:evidence.observedAt},changed=observedReplyAcknowledgmentKey(live,channel)!==observedReplyAcknowledgmentKey(next,channel);
+      if(changed){next.revision=live.revision+1;next.updatedAt=now();}store.put('socialInbox',live.id,next);return next;
+    });
+  }
   function preview(user,input={},context={}){return run(async signal=>{
-    context={...context,signal};const {row,channel}=getItem(user,input.inboxId,context);if(input.revision!==row.revision)throw fail('COMMENT_CHANGED','댓글이 바뀌었어요. 새로고침해 주세요.');
+    context={...context,signal};let {row,channel}=getItem(user,input.inboxId,context);if(input.revision!==row.revision)throw fail('COMMENT_CHANGED','댓글이 바뀌었어요. 새로고침해 주세요.');
     const issue=itemIssue(row,channel,credentialsFor(channel));if(issue)throw fail(issue[0],issue[1]);assertUnblocked(row);const message=text(input.text,2000,'최종 답장',true),generation=binding(channel.id),sourceHash=hash(fieldsOf(row));
     const check=()=>{const live=getItem(user,row.id,context).row;if(live.revision!==row.revision||hash(fieldsOf(live))!==sourceHash||binding(channel.id)!==generation)throw fail('PREVIEW_CHANGED','댓글·담당·계정 중 바뀐 것이 있어요. 미리보기를 다시 확인해 주세요.');};
     const session=await accountSession(user,channel,context,generation,true);await inspectComment(session,row,channel);check();assertUnblocked(row);
+    const evidence=await inspectExistingReplies(session,row,channel);check();row=recordObservation(user,row,channel,evidence,generation,context);const observationKey=observedReplyAcknowledgmentKey(row,channel);
+    if(observationKey&&input.observedReplyAcknowledgmentKey!==observationKey)throw fail('EXISTING_REPLY_REQUIRES_CONFIRMATION','SNS에서 이미 보낸 답장이 있어요. 기존 답장을 확인하고 추가 답장 여부를 선택해 주세요.');
     for(const old of store.all(K.previews))if(old.expiresAt<new Date(stamp()-86400000).toISOString())store.remove(K.previews,old.id);
     if(store.all(K.previews).filter(p=>p.createdBy===user.id&&p.expiresAt>now()).length>=100)throw fail('PREVIEW_LIMIT','열려 있는 답장 미리보기가 너무 많아요. 잠시 후 다시 시도해 주세요.',429);
     const previewId=randomUUID(),raw=randomBytes(32).toString('base64url'),idempotencyKey=randomUUID(),at=now(),publicPreview={id:previewId,inboxId:row.id,revision:row.revision,account:{channelId:channel.id,name:channel.displayName||channel.name||channel.handle||channel.id,platform:channel.platform,profile:channel.handle||channel.url||''},comment:{id:row.externalId,text:row.text,author:row.author||'',url:row.url||'',postId:row.nativePostId},text:message,expiresAt:new Date(stamp()+2*MINUTE).toISOString()};
-    const saved={...publicPreview,createdBy:user.id,createdAt:at,tokenHash:hash(raw),idempotencyKey,generation,sourceHash,sourceAccountId:row.sourceAccountId,dedupeKey:hash([channel.platform,row.sourceAccountId,row.externalId,message])};
+    publicPreview.observedReply=inboxReplyState(row,channel).observedReply;
+    const saved={...publicPreview,createdBy:user.id,createdAt:at,tokenHash:hash(raw),idempotencyKey,generation,sourceHash,observationKey,sourceAccountId:row.sourceAccountId,dedupeKey:hash([channel.platform,row.sourceAccountId,row.externalId,message])};
     store.transaction(()=>{check();store.put(K.previews,previewId,saved);});return {preview:publicPreview,confirmationToken:raw,idempotencyKey};
   },context.signal);}
   function finish(attempt,outcome){
@@ -133,6 +169,9 @@ export function createSocialReplies({store,getCredentials,fetchImpl=globalThis.f
     if(attempt.id!==saved.idempotencyKey)return {attempt:attemptView(attempt)};
     try{
       const session=await accountSession(user,channel,context,saved.generation,true);await inspectComment(session,row,channel);check();
+      const evidence=await inspectExistingReplies(session,row,channel);check();const observed=recordObservation(user,row,channel,evidence,saved.generation,context);
+      if(observedReplyAcknowledgmentKey(observed,channel)!==(saved.observationKey??null))throw fail('REPLY_HISTORY_CHANGED','미리보기 뒤 SNS의 답장 내역이 달라졌어요. 기존 답장을 확인하고 새로 미리보기를 만들어 주세요.');
+      check();
       store.transaction(()=>{check();const live=store.get(K.attempts,attempt.id);if(live.status!=='preparing')throw fail('ALREADY_SUBMITTED','이미 처리 중인 답장이에요.');attempt={...live,status:'submitting',submittedAt:now(),leaseUntil:new Date(stamp()+2*MINUTE).toISOString()};store.put(K.attempts,attempt.id,attempt);});
       const result=await session.api(row.externalId+(channel.platform==='instagram'?'/replies':'/comments'),{message:saved.text},'POST');if(!id(result?.id))throw fail('REPLY_RESULT_UNKNOWN','답장 접수 ID를 받지 못했어요.',502,{uncertain:true});
       attempt=finish(attempt,{status:'sent',remoteReplyId:result.id,sentAt:now(),observedAt:now(),retryable:false,message:'SNS가 답장을 등록했다고 응답했어요.',errorCode:null});

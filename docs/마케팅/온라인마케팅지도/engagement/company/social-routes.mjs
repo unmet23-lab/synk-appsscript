@@ -3,7 +3,7 @@ import {socialOnboarding} from './social-onboarding.mjs';
 const fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const parameter=value=>{try{return value===undefined?undefined:decodeURIComponent(value);}catch{throw fail('SNS 항목 주소를 확인해 주세요.');}};
 
-export function createSocialRoutes({store,publishing,marketing,provider,distribution,inboxProvider,replies,capacity,copyInsights,followups,ai,recovery,tracking,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
+export function createSocialRoutes({store,publishing,marketing,provider,distribution,inboxProvider,inboxRecovery,replies,capacity,copyInsights,followups,ai,recovery,tracking,workflows,review,publicationLinks,signal,session,origin,body,send,isStopped=()=>false,onChange=()=>{},runtime=()=>({})}){
   return async function handle(req,res,{url,demoRequest=false}){
     const path=url.pathname;if(!path.startsWith('/api/social/'))return false;
     const auth=session(req);if(!auth)throw fail('먼저 로그인해 주세요.',401);
@@ -23,6 +23,7 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
         const social=publishing.workspace(user,Object.fromEntries(url.searchParams)),extra=marketing.workspace(user,social);
         const jobs=social.jobs.map(job=>{let linkCheck=null;if(job.performanceEntryId&&publicationLinks)try{linkCheck=publicationLinks.get(user,{kind:'post',id:job.performanceEntryId}).check;}catch(error){if(![403,404,409].includes(error.status))throw error;}return {...job,linkCheck};});
         const result={...social,...extra,jobs,...distribution?.workspace(user),provider:provider.settings(user),connectionHealth:provider.health?.(user),inboxProvider:inboxProvider?.settings(user),inboxHealth:replies?.health(user),replies:replies?.workspace(user),capacity:capacity?.workspace(user),followups:followups?.list(user),ai:ai?.state(user),recovery:recovery?.list(user),tracking:tracking?.workspace(user),workflows:workflows?.workspace(user),runtime:runtime()};
+        if(result.inboxProvider&&inboxRecovery){const recoveryByChannel=new Map(inboxRecovery.workspace(user).channels.map(row=>[row.channelId,row.recovery]));result.inboxProvider={...result.inboxProvider,channels:result.inboxProvider.channels.map(row=>({...row,recovery:recoveryByChannel.get(row.channelId)||null}))};}
         result.onboarding=socialOnboarding(result,{origin});send(res,200,result);return true;
       }
       const followup=path.match(/^\/api\/social\/inbox\/([^/]+)\/followup$/);
@@ -54,6 +55,8 @@ export function createSocialRoutes({store,publishing,marketing,provider,distribu
     else if(path==='/api/social/copy-insights/template-preview')result=await copyInsights.templatePreview(actor,input,{authorize,signal});
     else if(path==='/api/social/provider/health')result=await provider.checkHealth(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/health')result=await replies.checkHealth(actor,input,{authorize,signal});
+    else if(path==='/api/social/inbox/provider/recovery/verify')result=await inboxRecovery.verify(actor,input,{authorize,signal});
+    else if(path==='/api/social/inbox/provider/recovery/resume')result=await inboxRecovery.resume(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/reply/preview')result=await replies.preview(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/reply/send')result=await replies.send(actor,input,{authorize,signal});
     else if(path==='/api/social/inbox/reply/reconcile')result=await replies.reconcile(actor,input,{authorize,signal});
