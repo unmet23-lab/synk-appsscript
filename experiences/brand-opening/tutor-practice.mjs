@@ -2,6 +2,7 @@ import {PracticeRun,PRACTICES,BEAT_AT,BEAT_PERIOD,BEAT_WINDOW,beatPosition,input
 import {practiceLine} from './tutor-practice-lines.mjs';
 import {tutorFace} from './game-tutor-lines.mjs';
 import {verdict,getPref} from './world-sound.mjs';
+import {tutorPhoto} from './tutor-photos.mjs';
 
 const asset=path=>new URL(path,import.meta.url).href;
 const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -13,14 +14,14 @@ export function createTutorPractice({tutor,game,container,reduced=()=>false,getS
  const still=()=>reduced()||matchMedia('(prefers-reduced-motion:reduce)').matches;
  const dialog=document.createElement('dialog');dialog.className='tutor-practice';dialog.dataset.tutor=tutor.id;dialog.dataset.practiceGame=game;
  dialog.setAttribute('aria-label',`${tutor.name}과 ${plan.title} 조작 연습`);dialog.tabIndex=-1;
- const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${asset('assets/tutors/'+tutor.images.기본)}" width="480" height="480" alt="${tutor.name}"><img class="game-tutor-face" src="${asset('assets/tutors/'+tutor.images.기본)}" width="480" height="480" alt="" aria-hidden="true"></span>`;
+ const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${tutorPhoto(tutor.id,game)}" width="480" height="480" alt="${tutor.name}"><img class="game-tutor-face" src="${tutorPhoto(tutor.id,game)}" width="480" height="480" alt="" aria-hidden="true"></span>`;
  dialog.innerHTML=`<header class="practice-header"><div><small>${tutor.name}과 · ${escape(plan.title)}</small><h3>${escape(plan.title)} 조작 연습</h3></div><button type="button" class="practice-exit" aria-label="연습을 닫고 놀이로 돌아가기">×</button></header><div class="practice-progress" aria-label="연습 진행"><span class="practice-count"></span><div class="practice-stops">${plan.steps.map((s,i)=>`<span data-stop="${i}" aria-label="${escape(s.title)}">${i+1}</span>`).join('')}</div></div><div class="practice-speech">${portrait()}<div><small class="practice-phase"></small><p class="practice-line" role="status" aria-live="polite"></p></div></div><div class="practice-work"><div class="practice-stage" tabindex="-1"><div class="practice-road" aria-hidden="true"><i></i><i></i><i></i></div><div class="practice-performer">${portrait()}</div><div class="practice-beat" aria-hidden="true"><span class="practice-note">O</span><span class="practice-hit-line"></span></div><p class="practice-example"></p><span class="practice-pose-label" aria-hidden="true"></span></div><div class="practice-controls" role="group" aria-label="직접 해 보는 조작 단추"></div><p class="practice-key-hint"></p></div><footer class="practice-footer"><button type="button" class="practice-primary">시범 보기</button><button type="button" class="practice-replay">시범 다시 보기</button></footer>`;
  container.append(dialog);
  const $=selector=>dialog.querySelector(selector);
  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);if(!disposed&&!document.hidden)fn();},ms);timers.add(id);};
  function stopAudio(){voice?.pause();voice=null;reactionVoice?.pause();reactionVoice=null;}
  function clear(){generation++;timers.forEach(clearTimeout);timers.clear();cancelAnimationFrame(raf);raf=0;stopAudio();held.clear();pointers.clear();gesture=null;}
- function face(emotion){const file=tutor.images[emotion]||tutor.images.기본;dialog.querySelectorAll('.game-tutor-face').forEach(img=>img.src=asset('assets/tutors/'+file));dialog.dataset.face=emotion;}
+ function face(emotion){const file=tutorPhoto(tutor.id,game,emotion);dialog.querySelectorAll('.game-tutor-face').forEach(img=>img.src=file);dialog.dataset.face=emotion;}
  // 판정 하나: 소리 + 진동 + (「친구들의 반응」이 켜져 있을 때만) 튜터 얼굴 한 번. 꺼져 있으면 시범 얼굴 그대로 둔다.
  function judged(correct){dialog.dataset.reactions=String(getPref('reactions'));verdict(correct,{react:ok=>face(tutorFace(tutor.id,ok?'success':'retry'))});}
  function speak(kind){$('.practice-line').textContent=practiceLine(tutor.id,kind);}

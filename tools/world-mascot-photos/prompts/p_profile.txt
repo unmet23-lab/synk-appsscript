@@ -1,0 +1,10 @@
+Image to generate: a square image made of exactly FOUR equal square photos in a precise 2 x 2 grid, separated by thin straight pure-white gutter lines about 12 pixels wide. No outer border, no text.
+Each photo is a friendly ID-card portrait of one felt mascot: head and upper body centred, the face in the middle of the frame (the eyes at about 45 percent of the height), the head filling about 70 percent of the frame width so it still reads as a small circle avatar. Plain backdrop of soft warm-grey felt with a gentle light falloff, soft even studio light from the front-left, a tiny soft shadow.
+1. top-left: Mongle with gentle smiling eyes stitched as two upward arcs in dark-brown thread.
+2. top-right: Kkamong with happy light-green stitched upward-arc eyes.
+3. bottom-left: Marin whose two lenses are small yellow felt daisy flowers (its smiling face).
+4. bottom-right: Mongle with calm black glass bead eyes.
+It is a real photograph of a handmade needle-felt miniature set (felt, wool, wood, paper), shot with a 50mm lens look, natural soft light, shallow depth of field, gentle film grain. Warm, calm, slightly muted colours. Absolutely no letters, numbers, words, logos or symbols anywhere in the image (signs, books, tags and labels are blank).
+
+{{MASCOTS}}
+REFERENCE 1 is the real Mongle toy, REFERENCE 2 the real Kkamong toy, REFERENCE 3 the real Marin toy.

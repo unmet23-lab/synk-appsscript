@@ -5,6 +5,7 @@ import {readPractice,practiceKey} from './tutor-practice-core.mjs';
 import {createSupportLedger,supportLabel,supportLine} from './game-tutor-support.mjs';
 import {createTutorReview} from './tutor-review.mjs';
 import {getPref} from './world-sound.mjs';
+import {tutorPhoto,preloadTutorPhotos} from './tutor-photos.mjs';
 
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asset=path=>new URL(path,import.meta.url).href;
@@ -20,6 +21,7 @@ export function gameTutorPresentation(value){
 }
 export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>false,owner='guest',onExit=()=>{},practiceEnabled=true,presentation=null}){
  const tutor=getTutor(tutorId),guide=GAME_GUIDES[game];if(!tutor||!guide||!container)return null;
+ const photo=(emotion='기본')=>tutorPhoto(tutor.id,game,emotion);preloadTutorPhotos(tutor.id,game);
  // The WORLD owner supplies verified preferences. Snapshot only these display
  // choices; a later account change disposes this companion through its host.
  const preferences=gameTutorPresentation(presentation),independent=preferences.support==='independent';
@@ -37,7 +39,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  const later=(fn,ms)=>{const id=setTimeout(()=>{timers.delete(id);if(!disposed&&!document.hidden)fn();},ms);timers.add(id);};
  const stopSound=()=>{clip?.pause();clip=null;};
  const clear=()=>{timers.forEach(clearTimeout);timers.clear();stopSound();};
- const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${asset('assets/tutors/'+tutor.images.기본)}" alt="${tutor.name}" width="480" height="480"><img class="game-tutor-face" src="${asset('assets/tutors/'+tutor.images.기본)}" alt="" aria-hidden="true" width="480" height="480"></span>`;
+ const portrait=()=>`<span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" src="${photo()}" alt="${tutor.name}" width="288" height="288"><img class="game-tutor-face" src="${photo()}" alt="" aria-hidden="true" width="480" height="480"></span>`;
  const element=document.createElement('aside');element.className='game-tutor';element.dataset.tutor=tutor.id;element.dataset.tutorGame=game;element.dataset.phase=phase;
  element.setAttribute('aria-label',`${tutor.name} · 함께하는 AI 튜터`);
  element.innerHTML=`${portrait()}<div class="game-tutor-message"><small><b>${tutor.name}</b> · <span class="game-tutor-label">함께하는 튜터</span></small><p class="game-tutor-line" role="status" aria-live="polite">${escape(tutorLine(tutor.id,'ready'))}</p></div><button class="game-tutor-help" type="button" aria-label="${tutor.name}에게 조작법 다시 보기">조작법</button>`;
@@ -81,7 +83,7 @@ export function createGameTutor({tutorId,game,container,frame=null,reduced=()=>f
  }
  const face=element.querySelector('.game-tutor-face'),line=element.querySelector('.game-tutor-line'),label=element.querySelector('.game-tutor-label');
  const body=element.querySelector('.game-tutor-portrait');
- const setFace=emotion=>{face.src=asset('assets/tutors/'+(tutor.images[emotion]||tutor.images.기본));element.dataset.face=emotion;};
+ const setFace=emotion=>{face.src=photo(emotion);element.dataset.face=emotion;};
  // 대기 중에는 스스로 움직이지 않는다(조사 ⑤ · 유호님 멀미 기준) — 예전의 눈 깜빡임 반복은 뺐다. 이름은 부르는 곳을 위해 남긴다.
  function idle(){}
  function playSound(emotion){

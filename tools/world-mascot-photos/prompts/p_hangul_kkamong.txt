@@ -1,0 +1,17 @@
+Image to generate: a stop-motion contact sheet. Landscape 3:2 image made of exactly SIX equal square frames in a precise 3 x 2 grid (3 columns, 2 rows), separated by thin straight pure-white gutter lines about 12 pixels wide. No outer border, no labels, no numbers, no text anywhere.
+
+All six frames are the SAME locked-off camera shot of the SAME miniature set, like six consecutive frames of a stop-motion film where the animator only swaps Kkamong's felt face pieces. The set, the camera position, the lighting, the props and Kkamong's body position, size, pose and shadow must be identical in all six frames. Only the face (and the tiny extra noted for a frame) changes.
+
+The shot (same in every frame): Kkamong sits at a low wooden writing desk with a sheet of cream hanji paper, a small brush resting on a black felt ink stone, and a few blank paper cards; behind it, out of focus, a hanok sliding door with cream paper panels glowing in soft daylight. Calm, soft, even daylight from the left. Its long tail with the coral felt paddle curls around its side.
+Framing inside each frame: a friendly close-up portrait. Kkamong's head is centred horizontally, the eyes sit at about 45 percent of the frame height, and the head and upper body fill about 70 percent of the frame width, so the face still reads clearly when the frame is shown as a small circle. The bottom of the frame cuts through the body; the top of the head is fully visible with a little space above it.
+
+Kkamong's face in each frame (REFERENCE 2 is an expression chart of the real Kkamong toy in 4 x 2 cells; copy the exact face pieces from the named chart cell):
+1. top-left: calm default - two big round glossy green eyes (chart cell 1).
+2. top-middle: eyes closed in a soft blink - two short light-green stitched lines (chart cell 2).
+3. top-right: surprised - the green eyes opened a little wider and rounder (chart cell 4).
+4. bottom-left: very happy - light-green stitched upward arc eyes like chart cell 3, plus a tiny puff of white felt steam from the nose.
+5. bottom-middle: smug and proud - light-green stitched arcs like chart cell 7, chin slightly up.
+6. bottom-right: a little embarrassed - small half-closed light-green eyes like chart cell 5, plus one tiny light-blue felt sweat drop on the side of the head. Make every frame's eyes clearly different from frame 1 so the expression change is obvious even at small size.
+
+{{MASCOTS}}
+Only Kkamong appears in this image. REFERENCE 1 shows Kkamong's body; REFERENCE 2 shows its faces.

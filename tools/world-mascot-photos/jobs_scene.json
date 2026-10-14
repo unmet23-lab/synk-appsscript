@@ -1,0 +1,217 @@
+[
+ {
+  "name": "profile",
+  "prompt": "p_profile.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "mongle",
+   "kkamong",
+   "marin",
+   "mongle-기본"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--free",
+   "--size=384"
+  ]
+ },
+ {
+  "name": "welcome",
+  "prompt": "p_welcome.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ]
+ },
+ {
+  "name": "cafe_counter",
+  "prompt": "p_cafe_counter.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ]
+ },
+ {
+  "name": "cafe_window",
+  "prompt": "p_cafe_window.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ]
+ },
+ {
+  "name": "cafe_garden",
+  "prompt": "p_cafe_garden.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ]
+ },
+ {
+  "name": "story_greetings",
+  "prompt": "p_story_greetings.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "story_cafe",
+  "prompt": "p_story_cafe.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "story_store",
+  "prompt": "p_story_store.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "story_directions",
+  "prompt": "p_story_directions.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "story_transit",
+  "prompt": "p_story_transit.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "story_plans",
+  "prompt": "p_story_plans.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/본체_kkamong.jpg",
+   "ref/본체_marin.jpg"
+  ],
+  "faces": [
+   "narrator",
+   "mongle",
+   "kkamong",
+   "marine"
+  ],
+  "grid": [
+   2,
+   2
+  ],
+  "split": [
+   "--size=768",
+   "--thr=24"
+  ]
+ },
+ {
+  "name": "teach_mongle",
+  "prompt": "p_teach_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg"
+  ],
+  "faces": [
+   "curious",
+   "smile"
+  ],
+  "grid": [
+   2,
+   1
+  ],
+  "split": [
+   "--size=512"
+  ]
+ }
+]

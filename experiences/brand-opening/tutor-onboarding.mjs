@@ -1,5 +1,6 @@
 import {TUTORS} from './tutor-profiles.mjs';
 import {readTutorChoice,saveTutorChoice,choiceKey,TUTOR_IDS} from './tutor-choice.mjs';
+import {tutorPhoto,profilePhoto,preloadTutorPhotos} from './tutor-photos.mjs';
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const openings={marin:'배정 대기. …준비됐다.',kkamong:'…이 몸을 고르겠지? 당연히.',mongle:'어? 너구나! 같이 할래?'};
 const summaries={marin:'목표를 작게 나눠 차근차근 가고 싶다면 잘 맞아요.',kkamong:'티격태격하며 도전하는 게 좋다면 잘 맞아요.',mongle:'뭐든 같이 해 보고 싶다면 잘 맞아요.'};
@@ -17,8 +18,8 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
  const cancelMotion=()=>{timers.forEach(clearTimeout);timers.clear();stopSound();};
  function stopSound(){audio?.pause();audio=null;}
  const selected=()=>TUTORS.find(t=>t.id===draft);
- const picture=(t,emotion='기본')=>asset(`assets/tutors/${t.images[emotion]}`);
- function image(t,large=false){return `<span class="tutor-portrait ${large?'large':''}" data-character="${t.id}"><img class="tutor-body" src="${picture(t)}" alt="${t.name}" width="480" height="480">${large?`<img class="tutor-face" src="${picture(t)}" alt="" aria-hidden="true" width="480" height="480">`:''}</span>`;}
+ const picture=(t,emotion='기본')=>tutorPhoto(t.id,'onb',emotion);
+ function image(t,large=false){return `<span class="tutor-portrait ${large?'large':''}" data-character="${t.id}"><img class="tutor-body" src="${large?picture(t):profilePhoto(t.id)}" alt="${t.name}" width="512" height="512">${large?`<img class="tutor-face" src="${picture(t)}" alt="" aria-hidden="true" width="512" height="512">`:''}</span>`;}
  function soundButton(){return `<button class="tutor-sound" data-tutor-action="sound" aria-pressed="${sound}" aria-label="반응 소리 ${sound?'끄기':'켜기'}">반응 소리 ${sound?'켜짐':'꺼짐'}</button>`;}
  function header(){return `<div class="tutor-step-line"><span>${step==='choose'?'1 / 2 · 튜터 고르기':'2 / 2 · 시작하기'}</span>${soundButton()}</div>`;}
  function choiceStatus(){try{return getChoiceStatus(owner)||{};}catch{return {blocked:true,message:'튜터 선택의 저장 상태를 확인하지 못했어요. 잠시 뒤 다시 시도해 주세요.'};}}
@@ -42,7 +43,7 @@ export function createTutorOnboarding({home,asset,onChoice=()=>{},commitChoice=n
   refreshStatus();
   if(t){preload(t);react('intro',false);startIdle();}
  }
- function preload(t){for(const name of ['잔잔감음','놀람','기쁨',t.reactions.normal.뒤]){const img=new Image();img.src=picture(t,name);} }
+ function preload(t){preloadTutorPhotos(t.id,'onb');}
  function setFace(emotion){const t=selected(),face=content()?.querySelector('.tutor-face');if(face&&t)face.src=picture(t,emotion);}
  function speak(text,label){
   const node=content()?.querySelector('#tutor-speech');if(!node)return;

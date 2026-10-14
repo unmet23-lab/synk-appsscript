@@ -1,0 +1,322 @@
+[
+ {
+  "name": "onb_kkamong",
+  "prompt": "p_onb_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "onb_marin",
+  "prompt": "p_onb_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "runner_mongle",
+  "prompt": "p_runner_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "runner_kkamong",
+  "prompt": "p_runner_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "runner_marin",
+  "prompt": "p_runner_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "눈웃음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "rhythm_mongle",
+  "prompt": "p_rhythm_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "rhythm_kkamong",
+  "prompt": "p_rhythm_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "rhythm_marin",
+  "prompt": "p_rhythm_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "눈웃음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "hangul_mongle",
+  "prompt": "p_hangul_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "hangul_kkamong",
+  "prompt": "p_hangul_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "hangul_marin",
+  "prompt": "p_hangul_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "눈웃음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "first_mongle",
+  "prompt": "p_first_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "first_kkamong",
+  "prompt": "p_first_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "first_marin",
+  "prompt": "p_first_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "눈웃음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "home_mongle",
+  "prompt": "p_home_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "home_kkamong",
+  "prompt": "p_home_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "home_marin",
+  "prompt": "p_home_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ },
+ {
+  "name": "life_mongle",
+  "prompt": "p_life_mongle.txt",
+  "refs": [
+   "ref/본체_mongle.jpg",
+   "ref/표정표_mongle.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "눈웃음",
+   "민망"
+  ]
+ },
+ {
+  "name": "life_kkamong",
+  "prompt": "p_life_kkamong.txt",
+  "refs": [
+   "ref/본체_kkamong.jpg",
+   "ref/표정표_kkamong.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "으쓱",
+   "민망"
+  ]
+ },
+ {
+  "name": "life_marin",
+  "prompt": "p_life_marin.txt",
+  "refs": [
+   "ref/본체_marin.jpg",
+   "ref/표정표_marin.jpg"
+  ],
+  "faces": [
+   "기본",
+   "잔잔감음",
+   "놀람",
+   "기쁨",
+   "집중",
+   "민망"
+  ]
+ }
+]

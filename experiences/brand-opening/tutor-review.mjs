@@ -1,6 +1,7 @@
 import {supportLine} from './game-tutor-support.mjs';
 import {tutorFace} from './game-tutor-lines.mjs';
 import {verdict,play as playSound,haptic,getPref} from './world-sound.mjs';
+import {tutorPhoto} from './tutor-photos.mjs';
 const asset=path=>new URL(path,import.meta.url).href;
 // 다시 풀기(어려웠던 곳 한 문항): 문제 → 고르기 → 판정은 world-sound의 verdict 하나(소리·진동·튜터 자세 한 번).
 // 맞히면 같은 창이 결과 한 장으로 바뀐다(조사 ⑦): 코랄 포스터(부메랑 인화지 + 큰 한글 한 줄 + 맞힌 표현과 다시 듣기) + 흰 알약 「놀이로 돌아가기」.
@@ -12,9 +13,9 @@ export function createTutorReview({tutor,game,entry,container,reduced=()=>false,
  dialog.innerHTML=`<header><div><small></small><h3>다시 풀기</h3></div><button type="button" class="tutor-review-exit" aria-label="다시 연습을 닫고 힌트로 돌아가기">×</button></header><div class="tutor-review-speech"><span class="game-tutor-portrait" data-character="${tutor.id}"><img class="game-tutor-body" width="480" height="480" alt=""><img class="game-tutor-face" width="480" height="480" alt="" aria-hidden="true"></span><div><p class="tutor-review-line" role="status" aria-live="polite"></p></div></div><div class="tutor-review-question"><p class="tutor-review-prompt"></p><button type="button" class="tutor-review-listen">소리 듣기</button><p class="tutor-review-status" role="status"></p><div class="tutor-review-options" role="group" aria-label="다시 골라 보기"></div><p class="tutor-review-hint" hidden></p></div><section class="tutor-review-result" hidden aria-label="다시 풀기 결과"><div class="tutor-review-poster"><span class="tutor-review-print" aria-hidden="true"><img alt="" width="640" height="640" decoding="async"></span><p class="tutor-review-tag" aria-hidden="true">REVIEW · DONE</p><p class="tutor-review-word">다시 풀기, 끝!</p><div class="tutor-review-answer"><span class="tutor-review-answer-text"></span><button type="button" class="tutor-review-again" hidden>다시 듣기</button></div></div></section><button type="button" class="tutor-review-return" hidden>놀이로 돌아가기</button>`;
  container.append(dialog);const $=s=>dialog.querySelector(s);
  $('header small').textContent=tutor.name+'과 · '+entry.title;
- $('.game-tutor-body').src=asset('assets/tutors/'+tutor.images.기본);$('.game-tutor-body').alt=tutor.name;
+ $('.game-tutor-body').src=tutorPhoto(tutor.id,game);$('.game-tutor-body').alt=tutor.name;
  $('.tutor-review-print img').src=asset('assets/world-felt/review.webp');
- const face=kind=>{$('.game-tutor-face').src=asset('assets/tutors/'+tutor.images[tutorFace(tutor.id,kind)]);dialog.dataset.face=tutorFace(tutor.id,kind);};
+ const face=kind=>{$('.game-tutor-face').src=tutorPhoto(tutor.id,game,tutorFace(tutor.id,kind));dialog.dataset.face=tutorFace(tutor.id,kind);};
  const stop=()=>{epoch++;voice?.pause();voice=null;};
  const status=text=>$('.tutor-review-status').textContent=text;
  const options=r.options.map((text,index)=>{const b=document.createElement('button');b.type='button';b.className='tutor-review-option';b.textContent=text;b.dataset.option=String(index);b.disabled=!heard;b.addEventListener('click',()=>choose(index));$('.tutor-review-options').append(b);return b;});
