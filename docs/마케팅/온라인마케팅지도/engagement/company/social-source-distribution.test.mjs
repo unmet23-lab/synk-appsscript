@@ -126,3 +126,10 @@ test('a changed caller session after media preparation cannot use the still-auth
   const pending=f.distribution.scan({user:f.admin,ruleId:rule.id,authorize:()=>sessionUser});await began;sessionUser=f.other;release();
   await assert.rejects(pending,{status:401});assert.equal(f.store.all('socialPosts').length,0);assert.equal(f.store.all('socialSourceReceipts').length,0);
 });
+
+test('a rule edited while media is prepared stops quietly instead of reporting a file problem',async t=>{
+  const f=fixture(t),source=packageFixture(f),rule=f.rule('all','studio:'+source.p.id);
+  f.marketing.prepareMedia=async(owner,ids,{authorize})=>{f.store.put('socialDistributionRules',rule.id,{...f.store.get('socialDistributionRules',rule.id),revision:rule.revision+1});authorize();return {media:[]};};
+  const result=await f.distribution.scan({user:f.admin,ruleId:rule.id,authorize:()=>f.admin});assert.equal(result.created,0);assert.equal(result.failed,0);
+  assert.equal(f.store.all('socialPosts').length,0);assert.doesNotMatch(String(f.store.get('socialSourceScanStatus',rule.id)?.error||''),/파일·규격·권한/);
+});

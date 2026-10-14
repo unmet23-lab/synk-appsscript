@@ -110,14 +110,14 @@ export function createSocialSourceDistribution({store,studio,publicationPackages
             return {channelId,title:draft.title,text:draft.body,media:output?[mediaRef(owner,output.mediaId)]:draft.media,format:output?.channel==='instagram-reels'?'reel':output?.channel==='youtube-shorts'?'shorts':'video',...(output?.channel?{publicationFormat:output.channel}:{})};
           });
           const refs=[...draft.media,...(draft.variants||[]).flatMap(v=>v.media||[])],assetIds=[...new Set(refs.map(ref=>ref.assetId||ref.id).filter(Boolean))];
-          if(assetIds.length)await marketing.prepareMedia(owner,assetIds,{authorize:()=>{const live=store.get('socialDistributionRules',rule.id);if(live?.revision!==rule.revision)throw fail('그사이 배포 규칙이 바뀌었어요.',409);return recheck(live);},signal});
+          if(assetIds.length)await marketing.prepareMedia(owner,assetIds,{authorize:()=>{const live=store.get('socialDistributionRules',rule.id);if(live?.revision!==rule.revision)throw Object.assign(fail('그사이 배포 규칙이 바뀌었어요.',409),{ruleChanged:true});return recheck(live);},signal});
           if(signal?.aborted)break;
           const afterPrepare=store.get('socialDistributionRules',rule.id);if(!afterPrepare?.enabled||afterPrepare.revision!==rule.revision)break;
           recheck(afterPrepare);assertEvent(owner,event);
           const input=marketing.validatePostInput(owner,draft);marketing.validateSource(owner,input);
           const receipt=publishing.ingestSource(owner,{ruleId:rule.id,sourceId:rule.sourceId,eventId:event.id,confirmed:true,existing:isExisting,post:input});
           for(const item of receipt.results){if(item.existing){existing++;result.existing++;}else{created++;result.created++;}}
-          }catch(error){if(error.stopScan)throw error;failed++;result.failed++;}
+          }catch(error){if(error.stopScan)throw error;if(error.ruleChanged)break;failed++;result.failed++;}
         }
         store.put('socialSourceScanStatus',rule.id,{lastCheckedAt:at,...(!failed&&!signal?.aborted?{lastSuccessAt:clock()}:{}),created,existing,error:failed?failed+'개 확정본의 파일·규격·권한을 확인해 주세요. 나머지 원본은 그대로 처리했어요.':signal?.aborted?'확정본 확인이 중단됐어요.':null});result.checkedRules++;
       }catch(error){if(error.stopScan)throw error;result.failed++;store.put('socialSourceScanStatus',rule.id,{lastCheckedAt:at,created,existing,error:[401,403,404,409,422].includes(error.status)?'원본·계정 권한 또는 확정 버전을 다시 확인해 주세요.':'확정본을 읽지 못했어요. 규칙과 원본을 확인해 주세요.'});}
