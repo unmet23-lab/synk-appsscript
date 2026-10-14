@@ -12,6 +12,8 @@ import { buildCareContext } from './care-context.mjs';
 import { createCarePush, carePushAccountIdentity, careLogoutNotice } from './care-push.mjs';
 import { CHECKIN_INTENTS, listSavedMessages, toggleMessageFavorite, removeSavedMessage } from './model.mjs';
 import { CONTACT_FILE_LIMIT, parseContactFile, previewContacts, addSelectedContacts } from './care-contact-import.mjs';
+import { createCareSignal } from './care-signal-view.mjs';
+import { initTheme, cycleTheme, THEME_LABEL, icon as signalIcon, createSheet } from '/member-signal/signal.mjs';
 
 const $ = id => document.getElementById(id);
 const PUBLIC_WEB = document.querySelector('meta[name="synk-care-runtime"]')?.content === 'public-web';
@@ -32,6 +34,7 @@ let expressionReview = null, preferenceCandidates = [], preferenceContext = null
 let memoryChoice = null, followupCalendar = null, checkinMode = false;
 let followupContext = null;
 let focusKey = '', focusEpoch = 0, focusOperation = null;
+let careSignal = null; // 시그널 판 새 화면(아래에서 만든다). 그 전의 render()는 건너뛴다.
 const ACTIONS = { contact: '연락', attend: '참석', gift: '선물', money: '경조금', remember: '조용히 기억' };
 const won = value => value === null || value === undefined ? '' : `${value.toLocaleString('ko-KR')}원`;
 const conversations = new Map(), sessionDrafts = new Map(), notified = new Set();
@@ -166,7 +169,7 @@ function restoreDraft() {
   if (!stored || (stored.eventId && (!row || (stored.draft && stored.draft.occurrenceId !== row.occurrence.occurrenceId)))) return;
   $('draft-event').value = stored.eventId; currentDraft = stored.draft;
   checkinMode=!stored.eventId;
-  $('draft-text').value = stored.text; $('draft-confirm').checked = stored.confirmed;
+  $('draft-text').value = stored.text; $('draft-confirm').checked = stored.confirmed; if (typeof paintDraftButtons === 'function') paintDraftButtons();
   $('draft-style').value = stored.approach || defaultDraftApproach(person(), currentDraft?.eventType || 'checkin'); $('draft-intent').value = stored.checkinIntent || 'everyday'; $('remember-draft').checked = stored.remember === true;
   if (currentDraft) $('draft-basis').textContent = [...currentDraft.basis, ...currentDraft.cautions, person().recipientPreference.note ? `기억할 점: ${person().recipientPreference.note}` : ''].filter(Boolean).join(' ');
   renderDraftNotice();
@@ -216,10 +219,12 @@ function renderWorkspace(restore = false) {
   if (restore) restoreConversation();
   renderEvents(); renderMessageOptions();
 }
-function render(restore = false) { renderPeople(); renderWorkspace(restore); renderHome(); renderHistory(); renderCapturePeople(); renderBrief(); updateView(); updateStorageLabel(); renderAccount(); }
+function render(restore = false) { renderPeople(); renderWorkspace(restore); renderHome(); renderHistory(); renderCapturePeople(); renderBrief(); updateView(); updateStorageLabel(); renderAccount(); careSignal?.render(); paintSignalChrome(); }
 function updateView() {
   document.body.dataset.view = activeView;
   $('home-view').hidden = activeView !== 'home'; $('workspace').hidden = activeView !== 'person';
+  $('ledger-view').hidden = activeView !== 'ledger'; document.querySelector('.intro').hidden = activeView !== 'home';
+  if (activeView === 'ledger') $('show-ledger').setAttribute('aria-current', 'page'); else $('show-ledger').removeAttribute('aria-current');
   $('show-home').setAttribute('aria-pressed', String(activeView === 'home'));
   if (activeView === 'home') $('show-home').setAttribute('aria-current', 'page'); else $('show-home').removeAttribute('aria-current');
   updateMood();
@@ -231,6 +236,7 @@ function updateMood() {
   document.body.dataset.mood = quiet ? 'quiet' : 'celebrate';
   $('remember-event').hidden = !quiet;
   $('complete-event').textContent = !event ? currentFollowupContext() ? '직접 챙겼어요 · 이 챙김 완료' : '직접 안부 전했어요' : quiet ? '마음을 전했어요' : '챙김 완료';
+  $('complete-help').textContent = `메시지는 직접 전해 주세요. ‘${$('complete-event').textContent}’는 연락하거나 챙긴 뒤에${quiet ? ', ‘조용히 기억했어요’는 연락 없이 마음에 담은 날에' : ''} 남기는 기록이에요.`;
   $('remember-draft').nextElementSibling.textContent=event?'복사할 때, 이 행사에 다시 쓸 내 문구로 기억':'복사할 때, 안부에 다시 쓸 내 문구로 기억';
 }
 function showHome() { stashConversation(); stashDraft(); activeView = 'home'; render(); }
@@ -240,9 +246,10 @@ function renderHome() {
   const checkinPerson=$('checkin-person').value;
   $('checkin-person').innerHTML=state.people.length?'<option value="">사람을 골라 주세요</option>'+state.people.map(item=>`<option value="${escapeHTML(item.id)}">${escapeHTML(item.name)}</option>`).join(''):'<option value="">먼저 사람을 기억해 주세요</option>';
   if(state.people.some(item=>item.id===checkinPerson))$('checkin-person').value=checkinPerson;
-  $('checkin-person').disabled=!state.people.length; $('start-checkin').textContent=state.people.length?'오늘 안부 준비':'사람 한 명부터 추가';
+  $('checkin-person').disabled=!state.people.length; $('start-checkin').textContent=state.people.length?'안부 문구 준비하기':'사람 한 명부터 추가';
   const upcoming = rows();
-  const soon = upcoming.filter(row => row.occurrence.daysUntil <= 7);
+  const shownToday = careSignal?.shownEventIds?.() || new Set();
+  const soon = upcoming.filter(row => row.occurrence.daysUntil <= 7 && !shownToday.has(row.event.id));
   const later = upcoming.filter(row => row.occurrence.daysUntil > 7).slice(0, 6);
   const card = row => {
     const { event, person: who, occurrence } = row;
@@ -251,9 +258,9 @@ function renderHome() {
     const pref = who.recipientPreference;
     const memory = pref.confirmed && pref.noReplyPressure ? '답장을 재촉하지 않기로 했어요.' : pref.confirmed && pref.salutation ? `평소 부르는 호칭 · ${pref.salutation}` : who.notes || (quiet ? '연락하지 않고 조용히 기억해도 괜찮아요.' : '올해의 인사를 내 말로 준비해요.');
     const title = event.title.startsWith(who.name) ? event.title : `${who.name} · ${event.title}`;
-    return `<article class="home-card" data-mood="${quiet ? 'quiet' : 'celebrate'}"><div class="home-date"><small>${Number(month)}월</small><strong>${Number(day)}</strong></div><div class="home-card-copy"><span class="home-badge">${eventDistance(row)}</span><h3>${escapeHTML(title)}</h3><p class="home-card-meta">${escapeHTML(who.relationship || '소중한 사람')}${event.calendar === 'lunar' ? ' · 음력 기준' : ''}${event.time ? ` · ${escapeHTML(event.time)}` : ''}</p><p class="home-memory">${escapeHTML(memory)}</p></div><div class="home-card-actions"><button class="soft-button" type="button" data-home-draft="${escapeHTML(event.id)}">${quiet ? '마음 준비하기' : '인사 준비하기'}</button><button class="text-button" type="button" data-home-person="${escapeHTML(who.id)}">우리의 기록</button><button class="text-button" type="button" data-ics="${escapeHTML(event.id)}" data-occurrence-date="${escapeHTML(occurrence.date)}">달력에 저장</button></div></article>`;
+    return `<article class="home-card" data-mood="${quiet ? 'quiet' : 'celebrate'}"><div class="home-date"><small>${Number(month)}월</small><strong>${Number(day)}</strong></div><div class="home-card-copy"><span class="home-badge">${eventDistance(row)}</span><h3>${escapeHTML(title)}</h3><p class="home-card-meta">${escapeHTML(who.relationship || '소중한 사람')}${event.calendar === 'lunar' ? ' · 음력 기준' : ''}${event.time ? ` · ${escapeHTML(event.time)}` : ''}</p>${careSignal?.upcomingLabel(event.id, occurrence.date) ? `<p class="home-nth">${escapeHTML(careSignal.upcomingLabel(event.id, occurrence.date))}</p>` : ''}<p class="home-memory">${escapeHTML(memory)}</p></div><div class="home-card-actions"><button class="soft-button" type="button" data-home-draft="${escapeHTML(event.id)}">${quiet ? '마음 준비하기' : '인사 준비하기'}</button><button class="text-button" type="button" data-home-person="${escapeHTML(who.id)}">우리의 기록</button><button class="text-button" type="button" data-ics="${escapeHTML(event.id)}" data-occurrence-date="${escapeHTML(occurrence.date)}">달력에 저장</button></div></article>`;
   };
-  $('home-upcoming').innerHTML = soon.length ? soon.map(card).join('') : '<p class="home-empty-week">이번 주에는 예정된 날이 없어요. 다음에 챙길 날을 미리 살펴보세요.</p>';
+  $('home-upcoming').innerHTML = soon.length ? soon.map(card).join('') : `<p class="home-empty-week">${shownToday.size ? '이번 주에 챙길 날은 위 「오늘 챙길 사람」에 모아 두었어요.' : '이번 주에는 예정된 날이 없어요. 다음에 챙길 날을 미리 살펴보세요.'}</p>`;
   $('home-later').innerHTML = later.map(card).join('');
   $('home-empty').hidden = upcoming.length > 0;
   $('home-empty').querySelector('h3').textContent = state.people.length ? '다음에 챙길 날을 남겨요.' : '떠오르는 한 사람부터.';
@@ -282,7 +289,7 @@ function renderCareFocus() {
   $('care-focus-detail').textContent = selected?.detail || '가까운 일정과 내가 정한 후속 챙김을 살폈어요. 원하면 아래에서 직접 안부를 준비해요.';
   $('care-focus-basis').textContent = result.basisPolicy;
   $('care-focus-action').hidden = $('care-focus-history').hidden = !selected;
-  $('care-focus-action').textContent = selected?.actionLabel || '마음 준비하기';
+  $('care-focus-action').textContent = selected?.actionLabel || '문구 준비하기';
   $('care-focus-next').hidden = options.length < 2;
   $('care-focus-next').textContent = '다른 사람 보기';
 }
@@ -459,7 +466,7 @@ function renderBrief() {
 }
 function scheduleCard(row) {
   const { event, person: who, occurrence, status } = row;
-  return `<article class="home-card"><div class="home-card-copy"><span class="home-badge">${status === 'completed' ? '챙김 기록 있음' : status === 'overdue' ? '기록할 마음' : eventDistance(row)}</span><h3>${escapeHTML(who.name)} · ${escapeHTML(event.title)}</h3><p>${escapeHTML(occurrence.date)} ${escapeHTML(event.time)}${event.calendar === 'lunar' ? ' · 음력에서 변환' : ''}</p>${event.location ? `<p>${escapeHTML(event.location)}</p>` : ''}</div><div class="home-card-actions">${status === 'upcoming' ? `<button type="button" class="soft-button" data-home-draft="${escapeHTML(event.id)}">인사 준비하기</button>` : ''}<button type="button" class="text-button" data-log-event="${escapeHTML(event.id)}" data-log-date="${escapeHTML(occurrence.date)}">${status === 'completed' ? '기록 보기' : '챙긴 마음 남기기'}</button></div></article>`;
+  return `<article class="home-card"><div class="home-card-copy"><span class="home-badge">${status === 'completed' ? '챙김 기록 있음' : status === 'overdue' ? '기록할 마음' : eventDistance(row)}</span><h3>${escapeHTML(who.name)} · ${escapeHTML(event.title)}</h3><p>${escapeHTML(occurrence.date)} ${escapeHTML(event.time)}${event.calendar === 'lunar' ? ' · 음력에서 변환' : ''}</p>${careSignal?.upcomingLabel(event.id, occurrence.date) ? `<p class="home-nth">${escapeHTML(careSignal.upcomingLabel(event.id, occurrence.date))}</p>` : ''}${event.location ? `<p>${escapeHTML(event.location)}</p>` : ''}</div><div class="home-card-actions">${status === 'upcoming' ? `<button type="button" class="soft-button" data-home-draft="${escapeHTML(event.id)}">인사 준비하기</button>` : ''}<button type="button" class="text-button" data-log-event="${escapeHTML(event.id)}" data-log-date="${escapeHTML(occurrence.date)}">${status === 'completed' ? '기록 보기' : '챙긴 마음 남기기'}</button></div></article>`;
 }
 function renderSchedule() {
   const mode = $('schedule-view').value;
@@ -698,7 +705,7 @@ async function deleteSavedMessage() {
   state = removeSavedMessage(state, { personId: owner, messageId: item.id });
   const saved = save(); renderSavedDraft(); renderHistory(); if (saved) notify('선택한 문구만 보관함에서 지웠어요. 작성 중인 초안은 그대로예요.');
 }
-function resetDraft({ preserveIntent = false } = {}) { invalidateMessageReview(); currentDraft = null; $('draft-text').value = ''; if (!preserveIntent) $('draft-intent').value = 'everyday'; $('draft-confirm').checked = false; $('remember-draft').checked = false; $('draft-basis').textContent = '직접 확인한 표현과 상황별 문장 틀로 준비해요.'; renderDraftNotice(); }
+function resetDraft({ preserveIntent = false } = {}) { invalidateMessageReview(); currentDraft = null; $('draft-text').value = ''; if (typeof paintDraftButtons === 'function') paintDraftButtons(); if (!preserveIntent) $('draft-intent').value = 'everyday'; $('draft-confirm').checked = false; $('remember-draft').checked = false; $('draft-basis').textContent = '직접 확인한 표현과 상황별 문장 틀로 준비해요.'; renderDraftNotice(); }
 function clearAudio() {
   if (transcribing) {
     const previous = transcribing; transcribing = null; previous.abort();
@@ -809,7 +816,7 @@ function editEvent(id) {
 function renderMessageOptions() {
   const available = currentRows(); const previous = $('draft-event').value;
   $('message-empty').hidden = !!person(); $('message-editor').hidden = !person();
-  $('draft-event').innerHTML = '<option value="">오늘 그냥 안부 · 일정 없이</option>'+available.map(row => `<option value="${escapeHTML(row.event.id)}" data-occurrence-id="${escapeHTML(row.occurrence.occurrenceId)}">${escapeHTML(row.event.title)} · ${escapeHTML(row.occurrence.date)}</option>`).join('');
+  $('draft-event').innerHTML = '<option value="">오늘 그냥 안부 · 일정 없이</option>'+available.map(row => `<option value="${escapeHTML(row.event.id)}" data-occurrence-id="${escapeHTML(row.occurrence.occurrenceId)}">${escapeHTML(row.event.title)} · ${Number(row.occurrence.date.slice(5, 7))}월 ${Number(row.occurrence.date.slice(8, 10))}일</option>`).join('');
   if (available.some(row => row.event.id === previous)) $('draft-event').value = previous;
   else if(!checkinMode&&available.length)$('draft-event').value=available[0].event.id;
   if (currentDraft && (currentDraft.eventId !== $('draft-event').value || currentDraft.occurrenceId !== $('draft-event').selectedOptions[0]?.dataset.occurrenceId)) resetDraft();
@@ -825,7 +832,7 @@ function generateDraft({ silent = false, savedMessageId } = {}) {
   if (event && row?.occurrence.occurrenceId !== $('draft-event').selectedOptions[0]?.dataset.occurrenceId) { renderMessageOptions(); throw Error('날짜가 바뀌었어요. 새로 표시한 일정을 확인해 주세요.'); }
   currentDraft = { ...draft, personId: selectedId, eventId: event?.id||'', eventType:event?.type||'checkin', occurrenceId: row?.occurrence.occurrenceId, originalText: draft.text };
   $('saved-message-select').dataset.scopeKey = '';
-  $('draft-text').value = draft.text; $('draft-confirm').checked = false; invalidateMessageReview();
+  $('draft-text').value = draft.text; $('draft-confirm').checked = false; invalidateMessageReview(); if (typeof paintDraftButtons === 'function') paintDraftButtons();
   $('draft-basis').textContent = [...draft.basis, ...draft.cautions, person().recipientPreference.note ? `기억할 점: ${person().recipientPreference.note}` : ''].filter(Boolean).join(' ');
   renderDraftNotice();
   renderMemoryApplication(draft);
@@ -1137,7 +1144,7 @@ on('care-log-form', 'submit', e => {
   e.preventDefault();
   const kind = $('care-log-kind').value, direction = $('care-log-direction').value, eventId = $('care-log-event').value;
   const recordedAt=new Date();
-  let next = recordCareAction(state, { personId: selectedId, eventId, kind, direction, occurredOn: $('care-log-date').value, amountWon: $('care-log-amount').value === '' ? null : Number($('care-log-amount').value), note: $('care-log-note').value },recordedAt);
+  let next = recordCareAction(state, { personId: selectedId, eventId, kind, direction, occurredOn: $('care-log-date').value, amountWon: $('care-log-amount').value === '' ? null : Number($('care-log-amount').value), note: $('care-log-note').value, ...($('care-log-occasion').value ? { occasion: $('care-log-occasion').value } : {}), ...($('care-log-item').value.trim() ? { item: $('care-log-item').value.trim() } : {}) },recordedAt);
   if (logOccurrence?.startsWith(`${eventId}:`) && direction === 'sent') next = completeEvent(next, eventId, recordedAt, logOccurrence, { allowPast: true, action: kind === 'remember' ? 'remembered' : 'contacted' });
   state = next; logOccurrence = null; $('care-log-form').reset(); save(); render(); notify('실제로 나눈 마음을 남겼어요. 다음에 준비할 때 함께 꺼내 보여드려요.');
 });
@@ -1429,7 +1436,7 @@ on('sample-button', 'click', () => {
   state.people.push(sample); state.events.push(makeEvent({ personId: sample.id, type: 'birthday', date: dateString, title: '지민 생일', repeat: 'yearly' }));
   const quiet = makePerson({ name: '서연', relationship: '친구 · 예시 인물', notes: '예시: 답장을 기다리지 않고 안부만 전하기', recipientPreference: { confirmed: true, formality: 'polite', noReplyPressure: true } });
   state.people.push(quiet); state.events.push(makeEvent({ personId: quiet.id, type: 'memorial', date: today(), title: '아버님 기일', repeat: 'yearly' }));
-  conversations.set(sample.id, { text: '나: 생일 축하해! 오늘 좋아하는 거 먹어 😊\n상대: 고마워! 기억해 줘서 좋다.', selfText: '생일 축하해! 오늘 좋아하는 거 먹어 😊', otherText: '고마워! 기억해 줘서 좋다.', verified: true }); sampleMode = true; showHome(); save(); notify('가상의 두 사람과 예시 일정이에요. 실제 자료를 넣기 전에는 예시를 지워 주세요.');
+  conversations.set(sample.id, { text: '나: 생일 축하해! 오늘 좋아하는 거 먹어 😊\n상대: 고마워! 기억해 줘서 좋다.', selfText: '생일 축하해! 오늘 좋아하는 거 먹어 😊', otherText: '고마워! 기억해 줘서 좋다.', verified: true }); sampleMode = true; showHome(); save(); notify('예시를 불러왔어요.');
 });
 on('notification-button', 'click', () => { renderPushSettings(); $('notification-dialog').showModal(); void carePush.prepare(); });
 on('close-notification-dialog', 'click', () => $('notification-dialog').close());
@@ -1455,3 +1462,50 @@ window.addEventListener('pagehide', event => { releaseMemoryCard(); $('audio-pla
 window.addEventListener('pageshow', event => { const restored = resumeCareLoginNavigation(accountStatus, event.persisted); if (restored !== accountStatus && !accountId) { accountStatus = restored;renderAccount(); } });
 window.addEventListener('online', () => { if (accountId && syncStatus.pending) void sync.flush(); });
 document.documentElement.dataset.ready = 'true';
+
+// ── 시그널 판(2026-10-14): 테마·계정 칩·새 화면 연결 ─────────────────
+initTheme();
+const accountSheet = createSheet($('account-sheet'));
+careSignal = createCareSignal({
+  $, getState: () => state, getSelectedId: () => selectedId, getActiveView: () => activeView,
+  setActiveView: view => { stashConversation(); stashDraft(); activeView = view; render(); $('ledger-view').focus?.({ preventScroll: true }); window.scrollTo({ top: 0, behavior: 'instant' }); },
+  commit: next => { state = next; save(); render(); }, notify, choosePerson, download,
+});
+// 흰 주 단추는 하나: 초안이 비었으면 「초안 준비하기」, 초안이 생기면 「확인한 메시지 복사」
+function paintDraftButtons() {
+  const empty = !$('draft-text')?.value.trim(), make = $('generate-draft'), copy = $('copy-draft');
+  if (!make || !copy) return;
+  make.className = empty ? 'felt-button' : 'soft-button'; copy.className = empty ? 'soft-button' : 'felt-button';
+}
+function paintSignalChrome() {
+  paintDraftButtons();
+  const theme = document.documentElement.dataset.theme || 'night', button = $('theme-button');
+  if (button) { button.innerHTML = signalIcon(theme === 'day' ? 'sun' : theme === 'system' ? 'monitor' : 'moon'); button.setAttribute('aria-label', `화면 밝기: ${THEME_LABEL[theme]} (눌러서 바꾸기)`); }
+  const chip = $('account-chip'); if (!chip) return;
+  const kind = $('account-panel').dataset.kind || '', status = $('account-status').textContent.trim();
+  chip.dataset.state = /conflict|error|locked|reconnect/.test(kind) || /필요|확인해 주세요|다시/.test(status) ? 'alert' : accountId ? (syncStatus.status === 'saving' || syncStatus.status === 'loading' ? 'busy' : 'ok') : accountStarting ? 'busy' : '';
+  chip.querySelector('span').textContent = accountId ? (syncStatus.status === 'synced' ? '계정에 저장됨' : status || '내 계정') : accountStarting ? '확인 중' : '로그인';
+  chip.setAttribute('aria-label', `SYNK 계정: ${status}`);
+}
+document.querySelector('[data-sheet-close]').innerHTML = signalIcon('close');
+for (const button of document.querySelectorAll('.close-x')) button.innerHTML = signalIcon('close');
+$('theme-button').addEventListener('click', () => { const next = cycleTheme(); paintSignalChrome(); notify(`${THEME_LABEL[next]}으로 바꿨어요.`); });
+$('account-chip').addEventListener('click', event => accountSheet.open(event.currentTarget));
+document.addEventListener('click', event => { if (event.target.closest('[data-open-account]')) accountSheet.open(event.target.closest('button')); });
+$('show-home').addEventListener('click', () => { if (activeView === 'ledger') { activeView = 'home'; render(); } });
+const guarded = handler => async event => {
+  try {
+    if (notebookView().locked && event.target.closest('.main-grid, #ledger-view, #amount-dialog, #memorial-dialog')) { if (event.type === 'click' && event.target.closest('button')) { event.preventDefault(); notify(notebookView().detail); } return; }
+    if (await handler(event)) event.stopPropagation?.();
+  } catch (error) { notify(error.message || '처리하지 못했어요. 다시 확인해 주세요.'); }
+};
+document.addEventListener('click', guarded(event => careSignal.onClick(event)));
+document.addEventListener('change', guarded(event => careSignal.onChange(event)));
+document.addEventListener('submit', guarded(event => careSignal.onSubmit(event)));
+document.addEventListener('input', event => { careSignal.onInput(event); if (event.target?.id === 'draft-text') paintDraftButtons(); });
+for (const slot of document.querySelectorAll('.tabbar [data-icon]')) slot.outerHTML = signalIcon(slot.dataset.icon);
+document.querySelector('.tabbar').addEventListener('click', event => { const button = event.target.closest('[data-proxy]'); if (button) $(button.dataset.proxy).click(); });
+careSignal.render();
+// 계정 판은 renderAccount가 그린다. 판이 바뀌면 위쪽 계정 칩도 따라 바꾼다(renderAccount는 손대지 않는다).
+new MutationObserver(() => paintSignalChrome()).observe($('account-panel'), { attributes: true, attributeFilter: ['data-kind'], subtree: true, childList: true, characterData: true });
+paintSignalChrome();

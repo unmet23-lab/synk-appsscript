@@ -5,12 +5,14 @@ import { fileURLToPath } from 'node:url';
 import { createRequire } from 'node:module';
 import { readConfig } from '../synk-account/src/core.mjs';
 import { isOAuthReturnNavigation } from '../synk-account/oauth-return.mjs';
+import { memberSignalRoutes } from '../member-signal/serve.mjs';
+const SIGNAL = new Map(memberSignalRoutes());
 
 const require = createRequire(import.meta.url);
 const { createLocalTranscriber } = require('../../tools/patent-studio/local-transcriber.cjs');
 const ROOT = fileURLToPath(new URL('.', import.meta.url));
 export const MAX_AUDIO_BYTES = 20 * 1024 * 1024;
-const FILES = new Set(['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-contact-import.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs']);
+const FILES = new Set(['index.html', 'style.css', 'app.mjs', 'model.mjs', 'lunar.mjs', 'care-features.mjs', 'care-contact-import.mjs', 'care-sync.mjs', 'account.mjs', 'care-account-view.mjs', 'care-focus.mjs', 'care-context.mjs', 'care-push.mjs', 'care-sw.js', 'manifest.webmanifest', 'care-planner.mjs', 'care-personalization.mjs', 'care-support.mjs', 'care-followup.js', 'care-outcomes.mjs', 'memory-card.mjs', 'memory-theme.mjs', 'care-signal-view.mjs', 'care-upcoming.mjs', 'care-today.mjs', 'care-ledger.mjs', 'care-amount.mjs', 'care-memorial.mjs', 'care-gift.mjs']);
 const ENGINE_FILES = new Set(['domain.js', 'ask.js', 'vellum-expression.js', 'temper-outcomes.js']);
 const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webmanifest': 'application/manifest+json', '.webp': 'image/webp', '.png': 'image/png', '.svg': 'image/svg+xml', '.woff2': 'font/woff2', '.ttf': 'font/ttf' };
 const HEADERS = {
@@ -87,7 +89,7 @@ export function createServer({ port = 4296, transcriber = createLocalTranscriber
     if (!['GET', 'HEAD'].includes(req.method)) return send(405, { error: '지원하지 않는 요청이에요.' });
     if (pathname === '/api/account-config') { await configReady; return send(200, publicConfig); }
     if (pathname === '/account-core.mjs') return send(200, await readFile(path.resolve(ROOT, '../synk-account/src/core.mjs')), MIME['.mjs']);
-    if (['/synk-account/src/core.mjs', '/synk-account/src/product-account.mjs', '/synk-account/src/document-sync.mjs'].includes(pathname)) return send(200, await readFile(path.resolve(ROOT, '..', pathname.slice(1))), MIME['.mjs']);
+    if (['/synk-account/src/core.mjs', '/synk-account/src/product-account.mjs', '/synk-account/src/document-sync.mjs', '/synk-account/src/platform-entry.mjs'].includes(pathname)) return send(200, await readFile(path.resolve(ROOT, '..', pathname.slice(1))), MIME['.mjs']);
     if (pathname.startsWith('/atlas/') && ENGINE_FILES.has(pathname.slice('/atlas/'.length))) {
       try { return send(200, await readFile(path.resolve(ROOT, '../../atlas', pathname.slice('/atlas/'.length))), MIME['.js']); }
       catch { return send(404, { error: '찾을 수 없는 파일이에요.' }); }
@@ -99,8 +101,9 @@ export function createServer({ port = 4296, transcriber = createLocalTranscriber
         return send(200, { transcription: { available: !!status.available, reason: status.reason, mode: 'local-whisper', maxBytes: MAX_AUDIO_BYTES, speakerSeparation: false }, cloudAI: false, accountSync: false, backgroundNotifications: false });
       } catch { return send(200, { transcription: { available: false, reason: 'local_runtime_missing' }, cloudAI: false }); }
     }
+    if (SIGNAL.has(pathname)) { try { return send(200, await readFile(SIGNAL.get(pathname)), MIME[path.extname(pathname)]); } catch { return send(404, { error: '찾을 수 없는 파일이에요.' }); } }
     const file = pathname === '/' ? 'index.html' : pathname.slice(1);
-    const asset = /^assets\/[A-Za-z0-9_.-]+\.(webp|png|svg|woff2|ttf)$/.test(file);
+    const asset = /^assets\/(?:art\/)?[A-Za-z0-9_.-]+\.(webp|png|svg|woff2|ttf)$/.test(file);
     if (!FILES.has(file) && !asset) return send(404, { error: '찾을 수 없는 파일이에요.' });
     try { send(200, await readFile(path.join(root, file)), MIME[path.extname(file)]); }
     catch { send(404, { error: '찾을 수 없는 파일이에요.' }); }

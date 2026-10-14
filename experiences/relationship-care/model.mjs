@@ -4,6 +4,10 @@ import { resolveCareMemory } from './care-personalization.mjs';
 export const EVENT_TYPES = Object.freeze({ birthday: '생일', wedding: '결혼', condolence: '부고', memorial: '기일', anniversary: '기념일' });
 export const MESSAGE_TYPES = Object.freeze({ ...EVENT_TYPES, checkin: '오늘 그냥 안부' });
 export const CHECKIN_INTENTS = Object.freeze({ everyday: '일상 안부', reconnect: '오랜만의 안부', thanks: '감사 인사', unspecified: '목적 미지정' });
+/** 경조사 장부의 행사 분류. 일정 종류(EVENT_TYPES)보다 넓다. 기록에 없으면 연결된 일정 종류에서 읽는다. */
+export const OCCASION_TYPES = Object.freeze({ wedding: '결혼', funeral: '장례·조문', 'first-birthday': '돌', birthday: '생일', 'milestone-birthday': '환갑·칠순', opening: '개업', housewarming: '집들이', hospital: '병문안', memorial: '기일·제사', holiday: '명절', other: '기타' });
+/** 직접 연락한 방법. 연락(contact) 기록에만 붙인다. */
+export const CONTACT_CHANNELS = Object.freeze({ call: '전화', message: '문자', meet: '만남' });
 const DAY = 86_400_000;
 const MAX_TEXT = 50_000;
 const choose = (value, options, fallback, label) => {
@@ -171,15 +175,48 @@ function tone(input) {
   };
 }
 
+const present = (input, key) => Object.hasOwn(input, key) && input[key] !== undefined && input[key] !== null;
+/** 사람별 「갖고 싶다고 말한 것」. 선택 칸이며 원문 근거가 필요한 기억(memories)과 따로 둔다. */
+function wishList(input) {
+  const seen = new Set();
+  return backupList(input, 50, '갖고 싶다고 말한 것').map(value => {
+    exactKeys(value, ['id', 'text', 'notedOn', 'given'], '갖고 싶다고 말한 것');
+    const notedOn = clean(value.notedOn, '들은 날짜', 10);
+    if (notedOn) dateParts(notedOn);
+    if (value.given !== undefined && typeof value.given !== 'boolean') throw new Error('이미 드렸는지 여부를 확인해 주세요.');
+    const item = { id: requireId(value.id, '갖고 싶은 것 식별자'), text: clean(value.text, '갖고 싶다고 말한 것', 200, true), notedOn, given: value.given === true };
+    uniqueId(item.id, seen, '갖고 싶다고 말한 것');
+    return item;
+  });
+}
+/** 오늘 카드의 「며칠 뒤에」. on은 미룬 한국 날짜, until은 다시 보여 줄 날짜. */
+function careSnooze(input) {
+  exactKeys(input, ['on', 'until'], '미루기');
+  const on = clean(input.on, '미룬 날짜', 10, true), until = clean(input.until, '다시 볼 날짜', 10, true);
+  dateParts(on); dateParts(until);
+  const gap = Math.round((dateNumber(until) - dateNumber(on)) / DAY);
+  if (gap < 1 || gap > 30) throw new Error('미루기는 1~30일 사이로 골라 주세요.');
+  return { on, until };
+}
+
 /** 사람 한 명. selfTone은 관찰, recipientPreference는 사용자가 직접 확인한 선호를 따로 보관한다. */
 export function makePerson(input = {}) {
   if (Object.hasOwn(input, 'checkinIntervalDays') && (!Number.isInteger(input.checkinIntervalDays) || input.checkinIntervalDays < 0 || input.checkinIntervalDays > 365)) throw new Error('안부 주기는 0~365일 사이의 정수로 골라 주세요. 0일은 일반 안부 추천 끄기예요.');
+  // 선택 칸(2026-10-14): 고인 표시·돌아가신 날·갖고 싶다고 말한 것·오늘 카드 미루기. 없으면 키를 만들지 않아 옛 기록 모양을 유지한다.
+  if (present(input, 'deceased') && typeof input.deceased !== 'boolean') throw new Error('고인 표시는 예·아니오로 골라 주세요.');
+  const deceased = input.deceased === true;
+  const diedOn = present(input, 'diedOn') ? clean(input.diedOn, '돌아가신 날', 10) : '';
+  if (diedOn) { dateParts(diedOn); if (!deceased) throw new Error('돌아가신 날은 고인으로 표시한 뒤 적어 주세요.'); }
   return {
     id: id(input.id, 'person'), name: clean(input.name, '이름', 80, true), relationship: clean(input.relationship, '관계', 80),
     group: choose(input.group, ['family', 'friend', 'work', 'other'], 'other', '사람 모음'),
     selfTone: tone(input.selfTone), recipientPreference: preference(input.recipientPreference), notes: clean(input.notes, '메모'), savedMessages: savedMessages(input.savedMessages),
     ...(Object.hasOwn(input, 'messageLibrary') ? { messageLibrary: messageLibrary(input.messageLibrary) } : {}),
     ...(Object.hasOwn(input, 'checkinIntervalDays') ? { checkinIntervalDays: input.checkinIntervalDays } : {}),
+    ...(deceased ? { deceased: true } : {}),
+    ...(diedOn ? { diedOn } : {}),
+    ...(present(input, 'wishes') ? { wishes: wishList(input.wishes) } : {}),
+    ...(present(input, 'careSnooze') ? { careSnooze: careSnooze(input.careSnooze) } : {}),
   };
 }
 
@@ -199,6 +236,8 @@ export function makeEvent(input = {}) {
   if (['wedding', 'condolence'].includes(type) && repeat !== 'none') throw new Error('결혼·부고는 일회성 일정으로 저장해 주세요.');
   const days = input.reminderDays ?? (type === 'condolence' ? [0] : [7, 1, 0]);
   if (!Array.isArray(days) || days.length > 12 || days.some(day => !Number.isInteger(day) || day < 0 || day > 365)) throw new Error('미리 알림은 0~365일 사이의 정수로 최대 12개까지 설정해 주세요.');
+  // 선택 칸(2026-10-14): 날짜의 연도가 실제 태어난 해·결혼한 해·돌아가신 해일 때만 true. 없으면 나이·주년·주기를 세지 않는다.
+  if (present(input, 'yearKnown') && typeof input.yearKnown !== 'boolean') throw new Error('연도를 아는지 여부를 확인해 주세요.');
   return {
     id: id(input.id, 'event'), personId, type, date, time, calendar,
     lunarLeapMonth, lunarLeapPolicy: choose(input.lunarLeapPolicy, ['regular', 'leap-only'], 'regular', '윤달 처리'),
@@ -206,6 +245,7 @@ export function makeEvent(input = {}) {
     title: clean(input.title, '일정 이름', 120) || EVENT_TYPES[type], location: clean(input.location, '장소', 300), repeat,
     reminderDays: [...new Set(days)].sort((a, b) => b - a), leapDayPolicy: choose(input.leapDayPolicy, ['feb28', 'mar1'], 'feb28', '윤년 처리'),
     notes: clean(input.notes, '일정 메모'), carePlan: carePlan(input.carePlan),
+    ...(input.yearKnown === true ? { yearKnown: true } : {}),
   };
 }
 
@@ -315,7 +355,18 @@ function makeActivity(input) {
   const occurredOn = clean(input.occurredOn, '챙긴 날짜', 10, true); dateParts(occurredOn);
   const createdAt = timestamp(input.createdAt, '챙긴 기록 시간');
   if (occurredOn > today(createdAt)) throw new Error('실제로 챙긴 기록의 날짜가 기록한 날보다 미래예요.');
-  return { id: requireId(input.id, '챙긴 기록 식별자'), personId: requireId(input.personId, '사람 식별자'), eventId: input.eventId ? requireId(input.eventId, '일정 식별자') : '', kind: choose(input.kind, ['contact', 'attend', 'gift', 'money', 'remember'], 'contact', '챙긴 방법'), occurredOn, amountWon: amount(input.amountWon), direction: choose(input.direction, ['sent', 'received'], 'sent', '주고받은 방향'), note: clean(input.note, '챙긴 기록 메모'), createdAt };
+  const kind = choose(input.kind, ['contact', 'attend', 'gift', 'money', 'remember'], 'contact', '챙긴 방법');
+  // 선택 칸(2026-10-14): 장부 행사 분류·참석 여부·물품 이름·연락 방법. 값이 없으면 키를 만들지 않는다.
+  if (present(input, 'attended') && typeof input.attended !== 'boolean') throw new Error('참석 여부를 확인해 주세요.');
+  const item = present(input, 'item') ? clean(input.item, '물품·선물 이름', 120) : '';
+  const channel = present(input, 'channel') && input.channel !== '' ? choose(input.channel, Object.keys(CONTACT_CHANNELS), '', '연락 방법') : '';
+  if (channel && kind !== 'contact') throw new Error('연락 방법은 연락 기록에만 남길 수 있어요.');
+  return { id: requireId(input.id, '챙긴 기록 식별자'), personId: requireId(input.personId, '사람 식별자'), eventId: input.eventId ? requireId(input.eventId, '일정 식별자') : '', kind, occurredOn, amountWon: amount(input.amountWon), direction: choose(input.direction, ['sent', 'received'], 'sent', '주고받은 방향'), note: clean(input.note, '챙긴 기록 메모'), createdAt,
+    ...(present(input, 'occasion') && input.occasion !== '' ? { occasion: choose(input.occasion, Object.keys(OCCASION_TYPES), 'other', '행사 분류') } : {}),
+    ...(present(input, 'attended') ? { attended: input.attended } : {}),
+    ...(item ? { item } : {}),
+    ...(channel ? { channel } : {}),
+  };
 }
 
 /** 선택을 확인한 뒤 원문과 기억·일정을 함께 저장한다. 하나라도 틀리면 전부 저장하지 않는다. */
@@ -459,7 +510,9 @@ export function defaultDraftApproach(personInput, type, { preferSaved = true, ch
 
 function composeDraft(person, type, options) {
   const pref = person.recipientPreference;
-  const sensitive = ['condolence', 'memorial'].includes(type);
+  // 고인으로 표시한 사람은 생일·기념일에도 축하 문구·이모지를 내지 않는다(2026-10-14).
+  const deceased = person.deceased === true;
+  const sensitive = deceased || ['condolence', 'memorial'].includes(type);
   const memory = resolveCareMemory({ state: options.state, personId: person.id, eventType: type, memorySelection: options.memorySelection });
   const observedCasual = person.selfTone?.formality === 'casual';
   const casual = !sensitive && (pref.confirmed && pref.formality !== 'auto' ? pref.formality === 'casual' : observedCasual);
@@ -483,6 +536,12 @@ function composeDraft(person, type, options) {
     anniversary: casual ? `${casualName}, 기념일 축하해!${longer ? ' 좋은 기억이 남는 하루 보내.' : ''}` : `${honorific}, 기념일 축하드려요.${longer ? ' 소중한 기억이 남는 하루 보내세요.' : ''}`,
     checkin: checkinTexts[checkinIntent],
   };
+  if (deceased) Object.assign(texts, {
+    birthday: `생전 생신을 맞아 고인을 함께 기억합니다.${longer ? ' 조용히 마음을 모읍니다.' : ''}`,
+    anniversary: `고인과 함께한 날을 기억하며 마음을 함께합니다.${longer ? ' 조용히 위로의 마음을 전합니다.' : ''}`,
+    wedding: `고인을 기억하며 마음을 함께합니다.${longer ? ' 조용히 위로의 마음을 전합니다.' : ''}`,
+    checkin: `문득 고인이 생각나 마음을 함께 전합니다.${longer ? ' 답장은 편하실 때 하셔도 괜찮아요.' : ''}`,
+  });
   const available = approach === 'saved' ? listSavedMessages(person, { type, ...(type === 'checkin' ? { checkinIntent } : {}) }) : [];
   const saved = selectedId ? available.find(item => item.id === selectedId) :
     (available.find(item => type !== 'checkin' || item.checkinIntent === checkinIntent) || available[0]);
@@ -490,7 +549,7 @@ function composeDraft(person, type, options) {
   const method = saved ? 'saved' : 'template';
   let text = saved ? saved.text : texts[type];
   if (!saved && !sensitive && customSalutation && !['birthday', 'anniversary', 'checkin'].includes(type)) text = `${customSalutation}, ${text}`;
-  const basis = saved ? ['이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요.'] : [sensitive ? '부고·기일에는 차분하고 정중한 표현을 사용했어요.' : pref.confirmed && pref.formality !== 'auto' ? '직접 확인한 상대의 말투 선호를 반영했어요.' : observedCasual ? '본인 발화에서 관찰한 편한 말투를 참고했어요.' : '확인된 단서가 부족해 정중한 표현을 사용했어요.', '만남·선물·송금 약속은 임의로 넣지 않았어요.'];
+  const basis = saved ? ['이 사람의 같은 종류 일정에 직접 기억해 둔 문구를 가져왔어요. 자동으로 학습한 결과가 아니에요.'] : [deceased ? '고인으로 표시한 분이라 축하 표현과 이모지를 넣지 않았어요.' : sensitive ? '부고·기일에는 차분하고 정중한 표현을 사용했어요.' : pref.confirmed && pref.formality !== 'auto' ? '직접 확인한 상대의 말투 선호를 반영했어요.' : observedCasual ? '본인 발화에서 관찰한 편한 말투를 참고했어요.' : '확인된 단서가 부족해 정중한 표현을 사용했어요.', '만남·선물·송금 약속은 임의로 넣지 않았어요.'];
   const cautions = [saved ? '지난 문구의 호칭·날짜·약속이 지금도 맞는지 확인해 주세요.' : '규칙과 문구 틀로 만든 초안이에요. 보내기 전에 직접 확인해 주세요.'];
   if (approach === 'saved' && !saved) cautions.push('이 종류의 일정에 기억해 둔 문구가 없어 짧은 초안부터 준비했어요.');
   if (customSalutation && !saved && !sensitive) basis.push('직접 정한 호칭을 사용했어요.');

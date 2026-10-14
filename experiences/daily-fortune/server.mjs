@@ -3,9 +3,11 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { readConfig } from '../synk-account/src/core.mjs';
+import { memberSignalRoutes } from '../member-signal/serve.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
-const publicFiles = ['index.html', 'app.css', 'app.mjs', 'core.mjs', 'saju-core.mjs', 'insights.mjs', 'account.mjs', 'account-state.mjs'];
+const publicFiles = ['index.html', 'app.css', 'app.mjs', 'core.mjs', 'saju-core.mjs', 'insights.mjs', 'account.mjs', 'account-state.mjs', 'daily.mjs', 'flow.mjs', 'compat.mjs', 'tarot.mjs', 'year.mjs', 'me.mjs', 'fortune-base.mjs'];
+const art = ['sun', 'calendar', 'moon', 'heart', 'sparkle', 'firework', 'star', 'crown', 'shooting'].map(name => `art/${name}.webp`);
 const assets = ['synk-logo.svg', 'SUIT.woff2', 'SUIT-LICENSE.txt', 'InterTight.woff2', 'InterTight-LICENSE.txt', 'fortune-star.avif', 'slab-cream-long.webp', 'slab-blush-long.webp', 'slab-coral-long.webp', 'wide-butter.webp'];
 const files = new Map([
   ['/', path.join(root, 'index.html')],
@@ -15,8 +17,11 @@ const files = new Map([
   ['/vendor/lunar-javascript-1.7.7/lunar.mjs', path.join(root, 'vendor/lunar-javascript-1.7.7/lunar.mjs')],
   ['/vendor/lunar-javascript-1.7.7/LICENSE', path.join(root, 'vendor/lunar-javascript-1.7.7/LICENSE')],
   ...assets.map(name => [`/assets/${name}`, path.join(root, 'assets', name)]),
+  ...art.map(name => [`/assets/${name}`, path.join(root, 'assets', name)]),
+  ['/synk-account/src/platform-entry.mjs', path.join(root, '../synk-account/src/platform-entry.mjs')],
+  ...memberSignalRoutes(),
 ]);
-const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.avif': 'image/avif', '.webp': 'image/webp', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8' };
+const mime = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.svg': 'image/svg+xml', '.avif': 'image/avif', '.webp': 'image/webp', '.woff2': 'font/woff2', '.txt': 'text/plain; charset=utf-8' };
 
 export function createServer({ accountConfig = { version: 1 } } = {}) {
   // Only the established public configuration format is exposed. Secret keys fail validation.

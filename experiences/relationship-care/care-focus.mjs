@@ -3,6 +3,8 @@ import * as DomainModule from '../../atlas/domain.js';
 import { importBackup, upcomingEvents, nextOccurrence } from './model.mjs';
 import { followupRows, SUPPORT_ENGINES } from './care-support.mjs';
 
+const monthDay = date => `${Number(date.slice(5, 7))}월 ${Number(date.slice(8, 10))}일`;
+
 const Core = DomainModule.default ?? globalThis.SynkAtlasDomain;
 const DAY = 86400000;
 const QUIET = new Set(['condolence', 'memorial']);
@@ -50,11 +52,12 @@ export function recommendCareFocus({ state, now = new Date() } = {}) {
   const add = (item, priority) => candidates.push({ ...item, priority });
   for (const { person, event, occurrence } of upcomingEvents(usable, at)) {
     if (occurrence.daysUntil > 7) continue;
-    const quiet = QUIET.has(event.type);
+    // 고인으로 표시한 사람의 생일·기념일도 축하 대신 조용한 안내로 보여 준다.
+    const quiet = QUIET.has(event.type) || person.deceased === true;
     add({ key: `event:${event.id}:${occurrence.date}`, personId: person.id, personName: person.name, kind: 'event', eventId: event.id, followupId: '', occurrenceId: occurrence.occurrenceId,
-      title: event.title, reason: occurrence.daysUntil === 0 ? `오늘(${occurrence.date}) 기억해 둔 날이에요.` : `${occurrence.daysUntil}일 뒤(${occurrence.date})로 남겨 둔 일정이에요.`,
+      title: event.title, reason: occurrence.daysUntil === 0 ? `오늘(${monthDay(occurrence.date)}) 기억해 둔 날이에요.` : `${occurrence.daysUntil}일 뒤(${monthDay(occurrence.date)})로 남겨 둔 일정이에요.`,
       detail: quiet ? '연락 없이 조용히 기억해도 괜찮아요. 마음을 전한다면 답장을 재촉하지 않는 표현부터 준비해요.' : detail(person),
-      actionLabel: quiet ? '마음 준비하기' : '인사 준비하기', quiet }, occurrence.daysUntil === 0 ? 1000 : 700 - occurrence.daysUntil);
+      actionLabel: quiet ? '조용한 문구 준비하기' : '문구 준비하기', quiet }, occurrence.daysUntil === 0 ? 1000 : 700 - occurrence.daysUntil);
   }
   for (const followup of followupRows(usable, { today: date }).pending) {
     if (!followup.person || followup.daysUntil > 0) continue;
@@ -73,7 +76,8 @@ export function recommendCareFocus({ state, now = new Date() } = {}) {
   // 직접 정한 다음 챙김 날보다 앞서 일반 안부로 다시 재촉하지 않는다.
   const plannedPeople = new Set(usable.followups.filter(item => item.status === 'pending' && item.dueOn > date).map(item => item.personId));
   for (const person of people.values()) {
-    if (quietPeople.has(person.id) || plannedPeople.has(person.id)) continue;
+    // 고인에게는 일반 안부를 권하지 않는다. 기일·생전 생신은 위의 일정으로만 보여 준다.
+    if (person.deceased === true || quietPeople.has(person.id) || plannedPeople.has(person.id)) continue;
     const interval = person.checkinIntervalDays ?? 30;
     if (interval === 0) continue;
     const last = latest.get(person.id), days = last ? Math.round((dayNumber(date) - dayNumber(last)) / DAY) : null;
@@ -82,7 +86,7 @@ export function recommendCareFocus({ state, now = new Date() } = {}) {
     add({ key: `checkin:${person.id}`, personId: person.id, personName: person.name, kind: 'checkin', eventId: '', followupId: '', occurrenceId: '',
       title: '가볍게 안부를 준비해 볼까요?',
       reason: (last ? `수첩에 마지막으로 남긴 챙김은 ${last}(${days}일 전)이에요. 실제로 나눈 연락과 다를 수 있어요.` : '아직 이 사람의 챙김 기록을 남기지 않았어요. 첫 안부부터 준비해 볼 수 있어요.') + intervalReason,
-      detail: detail(person), actionLabel: '오늘 안부 준비', quiet: false }, last ? 400 + Math.min(days, 3650) / 100 : 200);
+      detail: detail(person), actionLabel: '안부 문구 준비하기', quiet: false }, last ? 400 + Math.min(days, 3650) / 100 : 200);
   }
   // 한 사람의 여러 일감은 가장 가까운 제안 하나로 묶는다. 연락 횟수를 늘리기 위한 순위가 아니다.
   const byPerson = new Map();

@@ -4,18 +4,21 @@ import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { BOOK_STYLES } from './book.mjs';
+import { memberSignalRoutes } from '../member-signal/serve.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const repo = path.resolve(root, '../..');
-const assets = ['synk.svg','SUIT.woff2','InterTight.woff2','DMMono.ttf','teacher-cover.png','button.webp','button-soft.webp','chip.webp','wide-cream.webp','wide-lapis.webp'];
+const assets = ['podium.webp','bubble.webp','quote.webp','trophy.webp','thought.webp','stamp.webp'];
 const files = new Map([
   ['/',path.join(root,'index.html')],
-  ...['index.html','app.css','app.mjs','domain.mjs','storage.mjs','book.mjs'].map(name=>[`/${name}`,path.join(root,name)]),
+  ...['index.html','app.css','app.mjs','domain.mjs','storage.mjs','book.mjs','coach.mjs','voice.mjs'].map(name=>[`/${name}`,path.join(root,name)]),
   ['/member-book-assets.mjs',path.join(root,'../member-book-assets.mjs')],
   ['/core/ask.js',path.join(repo,'atlas/ask.js')],
-  ...assets.map(name=>[`/assets/${name}`,path.join(repo,'desktop/assets/launcher',name)]),
+  ...assets.map(name=>[`/assets/${name}`,path.join(root,'assets',name)]),
+  ...memberSignalRoutes(),
 ]);
 const mime = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.mjs':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf' };
+// 누르고 말하기: 녹음은 이 창의 blob 주소로만 다시 듣는다.
 export function createServer({accountConfigPath,accountConfig} = {}) {
   const shared=sharedAccountServer({configPath:accountConfigPath,config:accountConfig});
   return http.createServer(async(req,res)=>{
@@ -23,7 +26,7 @@ export function createServer({accountConfigPath,accountConfig} = {}) {
     res.setHeader('X-Content-Type-Options','nosniff');
     res.setHeader('Referrer-Policy','no-referrer');
     res.setHeader('Cache-Control','no-store');
-    res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; media-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
+    res.setHeader('Content-Security-Policy',"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; media-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'");
     res.setHeader('Content-Security-Policy',res.getHeader('Content-Security-Policy').replace("connect-src 'self'",`connect-src ${shared.connections()}`));
     if (!['GET','HEAD'].includes(req.method)) { res.writeHead(405,{Allow:'GET, HEAD'});res.end();return; }
     let url;
