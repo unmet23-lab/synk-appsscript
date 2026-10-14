@@ -83,6 +83,7 @@ async function api(path, body, method = body === undefined ? 'GET' : 'POST', {si
   if (!response.ok) {
     const err = new Error(content.error || '요청을 처리하지 못했어요. 잠시 후 다시 시도해 주세요.');
     err.status = response.status;
+    err.code = typeof content.code === 'string' ? content.code : null;
     if (response.status === 401 && state.user) clearCompanySessionView();
     throw err;
   }
@@ -656,7 +657,7 @@ document.addEventListener('submit', async event => {
         $('.modal-body', overlay).innerHTML = `<div class="form-success">새 채널 ${results.added.length}개 등록 · 이미 등록됨 ${results.existing.length}개${results.errors.length ? ` · 확인 필요 ${results.errors.length}개` : ''}</div>${results.errors.length ? `<div class="batch-result"><div class="batch-summary">등록하지 못한 주소</div>${results.errors.map(row => `<div class="batch-entry"><div class="url">${escape(row.url)}</div><div>${escape(row.error)}</div></div>`).join('')}</div>` : ''}<p class="notice mt-20">담당 채널에서 계정을 연결하면 실제 수집을 시작할 수 있어요.</p><div class="modal-actions">${button('담당 채널 보기', 'registration-done', 'arrow', 'primary')}</div>`;
         $('.modal-body [data-action="registration-done"]', overlay).onclick = () => { closeModal(); state.tab = 'channels'; render(); }; break;
       }
-      case 'connection': { const meta=['instagram','facebook'].includes(platformKey(state.data.channels.find(row=>row.id===form.dataset.id)?.platform));await api(`/api/channels/${encodeURIComponent(form.dataset.id)}/connection`, Object.fromEntries(Object.entries(values).filter(([, value]) => value !== ''))); closeModal(); await loadState(); notify(meta?'Meta 계정과 댓글 권한을 확인했어요. SNS 문의함에서 자동 수집을 켜 주세요.':'연결 정보를 저장했어요. 지금 수집을 눌러 실제 연결을 확인해 주세요.'); break; }
+      case 'connection': { const meta=['instagram','facebook'].includes(platformKey(state.data.channels.find(row=>row.id===form.dataset.id)?.platform));await api(`/api/channels/${encodeURIComponent(form.dataset.id)}/connection`, Object.fromEntries(Object.entries(values).filter(([, value]) => value !== ''))); closeModal(); await loadState(); if(state.tab==='social'&&typeof snswLoad==='function')await snswLoad(); notify(meta?'Meta 계정과 댓글 권한을 확인했어요. SNS 문의함에서 이전 수집 선택을 확인하고 재개하세요.':'연결 정보를 저장했어요. 지금 수집을 눌러 실제 연결을 확인해 주세요.'); break; }
       case 'provider': { await api('/api/settings/provider', { platform: form.dataset.platform, ...Object.fromEntries(Object.entries(values).filter(([, value]) => value !== '')) }); closeModal(); await loadState(); notify('플랫폼 연결 설정을 저장했어요. 채널에서 계정 연결을 진행해 주세요.'); break; }
       case 'owners': { const result = await api(`/api/channels/${encodeURIComponent(form.dataset.id)}/owners`, { userIds: new FormData(form).getAll('userIds'),reason:values.reason || '담당자 변경',...(isAdmin() ? {teamId:values.teamId || null} : {}) }); closeModal(); await loadState(); notify(result.requiresReconnect ? '이관을 요청했어요. 새 담당자의 계정 연결이 완료될 때까지 현재 담당을 유지합니다.' : '담당자를 저장하고 이력에 기록했어요.'); break; }
       case 'invite': {

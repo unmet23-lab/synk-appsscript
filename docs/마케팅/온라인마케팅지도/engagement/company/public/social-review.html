@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>SNS 게시물 검토 · SYNK</title>
+  <link rel="stylesheet" href="/social-review.css">
+  <script src="/social-review.js" defer></script>
+</head>
+<body>
+  <main class="review-shell">
+    <header class="review-header"><span class="brand">SYNK</span><h1>SNS 게시물 검토</h1><p>공유받은 게시 버전의 문구·파일·일정을 확인하고 의견을 남겨 주세요.</p></header>
+    <p id="review-notice" class="notice">검토 링크를 확인하고 있어요.</p>
+    <p id="review-error" class="error" role="alert" hidden></p>
+    <section id="review-content" aria-label="검토할 게시물" hidden></section>
+    <section id="review-feedback" aria-label="검토 의견" hidden></section>
+    <form id="review-form" hidden>
+      <h2>이 버전에 대한 의견</h2>
+      <label for="review-name">이름 <span>(선택 · 본인 확인 없이 그대로 보여요)</span></label>
+      <input id="review-name" maxlength="80" autocomplete="name" placeholder="검토자 이름">
+      <label for="review-comment">검토 의견 <span>(의견 등록·수정 요청 시 필수)</span></label>
+      <textarea id="review-comment" rows="5" maxlength="3000" placeholder="수정할 부분이나 승인 의견을 적어 주세요."></textarea>
+      <p class="hint">고객 검토 승인이 내부 발행 승인을 대신하지는 않아요. 문구·계정·파일·일정이 바뀌면 새 링크로 다시 검토하게 돼요.</p>
+      <div class="actions">
+        <button type="submit" name="decision" value="comment">의견 남기기</button>
+        <button type="submit" name="decision" value="reject">수정 요청</button>
+        <button class="primary" type="submit" name="decision" value="approve">이 버전 검토 승인</button>
+      </div>
+      <button id="review-retry" type="button" hidden>결과를 확인하고 다시 보내기</button>
+      <p id="review-result" role="status" aria-live="polite"></p>
+    </form>
+    <footer>이 링크를 가진 사람만 이 게시 버전을 검토할 수 있어요. 링크는 필요한 분에게만 전달해 주세요.</footer>
+  </main>
+</body>
+</html>

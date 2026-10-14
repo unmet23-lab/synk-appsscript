@@ -5,6 +5,7 @@ import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {canReadChannel,canWriteChannel,canManageOwners,visibleMembers} from './organization.mjs';
 import {validMediaSignature,STUDIO_MEDIA_LIMIT} from './studio-media.mjs';
+import {inboxReplyState} from './social-reply-observations.mjs';
 
 const run=promisify(execFile),fail=(message,status=400)=>Object.assign(new Error(message),{status});
 const clean=(value,max=200)=>{if(value==null)return '';if(typeof value!=='string'||value.length>max||/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value))throw fail('입력 길이와 문자를 확인해 주세요.');return value.trim();};
@@ -32,7 +33,7 @@ export function createSocialMarketingService({store,studio,publicationPackages,c
   function readCampaign(user,id,write=false){user=current(user,write);const c=store.get('socialCampaigns',id);if(!c||!readableCampaign(user,c)||(write&&c.channelIds.some(id=>!canWriteChannel(user,store.get('channels',id)))))throw fail('캠페인 접근 권한을 확인해 주세요.',403);return c;}
   function campaigns(user){user=current(user);return store.all('socialCampaigns').filter(c=>readableCampaign(user,c)).map(c=>({...c,canEdit:user.role!=='viewer'&&c.channelIds.every(id=>canWriteChannel(user,store.get('channels',id)))}));}
   function saveCampaign(user,input={},id){user=current(user,true);const old=id?readCampaign(user,id,true):null;if(old&&input.revision!==old.revision)throw fail('다른 사람이 캠페인을 먼저 수정했어요. 새로고침해 주세요.',409);const ids=input.channelIds??old?.channelIds??[];if(!Array.isArray(ids)||ids.length>100)throw fail('캠페인 계정 목록을 확인해 주세요.');const channelIds=[...new Set(ids)];channelIds.forEach(id=>channel(user,id,true));const name=clean(input.name??old?.name,120);if(!name)throw fail('캠페인 이름을 입력해 주세요.');const startAt=date(input.startAt??old?.startAt),endAt=date(input.endAt??old?.endAt);if(startAt&&endAt&&Date.parse(startAt)>Date.parse(endAt))throw fail('캠페인 종료일은 시작일 이후로 정해 주세요.');const row={id:old?.id||randomUUID(),revision:(old?.revision||0)+1,ownerId:old?.ownerId||user.id,name,goal:clean(input.goal??old?.goal,1000),channelIds,startAt,endAt,language:clean(input.language??old?.language,30),purpose:clean(input.purpose??old?.purpose,300),createdAt:old?.createdAt||clock(),updatedAt:clock()};store.put('socialCampaigns',row.id,row);return {campaign:row};}
-  function inbox(user){user=current(user);return store.all('socialInbox').filter(row=>{const c=store.get('channels',row.channelId);return c&&c.active!==false&&c.hidden!==true&&canReadChannel(user,c);}).map(row=>({...row,canEdit:canWriteChannel(user,store.get('channels',row.channelId))})).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));}
+  function inbox(user){user=current(user);return store.all('socialInbox').filter(row=>{const c=store.get('channels',row.channelId);return c&&c.active!==false&&c.hidden!==true&&canReadChannel(user,c);}).map(row=>{const c=store.get('channels',row.channelId),{metaReplyProofIds,metaReplyCompleteAt,metaAccountReply,...publicRow}=row;return {...publicRow,...inboxReplyState(row,c),canEdit:canWriteChannel(user,c)};}).sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt));}
   function saveInbox(user,input={},id){
     user=current(user,true);
     const old=id?store.get('socialInbox',id):null;if(id&&!old)throw fail('문의 기록을 찾을 수 없어요.',404);

@@ -1,0 +1,35 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtempSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join,dirname} from 'node:path';
+import {Store} from './store.mjs';
+import {createSocialInboxProvider} from './social-inbox-provider.mjs';
+import {createSocialInboxRecovery} from './social-inbox-recovery.mjs';
+const json=(body,status=200)=>new Response(JSON.stringify(body),{status});
+function fixture(t){
+ const directory=mkdtempSync(join(tmpdir(),'synk-inbox-recovery-'));assert.equal(dirname(directory),tmpdir());const store=new Store(directory),user={id:'admin',active:true,role:'admin'};let time=Date.parse('2026-10-14T00:00:00Z');
+ const channel={id:'ig',platform:'instagram',handle:'synk',externalId:'100',active:true,ownerIds:['admin'],connectionVersion:3};store.put('users',user.id,user);store.put('channels',channel.id,channel);store.setSecret('channel:ig',{accessToken:'synthetic-token',accountId:'100',appScopedId:'900',authType:'instagram-login',scope:'instagram_business_basic instagram_business_manage_comments'});store.put('socialInboxConnections','ig',{id:'ig',enabled:true,version:'prior-choice',connectionVersion:2,updatedBy:user.id,progress:{prior:'preserved-until-provider-handles-it'}});
+ const calls=[],control={hook:null},clock=()=>new Date(time).toISOString(),fetchImpl=async(raw,options)=>{assert.equal(options.method,'GET');assert.equal(options.redirect,'error');const route=new URL(raw).pathname.replace(/^\/v[\d.]+\//,'');calls.push(route);const override=await control.hook?.(route);if(override)return override;if(route==='me')return json({id:'900',user_id:'100',username:'synk'});if(route==='100/media')return json({data:[{id:'600'}]});if(route==='600')return json({id:'600',owner:{id:'900'}});if(route==='600/comments')return json({data:[]});throw Error('unexpected synthetic GET');};
+ const inboxProvider=createSocialInboxProvider({store,fetchImpl,clock}),service=createSocialInboxRecovery({store,inboxProvider,fetchImpl,clock});t.after(async()=>{service.stop();await inboxProvider.stop();store.close();rmSync(directory,{recursive:true,force:true});});
+ const input=()=>({channelId:'ig',connectionVersion:store.get('channels','ig').connectionVersion,settingsVersion:store.get('socialInboxConnections','ig').version});return {store,user,channel,service,inboxProvider,control,calls,input,advance(ms){time+=ms;}};
+}
+test('verification writes no credentials/settings; explicit resume rechecks current Meta and uses official configure/sync',async t=>{
+ const f=fixture(t),before=f.store.db.prepare('SELECT * FROM documents ORDER BY kind,id').all(),secret=f.store.db.prepare('SELECT * FROM credentials').all();const verified=await f.service.verify(f.user,f.input());assert.equal(verified.recovery.canResume,true);assert.equal(f.calls.length,4);assert.deepEqual(f.store.db.prepare('SELECT * FROM documents ORDER BY kind,id').all(),before);assert.deepEqual(f.store.db.prepare('SELECT * FROM credentials').all(),secret);
+ const result=await f.service.resume(f.user,{...f.input(),recoveryId:verified.recovery.recoveryId});assert.equal(result.status,'resumed');assert.equal(result.sync.imported,0);assert.equal(f.store.get('socialInboxConnections','ig').connectionVersion,3);assert.equal(f.store.get('socialInboxConnections','ig').enabled,true);assert.deepEqual(f.store.db.prepare('SELECT * FROM credentials').all(),secret);assert.ok(f.calls.length>8);await assert.rejects(f.service.resume(f.user,{...f.input(),recoveryId:verified.recovery.recoveryId}),{code:'RECOVERY_CONFIRMATION_REQUIRED'});
+});
+test('previous disabled selection never turns on via verification or replay',async t=>{
+ const f=fixture(t);f.store.put('socialInboxConnections','ig',{...f.store.get('socialInboxConnections','ig'),enabled:false});await assert.rejects(f.service.verify(f.user,f.input()),{code:'RECOVERY_NOT_PREVIOUSLY_ENABLED'});assert.equal(f.calls.length,0);assert.equal(f.service.workspace(f.user).channels[0].recovery.canResume,false);
+});
+test('changed account and revoked comments permission fail before enabling or saving credentials',async t=>{
+ for(const mode of ['identity','permission']){const f=fixture(t),before=f.store.get('socialInboxConnections','ig');f.control.hook=route=>mode==='identity'&&route==='me'?json({id:'900',user_id:'101',username:'synk'}):mode==='permission'&&route==='600/comments'?json({error:{code:200}},403):null;await assert.rejects(f.service.verify(f.user,f.input()));assert.deepEqual(f.store.get('socialInboxConnections','ig'),before);assert.equal(f.service.workspace(f.user).channels[0].recovery.canResume,false);}
+});
+test('token, authority, connection and settings races invalidate a prepared resume without new GETs',async t=>{
+ for(const mutation of ['token','role','owner','version','settings','disable']){const f=fixture(t),input=f.input(),verified=await f.service.verify(f.user,input),beforeCalls=f.calls.length;if(mutation==='token')f.store.setSecret('channel:ig',{...f.store.secret('channel:ig'),accessToken:'replacement'});if(mutation==='role')f.store.put('users','admin',{...f.user,role:'viewer'});if(mutation==='owner')f.store.put('channels','ig',{...f.channel,ownerIds:[]});if(mutation==='version')f.store.put('channels','ig',{...f.channel,connectionVersion:4});if(mutation==='settings'||mutation==='disable')f.store.put('socialInboxConnections','ig',{...f.store.get('socialInboxConnections','ig'),...(mutation==='settings'?{version:'changed'}:{enabled:false})});const settings=f.store.get('socialInboxConnections','ig');await assert.rejects(f.service.resume(f.user,{...input,recoveryId:verified.recovery.recoveryId}));assert.equal(f.calls.length,beforeCalls);assert.deepEqual(f.store.get('socialInboxConnections','ig'),settings);}
+});
+test('permission revocation after verify is rechecked at resume and cannot clear prior paused binding',async t=>{
+ const f=fixture(t),input=f.input(),verified=await f.service.verify(f.user,input),before=f.store.get('socialInboxConnections','ig');f.control.hook=route=>route==='600/comments'?json({error:{code:200}},403):null;await assert.rejects(f.service.resume(f.user,{...input,recoveryId:verified.recovery.recoveryId}),{code:'META_VERIFICATION_REJECTED'});assert.deepEqual(f.store.get('socialInboxConnections','ig'),before);
+});
+test('changes during permission GET, expired confirmation and revoked session cannot resume',async t=>{
+ for(const mutation of ['during-get','expiry','session']){const f=fixture(t),input=f.input(),verified=await f.service.verify(f.user,input),before=f.store.get('socialInboxConnections','ig');if(mutation==='during-get')f.control.hook=route=>{if(route==='600/comments')f.store.setSecret('channel:ig',{...f.store.secret('channel:ig'),accessToken:'rotated-during-get'});};if(mutation==='expiry')f.advance(300001);await assert.rejects(f.service.resume(f.user,{...input,recoveryId:verified.recovery.recoveryId},mutation==='session'?{authorize(){throw Error('synthetic revoked session');}}:{}));assert.deepEqual(f.store.get('socialInboxConnections','ig'),before);}
+});
