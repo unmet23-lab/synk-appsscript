@@ -121,7 +121,7 @@ function openPulseReview({session:isolated,url}){
   review.pulseReady=review.loadURL(url).catch(error=>{if(!review.isDestroyed())review.destroy();throw error;});
   return review;
 }
-app.on('before-quit',()=>{quittingRequested=true;});
+app.on('before-quit',()=>{quittingRequested=true;startupWindow?.prepareForQuit();});
 app.on('will-quit',event=>{
   if(platformUpdate?.needsInstallHandoff()){
     // will-quit runs only after the normal window/draft guards accepted. Hold
@@ -129,7 +129,7 @@ app.on('will-quit',event=>{
     event.preventDefault();
     void platformUpdate.completeInstall().then(result=>{
       if(result.ok&&!platformUpdate.needsInstallHandoff())app.quit();
-      else{quittingRequested=false;platformTray?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
+      else{quittingRequested=false;platformTray?.cancelQuit();startupWindow?.cancelQuit();if(startupGate?.isBlocking())startupWindow?.show();else if(!window||window.isDestroyed())createWindow();else{window.show();window.focus();}}
     });return;
   }
   startupGate?.dispose();startupWindow?.dispose();platformUpdate?.dispose();pulseApp?.dispose();pulseRequests?.dispose();desktopPreferences?.dispose();unbindTeacher?.();teacherService?.dispose();suiteFollower?.dispose();suitePublisher?.dispose();auth?.dispose();installations?.dispose();connectionRecovery?.dispose();
@@ -236,7 +236,7 @@ function createWindow(){
   if(isPlatform){windowPlacement.attach(window,{maximized:placement.maximized});contents.on('did-finish-load',()=>desktopPreferences.applyWindow(window));}
   if(isPlatform)installDraftExitGuard({contents,window,dialog,getRecoveryAvailable:()=>!!draftRecovery?.available()});
   platformTray?.attachWindow(window);
-  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
+  if(isPlatform)contents.on('will-prevent-unload',event=>{if(!event.defaultPrevented){quittingRequested=false;startupWindow?.cancelQuit();platformUpdate?.cancelInstall();startupGate?.cancelInstall();}});
   if(smoke)contents.on('console-message',details=>{if(details.level==='error')smokeConsoleErrors.push({message:details.message.slice(0,300),source:details.sourceId.split('?')[0],line:details.lineNumber});});
   const send=(channel,value)=>{if(window&&!window.isDestroyed()&&trustedEntry(window.webContents.getURL(),entry,runtime.clientId))window.webContents.send(channel,value);};
   const windowState=()=>({maximized:window.isMaximized(),minimized:window.isMinimized(),focused:window.isFocused(),platform:process.platform});

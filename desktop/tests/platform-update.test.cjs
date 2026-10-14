@@ -239,7 +239,7 @@ test('main updater is platform-packaged only, uses existing trusted sender check
   assert.match(main,/if\(runtime\.clientId==='platform'\)\{[\s\S]*?platformUpdate=createPlatformUpdater\(\{enabled:packaged&&!smoke,config:runtime\.update/);
   assert.match(main,/app\.on\('will-quit',event=>\{[\s\S]*?event\.preventDefault\(\);[\s\S]*?platformUpdate\.completeInstall\(\)/);
   assert.match(main,/launchWindowsUpdate\(\{spawn,file,pid:process\.pid,automatic:options\.automatic,nonce\}\)/);
-  assert.match(main,/contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)\{quittingRequested=false;platformUpdate\?\.cancelInstall\(\);startupGate\?\.cancelInstall\(\);\}\}\)/);
+  assert.match(main,/contents\.on\('will-prevent-unload',event=>\{if\(!event\.defaultPrevented\)\{quittingRequested=false;startupWindow\?\.cancelQuit\(\);platformUpdate\?\.cancelInstall\(\);startupGate\?\.cancelInstall\(\);\}\}\)/);
   assert.match(main,/ipcMain\.handle\(channel,async\(event,\.\.\.args\)=>\{assertSender\(event,window,entry,runtime\.clientId\)/);
   for(const operation of ['check-for-update','download-update','install-update'])assert.match(main,new RegExp("'synk:"+operation+"':\\(\\)=>platformUpdate\\?\\."));
 });

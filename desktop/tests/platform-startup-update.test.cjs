@@ -2,9 +2,23 @@
 const test=require('node:test'),assert=require('node:assert/strict'),{EventEmitter}=require('node:events');
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
 const {createStartupUpdateGate}=require('../src/platform-startup-update.cjs');
-const {assertStartupSender,STARTUP_ENTRY}=require('../src/platform-startup-window.cjs');
+const {assertStartupSender,STARTUP_ENTRY,createStartupUpdateWindow}=require('../src/platform-startup-window.cjs');
 const {launchWindowsUpdate}=require('../src/platform-update-handoff.cjs');
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
+test('installing startup window blocks manual close but normal application quit explicitly unlocks it',()=>{
+  let nativeWindow,closes=0,state='installing';const app=new EventEmitter(),handlers=new Map();
+  class TestWindow extends EventEmitter {
+    constructor(){super();nativeWindow=this;this.closable=true;this.destroyed=false;this.webContents=new EventEmitter();Object.assign(this.webContents,{setWindowOpenHandler(){},getURL:()=>STARTUP_ENTRY,send(){}});}
+    isDestroyed(){return this.destroyed;}isMinimized(){return false;}show(){}focus(){}setClosable(value){this.closable=value;}loadURL(){return Promise.resolve();}destroy(){this.destroyed=true;}
+    close(){if(this.closable)this.emit('close');}
+  }
+  const isolated={setPermissionRequestHandler(){},setPermissionCheckHandler(){},webRequest:{onBeforeRequest(){}},protocol:{handle(){},unhandle(){}},on(){}};
+  const startupWindow=createStartupUpdateWindow({BrowserWindow:TestWindow,session:{fromPartition:()=>isolated},ipcMain:{handle:(name,handler)=>handlers.set(name,handler),removeHandler:name=>handlers.delete(name)},appRoot:path.resolve(__dirname,'..'),gate:{isBlocking:()=>true,snapshot:()=>({state})},onClose:()=>closes++});
+  assert.doesNotThrow(()=>startupWindow.prepareForQuit());startupWindow.show();startupWindow.publish({state});nativeWindow.close();assert.equal(closes,0);assert.equal(nativeWindow.closable,false);
+  const main=fs.readFileSync(path.join(__dirname,'../src/main.cjs'),'utf8'),line=main.split('\n').find(value=>value.startsWith("app.on('before-quit'"));
+  const context={app,startupWindow,quittingRequested:false};vm.createContext(context);vm.runInContext(line,context);app.emit('before-quit');assert.equal(context.quittingRequested,true);assert.equal(nativeWindow.closable,true);startupWindow.publish({state});assert.equal(nativeWindow.closable,true,'late installing event cannot relock normal quit');startupWindow.cancelQuit();assert.equal(nativeWindow.closable,false,'cancelled quit restores manual close protection');app.emit('before-quit');nativeWindow.close();assert.equal(closes,1);
+  startupWindow.publish({state:'checking'});assert.equal(nativeWindow.closable,true);startupWindow.dispose();assert.doesNotThrow(()=>startupWindow.prepareForQuit());assert.equal(handlers.size,0);
+});
 function fixture({platform='win32',check={ok:true,state:'available'},download={ok:true,state:'ready'},install={ok:true,state:'opening'},recoveryCode=null}={}){
   let value={currentVersion:'0.4.4',latestVersion:'0.4.5',progress:0,state:'idle'},proceeds=0,cancels=0;const calls=[],changes=[];
   const updater={snapshot:()=>value,checkForUpdate:async()=>{calls.push('check');const next=typeof check==='function'?await check():check;value={...value,...next};return value;},downloadUpdate:async()=>{calls.push('download');value={...value,...download};return value;},installUpdate:async options=>{calls.push(['install',options]);value={...value,...install};return value;},start:options=>calls.push(['periodic',options]),cancelPending:()=>cancels++};

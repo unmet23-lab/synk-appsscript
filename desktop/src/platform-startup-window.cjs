@@ -5,7 +5,7 @@ const {preferences}=require('./security.cjs');
 const STARTUP_ENTRY='synk-desktop://platform/startup-update.html';
 function assertStartupSender(event,window){if(!window||window.isDestroyed()||event.sender!==window.webContents||event.senderFrame!==window.webContents.mainFrame||event.senderFrame?.url!==STARTUP_ENTRY)throw Error('UNTRUSTED_SENDER');}
 function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,onClose=()=>{}}){
-  let window=null,disposed=false,registered=false;
+  let window=null,disposed=false,registered=false,quitPrepared=false;
   const partition='synk-startup-update';
   const isolated=session.fromPartition(partition);
   isolated.setPermissionRequestHandler((_contents,_permission,callback)=>callback(false));isolated.setPermissionCheckHandler(()=>false);
@@ -18,6 +18,7 @@ function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,o
   function show(){
     if(disposed||!gate.isBlocking())return;
     if(window&&!window.isDestroyed()){if(window.isMinimized())window.restore();window.show();window.focus();return;}
+    quitPrepared=false;
     window=new BrowserWindow({width:560,height:440,minWidth:360,minHeight:400,resizable:false,minimizable:true,maximizable:false,title:'SYNK Platform 업데이트',show:false,autoHideMenuBar:true,backgroundColor:'#0B0D12',webPreferences:preferences(path.join(appRoot,'src','startup-update-preload.cjs'),partition)});
     const contents=window.webContents;
     contents.setWindowOpenHandler(()=>({action:'deny'}));contents.on('will-attach-webview',event=>event.preventDefault());
@@ -26,8 +27,12 @@ function createStartupUpdateWindow({BrowserWindow,session,ipcMain,appRoot,gate,o
     window.on('close',()=>{if(!disposed)onClose();});
     void window.loadURL(STARTUP_ENTRY).catch(()=>{if(!disposed)onClose();});
   }
-  function publish(value){if(disposed||!window||window.isDestroyed())return;window.setClosable(value.state!=='installing');if(window.webContents.getURL()===STARTUP_ENTRY)window.webContents.send('startup-update:changed',value);}
+  function publish(value){if(disposed||!window||window.isDestroyed())return;window.setClosable(quitPrepared||value.state!=='installing');if(window.webContents.getURL()===STARTUP_ENTRY)window.webContents.send('startup-update:changed',value);}
+  // Windows also honors closable=false during app.quit(). Unlock only when the
+  // application begins normal quit so its existing draft guards can still run.
+  function prepareForQuit(){quitPrepared=true;if(!disposed&&window&&!window.isDestroyed())window.setClosable(true);}
+  function cancelQuit(){quitPrepared=false;publish(gate.snapshot());}
   function dispose(){if(disposed)return;disposed=true;if(registered)for(const action of Object.keys(actions))ipcMain.removeHandler('startup-update:'+action);registered=false;isolated.protocol.unhandle('synk-desktop');if(window&&!window.isDestroyed())window.destroy();}
-  return {show,publish,dispose};
+  return {show,publish,prepareForQuit,cancelQuit,dispose};
 }
 module.exports={STARTUP_ENTRY,assertStartupSender,createStartupUpdateWindow};
