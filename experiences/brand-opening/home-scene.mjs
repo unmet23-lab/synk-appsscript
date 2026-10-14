@@ -1,6 +1,6 @@
 import {TUTORS} from './tutor-profiles.mjs';
 
-const names={'tutor:mongle':'몽글','tutor:kkamong':'까몽','tutor:marin':'마린',book:'책 펼치기',cafe:'카페',town:'우리 동네',memory:'기억 액자',photo:'사진 찍기',wardrobe:'옷장'};
+const names={'tutor:mongle':'몽글','tutor:kkamong':'까몽','tutor:marin':'마린',book:'책 펼치기',cafe:'카페',town:'싱크타운',memory:'기억 액자',photo:'사진 찍기',wardrobe:'옷장'};
 // Line icons for the glass pins. Frame, camera and hanger stay icon-only; their names show on hover/focus.
 const svg=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const icons={

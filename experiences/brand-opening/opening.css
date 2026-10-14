@@ -59,3 +59,33 @@
 .opening-copyright{font-size:11px;letter-spacing:.14em;color:rgba(255,255,255,.62)}
 @media(orientation:landscape){.opening-hint{left:23%;transform:translateX(-50%)}.opening-title-subtitle{font-size:16px;margin-top:26px}}
 @media(max-height:610px){.opening-title-subtitle{font-size:13.5px;margin-top:12px}.opening-hint{min-height:46px;font-size:14px;bottom:46px}}
+/* 2026-10-14 펠트 한글 놀이터(유호님 「첫 화면 3번」): 복숭아색 촬영 배경지 위 커다란 펠트 자모와 세 친구를 한 장으로 구운 사진(GPT 이미지 2.5).
+ * 노을 그림·도는 영상·어두운 덮개는 쓰지 않는다. 로고는 먹색 펠트 글씨, 글자와 시작 알약은 먹색. 회사 구간(검정)은 그대로다. */
+.opening-title{background:#F8C6B3}
+.opening-title-video,.opening-title-shade{display:none}
+.opening-title-scene{inset:auto 0 0;height:auto;aspect-ratio:940/1672;object-fit:cover;object-position:center bottom;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 8%);mask-image:linear-gradient(180deg,transparent 0,#000 8%)}
+.opening-title-copy{top:calc(9% + env(safe-area-inset-top));color:#2B1A14}
+.opening-title-logo{width:clamp(150px,42vw,200px)}
+.opening-world{color:#2B1A14;text-shadow:none;font-weight:600;font-size:15px;letter-spacing:.46em;margin-top:10px}
+.opening-title-subtitle{color:rgba(43,26,20,.82);text-shadow:none;font-weight:550;margin-top:16px}
+.opening-hint{background:#17110E;color:#FBF3EC;box-shadow:0 14px 34px rgba(110,46,24,.3)}
+.synk-opening[data-stage=title] .opening-copyright{color:rgba(43,26,20,.5)}
+.synk-opening[data-stage=title] .opening-sound{background:rgba(43,26,20,.78)}
+@media(orientation:landscape){
+ .opening-title{background:#FBCDBB}
+ .opening-title-scene{inset:0;height:100%;aspect-ratio:auto;object-position:right 58%;-webkit-mask-image:none;mask-image:none}
+ .opening-title-copy{top:27%;left:8%;width:30%;align-items:flex-start;text-align:left}
+ .opening-title-logo{width:min(230px,100%)}
+ .opening-world{margin-left:.2em;font-size:17px}
+ .opening-title-subtitle{font-size:17px;margin-top:22px}
+ .opening-hint{left:8%;transform:none;bottom:calc(24% + env(safe-area-inset-bottom))}
+}
+@media(orientation:portrait) and (max-aspect-ratio:9/17){.opening-title-copy{top:calc(17% + env(safe-area-inset-top))}}
+@media(orientation:landscape) and (max-aspect-ratio:3/2){
+ .opening-title{background:linear-gradient(90deg,#FDD9CA,#FED4C2,#FED0BE,#FECBB7,#FBC5B0,#F8BEAB,#F4B7A3,#ECAE96,#EBAD94)}
+ .opening-title-scene{inset:auto 0 0;height:auto;aspect-ratio:1672/941;object-position:center;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 10%);mask-image:linear-gradient(180deg,transparent 0,#000 10%)}
+}
+@media(max-height:610px){.opening-title-copy{top:8%}.opening-hint{bottom:44px}}
+@media(orientation:landscape) and (max-height:500px){.opening-title-copy{top:18%}.opening-hint{bottom:calc(16% + env(safe-area-inset-bottom))}}
+/* 16:9 작은 가로 휴대폰(667×375 등)은 사진이 잘리지 않아 노란 ㅇ이 글 바로 옆에 온다. 글 덩어리를 줄여 닿지 않게. */
+@media(orientation:landscape) and (max-height:420px){.opening-title-logo{width:min(170px,100%)}.opening-world{font-size:15px}.opening-title-subtitle{font-size:15px;margin-top:14px}}

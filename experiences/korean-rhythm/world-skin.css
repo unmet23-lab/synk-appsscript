@@ -8,7 +8,7 @@
  * id·data-*·클래스는 그대로 두고 겉모습만 바꾼다.
  * 3차(2026-10-14): 무대는 stage.mjs의 theme 'world'(어두운 무대 + 흰 판정선 하나 + 흰 노트), HUD는 지시 한 줄 + 문제 수 하나 + 일시정지 원,
  *   O·X는 엄지 자리의 큰 두 단추, 처음 한 번 박자 맞추기(#w-calibrate), 결과는 한 장(오늘 들은 문장 셋 + 다시 들어 볼 문장 하나 · 얻은 것 ·
- *   흰 알약 「우리 방으로」). 문구·소리·박자 맞추기는 app.mjs의 WORLD 분기(data-host=world일 때만)가 맡고, LAB 단독 화면은 계산 스타일·DOM·
+ *   흰 알약 「우리 동네로」). 문구·소리·박자 맞추기는 app.mjs의 WORLD 분기(data-host=world일 때만)가 맡고, LAB 단독 화면은 계산 스타일·DOM·
  *   캔버스 픽셀 차이 0(r2/games/standalone-proof.cjs). */
 /* 라틴·숫자는 Inter Tight, 영문 라벨은 DM Mono(띄어쓰기 뺀 범위) — 둘 다 키트 글꼴 파일을 쓴다. 이 이름은 WORLD 규칙에서만 불러서 LAB 화면은 받지 않는다. */
 @font-face{font-family:'World Game Latin';src:url(kit/fonts/InterTight-Medium.woff2) format('woff2');font-weight:100 599;font-display:swap;unicode-range:U+0020-007E,U+00A0-00B6,U+00B8-00FF,U+2010-2024,U+2026-2027,U+2030-203A,U+2190-2199,U+20A9,U+20AC,U+2122,U+2212}
@@ -120,7 +120,7 @@
 :root[data-host=world] .dialog-toggles .chip-btn[aria-pressed=true]::after{background:radial-gradient(circle at 35px 50%,var(--w-on-ink) 0 12px,transparent 12.5px),var(--w-ink);box-shadow:none}
 :root[data-host=world] .dialog-toggles .chip-btn:is(:hover,:active){background:none;transform:none}
 
-/* ── 3차 공통(2026-10-14, 바람길·말의 리듬 같은 글): 모노 라벨 · 점수 글자 · 결과 한 장(인화지 · 오늘 들은 말 · 얻은 것 · 흰 알약 「우리 방으로」) ── */
+/* ── 3차 공통(2026-10-14, 바람길·말의 리듬 같은 글): 모노 라벨 · 점수 글자 · 결과 한 장(인화지 · 오늘 들은 말 · 얻은 것 · 흰 알약 「우리 동네로」) ── */
 :root[data-host=world] .w-mono{font:500 11px/1.4 var(--w-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--w-ink-3)}
 /* 점수 글자(좋아요·딱!): 튀어 오르며 커지는 대신 제자리에서 잠깐 보였다 사라진다(입력 직후 한 번) */
 :root[data-host=world] .pop.go{animation:wPop .7s var(--w-ease) both}
@@ -140,14 +140,14 @@
 /* 얻은 것: 목록 아래 한 줄(공통 코인) */
 :root[data-host=world] .results .w-gain{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;margin:0 6px;padding:18px 0 4px;border-top:1px solid var(--w-line);font:600 15.5px/1.5 var(--w-sans);color:var(--w-ink)}
 :root[data-host=world] .results .w-gain::before{content:'얻은 것';flex:none;font:550 13px/1.4 var(--w-sans);color:var(--w-ink-3)}
-/* 다시 하기 · 다른 길은 1px 선 알약 둘(흰 알약은 「우리 방으로」 하나). 다음 판 이유는 입구에서 말한다 */
+/* 다시 하기 · 다른 길은 1px 선 알약 둘(흰 알약은 「우리 동네로」 하나). 다음 판 이유는 입구에서 말한다 */
 :root[data-host=world] .res-grid .next{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-bottom:6px}
 :root[data-host=world] .res-grid .next>:is(.tag,.reason),:root[data-host=world] :is(#result-home,#back-button){display:none}
 :root[data-host=world] .res-grid .next>.r-actions{display:contents}
 :root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn){width:100%;min-height:52px;padding:0 14px;background:transparent;color:var(--w-ink);box-shadow:inset 0 0 0 1px var(--w-line-2);font:600 15px/1.2 var(--w-sans)}
 :root[data-host=world] .res-grid .next .felt-cta .disc{display:none}
 :root[data-host=world] .res-grid .next :is(.felt-cta,.chip-btn):hover{background:var(--w-s2);box-shadow:inset 0 0 0 1px var(--w-line-2)}
-/* 흰 알약 「우리 방으로」: 결과 아래에 붙어 언제나 한 번에 누른다(결과 → 방 1탭) */
+/* 흰 알약 「우리 동네로」: 결과 아래에 붙어 언제나 한 번에 누른다(결과 → 방 1탭) */
 :root[data-host=world] .w-room-bar{position:sticky;z-index:6;bottom:0;margin:14px -12px -28px;padding:28px 18px max(16px,env(safe-area-inset-bottom));background:linear-gradient(180deg,rgba(12,13,16,0),var(--w-panel) 42%)}
 :root[data-host=world] .w-room-bar>.felt-cta{min-height:58px}
 

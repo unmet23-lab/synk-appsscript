@@ -10,7 +10,7 @@ import {hangulSupport} from '../brand-opening/game-tutor-support.mjs';
 
 let gameTutor=null;
 const tutorEvent=(kind,detail)=>gameTutor?.emit(kind,detail);
-// WORLD 안(같은 출처의 .game-frame iframe)에서만: 공통 소리·진동·연출 설정(world-sound), 「우리 방으로」, 허브 링크 숨김.
+// WORLD 안(같은 출처의 .game-frame iframe)에서만: 공통 소리·진동·연출 설정(world-sound), 「우리 동네로」, 허브 링크 숨김.
 // 단독(LAB) 화면에서는 이 모듈이 없을 수 있어 부르지 않는다. 불러오지 못하면 소리 없이 조용히 넘어간다.
 const IN_WORLD = (() => { try { return !!window.frameElement?.classList?.contains('game-frame'); } catch { return false; } })();
 if (IN_WORLD) document.documentElement.dataset.host = 'world';
@@ -30,9 +30,9 @@ function finishSound(gotSomething) {
   if (!worldSound || !celebrate()) return;
   worldSound.play(gotSomething ? 'reward' : 'done'); worldSound.haptic('done');
 }
-// 「우리 방으로」: WORLD 놀이 판의 닫기 단추를 대신 누른다(사용자가 닫기를 누른 것과 같은 길 — 진도는 회차 끝에 이미 저장됐다).
+// 「우리 동네로」: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸, 아니면 놀이 판의 닫기 단추를 대신 누른다(사용자가 닫기를 누른 것과 같은 길 — 진도는 회차 끝에 이미 저장됐다).
 function backToRoom() {
-  try { const close = window.parent.document.getElementById('panel-close'); if (close) { close.click(); return true; } } catch { /* 다른 출처 */ }
+  try { const town = window.parent.__synkHome?.goTown; if (town) { town(); return true; } const close = window.parent.document.getElementById('panel-close'); if (close) { close.click(); return true; } } catch { /* 다른 출처 */ }
   return false;
 }
 const pad2 = n => String(n).padStart(2, '0');
@@ -652,7 +652,7 @@ function endSession() {
   $('tomorrow').replaceChildren(...(v.tomorrow.length ? [el('p', {}, '다음에 만날 글자'), chipRow(v.tomorrow, v.tomorrowFinals)]
     : [el('p', {}, v.allMet ? '한글 글자를 다 만났어요.' : '')]));
   $('again').hidden = !canPlayMore(progress, at);
-  $('done-label').textContent = IN_WORLD ? '우리 방으로' : '처음으로 가기';
+  $('done-label').textContent = IN_WORLD ? '우리 동네로' : '처음으로 가기';
   // 노래로 복습: 오늘 겹모음을 다뤘으면 「겹모음 댄스」, 받침이면 「받침 노래」, 자음이면 「그 아 가」, 아니면 「모음 댄스」.
   const today = [...S.met, ...S.practiced].map(id => pack.byId.get(id)).filter(Boolean);
   const todayRoles = new Set(today.map(l => l.role));
@@ -677,13 +677,13 @@ function showGraduation() {
   $('grad-words').replaceChildren(...shown.map(w => el('button', { class: 'example', type: 'button', 'aria-label': `${w.text} 듣기`, onclick: () => audio.say(w.text) }, w.text, icon('speaker'))));
   $('grad-games').hidden = !HUB || IN_WORLD; if (HUB) $('grad-games').href = HUB;
   $('grad-note').hidden = !(hosted || IN_WORLD);
-  $('grad-done-label').textContent = IN_WORLD ? '우리 방으로' : '처음으로 가기';
+  $('grad-done-label').textContent = IN_WORLD ? '우리 동네로' : '처음으로 가기';
   show('graduation');
   if (IN_WORLD) finishSound(true); else setTimeout(() => audio.effect('joy'), 700);
 }
 $('again').addEventListener('click', () => startSession());
 $('finish-song').addEventListener('click', () => openSong($('finish-song').dataset.song, 'review'));
-// 끝 → 홈: WORLD 안에서는 한 번에 우리 방으로(놀이 판 닫기), 단독 화면에서는 한글 입구로.
+// 끝 → 홈: WORLD 안에서는 한 번에 우리 동네로(동네로 돌아가기 · 없으면 놀이 판 닫기), 단독 화면에서는 한글 입구로.
 $('grad-done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
 $('done').addEventListener('click', () => { if (IN_WORLD && backToRoom()) return; renderHome(); show('home'); });
 $('quit').addEventListener('click', () => {
