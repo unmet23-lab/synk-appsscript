@@ -554,7 +554,7 @@ async function recall() {
   }
 }
 
-/* ── WORLD 안: 입구·결과 문구, 결과 한 장(오늘 들은 문장 셋 + 다시 들어 볼 문장 하나 + 얻은 것 + 흰 알약 「우리 방으로」), 박자 맞추기 ── */
+/* ── WORLD 안: 입구·결과 문구, 결과 한 장(오늘 들은 문장 셋 + 다시 들어 볼 문장 하나 + 얻은 것 + 흰 알약 「우리 동네로」), 박자 맞추기 ── */
 const WORLD_COPY = [
   ['#lobby .hero-copy>.kicker', '03 · RHYTHM'],
   ['#lobby .hero .lede', '노래를 듣다가 O·X로 답해요'],
@@ -588,7 +588,7 @@ function setupWorld() {
   more.addEventListener('click', () => { const log = document.querySelector('.res-grid .log'); const all = log.classList.toggle('w-all'); more.textContent = all ? '접기' : more.dataset.label; });
   document.querySelector('.res-grid .log').append(more);
   const bar = document.createElement('div'); bar.className = 'w-room-bar';
-  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 방으로</span><i class="disc" aria-hidden="true"></i></button>';
+  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
   bar.firstChild.addEventListener('click', backToRoom); $('results').append(bar);
   const cal = document.createElement('dialog'); cal.id = 'w-calibrate'; cal.className = 'paper lab-dialog w-calibrate'; cal.setAttribute('aria-labelledby', 'w-cal-title');
   cal.innerHTML = '<span class="kicker">TIMING CHECK</span><h2 id="w-cal-title">박자 맞추기</h2>'
@@ -606,10 +606,10 @@ function setupWorld() {
   cal.querySelector('[data-w-skip]').addEventListener('click', () => { stopCalibration(); store.set(CAL_KEY, '1'); cal.close(); start(); });
   cal.addEventListener('close', stopCalibration);
 }
-/** 결과 → 우리 방: WORLD 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
+/** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
 function backToRoom() {
   music.stop();
-  try { const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
   show('lobby'); renderRecommendation();
 }
 function worldResults() {

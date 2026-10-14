@@ -10,7 +10,7 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   if(!replay&&(query.get('opening')==='off'||(previouslySeen&&query.get('opening')!=='replay'))){removeCover();return {done:Promise.resolve('return'),destroy:()=>{},stage:()=> 'closed'};}
   const reduced=reducedMotion||matchMedia('(prefers-reduced-motion: reduce)').matches;
   const dialog=document.createElement('dialog');dialog.className='synk-opening';dialog.dataset.stage='company';dialog.dataset.reduced=String(reduced);dialog.setAttribute('aria-label',`${product} 시작 화면`);dialog.tabIndex=-1;
-  dialog.innerHTML=`<section class="opening-company" aria-label="제작사 SYNK"><div class="opening-light" aria-hidden="true"></div><div class="opening-company-lockup"><img class="opening-wordmark" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><p class="opening-credit">CREATED BY SYNK</p></div></section><section class="opening-title" aria-labelledby="opening-world-title" hidden><picture><source media="(max-width:799px)" srcset="${asset('felt-world-scene-mobile-v9.webp')}"><img class="opening-title-scene" src="${asset('felt-world-scene-desktop-v9.webp')}" alt="한옥과 한강·남산을 배경으로 함께 모인 펠트 몽글·까몽·마린"></picture><video class="opening-title-video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="opening-title-shade" aria-hidden="true"></div><div class="opening-title-copy"><img class="opening-title-logo" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><h1 class="opening-world" id="opening-world-title">WORLD</h1><p class="opening-title-subtitle">세 친구와 배우는 한국어</p></div></section><button class="opening-enter" type="button" aria-label="오프닝 건너뛰기"><span class="opening-hint" hidden>화면을 터치해 주세요</span></button><div class="opening-controls"><button class="opening-sound" type="button" aria-pressed="false" aria-label="소리 켜기" title="소리 켜기"><img class="opening-sound-icon" src="${asset('sound-off.webp')}" alt="" aria-hidden="true"></button></div><p class="opening-copyright">© 2027 SYNK</p>`;
+  dialog.innerHTML=`<section class="opening-company" aria-label="제작사 SYNK"><div class="opening-light" aria-hidden="true"></div><div class="opening-company-lockup"><img class="opening-wordmark" src="${asset('synk-paper.webp')}" alt="synk" width="1100" height="541"><p class="opening-credit">CREATED BY SYNK</p></div></section><section class="opening-title" aria-labelledby="opening-world-title" hidden><picture><source media="(orientation:portrait)" srcset="${asset('world-title-letters-port-v1.webp')}"><img class="opening-title-scene" src="${asset('world-title-letters-land-v1.webp')}" alt="커다란 펠트 한글 조각 사이에서 노는 까몽·몽글·마린"></picture><video class="opening-title-video" muted loop playsinline preload="none" aria-hidden="true"></video><div class="opening-title-shade" aria-hidden="true"></div><div class="opening-title-copy"><img class="opening-title-logo" src="${asset('home/logo.webp')}" alt="synk" width="744" height="360"><h1 class="opening-world" id="opening-world-title">WORLD</h1><p class="opening-title-subtitle">세 친구와 배우는 한국어</p></div></section><button class="opening-enter" type="button" aria-label="오프닝 건너뛰기"><span class="opening-hint" hidden>화면을 터치해 주세요</span></button><div class="opening-controls"><button class="opening-sound" type="button" aria-pressed="false" aria-label="소리 켜기" title="소리 켜기"><img class="opening-sound-icon" src="${asset('sound-off.webp')}" alt="" aria-hidden="true"></button></div><p class="opening-copyright">© 2027 SYNK</p>`;
   // Product names are text, never interpolated markup or a false engine badge.
   if(product!=='SYNK WORLD')dialog.querySelector('.opening-world').textContent=product;
   const audio=new Audio(asset('opening-candidate.wav'));audio.preload='none';
@@ -18,7 +18,8 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   const video=dialog.querySelector('.opening-title-video'),viewport=matchMedia('(orientation:portrait)');video.muted=true;video.playsInline=true;
   let resumeTime=0;
   let stage='company',settled=false,timer,hideTimer,soundOn=false,playAttempt=0;
-  const motionRequested=!reduced;
+  // 10-14 펠트 한글 놀이터(유호님 「첫 화면 3번」): 정지 사진 한 장. 타이틀 위에서 도는 영상은 쓰지 않는다(멀미 기준).
+  const motionRequested=false;
   let resolveDone;const done=new Promise(resolve=>{resolveDone=resolve;});
   const previousFocus=document.activeElement;
   const previousBodyOverflow=document.body.style.overflow;document.body.style.overflow='hidden';
@@ -76,7 +77,8 @@ export function mountBrandOpening({product='SYNK WORLD',replay=false,companyOnly
   });
   video.addEventListener('error',()=>{if(settled)return;playAttempt++;dialog.classList.remove('video-ready');video.pause();dialog.dataset.videoState='error';});
   dialog.querySelector('.opening-wordmark').addEventListener('error',()=>title(),{once:true});
-  dialog.querySelector('.opening-title-scene').addEventListener('error',event=>{event.target.src=asset('mongle.webp');event.target.style.objectFit='contain';event.target.style.padding='120px 32px';event.target.alt='반갑게 웃는 몽글';},{once:true});
+  // 사진을 못 받으면 같은 복숭아색 배경지만 남긴다(정본 마스코트 그림을 대신 얹지 않는다).
+  dialog.querySelector('.opening-title-scene').addEventListener('error',event=>{event.target.hidden=true;},{once:true});
   document.body.append(dialog);
   try{dialog.showModal();}catch{finish('unavailable');return {done,destroy:finish,stage:()=>stage};}
   removeCover();dialog.focus({preventScroll:true});timer=setTimeout(title,reduced?240:2600);

@@ -499,7 +499,7 @@ async function preview(item) {
   if (revision !== previewRevision || screen !== 'results') return;
   if (!voiceBank.play(item)) toast('목소리를 틀지 못했어요. 다시 듣기를 한 번 더 눌러 주세요.');
 }
-/* ── WORLD 안: 입구 문구 · 결과 한 장(마지막 장면 인화지 + 오늘 들은 말 셋 + 다시 들어 볼 말 하나 + 얻은 것 + 흰 알약 「우리 방으로」) ── */
+/* ── WORLD 안: 입구 문구 · 결과 한 장(마지막 장면 인화지 + 오늘 들은 말 셋 + 다시 들어 볼 말 하나 + 얻은 것 + 흰 알약 「우리 동네로」) ── */
 const WORLD_COPY = [
   ['#lobby .hero-copy>.kicker', '01 · LISTEN & RUN'],
   ['#lobby .hero .lede', '들은 말대로 90초 동안 달려요'],
@@ -534,13 +534,13 @@ function setupWorld() {
   more.addEventListener('click', () => { const log = document.querySelector('.res-grid .log'); const all = log.classList.toggle('w-all'); more.textContent = all ? '접기' : more.dataset.label; });
   document.querySelector('.res-grid .log').append(more);
   const bar = document.createElement('div'); bar.className = 'w-room-bar';
-  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 방으로</span><i class="disc" aria-hidden="true"></i></button>';
+  bar.innerHTML = '<button id="w-room" class="felt-cta w-room" type="button"><span>우리 동네로</span><i class="disc" aria-hidden="true"></i></button>';
   bar.firstChild.addEventListener('click', backToRoom); byId('results').append(bar);
 }
-/** 결과 → 우리 방: WORLD 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
+/** 결과 → 우리 동네: WORLD 홈이 동네로 돌아가기(goTown)를 알면 그걸 부르고, 아니면 게임 창의 닫기(#panel-close)를 누른다(같은 출처 틀). 닿지 않으면 게임 입구로. */
 function backToRoom() {
   cancelVoice();
-  try { const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
+  try { const town = window.parent?.__synkHome?.goTown; if (town) { town(); return; } const close = window.parent?.document?.getElementById('panel-close'); if (close) { close.click(); return; } } catch { /* 다른 출처 */ }
   home();
 }
 function worldResults(snap, completed) {
