@@ -9,7 +9,7 @@ const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex
 // create-post quota. Media cache hits and shared status polls can lower usage.
 export function createSocialCapacity({store,publishing,provider,clock=()=>new Date().toISOString()}){
   const now=()=>new Date(clock()).toISOString();
-  function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('열람 계정에서는 예약을 변경할 수 없습니다.',403);return live;}
+  function current(user,write=false){const live=store.get('users',user?.id);if(!live?.active)throw fail('먼저 로그인해 주세요.',401);if(write&&live.role==='viewer')throw fail('열람 계정은 예약을 바꿀 수 없어요.',403);return live;}
   function state(user){
     user=current(user);const view=publishing.workspace(user),visible=new Set(view.jobs.map(job=>job.id));
     const jobs=store.all('socialPublishJobs').filter(job=>{const c=store.get('channels',job.channelId);return visible.has(job.id)&&job.status==='scheduled'&&c?.active!==false&&c?.hidden!==true;});
@@ -32,10 +32,10 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     for(const event of data.events){if(event.at===lastEnd)continue;lastEnd=event.at;while(right<timeline.length&&timeline[right].at<=event.at){sum+=timeline[right].cost;if(timeline[right].jobId)count++;right++;}while(left<right&&timeline[left].at<=event.at-HOUR){sum-=timeline[left].cost;if(timeline[left].jobId)count--;left++;}windows.push({from:new Date(event.at-HOUR).toISOString(),to:new Date(event.at).toISOString(),estimatedRequests:sum,jobCount:count,overLimit:sum>data.planningLimit});}
     const hot=[];for(const window of windows.filter(w=>w.overLimit)){const previous=hot.at(-1);if(previous&&window.from<=previous.to)previous.to=window.to;else hot.push({...window});}let hotIndex=0;
     const records=data.records.map(row=>{while(hotIndex<hot.length&&hot[hotIndex].to<row.scheduledAt)hotIndex++;return {...row,congested:!!(row.estimatedRequests&&hot[hotIndex]&&row.scheduledAt>hot[hotIndex].from&&row.scheduledAt<=hot[hotIndex].to)};});
-    const warnings=[];if(windows.some(row=>row.overLimit))warnings.push('한 시간 안의 예상 호출량이 계획 한도를 넘습니다. 예약 분산을 확인해 주세요.');
-    if(data.retryAfter>Date.parse(now()))warnings.push('제공자의 재시도 대기 시간이 남아 있습니다. 그 이후로 예약을 분산해 주세요.');
-    if(data.user.role!=='admin')warnings.push('열람 가능한 예약 기준입니다. 다른 팀의 예약은 관리자가 전체 화면에서 함께 확인해야 합니다.');
-    return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 합산한 계획용 추정입니다.','파일 캐시·공동 조회로 줄어들거나 재시도로 늘어날 수 있습니다. 실제 전송 시 서버 호출 한도를 다시 적용합니다.','현재 생성된 예약만 포함합니다. 아직 생성되지 않은 반복 예약은 포함하지 않습니다.'],jobs:records,windows,warnings};
+    const warnings=[];if(windows.some(row=>row.overLimit))warnings.push('한 시간 안의 예상 호출량이 계획 한도를 넘어요. 예약 분산을 확인해 주세요.');
+    if(data.retryAfter>Date.parse(now()))warnings.push('발행 서비스의 재시도 대기 시간이 아직 남아 있어요. 그 뒤로 예약을 분산해 주세요.');
+    if(data.user.role!=='admin')warnings.push('볼 수 있는 예약만 기준으로 계산했어요. 다른 팀 예약까지 함께 보려면 관리자가 전체 화면에서 확인해야 해요.');
+    return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 더한 계획용 추정이에요.','파일 캐시·공동 조회로 줄거나 재시도로 늘 수 있어요. 실제로 보낼 때 서버 호출 한도를 다시 적용해요.','지금 만들어진 예약만 계산에 넣었어요. 아직 만들어지지 않은 반복 예약은 빠져 있어요.'],jobs:records,windows,warnings};
   }
   function validateMove(user,change){
     const data=state(user),record=data.records.find(row=>row.jobId===change.jobId);if(!record?.canMove)throw fail('예약의 현재 발행 권한과 승인 버전을 다시 확인해 주세요.',409);
@@ -69,7 +69,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
         change.to=new Date(at).toISOString();
         try{trial(user,[...changes.filter(c=>!c.excluded),change]);found=true;break;}catch(error){change.reason=error.message;}
       }
-      if(!found){change.to=change.from;change.excluded=true;change.reason=row.estimatedRequests>data.planningLimit?'이 예약 하나의 예상 호출량이 계획 한도를 넘습니다. 파일·옵션 구성을 확인해 주세요.':change.reason||'선택한 범위 안에 분산할 자리가 없습니다.';events.push({at:Date.parse(row.scheduledAt),cost:row.estimatedRequests,channelId:row.channelId});}
+      if(!found){change.to=change.from;change.excluded=true;change.reason=row.estimatedRequests>data.planningLimit?'이 예약 하나만으로도 예상 호출량이 계획 한도를 넘어요. 파일·옵션 구성을 확인해 주세요.':change.reason||'선택한 범위 안에는 옮길 자리가 없어요.';events.push({at:Date.parse(row.scheduledAt),cost:row.estimatedRequests,channelId:row.channelId});}
       else{change.reason=change.from===change.to?'현재 시각 유지':'호출량·계정 간격을 고려한 분산 제안';events.push({at,cost:row.estimatedRequests,channelId:row.channelId});}
       changes.push(change);
     }
@@ -79,7 +79,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     // Restoring it must not silently overload an earlier successful proposal.
     const moved=new Map(active.map(change=>[change.jobId,Date.parse(change.to)])),finalEvents=[...data.recent,...data.events.map(event=>({...event,at:moved.get(event.jobId)??event.at}))];
     if(finalEvents.some(end=>{const window=finalEvents.filter(event=>event.at>end.at-HOUR&&event.at<=end.at);return window.some(event=>moved.has(event.jobId))&&window.reduce((sum,event)=>sum+event.cost,0)>data.planningLimit;})){
-      validationError='이동할 수 없는 예약을 유지하면 분산 후에도 호출량이 겹칩니다. 예약 선택이나 정시 예약 포함 범위를 조정해 주세요.';warnings.push(validationError);
+      validationError='옮길 수 없는 예약이 그대로 남아 분산 후에도 호출량이 몰려요. 고른 예약이나 정시 예약 포함 범위를 바꿔 주세요.';warnings.push(validationError);
     }
     const id=randomUUID(),expiresAt=new Date(Date.parse(now())+15*MINUTE).toISOString();
     const plan={id,ownerId:user.id,signature:data.signature,changes,expiresAt,createdAt:now(),validCount:active.length,blockedCount:changes.filter(c=>c.excluded).length,canApply:active.length>0&&!validationError,warnings};
@@ -88,12 +88,12 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
   function apply(user,input={}){
     user=current(user,true);if(input.confirmed!==true)throw fail('변경 전후의 예약을 확인한 뒤 적용해 주세요.');
     return publishing.atomic(()=>{
-      const plan=store.get(PLANS,input.previewId);if(!plan||plan.ownerId!==user.id)throw fail('예약 미리보기를 찾을 수 없습니다.',404);
+      const plan=store.get(PLANS,input.previewId);if(!plan||plan.ownerId!==user.id)throw fail('예약 미리보기를 찾을 수 없어요. 미리보기를 다시 만들어 주세요.',404);
       const view=publishing.workspace(user),visible=new Set(view.jobs.map(j=>j.id));
-      if(plan.appliedAt){if(plan.jobIds.some(id=>!visible.has(id)))throw fail('예약 접근 권한이 변경됐습니다.',403);return {jobs:view.jobs.filter(j=>plan.jobIds.includes(j.id)),existing:true};}
-      if(plan.expiresAt<=now()||!plan.canApply||state(user).signature!==plan.signature)throw fail('예약 또는 연결 상태가 변경됐습니다. 미리보기를 다시 확인해 주세요.',409);
+      if(plan.appliedAt){if(plan.jobIds.some(id=>!visible.has(id)))throw fail('예약 접근 권한이 바뀌었어요.',403);return {jobs:view.jobs.filter(j=>plan.jobIds.includes(j.id)),existing:true};}
+      if(plan.expiresAt<=now()||!plan.canApply||state(user).signature!==plan.signature)throw fail('미리보기가 만료됐거나 예약·연결 상태가 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
       const changes=plan.changes.filter(c=>!c.excluded&&c.from!==c.to);changes.forEach(change=>validateMove(user,change));
-      if(changes.some(c=>Date.parse(c.to)<(store.get('socialProviderRequests','postiz')?.retryAfter||0)))throw fail('제공자의 대기 시간이 변경됐습니다. 다시 확인해 주세요.',409);
+      if(changes.some(c=>Date.parse(c.to)<(store.get('socialProviderRequests','postiz')?.retryAfter||0)))throw fail('발행 서비스의 대기 시간이 바뀌었어요. 미리보기를 다시 확인해 주세요.',409);
       const result=publishing.rescheduleApply(user,{changes});
       store.put(PLANS,plan.id,{id:plan.id,ownerId:user.id,jobIds:result.jobs.map(j=>j.id),appliedAt:now(),expiresAt:plan.expiresAt});return {...result,existing:false};
     });
