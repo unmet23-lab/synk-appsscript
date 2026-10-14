@@ -1,18 +1,30 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>SYNK · 맞춤 학습</title>
-<link rel="stylesheet" href="/learning-hub/assets/scrapbook.css"><link rel="stylesheet" href="/learning-hub/style.css"><script src="/learning-hub/atlas-learning.js" defer></script><script src="/learning-hub/app.js" defer></script></head>
+<link rel="stylesheet" href="/learning-hub/assets/scrapbook.css"><link rel="stylesheet" href="/learning-hub/style.css"><link rel="stylesheet" href="/learning-hub/beginner-cards.css"><script src="/learning-hub/atlas-learning.js" defer></script><script src="/learning-hub/app.js" defer></script></head>
 <body class="sb-page"><main><header><span class="brand">SYNK LAB PLAY</span><span class="badge">로컬 연결판</span></header>
-<a class="account-link" href="/synk-account/platform.html">← SYNK 플랫폼</a><a class="account-link" href="/synk-account/client.html?product=world">내 SYNK 계정 · WORLD로 이어가기 →</a>
+<a class="beginner-jump" href="#beginner-title">처음 배우나요? <span lang="en">New to Korean? Start here ↓</span></a>
+<a class="account-link" href="/synk-account/platform.html">← SYNK 플랫폼</a><a class="account-link" href="/synk-account/client.html?product=world&amp;play=learning-hub">내 SYNK 계정 · WORLD로 이어가기 →</a>
 <section class="intro"><img class="book" src="/learning-hub/assets/sticker-book.webp" alt=""><p class="eyebrow">내 기록에서 이어지는 다음 연습</p><h1>오늘은 무엇을<br><span class="sb-underline">더 연습해 볼까요?</span></h1><p>게임에서 확인한 내용을 다음 연습에 반영해요.<br>게임 안에서도 하는 모습을 보고 속도와 난이도가 나에게 맞춰 움직여요.</p><a class="lab-link" href="/atlas-lab/">맞춤이 어떻게 움직이는지 직접 보기 →</a></section>
+<section class="beginner" aria-labelledby="beginner-title">
+<p class="eyebrow">처음 배우는 한국어 · Your first Korean</p>
+<h2 id="beginner-title" tabindex="-1">듣고, 만지고, 함께 놀아요.<span lang="en">Listen. Try. Play.</span></h2>
+<p>한글을 몰라도 괜찮아요. 먼저 보고, 소리를 듣고, 직접 해 봐요. 처음에는 시간 제한이 없어요.<br><span lang="en">No Korean needed. Watch, listen, then try. No timer to start.</span></p>
+<p class="beginner-note">소리를 켜 주세요. 놀이 안에서 다시 들을 수 있어요.<br><span lang="en">Sound on. You can listen again in each game.</span></p>
+<div class="beginner-games">
+<a href="/word-magic/"><span class="beginner-card-art art-magic" aria-hidden="true"><img src="/word-magic/assets/objects/rabbit.webp" alt="" width="140" height="186"><img class="art-companion" src="/word-magic/assets/objects/book.webp" alt="" width="80" height="80"></span><span class="beginner-meta">처음이라면 여기부터<span lang="en">Start here · Solo</span></span><h3>말의 마법사<span lang="en">Word Magic</span></h3><p>물체를 키우고, 문을 열어요.<br><span lang="en">Make things change.</span></p><strong>마법 시작 · <span lang="en">Play</span> →</strong></a>
+<a href="/order-rush/beginner.html"><span class="beginner-card-art art-order" aria-hidden="true"><img src="/spaceship-coop/assets/brand/mongle-smile.webp" alt="" width="140" height="186"><img class="art-companion" src="/order-rush/assets/beginner/bread.webp" alt="" width="80" height="80"></span><span class="beginner-meta">혼자 가게 놀이<span lang="en">Solo</span></span><h3>주문 폭주 입문<span lang="en">Your First Shop</span></h3><p>물, 빵, 사과부터 건네요.<br><span lang="en">Serve your first order.</span></p><strong>가게 열기 · <span lang="en">Play</span> →</strong></a>
+<a href="/spaceship-coop/"><span class="beginner-card-art art-ship" aria-hidden="true"><img src="/spaceship-coop/assets/art/felt-rocket-v2.webp" alt="" width="140" height="186"><img class="art-companion" src="/spaceship-coop/assets/felt/sparkle.webp" alt="" width="80" height="80"></span><span class="beginner-meta">친구와 화면 하나씩<span lang="en">2 players · 2 screens</span></span><h3>둘이서 우주선 고치기<span lang="en">Fix the Spaceship</span></h3><p>서로 듣고 도와 우주선을 고쳐요.<br><span lang="en">Listen, help, and launch.</span></p><strong>친구와 시작 · <span lang="en">Play</span> →</strong></a>
+</div></section>
 <section class="recommend" aria-labelledby="recommend-title"><p class="eyebrow">다음 연습</p><h2 id="recommend-title">기록을 살펴보고 있어요</h2><p id="reason" aria-live="polite"></p><a id="start" class="primary" href="/korean-racing/">추천 연습 열기 <span>→</span></a><label class="audio"><input id="audio" type="checkbox" checked> 지금 소리를 들을 수 있어요</label>
 <div class="today" role="group" aria-labelledby="today-title"><p id="today-title" class="eyebrow">오늘은 어때요?</p><div class="today-choices"><button type="button" data-today="good" aria-pressed="false">좋아요</button><button type="button" data-today="okay" aria-pressed="false">보통이에요</button><button type="button" data-today="tired" aria-pressed="false">피곤해요</button><button type="button" data-today="no_time" aria-pressed="false">시간이 없어요</button></div><p id="today-note" class="note" aria-live="polite"></p></div>
 <div class="today help" role="group" aria-labelledby="help-title"><p id="help-title" class="eyebrow">도움은 어떻게 받을까요?</p><div class="today-choices help-choices"><button type="button" data-help="step" aria-pressed="false">단계별로 도와줘요</button><button type="button" data-help="choose" aria-pressed="false">그때그때 맞춰 줘요</button><button type="button" data-help="independent" aria-pressed="false">혼자 해 볼게요</button></div><p id="help-note" class="note" aria-live="polite"></p></div></section>
+<a class="account-link" href="/learning-hub/collection.html">나의 플레이 컬렉션 · 상점과 28개 칭호 →</a>
 <section aria-labelledby="games-title"><div class="section-title"><h2 id="games-title">원하는 게임도 골라요</h2><p>추천은 언제든 바꿀 수 있어요.</p></div><div class="games">
 <a href="/hangul-stage/"><span class="number">00</span><h3>한글 단계</h3><p>한글을 처음 배우나요?<br>가나다부터 소리를 듣고 익혀요.</p><span>시작하기 →</span></a>
 <a href="/korean-racing/"><span class="number">01</span><h3>한국어 레이싱</h3><p>듣기와 읽기를 오가며<br>기록에 맞는 다섯 문항.</p><span>시작하기 →</span></a>
 <a href="/korean-rhythm/"><span class="number">02</span><h3>말의 리듬</h3><p>듣고 뜻을 판단해요.<br>다음 곡도 기록에 맞춰.</p><span>시작하기 →</span></a>
 <a href="/order-rush/"><span class="number">03</span><h3>주문 폭주</h3><p>수량과 변경 조건을 듣고<br>나에게 필요한 주문부터.</p><span>시작하기 →</span></a>
-<a href="/korean-runner/"><span class="number">04</span><h3>바람길</h3><p>한국어 부탁을 듣고 움직여요.<br>다시 볼 표현을 골라 달려요.</p><span>시작하기 →</span></a>
+<a href="/korean-runner/"><span class="number">04</span><h3>바람길</h3><p>한국어 부탁을 듣고 움직여요.<br>여덟 등불로 정원을 깨워요.</p><span>시작하기 →</span></a>
 <a href="/entry-check/"><span class="number">05</span><h3>입장 검사</h3><p>안내문을 읽고 손님을 통과·거절.<br>놓친 규칙의 손님부터 만나요.</p><span>시작하기 →</span></a>
 <a href="/story-classroom/"><span class="number">06</span><h3>선생님이 돌아왔다</h3><p>이야기를 읽고 친구들과 정리해요.<br>장소와 순서가 바뀌는 새 부탁까지.</p><span>시작하기 →</span></a>
 <a href="/blank-slice/"><span class="number">07</span><h3>빈칸 베기</h3><p>문장을 읽고 맞는 낱말을 베어요.<br>틀린 낱말·조사부터 다시 나와요.</p><span>시작하기 →</span></a>

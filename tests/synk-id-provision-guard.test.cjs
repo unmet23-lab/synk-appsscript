@@ -27,11 +27,52 @@ test('provider passes actual mode to the shared guard and read-only instances re
       const credentials = { 운영REF: guard.운영REF, 리허설REF: guard.리허설REF, 읽기: (_name, options) => { observed.push(options); return { SUPABASE_PROJECT_REF: process.env.SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN: 'fixture-only' }; } };
       const provider = await createProvider({ environment, apply }, { credentials, management: async (ref, suffix, init) => { calls.push({ ref, suffix, method: init?.method || 'GET' }); return new Response(JSON.stringify(suffix.startsWith('/api-keys') ? [{ type: 'secret', api_key: 'fixture-admin-only' }] : [])); }, fetcher: async (_url, init) => { calls.push({ method: init.method }); return new Response('{}'); } });
       assert.deepEqual(observed, [credentialMode({ environment, apply })]);
-      if (apply) { await provider.createClient({}); await provider.writeMapping({}); assert.equal(calls.filter(call => call.method === 'POST').length, 2); }
-      else { await assert.rejects(provider.createClient({}), /읽기 전용/); await assert.rejects(provider.writeMapping({}), /읽기 전용/); assert.equal(calls.length, 0); }
+      if (apply) { await provider.createClient({}); await provider.updateClient('existing-client', {}); await provider.writeMapping({}); assert.equal(calls.filter(call => call.method === 'POST').length, 2); assert.equal(calls.filter(call => call.method === 'PUT').length, 1); }
+      else { await assert.rejects(provider.createClient({}), /읽기 전용/); await assert.rejects(provider.updateClient('existing-client', {}), /읽기 전용/); await assert.rejects(provider.writeMapping({}), /읽기 전용/); assert.equal(calls.length, 0); }
     }
     const credentials = { 운영REF: guard.운영REF, 리허설REF: guard.리허설REF, 읽기: () => ({ SUPABASE_PROJECT_REF: 'wrong-target', SUPABASE_ACCESS_TOKEN: 'fixture' }) };
     await assert.rejects(createProvider({ environment: 'production', apply: true }, { credentials }), /실제 요청 대상/);
+  } finally { if (original === undefined) delete process.env.SUPABASE_PROJECT_REF; else process.env.SUPABASE_PROJECT_REF = original; }
+});
+
+test('provider updates only the selected OAuth client through the guarded admin endpoint and preserves the exact supplied fields', async () => {
+  const original = process.env.SUPABASE_PROJECT_REF;
+  try {
+    const calls = [], credentialCalls = [], clientId = 'Existing_client-123', body = { redirect_uris: ['http://127.0.0.1:4191/api/synk-id/callback', 'https://workspace.synk.im/api/synk-id/callback'] };
+    const credentials = { 운영REF: guard.운영REF, 리허설REF: guard.리허설REF, 읽기: (name, options) => { credentialCalls.push({ name, options }); return { SUPABASE_PROJECT_REF: process.env.SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN: 'guard-token-fixture' }; } };
+    const provider = await createProvider({ environment: 'production', apply: true }, { credentials, fetcher: async (url, init) => {
+      calls.push({ url, init });
+      return new Response(JSON.stringify(url.includes('/api-keys?') ? [{ type: 'secret', api_key: 'admin-key-fixture' }] : { client_id: clientId, ...JSON.parse(init.body) }));
+    } });
+    assert.deepEqual(await provider.updateClient(clientId, body), { client_id: clientId, ...body });
+    assert.deepEqual(credentialCalls, [{ name: 'SYNK공통계정연결', options: credentialMode({ environment: 'production', apply: true }) }]);
+    assert.equal(calls.length, 2);
+    assert.equal(calls[0].url, `https://api.supabase.com/v1/projects/${guard.운영REF}/api-keys?reveal=true`);
+    assert.equal(calls[0].init.headers.Authorization, 'Bearer guard-token-fixture');
+    assert.equal(calls[1].url, `https://${guard.운영REF}.supabase.co/auth/v1/admin/oauth/clients/${encodeURIComponent(clientId)}`);
+    assert.equal(calls[1].init.method, 'PUT'); assert.equal(calls[1].init.redirect, 'error');
+    assert.deepEqual(JSON.parse(calls[1].init.body), body);
+    assert.deepEqual(calls[1].init.headers, { apikey: 'admin-key-fixture', Authorization: 'Bearer admin-key-fixture', 'Content-Type': 'application/json' });
+  } finally { if (original === undefined) delete process.env.SUPABASE_PROJECT_REF; else process.env.SUPABASE_PROJECT_REF = original; }
+});
+
+test('provider rejects malformed OAuth update IDs before loading an admin key or making a network request', async () => {
+  const original = process.env.SUPABASE_PROJECT_REF;
+  try {
+    let calls = 0;
+    const credentials = { 운영REF: guard.운영REF, 리허설REF: guard.리허설REF, 읽기: () => ({ SUPABASE_PROJECT_REF: process.env.SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN: 'fixture' }) };
+    const provider = await createProvider({ environment: 'rehearsal', apply: true }, { credentials, management: async () => { calls++; throw Error('unexpected management request'); }, fetcher: async () => { calls++; throw Error('unexpected admin request'); } });
+    for (const clientId of [undefined, null, 1, {}, '', ' ', 'x'.repeat(257), '../client', 'client/other', 'client?key=value', 'client#fragment', 'client%2Fother', 'client\n']) await assert.rejects(provider.updateClient(clientId, { redirect_uris: [] }), /클라이언트 ID/);
+    assert.equal(calls, 0);
+  } finally { if (original === undefined) delete process.env.SUPABASE_PROJECT_REF; else process.env.SUPABASE_PROJECT_REF = original; }
+});
+
+test('provider surfaces OAuth update failure status without including remote response content', async () => {
+  const original = process.env.SUPABASE_PROJECT_REF;
+  try {
+    const credentials = { 운영REF: guard.운영REF, 리허설REF: guard.리허설REF, 읽기: () => ({ SUPABASE_PROJECT_REF: process.env.SUPABASE_PROJECT_REF, SUPABASE_ACCESS_TOKEN: 'fixture' }) };
+    const provider = await createProvider({ environment: 'rehearsal', apply: true }, { credentials, management: async () => new Response(JSON.stringify([{ type: 'secret', api_key: 'fixture' }])), fetcher: async () => new Response('remote-sensitive-fixture', { status: 404 }) });
+    await assert.rejects(provider.updateClient('missing-client', { redirect_uris: [] }), error => error.status === 404 && error.message === 'Public OAuth 갱신 HTTP 404');
   } finally { if (original === undefined) delete process.env.SUPABASE_PROJECT_REF; else process.env.SUPABASE_PROJECT_REF = original; }
 });
 

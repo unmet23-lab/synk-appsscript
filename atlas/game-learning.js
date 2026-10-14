@@ -308,6 +308,10 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
       const profile = summary();
       return { ...Learning.recommend({ profile, candidates, presentations: view().presentations, prior: ledger, ...options }), storage: profile.storage };
     },
+    recommendActivities(candidates, options = {}) {
+      const profile = summary();
+      return { ...Learning.recommendActivities({ ...options, profile, candidates, presentations: view().presentations, prior: ledger }), storage: profile.storage };
+    },
     // Display exposure is stricter than independent-attempt qualification: an item
     // shown without an answer is still not a never-shown item. Both include folded history.
     exposure(item) {
@@ -463,4 +467,5 @@ function createGame({ gameId, map, storage = null, learnerKey = 'device', clock 
   api.live = createLive({ coach: api, port: flowPort, clock: monotonicClock });
   return api;
 }
-module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend, POLICY: Learning.POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };
+module.exports = { createGame, createLearningSync, createMemorySync, summarizeLearning: Learning.summarizeLearning, recommend: Learning.recommend,
+  recommendActivities: Learning.recommendActivities, POLICY: Learning.POLICY, ACTIVITY_POLICY: Learning.ACTIVITY_POLICY, RESPONSE_FORMATS: Learning.RESPONSE_FORMATS, KEY };

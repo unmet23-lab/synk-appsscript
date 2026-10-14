@@ -9,6 +9,10 @@ import * as sound from './audio.mjs';
 import { swingPower } from './sfx.mjs';
 import { createStage, FEEL } from './stage.mjs';
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+const progressStorage = globalThis.SynkPlayAccount.storage();
+
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -26,11 +30,11 @@ const impacts = [];   // 확인용(?qa): 벤 순간의 시각·자리
 const KEY = 'synk.blank-slice.v1';
 let saved = true;
 function load() {
-  try { const p = JSON.parse(localStorage.getItem(KEY) || 'null'); if (p && p.v === 1) return p; } catch { saved = false; }
+  try { const p = JSON.parse(progressStorage.getItem(KEY) || 'null'); if (p && p.v === 1) return p; } catch { saved = false; }
   return { v: 1, plays: 0, practiced: false, slow: false, best: null };
 }
 const progress = load();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } };
+const save = () => { try { progressStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } };
 
 /* ── 아틀라스 ── */
 let coach = null;

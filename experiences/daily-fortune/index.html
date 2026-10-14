@@ -23,7 +23,7 @@
       <div class="account-actions"><button id="account-login" class="soft-button" type="button" hidden>SYNK ID로 로그인</button><button id="account-cancel" class="text-button" type="button" hidden>로그인 취소</button><button id="account-reload" class="soft-button" type="button" hidden>계정에서 다시 불러오기</button><button id="account-logout" class="text-button" type="button" hidden>로그아웃</button></div>
       <p id="saved-profile" class="saved-profile" hidden></p>
     </section>
-    <nav class="view-tabs" aria-label="운세 둘러보기"><button type="button" data-view="today" aria-pressed="true">오늘의 운세</button><button type="button" data-view="week" aria-pressed="false">이번 주</button><button type="button" data-view="history" aria-pressed="false">내 보관함 <span id="history-count">0</span></button></nav>
+    <nav class="view-tabs" aria-label="운세 둘러보기"><button type="button" data-view="today" aria-pressed="true">오늘의 운세</button><button type="button" data-view="week" aria-pressed="false">이번 주</button><button type="button" data-view="reflection" aria-pressed="false">최근 7일 돌아보기</button><button type="button" data-view="history" aria-pressed="false">내 보관함 <span id="history-count">0</span></button></nav>
     <div id="reading-area">
     <section class="mode-picker" aria-labelledby="mode-title">
       <div class="section-heading"><div><p class="eyebrow">01 / CHOOSE YOUR WAY</p><h2 id="mode-title" tabindex="-1">어떤 운세로 볼까요?</h2></div><p class="date"><time id="today"></time><span>한국 시간 기준</span></p></div>
@@ -61,6 +61,13 @@
     </section>
     </div>
     <section id="history-panel" aria-labelledby="history-title" hidden><div class="section-heading"><div><p class="eyebrow">MY COLLECTION</p><h2 id="history-title" tabindex="-1">나에게 남긴 작은 기록</h2></div></div><p id="history-summary" class="helper"></p><div class="history-tools"><label for="history-filter">기록 보기 <select id="history-filter"><option value="all">전체</option><option value="western">별자리</option><option value="korean">한국 사주</option><option value="completed">실천한 기록</option></select></label><button id="export-records" class="soft-button" type="button">내 기록 내보내기</button></div><div id="history-list" class="history-list"></div><div class="delete-account-data"><button id="delete-data" class="text-button" type="button">계정의 운세 정보 전체 삭제</button><div id="delete-confirm" hidden><p>저장한 출생정보·선호 방식·운세 기록과 메모를 지워요. SYNK 계정 자체는 유지돼요. 필요한 기록은 먼저 내보내세요.</p><button id="confirm-delete-data" class="soft-button" type="button">운세 정보 삭제하기</button><button id="cancel-delete-data" class="text-button" type="button">취소</button></div></div></section>
+    <section id="reflection-panel" aria-labelledby="reflection-week-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">MY LAST 7 DAYS</p><h2 id="reflection-week-title" tabindex="-1">작은 실천을 다시 만나요</h2></div></div>
+      <p id="reflection-range" class="helper"></p>
+      <p class="helper">오늘부터 6일 전까지의 운세에 남긴 메모와 실천한 행동이에요. 운세 날짜를 기준으로 모으며, 계정에 저장한 내용만 보여요.</p>
+      <p class="reflection-prompt">다시 해 보고 싶은 행동이나 기억하고 싶은 메모가 있나요?</p>
+      <p id="reflection-empty" class="empty-state"></p><div id="reflection-days"></div>
+    </section>
     <p class="disclaimer">가볍게 읽는 재미용 운세예요. 미래를 예측하지 않아요.</p>
   </main>
   <footer><span>SYNK FOR YOU</span><p>비회원 입력은 이 화면에만 남아요. 계정 저장은 저장 단추를 누를 때 이뤄져요.</p><button id="clear-input" type="button">화면의 입력·결과 지우기</button></footer>

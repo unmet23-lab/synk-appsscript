@@ -12,3 +12,4 @@
 @media print{body.view-book>.topbar,body.view-book>footer,body.view-book>.notice,body.view-book .book-toolbar{display:none!important}body.view-book,body.view-book main{margin:0;padding:0;background:#fff}body.view-book .work{max-width:none}body.view-book .book-preview .growth-book{margin:0}body.view-book .book-preview .growth-book h2{font-size:30pt}}
 
 .checkline[hidden]{display:none!important}
+.practice-choices{margin:24px 0 32px}.practice-choices fieldset{border:0;padding:0;margin:0 0 20px}.practice-choices legend{font-size:16px;font-weight:750;margin-bottom:12px}.branch-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.branch-options .choice{padding:22px 24px;font-size:15px;font-weight:700;text-align:center}.practice-choices>.muted{font-size:13px;margin:16px 0}.practice-label{font-size:13px;margin:12px 0 0;color:#24448c}@media(max-width:480px){.branch-options{grid-template-columns:1fr;gap:8px}.branch-options .choice{padding:20px 24px}}

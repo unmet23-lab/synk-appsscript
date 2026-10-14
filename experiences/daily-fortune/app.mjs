@@ -2,7 +2,7 @@ import { getSigns, FORTUNE_MODES, seoulDateKey, displayDate, millisecondsUntilNe
 import { getSaju, sajuText } from './saju-core.mjs';
 import { suggestZodiac, getZodiacProfile, getReadingSeries, getSajuGuide } from './insights.mjs';
 import { createFortuneAccount } from './account.mjs';
-import { emptyState, birthProfile, saveReading, readingKey, entryKey } from './account-state.mjs';
+import { emptyState, birthProfile, saveReading, readingKey, entryKey, recentReflections } from './account-state.mjs';
 
 const $ = id => document.getElementById(id);
 let selectedMode = null;
@@ -15,6 +15,7 @@ let vault = emptyState();
 let accountState = { configured: false, status: 'loading', ready: false };
 let accountBusy = false;
 let loadedIdentity = null;
+let screenVersion = 0;
 const drafts = new Map();
 let fortune = null;
 let dayTimer;
@@ -75,6 +76,7 @@ function renderSaju(result) {
   $('saju-notes').replaceChildren(...result.notes.map(note => textNode('li', note)));
 }
 function renderResult({ announce = true } = {}) {
+  screenVersion++;
   const western = selectedMode === 'western';
   if (!selectedMode || (western ? !selectedSign : !birth)) {
     fortune = null;
@@ -115,6 +117,7 @@ function refreshDay() {
   date = current;
   showDate();
   renderResult({ announce: false });
+  renderReflection();
   notify('한국 시간이 새날로 바뀌어 오늘의 내용을 새로 준비했어요.');
   return true;
 }
@@ -153,6 +156,7 @@ function chooseMode(mode, { announce = true } = {}) {
 }
 for (const button of document.querySelectorAll('[data-mode]')) button.addEventListener('click', () => chooseMode(button.dataset.mode));
 function invalidateBirth() {
+  screenVersion++;
   birth = null;
   $('saju-error').hidden = true;
   clearCopy();
@@ -203,6 +207,7 @@ $('copy').addEventListener('click', async () => {
   }
 });
 function clearScreen({ announce = true } = {}) {
+  screenVersion++;
   drafts.clear();
   selectedMode = null; selectedSign = null; birth = null; fortune = null;
   $('saju-form').reset(); $('birth-time').disabled = false; $('birth-time').required = true;
@@ -220,9 +225,10 @@ function clearScreen({ announce = true } = {}) {
 $('clear-input').addEventListener('click', () => clearScreen());
 
 function updateNoteCount() { $('note-count').textContent = `${[...$('reflection-note').value].length} / 1000`; }
-function rememberDraft() { if (fortune) drafts.set(readingKey(fortune), { note: $('reflection-note').value, completed: $('complete-action').checked });updateNoteCount(); }
+function rememberDraft() { screenVersion++;if (fortune) drafts.set(readingKey(fortune), { note: $('reflection-note').value, completed: $('complete-action').checked });updateNoteCount(); }
 $('reflection-note').addEventListener('input', rememberDraft);
 $('complete-action').addEventListener('change', rememberDraft);
+$('zodiac-birth').addEventListener('input', () => { screenVersion++; });
 function guideBlock(title, copy) { const block = document.createElement('article');block.append(textNode('h4', title), textNode('p', copy));return block; }
 function renderGuide() {
   const target = $('guide-content');target.replaceChildren();
@@ -261,9 +267,10 @@ function setView(next) {
   view = next;
   document.documentElement.dataset.view = next;
   for (const button of document.querySelectorAll('[data-view]')) button.setAttribute('aria-pressed', String(button.dataset.view === next));
-  $('reading-area').hidden = next === 'history';$('history-panel').hidden = next !== 'history';
+  $('reading-area').hidden = next === 'history' || next === 'reflection';$('history-panel').hidden = next !== 'history';
+  $('reflection-panel').hidden = next !== 'reflection';
   $('result').hidden = next !== 'today' || !fortune;
-  renderWeek();if (next === 'history') renderHistory();
+  renderWeek();if (next === 'history') renderHistory();if (next === 'reflection') renderReflection();
 }
 for (const button of document.querySelectorAll('[data-view]')) button.addEventListener('click', () => { refreshDay();setView(button.dataset.view); });
 $('find-zodiac').addEventListener('click', () => {
@@ -276,7 +283,8 @@ $('find-zodiac').addEventListener('click', () => {
 
 function updateAccountControls() {
   const signedIn = accountState.status === 'signed-in';
-  $('account-login').hidden = !accountState.configured || signedIn;
+  $('account-login').hidden = !accountState.configured && !accountState.retryable || signedIn;
+  $('account-login').textContent = accountState.retryable ? '계정 연결 다시 확인' : 'SYNK ID로 로그인';
   $('account-login').disabled = accountBusy || accountState.status === 'signing-in';
   $('account-cancel').hidden = accountState.status !== 'signing-in';
   $('account-logout').hidden = !signedIn;$('account-reload').hidden = !signedIn;
@@ -286,6 +294,7 @@ function updateAccountControls() {
   $('reading-save-note').textContent = accountState.ready ? '결과·실천 여부·메모를 내 SYNK 계정에 저장해요. 저장 단추를 누르기 전 수정은 이 화면에만 남아요.' : '로그인하고 계정 저장이 연결되면 결과와 메모를 보관할 수 있어요.';
   $('saved-profile').hidden = !accountState.ready;
   $('saved-profile').textContent = vault.profile ? `저장된 내 정보 · 양력 ${vault.profile.birthDate} · ${vault.profile.birthTime ?? '시간 모름'} · 한국 표준시` : '저장된 출생정보가 없어요. 아래에서 입력한 뒤 계정에 저장해 주세요.';
+  renderReflection();
 }
 function applyAccount({ restore = false } = {}) {
   const snapshot = connection.snapshot();if (!snapshot.ready) return;
@@ -310,14 +319,18 @@ const connection = createFortuneAccount({
 });
 async function accountTask(action, success) {
   if (accountBusy) return;accountBusy = true;updateAccountControls();
-  try { await action();if (success) notify(success); }
+  try { const message = await action();if (success) notify(typeof message === 'string' ? message : success); }
   catch (error) { if (error.code !== 'ACCOUNT_CHANGED') notify(error.message || '계정 연결을 확인해 주세요.'); }
   finally { accountBusy = false;updateAccountControls(); }
 }
 $('account-login').addEventListener('click', () => accountTask(() => connection.signIn()));
 $('account-cancel').addEventListener('click', () => accountTask(() => connection.cancel()));
 $('account-logout').addEventListener('click', () => { void connection.signOut().catch(error => notify(error.message)); });
-$('account-reload').addEventListener('click', () => accountTask(async () => { await connection.load();clearScreen({ announce: false });applyAccount({ restore: true }); }, '계정의 최신 정보를 불러왔어요.'));
+$('account-reload').addEventListener('click', () => accountTask(async () => {
+  const expectedScreen = screenVersion;await connection.load();
+  if (expectedScreen !== screenVersion) { applyAccount();return '계정의 최신 정보를 불러왔어요. 기다리는 동안 바꾼 입력은 아직 저장하지 않고 화면에 남겨 두었어요.'; }
+  clearScreen({ announce: false });applyAccount({ restore: true });
+}, '계정의 최신 정보를 불러왔어요.'));
 function currentProfile() {
   if (selectedMode === 'korean') return birthProfile($('birth-date').value, $('time-unknown').checked ? null : $('birth-time').value);
   if ($('zodiac-birth').value) return birthProfile($('zodiac-birth').value, vault.profile?.birthDate === $('zodiac-birth').value ? vault.profile.birthTime : null);
@@ -334,6 +347,7 @@ $('save-reading').addEventListener('click', () => accountTask(async () => {
   await connection.save(next);if (drafts.get(key) === submittedDraft) drafts.delete(key);applyAccount();
 }, '결과와 한 줄 기록을 계정에 저장했어요.'));
 function renderHistory() {
+  renderReflection();
   $('history-count').textContent = String(vault.entries.length);
   $('history-summary').textContent = accountState.ready ? `${vault.entries.length}개 보관 · ${vault.entries.filter(item => item.completed).length}개 실천 · 최대 90개` : 'SYNK ID로 로그인하면 다른 기기에서도 내 기록을 불러올 수 있어요.';
   const filter = $('history-filter').value;
@@ -346,14 +360,49 @@ function renderHistory() {
     if (entry.note) row.append(textNode('blockquote', entry.note));
     const controls = document.createElement('div');controls.className = 'history-row-actions';
     const open = textNode('button', '다시 보기 · 메모 수정', 'soft-button');open.type = 'button';
-    open.addEventListener('click', () => {
-      if (entry.mode === 'western') selectedSign = entry.signId;
-      else { birth = { birthDate: entry.birth.birthDate, birthTime: entry.birth.birthTime };$('birth-date').value = birth.birthDate;$('birth-time').value = birth.birthTime || '';$('time-unknown').checked = birth.birthTime === null;$('birth-time').disabled = birth.birthTime === null;$('birth-time').required = birth.birthTime !== null; }
-      readingDate = entry.date;setView('today');chooseMode(entry.mode, { announce: false });renderResult();
-    });
+    open.addEventListener('click', () => openEntry(entry));
     const remove = textNode('button', '기록 삭제', 'text-button');remove.type = 'button';remove.disabled = accountBusy || !accountState.ready;
     remove.addEventListener('click', () => accountTask(async () => { await connection.save({ ...vault, entries: vault.entries.filter(item => item.id !== entry.id) });applyAccount(); }, '기록을 삭제했어요.'));
     controls.append(open, remove);row.append(controls);$('history-list').append(row);
+  }
+}
+function openEntry(entry) {
+  if (entry.mode === 'western') selectedSign = entry.signId;
+  else { birth = { birthDate: entry.birth.birthDate, birthTime: entry.birth.birthTime };$('birth-date').value = birth.birthDate;$('birth-time').value = birth.birthTime || '';$('time-unknown').checked = birth.birthTime === null;$('birth-time').disabled = birth.birthTime === null;$('birth-time').required = birth.birthTime !== null; }
+  readingDate = entry.date;setView('today');chooseMode(entry.mode, { announce: false });renderResult();
+}
+function renderReflection() {
+  const target = $('reflection-days');target.replaceChildren();
+  $('reflection-range').textContent = '';
+  if (!accountState.ready) {
+    $('reflection-empty').hidden = false;
+    $('reflection-empty').textContent = accountState.status === 'signed-in'
+      ? '계정 연결을 확인한 뒤 저장된 기록을 돌아볼 수 있어요. 위에서 계정 정보를 다시 불러와 주세요.'
+      : 'SYNK ID로 로그인하면 계정에 저장한 메모와 실천한 행동을 모아 볼 수 있어요.';
+    return;
+  }
+  const recent = recentReflections(vault, date);
+  $('reflection-range').textContent = `${recent.startDate} – ${recent.endDate} · 한국 날짜`;
+  $('reflection-empty').hidden = recent.days.some(day => day.entries.length);
+  $('reflection-empty').textContent = '이 기간에 저장한 메모나 실천한 행동이 아직 없어요. 오늘의 작은 행동을 해 보고 한 줄을 남겨 보세요.';
+  for (const day of recent.days) {
+    const section = document.createElement('section');section.className = 'reflection-day';
+    section.dataset.date = day.date;
+    section.append(textNode('h3', `${day.date === date ? '오늘 · ' : ''}${displayDate(day.date)}`));
+    if (!day.entries.length) section.append(textNode('p', '남긴 메모나 완료한 행동이 없어요.', 'helper'));
+    for (const entry of day.entries) {
+      const row = document.createElement('article');row.className = 'reflection-record';
+      row.append(textNode('p', entry.mode === 'korean' ? '한국 사주' : `별자리 · ${getZodiacProfile(entry.signId).label}`, 'eyebrow'), textNode('h4', entry.title));
+      if (entry.completed) row.append(textNode('p', '실천한 행동', 'reflection-label'), textNode('p', entry.action, 'reflection-action'));
+      if (entry.note.trim()) row.append(textNode('p', '내가 남긴 메모', 'reflection-label'), textNode('blockquote', entry.note));
+      const open = textNode('button', '다시 보기 · 메모 수정', 'soft-button');open.type = 'button';
+      open.addEventListener('click', () => {
+        const current = vault.entries.find(item => item.id === entry.id);
+        if (accountState.ready && current) openEntry(current);
+      });
+      row.append(open);section.append(row);
+    }
+    target.append(section);
   }
 }
 $('history-filter').addEventListener('change', renderHistory);
@@ -365,7 +414,13 @@ $('export-records').addEventListener('click', () => {
 });
 $('delete-data').addEventListener('click', () => { $('delete-confirm').hidden = false; });
 $('cancel-delete-data').addEventListener('click', () => { $('delete-confirm').hidden = true; });
-$('confirm-delete-data').addEventListener('click', () => accountTask(async () => { await connection.remove();clearScreen({ announce: false });applyAccount();$('delete-confirm').hidden = true; }, '계정에 저장한 운세 정보와 기록을 삭제했어요.'));
+$('confirm-delete-data').addEventListener('click', () => accountTask(async () => {
+  const expectedScreen = screenVersion;await connection.remove();
+  const changedScreen = expectedScreen !== screenVersion;
+  if (!changedScreen) clearScreen({ announce: false });
+  applyAccount();$('delete-confirm').hidden = true;
+  if (changedScreen) return '계정에 저장한 운세 정보와 기록을 삭제했어요. 기다리는 동안 바꾼 입력은 계정에 저장하지 않고 화면에 남겨 두었어요.';
+}, '계정에 저장한 운세 정보와 기록을 삭제했어요.'));
 window.addEventListener('focus', () => { refreshDay(); scheduleDay(); });
 window.addEventListener('pageshow', () => { refreshDay(); scheduleDay(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { refreshDay(); scheduleDay(); } });

@@ -1,5 +1,5 @@
 import './core/ask.js';
-import { SCENARIOS, REVIEWS, DIRECTIONS, MAX_SESSIONS, MAX_IMPORT_BYTES, createSession, getTurn, followupQuestion, appendTurn, retryTurn, stuckTurn, archive, firstSentenceFrom } from './domain.mjs';
+import { SCENARIOS, PRACTICES, defaultPractice, practiceDetails, REVIEWS, DIRECTIONS, MAX_SESSIONS, MAX_IMPORT_BYTES, createSession, getTurn, followupQuestion, appendTurn, retryTurn, stuckTurn, archive, firstSentenceFrom } from './domain.mjs';
 import { loadSaved, saveSessions, removeSaved, createImportController } from './storage.mjs';
 import { bookContent, createBook, BOOK_FILENAME, BOOK_MIME } from './book.mjs';
 import { createAccountNotebook } from '/synk-account/src/account-notebook.mjs';
@@ -10,6 +10,7 @@ const storage = { getItem: key => window.localStorage.getItem(key), setItem: (ke
 const loaded = loadSaved(storage);
 const imports = createImportController();
 let saving = loaded.enabled, sessions = loaded.sessions, scenario = 'interview', current = null, page = 'home', pending = null, retryIndex = 0, imported = null, deletePending = false;
+let selectedPractice = defaultPractice(scenario);
 let noticeTimer;
 let bookReturn = 'home';
 let bookHomeDraft = null;
@@ -24,7 +25,11 @@ function button(label, action, secondary = false, attrs = '') { return `<button 
 function radio(name, value, label, checked = false) { return `<label class="choice"><input type="radio" name="${name}" value="${value}" ${checked ? 'checked' : ''} required><span>${label}</span></label>`; }
 function reviews(selected = null) { return `<fieldset class="reviews"><legend>말해 보니 어떤 느낌이었나요? <span class="muted">내가 직접 고르는 느낌</span></legend><div class="review-options">${Object.entries(REVIEWS).map(([id,label]) => radio('review', id, label, selected === id)).join('')}</div></fieldset>`; }
 function header(label) { return `<div class="topline"><button class="textbutton" type="button" data-action="home">← 처음으로</button><span class="eyebrow">${label}</span></div>`; }
-function goal() { return `<div class="goal"><strong>${esc(current.counterpart)}에게 전하고 싶은 것</strong>${esc(current.goal)}</div>`; }
+function practiceChoices() {
+  const options = PRACTICES[scenario];
+  return `<div class="practice-choices"><fieldset><legend>상대 유형</legend><div class="branch-options">${Object.entries(options.counterparts).map(([id, value]) => radio('counterpartKind', id, value.label, selectedPractice.counterpart === id)).join('')}</div></fieldset><fieldset><legend>이번에 연습할 목표</legend><div class="branch-options">${Object.entries(options.goals).map(([id, value]) => radio('goalKind', id, value.label, selectedPractice.goal === id)).join('')}</div></fieldset><p class="muted">고른 유형과 목표에 맞춰 준비된 대사와 힌트가 달라져요. 아래 자유 입력은 내가 기억할 메모이며, 내용을 자동 분석하지 않아요.</p></div>`;
+}
+function goal() { return `<div class="goal"><strong>${esc(current.counterpart)}에게 전하고 싶은 것</strong>${esc(current.goal)}${current.practice ? `<p class="practice-label">고른 연습: ${esc(practiceDetails(current).label)}</p>` : ''}</div>`; }
 function prompt(turn) { return `<div class="dialogue"><p class="speaker">${esc(current.counterpart)}의 말 · 연습용 대사</p><blockquote>${esc(turn.prompt)}</blockquote></div>`; }
 function statusSave() { return notebook?.active ? '완료한 연습은 계정에 저장해요. 위 SYNK ID에서 저장 상태를 확인하세요.' : saving ? '완료한 연습을 이 기기에 저장하고 있어요.' : '현재 창에서만 기억하고 있어요. 새로고침하면 사라집니다.'; }
 function bookInvitation() {
@@ -40,11 +45,11 @@ function resume() {
   const previous = sessions.find(s => s.scenario === scenario && stuckTurn(s) >= 0);
   if (!previous) return '';
   const index = stuckTurn(previous), turn = previous.turns[index];
-  return `<aside class="resume"><p class="eyebrow">지난 연습에서 이어서</p><h3>${esc(SCENARIOS[scenario].turns[turn.id].title)}</h3><p>${date(previous.at)}에 직접 ‘${REVIEWS[turn.retryReview || turn.review]}’를 골랐던 부분이에요.</p><button class="textbutton" type="button" data-action="resume" data-id="${esc(previous.id)}">이 부분부터 다시 연습 →</button></aside>`;
+  return `<aside class="resume"><p class="eyebrow">지난 연습에서 이어서</p><h3>${esc(getTurn(previous, index).title)}</h3><p>${esc(previous.counterpart)} · ${esc(previous.goal)}<br>${date(previous.at)}에 직접 ‘${REVIEWS[turn.retryReview || turn.review]}’를 골랐던 부분이에요.</p><button class="textbutton" type="button" data-action="resume" data-id="${esc(previous.id)}">이 부분부터 다시 연습 →</button></aside>`;
 }
 function home() {
-  const s = SCENARIOS[scenario];
-  return `<section class="hero"><div><p class="eyebrow">SYNK FOR YOU / REHEARSAL</p><h1 class="screen-title" tabindex="-1">중요한 말,<br><span class="accent">한 번 먼저.</span></h1><p class="lead">머릿속으로만 맴돌던 말을 꺼내 보고,<br>막힌 순간만 한 번 더 연습하세요.</p><ol class="mini-steps"><li><span>01</span>상황 고르기</li><li><span>02</span>세 번 말해 보기</li><li><span>03</span>내 문장 남기기</li></ol></div><div class="hero-art"><img src="./assets/teacher-cover.png" alt="말할 내용을 준비한 펠트 연단과 보드" width="480" height="400"></div></section><form id="setup"><fieldset class="scenarios"><legend>어떤 대화가 기다리고 있나요?</legend>${Object.entries(SCENARIOS).map(([id,value],i) => `<label class="choice"><input type="radio" name="scenario" value="${id}" ${scenario === id ? 'checked' : ''} required><span class="number">0${i+1}</span><strong>${value.name}</strong><small>${value.note}</small></label>`).join('')}</fieldset><div id="resume-slot">${resume()}</div><div class="context"><label class="field"><span>누구와 나눌 대화인가요?</span><input type="text" name="counterpart" aria-label="대화 상대" maxlength="80" value="${esc(s.counterpart)}" required></label><label class="field"><span>오늘 꼭 전하고 싶은 것 <small>나만의 목표</small></span><input type="text" name="goal" aria-label="오늘의 목표" maxlength="240" value="${esc(s.goal)}" required></label></div><label class="checkline"><input type="checkbox" name="save" ${saving ? 'checked' : ''}><span>완료한 연습을 이 기기에 저장하기 <span class="muted">선택 · 다음에 막힌 부분부터 이어서</span></span></label><div class="actions"><button class="button" type="submit">대화 시작하기 →</button><span class="muted">텍스트로 연습해요 · 세 번의 대화</span></div><p id="error" class="error" role="alert" tabindex="-1"></p></form>${memory()}`;
+  const s = practiceDetails({ scenario, practice: selectedPractice });
+  return `<section class="hero"><div><p class="eyebrow">SYNK FOR YOU / REHEARSAL</p><h1 class="screen-title" tabindex="-1">중요한 말,<br><span class="accent">한 번 먼저.</span></h1><p class="lead">머릿속으로만 맴돌던 말을 꺼내 보고,<br>막힌 순간만 한 번 더 연습하세요.</p><ol class="mini-steps"><li><span>01</span>상황 고르기</li><li><span>02</span>세 번 말해 보기</li><li><span>03</span>내 문장 남기기</li></ol></div><div class="hero-art"><img src="./assets/teacher-cover.png" alt="말할 내용을 준비한 펠트 연단과 보드" width="480" height="400"></div></section><form id="setup"><fieldset class="scenarios"><legend>어떤 대화가 기다리고 있나요?</legend>${Object.entries(SCENARIOS).map(([id,value],i) => `<label class="choice"><input type="radio" name="scenario" value="${id}" ${scenario === id ? 'checked' : ''} required><span class="number">0${i+1}</span><strong>${value.name}</strong><small>${value.note}</small></label>`).join('')}</fieldset><div id="resume-slot">${resume()}</div><div id="practice-choices">${practiceChoices()}</div><div class="context"><label class="field"><span>상대 이름이나 상황 메모</span><input type="text" name="counterpart" aria-label="대화 상대" maxlength="80" value="${esc(s.counterpart)}" required></label><label class="field"><span>오늘 꼭 전하고 싶은 것 <small>나만의 목표</small></span><input type="text" name="goal" aria-label="오늘의 목표" maxlength="240" value="${esc(s.goal)}" required></label></div><label class="checkline"><input type="checkbox" name="save" ${saving ? 'checked' : ''}><span>완료한 연습을 이 기기에 저장하기 <span class="muted">선택 · 다음에 막힌 부분부터 이어서</span></span></label><div class="actions"><button class="button" type="submit">대화 시작하기 →</button><span class="muted">텍스트로 연습해요 · 세 번의 대화</span></div><p id="error" class="error" role="alert" tabindex="-1"></p></form>${memory()}`;
 }
 function practice() {
   const index = current.turns.length, turn = getTurn(current);
@@ -56,11 +61,11 @@ function reflection() {
   return `<section class="work">${header('다음 대화 준비')}<h1 class="screen-title" tabindex="-1">내게 필요한 쪽으로.</h1><p class="result-note">방금 직접 고른 느낌은 ‘${REVIEWS[pending.review]}’였어요.</p><div class="answer-read">${esc(pending.answer)}</div><form id="focus"><fieldset class="reflection"><legend>${q.question.label}</legend>${q.question.options.map(option=>radio('focus',option.id,option.label)).join('')}</fieldset><p class="evidence">고른 방향에 맞춰 다음 상대의 반응이 달라져요.</p><div class="actions"><button class="button" type="submit">고른 방향으로 연습하기 →</button>${button('내 답변 다시 적기','back-answer',true)}</div><p id="error" class="error" role="alert" tabindex="-1"></p></form></section>`;
 }
 function results() {
-  const s = SCENARIOS[current.scenario];
-  return `<section class="work">${header('오늘의 리허설')}<div class="result-head"><p class="eyebrow">내 말로 남기는 한 장</p><h1 class="screen-title" tabindex="-1">이제, 꺼내 볼<br><span class="accent">내 문장.</span></h1><p class="result-note">세 번의 대화를 마쳤어요. 실제 대화에 가져갈 첫 문장과 기억할 한 가지를 직접 다듬어 보세요.</p></div>${goal()}<form id="takeaway"><div class="result-fields"><label class="field"><span>실제 대화에서 꺼낼 첫 문장</span><textarea name="firstSentence" aria-label="내 첫 문장" maxlength="600" placeholder="${esc(s.starter)}">${esc(current.firstSentence)}</textarea></label><label class="field"><span>기억할 한 가지</span><textarea name="takeaway" aria-label="기억할 한 가지" maxlength="600" placeholder="다음에 어떤 점을 기억하고 싶나요?">${esc(current.takeaway)}</textarea></label></div><p class="hint">스스로 확인해 보기: ${s.check}</p><div class="actions"><button class="button" type="submit">내 문장 남기기</button>${button('첫 문장 복사','copy',true)}</div><p id="error" class="error" role="alert" tabindex="-1"></p></form><p class="muted">${statusSave()} 아래에서 저장 방식을 바꿀 수 있어요.</p><div class="section-top"><h2>막힌 순간만, 한 번 더.</h2><p>자동 평가 없이 나의 느낌으로 돌아봐요.</p></div><div class="retry-list">${current.turns.map((turn,index)=>`<article class="retry-card"><span class="label">${index+1}번째 대화 · ${REVIEWS[turn.review]}</span><h3>${s.turns[turn.id].title}</h3><p>${s.turns[turn.id].prompt}</p>${turn.retry ? `<div class="comparison"><div><h3>처음 적은 말</h3><p>${esc(turn.answer)}</p></div><div><h3>다시 적은 말</h3><p>${esc(turn.retry)}</p><small class="muted">다시 말한 느낌: ${REVIEWS[turn.retryReview]}</small></div></div>` : `<p class="answer-read">${esc(turn.answer)}</p>`}<button type="button" class="textbutton" data-action="retry" data-index="${index}">이 대화 다시 연습 →</button></article>`).join('')}</div><div class="actions">${button('새 대화 연습하기','home',true)}</div>${memory()}</section>`;
+  const s = practiceDetails(current);
+  return `<section class="work">${header('오늘의 리허설')}<div class="result-head"><p class="eyebrow">내 말로 남기는 한 장</p><h1 class="screen-title" tabindex="-1">이제, 꺼내 볼<br><span class="accent">내 문장.</span></h1><p class="result-note">세 번의 대화를 마쳤어요. 실제 대화에 가져갈 첫 문장과 기억할 한 가지를 직접 다듬어 보세요.</p></div>${goal()}<form id="takeaway"><div class="result-fields"><label class="field"><span>실제 대화에서 꺼낼 첫 문장</span><textarea name="firstSentence" aria-label="내 첫 문장" maxlength="600" placeholder="${esc(s.starter)}">${esc(current.firstSentence)}</textarea></label><label class="field"><span>기억할 한 가지</span><textarea name="takeaway" aria-label="기억할 한 가지" maxlength="600" placeholder="다음에 어떤 점을 기억하고 싶나요?">${esc(current.takeaway)}</textarea></label></div><p class="hint">스스로 확인해 보기: ${s.check}</p><div class="actions"><button class="button" type="submit">내 문장 남기기</button>${button('첫 문장 복사','copy',true)}</div><p id="error" class="error" role="alert" tabindex="-1"></p></form><p class="muted">${statusSave()} 아래에서 저장 방식을 바꿀 수 있어요.</p><div class="section-top"><h2>막힌 순간만, 한 번 더.</h2><p>자동 평가 없이 나의 느낌으로 돌아봐요.</p></div><div class="retry-list">${current.turns.map((turn,index)=>`<article class="retry-card"><span class="label">${index+1}번째 대화 · ${REVIEWS[turn.review]}</span><h3>${getTurn(current,index).title}</h3><p>${getTurn(current,index).prompt}</p>${turn.retry ? `<div class="comparison"><div><h3>처음 적은 말</h3><p>${esc(turn.answer)}</p></div><div><h3>다시 적은 말</h3><p>${esc(turn.retry)}</p><small class="muted">다시 말한 느낌: ${REVIEWS[turn.retryReview]}</small></div></div>` : `<p class="answer-read">${esc(turn.answer)}</p>`}<button type="button" class="textbutton" data-action="retry" data-index="${index}">이 대화 다시 연습 →</button></article>`).join('')}</div><div class="actions">${button('새 대화 연습하기','home',true)}</div>${memory()}</section>`;
 }
 function retry() {
-  const turn = current.turns[retryIndex], content = SCENARIOS[current.scenario].turns[turn.id];
+  const turn = current.turns[retryIndex], content = getTurn(current, retryIndex);
   return `<section class="work">${header('한 부분 다시 연습')}<h1 class="screen-title" tabindex="-1">이번에는, 이렇게.</h1>${goal()}<p class="evidence">지난 느낌은 ‘${REVIEWS[turn.retryReview || turn.review]}’였어요. 나머지는 그대로 두고 이 부분만 다시 해 봅니다.</p>${prompt(content)}<details><summary>처음 적은 말 보기</summary><p class="answer-read">${esc(turn.answer)}</p></details><p class="hint">${content.hint}</p><form id="retry"><label class="field"><span>다시 해 볼 말</span><textarea name="retry" aria-label="다시 해 볼 말" maxlength="2000" required>${esc(turn.retry)}</textarea></label>${reviews()}<div class="actions"><button class="button" type="submit">처음과 다시 쓴 말 비교하기</button>${button('결과로 돌아가기','result',true)}</div><p id="error" class="error" role="alert" tabindex="-1"></p></form></section>`;
 }
 function render({ focus = true } = {}) {
@@ -90,7 +95,7 @@ app.addEventListener('submit', event => {
   event.preventDefault();
   const form = event.target, data = new FormData(form);
   try {
-    if (form.id === 'setup') { scenario = data.get('scenario'); current = createSession({ scenario, counterpart: data.get('counterpart'), goal: data.get('goal') }); if (saving !== data.has('save')) setSaving(data.has('save')); page = 'practice'; }
+    if (form.id === 'setup') { scenario = data.get('scenario'); current = createSession({ scenario, counterpart: data.get('counterpart'), goal: data.get('goal'), practice: { counterpart: data.get('counterpartKind'), goal: data.get('goalKind') } }); if (saving !== data.has('save')) setSaving(data.has('save')); page = 'practice'; }
     else if (form.id === 'answer') {
       const answer = data.get('answer').trim(), review = data.get('review');
       if (!answer) throw new Error('상대에게 하고 싶은 말을 적어 주세요.');
@@ -104,16 +109,19 @@ app.addEventListener('submit', event => {
 });
 app.addEventListener('change', async event => {
   const input = event.target;
-  if (input.name === 'scenario') {
-    scenario = input.value;
-    const setup = document.querySelector('#setup');
-    setup.elements.counterpart.value = SCENARIOS[scenario].counterpart;
-    setup.elements.goal.value = SCENARIOS[scenario].goal;
+  if (['scenario', 'counterpartKind', 'goalKind'].includes(input.name)) {
+    const previous = practiceDetails({ scenario, practice: selectedPractice });
+    if (input.name === 'scenario') { scenario = input.value; selectedPractice = defaultPractice(scenario); }
+    else selectedPractice = { ...selectedPractice, [input.name === 'counterpartKind' ? 'counterpart' : 'goal']: input.value };
+    const next = practiceDetails({ scenario, practice: selectedPractice }), setup = document.querySelector('#setup');
+    // A choice updates suggested text, while the user's own notes stay intact.
+    for (const key of ['counterpart', 'goal']) if (setup.elements[key].value === previous[key]) setup.elements[key].value = next[key];
+    if (input.name === 'scenario') document.querySelector('#practice-choices').innerHTML = practiceChoices();
     document.querySelector('#resume-slot').innerHTML = resume();
   } else if (input.dataset.action === 'save-toggle') { captureTakeaway(); setSaving(input.checked); input.checked = saving; const setup=document.querySelector('#setup'); if(setup) setup.elements.save.checked=saving; render({ focus: false }); app.querySelector('.memory').open = true; }
   else if (input.id === 'import' && input.files[0]) {
     const file = input.files[0];
-    try { const result=await imports.read(file); if(result.status==='cancelled'||!input.isConnected) return; imported=result.archive; captureTakeaway(); render({ focus: false }); app.querySelector('.memory').open = true; }
+    try { const result=await imports.read(file); if(result.status==='cancelled'||!input.isConnected) return; if(notebook?.active&&!notebook.canEdit)throw new Error('계정 연결을 확인한 뒤 기록 파일을 다시 골라 주세요.'); imported=result.archive; captureTakeaway(); render({ focus: false }); app.querySelector('.memory').open = true; }
     catch (err) { notice(err.message); input.value = ''; }
   }
 });
@@ -127,7 +135,7 @@ document.addEventListener('click', async event => {
       if ((unfinished || retryDraft) && !window.confirm('연습을 종료하고 처음으로 돌아갈까요? 아직 완료하지 않은 답변은 저장되지 않아요.')) return;
       captureTakeaway(); page = 'home'; current = null; pending = null; render();
     }
-    else if (action === 'history' || action === 'resume') { const captured = captureTakeaway(); if (!captured.ok) throw new Error(captured.error); const saved = sessions.find(s=>s.id===target.dataset.id); if (!saved) throw new Error('연습 기록을 찾지 못했어요.'); current = structuredClone(saved); scenario = current.scenario; if (action === 'resume') { retryIndex = stuckTurn(current); page = 'retry'; } else page = 'results'; render(); }
+    else if (action === 'history' || action === 'resume') { const captured = captureTakeaway(); if (!captured.ok) throw new Error(captured.error); const saved = sessions.find(s=>s.id===target.dataset.id); if (!saved) throw new Error('연습 기록을 찾지 못했어요.'); current = structuredClone(saved); scenario = current.scenario; selectedPractice = current.practice ? { ...current.practice } : defaultPractice(scenario); if (action === 'resume') { retryIndex = stuckTurn(current); page = 'retry'; } else page = 'results'; render(); }
     else if (action === 'retry') { captureTakeaway(); retryIndex = Number(target.dataset.index); page = 'retry'; render(); }
     else if (action === 'result') { page = 'results'; render(); }
     else if (action === 'back-answer') { const draft = pending; page = 'practice'; render(); document.querySelector('[name=answer]').value = draft.answer; document.querySelector(`[name=review][value=${draft.review}]`).checked = true; }
@@ -141,10 +149,12 @@ document.addEventListener('click', async event => {
     else if (action === 'delete-cancel') { captureTakeaway(); deletePending = false; render({ focus:false }); app.querySelector('.memory').open = true; }
     else if (action === 'delete-confirm') { if(notebook?.active){await notebook.remove();return;}const result = removeSaved(storage); sessions=[]; saving=false; current=null; imported=null; pending=null; deletePending=false; page='home'; render(); notice(result.ok?'이 기기와 현재 창의 연습 기록을 지웠어요.':result.error); }
     else if (action === 'import-cancel') { captureTakeaway(); imported=null; render({focus:false}); app.querySelector('.memory').open=true; }
-    else if (action === 'import-confirm') { const captured=captureTakeaway(); if(!captured.ok) throw new Error(captured.error); const byId=new Map(sessions.map(s=>[s.id,s])); for(const s of imported.sessions) if(!byId.has(s.id)) byId.set(s.id,s); sessions=[...byId.values()].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,MAX_SESSIONS); imported=null; const saved=save(); render({focus:false}); app.querySelector('.memory').open=true; notice(saved.ok?(notebook?.active?'기록을 합쳤어요. 위 SYNK ID에서 계정 저장 상태를 확인하세요.':saving?'기록을 합쳐 이 기기에 저장했어요.':'기록을 현재 창으로 가져왔어요. 기기에는 저장하지 않았어요.'):saved.error); }
+    else if (action === 'import-confirm') { if(notebook?.active&&!notebook.canEdit)throw new Error('계정 연결을 확인한 뒤 기록을 다시 합쳐 주세요.'); const captured=captureTakeaway(); if(!captured.ok) throw new Error(captured.error); const byId=new Map(sessions.map(s=>[s.id,s])); for(const s of imported.sessions) if(!byId.has(s.id)) byId.set(s.id,s); sessions=[...byId.values()].sort((a,b)=>Date.parse(b.at)-Date.parse(a.at)).slice(0,MAX_SESSIONS); imported=null; const saved=save(); render({focus:false}); app.querySelector('.memory').open=true; notice(saved.ok?(notebook?.active?'기록을 합쳤어요. 위 SYNK ID에서 계정 저장 상태를 확인하세요.':saving?'기록을 합쳐 이 기기에 저장했어요.':'기록을 현재 창으로 가져왔어요. 기기에는 저장하지 않았어요.'):saved.error); }
   } catch(err) { error(err.message); }
 });
 render({ focus:false });
 if (loaded.error) notice(loaded.error);
-notebook=createAccountNotebook({resource:'rehearsal',mount:document.querySelector('#account-panel'),content:app,description:'완료한 최근 10회의 답변·다시 쓴 말·직접 고른 느낌·첫 문장을 계정에 보관해요.',getState:()=>archive(sessions),emptyDocument:()=>archive([]),onMode:(active,{wasActive}={})=>{if(active){if(!wasActive)guestSaving=saving;saving=false;}else saving=guestSaving;},applyState:value=>{sessions=value.sessions;current=null;pending=null;imported=null;deletePending=false;page='home';bookHomeDraft=null;render();},beforeNavigate:()=>{const hasDraft=current&&current.turns.length<3||page==='retry'||document.querySelector('#takeaway');return !hasDraft||window.confirm('작성 중인 화면을 닫고 계정 기록을 확인할까요? 완료하지 않은 입력은 저장되지 않아요.');}});
-void notebook.start();window.addEventListener('pagehide',()=>notebook.dispose());
+notebook=createAccountNotebook({resource:'rehearsal',mount:document.querySelector('#account-panel'),content:app,description:'완료한 최근 10회의 답변·다시 쓴 말·직접 고른 느낌·첫 문장을 계정에 보관해요.',getState:()=>archive(sessions),emptyDocument:()=>archive([]),onMode:(active,{wasActive}={})=>{imports.invalidate();if(active){if(!wasActive)guestSaving=saving;saving=false;}else saving=guestSaving;},applyState:value=>{sessions=value.sessions;current=null;pending=null;imported=null;deletePending=false;page='home';bookHomeDraft=null;render();},beforeNavigate:()=>{const setup=document.querySelector('#setup'),fields=setup?{counterpart:setup.elements.counterpart.value,goal:setup.elements.goal.value}:bookHomeDraft,editedSetup=fields&&['counterpart','goal'].some(key=>fields[key].trim()!==practiceDetails({scenario,practice:selectedPractice})[key]);const hasDraft=editedSetup||current&&current.turns.length<3||page==='retry'||document.querySelector('#takeaway');return !hasDraft||window.confirm('작성 중인 화면을 닫고 계정 기록을 확인할까요? 완료하지 않은 입력은 저장되지 않아요.');}});
+void notebook.start();
+window.addEventListener('pagehide',event=>{if(event.persisted)notebook.suspend();else notebook.dispose();});
+window.addEventListener('pageshow',event=>{if(event.persisted)void notebook.resume();});

@@ -46,7 +46,7 @@ function harness(people = []) {
     notebookView: () => ({ locked: false }), hasPersonalizationInput: () => false,
     updateStorageLabel() {}, renderPeople() {}, renderHome() {}, render() {}, renderWorkspace() {}, renderHistory() {}, renderCapturePeople() {}, renderBrief() {},
     resetPersonalMemory() {}, resetMemoryCard() {}, stashConversation() {}, stashDraft() {}, resetDraft() {},
-    resetEventForm() {}, clearAudio() {}, clearConversationFields() {}, restoreDraft() {}, switchTab() {},
+    resetEventForm() {}, resetContactImport() {}, clearAudio() {}, clearConversationFields() {}, restoreDraft() {}, switchTab() {},
     invalidateCapture() {}, prepareEvent: async () => {}, beginCheckin: async () => false,
     localStorage: { setItem(key, value) { if (context.storageFails) throw Error('Storage is full'); writes.push({ key, value }); } },
   });

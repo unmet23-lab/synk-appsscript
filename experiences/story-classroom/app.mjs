@@ -11,6 +11,9 @@ import { VOICE_LINE_BY_ID, voiceForMission } from './voice-lines.mjs';
 import { createStoryLearning, skillReport, assignmentMissions, storyTargetLabel, missionMetadata, SKILL_LABELS } from './learning.mjs';
 import { $, $$, esc, fitText } from './kit/lab.mjs';
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+
 const QA = new URLSearchParams(location.search).has('qa');
 const game = new StoryGame(), audio = new StoryAudio();
 const learning = createStoryLearning({ storage: localStorage });

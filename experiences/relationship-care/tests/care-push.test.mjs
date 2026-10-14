@@ -29,6 +29,21 @@ function fixture() {
   return { controller, state, env, log, request, registration, notifications, makeSubscription };
 }
 
+test('logout reports unknown notification cleanup when registration lookup fails', async () => {
+  const f = fixture(); f.state.browserSub = f.makeSubscription();
+  f.env.navigator.serviceWorker.getRegistration = async () => { throw new Error('storage unavailable'); };
+  const result = await f.controller.logout({ localOnly: true });
+  assert.equal(result.ok, false); assert.equal(result.deviceRemoved, false);
+  assert.ok(f.state.browserSub);
+  assert.match(careLogoutNotice({ ok: true, serverRevoked: true }, result), /기기 알림 해제를 확인하지 못했/);
+});
+
+test('logout accepts verified absence of a service worker registration', async () => {
+  const f = fixture(); f.env.navigator.serviceWorker.getRegistration = async () => undefined;
+  const result = await f.controller.logout({ localOnly: true });
+  assert.equal(result.ok, true); assert.equal(result.deviceRemoved, true);
+});
+
 test('preparation registers the worker and fetches public key without prompting or creating a subscription', async () => {
   const f = fixture(); await f.controller.setAccount('A');
   assert.equal(f.controller.snapshot().phase, 'ready'); assert.equal(f.env.Notification.permission, 'default');
@@ -177,6 +192,30 @@ test('logout notice preserves both server revocation and device notification fai
   assert.equal(careLogoutNotice({ serverRevoked: true }, { ok: true }), '');
   const combined = careLogoutNotice({ serverRevoked: false }, { ok: false }); assert.match(combined, /서버의 세션 종료/); assert.match(combined, /기기 알림 해제/); assert.match(combined, /사이트 설정/);
   assert.doesNotMatch(careLogoutNotice({ serverRevoked: true }, { ok: false }), /서버의 세션 종료/);
+});
+
+test('local-only logout does not need live account credentials and still removes the device subscription', async () => {
+  const f=fixture();await f.controller.setAccount('A');await f.controller.enable();
+  const start=f.log.length;
+  const result=await f.controller.logout({localOnly:true});
+  assert.equal(result.deviceRemoved,true);assert.equal(f.state.browserSub,null);
+  assert.equal(f.log.slice(start).some(row=>typeof row==='object'),false);
+});
+test('a new account cannot prepare notifications ahead of an old logout cleanup', async () => {
+  const f=fixture(),wait=deferred();await f.controller.setAccount('A');await f.controller.enable();
+  const old=f.state.browserSub,unsubscribe=old.unsubscribe.bind(old);old.unsubscribe=async()=>{await wait.promise;return unsubscribe();};
+  const cleanup=f.controller.logout({localOnly:true}),out=f.controller.setAccount(null);
+  f.state.owner='B';const next=f.controller.setAccount('B');
+  await new Promise(setImmediate);
+  assert.equal(f.controller.snapshot().phase,'preparing');
+  await f.controller.enable();assert.equal(f.state.browserSub,old);
+  wait.resolve();await Promise.all([cleanup,out,next]);
+  await f.controller.enable();const current=f.state.browserSub;
+  assert.ok(current);assert.notEqual(current,old);assert.equal(f.controller.snapshot().enabled,true);
+});
+test('failed credential cleanup cannot be described as completed local logout', () => {
+  const message=careLogoutNotice({ok:false,serverRevoked:true},{ok:true});
+  assert.match(message,/로그인 정보 삭제를 확인하지 못/);assert.doesNotMatch(message,/이 기기의 로그인은 종료했어요/);
 });
 
 async function workerFixture(workerScope = scopeUrl) {

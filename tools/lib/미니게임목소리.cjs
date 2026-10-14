@@ -10,7 +10,7 @@ const VENDOR = process.env.SYNK_MINIGAME_VOICE_VENDOR ? path.resolve(process.env
 const VOICE_ID = /^tc_[0-9a-f]{24}$/;
 // 감정: 프리셋 하나(세기 0~2)를 고르거나, smart(ssfm-v30만) — 앞뒤 글(previous_text·next_text)을 읽고 감정을 스스로 정한다.
 const SMART = 'smart', PRESETS = ['normal', 'happy', 'sad', 'angry', 'whisper', 'toneup', 'tonedown'];
-const GAME_ORDER = ['korean-racing', 'entry-check', 'story-classroom', 'korean-rhythm', 'talk-rally', 'korean-runner', 'order-rush'];
+const GAME_ORDER = ['korean-racing', 'entry-check', 'story-classroom', 'korean-rhythm', 'talk-rally', 'korean-runner', 'order-rush', 'beginner-games'];
 const PLAN_CREDITS = 200000;   // Typecast API Lite 월 제공(유호님 요금제, 1글자 = 1크레딧 기준)
 
 const loadCasting = (file = CASTING_FILE) => JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -165,7 +165,7 @@ async function dryRun({ casting = loadCasting(), repo = G.REPO, games = presentG
     const ids = mine.map(j => j.id), dupIds = ids.filter((x, i) => ids.indexOf(x) !== i);
     if (dupes.length) problems.push(`${id}: 같은 출력 파일을 두 줄이 씀 ${dupes.slice(0, 3).join(', ')}`);
     if (dupIds.length) problems.push(`${id}: 같은 id ${dupIds.slice(0, 3).join(', ')}`);
-    if (missing.length) problems.push(`${id}: 지금 없는 출력 파일 ${missing.length}개(예: ${missing.slice(0, 3).join(', ')})`);
+    if (missing.length && !adapter.newBank) problems.push(`${id}: 지금 없는 출력 파일 ${missing.length}개(예: ${missing.slice(0, 3).join(', ')})`);
     if (uncovered.length) problems.push(`${id}: 작업이 덮지 않는 지금 음성 파일 ${uncovered.length}개(예: ${uncovered.slice(0, 3).join(', ')})`);
     if (adapter.stale && await adapter.stale(repo)) problems.push(`${id}: 얼린 원고(jobs.json)가 지금 원고와 다르다 — 그 게임의 원고 내보내기 스크립트를 먼저`);
     const u = unique(mine);

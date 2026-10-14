@@ -30,6 +30,47 @@ test('default provisioning only reads and creates no clients, mappings, journal 
   assert.deepEqual(f.calls, { create: [], write: [], configs: [] }); assert.equal(f.journal, null);
 });
 
+test('travel-only dry-run mutates nothing, and explicit synthetic apply creates only travel preserving other data/configs', async () => {
+  const f = fixture(), originalClients = clone(f.clients), originalMapping = clone(f.mapping);
+  const read = await provision({ ...f.options(), only: 'path-travel-browser' });
+  assert.deepEqual(read.registrationsNeeded, ['path-travel-browser']);
+  assert.ok(read.deferredRegistrations.includes('dating-browser'));
+  assert.deepEqual(f.calls, { create: [], write: [], configs: [] }); assert.equal(f.journal, null);
+  const done = await provision({ ...f.options(), only: 'path-travel-browser', apply: true });
+  assert.equal(f.calls.create.length, 1); assert.equal(f.calls.write.length, 1); assert.equal(f.calls.configs.length, 0);
+  assert.deepEqual(f.calls.create[0].redirect_uris, ['http://127.0.0.1:4303/']);
+  assert.equal(f.calls.create[0].client_name, clientName('path-travel-browser', 'production'));
+  assert.deepEqual(f.clients.slice(0, originalClients.length), originalClients);
+  const added = f.journal.bindings['path-travel-browser'];
+  assert.deepEqual(f.mapping, { ...originalMapping, [added]: 'platform' });
+  assert.deepEqual(done.files, []); assert.equal(done.localConfigWriteDeferred, true);
+  assert.equal(done.liveLoginVerified, false);
+  await provision({ ...f.options(), only: 'path-travel-browser', apply: true });
+  assert.equal(f.calls.create.length, 1); assert.equal(f.calls.write.length, 1);
+});
+
+test('invalid scope and an unrelated in-flight mapping are rejected before provider access', async () => {
+  let reads = 0;
+  const api = { readDigest: async () => { reads++; throw Error('must not read'); } };
+  for (const only of ['', null, 'path', 'unknown', ['path-travel-browser']])
+    await assert.rejects(provision({ environment: 'production', api, only }), /--only/);
+  await assert.rejects(provision({ environment: 'production', api, only: 'path-travel-browser', journal: { pendingMapping: { other: 'world' } } }), /진행 중/);
+  assert.equal(reads, 0);
+});
+
+test('travel-only application preserves another registered but unmapped product and resumes its own confirmed mapping once', async () => {
+  const f = fixture(), other = CLIENTS.find(row => row.id === 'care-browser'), previous = clone(f.mapping);
+  f.clients.push({ client_id: 'existing-unmapped-care', client_type: 'public', redirect_uris: [...other.redirectUris] });
+  await provision({ ...f.options(), only: 'path-travel-browser', bindings: { 'care-browser': 'existing-unmapped-care' }, apply: true });
+  assert.equal(f.mapping['existing-unmapped-care'], undefined);
+  assert.equal(f.journal.bindings['care-browser'], 'existing-unmapped-care');
+  assert.equal(f.calls.create.length, 1); assert.equal(f.calls.configs.length, 0);
+  const journal = clone(f.journal); journal.pendingMapping = journal.mapping; journal.mapping = previous;
+  const resumed = await provision({ ...f.options(), journal, only: 'path-travel-browser', apply: true });
+  assert.equal(resumed.mappingVerified, true); assert.equal(f.calls.write.length, 1); assert.equal(f.calls.create.length, 1);
+  assert.equal(f.journal.pendingMapping, null);
+});
+
 test('apply registers only public clients with actual API fields, preserves legacy and generates only actual returned IDs', async () => {
   const f = fixture(), legacy = clone(f.mapping), result = await provision({ ...f.options(), apply: true });
   assert.equal(result.mode, 'apply'); assert.equal(result.liveLoginVerified, false);
@@ -142,7 +183,7 @@ test('existing Fortune and unrelated mapping source order survive the full workf
   const original = { ...f.mapping, 'existing-fortune-native': 'platform', 'existing-fortune-browser': 'platform', 'other-service': 'world' }; f.setMapping(original);
   await provision({ ...f.options(), apply: true, existingMapping: original, bindings });
   assert.deepEqual(Object.entries(f.mapping).slice(0, Object.keys(original).length), Object.entries(original));
-  assert.equal(f.calls.create.length, 15); assert.equal(f.calls.create.some(row => /fortune/.test(row.client_name)), false);
+  assert.equal(f.calls.create.length, 17); assert.equal(f.calls.create.some(row => /fortune/.test(row.client_name)), false);
 });
 
 async function updateProviderFixture(t, apply) {

@@ -54,7 +54,7 @@ function render() {
 // Today's condition (Atlas design §8-3): pressed only by the person, kept until the end of the day,
 // never stored as a trait and never shown to anyone else. Games start gentler on a tired day.
 const todayNotes = { good: '좋아요. 평소처럼 시작해요.', okay: '알겠어요. 평소처럼 시작해요.', tired: '알겠어요. 오늘은 어느 게임도 판 안에서 더 어려워지지 않고, 힌트를 줄이자는 말도 하지 않아요.', no_time: '짧게 해도 괜찮아요. 멈추면 그때까지 기록돼요.' };
-const todayDefault = '누르지 않아도 괜찮아요. 고르면 오늘 하루만, 속도와 도움을 맞추는 게임(주문 폭주·말의 리듬·바람길·빈칸 베기·입장 검사)의 시작에 반영해요.';
+const todayDefault = '누르지 않아도 괜찮아요. 고르면 오늘 하루만, 속도와 도움을 맞추는 게임(주문 폭주·말의 리듬·빈칸 베기·입장 검사)의 시작에 반영해요.';
 function renderToday() {
   let value = null;
   try { value = coach?.today?.() ?? null; } catch { value = null; }

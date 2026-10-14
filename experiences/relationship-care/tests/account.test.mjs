@@ -82,6 +82,96 @@ test('missing config stays explicitly unconfigured without auth or care traffic'
   assert.equal(f.calls.length, 1); account.dispose();
 });
 
+test('temporary notebook outage preserves the browser login and reconnects without another OAuth redirect', async () => {
+  let unavailable = true;
+  const f = setup({ handler: call => unavailable && call.url.endsWith('/synk-care') ? reply({ ok: false }, 503) : null }), account = f.create();
+  const failed = await account.start();
+  assert.equal(failed.signedIn, false); assert.equal(failed.accountId, null); assert.equal(failed.error.retryable, true);
+  assert.ok(f.storage.getItem(SESSION), 'temporary failure must not erase the saved login');
+  await assert.rejects(account.request('careLoad'), { code: 'AUTH_REQUIRED' });
+  unavailable = false;
+  assert.equal((await account.signIn()).accountId, 'fixture-a');
+  assert.equal(f.navigated(), null); assert.equal(f.calls.filter(call => call.url.endsWith('/oauth/token')).length, 0);
+  account.dispose();
+});
+
+test('configuration network failure is retryable and never presented as missing setup', async () => {
+  let unavailable = true;
+  const f = setup({ handler: call => { if (unavailable && call.url.endsWith('/api/account-config')) throw Error('offline'); } }), account = f.create();
+  const failed = await account.start();
+  assert.equal(failed.status, 'error'); assert.equal(failed.error.code, 'NETWORK'); assert.equal(failed.error.retryable, true);
+  assert.ok(f.storage.getItem(SESSION));
+  unavailable = false;
+  assert.equal((await account.signIn()).signedIn, true); assert.equal(f.navigated(), null); account.dispose();
+});
+
+test('reconnect coalesces concurrent starts and logout cancels a late restoration', async () => {
+  const pending = deferred(); let phase = 'offline';
+  const f = setup({ handler: call => call.url.endsWith('/synk-care') ? phase === 'offline' ? reply({ ok: false }, 503) : pending.promise : null }), account = f.create();
+  await account.start(); phase = 'waiting';
+  const first = account.start(), second = account.start();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(f.calls.filter(call => call.url.endsWith('/synk-care')).length, 2);
+  await account.signOut(); pending.resolve(reply(envelope())); await Promise.all([first, second]);
+  assert.equal(account.status().status, 'signed-out'); assert.equal(account.status().accountId, null); assert.equal(f.storage.getItem(SESSION), null);
+  assert.equal((await account.start()).signedIn, false); account.dispose();
+});
+
+test('rejected browser restoration clears credentials instead of allowing a transient retry', async () => {
+  const f = setup({ handler: call => call.url.endsWith('/synk-care') ? reply({ ok: false }, 401) : null }), account = f.create();
+  const failed = await account.start();
+  assert.equal(failed.error.code, 'AUTH_REQUIRED'); assert.equal(failed.error.retryable, false);
+  assert.equal(f.storage.getItem(SESSION), null); account.dispose();
+});
+
+test('expired login survives a temporary refresh outage and uses rotated credentials when retried', async () => {
+  let unavailable = true;
+  const f = setup({ handler: call => unavailable && call.url.endsWith('/oauth/token') ? reply({ error: 'temporary' }, 503) : null });
+  const session = JSON.parse(f.storage.getItem(SESSION)); session.expires_at = Date.now() - 1000; f.storage.setItem(SESSION, JSON.stringify(session));
+  const account = f.create();
+  assert.equal((await account.start()).error.retryable, true); assert.ok(f.storage.getItem(SESSION));
+  unavailable = false;
+  assert.equal((await account.signIn()).signedIn, true); assert.equal(f.navigated(), null);
+  assert.equal(f.calls.at(-1).headers.Authorization, 'Bearer fixture-rotated'); account.dispose();
+});
+
+test('logout during a reconnect click cannot start another OAuth flow after the late response', async () => {
+  const pending = deferred(); let phase = 'offline';
+  const f = setup({ handler: call => call.url.endsWith('/synk-care') ? phase === 'offline' ? reply({ ok: false }, 503) : pending.promise : null }), account = f.create();
+  await account.start(); phase = 'waiting';
+  const reconnect = account.signIn();
+  const rejected = assert.rejects(reconnect, { code: 'ACCOUNT_CHANGED' });
+  await new Promise(resolve => setImmediate(resolve));
+  await account.signOut(); pending.resolve(reply(envelope())); await rejected;
+  assert.equal(f.navigated(), null); assert.equal(account.status().signedIn, false); account.dispose();
+});
+
+test('reconnect discovers a revoked session and opens fresh authentication on the same click', async () => {
+  let status = 503;
+  const f = setup({ handler: call => call.url.endsWith('/synk-care') ? reply({ ok: false }, status) : null }), account = f.create();
+  await account.start(); status = 401;
+  await account.signIn();
+  assert.equal(account.status().status, 'signing-in'); assert.equal(f.storage.getItem(SESSION), null);
+  assert.equal(new URL(f.navigated()).pathname, '/auth/v1/oauth/authorize'); account.dispose();
+});
+
+test('an interrupted login module download preserves credentials and can be retried', async () => {
+  let unavailable = true;
+  const f = setup(), account = createCareAccount({ ...f.options, loadCore: async () => { if (unavailable) throw new TypeError('module download failed'); return core; } });
+  assert.equal((await account.start()).error.retryable, true); assert.ok(f.storage.getItem(SESSION));
+  unavailable = false; assert.equal((await account.signIn()).signedIn, true); assert.equal(f.navigated(), null); account.dispose();
+});
+
+test('logout during callback module loading cannot exchange a code or restore the account', async () => {
+  const module = deferred(), f = setup({ restored: false });
+  const auth = new URL(await core.beginOAuth({ config: core.readConfig(config, f.getUrl()), product: 'care', storage: f.storage, cryptoAPI: webcrypto }));
+  f.setUrl('http://127.0.0.1:4296/?code=fixture-code&state=' + auth.searchParams.get('state'));
+  const account = createCareAccount({ ...f.options, loadCore: () => module.promise });
+  const starting = account.start(); await account.signOut(); module.resolve(core); await starting;
+  assert.equal(account.status().signedIn, false); assert.equal(account.status().accountId, null);
+  assert.equal(f.calls.length, 0); assert.equal(f.storage.getItem(SESSION), null); account.dispose();
+});
+
 test('public subpath config stays same-origin and uses the registered public callback', async () => {
   const redirectUri = 'https://care.example.test/care/';
   const publicConfig = { ...config, clients: { care: { clientId: 'fixture-public-care', redirectUri } } };
@@ -121,6 +211,65 @@ test('browser login reuses canonical PKCE and publishes identity only after care
   const fields = f.calls.find(call => call.url.endsWith('/oauth/token')).body;
   assert.equal(fields.get('code_verifier'), pending.verifier);
   assert.equal(JSON.stringify(f.statuses).includes('fixture-rotated'), false);
+  account.dispose();
+});
+
+async function callbackFixture(handler) {
+  const f = setup({ restored: false, handler });
+  const auth = new URL(await core.beginOAuth({ config: core.readConfig(config, f.getUrl()), product: 'care', storage: f.storage, cryptoAPI: webcrypto }));
+  f.setUrl(`http://127.0.0.1:4296/?code=fixture-code&state=${auth.searchParams.get('state')}`);
+  return f;
+}
+
+test('a temporary callback exchange failure retries the verified PKCE request without another login', async () => {
+  let fail = true;
+  const f = await callbackFixture(call => fail && call.url.endsWith('/oauth/token') ? reply({ error: 'temporarily_unavailable' }, 503) : null);
+  const account = f.create();
+  assert.equal((await account.start()).error.retryable, true);
+  assert.equal(new URL(f.getUrl()).search, '');
+  assert.equal(f.storage.getItem('synk.oauth.pending.care'), null);
+  assert.equal(f.storage.getItem(SESSION), null);
+  fail = false;
+  assert.equal((await account.signIn()).accountId, 'fixture-a');
+  assert.equal(f.navigated(), null);
+  const exchanges = f.calls.filter(call => call.url.endsWith('/oauth/token'));
+  assert.equal(exchanges.length, 2);
+  assert.equal(exchanges[0].body.toString(), exchanges[1].body.toString());
+  assert.equal(JSON.stringify(f.statuses).includes('fixture-code'), false);
+  account.dispose();
+});
+
+test('logout discards an interrupted callback exchange before another connection attempt', async () => {
+  const f = await callbackFixture(call => call.url.endsWith('/oauth/token') ? reply({}, 503) : null), account = f.create();
+  await account.start(); await account.signOut(); await account.start();
+  assert.equal(account.status().signedIn, false);
+  assert.equal(f.calls.filter(call => call.url.endsWith('/oauth/token')).length, 1);
+  assert.equal(f.storage.getItem(SESSION), null);
+  account.dispose();
+});
+
+test('an interrupted callback is never exchanged against a changed issuer configuration', async () => {
+  let changed = false;
+  const f = await callbackFixture(call => {
+    if (call.url.endsWith('/oauth/token')) return reply({}, 503);
+    if (changed && call.url.endsWith('/api/account-config')) return reply({ ...config, supabaseUrl: 'https://changed.example.test' });
+  }), account = f.create();
+  await account.start(); changed = true;
+  const result = await account.start();
+  assert.equal(result.signedIn, false);
+  assert.equal(result.error?.code, 'AUTH_REQUIRED');
+  assert.equal(f.calls.filter(call => call.url.endsWith('/oauth/token')).length, 1);
+  account.dispose();
+});
+
+test('a rejected callback retry opens fresh login instead of looping the consumed code', async () => {
+  let denied = false;
+  const f = await callbackFixture(call => call.url.endsWith('/oauth/token') ? reply({}, denied ? 400 : 503) : null), account = f.create();
+  await account.start(); denied = true; await account.signIn();
+  assert.equal(account.status().status, 'signing-in');
+  assert.ok(f.navigated());
+  assert.equal(f.calls.filter(call => call.url.endsWith('/oauth/token')).length, 2);
+  assert.equal(f.storage.getItem(SESSION), null);
   account.dispose();
 });
 
@@ -210,6 +359,89 @@ test('native rejects a care response for an account different from main verified
   const source = { configured: true, signedIn: true, status: 'signed-in', sessionGeneration: 1, account: { synk_user_id: 'fixture-a' } };
   const account = createCareAccount({ bridge: { getEnvironment: async () => ({ clientId: 'care' }), onAuthChanged: () => () => {}, authStatus: async () => source, accountRequest: async () => envelope('fixture-b') } });
   const result = await account.start(); assert.equal(result.signedIn, false); assert.equal(result.error.code, 'ACCOUNT_CHANGED'); account.dispose();
+});
+
+function nativeRecoveryFixture({ load, signIn, initial, document } = {}) {
+  let listener = null, source = initial || { configured: true, signedIn: false, status: 'error', sessionGeneration: 1, account: null, error: { code: 'AUTH_UNAVAILABLE', message: '연결을 다시 확인해 주세요.', retryable: true } };
+  const calls = [], emit = next => { source = next; listener?.(source); };
+  const signedIn = { configured: true, signedIn: true, status: 'signed-in', sessionGeneration: 1, account: { synk_user_id: 'fixture-a' }, error: null };
+  const bridge = {
+    getEnvironment: async () => ({ clientId: 'care' }),
+    onAuthChanged: fn => { listener = fn; return () => { listener = null; }; },
+    authStatus: async () => source,
+    authSignIn: async () => { calls.push('oauth'); if (signIn) return signIn({ emit, signedIn }); emit({ ...source, signedIn: false, account: null, status: 'signing-in', error: null }); return source; },
+    authSignOut: async () => { calls.push('logout'); emit({ configured: true, signedIn: false, status: 'signed-out', sessionGeneration: source.sessionGeneration + 1, account: null, error: null }); return { ok: true }; },
+    accountRequest: async action => { calls.push(action); if (action === 'load') { if (load) return load({ emit, signedIn }); emit(signedIn); return { ok: true }; } assert.equal(action, 'careLoad'); return document ? document() : envelope(); },
+  };
+  return { bridge, calls, emit, signedIn, create: () => createCareAccount({ bridge }) };
+}
+
+test('native retry verifies the main-held saved login through load without starting OAuth', async () => {
+  const f = nativeRecoveryFixture(), account = f.create();
+  assert.equal((await account.start()).error.retryable, true);
+  assert.equal((await account.signIn()).accountId, 'fixture-a');
+  assert.deepEqual(f.calls, ['load', 'careLoad']); account.dispose();
+});
+
+test('native repeated connectivity failure stays retryable and a later retry restores the same account', async () => {
+  let offline = true;
+  const f = nativeRecoveryFixture({ load: ({ emit, signedIn }) => { if (offline) return { ok: false, error: { code: 'NETWORK', message: '연결을 다시 확인해 주세요.', retryable: true } }; emit(signedIn); return { ok: true }; } }), account = f.create();
+  await account.start(); await assert.rejects(account.signIn(), { code: 'AUTH_UNAVAILABLE', retryable: true });
+  assert.equal(account.status().accountId, null); await assert.rejects(account.request('careLoad'), { code: 'AUTH_REQUIRED' });
+  offline = false; assert.equal((await account.signIn()).accountId, 'fixture-a'); assert.equal(f.calls.includes('oauth'), false); account.dispose();
+});
+
+test('native rejected saved credentials require the next explicit login click before a new OAuth flow', async () => {
+  const f = nativeRecoveryFixture({ load: ({ emit }) => { const error = { code: 'AUTH_REQUIRED', message: 'SYNK ID로 다시 로그인해 주세요.', retryable: false }; emit({ configured: true, signedIn: false, status: 'signed-out', sessionGeneration: 2, account: null, error }); return { ok: false, error }; } }), account = f.create();
+  await account.start(); await assert.rejects(account.signIn(), { code: 'AUTH_REQUIRED' }); assert.deepEqual(f.calls, ['load']);
+  assert.equal((await account.signIn()).status, 'signing-in'); assert.deepEqual(f.calls, ['load', 'oauth']); account.dispose();
+});
+
+test('native logout and cancellation during saved-login retry cannot open OAuth or restore a stale identity', async () => {
+  for (const action of ['logout', 'cancel']) {
+    const pending = deferred(), f = nativeRecoveryFixture({ load: () => pending.promise }), account = f.create();
+    await account.start(); const retry = account.signIn(), rejected = assert.rejects(retry, { code: action === 'logout' ? 'ACCOUNT_CHANGED' : 'AUTH_CANCELLED' });
+    await new Promise(resolve => setImmediate(resolve));
+    if (action === 'logout') await account.signOut();
+    else f.emit({ configured: true, signedIn: false, status: 'signed-out', sessionGeneration: 2, account: null, error: { code: 'AUTH_CANCELLED', message: '로그인을 취소했어요.', retryable: false } });
+    pending.resolve({ ok: true }); await rejected;
+    assert.equal(account.status().signedIn, false); assert.equal(account.status().accountId, null); assert.equal(f.calls.includes('oauth'), false); assert.equal(f.calls.includes('careLoad'), false); account.dispose();
+  }
+});
+
+test('native restored login waits for product ownership verification and logout fences that late document', async () => {
+  for (const logout of [false, true]) {
+    const document = deferred(), f = nativeRecoveryFixture({
+      load: ({ emit, signedIn }) => { emit({ ...signedIn, signedIn: false, account: null, status: 'restoring' }); emit(signedIn); return { ok: true }; },
+      document: () => document.promise,
+    }), account = f.create();
+    await account.start(); const retry = account.signIn();
+    const rejected = logout ? assert.rejects(retry, { code: 'ACCOUNT_CHANGED' }) : null;
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(account.status().signedIn, false); assert.equal(account.status().accountId, null); assert.equal(f.calls.filter(action => action === 'careLoad').length, 1);
+    if (logout) await account.signOut();
+    document.resolve(envelope());
+    if (logout) { await rejected; assert.equal(account.status().accountId, null); }
+    else assert.equal((await retry).accountId, 'fixture-a');
+    assert.equal(f.calls.includes('oauth'), false); account.dispose();
+  }
+});
+
+test('native OAuth response arriving after explicit logout cannot restore the old account', async () => {
+  const pending = deferred(), f = nativeRecoveryFixture({ initial: { configured: true, signedIn: false, status: 'signed-out', sessionGeneration: 1, account: null, error: null }, signIn: () => pending.promise }), account = f.create();
+  await account.start(); const login = account.signIn(), rejected = assert.rejects(login, { code: 'ACCOUNT_CHANGED' });
+  await new Promise(resolve => setImmediate(resolve)); await account.signOut(); pending.resolve(f.signedIn); await rejected;
+  assert.equal(account.status().signedIn, false); assert.equal(f.calls.includes('careLoad'), false); account.dispose();
+});
+
+test('an interrupted successful token response preserves the saved browser login for the next retry', async () => {
+  let interrupted = true;
+  const f = setup({ handler: call => interrupted && call.url.endsWith('/oauth/token') ? new Response(new ReadableStream({ start(controller) { controller.error(new TypeError('transport interrupted')); } }), { status: 200 }) : null });
+  const saved = JSON.parse(f.storage.getItem(SESSION)); saved.expires_at = Date.now() - 1000; f.storage.setItem(SESSION, JSON.stringify(saved));
+  const account = f.create(), failed = await account.start();
+  assert.equal(failed.error.code, 'NETWORK'); assert.equal(failed.error.retryable, true); assert.ok(f.storage.getItem(SESSION));
+  assert.equal(failed.accountId, null); await assert.rejects(account.request('careLoad'), { code: 'AUTH_REQUIRED' });
+  interrupted = false; assert.equal((await account.signIn()).accountId, 'fixture-a'); assert.equal(f.navigated(), null); account.dispose();
 });
 
 function libraryFixture() {

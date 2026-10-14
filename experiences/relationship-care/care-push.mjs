@@ -12,7 +12,7 @@ const errors = {
 const errorMessage = error => errors[error?.code] || (error?.name === 'NotAllowedError' ? '알림 권한을 받지 못했어요. 브라우저의 사이트 설정에서 허용한 뒤 다시 확인해 주세요.' : '알림 서버에 연결하지 못했어요. 잠시 뒤 다시 확인해 주세요.');
 
 export function pushCapability(env = globalThis) {
-  if (env.synkProduct?.authStatus) return { supported: false, phase: 'unsupported', message: '이 앱의 알림은 웹 브라우저에서 설정해 주세요. 아래의 브라우저에서 열기를 이용할 수 있어요.' };
+  if (env.synkProduct?.authStatus) return { supported: false, phase: 'unsupported', message: '이 앱의 알림은 웹 브라우저에서 설정해 주세요. 알림 설정을 닫고 브라우저에서 열기를 눌러 주세요.' };
   const nav = env.navigator, standalone = nav?.standalone === true || env.matchMedia?.('(display-mode: standalone)')?.matches === true;
   const ios = /iPad|iPhone|iPod/.test(nav?.userAgent || '') || nav?.platform === 'MacIntel' && nav?.maxTouchPoints > 1;
   if (ios && !standalone) return { supported: false, phase: 'needs-install', message: 'iPhone·iPad에서는 Safari의 공유 메뉴 → 홈 화면에 추가를 누른 뒤, 홈 화면의 플레저에서 알림을 켜 주세요.' };
@@ -40,9 +40,10 @@ export function carePushAccountIdentity(status, starting = false) {
 
 export function careLogoutNotice(accountResult, pushResult) {
   const warnings = [];
+  if (accountResult?.ok === false) warnings.push('이 기기의 로그인 정보 삭제를 확인하지 못했어요. 브라우저나 앱의 저장 정보를 확인해 주세요.');
   if (accountResult?.serverRevoked === false) warnings.push('서버의 세션 종료는 확인하지 못했어요.');
   if (pushResult?.ok === false) warnings.push('기기 알림 해제를 확인하지 못했으니 브라우저 사이트 설정에서 알림을 꺼 주세요.');
-  return warnings.length ? `이 기기의 로그인은 종료했어요. ${warnings.join(' ')}` : '';
+  return warnings.length ? `${accountResult?.ok === false ? '로그아웃을 완전히 확인하지 못했어요.' : '이 기기의 로그인은 종료했어요.'} ${warnings.join(' ')}` : '';
 }
 
 function bounded(promise, ms = 12000) {
@@ -52,14 +53,14 @@ function bounded(promise, ms = 12000) {
 
 /** Per-device opt-in only. No permission request or new subscription during preparation. */
 export function createCarePush({ request, onState = () => {}, env = globalThis, workerUrl = new URL('./care-sw.js', import.meta.url).href, scopeUrl = new URL('./', import.meta.url).href } = {}) {
-  let owner, epoch = 0, registration = null, subscription = null, publicKey = null, mutation = null, preparation = null, suspended = false, permissionAttempt = null, timeDraft = null;
+  let owner, epoch = 0, registration = null, subscription = null, publicKey = null, mutation = null, preparation = null, cleanup = null, suspended = false, permissionAttempt = null, timeDraft = null;
   let state = { phase: 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, timeZone: PUSH_TIME_ZONE, message: SIGNED_OUT_NOTICE };
   const snapshot = () => ({ ...state, inputHour: timeDraft?.hour ?? state.hour, inputMinute: timeDraft?.minute ?? state.minute, canCancelEnable: !!permissionAttempt?.waiting && !permissionAttempt.cancelled && current(permissionAttempt.epoch), permissionPending: !!permissionAttempt, busy: busyPhases.has(state.phase), signedIn: !!owner && !suspended, suppressOpenReminders: state.enabled || !!subscription || !!permissionAttempt || busyPhases.has(state.phase) });
   const emit = patch => { state = { ...state, ...patch }; onState(snapshot()); return snapshot(); };
   const current = expected => expected === epoch && !!owner && !suspended;
   const guard = expected => { if (!current(expected)) throw Object.assign(new Error('계정이 바뀌었어요.'), { code: 'ACCOUNT_CHANGED' }); };
   const call = async (action, body, expected) => { guard(expected); const result = await request(action, body); guard(expected); if (result?.ok !== true) throw new Error('알림 서버 응답을 확인하지 못했어요.'); return result; };
-  const closeNotifications = async reg => { try { for (const item of await reg?.getNotifications?.({ tag: 'synk-care-daily' }) || []) item.close(); } catch { /* Notification display cleanup is best effort. */ } };
+  const closeNotifications = async reg => { try { for (const item of await bounded(reg?.getNotifications?.({ tag: 'synk-care-daily' })) || []) item.close(); } catch { /* Notification display cleanup is best effort and must not block unsubscribe or the next account. */ } };
   async function removeLocal(sub, reg = registration) {
     let removed = !sub;
     if (sub) { try { removed = await bounded(sub.unsubscribe()); } catch { removed = false; } }
@@ -75,7 +76,8 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
   async function existing() {
     if (registration) return registration;
     if (!env.navigator?.serviceWorker?.getRegistration) return null;
-    try { const reg = await bounded(env.navigator.serviceWorker.getRegistration(scopeUrl)); return reg?.scope === scopeUrl ? reg : null; } catch { return null; }
+    const reg = await bounded(env.navigator.serviceWorker.getRegistration(scopeUrl));
+    return reg?.scope === scopeUrl ? reg : null;
   }
   async function getReadyRegistration(expected) {
     const reg = await bounded(env.navigator.serviceWorker.register(workerUrl, { scope: scopeUrl, updateViaCache: 'none' })); guard(expected);
@@ -97,6 +99,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
   }
   function prepare() {
     if (!owner || suspended) return Promise.resolve(snapshot());
+    if (cleanup) return cleanup.then(() => prepare(), () => prepare());
     // A native permission prompt cannot be dismissed by the page. Keep its lock,
     // but never queue another UI preparation behind an unanswered prompt.
     if (permissionAttempt) return Promise.resolve(snapshot());
@@ -108,7 +111,7 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     const pending = (async () => {
       try {
         registration = await getReadyRegistration(expected); guard(expected);
-        const candidate = await registration.pushManager.getSubscription(); guard(expected);
+        const candidate = await bounded(registration.pushManager.getSubscription()); guard(expected);
         subscription = candidate;
         const result = await call('status', candidate ? { endpoint: candidate.endpoint } : {}, expected);
         publicKey = decodePushKey(result.publicKey, env.atob || globalThis.atob);
@@ -126,21 +129,21 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     const next = typeof accountId === 'string' && accountId ? accountId : null;
     if (next === owner && !suspended) return snapshot();
     cancelEnable();
-    const previous = owner, expected = ++epoch, running = mutation;
+    const previous = owner, expected = ++epoch, running = mutation, clearing = cleanup;
     owner = next; suspended = false; preparation = null; publicKey = null;
     timeDraft = null;
     emit({ phase: next ? permissionAttempt ? 'permission-pending' : 'preparing' : 'signed-out', enabled: false, scheduleKnown: true, hour: 9, minute: 0, message: next ? permissionAttempt ? '이전 알림 연결을 정리하고 있어요. 브라우저에 남아 있는 알림 허용 창을 닫아 주세요. 수첩은 계속 이용할 수 있어요.' : '이 기기의 알림 연결을 확인하고 있어요.' : SIGNED_OUT_NOTICE });
     // A subscribe prompt can finish after a sign-out. That mutation removes its own
     // subscription; wait before preparing a new account so it cannot remove theirs.
     if (running) { try { await running; } catch { /* The stale mutation cleans up below. */ } }
+    if (clearing) { try { await clearing; } catch { /* Keep the current account's preparation separate. */ } }
     if (expected !== epoch) return snapshot();
     // A fresh tab has no sessionStorage login, but its browser-level subscription
     // may belong to another live tab. Only a known owner transition may remove it.
     if (previous) {
-      const reg = await existing(); if (expected !== epoch) return snapshot();
-      let old = subscription;
-      try { old ||= await reg?.pushManager?.getSubscription(); }
-      catch { return emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 기기 알림을 확인하지 못했어요. 사이트 설정에서 알림을 끈 뒤 다시 확인해 주세요.' }); }
+      let reg, old = subscription;
+      try { reg = await existing(); if (expected !== epoch) return snapshot(); old ||= await bounded(reg?.pushManager?.getSubscription()); }
+      catch { return expected !== epoch ? snapshot() : emit({ phase: 'unavailable', enabled: false, message: '이전 계정의 기기 알림을 확인하지 못했어요. 사이트 설정에서 알림을 끈 뒤 다시 확인해 주세요.' }); }
       if (expected !== epoch) return snapshot();
       const removed = await removeLocal(old, reg);
       if (expected !== epoch) return snapshot();
@@ -224,19 +227,24 @@ export function createCarePush({ request, onState = () => {}, env = globalThis, 
     })().finally(() => { if (mutation === pending) mutation = null; });
     mutation = pending; return pending;
   }
-  async function logout() {
+  function logout({ localOnly = false } = {}) {
+    if (cleanup) return cleanup;
     // Do not wait for an unanswered permission prompt to sign out. Its completion
     // checks the epoch before writing and unsubscribes any late subscription.
     cancelEnable();
     ++epoch; suspended = true; publicKey = null; preparation = null;
     emit({ phase: 'disabling', enabled: false, message: '이 기기의 계정 알림을 해제하고 있어요.' });
-    const reg = await existing(); let candidate = subscription;
-    try { candidate ||= await reg?.pushManager?.getSubscription(); }
-    catch { return { ok: false, serverRemoved: false, deviceRemoved: false }; }
-    let serverRemoved = !candidate;
-    if (candidate) { try { serverRemoved = (await request('unsubscribe', { endpoint: candidate.endpoint }))?.ok === true; } catch { /* Session revocation and provider cancellation are independent fallbacks. */ } }
-    const removed = await removeLocal(candidate, reg);
-    return { ok: serverRemoved || removed, serverRemoved, deviceRemoved: removed };
+    const captured = subscription;
+    const pending = (async () => {
+      let reg, candidate = captured;
+      try { reg = await existing(); candidate ||= await bounded(reg?.pushManager?.getSubscription()); }
+      catch { return { ok: false, serverRemoved: false, deviceRemoved: false }; }
+      let serverRemoved = !candidate;
+      if (candidate && !localOnly) { try { serverRemoved = (await request('unsubscribe', { endpoint: candidate.endpoint }))?.ok === true; } catch { /* Provider cancellation still stops device delivery. */ } }
+      const removed = await removeLocal(candidate, reg);
+      return { ok: serverRemoved || removed, serverRemoved, deviceRemoved: removed };
+    })().finally(() => { if (cleanup === pending) cleanup = null; });
+    cleanup = pending; return pending;
   }
   return { snapshot, setAccount, prepare, enable, cancelEnable, update, disable, logout };
 }

@@ -36,6 +36,15 @@ test('canceling navigation preserves both story and detail drafts; approving dis
   assert.equal(state.location.hash,'#takehome');assert.equal(state.draftDirty,false);assert.equal(state.formDrafts.has('#page/a'),false);
 });
 
+test('approving account reverification keeps unsaved flags until a real replacement or navigation',()=>{
+  const state=harness();state.draftDirty=true;state.window.confirm=()=>true;
+  state.formDrafts.capture('#page/a','attempt-form',{note:'같은 계정에서 계속 쓸 기록'},{note:''});
+  const hook=app.match(/beforeNavigate:(\(\)=>confirmDiscard\([^\n]*\)),/)[1];
+  assert.equal(vm.runInContext(`(${hook})()`,state),true);
+  assert.equal(state.draftDirty,true);assert.equal(state.formDrafts.has('#page/a'),true);
+  state.window.confirm=()=>false;assert.equal(state.go('#takehome'),false);
+});
+
 test('a page rerender restores all unfinished form values including an intentionally blank date',()=>{
   const state=harness(),fields=[{id:'attempt-date',value:'',defaultValue:'2026-10-06'},{id:'attempt-note',value:'다음에는 덜 넣기',defaultValue:''}];
   const form={id:'attempt-form',querySelectorAll:()=>fields};state.forms.set(form.id,form);

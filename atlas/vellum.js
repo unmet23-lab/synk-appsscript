@@ -58,4 +58,17 @@ function situationLine({ when }) {
   if (typeof when !== 'string' || !when.trim()) throw new TypeError('Vellum: invalid situation line');
   return `${when} 쓰는 말이라 골랐어요.`;
 }
-module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine };
+// Activity reasons keep a product's scheduled review distinct from observed practice.
+function activityReason({ reasons = [], state = 'unseen', label } = {}) {
+  if (!Array.isArray(reasons)) throw new TypeError('Vellum: invalid activity reason');
+  if (reasons.includes('activity.none')) return '지금 조건에 맞는 활동이 없어요. 시간이나 소리 설정을 바꿔 볼 수 있어요.';
+  if (reasons.includes('review.due')) return '복습할 시간이 된 내용이 있어요. 짧게 다시 만나 봐요.';
+  const goal = reasons.includes('goal.declared');
+  if (reasons.includes('activity.retry')) return `처음에 놓친 부분을 다시 연습해 봐요.${goal ? ' 고른 목표와 이어지는 활동이에요.' : ''}`;
+  if (reasons.includes('activity.assisted')) return `도움과 함께 해낸 부분이에요. 한 번 더 살펴봐요.${goal ? ' 고른 목표와 이어지는 활동이에요.' : ''}`;
+  if (label && state !== 'unseen') return `${learningReason({ status: state, label })}${goal ? ' 고른 목표와 이어지는 활동이에요.' : ''}`;
+  if (goal) return '직접 고른 목표와 이어지는 활동이에요. 짧게 시작해 봐요.';
+  if (reasons.includes('history.incomplete')) return '기록을 모두 확인하기 전이라 기본 활동으로 시작해요.';
+  return '아직 연습 기록이 적어요. 짧게 해 보며 맞춰 갈게요.';
+}
+module.exports = { SUPPORTS, STUCK, reviewOpen, offerCue, learningReason, situationLine, activityReason };

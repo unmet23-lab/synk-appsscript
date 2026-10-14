@@ -14,6 +14,10 @@ import { DAILY_KEY, seoulDate, dailyRound, dailyOptions, emptyRecords, normalize
 import { NARRATION, NARRATION_LINES, resultLine } from './narration.mjs';
 import { createGearPanel, DEFAULT_GEAR } from './gear.mjs';
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+const progressStorage = globalThis.SynkPlayAccount.storage();
+
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -30,15 +34,15 @@ const impacts = [];   // 확인용(?qa): 받아친 순간의 시각·판정
 const KEY = 'synk.talk-rally.v1';
 let saved = true;
 function load() {
-  try { const p = JSON.parse(localStorage.getItem(KEY) || 'null'); if (p && p.v === 1) return p; } catch { saved = false; }
+  try { const p = JSON.parse(progressStorage.getItem(KEY) || 'null'); if (p && p.v === 1) return p; } catch { saved = false; }
   return { v: 1, plays: 0, practiced: false, slow: false, best: null };
 }
 const progress = load();
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } };
+const save = () => { try { progressStorage.setItem(KEY, JSON.stringify(progress)); saved = true; } catch { saved = false; } };
 /* ── 하루 도전 기록(이 브라우저, 날짜마다 최고·판 수). 저장이 막혀도 게임은 그대로이고 기록만 남지 않는다 ── */
 let dailySaved = true;
-function loadDaily() { try { const r = normalizeRecords(JSON.parse(localStorage.getItem(DAILY_KEY) || 'null')); dailySaved = true; return r; } catch { dailySaved = false; return emptyRecords(); } }
-function saveDaily(records) { try { localStorage.setItem(DAILY_KEY, JSON.stringify(records)); dailySaved = true; } catch { dailySaved = false; } return dailySaved; }
+function loadDaily() { try { const r = normalizeRecords(JSON.parse(progressStorage.getItem(DAILY_KEY) || 'null')); dailySaved = true; return r; } catch { dailySaved = false; return emptyRecords(); } }
+function saveDaily(records) { try { progressStorage.setItem(DAILY_KEY, JSON.stringify(records)); dailySaved = true; } catch { dailySaved = false; } return dailySaved; }
 const num = (n) => Number(n).toLocaleString('ko-KR');
 const monthDay = (d) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8, 10))}일`;
 

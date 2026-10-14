@@ -217,7 +217,7 @@ test('적용: 무대 결과를 넣으면 다시 만든 줄만 목록이 바뀌�
     'korean-racing': ['manifest.json', 'challenge-manifest.json', 'choice-manifest.json', 'finale-manifest.json', 'garage-manifest.json', 'tutorial-manifest.json'].map(f => 'assets/narration/' + f),
     'entry-check': ['assets/voice/voices.json'], 'story-classroom': ['assets/voice/manifest.json', 'assets/voice/jobs.json'],
     'korean-rhythm': ['assets/narration/manifest.json', 'narration.mjs'], 'talk-rally': ['assets/voice/manifest.json', 'assets/narration/manifest.json'],
-    'korean-runner': ['assets/voice/manifest.json', 'voice-timing.mjs'], 'order-rush': [],
+    'korean-runner': ['assets/voice/manifest.json', 'voice-timing.mjs'], 'order-rush': [], 'beginner-games': ['audio/manifest.json'],
   };
   try {
     for (const game of V.GAME_ORDER) {

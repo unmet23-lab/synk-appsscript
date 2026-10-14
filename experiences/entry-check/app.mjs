@@ -8,6 +8,10 @@ import { fitText, preloadImages } from './kit/lab.mjs';
 import { josa } from './kit/josa.mjs';
 import { choiceId, choiceCorrection, immediateCheck, followUpResult } from './correction.mjs';
 
+// Restore the verified account before reading progress or enabling play.
+await globalThis.SynkPlayAccount.ready();
+const progressStorage = globalThis.SynkPlayAccount.storage();
+
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const n = document.createElement(tag); if (cls) n.className = cls; if (html != null) n.innerHTML = html; return n; };
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -18,10 +22,10 @@ const wait = (ms) => new Promise((r) => setTimeout(r, reduced() ? 0 : ms));
 const PROGRESS_KEY = 'synk.entry-check.v1';
 let progressSaved = true;
 function loadProgress() {
-  try { const p = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null'); if (p && p.v === 1) return { motion: true, ...p }; } catch { progressSaved = false; }
+  try { const p = JSON.parse(progressStorage.getItem(PROGRESS_KEY) || 'null'); if (p && p.v === 1) return { motion: true, ...p }; } catch { progressSaved = false; }
   return { v: 1, stars: {}, plays: 0, tutorial: false, doneDay: null, motion: true };
 }
-function saveProgress() { try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); progressSaved = true; } catch { progressSaved = false; } }
+function saveProgress() { try { progressStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); progressSaved = true; } catch { progressSaved = false; } }
 const progress = loadProgress();
 
 /* ── 아틀라스: 같은 주소의 다른 SYNK 게임과 기록을 함께 쓴다 ── */

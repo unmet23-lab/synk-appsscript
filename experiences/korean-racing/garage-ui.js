@@ -203,12 +203,23 @@ export function createGarageUI({ onPreview = () => {}, onEquip = () => {}, onClo
     preview(button.dataset.item);
     screen.querySelector(`[data-item="${selectedId}"]`)?.focus({ preventScroll: true });
   });
-  $('garage-item-actions').addEventListener('click', (event) => {
+  let purchasing=false;
+  $('garage-item-actions').addEventListener('click', async (event) => {
     const action = event.target.closest('[data-action]')?.dataset.action;
     if (!action) return;
     const item = selected();
     let latest;
     try { latest = state(); } catch { setNotice('차고 기록을 읽지 못했어요. 잠시 후 다시 시도해 주세요.', 'error'); return; }
+    if(globalThis.SynkPlayAccount?.status().mode==='account'){
+      if(purchasing)return;purchasing=true;setNotice('계정에 저장하고 있어요…');
+      try{
+        const result=await globalThis.SynkPlayCollection.command(action==='wish'?'setWish':action==='buy'?'buyItem':'equipItem',action==='wish'?(latest.wish===item.value?null:item.value):item.id);
+        if(!result.ok){setNotice(result.reason==='insufficient'?'코인이 조금 모자라요.':result.reason==='owned'?'이미 가지고 있어요.':'아직 계정에서 구매를 확인하지 못했어요. 저장 상태를 확인해 주세요.','error');render();return;}
+        setNotice(action==='wish'?'목표를 계정에 저장했어요.':`${item.name} ${action==='buy'?'샀어요.':'장착했어요.'}`);render();
+        if(action==='equip'){onEquip({...item});onPreview({...item});}
+      }finally{purchasing=false;}
+      return;
+    }
     if (action === 'wish') {
       if (!persist(setWish(latest, latest.wish === item.value ? null : item.value))) return;
       setNotice(latest.wish === item.value ? '다음 목표를 새로 골라도 좋아요.' : `${item.name}${josa(item.name, '을', '를')} 다음 목표로 찜했어요.`); render(); return;

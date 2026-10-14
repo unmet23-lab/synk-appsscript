@@ -530,7 +530,32 @@ const orderRush = {
   },
 };
 
-const GAMES = Object.fromEntries([racing, entry, story, rhythm, rally, runner, orderRush].map(g => [g.id, g]));
+// Three beginner games share one small narration bank and the existing credit/cache safeguards.
+const beginnerGames = {
+  id: 'beginner-games', label: '완전 입문 게임 3종', newBank: true,
+  post: 'MP3 mono 44.1 kHz · 96 kbps · -17 LUFS · 앞 0.08/뒤 0.18초',
+  async jobs(repo = REPO) {
+    return readJson(path.join(gameDir(this.id, repo), 'voice-request.json')).lines.map(row =>
+      job(this.id, row.id, 'narrator', row.text, [`audio/${row.id}.mp3`]));
+  },
+  current(repo = REPO) { return listFiles(path.join(gameDir(this.id, repo), 'audio'), /\.mp3$/).map(f => 'audio/' + f); },
+  shipped(repo = REPO) { return readJson(path.join(gameDir(this.id, repo), 'voice-request.json')).lines; },
+  async process(j, raw, stage) {
+    const mp3 = abs(stage, j.outputs[0]), wav = mp3 + '.wav';
+    fs.mkdirSync(path.dirname(mp3), { recursive: true });
+    await matchedWav(raw, wav, { edges: { lead: 0.08, tail: 0.18 }, lufs: -17, rate: 44100 });
+    await ff(['-i', wav, '-ac', '1', '-ar', '44100', '-codec:a', 'libmp3lame', '-b:a', '96k', mp3]);
+    return { files: { [j.outputs[0]]: mp3 }, metrics: await inspect(mp3, { minDuration: 0.12 }) };
+  },
+  validate(j, metrics) { return metrics.durationSeconds > 8 ? ['입문 낱말·짧은 부탁이 8초보다 김'] : []; },
+  finalize(results, dir) {
+    const clips = Object.fromEntries(results.map(r => [r.job.id, { text: r.job.text,
+      file: r.job.outputs[0], durationSeconds: r.metrics.durationSeconds }]));
+    fs.writeFileSync(path.join(dir, 'audio/manifest.json'), JSON.stringify({ version: 1, approved: true, clips }, null, 2) + '\n');
+    return ['audio/manifest.json'];
+  },
+};
+const GAMES = Object.fromEntries([racing, entry, story, rhythm, rally, runner, orderRush, beginnerGames].map(g => [g.id, g]));
 
 // 게임이 읽거나 공개되는 파일에 들어가면 안 되는 이름(제작 도구·모델·목소리 id). 시험과 적용 뒤 검사에 쓴다.
 const TOOL_NAMES = /typecast|\btc_[0-9a-f]{6,}|ssfm|edge[-_ ]?tts|neural|heami|microsoft|system\.speech|gemini|vertex|sunhi|injoon|hyunsu/i;

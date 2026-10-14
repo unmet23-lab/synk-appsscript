@@ -59,17 +59,13 @@ test('read-only plan reports separate identities and performs no state or remote
   assert.deepEqual(f.journal, f.original); assert.equal(JSON.stringify(result).includes('sb_publishable'), false);
 });
 test('unbound new catalogue entries are reported but never registered or mapped by the company workflow', async () => {
-  const f = fixture(), journal = clone(f.journal);
-  const deferred = CLIENTS.find(row => row.runtime === 'browser' && !['messenger', 'fortune'].includes(row.service) && Object.hasOwn(journal.bindings, row.id));
-  assert.ok(deferred, 'fixture requires an unrelated bound browser registration');
-  const id = journal.bindings[deferred.id], clientIndex = f.clients.findIndex(row => row.client_id === id);
-  assert.ok(clientIndex >= 0);
-  delete journal.bindings[deferred.id]; delete journal.mapping[id]; journal.attempted = journal.attempted.filter(row => row !== deferred.id);
-  f.clients.splice(clientIndex, 1);
+  const f = fixture(), journal = clone(f.journal), id = journal.bindings['dating-browser'];
+  delete journal.bindings['dating-browser']; delete journal.mapping[id]; journal.attempted = journal.attempted.filter(row => row !== 'dating-browser');
+  f.clients.splice(f.clients.findIndex(row => row.client_id === id), 1);
   f.currentPortal.authorizationClients = f.currentPortal.authorizationClients.filter(row => row.clientId !== id);
   f.setJournal(journal); f.setMapping(journal.mapping);
   const result = await provisionCompanyPublic(f.args({ apply: true }));
-  assert.deepEqual(result.deferredRegistrations, [deferred.id]); assert.equal(f.calls.create.length, 1);
+  assert.deepEqual(result.deferredRegistrations, ['dating-browser']); assert.equal(f.calls.create.length, 1);
   assert.equal(f.calls.create[0].client_name, clientName(COMPANY.customer.id, 'production')); assert.equal(Object.hasOwn(f.mapping, id), false);
 });
 test('apply preserves existing callbacks, Care, mappings and portal; customer config matches actual runtime contract', async () => {

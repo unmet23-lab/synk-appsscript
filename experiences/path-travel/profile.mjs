@@ -126,6 +126,7 @@ export function valueLabel(field,value){
   const spec=fieldMap.get(field), option=spec?.options?.find(option=>option.value===value);if(option)return option.label;
   if(['hotelMaxPrice','mealMaxPrice','budget'].includes(field))return new Intl.NumberFormat('ko-KR').format(value)+'원';
   if(['maxWait','walkLimit'].includes(field))return `${value}분`;
+  if(field==='dayStart')return `${value}시`;
   if(field==='returnBy')return `${value>=1440?'다음 날 ':''}${String(Math.floor(value/60)%24).padStart(2,'0')}:${String(value%60).padStart(2,'0')}`;
   if(field==='hotelNoise')return value<=0.2?'아주 조용한 편':value<=0.5?'생활 소음이 있는 편':'주변 소음이 있는 편';
   if(field==='hotelCleanliness')return value>=0.9?'높은 청결 지표':value>=0.7?'보통 청결 지표':'기본 청결 지표';

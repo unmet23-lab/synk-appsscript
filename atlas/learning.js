@@ -3,7 +3,7 @@
 // Receives Trail provenance and Strata nodes; owns neither identity nor storage.
 const POLICY = Object.freeze({ version: 'learning-priority-3', recentDays: 30, reviewDays: 7, sample: 4, stableRatio: .8 });
 const RESPONSE_FORMATS = Object.freeze(['binary-choice', 'single-choice', 'cup-compose', 'action', 'unknown']);
-const { learningReason } = require('./vellum');
+const { learningReason, activityReason, SUPPORTS } = require('./vellum');
 const Ledger = require('./learning-ledger');
 const DAY = 86400000;
 // `base` holds the rows of entries folded into a ledger (Ledger.rows): they are read with the log's.
@@ -22,8 +22,11 @@ function formatEvidence(rows, { now, complete, difficulty, responseFormat, base 
   else if (n >= 3 && incorrect >= 2) { status = 'practice'; priority = 1; }
   else if (n) { status = 'checking'; priority = incorrect ? .85 : .55; }
   else if (helped.length) { status = 'supported'; priority = .9; }
+  // Keep the actual source even when an old item is due outside the recent window, or
+  // a supported success has no independent attempt. A reason must not lose its provenance.
+  const reasonEvidence = status === 'supported' ? helped.slice(-12) : status === 'review' && !recent.length ? valid.slice(-1) : recent;
   return { difficulty, responseFormat, status, priority, n, correct, incorrect, lastAt,
-    assisted: helped.length, evidence: recent.map(a => a.eventId),
+    assisted: helped.length, evidence: recent.map(a => a.eventId), reasonEvidence: reasonEvidence.map(a => a.eventId),
     unassessed: rows.filter(a => a.verdict === 'unassessed' || a.verdict === 'skipped').length + (base?.unassessed || 0) };
 }
 function summarizeLearning({ summary, map, complete = true, prior = null }) {
@@ -55,7 +58,7 @@ function summarizeLearning({ summary, map, complete = true, prior = null }) {
 // Missed or due content (a word, a grammar point) puts a candidate a little ahead of those its
 // ability's own state ranks alike; it never moves one ability, level or history past another.
 const CONTENT_LIFT = Object.freeze({ practice: 0.2, review: 0.1, supported: 0.05 });
-function recommend({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
+function rankLearning({ profile, candidates, presentations = [], audioAvailable = true, excludeIds = [], prior = null }) {
   if (!Array.isArray(candidates)) throw new TypeError('Core: candidates must be an array');
   const ids = new Set(), skills = new Map(profile.skills.map(s => [s.id, s]));
   const content = new Map((profile.concepts || []).map(c => [c.id, c.status]));
@@ -112,11 +115,97 @@ function recommend({ profile, candidates, presentations = [], audioAvailable = t
     ranked.push({ candidate, focus, score, lift, count });
   }
   ranked.sort((a, b) => b.score - a.score || b.lift - a.lift || a.count - b.count || a.candidate.difficulty - b.candidate.difficulty || a.candidate.id.localeCompare(b.candidate.id));
+  return ranked;
+}
+function recommend(input) {
+  const ranked = rankLearning(input);
   if (!ranked.length) return { status: 'unavailable', selected: null, reason: '지금 조건에 맞는 연습이 없어요.', alternatives: [] };
   const best = ranked[0], label = best.focus.skill.label;
   return { status: 'ready', selected: best.candidate, reason: learningReason({ status: best.focus.status, label }), focusSkillId: best.focus.skill.id,
     state: best.focus.status, responseFormat: best.focus.responseFormat, policy: POLICY.version, evidence: best.focus.evidence,
     alternatives: ranked.slice(1).map(r => r.candidate) };
+}
+
+// Choose between activities supplied by a product, using the same practice evidence as an
+// individual item. Activity ids, routes, goals and review schedules belong to that product.
+// A declared goal changes the choice among equally urgent needs; it never hides an observed
+// need or a due review. A schedule is not an assessment, and a missing target is not a weakness.
+const ACTIVITY_POLICY = 'learning-activity-1';
+const activityToken = value => typeof value === 'string' && /^[a-zA-Z0-9_.:-]{1,120}$/.test(value);
+const activityTime = value => typeof value === 'string' && Number.isFinite(Date.parse(value));
+const activityList = value => Array.isArray(value) && value.every(activityToken) && new Set(value).size === value.length;
+function recommendActivities({ profile, candidates, settings = {}, at = profile?.asOf, presentations = [], prior = null } = {}) {
+  if (!profile || !Array.isArray(profile.skills) || typeof profile.evidenceComplete !== 'boolean'
+    || !activityTime(at) || !Array.isArray(candidates) || candidates.length > 500
+    || !settings || typeof settings !== 'object' || Array.isArray(settings)
+    || Object.keys(settings).some(key => !['goals', 'minutes', 'support', 'audioAvailable'].includes(key))
+    || (settings.goals != null && !activityList(settings.goals))
+    || (settings.minutes != null && (!Number.isFinite(settings.minutes) || settings.minutes <= 0))
+    || (settings.support != null && !SUPPORTS.includes(settings.support))
+    || (settings.audioAvailable != null && typeof settings.audioAvailable !== 'boolean')) throw new TypeError('Core: invalid activity recommendation');
+  // An incomplete history cannot establish a need or an easy start. Known presentations still
+  // avoid repetition, but every ability and concept remains unassessed until the host completes it.
+  const usable = profile.evidenceComplete ? profile : { ...profile, concepts: [], skills: profile.skills.map(skill => ({ ...skill,
+    levels: Object.fromEntries([1, 2, 3].map(difficulty => [difficulty, { formats: Object.fromEntries(RESPONSE_FORMATS.map(responseFormat => [responseFormat,
+      { difficulty, responseFormat, status: 'unseen', priority: .65, n: 0, correct: 0, incorrect: 0, assisted: 0, evidence: [] }])) }])) })) };
+  const goals = new Set(settings.goals || []), ids = new Set(), ranked = [], excluded = [];
+  for (const candidate of candidates) {
+    if (!candidate || !activityToken(candidate.id) || ids.has(candidate.id)
+      || !Number.isFinite(candidate.minutes) || candidate.minutes <= 0
+      || !Array.isArray(candidate.targets) || candidate.targets.length > 500
+      || (candidate.goals != null && !activityList(candidate.goals))
+      || (candidate.supports != null && (!Array.isArray(candidate.supports) || !candidate.supports.length
+        || candidate.supports.some(support => !SUPPORTS.includes(support)) || new Set(candidate.supports).size !== candidate.supports.length))
+      || (candidate.audioRequired != null && typeof candidate.audioRequired !== 'boolean')
+      || (candidate.available != null && typeof candidate.available !== 'boolean')
+      || (candidate.reviewAt != null && !activityTime(candidate.reviewAt))
+      || (candidate.practiceNeed != null && (!['retry', 'assisted'].includes(candidate.practiceNeed.kind)
+        || Object.keys(candidate.practiceNeed).some(key => !['kind', 'at', 'evidenceRefs'].includes(key))
+        || !activityTime(candidate.practiceNeed.at) || Date.parse(candidate.practiceNeed.at) > Date.parse(at)
+        || !activityList(candidate.practiceNeed.evidenceRefs) || !candidate.practiceNeed.evidenceRefs.length))) throw new TypeError('Core: invalid learning activity');
+    ids.add(candidate.id);
+    // Validate every target, including targets on an unavailable activity. The established
+    // item policy owns domain, difficulty, format and exposure; a product cannot bypass it.
+    const targets = rankLearning({ profile: usable, candidates: candidate.targets, presentations, prior,
+      audioAvailable: settings.audioAvailable !== false });
+    const blocked = [];
+    if (candidate.available === false) blocked.push('activity.unavailable');
+    if (settings.minutes != null && candidate.minutes > settings.minutes) blocked.push('time.limit');
+    if (settings.audioAvailable === false && (candidate.audioRequired || (candidate.targets.length && !targets.length))) blocked.push('audio.unavailable');
+    if (settings.support && settings.support !== 'choose' && candidate.supports && !candidate.supports.includes(settings.support)) blocked.push('support.mismatch');
+    if (blocked.length) { excluded.push({ id: candidate.id, reasons: blocked }); continue; }
+    const target = targets[0] || null, state = target?.focus.status || 'unseen';
+    const due = candidate.reviewAt != null && Date.parse(candidate.reviewAt) <= Date.parse(at);
+    // A host may have its own assessed activity (for example a language's letter practice).
+    // Keep that recent first-response/help fact separate from Trail skill evidence. The host
+    // withdraws it when corrected; Core neither persists it nor manufactures a skill mapping.
+    const hostNeed = candidate.practiceNeed && Date.parse(at) - Date.parse(candidate.practiceNeed.at) <= POLICY.recentDays * DAY
+      ? candidate.practiceNeed : null;
+    const urgent = due || hostNeed || ['practice', 'supported', 'review'].includes(state);
+    const tier = urgent ? 0 : state === 'recent-independent' ? 2 : 1;
+    const matchedGoals = (candidate.goals || []).filter(goal => goals.has(goal));
+    const reasons = [...(due ? ['review.due'] : []), ...(hostNeed ? [`activity.${hostNeed.kind}`] : []), ...(target && state !== 'unseen' ? [`practice.${state}`] : []),
+      ...(matchedGoals.length ? ['goal.declared'] : []), ...(!profile.evidenceComplete ? ['history.incomplete'] : []),
+      ...(!due && !hostNeed && state === 'unseen' && !matchedGoals.length ? ['practice.unseen'] : [])];
+    ranked.push({ candidate, target, state, tier, matchedGoals, due, hostNeed, reasons });
+  }
+  ranked.sort((a, b) => a.tier - b.tier || b.matchedGoals.length - a.matchedGoals.length
+    || Number(b.due) - Number(a.due) || (b.target?.score ?? .65) - (a.target?.score ?? .65)
+    || (b.target?.lift ?? 0) - (a.target?.lift ?? 0) || (a.target?.count ?? 0) - (b.target?.count ?? 0)
+    || a.candidate.minutes - b.candidate.minutes || a.candidate.id.localeCompare(b.candidate.id));
+  const best = ranked[0];
+  const common = { policy: ACTIVITY_POLICY, asOf: at, evidenceComplete: profile.evidenceComplete, excluded,
+    learningEffectClaim: false, abilityClaim: false, grade: null };
+  if (!best) return { ...common, status: 'unavailable', selected: null, alternatives: [], reasons: ['activity.none'],
+    reason: activityReason({ reasons: ['activity.none'] }), evidence: [], focusSkillId: null, state: null, matchedGoals: [] };
+  const detail = row => ({ id: row.candidate.id, reasons: [...row.reasons], state: row.state,
+    focusSkillId: row.target?.focus.skill.id || null, matchedGoals: [...row.matchedGoals],
+    evidence: [...(row.target?.focus.reasonEvidence || row.target?.focus.evidence || [])], ...(row.due ? { reviewAt: row.candidate.reviewAt, reviewSource: 'host-schedule' } : {}),
+    ...(row.hostNeed ? { hostEvidence: { kind: row.hostNeed.kind, at: row.hostNeed.at, evidenceRefs: [...row.hostNeed.evidenceRefs], source: 'host-practice' } } : {}) });
+  return { ...common, status: 'ready', selected: best.candidate, alternatives: ranked.slice(1).map(row => row.candidate),
+    ...detail(best), reason: activityReason({ reasons: best.reasons, state: best.state, label: best.target?.focus.skill.label }),
+    basis: best.due ? 'review-schedule' : best.hostNeed ? 'host-practice' : best.target && best.state !== 'unseen' ? 'practice' : best.matchedGoals.length ? 'declared' : 'cold-start',
+    assessments: ranked.map(detail) };
 }
 // Content an item uses (words, grammar), read by the same evidence rules as abilities and
 // kept per response format. Only content with observations is listed: a word never met
@@ -150,4 +239,4 @@ function summarizeConcepts({ summary, map, complete = true, prior = null }) {
     return { id: node.id, kind: node.kind, label: node.label_ko, status: focus.status, priority: focus.priority, formats };
   }).sort((a, b) => b.priority - a.priority || a.id.localeCompare(b.id));
 }
-module.exports = { POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, formatEvidence };
+module.exports = { POLICY, ACTIVITY_POLICY, RESPONSE_FORMATS, CONTENT, summarizeLearning, summarizeConcepts, recommend, recommendActivities, formatEvidence };

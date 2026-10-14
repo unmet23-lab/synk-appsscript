@@ -2,35 +2,44 @@ import http from 'node:http';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { sharedAccountServer } from '../synk-account/server-shared.mjs';
 
-const PUBLIC = new Map(['index.html', 'app.mjs', 'style.css', 'model.mjs', 'catalog.mjs', 'storage.mjs', 'profile.mjs', 'extractor.mjs', 'conversation.mjs'].map(file => ['/' + file, new URL(file, import.meta.url)]));
-for (const module of ['engine', 'personalization', 'domain', 'interpretation', 'ask', 'travel']) PUBLIC.set(`/atlas/${module}.js`, new URL(`../../atlas/${module}.js`, import.meta.url));
+const PUBLIC = new Map(['index.html', 'planner.html', 'planner.css', 'planner-ui.mjs', 'planner-origin.mjs', 'planner.mjs', 'places-v2.mjs', 'walking-router.mjs', 'planner-storage.mjs', 'planner-feedback.mjs', 'planner-account.mjs', 'planner-account-session.mjs', 'app.mjs', 'style.css', 'model.mjs', 'catalog.mjs', 'storage.mjs', 'profile.mjs', 'extractor.mjs', 'conversation.mjs', 'real-places.mjs', 'real-guide.mjs', 'real-ui.mjs', 'real-conditions.mjs', 'real-course.mjs', 'real-course-data.mjs', 'real-course-ui.mjs'].map(file => ['/' + file, new URL(file, import.meta.url)]));
+PUBLIC.set('/planner-login-draft.mjs', new URL('./planner-login-draft.mjs', import.meta.url));
+for (const module of ['engine', 'personalization', 'domain', 'interpretation', 'ask', 'travel', 'trail-life', 'temper-outcomes']) PUBLIC.set(`/atlas/${module}.js`, new URL(`../../atlas/${module}.js`, import.meta.url));
+PUBLIC.set('/tools/lib/loom-motion.js', new URL('../../tools/lib/loom-motion.js', import.meta.url));
 const ASSETS = new Set(['DMMono-Regular.ttf', 'felt-black.webp', 'felt-button.webp', 'felt-choice.webp', 'felt-selected.webp', 'InterTight-Bold.ttf', 'logo-synk.webp', 'scrapbook.css', 'sticker-search.webp', 'sticker-time.webp', 'SUIT-Variable.woff2', 'thread.webp']);
-const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.svg': 'image/svg+xml' };
+PUBLIC.set('/legacy.html', new URL('./legacy.html', import.meta.url));
+const MIME = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json; charset=utf-8', '.jpg': 'image/jpeg', '.webp': 'image/webp', '.png': 'image/png', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.svg': 'image/svg+xml' };
 const HEADERS = {
   'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer',
-  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+  'Content-Security-Policy': "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-src 'none'; worker-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
 };
 
-export function createServer({ port = 4303 } = {}) {
+export function createServer({ port = 4303, accountConfigPath = new URL('./config.json', import.meta.url), accountConfig } = {}) {
   if (!Number.isInteger(port) || port < 0 || port > 65535) throw new TypeError('Invalid port');
+  const shared = sharedAccountServer({ configPath: accountConfigPath, config: accountConfig });
   const server = http.createServer(async (req, res) => {
+    await shared.ready;
     const send = (status, body, type = 'application/json; charset=utf-8') => {
-      res.writeHead(status, { ...HEADERS, 'Content-Type': type });
+      res.writeHead(status, { ...HEADERS, 'Content-Security-Policy': HEADERS['Content-Security-Policy'].replace("connect-src 'self'", `connect-src ${shared.connections()}`), 'Content-Type': type });
       res.end(req.method === 'HEAD' ? undefined : typeof body === 'string' || Buffer.isBuffer(body) ? body : JSON.stringify(body));
     };
     const host = req.headers.host ?? '';
     const origin = `http://${host}`;
     if (!/^(127\.0\.0\.1|localhost):\d+$/.test(host) || Number(host.split(':')[1]) !== server.address()?.port) return send(403, { error: '이 PC의 여행 주소에서 열어 주세요.' });
-    if (req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site') return send(403, { error: '이 앱에서 직접 열어 주세요.' });
     if (!['GET', 'HEAD'].includes(req.method)) return send(405, { error: '지원하지 않는 요청이에요.' });
-    let pathname;
-    try { pathname = decodeURIComponent(new URL(req.url, origin).pathname); }
+    let pathname, url;
+    try { url = new URL(req.url, origin); pathname = decodeURIComponent(url.pathname); }
     catch { return send(400, { error: '올바르지 않은 주소예요.' }); }
-    if (pathname === '/api/health') return send(200, { ok: true, product: 'path-travel', mode: 'local-fixture-mvp', city: 'seoul', cloudAI: false, booking: false, accountSync: false });
+    if (req.headers.origin && req.headers.origin !== origin || req.headers['sec-fetch-site'] === 'cross-site' && !shared.allowsOAuthReturn(req, url, 'path-travel')) return send(403, { error: '이 앱에서 직접 열어 주세요.' });
+    if (pathname === '/api/health') return send(200, { ok: true, product: 'path-travel', mode: 'local-real-planner-v4', city: 'seoul', cloudAI: false, booking: false, accountSync: shared.configured('path-travel') });
+    const common = await shared.read(pathname === '/config.json' ? '/api/account-config' : pathname);
+    if (common) return send(200, common.body, common.type);
     let file = PUBLIC.get(pathname === '/' ? '/index.html' : pathname);
     if (!file && pathname.startsWith('/assets/') && ASSETS.has(pathname.slice(8))) file = new URL('.' + pathname, import.meta.url);
+    if (!file && (pathname === '/assets/jongno-walking.json' || /^\/assets\/places\/[a-z0-9-]+\.jpg$/.test(pathname))) file = new URL('.' + pathname, import.meta.url);
     if (!file) return send(404, { error: '찾을 수 없는 파일이에요.' });
     try { return send(200, await readFile(file), MIME[path.extname(file.pathname)]); }
     catch { return send(404, { error: '찾을 수 없는 파일이에요.' }); }

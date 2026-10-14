@@ -6,8 +6,9 @@ import {createCoastDrive} from '../coast-drive.js';
 import {createCoastRadio} from '../coast-radio.js';
 import {CAMPAIGN,CHAPTERS,campaignUnlocked,recommendedStage,medalFor} from '../campaign.js';
 import {FINALES,finaleUnlocked} from '../finales.js';
-import {makeQuestions,emptyProgress,recordRound,PROGRESS_KEY,STAGES,WORD_BY_ID,answerFeedback} from '../learning.js';
+import {makeQuestions,emptyProgress,loadProgress,recordRound,PROGRESS_KEY,STAGES,WORD_BY_ID,answerFeedback} from '../learning.js';
 import {loadGarage,awardRace,SHOP_ITEMS} from '../garage.js';
+import {awardAccountRace} from '../../play-common/racing-command.mjs';
 import {resolveContact,shieldContact,comboShield} from '../driving.js';
 import {BASE_CRUISE,racingFollowUp,racingRecheck,linkRacingRecheck} from '../personalization.js';
 import {createQuestionPace,gatePosition,QUESTION_LEAD,rewardBoost,COMBO_BOOST_SECONDS} from '../race-pacing.js';
@@ -31,6 +32,89 @@ const productionFunctions=['syncCoastRadio','silence','finish','resultSummary','
 const noopHud=()=>new Proxy({},{get:(target,key)=>target[key]??(()=>{})});
 const flush=()=>new Promise(resolve=>setImmediate(resolve));
 
+test('account reward latency keeps completion driving responsive and displays only confirmed coins',async()=>{
+  const x=setup();let resolve,commands=0;
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet(){commands++;return new Promise(r=>{resolve=r;});}};
+  x.ctx.renderCollection=()=>{};
+  x.run('finish');x.run('finish');assert.equal(commands,1);assert.equal(x.counts.record,1);assert.equal(x.counts.garage,0);assert.equal(x.counts.progress,0);
+  assert.equal(x.$('cruise-banner').hidden,false);assert.match(x.ctx.lastResults.coinText,/저장하는 중/);
+  const confirmed=awardRace(loadGarage({getItem:()=>null}),x.ctx.selectedStage,x.ctx.answers,{roundId:'confirmed'});
+  x.storage.set(PROGRESS_KEY,JSON.stringify({...x.ctx.progress,rounds:3}));resolve(confirmed);await flush();
+  assert.match(x.ctx.lastResults.coinText,/공통 코인 \+/);assert.equal(x.ctx.garage.coins,confirmed.coins);assert.equal(x.counts.record,1);
+  assert.equal(x.ctx.progress.rounds,3,'ACK restores the host current progress');
+});
+
+test('a delayed account ACK cannot replace the next round progress or wallet UI',async()=>{
+  const x=setup();let resolve;
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet:()=>new Promise(r=>{resolve=r;})};
+  x.run('finish');x.ctx.roundId='next-round';x.ctx.finished=false;
+  const nextProgress={...x.ctx.progress,rounds:2};x.ctx.progress=nextProgress;
+  resolve(awardRace(loadGarage({getItem:()=>null}),x.ctx.selectedStage,x.ctx.answers,{roundId:'confirmed'}));await flush();
+  assert.equal(x.ctx.progress,nextProgress);assert.equal(x.ctx.garage.coins,0);assert.equal(x.counts.progress,0);
+});
+
+test('preserved permanent rejection restores confirmed progress and ends the pending reward message',async()=>{
+  const x=setup();x.ctx.renderCollection=()=>{};
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet:()=>Promise.reject(Object.assign(Error('INVALID_PLAY_COMMAND'),{rejected:true}))};
+  x.run('finish');await flush();
+  assert.equal(x.ctx.progress.rounds,0);assert.match(x.ctx.lastResults.coinText,/지급되지 않았/);assert.doesNotMatch(x.ctx.lastResults.coinText,/저장하는 중/);
+  assert.equal(x.counts.progress,0);assert.equal(x.$('next-stage').hidden,true);
+});
+
+test('retry restores the same confirmed round from the host without issuing another award',async()=>{
+  const x=setup();let listener,commands=0,removed=0;x.ctx.renderCollection=()=>{};
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet(){commands++;return Promise.reject(Error('NETWORK'));},subscribe(fn){listener=fn;fn();return()=>{removed++;};}};
+  x.run('finish');await flush();assert.match(x.ctx.lastResults.coinText,/저장하는 중/);
+  const confirmed=awardRace(loadGarage({getItem:()=>null}),x.ctx.selectedStage,x.ctx.answers,{roundId:x.ctx.roundId});
+  x.ctx.loadGarageSafe=()=>confirmed.state;x.storage.set(PROGRESS_KEY,JSON.stringify({...x.ctx.progress,rounds:4}));listener();
+  assert.equal(commands,1);assert.equal(removed,1);assert.equal(x.ctx.progress.rounds,4);
+  assert.equal(x.ctx.lastResults.coinText,'공통 코인 +50 · 보유 50');assert.equal(x.counts.progress,0);
+});
+
+test('a retry receipt cannot replace the following round and its watcher detaches',async()=>{
+  const x=setup();let listener,removed=0;
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet:()=>Promise.reject(Error('NETWORK')),subscribe(fn){listener=fn;fn();return()=>{removed++;};}};
+  x.run('finish');await flush();x.ctx.roundId='following-round';const current=x.ctx.progress;listener();
+  assert.equal(removed,1);assert.equal(x.ctx.progress,current);assert.equal(x.ctx.garage.coins,0);
+});
+
+for(const account of [false,true])test(`personalized replacement rewards and records the actual five questions in ${account?'account':'guest'} mode`,async()=>{
+  const x=setup({score:4}),initial=CAMPAIGN[0].items;
+  x.ctx.selectedStage={...CAMPAIGN[0],id:'personalized',personalized:true,review:true,items:initial};
+  x.ctx.questionBank=makeQuestions(x.ctx.selectedStage,()=>.3);
+  x.ctx.questionBank[1]={...CAMPAIGN[1].items[0]};
+  x.ctx.answers=x.ctx.questionBank.map((q,i)=>({id:q.id,answer:q.answer,correct:i!==0}));
+  const actual=x.ctx.questionBank.map(q=>q.id);let result,descriptor;
+  if(account){
+    x.ctx.renderCollection=()=>{};
+    x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet(method,args){
+      assert.equal(method,'awardRace');descriptor=args[0];
+      result=awardAccountRace(loadGarage({getItem:()=>null}),{},args,Date.now());
+      if(result.records)x.storage.set(PROGRESS_KEY,result.records[PROGRESS_KEY]);
+      return Promise.resolve(result);
+    }};
+  }
+  x.run('finish');await flush();
+  if(account){assert.deepEqual(Array.from(descriptor.questionIds),actual);assert.equal(result.reason,null);}
+  assert.equal(x.ctx.garage.coins,23);assert.equal(x.ctx.progress.rounds,1);
+  assert.deepEqual(Object.keys(x.ctx.progress.challenges).sort(),[...actual].sort());
+  assert.equal(Object.values(x.ctx.progress.challenges).reduce((n,p)=>n+p.seen,0),5);
+  assert.equal(x.ctx.garage.firstClears.personalized,undefined);
+  assert.equal(x.ctx.lastResults.coinText,'공통 코인 +23 · 보유 23');
+  assert.doesNotMatch(x.ctx.lastResults.plain.join(' '),/모두 받았/);
+  assert.equal(x.ctx.selectedStage.items,initial,'original recommendation remains unchanged');
+  assert.equal(x.counts.progress,account?0:1);
+});
+
+test('authored course descriptors retain the canonical list after question reordering',()=>{
+  const x=setup();let descriptor;
+  x.ctx.questionBank.reverse();
+  x.ctx.SynkPlayAccount={status:()=>({mode:'account'}),wallet(method,args){descriptor=args[0];return new Promise(()=>{});}};
+  x.run('finish');
+  assert.deepEqual(Array.from(descriptor.questionIds),CAMPAIGN[0].items.map(q=>q.id));
+  assert.notDeepEqual(Array.from(descriptor.questionIds),x.ctx.questionBank.map(q=>q.id));
+});
+
 function setup({score=5,demo=false,cruise=26}={}){
   const nodes=new Map(),storage=new Map(),counts={award:0,record:0,garage:0,progress:0,contacts:0,ensureAudio:0,cancel:0};
   function node(){
@@ -50,7 +134,7 @@ function setup({score=5,demo=false,cruise=26}={}){
   const selectedStage=CAMPAIGN[0],questionBank=makeQuestions(selectedStage,()=>.3);
   const answers=questionBank.map((q,i)=>({id:q.id,prompt:q.prompt,answer:q.answer,chosen:i<score?q.answer:q.options.find(o=>o!==q.answer),correct:i<score}));
   const context=vm.createContext({
-    $,document:{hidden:false,createElement:node},localStorage,console,Math,Date,JSON,
+    $,document:{hidden:false,createElement:node},localStorage,progressStorage:localStorage,SynkPlayAccount:{status:()=>({mode:'guest'})},console,Math,Date,JSON,
     coastDrive:createCoastDrive(),coastRadio,running:true,paused:false,finished:false,ready:true,
     tutorial:null,tutorialVoicePending:false,roundWasDemo:demo,auto:demo,inputs:{left:true,right:false},
     playerS:1376,playerOffset:0,velocity:42*cruise/BASE_CRUISE,cruise,BASE_CRUISE,ROAD_END:2250,
@@ -74,7 +158,7 @@ function setup({score=5,demo=false,cruise=26}={}){
     loadGarageSafe:()=>loadGarage(localStorage),
     storeGarage(state){counts.garage++;context.garage=state;},
     awardRace(...args){counts.award++;return awardRace(...args);},
-    recordRound(...args){counts.record++;return recordRound(...args);},
+    loadProgress,recordRound(...args){counts.record++;return recordRound(...args);},
     isUnlocked:s=>s.finale?finaleUnlocked(context.progress,s):campaignUnlocked(context.progress,s),
     ensureAudio:async()=>{counts.ensureAudio++;await coastRadio.unlock();},
     contactSound(){counts.contacts++;},contactSparks(){},showToast(){},speak(){},

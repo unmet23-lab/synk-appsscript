@@ -7,6 +7,7 @@ import {
 import {
   buildRecommendations, DEFAULT_PROFILE, PRESETS,
 } from '../experiences/path-travel/model.mjs';
+import { exportPlan } from '../experiences/path-travel/storage.mjs';
 
 const AT = '2026-10-06T00:00:00.000Z';
 const EXPIRED_AT = '2026-11-07T00:00:00.000Z';
@@ -204,6 +205,19 @@ test('총예산 같은 실행 조건은 선호 중요도로 완화하는 것처�
   const result=recommend(state);
   assert.ok(result.primary.totalCost<=130000);
   assert.equal(result.primary.fitDetails.find(item=>item.field==='budget').mode,'require');
+});
+
+test('선택한 시작 시간은 개인화 설명과 내려받는 여행 메모에 시 단위로 표시한다', () => {
+  for (const hour of [9, 11]) {
+    const state = declare(createPersonalization(), 'dayStart', hour);
+    const result = recommend(state);
+    assert.equal(result.status, 'ready');
+    assert.equal(entryOf(state, 'dayStart').labelValue, `${hour}시`);
+    assert.equal(detailOf(result, 'dayStart').wanted, `${hour}시`);
+    const memo = exportPlan(result.primary, result.profile);
+    assert.ok(memo.includes(`- 시작 시간: ${hour}시 / 반영 / 이번 여행`));
+    assert.ok(!memo.includes(`- 시작 시간: ${hour} /`));
+  }
 });
 
 test('추가 질문의 가상 답변 평가가 실제 선언과 원본 상태를 변경하지 않는다', () => {

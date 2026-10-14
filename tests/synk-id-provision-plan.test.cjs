@@ -23,3 +23,15 @@ test('Fortune native/browser role swaps are rejected independently of allowlist 
   const clients = [...legacy, ...['fortune-native', 'fortune-browser'].map(id => ({ client_id: 'existing-' + id, client_type: 'public', redirect_uris: CLIENTS.find(row => row.id === id).redirectUris }))];
   assert.throws(() => make({ clients, bindings: { 'fortune-native': 'existing-fortune-browser', 'fortune-browser': 'existing-fortune-native' } }), /반환 주소/);
 });
+
+test('travel-only plans target one new browser and never merge an unrelated unmapped client', () => {
+  const other = CLIENTS.find(row => row.id === 'care-browser');
+  const clients = [...legacy, { client_id: 'existing-unmapped-care', client_type: 'public', redirect_uris: other.redirectUris }];
+  const plan = make({ only: 'path-travel-browser', clients, bindings: { 'care-browser': 'existing-unmapped-care' } });
+  assert.deepEqual(plan.actions.map(row => row.registration), ['path-travel-browser']);
+  assert.deepEqual(plan.actions[0].body.redirect_uris, ['http://127.0.0.1:4303/']);
+  assert.equal(plan.mapping.mergedCount, 2);
+  assert.equal(plan.registrations.find(row => row.id === 'care-browser').status, 'mapping-needed');
+  for (const only of ['', null, [], 'path-travel', 'PATH-TRAVEL-browser', 'teacher-browser']) assert.throws(() => make({ only }), /--only/);
+  assert.deepEqual(make({ only: undefined }), make());
+});

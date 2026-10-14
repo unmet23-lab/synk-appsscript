@@ -37,6 +37,19 @@ test('received revision zero and selected local notebooks stay usable while save
   assert.equal(choice.canImportDevice, false);
 });
 
+test('temporary configuration failures expose a working reconnect action without claiming missing setup', () => {
+  const view = careAccountView({ account: { configured: false, status: 'error', error: { code: 'NETWORK', retryable: true, message: '연결이 돌아오면 다시 확인해 주세요.' } } });
+  assert.equal(view.signInDisabled, false); assert.equal(view.signInLabel, '계정 연결 다시 확인');
+  assert.equal(view.kind, 'error'); assert.doesNotMatch(view.title, /설정이 아직/);
+});
+
+test('temporary loss of account verification conceals retained notebook data and offers only connection recovery', () => {
+  const view = careAccountView({ connected: true, currentAccountId: 'owner-a', account: { status: 'error', signedIn: false, error: { code: 'NETWORK', retryable: true } }, sync: { accountId: 'owner-a', status: 'offline', revision: 3, pending: true } });
+  assert.equal(view.locked, true); assert.equal(view.concealNotebook, true); assert.equal(view.loading, false);
+  assert.equal(view.canReconnect, true); assert.equal(view.signInDisabled, false); assert.equal(view.canRetryNotebook, false); assert.equal(view.canImportDevice, false);
+  assert.match(view.detail, /저장하지 않은 입력/); assert.match(view.detail, /화면을 닫거나 새로고침/);
+});
+
 test('first notebook failure keeps inputs and device import locked but offers retry without a spinner', () => {
   for (const status of ['offline', 'error', 'storage-error']) {
     const view = careAccountView({ connected: true, sync: { status, revision: null, pending: false, error: { message: '수첩 응답을 확인하지 못했어요.' } } });

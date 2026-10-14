@@ -32,16 +32,34 @@ function 시작({ playlist, progress, send, log = () => {} }) {
   if (!playlist) return null;
   const file = path.join(path.dirname(playlist), 'now-playing.json');
   if (!fs.existsSync(file)) return null;
-  const manifest = 검증(JSON.parse(fs.readFileSync(file, 'utf8')));
+  let manifest = 검증(JSON.parse(fs.readFileSync(file, 'utf8')));
   const sha = crypto.createHash('sha256').update(fs.readFileSync(playlist)).digest('hex');
   if (sha !== manifest.playlistSha256) throw Error('소리 목록과 곡 시간표가 다릅니다');
+  const 파일판 = () => { const s = fs.statSync(file); return s.mtimeMs + ':' + s.size; };
+  let 판 = 파일판(), 다음확인 = 0;
   let last = '', busy = false;
   const tick = async () => {
     if (busy) return;
+    if (Date.now() >= 다음확인) {
+      다음확인 = Date.now() + 1000;
+      try {
+        const 새판 = 파일판();
+        if (새판 !== 판) {
+          판 = 새판;
+          const next = 검증(JSON.parse(fs.readFileSync(file, 'utf8')));
+          if (next.playlistSha256 !== sha || next.duration !== manifest.duration
+            || next.tracks.length !== manifest.tracks.length
+            || next.tracks.some((t, i) => t.start !== manifest.tracks[i].start)) {
+            throw Error('재생 중에는 곡 제목만 바꿀 수 있습니다');
+          }
+          manifest = next;
+        }
+      } catch (e) { log('곡 제목 갱신 보류: ' + e.message); }
+    }
     const seconds = 초읽기(progress.out_time);
     if (seconds === null) return;
     const track = 찾기(manifest, seconds);
-    const key = track.cycle + ':' + track.index;
+    const key = track.cycle + ':' + track.index + ':' + track.title;
     if (key === last) return;
     busy = true;
     try {

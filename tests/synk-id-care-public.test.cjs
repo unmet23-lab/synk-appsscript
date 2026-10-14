@@ -37,20 +37,21 @@ function fixture(options = {}) {
 test('read-only plan preserves all existing state and never mutates or invents a client ID', async () => {
   const f = fixture(), result = await provisionCarePublic(f.args());
   assert.equal(result.mode, 'dry-run'); assert.equal(result.registrationNeeded, true); assert.equal(result.actualClientId, null);
-  assert.equal(result.existingRegistrations, 19); assert.equal(result.localConfigsWritten, false);
+  assert.equal(result.existingRegistrations, Object.keys(f.original.mapping).length); assert.equal(result.localConfigsWritten, false);
   assert.equal(f.calls.create.length + f.calls.mapping.length + f.calls.saved.length + f.calls.artifacts.length, 0);
   assert.deepEqual(f.journal, f.original);
 });
-test('one public registration preserves 19 mappings and bindings, writes only public artifacts and remains idempotent', async () => {
+test('one public registration preserves all existing mappings and bindings, writes only public artifacts and remains idempotent', async () => {
   const f = fixture(), result = await provisionCarePublic(f.args({ apply: true }));
   assert.deepEqual(f.calls.create, [{ client_name: 'SYNK care-public-browser (production)', client_type: 'public', token_endpoint_auth_method: 'none', redirect_uris: ['https://synk.im/care/'] }]);
-  assert.equal(result.existingRegistrations, 20); assert.equal(result.mappingEntries, 20); assert.equal(result.actualClientId, 'actual-public-care');
+  const beforeCount = Object.keys(f.original.mapping).length;
+  assert.equal(result.existingRegistrations, beforeCount + 1); assert.equal(result.mappingEntries, beforeCount + 1); assert.equal(result.actualClientId, 'actual-public-care');
   assert.deepEqual(f.journal.bindings, f.original.bindings); assert.deepEqual(f.journal.attempted, f.original.attempted);
   for (const [id, product] of Object.entries(f.original.mapping)) assert.equal(f.mapping[id], product);
   assert.equal(f.mapping['actual-public-care'], 'platform'); assert.equal(f.journal.pendingMapping, null);
   assert.deepEqual(f.calls.artifacts[0].config.clients, { care: { clientId: 'actual-public-care', redirectUri: 'https://synk.im/care/' } });
-  assert.equal(f.calls.artifacts[0].portal.authorizationClients.length, 20);
-  assert.deepEqual(f.calls.artifacts[0].portal.authorizationClients.slice(0, 19), f.currentPortal.authorizationClients);
+  assert.equal(f.calls.artifacts[0].portal.authorizationClients.length, beforeCount + 1);
+  assert.deepEqual(f.calls.artifacts[0].portal.authorizationClients.slice(0, beforeCount), f.currentPortal.authorizationClients);
   assert.deepEqual(f.calls.artifacts[0].portal.clients, f.currentPortal.clients);
   await provisionCarePublic(f.args({ apply: true })); assert.equal(f.calls.create.length, 1); assert.equal(f.calls.mapping.length, 1);
   // The shared journal remains consumable by the existing generic read-only tool.
@@ -82,7 +83,7 @@ test('lost mapping response is verified rather than replayed and a crash resumes
 test('unconfirmed mapping failure retains the durable pending target and writes no artifacts', async () => {
   const f = fixture({ failBeforeMapping: true });
   await assert.rejects(provisionCarePublic(f.args({ apply: true })), /MAPPING_NOT_VERIFIED/);
-  assert.equal(Object.keys(f.journal.pendingMapping).length, 20); assert.equal(f.calls.artifacts.length, 0);
+  assert.equal(Object.keys(f.journal.pendingMapping).length, Object.keys(f.original.mapping).length + 1); assert.equal(f.calls.artifacts.length, 0);
 });
 test('foreign mapping digest drift blocks before mutation', async () => {
   const f = fixture(); f.setMapping({ ...f.mapping, unrelated: 'platform' });

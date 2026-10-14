@@ -37,6 +37,7 @@ test('브라우저 실행 실패는 성공으로 기억하지 않고 재시도�
   const logs = [], context = vm.createContext({ module: { exports: {} },
     require: name => name === 'node:fs' ? {
       existsSync: () => true,
+      statSync: () => ({ mtimeMs: 1, size: 100 }),
       readFileSync: file => file.endsWith('now-playing.json') ? JSON.stringify(manifest) : playlist,
     } : require(name),
     setInterval: callback => { tick = callback; return { unref() {} }; },
@@ -56,4 +57,29 @@ test('브라우저 실행 실패는 성공으로 기억하지 않고 재시도�
   progress.out_time = '00:00:10.125';
   await tick();
   assert.equal(attempts, 3);
+});
+
+test('현재 곡의 개명은 재시작 없이 표시하고 재생 경계 변경은 보류한다', async () => {
+  const playlist = 'file track.flac\n', sha = crypto.createHash('sha256').update(playlist).digest('hex');
+  let saved = { ...list, playlistSha256: sha }, version = 1, clock = 1000, tick;
+  const sent = [], logs = [], context = vm.createContext({ module: { exports: {} }, Date: { now: () => clock },
+    require: name => name === 'node:fs' ? {
+      existsSync: () => true, statSync: () => ({ mtimeMs: version, size: 100 }),
+      readFileSync: file => file.endsWith('now-playing.json') ? JSON.stringify(saved) : playlist,
+    } : require(name), setInterval: fn => { tick = fn; return { unref() {} }; },
+  });
+  vm.runInContext(fs.readFileSync(require.resolve('../bots/오버레이/현재곡.js'), 'utf8'), context);
+  context.module.exports.시작({ playlist: '/fixture/playlist.txt', progress: { out_time: '00:00:03.000' },
+    send: async event => { sent.push(event.제목); return {}; }, log: line => logs.push(line) });
+  await tick();
+  saved = { ...saved, tracks: [{ start: 0, title: '새 제목' }, saved.tracks[1]] };
+  version++; clock += 1100; await tick();
+  assert.deepEqual(sent, ['첫 곡', '새 제목']);
+  saved = { ...saved, tracks: [{ start: 0, title: '다른 제목' }, { start: 12, title: '둘째 곡' }] };
+  version++; clock += 1100; await tick();
+  assert.deepEqual(sent, ['첫 곡', '새 제목']);
+  assert.ok(logs.some(line => line.includes('재생 중에는 곡 제목만')));
+  saved = { ...saved, tracks: [{ start: 0, title: '최종 제목' }, list.tracks[1]] };
+  version++; clock += 1100; await tick();
+  assert.deepEqual(sent, ['첫 곡', '새 제목', '최종 제목']);
 });

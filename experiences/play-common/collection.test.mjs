@@ -71,7 +71,7 @@ test('the coast badge is visible only when owned and equipped and garage links f
 });
 
 test('every coin-paying mini-game ships byte-identical copies of the generated canonical rules',async()=>{
-  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
+  for(const game of ['korean-rhythm','korean-runner','blank-slice','entry-check','story-classroom','talk-rally','order-rush','word-magic','spaceship-coop','learning-hub'])assert.equal(await fs.readFile(new URL(`../${game}/collection.js`,import.meta.url),'utf8'),source);
 });
 
 test('the three reading games pay from the same wallet, by accuracy rather than round length',async()=>{
@@ -120,14 +120,48 @@ test('buy() spends coins with the garage rule, saves only a valid purchase, and 
   const blocked=browser({blocked:true});assert.equal((await blocked.api.buy('ball-lapis')).reason,'storage-unavailable');
 });
 
-test('an older saved wallet keeps every field through the shared adapter and only gains the free racket and ball',async()=>{
+test('an older saved wallet keeps every field through the shared adapter and only gains new free defaults',async()=>{
   const b=browser({pathname:'/try/talk-rally/'}),legacy={version:1,coins:33,totalEarned:58,owned:['vehicle-coast','paint-mint','wheels-silver','trail-lime','paint-pearl'],
     equipped:{vehicle:'coast',paint:'pearl',wheels:'silver',trail:'lime',badge:null},wish:'open',rewardedRounds:{'rhythm:x':{date:'2026-10-04',coins:25}},firstClears:{},corrections:{},dailyRaceCounts:{'2026-10-04':1},missions:{}};
   b.data.set(GARAGE_KEY,JSON.stringify(legacy));
   const loaded=await b.api.load();
   assert.equal(loaded.coins,33);assert.equal(loaded.equipped.paint,'pearl');assert.equal(JSON.stringify(loaded.rewardedRounds),JSON.stringify(legacy.rewardedRounds));
   assert.equal(loaded.equipped.racket,'coral');assert.equal(loaded.equipped.ball,'cream');
-  assert.equal(JSON.stringify(loaded.owned.filter(id=>!/^(racket|ball)-/.test(id)).sort()),JSON.stringify([...legacy.owned].sort()));
+  for(const id of legacy.owned)assert(loaded.owned.includes(id));
+  const items=await b.api.catalog();assert(loaded.owned.filter(id=>!legacy.owned.includes(id)).every(id=>items.find(i=>i.id===id)?.price===0));
+});
+
+test('beginner shops preserve existing hub cosmetics, titles, wishes and Talk Rally equipment through purchase and reload',async()=>{
+  const b=browser({pathname:'/word-magic/'}),state=emptyGarage();state.coins=140;state.totalEarned=200;
+  state.owned.push('order-rush-style-mint','order-rush-title-first','ball-lapis');
+  state.equipped.ball='lapis';state.gameEquipment['order-rush']={style:'mint',title:'first'};
+  state.gameStats['order-rush']={rounds:2,total:16,correct:15,perfectRounds:1,bestCombo:6};state.achievements['order-rush-first']=true;state.gameWishes['rhythm']='rhythm-style-aurora';
+  await b.api.save(state);const before=await b.api.load();
+  for(const [id,kind,value] of [['magic-scene-sunset','magic-scene','sunset'],['order-tray-butter','order-tray','butter'],['ship-badge-ring','ship-badge','ring']]){assert.equal((await b.api.buy(id)).ok,true);assert.equal((await b.api.equip(id)).ok,true);assert.equal((await b.api.load()).equipped[kind],value);}
+  const after=await b.api.load();assert.equal(after.coins,85);assert.equal(after.equipped.ball,'lapis');assert.equal(after.gameWishes.rhythm,'rhythm-style-aurora');
+  assert.equal(JSON.stringify(after.gameEquipment),JSON.stringify(before.gameEquipment));assert.equal(JSON.stringify(after.gameStats),JSON.stringify(before.gameStats));assert.equal(JSON.stringify(after.achievements),JSON.stringify(before.achievements));assert.equal(JSON.stringify(after.gameWishes),JSON.stringify(before.gameWishes));
+  const progress=await b.api.progress('order-rush');assert(progress.achievements.find(a=>a.key==='first').unlocked);assert.equal(progress.equipment.style,'mint');
+  assert.equal((await b.api.buy('ship-badge-ring')).reason,'owned');assert.equal((await b.api.load()).coins,85);
+  assert.equal((await b.api.equip('magic-scene-default')).ok,true);assert.equal((await b.api.load()).equipped['magic-scene'],'default');
+  assert.equal(b.links[0].href,'/korean-racing/?garage=1');
+});
+
+test('new games share the same reward cap and cannot mint coins through duplicate endings or previews',async()=>{
+  const b=browser();const chapter={game:'word-magic',roundId:'word-magic:chapter:size',total:6,correct:0,completed:true,now};
+  assert.equal((await b.api.award({...chapter,automatic:true})).coins,0);assert.equal((await b.api.award(chapter)).coins,15);
+  assert.equal((await b.api.award(chapter)).reason,'duplicate-round');
+  assert.equal((await b.api.award({...chapter,game:'spaceship-coop',roundId:'spaceship-coop:unique-room',total:18})).coins,15);
+  assert.equal((await b.api.load()).coins,30);
+  for(let i=0;i<8;i++)await b.api.award(round('order-rush',`shop-limit:${i}`));
+  assert.equal((await b.api.award({...chapter,roundId:'word-magic:chapter:doors'})).reason,'daily-limit');
+});
+
+test('failed storage writes never claim ownership, equipment or spent coins',async()=>{
+  const data=new Map([[GARAGE_KEY,JSON.stringify({...emptyGarage(),coins:80,totalEarned:80})]]);
+  const context=vm.createContext({localStorage:{getItem:k=>data.get(k)||null,setItem(){throw Error('quota');}},location:{pathname:'/spaceship-coop/'},addEventListener(){}});vm.runInContext(source,context);
+  const api=context.SynkPlayCollection;assert.equal((await api.buy('ship-sky-night')).reason,'storage-unavailable');
+  assert.equal((await api.load()).coins,80);assert(!(await api.load()).owned.includes('ship-sky-night'));
+  const blocked=browser({blocked:true});assert.equal((await blocked.api.equip('magic-scene-default')).reason,'storage-unavailable');
 });
 
 test('the daily limit says so, and the badge is named in words',async()=>{
@@ -135,7 +169,35 @@ test('the daily limit says so, and the badge is named in words',async()=>{
   for(let i=0;i<10;i++)await b.api.award(round('rhythm',`cap:${i}`,5));
   const limited=await b.api.award(round('blank-slice','cap:10',5));
   assert.equal(limited.reason,'daily-limit');assert.equal(limited.coins,0);
-  assert.equal(b.api.rewardText(limited),'오늘의 완주 코인 10회분을 모두 받았어요.');
+  assert.equal(b.api.rewardText(limited),'오늘의 공통 코인 보상 10회분을 모두 받았어요.');
   const owned=emptyGarage();owned.owned.push('badge-coast');owned.equipped.badge='coast';assert(await b.api.save(owned));
   await b.api.refreshBadges();assert.equal(b.badges[0].textContent,'코스트 챔피언');
+});
+
+test('beginner goals and optional practice survive generated-adapter reload without changing legacy goals',async()=>{
+ const b=browser(),initial=emptyGarage();initial.gameWishes['order-rush']='order-rush-style-mint';await b.api.save(initial);
+ assert.equal((await b.api.beginnerProgress('order-rush')).goal,null);
+ assert.equal((await b.api.setBeginnerGoal('order-rush','order-playset-picnic')).ok,true);
+ assert.equal((await b.api.beginnerProgress('order-rush')).remaining,15);
+ const actions=[['grow','bear'],['shrink','bear'],['open','chest']].map(([spell,objectId])=>({spell,objectId,heard:true,changed:true}));
+ const first=await b.api.awardPractice({game:'word-magic',completed:true,actions,now});assert(first.saved);assert.equal(first.coins,5);
+ assert.equal((await b.api.awardPractice({game:'word-magic',completed:true,actions,now})).reason,'duplicate-round');
+ assert.equal((await b.api.beginnerProgress('order-rush')).remaining,10);
+ assert.equal((await b.api.load()).gameWishes['order-rush'],'order-rush-style-mint');
+ assert.equal((await b.api.setBeginnerGoal('order-rush',null)).ok,true);
+ assert.equal((await b.api.beginnerProgress('order-rush')).goal,null);
+});
+
+test('failed writes cannot claim a goal, playset or practice reward',async()=>{
+ const initial={...emptyGarage(),coins:30,totalEarned:30},data=new Map([[GARAGE_KEY,JSON.stringify(initial)]]);
+ const context=vm.createContext({localStorage:{getItem:k=>data.get(k)||null,setItem(){throw Error('quota');}},location:{pathname:'/word-magic/'},addEventListener(){}});vm.runInContext(source,context);
+ const api=context.SynkPlayCollection;
+ assert.equal((await api.setBeginnerGoal('word-magic','magic-toys-picnic')).reason,'storage-unavailable');
+ assert.equal((await api.beginnerProgress('word-magic')).goal,null);
+ assert.equal((await api.buy('order-playset-picnic')).reason,'storage-unavailable');
+ const actions=[['grow','bear'],['shrink','bear'],['open','chest']].map(([spell,objectId])=>({spell,objectId,heard:true,changed:true}));
+ const reward=await api.awardPractice({game:'word-magic',completed:true,actions,now});assert.equal(reward.coins,0);assert.equal(reward.saved,false);
+ assert.equal((await api.load()).coins,30);assert.equal(data.get(GARAGE_KEY),JSON.stringify(initial));
+ const blocked=browser({blocked:true});assert.equal((await blocked.api.beginnerProgress('word-magic')).available,false);
+ assert.equal((await blocked.api.setBeginnerGoal('word-magic','magic-toys-picnic')).reason,'storage-unavailable');
 });

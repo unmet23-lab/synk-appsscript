@@ -226,3 +226,8 @@
   .station{gap:10px;padding:14px 22px 18px}
   .serve{min-height:58px}
 }
+/* First-day Korean is a separate entry; the original cafe modes keep their rules. */
+.beginner-entry{grid-column:1/-1;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.beginner-entry h2{font-size:26px;margin:8px 0 10px}.beginner-entry p{max-width:560px;line-height:1.7;font-size:16px;margin:0;word-break:keep-all}
+.beginner-entry .felt-cta{flex:0 0 320px;min-height:64px;text-decoration:none;text-align:center;display:flex;align-items:center;justify-content:center;gap:16px}
+@media(max-width:700px){.beginner-entry{padding:24px;display:block}.beginner-entry h2{font-size:23px}.beginner-entry .felt-cta{margin-top:16px;width:100%;min-height:60px;font-size:17px}}

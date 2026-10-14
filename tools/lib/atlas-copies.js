@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { spawnSync } = require('node:child_process');
-const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally']);
+const GAMES = Object.freeze(['korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'learning-hub', 'entry-check', 'story-classroom', 'blank-slice', 'talk-rally', 'word-magic']);
 const TOOL_OUTPUTS = Object.freeze({ computer: 'brief/computer', meeting: 'brief/meeting', manual: 'builds/manual' });
 const WEBSITE_GAMES = Object.freeze({ racing: 'korean-racing', runner: 'korean-runner', rhythm: 'korean-rhythm', 'order-rush': 'order-rush', 'story-classroom': 'story-classroom', 'entry-check': 'entry-check', 'blank-slice': 'blank-slice', 'talk-rally': 'talk-rally' });
 const text = bytes => bytes.toString('utf8').replace(/\r\n/g, '\n');

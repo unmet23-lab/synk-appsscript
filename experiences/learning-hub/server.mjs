@@ -8,8 +8,9 @@ import Personalization from '../../atlas/personalization.js';
 import { createMeetingAdapter } from '../atlas-lab/meeting.mjs';
 import { createJourneyHost } from '../atlas-lab/journey-host.mjs';
 import { datingPublicTarget, datingRequestPath, resolveDatingPublicTarget } from '../atlas-lab/dating-public.mjs';
+import { createRoomHandler } from '../spaceship-coop/server.mjs';
 export const root = fileURLToPath(new URL('../', import.meta.url));
-const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'synk-account', 'atlas-lab', 'blank-slice','teacher-world','synk-town','hangul-stage']);
+const allowed = new Set(['learning-hub', 'korean-racing', 'korean-runner', 'korean-rhythm', 'order-rush', 'entry-check', 'story-classroom', 'talk-rally', 'synk-account', 'atlas-lab', 'blank-slice','teacher-world','synk-town','hangul-stage','word-magic','spaceship-coop']);
 // The Atlas lab's consultation demo reads the published computer recommendation tool, read-only.
 const consult = new Map([['/consult/computer/rules.js', '../docs/마케팅/맞춤도구/computer/rules.js'], ['/consult/computer/content.js', '../docs/마케팅/맞춤도구/computer/content.js']]);
 consult.set('/consult/core/domain.js', '../atlas/domain.js');
@@ -21,10 +22,12 @@ consult.set('/synk-account/src/core.mjs', 'synk-account/src/core.mjs');
 consult.set('/synk-town/engine/loom-motion.js','../tools/lib/loom-motion.js');
 consult.set('/synk-town/engine/loom-life.js','../tools/lib/loom-life.js');
 const classroomPublic={
-  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css']),
+  'teacher-world':new Set(['index.html','style.css','app.mjs','personalization-ui.mjs','personalization.css','workspace-overview.mjs','workspace-overview.css','sharing-fence.mjs']),
   'synk-town':new Set(['linked.html','app.mjs','style.css','linked-client.mjs','understanding.mjs','understanding-ui.mjs'])
 };
 const accountPublic = new Set(['index.html', 'client.html', 'teacher.html', 'teacher.css', 'preview.html', 'platform.html', 'platform.css', 'config.json', 'style.css',
+  'wardrobe.css', 'dist/wardrobe-three.js',
+  ...['mongle-basic.webp', 'marin-basic.webp', 'kkamong-base.webp', 'kkamong-scarf.webp', 'kkamong-headphones.webp', 'kkamong-apron.webp', 'kkamong-summer-deel.webp', 'kkamong-winter-deel.webp', 'felt-paper.webp', 'felt-night.webp', 'felt-lapis.webp', 'cushion-cream.webp', 'cushion-blush.webp'].map(name => `assets/wardrobe/${name}`),
   'benefits.css', 'assets/member/care-note.webp', 'assets/member/fortune-star.avif', 'assets/member/teacher-cover.png', 'assets/member/studio-camera.webp', 'assets/member/wide-lapis.webp', 'assets/member/wide-butter.webp',
   'platform.webmanifest', 'world.webmanifest', 'world-classroom.css', 'assets/app-platform.png', 'assets/app-world.png',
   'dist/app.js', 'dist/client.js', 'dist/teacher.js', 'dist/preview.js', 'dist/platform.js',
@@ -49,6 +52,8 @@ export function targetFor(url, { datingOnly = false } = {}) {
     || segments.some(s => s.startsWith('.')) || !types[path.extname(target)]
     || segments.includes('qa') || segments.includes('site-package')) return null;
   if (segments[0] === 'synk-account' && !accountPublic.has(segments.slice(1).join('/'))) return null;
+  if (segments[0] === 'spaceship-coop' && !(new Set(['index.html','style.css','app.mjs','audio.mjs','collection.js','shop.mjs','shop.css','starbook.mjs']).has(segments.slice(1).join('/')) || segments[1] === 'assets')) return null;
+  if (['word-magic','spaceship-coop'].includes(segments[0]) && /(?:\.test\.(?:mjs|js)|\.source\.json|voice-request\.json)$/.test(target)) return null;
   if (segments[0] === 'atlas-lab' && /^(?:dating-(?:server|service|store|auth|runtime|lifecycle|adult|transport|public|admission|shutdown|restore)\.mjs|.*config.*\.json)$/.test(segments.slice(1).join('/'))) return null;
   const publicFiles=classroomPublic[segments[0]],name=segments.slice(1).join('/');
   if(publicFiles&&!publicFiles.has(name)&&!(name.startsWith('assets/')&&/\.(?:png|webp|svg|woff2|ttf|jpg)$/.test(name)))return null;
@@ -56,6 +61,7 @@ export function targetFor(url, { datingOnly = false } = {}) {
 }
 export function createServer({ datingService, datingConfig, datingOnly = false, requestGuard } = {}) {
   const journey = datingOnly ? null : createJourneyHost({ adapter: createMeetingAdapter({ Domain, Ask, Personalization }) });
+  const spaceship = datingOnly ? null : createRoomHandler({ prefix: '/api/spaceship', serveStatic: false });
   const server = http.createServer(async (req, res) => {
     try {
       if (requestGuard && (await requestGuard(req, res) === false || res.writableEnded)) {
@@ -71,6 +77,7 @@ export function createServer({ datingService, datingConfig, datingOnly = false, 
       }
       if (datingService && (!datingOnly || pathname === '/api/atlas-dating' || pathname.startsWith('/api/atlas-dating/')) && await datingService.handle(req, res)) return;
       if (journey && await journey.handle(req, res)) return;
+      if (spaceship && await spaceship(req, res)) return;
       if (datingOnly && pathname.startsWith('/api/')) { res.writeHead(404).end(); return; }
       if (!['GET', 'HEAD'].includes(req.method)) { res.writeHead(405).end(); return; }
       if (pathname === '/') { res.writeHead(302, { Location: datingOnly ? '/atlas-lab/dating.html' : '/synk-account/platform.html', 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' }).end(); return; }
@@ -97,7 +104,7 @@ export function createServer({ datingService, datingConfig, datingOnly = false, 
       res.end(req.method === 'HEAD' ? undefined : data);
     } catch { res.writeHead(404).end(); }
   });
-  server.on('close', () => { journey?.close(); datingService?.close(); });
+  server.on('close', () => { journey?.close(); spaceship?.close(); datingService?.close(); });
   return server;
 }
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

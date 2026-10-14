@@ -43,6 +43,19 @@ export function readingKey(result) {
 export function entryKey(entry) {
   return entry.mode === 'korean' ? `korean:${entry.date}:${entry.birth.birthDate}:${entry.birth.birthTime ?? '?'}` : `western:${entry.date}:${entry.signId}`;
 }
+export function recentReflections(state, today = seoulDateKey()) {
+  validateDateKey(today);
+  // Entries belong to their reading date, not the later time they were saved or
+  // edited. Date-key arithmetic must also stay independent of the host timezone.
+  const entries = validateState(state, today).entries;
+  const midnight = Date.parse(`${today}T00:00:00Z`);
+  const days = Array.from({ length: 7 }, (_, offset) => {
+    const date = new Date(midnight - offset * 86_400_000).toISOString().slice(0, 10);
+    return { date, entries: entries.filter(entry => entry.date === date && (entry.completed || entry.note.trim()))
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id)) };
+  });
+  return { startDate: days[6].date, endDate: today, days };
+}
 export function saveReading(state, result, { note = '', completed = false, now = new Date().toISOString(), id = crypto.randomUUID() } = {}) {
   const key = readingKey(result), previous = state.entries.find(item => entryKey(item) === key);
   if (!previous && state.entries.length >= 90) throw new Error('보관함에는 90개까지 담을 수 있어요. 내보낸 뒤 오래된 기록을 정리해 주세요.');

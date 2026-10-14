@@ -28,12 +28,12 @@ function memoryStorage(initial = []) {
     removeItem(key) { if (this.failRemove) throw new Error('Blocked storage removal'); removals.push(key); data.delete(key); },
   };
 }
-function fixture({ storage = memoryStorage(), transport, remoteText = 'server', onSaved = () => {}, onRemoved = () => {} } = {}) {
+function fixture({ storage = memoryStorage(), transport, remoteText = 'server', onSaved = () => {}, onRemoved = () => {}, preferRemoteOnOpen = false } = {}) {
   const statuses = [], states = [], calls = [];
   let revision = 0, remote = state(remoteText);
   const reply = () => ({ ok: true, scope: 'synk-personal', resource: 'family-album', accountId: ACCOUNT, revision, state: remote });
   const sync = createDocumentSync({
-    storage, onSaved, onRemoved, cachePrefix: PREFIX, scope: 'synk-personal', resource: 'family-album',
+    storage, onSaved, onRemoved, preferRemoteOnOpen, cachePrefix: PREFIX, scope: 'synk-personal', resource: 'family-album',
     operations: { load: 'personalLoad', save: 'personalSave', delete: 'personalDelete' },
     validateState, emptyState: () => state(''),
     onState: value => states.push(structuredClone(value)), onStatus: value => statuses.push(structuredClone(value)),
@@ -349,4 +349,146 @@ test('product callbacks receive successful save/delete ACKs, never reads, reject
   f.sync.change(state('ack data'));await f.sync.flush();assert.deepEqual(saved,[state('ack data')]);await f.sync.remove();assert.equal(removed.length,1);
   const started=deferred(),hold=deferred(),g=fixture({onSaved:value=>saved.push(value),transport:async(action,body,reply)=>{if(action==='personalSave'){started.resolve();await hold.promise;return {...reply(),revision:1,state:body.state};}return reply();}});
   await g.sync.open(ACCOUNT);g.sync.change(state('late secret'));const result=g.sync.flush();await started.promise;g.sync.close();hold.resolve();assert.equal(await result,false);assert.deepEqual(saved,[state('ack data')]);
+});
+
+test('remote-first open and reopen load verified server state without locking or sending old recoveries', async t => {
+  const draftId = '11111111-1111-4111-8111-111111111111';
+  const oldDraft = JSON.stringify({ ...JSON.parse(cache(ACCOUNT, 'older detached draft')), draftId, createdAt: '2026-10-08T00:00:00.000Z' });
+  const storage = memoryStorage([[keyFor(ACCOUNT), cache(ACCOUNT, 'legacy recovery')], [keyFor(ACCOUNT) + ':draft:' + draftId, oldDraft],
+    [keyFor('other-owner'), cache('other-owner', 'private other recovery')]]);
+  const before = new Map(storage.data), server = sharedServer();
+  const f = fixture({ storage, transport: server.transport, preferRemoteOnOpen: true }); t.after(() => f.sync.close());
+  for (let i = 0; i < 2; i++) {
+    assert.equal(await f.sync.open(ACCOUNT), true);
+    assert.equal(f.status().status, 'synced'); assert.equal(f.status().pending, false);
+    assert.equal(f.states.at(-1).text, 'server'); assert.equal(f.status().localDrafts.length, 2);
+    assert.equal(await f.sync.refresh(), true); assert.equal(await f.sync.flush(), true);
+    assert.equal(server.saves, 0); assert.deepEqual(storage.data, before);
+    assert.equal(f.sync.exportLocalRecords().entries.length, 2);
+    f.sync.close();
+  }
+  assert(!f.states.some(value => /recovery|draft/.test(value.text)));
+  await f.sync.open(ACCOUNT);
+  assert.equal(f.sync.change(state('new edit on verified state')), true, 'Recoveries must not lock editing');
+  assert.equal(await f.sync.flush(), true); assert.equal(server.saves, 1);
+  assert.deepEqual(storage.data, before, 'Saving a new edit cannot acknowledge detached recoveries');
+});
+
+test('remote-first recovery remains optional after storage events and refresh', async t => {
+  const listeners = new Set(), oldAdd = globalThis.addEventListener, oldRemove = globalThis.removeEventListener;
+  globalThis.addEventListener = (type, fn) => { if (type === 'storage') listeners.add(fn); };
+  globalThis.removeEventListener = (type, fn) => { if (type === 'storage') listeners.delete(fn); };
+  const storage = memoryStorage(), server = sharedServer();
+  const f = fixture({ storage, transport: server.transport, preferRemoteOnOpen: true });
+  t.after(() => { f.sync.close(); globalThis.addEventListener = oldAdd; globalThis.removeEventListener = oldRemove; });
+  await f.sync.open(ACCOUNT);
+  const raw = cache(ACCOUNT, 'other tab offline recovery'); storage.setItem(keyFor(ACCOUNT), raw);
+  for (const listener of listeners) listener({ key: keyFor(ACCOUNT), storageArea: {} });
+  assert.equal(f.status().status, 'synced'); assert.equal(f.status().localDrafts.length, 1);
+  assert.equal(await f.sync.refresh(), true); assert.equal(f.status().status, 'synced');
+  assert.equal(server.saves, 0); assert.equal(f.sync.change(state('still editable')), true);
+  assert.equal(await f.sync.flush(), true); assert.equal(storage.getItem(keyFor(ACCOUNT)), raw);
+  assert.equal(f.status().status, 'synced'); assert.equal(f.status().localDrafts.length, 1);
+});
+
+test('remote selection retains the current recovery through later saves and remote-first reopen', async t => {
+  const storage = memoryStorage([[keyFor(ACCOUNT), cache(ACCOUNT, 'old detached recovery')]]), server = sharedServer();
+  const f = fixture({ storage, transport: server.transport, preferRemoteOnOpen: true }); t.after(() => f.sync.close());
+  await f.sync.open(ACCOUNT); f.sync.change(state('unsaved work to preserve'));
+  const retained = new Map(storage.data);
+  assert.equal(await f.sync.resolveRemote(), true); assert.equal(f.states.at(-1).text, 'server');
+  assert.deepEqual(storage.data, retained); assert.equal(f.status().localDrafts.length, 2); assert.equal(server.saves, 0);
+  f.sync.change(state('later intentional save')); assert.equal(await f.sync.flush(), true);
+  assert.equal(server.state.text, 'later intentional save'); assert.deepEqual(storage.data, retained);
+  f.sync.close(); assert.equal(await f.sync.open(ACCOUNT), true);
+  assert.equal(f.states.at(-1).text, 'later intentional save'); assert.equal(f.status().status, 'synced');
+  assert.equal(f.status().localDrafts.length, 2); assert.deepEqual(storage.data, retained); assert.equal(server.saves, 1);
+});
+
+test('failed persistence prevents remote selection from discarding a memory-only edit', async t => {
+  const f = fixture({ preferRemoteOnOpen: true }); t.after(() => f.sync.close());
+  await f.sync.open(ACCOUNT); f.sync.change(state('previous safe recovery'));
+  const retained = new Map(f.storage.data);
+  f.storage.failWrite = true; f.sync.change(state('newest memory-only edit'));
+  const statesBefore = f.states.length, revisionBefore = f.status().revision, callsBefore = f.calls.length;
+  assert.equal(await f.sync.resolveRemote(), false);
+  assert.equal(f.calls.length, callsBefore, 'An unprotected edit blocks the fetch before any request');
+  assert.equal(f.states.length, statesBefore); assert.equal(f.status().status, 'storage-error');
+  assert.equal(f.status().error.code, 'LOCAL_STORAGE_UNAVAILABLE'); assert.equal(f.status().pending, true);
+  assert.equal(f.status().pendingStored, false); assert.equal(f.status().revision, revisionBefore);
+  assert.deepEqual(f.storage.data, retained); assert.equal(f.calls.filter(call => call.action === 'personalSave').length, 0);
+  f.storage.failWrite = false;
+  assert.equal(await f.sync.resolveRemote(), true); assert.equal(f.states.at(-1).text, 'server');
+  assert(pendingEntries(f.storage).some(([, raw]) => JSON.parse(raw).state.text === 'newest memory-only edit'));
+  assert.equal(f.status().pending, false); assert.equal(f.status().status, 'synced');
+});
+
+test('remote-first local recovery selection still performs a fresh CAS check and requires conflict review', async t => {
+  const storage = memoryStorage([[keyFor(ACCOUNT), cache(ACCOUNT, 'stale optional recovery')]]), server = sharedServer();
+  const f = fixture({ storage, transport: server.transport, preferRemoteOnOpen: true }); t.after(() => f.sync.close());
+  await f.sync.open(ACCOUNT);
+  await server.transport('personalSave', { expected_revision: 0, state: state('other device latest') });
+  const callsBefore = f.calls.length;
+  assert.equal(await f.sync.selectLocalDraft('legacy'), true);
+  assert.deepEqual(f.calls.slice(callsBefore).map(call => call.action), ['personalLoad']);
+  assert.equal(f.status().status, 'conflict'); assert.equal(f.status().error.code, 'REVISION_CONFLICT');
+  assert.equal(f.states.at(-1).text, 'stale optional recovery'); assert.equal(await f.sync.flush(), false);
+  assert.equal(server.state.text, 'other device latest'); assert.equal(server.saves, 1);
+});
+
+test('remote-first mode still blocks a current-session CAS conflict until an explicit choice', async t => {
+  const server = sharedServer(), f = fixture({ transport: server.transport, preferRemoteOnOpen: true });
+  t.after(() => f.sync.close()); await f.sync.open(ACCOUNT);
+  await server.transport('personalSave', { expected_revision: 0, state: state('other device saved first') });
+  f.sync.change(state('this device unsaved work'));
+  assert.equal(await f.sync.flush(), false); assert.equal(f.status().status, 'conflict');
+  assert.equal(f.status().error.code, 'REVISION_CONFLICT'); assert.equal(f.status().pending, true);
+  const retained = new Map(f.storage.data), savesAfterConflict = server.saves;
+  assert.equal(await f.sync.refresh(), false); assert.equal(await f.sync.flush(), false);
+  assert.equal(server.saves, savesAfterConflict); assert.equal(server.state.text, 'other device saved first');
+  assert.equal(await f.sync.resolveRemote(), true); assert.equal(f.states.at(-1).text, 'other device saved first');
+  assert.deepEqual(f.storage.data, retained); assert.equal(f.status().localDrafts.length, 1);
+  assert.equal(server.saves, savesAfterConflict);
+});
+
+test('remote selection cannot replace edits made during the fetch or use failed or foreign responses', async t => {
+  const began = deferred(), hold = deferred(); let mode = 'normal';
+  const f = fixture({ preferRemoteOnOpen: true, transport: async (_action, _body, reply) => {
+    if (mode === 'delayed') { began.resolve(); await hold.promise; }
+    if (mode === 'offline') throw Object.assign(new Error('offline'), { code: 'NETWORK_FAILED' });
+    if (mode === 'foreign') return { ...reply(), accountId: 'foreign-owner', state: state('private foreign response') };
+    return reply();
+  } }); t.after(() => { hold.resolve(); f.sync.close(); });
+  await f.sync.open(ACCOUNT); f.sync.change(state('first unsaved edit'));
+  mode = 'delayed'; const resolving = f.sync.resolveRemote(); await began.promise;
+  f.sync.change(state('edit made while fetching')); const retained = new Map(f.storage.data);
+  hold.resolve(); assert.equal(await resolving, false);
+  assert.equal(f.status().status, 'conflict'); assert.equal(f.status().error.code, 'LOCAL_CHANGED_DURING_REFRESH');
+  assert.deepEqual(f.storage.data, retained); assert.equal(f.status().pending, true);
+  for (mode of ['offline', 'foreign']) {
+    const before = f.states.length;
+    assert.equal(await f.sync.resolveRemote(), false); assert.equal(f.states.length, before);
+    assert.equal(f.status().pending, true); assert.deepEqual(f.storage.data, retained);
+  }
+  assert(!f.states.some(value => value.text === 'private foreign response'));
+  assert.equal(f.calls.filter(call => call.action === 'personalSave').length, 0);
+});
+
+test('account switching during remote selection never exposes or removes the previous account recovery', async t => {
+  const began = deferred(), hold = deferred(); let account = ACCOUNT, loads = 0;
+  const foreignRaw = cache('next-owner', 'next-owner optional recovery');
+  const storage = memoryStorage([[keyFor('next-owner'), foreignRaw]]);
+  const f = fixture({ storage, preferRemoteOnOpen: true, transport: async (_action, _body, reply) => {
+    const response = { ...reply(), accountId: account, state: state(account + ' server') };
+    if (++loads === 2) { began.resolve(); await hold.promise; }
+    return response;
+  } }); t.after(() => { hold.resolve(); f.sync.close(); });
+  await f.sync.open(ACCOUNT); f.sync.change(state('previous owner private edit'));
+  const retained = new Map(storage.data), resolving = f.sync.resolveRemote(); await began.promise;
+  account = 'next-owner'; assert.equal(await f.sync.open(account), true); const statesAfterSwitch = f.states.length;
+  hold.resolve(); assert.equal(await resolving, false);
+  assert.equal(f.states.length, statesAfterSwitch); assert.equal(f.states.at(-1).text, 'next-owner server');
+  assert.equal(f.status().accountId, 'next-owner'); assert.equal(f.status().status, 'synced');
+  assert.deepEqual(storage.data, retained); assert.deepEqual(f.sync.exportLocalRecords().entries, [{ key: keyFor('next-owner'), raw: foreignRaw }]);
+  assert.equal(f.status().localDrafts.length, 1); assert.equal(f.calls.filter(call => call.action === 'personalSave').length, 0);
 });

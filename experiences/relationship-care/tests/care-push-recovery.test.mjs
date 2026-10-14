@@ -48,11 +48,57 @@ function fixture() {
     return { ok: true, publicKey, enabled: state.serverEnabled && state.owner === state.serverOwner, hour: state.hour, minute: state.minute, timeZone: 'Asia/Seoul' };
   };
   const controller = createCarePush({ request, env, scopeUrl, onState: snapshot => states.push(snapshot) });
-  return { controller, state, env, calls, states };
+  return { controller, state, env, calls, states, registration };
 }
 const time = snapshot => [snapshot.hour, snapshot.minute];
 const inputTime = snapshot => [snapshot.inputHour, snapshot.inputMinute];
 const registrations = f => f.calls.filter(row => row.action === 'subscribe');
+
+test('stalled subscription lookup releases preparation for retry and ignores its late result', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const f = fixture(), lookup = deferred();
+  f.registration.pushManager.getSubscription = () => lookup.promise;
+  const preparing = f.controller.setAccount('A'); await flush();
+  t.mock.timers.tick(11999); await flush();
+  assert.equal(f.controller.snapshot().phase, 'preparing'); assert.equal(f.controller.snapshot().busy, true);
+  t.mock.timers.tick(1); await preparing;
+  assert.equal(f.controller.snapshot().phase, 'unavailable'); assert.equal(f.controller.snapshot().busy, false);
+  assert.equal(f.controller.snapshot().scheduleKnown, false); assert.deepEqual(f.calls, []);
+
+  f.registration.pushManager.getSubscription = async () => null;
+  await f.controller.prepare();
+  const recovered = f.controller.snapshot();
+  assert.equal(recovered.phase, 'ready'); assert.equal(recovered.enabled, false);
+  let lateCleanup = 0;
+  lookup.resolve({ endpoint: 'https://fcm.googleapis.com/fcm/send/stale-read', unsubscribe: async () => { lateCleanup++; return true; } });
+  await flush();
+  assert.deepEqual(f.controller.snapshot(), recovered);
+  assert.deepEqual(f.calls.map(call => call.action), ['status']);
+  assert.equal(lateCleanup, 0); assert.equal(f.state.subscribeCount, 0);
+});
+
+test('stalled displayed-notification lookup preserves unsubscribe success and releases the next account', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const f = fixture(); await f.controller.setAccount('A'); await f.controller.enable();
+  const lookup = deferred(); let lookups = 0, lateClosed = 0;
+  f.registration.getNotifications = () => ++lookups === 1 ? lookup.promise : Promise.resolve([]);
+  let logoutResult;
+  const loggingOut = f.controller.logout({ localOnly: true }).then(result => { logoutResult = result; });
+  await flush();
+  assert.equal(f.state.unsubscribed, 1); assert.equal(f.state.browserSub, null);
+  f.state.owner = 'B';
+  const switching = f.controller.setAccount('B');
+  t.mock.timers.tick(11999); await flush(); assert.equal(logoutResult, undefined);
+  t.mock.timers.tick(1); await loggingOut; await switching;
+  assert.deepEqual(logoutResult, { ok: true, serverRemoved: false, deviceRemoved: true });
+  assert.equal(f.controller.snapshot().phase, 'ready'); assert.equal(f.controller.snapshot().busy, false);
+  assert.equal(f.controller.snapshot().signedIn, true); assert.equal(f.state.unsubscribed, 1);
+  const recovered = f.controller.snapshot();
+  lookup.resolve([{ close() { lateClosed++; } }]); await flush();
+  assert.equal(lateClosed, 0); assert.deepEqual(f.controller.snapshot(), recovered);
+  assert.deepEqual(registrations(f).map(call => call.owner), ['A']);
+  assert.equal(f.calls.some(call => call.action === 'unsubscribe'), false, 'local logout needs no live server credentials');
+});
 
 test('manual cancel restores usable UI immediately while serializing the unresolved native permission', async () => {
   const f = fixture(); await f.controller.setAccount('A'); f.state.permission = deferred();
