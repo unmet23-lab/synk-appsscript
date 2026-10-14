@@ -88,7 +88,7 @@ copyTree(home,'',(source,relative)=>!relative.endsWith('.html'));
 const indexSource=path.join(root,'experiences/brand-opening/home.html'),indexBytes=fs.readFileSync(indexSource);sourceHashes.set(indexSource,sha(indexBytes));
 const html=rewrite(renderWorldDocument(indexBytes.toString('utf8'),config));
 for(const name of ['index.html','mobile.html','desktop.html'])write(name,Buffer.from(html),indexSource);
-for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
+for(const name of ['world-bootstrap.js','app-shell.mjs','app-shell.css','world-client.mjs','world-town-client.mjs','world-account.bundle.mjs','life-content.mjs','life-progress.mjs','world-learning-ui.mjs','world-learning-profile.mjs','world-learning-profile-core.mjs','tutor-selection-sync.mjs','life-ui.mjs','life-story.mjs','life-ui.css','cafe-activity.mjs','cafe-ui.mjs'])copyFile(path.join(root,'experiences/synk-world-app',name),name);
 copyFile(path.join(root,'experiences/synk-account/src/enrollment.mjs'),'enrollment.mjs');
 // 바람길·말의 리듬이 ../social-conversion.mjs(SNS로 들어온 방문의 익명 체험 기록, synk.im에서만 동작)를 정적으로 부른다.
 copyFile(path.join(root,'experiences/social-conversion.mjs'),'social-conversion.mjs');

@@ -22,6 +22,7 @@
 #world-panel[class*="life-"] #panel-content>.life-tutor{margin:0 0 18px}
 #world-panel[class*="life-"] .close-button{width:44px;height:44px}
 #panel-content[data-reduced=true] *{transition:none!important;animation:none!important}
+@property --life-mk{syntax:'<color>';inherits:false;initial-value:rgba(249,104,89,.5)}
 /* 흰 알약·선 알약의 화살표는 글자 대신 선 아이콘 */
 #world-panel[class*="life-"] :is(.felt-button,.plain-button)>span[aria-hidden],.study-form .felt-button>span[aria-hidden]{display:inline-block;flex-shrink:0;width:17px;height:17px;font-size:0;background:currentColor;-webkit-mask:var(--w-arrow) center/contain no-repeat;mask:var(--w-arrow) center/contain no-repeat}
 .life-heading{outline:none}
@@ -224,7 +225,7 @@ button.life-sign:focus-visible{outline:2px solid #FAFAF9;outline-offset:2px;bord
 button.life-sign:is([data-kind=tag],[data-kind=board]):hover{text-decoration:underline;text-decoration-thickness:1.5px;text-underline-offset:3px}
 .life-sign[data-kind=led]{font-size:max(13px,3.2cqw);border-radius:4px;background:rgba(18,14,10,.88);color:#FFB547;font-weight:650;letter-spacing:.02em;text-shadow:0 0 6px rgba(255,170,60,.7);box-shadow:inset 0 0 0 1px rgba(255,255,255,.07),0 4px 10px rgba(0,0,0,.25)}
 /* 이 레슨에서 배우는 한국어(‘…’)는 코랄 형광펜 */
-mark.life-say{background:linear-gradient(transparent 60%,rgba(249,104,89,.5) 60%);color:inherit;font-weight:650;padding:0 .06em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.life-say{--life-mk:rgba(249,104,89,.5);background:linear-gradient(transparent 60%,var(--life-mk) 60%);color:inherit;font-weight:650;padding:0 .06em;border-radius:2px;-webkit-box-decoration-break:clone;box-decoration-break:clone;transition:--life-mk .3s ease}
 .life-dialogue>small.w-name{display:inline-flex;margin-bottom:10px;font-weight:650;line-height:1}
 /* 사진 속 자리(왼쪽부터 몽글·까몽·마린)를 말풍선 꼬리가 가리킨다 */
 .life-story-stage:has(.life-story-photo) .life-dialogue[data-speaker=mongle]::before{left:21%}
@@ -251,6 +252,31 @@ mark.life-say{background:linear-gradient(transparent 60%,rgba(249,104,89,.5) 60%
 .life-dialogue[data-speaker=narrator]::before{display:none}
 .life-dialogue[data-speaker=narrator]>small{color:var(--w-ink-3)}
 .life-dialogue[data-speaker=narrator]>p{font-size:20px;font-weight:var(--wt-body)}
+/* 이야기 디테일(10-15 유호님 「시안 1~8번 모두 앱에」, life-story.mjs). 움직임은 투명도뿐이고 판의 움직임 줄이기(#panel-content[data-reduced=true])면 모두 멈춘다. */
+/* ⑥ 해설은 책 글씨(본명조), 친구 대사는 말 글씨(SUIT). 줄 끝 문장부호는 글 상자 밖으로 살짝(사파리). */
+.life-dialogue>p{hanging-punctuation:first allow-end last}
+.life-dialogue[data-speaker=narrator]>p{font-family:'World Story Serif',var(--w-sans);letter-spacing:-.01em;line-height:1.66}
+/* ② 글자 한 자씩: 자리는 그대로, 흐릿했다가 또렷해지기만 한다. 말풍선을 누르면 바로 다 보인다. */
+.life-dialogue>p[data-typing] .life-c{opacity:0;transition:opacity .07s linear}
+.life-dialogue>p[data-typing] .life-c.is-on{opacity:1}
+.life-story-stage .life-dialogue:has(>p[data-typing]){cursor:pointer}
+/* ⑧ 형광펜은 글이 다 나타난 뒤 0.3초 동안 칠해진다. 레슨 표현과 맞는 형광펜은 누르면 표현 도움이 그 표현에 맞춰 열린다. */
+.life-dialogue[data-speaker=narrator] mark.life-say{--life-mk:rgba(249,104,89,.42)}
+.life-dialogue>p[data-typing] mark.life-say,mark.life-say.is-fresh{--life-mk:transparent}
+mark.life-say[data-life-mark]{cursor:pointer}
+mark.life-say[data-life-mark]:focus-visible{outline:2px solid var(--w-face);outline-offset:2px}
+/* ⑦ 넘기는 손맛: 사진 오른쪽 70%를 누르거나 밀면 다음, 왼쪽 30%는 이전. 말하는 친구가 바뀌면 앞 사진이 0.18초 동안 투명하게 사라진다. */
+.life-story-photo[data-nav]{cursor:pointer;touch-action:pan-y;-webkit-user-select:none;user-select:none}
+.life-story-photo-prev{position:absolute;inset:0;display:block;pointer-events:none;transition:opacity .18s ease}
+.life-story-photo-prev>img{display:block;width:100%;height:100%;object-fit:cover}
+.life-story-photo-prev.is-leaving{opacity:0}
+.life-story-hint{position:absolute;right:10px;top:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:rgba(8,9,12,.62);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12);color:#FAFAF9;font-size:13px;font-weight:var(--wt-label);line-height:1;pointer-events:none}
+/* 진행 칸: 이야기 장면 칸 + 문제 칸. 지난 칸은 흐린 흰색, 지금 칸은 코랄. */
+.life-session-meta>span.life-steps{grid-column:1/-1;display:flex;gap:8px;overflow:visible}
+.life-steps>span{display:flex;flex:var(--n) 1 0;gap:3px;min-width:0}
+.life-steps i{flex:1;height:3px;border-radius:2px;background:var(--w-line-2);transition:background .2s}
+.life-steps i.is-done{background:var(--w-ink-2)}
+.life-steps i.is-now{background:var(--w-face)}
 
 /* ── 문제: 장면(팩 사진 + 상황) → 묻는 말 → 큰 선택지(고르면 흰 바탕). 판정은 아래 고정 띠 ── */
 .life-question-layout{display:grid;gap:18px;align-content:start}
@@ -659,6 +685,8 @@ h3.life-poster-sub{margin-bottom:0}
   .life-complete>.life-poster,.life-review-summary>.life-poster,.cafe-complete>.life-poster{position:static}
   .life-session-meta>.life-progress,.cafe-session-meta>.life-progress{grid-column:1}
   .life-session-meta>.life-progress+span,.cafe-session-meta>.life-progress+span{display:none}
+  .life-session-meta>span.life-steps{grid-column:1}
+  .life-session-meta>.life-steps+span{display:none}
   .life-session-meta::after,.cafe-session-meta::after{height:10px}
   #world-panel[class*="life-"]:not(.life-library-panel) .life-actions{padding-top:10px;padding-bottom:4px}
   #world-panel[class*="life-"]:not(.life-library-panel) .life-actions .felt-button{min-height:48px}

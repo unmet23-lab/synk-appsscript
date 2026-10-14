@@ -16,6 +16,8 @@
 @font-face{font-family:'World Arrow';src:url(assets/InterTight.woff2) format('woff2');font-weight:100 900;font-display:swap;unicode-range:U+2190-2199;size-adjust:112%}
 /* DM Mono는 띄어쓰기를 뺀 범위만: 한글이 섞인 라벨이 고정폭 공백으로 벌어지지 않게. */
 @font-face{font-family:'World Mono';src:url(assets/home/DMMono.woff2) format('woff2');font-weight:400 600;font-display:swap;unicode-range:U+0021-007E,U+00A0-00FF,U+2010-2027}
+/* 이야기 해설만 책 글씨(본명조 · Noto Serif KR, OFL). 이야기 장면에 쓰인 글자만 잘랐다 — tools/build-world-story-font.mjs. 친구 대사는 SUIT 그대로. */
+@font-face{font-family:'World Story Serif';src:url(assets/NotoSerifKR-story.woff2) format('woff2');font-weight:450 650;font-display:swap}
 
 :root{
   --w-sans:'World Arrow','World Latin','World SUIT',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;

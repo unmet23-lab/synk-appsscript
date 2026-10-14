@@ -4,10 +4,9 @@ import {cafeMarkup,cafeCompletionMarkup,createCafeSpeech,cafeSpeechLabel} from '
 import {play,haptic,verdict,getPref} from '../brand-opening/world-sound.mjs'
 import {storyPhotoFile,hasStoryPhoto,cafePhotoFile,hasCafePhoto} from '../brand-opening/tutor-photos.mjs';
 import {storySigns} from '../brand-opening/story-signs.mjs';
+import {storyLineMarkup,storySteps,createStoryDetail} from './life-story.mjs';
 if(!document.querySelector('[data-life-style]')){const style=document.createElement('link');style.rel='stylesheet';style.href=new URL('./life-ui.css',import.meta.url).href;style.dataset.lifeStyle='true';document.head.append(style);}
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-// 이야기 글 속 ‘…’은 이 레슨에서 배우는 한국어 — 코랄 형광펜으로 표시한다(escape 뒤에 쓴다).
-const sayMarks=html=>html.replace(/‘([^‘’]{1,80})’/g,'‘<mark class="life-say">$1</mark>’');
 // 세 친구: 카페 장면은 방 사진 속 작은 친구(home/friend-*), 이야기 무대는 정본 컷(assets/tutors).
 const friends={mongle:{name:'몽글',file:'friend-mongle.webp',cut:'mongle'},kkamong:{name:'까몽',file:'friend-kkamong.webp',cut:'kkamong'},marine:{name:'마린',file:'friend-marine.webp',cut:'marin'}};
 const phaseNames={expressions:'표현 익히기',story:'이야기 읽기',apply:'생활에서 써 보기',visit:'카페 방문',compose:'내 주문 만들기'};
@@ -45,6 +44,8 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  const speech=createCafeSpeech({asset,onChange(){if(ended||!shown||context?.phase!=='cafe')return;const metrics=speech.metrics(),button=content.querySelector('[data-life-cafe-speech]'),status=content.querySelector('.cafe-speech-status');if(button){button.textContent=cafeSpeechLabel({available:metrics.available,phase:metrics.phase,heard:cafeRun.listen?.heard});button.dataset.phase=!metrics.available?'unavailable':metrics.phase;}if(status&&metrics.phase==='error')status.textContent='소리를 재생하지 못했어요. 다시 눌러 주세요.';companion?.update(tutorState());}});
  void speech.prepare();
+ // 이야기 장면 디테일(글자 한 자씩·말소리·넘기는 손맛·형광펜, life-story.mjs). 형광펜을 누르면 표현 도움이 그 표현에 맞춰 열린다.
+ const story=createStoryDetail({content,isActive:()=>shown&&panel.open&&context?.phase==='story',onNext:()=>turnScene(1),onPrev:()=>turnScene(-1),onMark:index=>{if(!companion?.openGuide)return;play('open');haptic('tap');companion.openGuide({expression:index});},reduced:()=>!!home.state?.reduced});
  const summary=()=>getProgress().summary(PACKS,LESSONS);
  const preferences=()=>{try{return getProgress().learningProfileValues?.()||{};}catch{return {};}};
  const photo=(speaker,size='')=>friends[speaker]?`<img class="life-friend ${size}" src="${asset('home/'+friends[speaker].file)}" alt="${friends[speaker].name}" width="384" height="384">`:'';
@@ -73,7 +74,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const current=cafe?['choose','repair','response'].includes(cafeRun.phase):['questions','review'].includes(context?.phase);
   const requiresHearing=cafe&&current&&cafeRun.listen?.mode==='listen'&&!cafeRun.listen.heard&&!cafeRun.listen.textShown;
   return {scope:place,phase:cafe?cafeRun.phase:context?.phase,question:current?q:null,questionId:original?.id,answered:cafe?!!cafeRun.choiceId:!!lastFeedback,
-   feedback:current&&!cafe?lastFeedback:null,helped,requiresHearing,listening:cafe&&speech.metrics().phase==='playing',compose:cafe&&context.lessonId===CAFE_COMPOSE_ID&&cafeRun.step===0};
+   feedback:current&&!cafe?lastFeedback:null,helped,requiresHearing,listening:cafe&&speech.metrics().phase==='playing',compose:cafe&&context.lessonId===CAFE_COMPOSE_ID&&cafeRun.step===0,expressions:context?.phase==='story'?l?.expressions||null:null};
  }
  function tutorHint(){
   speech.pause();if(!context)return;
@@ -96,12 +97,12 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  function paint(title,html,{type='life-library',focus='.life-heading',eyebrow='LIFE IN KOREA',keepScroll=false,tutorSlot=null}={}){
   // 집중 판은 내용 영역이 스크롤된다. 같은 장면을 다시 그릴 때(낱말 고르기 등)만 자리를 지키고, 새 장면은 맨 위에서 시작한다.
   const scroll=keepScroll&&shown?content.scrollTop:0;
-  generation++;rendering=true;show(title,html+statusLine(),{type,eyebrow,nav:'play'});
+  story.stop();generation++;rendering=true;show(title,html+statusLine(),{type,eyebrow,nav:'play'});
   const tutor=home.mountLifeTutor?.({state:tutorState(),snapshot:getProgress().exportSnapshot(),lessons:LESSONS,practised:[...practised],onHint:tutorHint,onPause:()=>speech.pause(),onPreparePractice:prepareTutorPractice,onPracticeSuccess:id=>completeTutorPractice(id,home.tutor?.().tutor),onPracticeComplete:id=>{practised.add(id);companion?.update({...tutorState(),practiceCompleted:true});}});
   companion=tutor;
   // 이야기 장면에서는 튜터 띠를 사진 위 작은 「표현 도움」 알약으로 접는다(장면이 주인공). 문제·결과 화면은 그대로 띠.
   if(tutorSlot&&tutor?.element){const slot=content.querySelector(tutorSlot);if(slot){tutor.element.dataset.layout='scene';slot.append(tutor.element);}}
-  home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
+  home.attachPanelResource({dispose(){tutor?.dispose();if(companion===tutor)companion=null;if(!rendering){speech.stop();story.stop();signClip?.pause();signClip=null;shown=false;generation++;try{void getProgress().flush().catch(()=>{});}catch{}context=null;reviewRun=null;lastFeedback=null;}}});
   rendering=false;shown=true;content.scrollTop=scroll;content.dataset.reduced=String(!!home.state?.reduced);content.querySelector(focus)?.focus({preventScroll:true});updateHome();
  }
  // 판정 한 번: 소리 + 진동 + (「친구들의 반응」이 켜져 있으면) 튜터 자세 한 번.
@@ -232,7 +233,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   const pack=packById(l.packId),scenes=l.scenes.length,questions=l.questions.length,phase=context.phase;
   const done=phase==='story'?context.sceneIndex+1:phase==='questions'?scenes+Math.min(context.questionIndex+(lastFeedback?1:0),questions):0;
   const count=phase==='questions'?`${Math.min(context.questionIndex+1,questions)} / ${questions}`:phase==='story'?`${Math.min(context.sceneIndex+1,scenes)} / ${scenes}`:'';
-  return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${progressLine(done,scenes+questions)}<span>${escape(pack.title)} · ${phaseNames[l.type]}</span><span>${count?`<b class="life-count">${count}</b>`:'<b class="life-count">START</b>'}</span></div>`;
+  return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context.questionIndex}">${scenes?storySteps({scenes,questions,phase,sceneIndex:context.sceneIndex,questionIndex:context.questionIndex,answered:!!lastFeedback}):progressLine(done,scenes+questions)}<span>${escape(pack.title)} · ${phaseNames[l.type]}</span><span>${count?`<b class="life-count">${count}</b>`:'<b class="life-count">START</b>'}</span></div>`;
  }
  const expressionList=(l,label='EXPRESSIONS')=>`<section class="life-expression-list" aria-label="${label==='EXPRESSIONS'?'이번에 배울 표현':'배운 표현'}"><p class="life-section-label">${label}</p>${l.expressions.map((e,i)=>`<article><span class="life-expression-index" aria-hidden="true">${pad(i+1)}</span><div><strong>${escape(e.korean)}</strong><p>${escape(e.meaning)}</p></div></article>`).join('')}</section>`;
  // 결과 한 장에 들어가는 「배운 표현」: 표현 + 작은 뜻.
@@ -250,7 +251,9 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
    // 이야기 장소에서 세 친구를 함께 구운 사진. 말하는 친구가 바뀌면 같은 장면의 그 순간 사진으로 바꾼다. 대사는 흰 말풍선. 저절로 넘어가지 않는다.
    if(hasStoryPhoto(l.packId))for(const who of ['narrator','mongle','kkamong','marine']){const img=new Image();img.src=asset(storyPhotoFile(l.packId,who));}
    const photo=hasStoryPhoto(l.packId),signs=photo?storySigns(l.packId):[];
-   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId,speaker))}" alt="${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape(s.text)} 소리 듣기" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend?` class="w-name" data-who="${speaker}"`:''}>${friend?friend.name:'이야기'}</small><p>${sayMarks(escape(scene.text))}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last?'문제 풀기':'다음'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>나중에 하기</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});return;
+   // 같은 레슨의 앞 장면 사진(말하는 친구가 바뀌면 0.18초 겹쳐 바꾼다)
+   const previousSrc=content.querySelector('.life-session-meta')?.dataset.lifeLessonId===l.id?content.querySelector('.life-story-photo>img')?.src||null:null;
+   paint(l.title,`${header}<div class="life-story-stage" data-speaker="${speaker}">${photo?`<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId,speaker))}" alt="${friend?`${friend.name} 차례 · `:''}몽글·까몽·마린이 함께 있는 이야기 장면${signs.length?` · ${escape(signs.map(s=>s.text).join(', '))}`:''}" width="768" height="512" decoding="async">${signs.map(s=>`<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape(s.text)} 소리 듣기" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2]-s.box[0]}%;--h:${s.box[3]-s.box[1]}%">${escape(s.text)}</button>`).join('')}</figure>`:`<div class="life-cast">${Object.keys(friends).map(f=>`<div class="${f===scene.speaker?'is-speaking':''}">${cut(f)}<small>${friends[f].name}</small></div>`).join('')}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend?` class="w-name" data-who="${speaker}"`:''}>${friend?friend.name:'이야기'}</small><p>${storyLineMarkup(scene.text,l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${last?'문제 풀기':'다음'} <span aria-hidden="true">→</span></button><button class="quiet-button" data-life-pause>나중에 하기</button></div>`,{type:'life-story',tutorSlot:photo?'.life-story-photo':null});story.enter({who:speaker,previousSrc,first:context.sceneIndex===0,signs});return;
   }
   renderQuestion();
  }
@@ -317,11 +320,18 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   paint('복습',`<div class="life-session-meta" data-life-review-id="${context.reviewId}" data-life-phase="review" data-life-step="${context.questionIndex}">${progressLine(context.questionIndex+1,reviewRun.ids.length)}<span>${escape(packById(record?.packId)?.title||'생활 한국어')} · 새 장면 복습</span><span><b class="life-count">${context.questionIndex+1} / ${reviewRun.ids.length}</b></span></div>${html}`,{type:'life-question',focus:'.life-question-title'});
   revealFeedback();judge(correct);
  }
+ // 이야기 넘기기: 다음 단추·사진 누르기·밀기·←/→가 모두 여기로 온다. 첫 장면에서 이전은 알림만.
+ function turnScene(delta){
+  if(context?.phase!=='story')return;const l=lessonById(context.lessonId),target=context.sceneIndex+delta;
+  if(target<0){play('tap');home.toast('첫 장면이에요.');return;}
+  play('page');haptic('tap');
+  context.sceneIndex=target;if(target>=l.scenes.length)context.phase='questions';persistStage();renderLesson();
+ }
  function pause(){if(context?.phase==='cafe')persistCafe();else if(context&&['intro','story','questions'].includes(context.phase))persistStage();home.closePanel();updateHome();home.toast('하던 자리를 저장했어요.');}
  const handlers={
   packs,stories,review,next,home:()=>{home.closePanel();home.goTown?.();updateHome();},pack:el=>pack(el.dataset.lifePack),lesson:el=>start(el.dataset.lifeLesson),
   begin:()=>{context.phase='story';context.sceneIndex=0;persistStage();renderLesson();},
-  'scene-next':()=>{context.sceneIndex++;if(context.sceneIndex>=lessonById(context.lessonId).scenes.length)context.phase='questions';persistStage();renderLesson();},
+  'scene-next':()=>turnScene(1),
   choice:el=>context.phase==='review'?chooseReview(el.dataset.lifeChoice):choose(el.dataset.lifeChoice),
   'question-next':()=>{if(context.phase==='review'){lastFeedback=null;helped=false;renderReview();}else{context.questionIndex++;lastFeedback=null;helped=false;persistStage();renderLesson();}},
   'review-start':reviewStart,pause,
@@ -334,7 +344,7 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
   'cafe-help':()=>{helped=true;persistCafe();renderCafe();content.querySelector('[data-life-cafe-help]')?.focus({preventScroll:true});},
   help:tutorHint,'tutor-retry':el=>companion?.openPractice(el.dataset.lifeTutorRetry),
   // 이야기 사진 속 이름표·안내판을 누르면 그 낱말을 한 번 읽어 준다
-  sign:el=>{const name=el.dataset.lifeSign;if(!/^[a-z-]+$/.test(name||''))return;signClip?.pause();const clip=new Audio(asset('story-voice/'+name+'.mp3'));signClip=clip;clip.play().catch(()=>{if(signClip===clip)signClip=null;});}
+  sign:el=>{const name=el.dataset.lifeSign;if(!/^[a-z-]+$/.test(name||''))return;play('sign');haptic('tap');signClip?.pause();const clip=new Audio(asset('story-voice/'+name+'.mp3'));signClip=clip;clip.play().catch(()=>{if(signClip===clip)signClip=null;});}
  };
  function click(event){const button=event.target.closest('button');if(!button||!panel.open||!shown)return;
   const entry=Object.entries(handlers).find(([key])=>button.hasAttribute('data-life-'+key));if(!entry)return;
@@ -342,5 +352,5 @@ export function createLifeExperience({home,getProgress,show=(title,html,options)
  }
  document.addEventListener('click',click);
  timer=setInterval(updateHome,15000);updateHome();
- return {packs,stories,review,reviewStart,next,pack,start,cafe:()=>pack('cafe'),summary,refresh:updateHome,metrics:()=>({shown,lessonId:context?.lessonId||null,phase:context?.phase||null,step:context?.questionIndex??null,cafe:isCafeLesson(context?.lessonId)?cafeRun:null,speech:speech.metrics(),tutor:companion?.metrics()||null,owner:getProgress().owner,progress:getProgress().exportSnapshot()}),dispose(){ended=true;speech.dispose();clearInterval(timer);document.removeEventListener('click',click);document.removeEventListener('visibilitychange',sitting);if(shown)home.closePanel();}};
+ return {packs,stories,review,reviewStart,next,pack,start,cafe:()=>pack('cafe'),summary,refresh:updateHome,metrics:()=>({shown,lessonId:context?.lessonId||null,phase:context?.phase||null,step:context?.questionIndex??null,cafe:isCafeLesson(context?.lessonId)?cafeRun:null,speech:speech.metrics(),tutor:companion?.metrics()||null,owner:getProgress().owner,progress:getProgress().exportSnapshot()}),dispose(){ended=true;speech.dispose();story.dispose();clearInterval(timer);document.removeEventListener('click',click);document.removeEventListener('visibilitychange',sitting);if(shown)home.closePanel();}};
 }

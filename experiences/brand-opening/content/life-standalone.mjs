@@ -7052,9 +7052,9 @@ var require_education = __commonJS({
         mastery: null
       };
     }
-    function createPractice({ session, decision, map, task, assess, firstExposure = null }) {
+    function createPractice({ session: session2, decision, map, task, assess, firstExposure = null }) {
       const conceptIds = conceptsFor(map, task);
-      const presentation = session.practice("presented", {
+      const presentation = session2.practice("presented", {
         decisionId: decision.id,
         taskId: task.id,
         taskVersion: task.version,
@@ -7079,7 +7079,7 @@ var require_education = __commonJS({
           if (broken) throw new Error("Core: practice record incomplete");
           const selected = choice === void 0 ? null : choiceRecord(choice);
           const result = diagnose({ map, task, assessment: skipped ? { verdict: "skipped", errorTags: [] } : assess(response) });
-          const event = guarded(() => session.practice("attempted", {
+          const event = guarded(() => session2.practice("attempted", {
             presentationId: presentation.id,
             attemptNo: attempts + 1,
             verdict: result.verdict,
@@ -7097,7 +7097,7 @@ var require_education = __commonJS({
             if (!help || typeof help.id !== "string" || !["cue", "explanation", "answer"].includes(help.level) || typeof help.contentRef !== "string") throw new TypeError("Core: invalid delivered help");
             const key = `${help.id}|${help.level}|${help.contentRef}`;
             if (shown.has(key)) return null;
-            const event = session.practice("helped", { presentationId: presentation.id, helpId: help.id, level: help.level, contentRef: help.contentRef });
+            const event = session2.practice("helped", { presentationId: presentation.id, helpId: help.id, level: help.level, contentRef: help.contentRef });
             shown.add(key);
             if (help.level === "answer" && !met) met = { itemKey: task.itemKey, conceptIds, at: event.at, verdict: null };
             return event;
@@ -9347,7 +9347,7 @@ var require_game_learning = __commonJS({
       const scope = { domain: "LAB", workspace: "learning", subject: learnerKey };
       const key = `${KEY}.${learnerKey}`;
       let flowPort = null;
-      let epoch = null, session, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
+      let epoch = null, session2, readable = true, writable = !!storage, complete = historyComplete, warning = null, ledger = null;
       const folding = fold === false || fold == null && storageScope !== "device" ? null : { max: 600, keep: 400, ageMs: fold?.remote ? 864e5 : 6e5, remote: false, ...fold && typeof fold === "object" ? fold : {} };
       const settled = /* @__PURE__ */ new Set();
       let settledVersion = 0;
@@ -9381,7 +9381,7 @@ var require_game_learning = __commonJS({
         }
         return Atlas.createSession({ scope, events, clock: monotonicClock });
       };
-      const log = () => session.snapshot ? session.snapshot() : session.events();
+      const log = () => session2.snapshot ? session2.snapshot() : session2.events();
       const decode = (raw) => {
         if (raw == null) return null;
         const value = JSON.parse(raw);
@@ -9411,7 +9411,7 @@ var require_game_learning = __commonJS({
       const initial = readStored();
       epoch = initial?.epoch || uid();
       ledger = initial?.ledger || null;
-      session = newSession(initial?.events || []);
+      session2 = newSession(initial?.events || []);
       const settle = (ids, known) => {
         const before = settled.size;
         for (const id of ids) if (known.has(id)) settled.add(id);
@@ -9435,7 +9435,7 @@ var require_game_learning = __commonJS({
         if (stored.epoch !== epoch) {
           epoch = stored.epoch;
           ledger = stored.ledger || null;
-          session = newSession(stored.events);
+          session2 = newSession(stored.events);
           active.clear();
           settled.clear();
           settledVersion += 1;
@@ -9464,7 +9464,7 @@ var require_game_learning = __commonJS({
         if (order2 < 0) ledger = theirs;
         settle([...settled, ...stored.settled || []], known);
         takeDropped(stored.dropped || [], order2 > 0);
-        session = newSession(combined);
+        session2 = newSession(combined);
         for (const pid of active.keys()) if (!known.has(pid)) active.delete(pid);
       }
       const serialised = /* @__PURE__ */ new WeakMap();
@@ -9478,7 +9478,7 @@ var require_game_learning = __commonJS({
       };
       let body = null;
       const snapshot = (events) => {
-        if (!(body && body.session === session && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session, count: 0, last: null, text: "" };
+        if (!(body && body.session === session2 && body.count <= events.length && (body.count === 0 || events[body.count - 1] === body.last))) body = { session: session2, count: 0, last: null, text: "" };
         for (; body.count < events.length; body.count += 1) body.text += (body.count ? "," : "") + entryJson(events[body.count]);
         body.last = body.count ? events[body.count - 1] : null;
         if (ledgerJson?.ledger !== ledger) ledgerJson = { ledger, text: ledger ? `,"ledger":${JSON.stringify(ledger)}` : "" };
@@ -9509,7 +9509,7 @@ var require_game_learning = __commonJS({
         }
         retryFold = null;
         ledger = Ledger.fold(ledger, planned.folded, { scope, log: events, local: !folding.remote });
-        session = newSession(planned.kept);
+        session2 = newSession(planned.kept);
         for (const e of planned.folded) {
           if (e.type === "practice.presented") active.delete(e.id);
           settled.delete(e.id);
@@ -9545,7 +9545,7 @@ var require_game_learning = __commonJS({
         }
       }
       if (!initial && readable && storage) persist();
-      const practiceSession = { practice: (...args) => session.practice(...args) };
+      const practiceSession = { practice: (...args) => session2.practice(...args) };
       const VIEW_MS = 6e4;
       let cached = null, met = null;
       function view() {
@@ -9566,7 +9566,7 @@ var require_game_learning = __commonJS({
       }
       function provenance() {
         const events = log();
-        if (!met || met.session !== session) met = { session, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
+        if (!met || met.session !== session2) met = { session: session2, done: 0, index: Trail.createIndex({ scope, prior: ledger }), buckets: /* @__PURE__ */ new Map() };
         for (; met.done < events.length; met.done += 1) {
           const row = met.index.add(events[met.done]);
           if (!row?.measure) continue;
@@ -9620,7 +9620,7 @@ var require_game_learning = __commonJS({
           events() {
             refresh();
             if (!readable || !writable) throw Object.assign(new Error("Atlas: local history is not durable"), { code: "STORAGE_ERROR" });
-            return session.events();
+            return session2.events();
           },
           // The kept entries' ids, without copying the entries: a WORLD host compares them around a
           // game call to find what the call added (account/world-learning-host.js).
@@ -9687,7 +9687,7 @@ var require_game_learning = __commonJS({
             }
             if (combined.length === previousLength && !skipped.length && writable && snapshot(combined) === lastStoredRaw) return { added: 0, skipped };
             const imported = newSession(combined);
-            session = imported;
+            session2 = imported;
             if (late.length || skipped.length) ledger = Ledger.demote(ledger, { late, excluded: gone, strays: skipped.length }, (id) => known.get(id));
             if (!persist("import")) throw Object.assign(new Error("Atlas: imported history could not be saved"), { code: "STORAGE_ERROR" });
             return { added: combined.length - previousLength, skipped };
@@ -9786,7 +9786,7 @@ var require_game_learning = __commonJS({
           };
           const seen = provenance().index.met(item.itemKey, measure.familyKey);
           const basis = basisOf(measure);
-          const decision = session.plan(gameId, [{
+          const decision = session2.plan(gameId, [{
             id: item.id,
             minutes: 3,
             pace: "standard",
@@ -9825,7 +9825,7 @@ var require_game_learning = __commonJS({
         delivery(pid, { audio }) {
           const p = requireActive(pid);
           p.audio = audio;
-          const result = session.practice("delivery", { presentationId: pid, audio });
+          const result = session2.practice("delivery", { presentationId: pid, audio });
           persist();
           return result;
         },
@@ -9842,7 +9842,7 @@ var require_game_learning = __commonJS({
           const reason = p.measure.confounded ? result.reason || "visual" : p.measure.audioRequired && p.audio !== "completed" ? "audio" : !readable || !writable ? "storage" : result.reason;
           const assessable = result.assessable && !p.measure.confounded && (!p.measure.audioRequired || p.audio === "completed") && readable && writable;
           const attempt = p.practice.submit({ ...result, assessable }, { reason: reason || null, ...choice ? { choice } : {} });
-          session.complete(p.decision);
+          session2.complete(p.decision);
           persist();
           const known = provenance(), row = known.index.attempt(attempt.eventId);
           const actual = known.index.exact ? row && !row.omitted ? row : void 0 : view().attempts.find((a) => a.eventId === attempt.eventId);
@@ -9858,13 +9858,13 @@ var require_game_learning = __commonJS({
         },
         exclude(eventId) {
           refresh();
-          const event = session.exclude(eventId);
+          const event = session2.exclude(eventId);
           persist();
           return event;
         },
         events() {
           refresh();
-          return session.events();
+          return session2.events();
         },
         // Before a tab closes or hides: another tab may have written an older history over this
         // one's entries in the meantime (tabs see each other's writes late), so join and write again.
@@ -9880,7 +9880,7 @@ var require_game_learning = __commonJS({
           settled.clear();
           settledVersion += 1;
           takeDropped([], false);
-          session = newSession([]);
+          session2 = newSession([]);
           active.clear();
           readable = true;
           writable = !!storage;
@@ -12221,7 +12221,7 @@ var require_personalization = __commonJS2({
         }
         return profile.consent ? copy3(events.filter((event) => event.scope.workspace === expected.workspace)) : [];
       }
-      function session(profile, events, at) {
+      function session2(profile, events, at) {
         let sequence = events.length;
         const ids = new Set(events.map((event) => event.id));
         return Core.createSession({ scope: coreScope(profile), events, clock: () => at, id: () => {
@@ -12252,7 +12252,7 @@ var require_personalization = __commonJS2({
         const prior = history(profile, scope, events, at);
         checkCandidates(candidates);
         if (!token(experienceId, 120)) fail2("invalid experience id");
-        const values = profile.consent ? copy3(profile.values) : {}, presentation = presentationFor2(values), current = session(profile, prior, at);
+        const values = profile.consent ? copy3(profile.values) : {}, presentation = presentationFor2(values), current = session2(profile, prior, at);
         const settings = {
           goal: declaredGoal(values),
           time: values.minutes == null ? null : values.minutes <= 5 ? "short" : "standard",
@@ -12278,7 +12278,7 @@ var require_personalization = __commonJS2({
         let ask = null;
         if (mixedGoals.length > 1 && eligible.length) {
           const outcomes = new Set(mixedGoals.map((goal) => {
-            const trial = session(profile, copy3(prior), at);
+            const trial = session2(profile, copy3(prior), at);
             apply(trial, { ...settings, goal });
             return trial.plan(experienceId, copy3(eligible)).selected?.id ?? null;
           }));
@@ -12332,7 +12332,7 @@ var require_personalization = __commonJS2({
         const prior = history(profile, scope, events, at);
         if (!profile.consent) fail2("feedback memory requires consent");
         if (scope.domain === "PULSE") fail2("PULSE does not learn a personal behavioral profile");
-        return session(profile, prior, at);
+        return session2(profile, prior, at);
       }
       function recordCompletion(options = {}) {
         const current = feedbackSession(options);
@@ -12635,12 +12635,12 @@ function updateWorldLearningProfile(value, { owner, at, values = {}, consent, ex
   if (!exact(values, persistentFields)) throw TypeError("Session conditions and inferred traits cannot be persistent preferences");
   const update = { values, expectedRevision, ...consent === void 0 ? {} : { consent } };
   const profile = world_learning_profile_core_default.updateProfile(current.profile, update, iso(at));
-  let session = profile.consent ? current.today : null;
+  let session2 = profile.consent ? current.today : null;
   if (today !== void 0) {
     if (today !== null && !profile.consent) throw TypeError("Explicit consent required before remembering session conditions");
-    session = today === null ? null : { day: learningProfileDay(at), values: todayValues(today), updatedAt: iso(at) };
+    session2 = today === null ? null : { day: learningProfileDay(at), values: todayValues(today), updatedAt: iso(at) };
   }
-  return { version: 1, profile, today: session };
+  return { version: 1, profile, today: session2 };
 }
 function clearWorldLearningProfile(value, { owner, at, mode = "delete", expectedRevision } = {}) {
   const current = readWorldLearningProfile(value, { owner, at });
@@ -13303,14 +13303,15 @@ function cafeCompletionMarkup({ photo, print = () => "", nextLesson, lessonId = 
 }
 
 // experiences/brand-opening/world-sound.mjs
-var PREF_KEYS = Object.freeze({ sound: "synk.world.sound", haptic: "synk.world.haptic", celebrate: "synk.world.celebrate", reactions: "synk.world.reactions" });
+var PREF_KEYS = Object.freeze({ sound: "synk.world.sound", storyVoice: "synk.world.story-voice", haptic: "synk.world.haptic", celebrate: "synk.world.celebrate", reactions: "synk.world.reactions" });
 var PREF_LABELS = Object.freeze({
   sound: { title: "\uD6A8\uACFC\uC74C", note: "\uB2E8\uCD94\xB7\uC815\uB2F5\xB7\uC644\uB8CC\uC758 \uC9E7\uC740 \uC18C\uB9AC\uC608\uC694. \uBAA9\uC18C\uB9AC\uBCF4\uB2E4 \uC791\uAC8C \uC6B8\uB824\uC694." },
-  haptic: { title: "\uC9C4\uB3D9", note: "\uC815\uB2F5\uACFC \uC644\uB8CC \uB54C \uC544\uC8FC \uC9E7\uAC8C \uD55C \uBC88 \uC6B8\uB824\uC694." },
+  storyVoice: { title: "\uC774\uC57C\uAE30 \uB9D0\uC18C\uB9AC", note: "\uC774\uC57C\uAE30 \uAE00\uC774 \uB098\uD0C0\uB0A0 \uB54C \uCE5C\uAD6C\uB9C8\uB2E4 \uB2E4\uB978 \uC9E7\uC740 \uB9D0\uC18C\uB9AC\uC640 \uD574\uC124 \uD0C0\uC790 \uC18C\uB9AC\uAC00 \uB098\uC694." },
+  haptic: { title: "\uC9C4\uB3D9", note: "\uB118\uAE30\uAE30\xB7\uC815\uB2F5\xB7\uC644\uB8CC \uB54C \uC544\uC8FC \uC9E7\uAC8C \uD55C \uBC88 \uC6B8\uB824\uC694." },
   celebrate: { title: "\uBCF4\uC0C1 \uC5F0\uCD9C", note: "\uB05D\uB0AC\uC744 \uB54C \uD55C \uC7A5\uC73C\uB85C \uBCF4\uC5EC \uC8FC\uB294 \uC9E7\uC740 \uCD95\uD558\uC608\uC694. \uAEBC\uB3C4 \uACB0\uACFC\uB294 \uB611\uAC19\uC774 \uBCF4\uC5EC\uC694." },
   reactions: { title: "\uCE5C\uAD6C\uB4E4\uC758 \uBC18\uC751", note: "\uC815\uB2F5\xB7\uC624\uB2F5\uC5D0 \uCE5C\uAD6C\uB4E4\uC774 \uC790\uC138\uB97C \uD55C \uBC88 \uBC14\uAFD4\uC694. \uB044\uBA74 \uAC00\uB9CC\uD788 \uC788\uC5B4\uC694." }
 });
-var DEFAULTS = { sound: true, haptic: true, celebrate: true, reactions: true };
+var DEFAULTS = { sound: true, storyVoice: true, haptic: true, celebrate: true, reactions: true };
 function getPref(name) {
   if (!(name in DEFAULTS)) return true;
   try {
@@ -13321,20 +13322,127 @@ function getPref(name) {
   }
   return DEFAULTS[name];
 }
-var VOICES = {
-  tap: [{ f: 330, t: "triangle", d: 0.045, g: 0.05 }],
-  select: [{ f: 392, t: "triangle", d: 0.06, g: 0.06 }, { f: 523, t: "sine", d: 0.07, g: 0.04, at: 0.03 }],
-  open: [{ f: 262, t: "sine", d: 0.11, g: 0.06, slide: 330 }],
-  close: [{ f: 330, t: "sine", d: 0.1, g: 0.05, slide: 247 }],
-  ok: [{ f: 440, t: "triangle", d: 0.09, g: 0.07 }, { f: 659, t: "sine", d: 0.16, g: 0.06, at: 0.07 }],
-  miss: [{ f: 196, t: "sine", d: 0.2, g: 0.07, slide: 165 }],
-  done: [{ f: 392, t: "triangle", d: 0.1, g: 0.06 }, { f: 523, t: "triangle", d: 0.1, g: 0.06, at: 0.09 }, { f: 659, t: "sine", d: 0.26, g: 0.07, at: 0.18 }],
-  reward: [{ f: 523, t: "sine", d: 0.12, g: 0.06 }, { f: 659, t: "sine", d: 0.12, g: 0.06, at: 0.1 }, { f: 784, t: "sine", d: 0.3, g: 0.07, at: 0.2 }],
-  tick: [{ f: 880, t: "sine", d: 0.02, g: 0.025 }]
+var noiseBuffers = /* @__PURE__ */ new WeakMap();
+function noise(ctx) {
+  let buffer = noiseBuffers.get(ctx);
+  if (!buffer) {
+    const length = Math.floor(ctx.sampleRate * 0.6);
+    buffer = ctx.createBuffer(1, length, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < length; i++) data[i] = Math.random() * 2 - 1;
+    noiseBuffers.set(ctx, buffer);
+  }
+  const source = ctx.createBufferSource();
+  source.buffer = buffer;
+  return source;
+}
+var vary = (amount) => 1 + (Math.random() * 2 - 1) * amount;
+function envelope(gain, t, peak, attack, decay) {
+  gain.gain.setValueAtTime(1e-4, t);
+  gain.gain.exponentialRampToValueAtTime(Math.max(peak, 2e-4), t + attack);
+  gain.gain.exponentialRampToValueAtTime(1e-4, t + attack + decay);
+}
+function tone(ctx, dest, { type = "sine", f, f2 = 0, glide = 0.04, t, peak, att = 4e-3, dec = 0.08 }) {
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(f, t);
+  if (f2) osc.frequency.exponentialRampToValueAtTime(f2, t + glide);
+  envelope(gain, t, peak, att, dec);
+  osc.connect(gain);
+  gain.connect(dest);
+  osc.start(t);
+  osc.stop(t + att + dec + 0.03);
+}
+function burst(ctx, dest, { t, peak, att = 1e-3, dec = 0.03, filters = [] }) {
+  const source = noise(ctx), gain = ctx.createGain();
+  let node = source;
+  for (const [type, f, q = 0.7, f2 = 0, dur = 0] of filters) {
+    const filter = ctx.createBiquadFilter();
+    filter.type = type;
+    filter.frequency.setValueAtTime(f, t);
+    if (f2) filter.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    filter.Q.value = q;
+    node.connect(filter);
+    node = filter;
+  }
+  node.connect(gain);
+  gain.connect(dest);
+  envelope(gain, t, peak, att, dec);
+  source.start(t, Math.random() * 0.3);
+  source.stop(t + att + dec + 0.03);
+}
+function marimba(ctx, dest, t, f, v = 1) {
+  tone(ctx, dest, { f, t, peak: 0.1 * v, att: 2e-3, dec: 0.42 });
+  tone(ctx, dest, { f: f * 3.99, t, peak: 0.025 * v, att: 1e-3, dec: 0.06 });
+  burst(ctx, dest, { t, peak: 0.18 * v, att: 8e-4, dec: 7e-3, filters: [["bandpass", 2200, 1]] });
+}
+function bell(ctx, dest, t, f, v = 1) {
+  tone(ctx, dest, { f, t, peak: 0.05 * v, att: 2e-3, dec: 0.7 });
+  tone(ctx, dest, { f: f * 1.0023, t, peak: 0.03 * v, att: 2e-3, dec: 0.6 });
+  tone(ctx, dest, { f: f * 2, t, peak: 0.012 * v, att: 1e-3, dec: 0.18 });
+}
+var FELT = {
+  // 단추: 펠트를 손끝으로 톡
+  tap(ctx, d, t) {
+    burst(ctx, d, { t, peak: 0.55 * vary(0.12), att: 15e-4, dec: 0.038, filters: [["bandpass", 1150 * vary(0.08), 0.9], ["lowpass", 2800]] });
+    tone(ctx, d, { f: 175 * vary(0.05), f2: 118, glide: 0.05, t, peak: 0.085, att: 2e-3, dec: 0.06 });
+  },
+  // 고르기: 펠트 톡 + 작은 나무 한 음
+  select(ctx, d, t) {
+    FELT.tap(ctx, d, t);
+    marimba(ctx, d, t + 0.02, 659.25 * vary(0.02), 0.55);
+  },
+  // 쪽 넘김: 종이가 스치고 탁 내려앉음
+  page(ctx, d, t) {
+    burst(ctx, d, { t, peak: 0.42, att: 0.05, dec: 0.16, filters: [["bandpass", 620 * vary(0.06), 0.8, 2600, 0.17], ["highpass", 300]] });
+    burst(ctx, d, { t: t + 0.14, peak: 0.3, att: 2e-3, dec: 0.05, filters: [["bandpass", 900, 0.9], ["lowpass", 2200]] });
+    tone(ctx, d, { f: 132, f2: 92, glide: 0.07, t: t + 0.14, peak: 0.08, att: 3e-3, dec: 0.07 });
+  },
+  // 이름표·안내판: 나무 패를 손톱으로 딱
+  sign(ctx, d, t) {
+    const f = 1240 * vary(0.03);
+    tone(ctx, d, { f, t, peak: 0.05, att: 1e-3, dec: 0.05 });
+    tone(ctx, d, { f: f * 2.76, t, peak: 0.018, att: 1e-3, dec: 0.018 });
+    burst(ctx, d, { t, peak: 0.32, att: 8e-4, dec: 0.01, filters: [["bandpass", 2600, 1.2]] });
+  },
+  open(ctx, d, t) {
+    burst(ctx, d, { t, peak: 0.5, att: 0.012, dec: 0.1, filters: [["lowpass", 1e3, 0.7, 1800, 0.08]] });
+    tone(ctx, d, { f: 220, f2: 330, glide: 0.09, t, peak: 0.05, att: 0.01, dec: 0.1 });
+  },
+  close(ctx, d, t) {
+    burst(ctx, d, { t, peak: 0.4, att: 6e-3, dec: 0.08, filters: [["lowpass", 1500, 0.7, 700, 0.07]] });
+    tone(ctx, d, { f: 300, f2: 215, glide: 0.08, t, peak: 0.045, att: 6e-3, dec: 0.08 });
+  },
+  // 정답: 나무 실로폰 두 음 · 다시: 부드러운 툭툭 · 끝: 오르골 네 음 · 선물: 실로폰 세 음 위에 오르골
+  ok(ctx, d, t) {
+    marimba(ctx, d, t, 523.25);
+    marimba(ctx, d, t + 0.09, 783.99);
+  },
+  miss(ctx, d, t) {
+    const low = ctx.createBiquadFilter();
+    low.type = "lowpass";
+    low.frequency.value = 900;
+    low.connect(d);
+    tone(ctx, low, { f: 196, f2: 160, glide: 0.1, t, peak: 0.09, att: 4e-3, dec: 0.12 });
+    tone(ctx, low, { f: 175, f2: 140, glide: 0.1, t: t + 0.13, peak: 0.08, att: 4e-3, dec: 0.14 });
+    burst(ctx, low, { t, peak: 0.25, att: 2e-3, dec: 0.04, filters: [["bandpass", 500, 0.8]] });
+  },
+  done(ctx, d, t) {
+    [1046.5, 1318.5, 1568, 2093].forEach((f, i) => bell(ctx, d, t + i * 0.085, f, i === 3 ? 1.1 : 1));
+  },
+  reward(ctx, d, t) {
+    [523.25, 659.25, 783.99].forEach((f, i) => marimba(ctx, d, t + i * 0.1, f, 0.9));
+    bell(ctx, d, t + 0.3, 1568, 1.2);
+  },
+  // 시계 바늘 한 칸: 아주 작은 나무 딱
+  tick(ctx, d, t) {
+    tone(ctx, d, { f: 1480 * vary(0.02), t, peak: 0.04, att: 1e-3, dec: 0.03 });
+    burst(ctx, d, { t, peak: 0.2, att: 8e-4, dec: 8e-3, filters: [["bandpass", 3e3, 1.2]] });
+  }
 };
+var LEVEL = { tap: 0.25, select: 0.3, page: 0.21, sign: 0.56, open: 0.44, close: 0.5, ok: 0.4, miss: 0.83, done: 0.39, reward: 0.45, tick: 0.32 };
 var context = null;
 var master = null;
-var unlocked = false;
 function ensure() {
   if (context) return context;
   const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
@@ -13345,33 +13453,71 @@ function ensure() {
     return null;
   }
   master = context.createGain();
-  master.gain.value = 0.9;
-  const low = context.createBiquadFilter();
-  low.type = "lowpass";
-  low.frequency.value = 2400;
-  low.Q.value = 0.6;
-  master.connect(low);
-  low.connect(context.destination);
+  master.gain.value = 1;
+  master.connect(context.destination);
   return context;
 }
 function unlock() {
-  if (unlocked) return;
   const ctx = ensure();
-  if (!ctx) return;
-  unlocked = true;
-  if (ctx.state === "suspended") ctx.resume().catch(() => {
+  if (!ctx || ctx.state === "running") return;
+  try {
+    const source = ctx.createBufferSource();
+    source.buffer = ctx.createBuffer(1, 1, 22050);
+    source.connect(ctx.destination);
+    source.start(0);
+  } catch {
+  }
+  ctx.resume().catch(() => {
   });
 }
-for (const type of ["pointerdown", "keydown", "touchstart"]) {
+for (const type of ["pointerdown", "touchend", "click", "keydown"]) {
   try {
     addEventListener(type, unlock, { capture: true, passive: true });
   } catch {
   }
 }
+var playingMedia = /* @__PURE__ */ new Set();
+function session(type) {
+  try {
+    const value = navigator.audioSession;
+    if (value && value.type !== type) value.type = type;
+  } catch {
+  }
+}
+function guardMedia() {
+  const proto = globalThis.HTMLMediaElement?.prototype;
+  if (!proto || !globalThis.navigator?.audioSession || proto.__synkAudioSession) return;
+  const native = proto.play;
+  Object.defineProperty(proto, "__synkAudioSession", { value: true });
+  proto.play = function(...args) {
+    if (!this.muted) {
+      playingMedia.add(this);
+      session("playback");
+      const done = () => {
+        for (const type of ["pause", "ended", "error"]) this.removeEventListener(type, done);
+        playingMedia.delete(this);
+      };
+      for (const type of ["pause", "ended", "error"]) this.addEventListener(type, done);
+    }
+    return native.apply(this, args);
+  };
+}
+guardMedia();
+var ambient = () => {
+  if (!playingMedia.size) session("ambient");
+};
+function renderSound(name, ctx, dest, when = 0) {
+  const make = FELT[name];
+  if (!make) return false;
+  const out = ctx.createGain();
+  out.gain.value = LEVEL[name];
+  out.connect(dest);
+  make(ctx, out, when);
+  return true;
+}
 function play(name) {
   if (!getPref("sound")) return false;
-  const voice = VOICES[name];
-  if (!voice) return false;
+  if (!FELT[name]) return false;
   const ctx = ensure();
   if (!ctx) return false;
   if (ctx.state === "suspended") {
@@ -13379,27 +13525,130 @@ function play(name) {
     });
     if (ctx.state === "suspended") return false;
   }
-  const now = ctx.currentTime;
-  for (const n of voice) {
-    const osc = ctx.createOscillator(), gain = ctx.createGain(), start = now + (n.at || 0), end = start + n.d;
-    osc.type = n.t;
-    osc.frequency.setValueAtTime(n.f, start);
-    if (n.slide) osc.frequency.exponentialRampToValueAtTime(n.slide, end);
-    gain.gain.setValueAtTime(1e-4, start);
-    gain.gain.exponentialRampToValueAtTime(n.g, start + 8e-3);
-    gain.gain.exponentialRampToValueAtTime(1e-4, end);
-    osc.connect(gain);
-    gain.connect(master);
-    osc.start(start);
-    osc.stop(end + 0.02);
+  ambient();
+  return renderSound(name, ctx, master, ctx.currentTime + 5e-3);
+}
+var JUNG_SEMI = [2, 3, 2, 3, 0, 3, 0, 3, -1, 2, 3, -1, -1, -3, 0, 3, -3, -3, -2, -2, 5];
+function hangul(ch) {
+  const code = ch?.codePointAt?.(0);
+  if (!(code >= 44032 && code <= 55203)) return null;
+  const i = code - 44032;
+  return { jung: Math.floor(i % 588 / 28), jong: i % 28 };
+}
+var VOICE = {
+  mongle: { base: 494, type: "sine", from: 0.9, glide: 0.03, att: 4e-3, dec: 0.075, peak: 0.03, lp: 1900, harm: 0.2, jit: 25 },
+  kkamong: { base: 587, type: "triangle", from: 1.12, glide: 0.025, att: 2e-3, dec: 0.05, peak: 0.044, lp: 2600, bp: 1300, jit: 55 },
+  marine: { base: 370, type: "square", from: 1, glide: 0, att: 1e-3, dec: 0.04, peak: 0.045, lp: 1500, step: 1.26, jit: 0 }
+};
+function blip(ctx, dest, t, who, info) {
+  const p = VOICE[who], semi = info.semi + (p.jit ? (Math.random() * 2 - 1) * p.jit / 100 : 0);
+  const f = p.base * Math.pow(2, semi / 12), closed = info.jong > 0, dec = p.dec * (closed ? 0.72 : 1), peak = p.peak * info.loud * (closed ? 0.9 : 1);
+  const low = ctx.createBiquadFilter();
+  low.type = "lowpass";
+  low.frequency.value = p.lp;
+  low.Q.value = 0.5;
+  low.connect(dest);
+  let out = low;
+  if (p.bp) {
+    const bump = ctx.createBiquadFilter();
+    bump.type = "peaking";
+    bump.frequency.value = p.bp;
+    bump.Q.value = 1.4;
+    bump.gain.value = 5;
+    bump.connect(low);
+    out = bump;
   }
-  return true;
+  if (p.step) {
+    tone(ctx, out, { type: p.type, f, t, peak, att: p.att, dec: dec * 0.5 });
+    tone(ctx, out, { type: p.type, f: f * p.step, t: t + dec * 0.45, peak: peak * 0.8, att: p.att, dec: dec * 0.55 });
+    return;
+  }
+  tone(ctx, out, { type: p.type, f: f * p.from, f2: p.from !== 1 ? f : 0, glide: p.glide, t, peak, att: p.att, dec });
+  if (p.harm) tone(ctx, out, { type: "sine", f: f * 2 * p.from, f2: p.from !== 1 ? f * 2 : 0, glide: p.glide, t, peak: peak * p.harm, att: p.att, dec: dec * 0.6 });
+}
+function keyTick(ctx, dest, t) {
+  burst(ctx, dest, { t, peak: 0.112 * vary(0.15), att: 6e-4, dec: 0.014, filters: [["highpass", 1500, 0.7], ["bandpass", 3300 * vary(0.07), 1.3]] });
+  tone(ctx, dest, { f: 1900 * vary(0.04), t, peak: 5e-3, att: 5e-4, dec: 9e-3 });
+}
+function contour(chars) {
+  const n = chars.length, semi = new Array(n).fill(0), loud = new Array(n).fill(1);
+  let start = 0;
+  for (let k = 0; k < n; k++) {
+    const ch = chars[k];
+    if (!".!?\u2026".includes(ch) && k !== n - 1) continue;
+    const syllables = [];
+    for (let j = start; j <= k; j++) if (hangul(chars[j])) syllables.push(j);
+    const tail = (steps) => syllables.slice(-steps.length).forEach((j, q, list) => {
+      semi[j] += steps[q + steps.length - list.length];
+    });
+    if (ch === "?") tail([2, 4, 7]);
+    else if (ch === "!") {
+      for (const j of syllables) {
+        semi[j] += 1;
+        loud[j] = 1.15;
+      }
+      tail([2]);
+    } else if (ch === ".") tail([-1, -2, -3]);
+    else if (ch === "\u2026") tail([-1, -2]);
+    start = k + 1;
+  }
+  return { semi, loud };
+}
+function storyVoice(who, text, { cps = 23, render = null } = {}) {
+  const chars = Array.from(String(text ?? "")), { semi, loud } = contour(chars), every = Math.max(1, Math.round(cps / 11));
+  let syllables = 0;
+  const draw = (ctx, dest, t, k, h, n) => {
+    if (VOICE[who]) {
+      blip(ctx, dest, t, who, { jong: h.jong, semi: semi[k] + JUNG_SEMI[h.jung], loud: loud[k] });
+      return true;
+    }
+    if (n % every) return false;
+    keyTick(ctx, dest, t);
+    return true;
+  };
+  return { chars, at(k, when = null) {
+    const h = hangul(chars[k]);
+    if (!h) return false;
+    const n = syllables++;
+    if (render) return draw(render.ctx, render.dest, when ?? 0, k, h, n);
+    if (!getPref("sound") || !getPref("storyVoice")) return false;
+    const ctx = context;
+    if (!ctx || ctx.state !== "running") return false;
+    ambient();
+    return draw(ctx, master, ctx.currentTime + 4e-3, k, h, n);
+  } };
+}
+var canVibrate = () => typeof navigator !== "undefined" && typeof navigator.vibrate === "function";
+function canSwitch() {
+  try {
+    return typeof document !== "undefined" && "switch" in HTMLInputElement.prototype && (navigator.maxTouchPoints || 0) > 0;
+  } catch {
+    return false;
+  }
 }
 function haptic(kind = "ok") {
   if (!getPref("haptic")) return false;
-  const pattern = kind === "done" ? [14, 40, 18] : kind === "miss" ? [22] : [10];
+  if (canVibrate()) {
+    const pattern = kind === "done" ? [14, 40, 18] : kind === "miss" ? [22] : kind === "tap" ? [8] : [10];
+    try {
+      return Boolean(navigator.vibrate(pattern));
+    } catch {
+      return false;
+    }
+  }
+  if (!canSwitch()) return false;
   try {
-    return Boolean(navigator.vibrate?.(pattern));
+    const label = document.createElement("label"), input = document.createElement("input");
+    input.type = "checkbox";
+    input.setAttribute("switch", "");
+    label.setAttribute("aria-hidden", "true");
+    label.style.display = "none";
+    label.append(input);
+    label.addEventListener("click", (event) => event.stopPropagation());
+    document.head.append(label);
+    label.click();
+    label.remove();
+    return true;
   } catch {
     return false;
   }
@@ -13435,6 +13684,261 @@ var STORY_SIGNS = {
 };
 var storySigns = (pack) => STORY_SIGNS[pack] || [];
 
+// experiences/synk-world-app/life-story.mjs
+var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var expressionKey = (korean) => String(korean || "").replace(/[.!?。…]+$/, "").trim();
+function storyLineMarkup(text, expressions = []) {
+  const source = String(text ?? ""), keys = expressions.map((e, index) => ({ index, key: expressionKey(e.korean) })).filter((k) => k.key.length >= 2);
+  const marks = [];
+  for (const match of source.matchAll(/‘([^‘’]{1,80})’/g)) {
+    const inner = match[1], hit = keys.find((k) => inner.includes(k.key) || k.key.includes(inner));
+    marks.push({ start: match.index + 1, end: match.index + 1 + inner.length, index: hit ? hit.index : null });
+  }
+  for (const { index, key } of keys) {
+    let from = 0, at;
+    while ((at = source.indexOf(key, from)) >= 0) {
+      from = at + key.length;
+      if (!marks.some((m) => at < m.end && at + key.length > m.start)) marks.push({ start: at, end: at + key.length, index });
+    }
+  }
+  marks.sort((a, b) => a.start - b.start);
+  let html = "", cursor = 0;
+  for (const m of marks) {
+    if (m.start < cursor) continue;
+    html += escape(source.slice(cursor, m.start));
+    const inner = source.slice(m.start, m.end);
+    html += m.index === null ? `<mark class="life-say">${escape(inner)}</mark>` : `<mark class="life-say" data-life-mark="${m.index}" tabindex="0" aria-label="${escape(inner)} \xB7 \uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30">${escape(inner)}</mark>`;
+    cursor = m.end;
+  }
+  return html + escape(source.slice(cursor));
+}
+function storySteps({ scenes, questions, phase, sceneIndex = 0, questionIndex = 0, answered = false }) {
+  const storyState = (k) => phase === "questions" ? "done" : phase !== "story" ? "" : k < sceneIndex ? "done" : k === sceneIndex ? "now" : "";
+  const quizState = (k) => phase !== "questions" ? "" : k < questionIndex + (answered ? 1 : 0) ? "done" : k === questionIndex ? "now" : "";
+  const story = Array.from({ length: scenes }, (_, k) => storyState(k)), quiz = Array.from({ length: questions }, (_, k) => quizState(k));
+  const cells = (list) => list.map((state) => `<i${state ? ` class="is-${state}"` : ""}></i>`).join("");
+  return `<span class="life-steps" aria-hidden="true"><span class="life-steps-story" style="--n:${scenes}">${cells(story)}</span>${questions ? `<span class="life-steps-quiz" style="--n:${questions}">${cells(quiz)}</span>` : ""}</span>`;
+}
+var CPS = 23;
+var pauseAfter = (ch, base) => ch === " " ? base * 0.55 : ch === "," ? base + 140 : ".!?".includes(ch) ? base + 230 : ch === "\u2026" ? base + 320 : base;
+var NAV_HINT = "synk.world.story.nav-hint";
+function createStoryDetail({ content, isActive, onNext, onPrev, onMark, reduced = () => false }) {
+  let typing = null, photoSwap = null, down = null, swiped = false;
+  const motionOff = () => reduced() || matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const storageGet = () => {
+    try {
+      return localStorage.getItem(NAV_HINT) === "used";
+    } catch {
+      return false;
+    }
+  };
+  const markUsed = () => {
+    try {
+      localStorage.setItem(NAV_HINT, "used");
+    } catch {
+    }
+    content.querySelector(".life-story-hint")?.remove();
+  };
+  function stopTyping() {
+    if (!typing) return;
+    const { line, html, timer } = typing;
+    typing = null;
+    clearTimeout(timer);
+    if (!line.isConnected) return;
+    line.innerHTML = html;
+    delete line.dataset.typing;
+    const marks = [...line.querySelectorAll("mark.life-say")];
+    if (!marks.length || motionOff()) return;
+    for (const mark of marks) mark.classList.add("is-fresh");
+    void line.offsetWidth;
+    requestAnimationFrame(() => {
+      for (const mark of marks) mark.classList.remove("is-fresh");
+    });
+  }
+  function startTyping(line, who) {
+    stopTyping();
+    const html = line.innerHTML, units = [];
+    const walk = (node) => {
+      for (const child of [...node.childNodes]) {
+        if (child.nodeType === 3) {
+          const frag = document.createDocumentFragment();
+          for (const ch of Array.from(child.textContent)) {
+            const span = document.createElement("span");
+            span.className = "life-c";
+            span.textContent = ch;
+            frag.append(span);
+            units.push({ el: span, ch });
+          }
+          child.replaceWith(frag);
+        } else if (child.nodeType === 1) walk(child);
+      }
+    };
+    walk(line);
+    line.dataset.typing = "true";
+    const voice = storyVoice(who, units.map((u) => u.ch).join(""), { cps: CPS }), base = 1e3 / CPS;
+    let k = 0;
+    typing = { line, html, timer: 0 };
+    const step = () => {
+      if (!typing || typing.line !== line) return;
+      if (!line.isConnected) {
+        typing = null;
+        return;
+      }
+      if (k >= units.length) {
+        stopTyping();
+        return;
+      }
+      units[k].el.classList.add("is-on");
+      voice.at(k);
+      const wait = pauseAfter(units[k].ch, base);
+      k++;
+      typing.timer = setTimeout(step, wait);
+    };
+    step();
+  }
+  function crossfade(figure, previousSrc) {
+    photoSwap?.remove();
+    photoSwap = null;
+    const img = figure.querySelector(":scope>img");
+    if (!img || !previousSrc || img.currentSrc === previousSrc || img.src === previousSrc) return;
+    const cover = document.createElement("span"), picture = document.createElement("img");
+    cover.className = "life-story-photo-prev";
+    cover.setAttribute("aria-hidden", "true");
+    picture.src = previousSrc;
+    picture.alt = "";
+    picture.decoding = "sync";
+    cover.append(picture);
+    img.after(cover);
+    photoSwap = cover;
+    const fade = () => {
+      if (photoSwap !== cover) return;
+      requestAnimationFrame(() => {
+        cover.classList.add("is-leaving");
+        setTimeout(() => {
+          cover.remove();
+          if (photoSwap === cover) photoSwap = null;
+        }, 260);
+      });
+    };
+    (img.decode ? img.decode() : Promise.resolve()).then(fade, fade);
+  }
+  function enter({ who, previousSrc = null, first = false, signs = [] } = {}) {
+    stopTyping();
+    const stage = content.querySelector(".life-story-stage"), line = stage?.querySelector(".life-dialogue>p"), figure = stage?.querySelector(".life-story-photo");
+    if (!stage || !line) return;
+    try {
+      document.fonts?.load?.("450 20px 'World Story Serif'", "\uC774\uC57C\uAE30");
+    } catch {
+    }
+    if (figure) {
+      figure.dataset.nav = "true";
+      if (!motionOff()) crossfade(figure, previousSrc);
+      const crowded = signs.some((s) => s.box[2] > 60 && s.box[1] < 18);
+      if (first && !crowded && !storageGet()) {
+        const hint = document.createElement("span");
+        hint.className = "life-story-hint";
+        hint.setAttribute("aria-hidden", "true");
+        hint.innerHTML = "\uB20C\uB7EC\uC11C \uB118\uAE30\uAE30 <span>\u2192</span>";
+        figure.append(hint);
+      }
+    }
+    if (!motionOff() && !document.hidden) startTyping(line, who);
+  }
+  const inSheet = (el) => {
+    const sheet = el?.closest?.("dialog");
+    return !!sheet && !sheet.contains(content);
+  };
+  const storyTarget = (event) => isActive() && event.target instanceof Element && !inSheet(event.target);
+  function onPointerDown(event) {
+    if (!storyTarget(event) || event.button) return;
+    const figure = event.target.closest(".life-story-photo");
+    down = figure && !event.target.closest("button") ? { x: event.clientX, y: event.clientY } : null;
+    swiped = false;
+  }
+  function onPointerUp(event) {
+    if (!down || !storyTarget(event)) return;
+    const dx = event.clientX - down.x, dy = event.clientY - down.y;
+    down = null;
+    if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+      swiped = true;
+      markUsed();
+      (dx < 0 ? onNext : onPrev)();
+    }
+  }
+  function onClick(event) {
+    if (!storyTarget(event)) return;
+    const mark = event.target.closest("mark[data-life-mark]");
+    if (mark && !typing) {
+      event.preventDefault();
+      onMark(Number(mark.dataset.lifeMark));
+      return;
+    }
+    if (event.target.closest(".life-dialogue")) {
+      if (typing) {
+        event.preventDefault();
+        stopTyping();
+      }
+      return;
+    }
+    const figure = event.target.closest(".life-story-photo");
+    if (!figure || event.target.closest("button")) return;
+    if (swiped) {
+      swiped = false;
+      return;
+    }
+    const box = figure.getBoundingClientRect();
+    markUsed();
+    ((event.clientX - box.left) / box.width < 0.3 ? onPrev : onNext)();
+  }
+  function onKey(event) {
+    if (!isActive() || event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest("input,textarea,select,[contenteditable]") || inSheet(target) || content.querySelector("dialog[open]")) return;
+    const mark = target?.closest("mark[data-life-mark]");
+    if (mark && (event.key === "Enter" || event.key === " ")) {
+      event.preventDefault();
+      if (typing) stopTyping();
+      else onMark(Number(mark.dataset.lifeMark));
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      onNext();
+    } else if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      onPrev();
+    }
+  }
+  const onVisibility = () => {
+    if (document.hidden) stopTyping();
+  };
+  content.addEventListener("pointerdown", onPointerDown, { passive: true });
+  content.addEventListener("pointerup", onPointerUp, { passive: true });
+  content.addEventListener("pointercancel", () => {
+    down = null;
+  }, { passive: true });
+  content.addEventListener("click", onClick);
+  document.addEventListener("keydown", onKey);
+  document.addEventListener("visibilitychange", onVisibility);
+  return {
+    enter,
+    stop() {
+      stopTyping();
+      photoSwap?.remove();
+      photoSwap = null;
+    },
+    typing: () => !!typing,
+    dispose() {
+      stopTyping();
+      content.removeEventListener("pointerdown", onPointerDown);
+      content.removeEventListener("pointerup", onPointerUp);
+      content.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("visibilitychange", onVisibility);
+    }
+  };
+}
+
 // experiences/synk-world-app/life-ui.mjs
 if (!document.querySelector("[data-life-style]")) {
   const style = document.createElement("link");
@@ -13443,8 +13947,7 @@ if (!document.querySelector("[data-life-style]")) {
   style.dataset.lifeStyle = "true";
   document.head.append(style);
 }
-var escape = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-var sayMarks = (html) => html.replace(/‘([^‘’]{1,80})’/g, '\u2018<mark class="life-say">$1</mark>\u2019');
+var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var friends = { mongle: { name: "\uBABD\uAE00", file: "friend-mongle.webp", cut: "mongle" }, kkamong: { name: "\uAE4C\uBABD", file: "friend-kkamong.webp", cut: "kkamong" }, marine: { name: "\uB9C8\uB9B0", file: "friend-marine.webp", cut: "marin" } };
 var phaseNames = { expressions: "\uD45C\uD604 \uC775\uD788\uAE30", story: "\uC774\uC57C\uAE30 \uC77D\uAE30", apply: "\uC0DD\uD65C\uC5D0\uC11C \uC368 \uBCF4\uAE30", visit: "\uCE74\uD398 \uBC29\uBB38", compose: "\uB0B4 \uC8FC\uBB38 \uB9CC\uB4E4\uAE30" };
 var phaseLabels = { expressions: "EXPRESSIONS", story: "STORY", apply: "PRACTICE", visit: "CAFE VISIT", compose: "MY ORDER" };
@@ -13502,6 +14005,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     companion?.update(tutorState());
   } });
   void speech.prepare();
+  const story = createStoryDetail({ content, isActive: () => shown && panel.open && context2?.phase === "story", onNext: () => turnScene(1), onPrev: () => turnScene(-1), onMark: (index) => {
+    if (!companion?.openGuide) return;
+    play("open");
+    haptic("tap");
+    companion.openGuide({ expression: index });
+  }, reduced: () => !!home.state?.reduced });
   const summary = () => getProgress().summary(PACKS, LESSONS);
   const preferences = () => {
     try {
@@ -13546,7 +14055,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function statusLine() {
     const s = getProgress().status();
-    return `<p class="life-save-status" data-save-phase="${escape(s.phase)}" role="status">${escape(s.message)}</p>`;
+    return `<p class="life-save-status" data-save-phase="${escape2(s.phase)}" role="status">${escape2(s.message)}</p>`;
   }
   function tutorState() {
     const l = lessonById(context2?.lessonId), cafe = context2?.phase === "cafe";
@@ -13564,7 +14073,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped,
       requiresHearing,
       listening: cafe && speech.metrics().phase === "playing",
-      compose: cafe && context2.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0
+      compose: cafe && context2.lessonId === CAFE_COMPOSE_ID && cafeRun.step === 0,
+      expressions: context2?.phase === "story" ? l?.expressions || null : null
     };
   }
   function tutorHint() {
@@ -13596,9 +14106,10 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     else if (context2.phase === "questions") persistStage();
     else if (context2.phase === "review") getProgress().markReviewHelp(context2.reviewId);
   }
-  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
+  const retryButton = (q) => home.mountLifeTutor && home.tutor?.().tutor ? `<button class="life-tutor-retry" data-life-tutor-retry="${escape2(q.id)}">\uD29C\uD130\uC640 \uB2E4\uC2DC \uC5F0\uC2B5\uD558\uAE30</button>` : "";
   function paint(title, html, { type = "life-library", focus = ".life-heading", eyebrow = "LIFE IN KOREA", keepScroll = false, tutorSlot = null } = {}) {
     const scroll = keepScroll && shown ? content.scrollTop : 0;
+    story.stop();
     generation++;
     rendering = true;
     show(title, html + statusLine(), { type, eyebrow, nav: "play" });
@@ -13619,6 +14130,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       if (companion === tutor) companion = null;
       if (!rendering) {
         speech.stop();
+        story.stop();
         signClip?.pause();
         signClip = null;
         shown = false;
@@ -13658,7 +14170,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   function ensureReadable() {
     const s = getProgress().status();
     if (s.phase !== "unreadable") return true;
-    paint("\uC9C4\uB3C4\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694", `<p class="panel-description">${escape(s.message)}</p><p class="dialog-note">\uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694. \uB0B4 \uACC4\uC815\uC5D0\uC11C \uC5F0\uACB0 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p>`);
+    paint("\uC9C4\uB3C4\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694", `<p class="panel-description">${escape2(s.message)}</p><p class="dialog-note">\uAE30\uB85D\uC740 \uC9C0\uC6B0\uC9C0 \uC54A\uC558\uC5B4\uC694. \uB0B4 \uACC4\uC815\uC5D0\uC11C \uC5F0\uACB0 \uC0C1\uD0DC\uB97C \uD655\uC778\uD574 \uC8FC\uC138\uC694.</p>`);
     return false;
   }
   const stateOf = (id) => {
@@ -13670,21 +14182,21 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const done = packDone(pack2), total = pack2.lessons.length, started = pack2.lessons.some((l) => stateOf(l.id) === "started"), [word, label] = packWords[pack2.id] || [pack2.title, pack2.id.toUpperCase()];
     const state = done === total ? "done" : done || started ? "active" : "new", now = pack2.id === current;
     const foot = state === "new" ? `<span class="life-pack-count">${pad(total)} LESSONS</span>` : state === "done" ? '<span class="life-pack-done"><i class="w-led ok"></i>\uB2E4 \uB9C8\uCCE4\uC5B4\uC694</span>' : meter(done, total);
-    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape(`${pack2.title} \xB7 ${pack2.subtitle} \xB7 ${done} / ${total} \uB808\uC2A8${state === "done" ? " \uC644\uB8CC" : ""}`)}">${now ? '<span class="life-pack-now"><i class="w-led ok"></i>\uC9C0\uAE08 \uD558\uB294 \uD329</span>' : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word">${escape(word)}</strong><span class="life-pack-title">${escape(pack2.title)}</span></span><span class="life-pack-foot">${foot}</span></button>`;
+    return `<button class="life-pack-card" data-life-pack="${pack2.id}" data-state="${state}" data-shape="${packShapes[index % packShapes.length]}"${now ? ' data-current="true"' : ""} aria-label="${escape2(`${pack2.title} \xB7 ${pack2.subtitle} \xB7 ${done} / ${total} \uB808\uC2A8${state === "done" ? " \uC644\uB8CC" : ""}`)}">${now ? '<span class="life-pack-now"><i class="w-led ok"></i>\uC9C0\uAE08 \uD558\uB294 \uD329</span>' : print(pack2.id, "life-pack-print")}<span class="life-pack-copy"><small class="life-pack-label">${pad(index + 1)} \xB7 ${label}</small><strong class="life-pack-word">${escape2(word)}</strong><span class="life-pack-title">${escape2(pack2.title)}</span></span><span class="life-pack-foot">${foot}</span></button>`;
   }
   function nowPoster(s) {
     const lesson2 = s.nextLesson;
     if (lesson2 && (s.resume || !s.dueCount)) {
       const pack2 = packById(lesson2.packId), packIndex = PACKS.indexOf(pack2), index = Math.max(0, pack2.lessons.findIndex((l) => l.id === lesson2.id)), total = pack2.lessons.length, started = s.resume || stateOf(lesson2.id) === "started";
-      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word">${escape(lesson2.title)}</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${phaseNames[lesson2.type]}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${started ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></section>` };
+      return { kind: "lesson", packId: pack2.id, html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print(pack2.id)}<small class="life-poster-label">${started ? "CONTINUE" : "UP NEXT"} \xB7 PACK ${pad(packIndex + 1)}</small><strong class="life-poster-word">${escape2(lesson2.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[lesson2.type]}</span>${meter(index, total, `${pad(index + 1)} / ${pad(total)}`)}<button class="felt-button" data-life-lesson="${lesson2.id}">${started ? "\uC774\uC5B4\uC11C \uD558\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></section>` };
     }
     if (s.dueCount) return { kind: "review", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("review")}<small class="life-poster-label">REVIEW \xB7 ${pad(s.dueCount)}</small><strong class="life-poster-word">\uB3CC\uC544\uC628 \uD45C\uD604</strong><span class="life-poster-sub">\uBC30\uC6B4 \uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uC0C8 \uC7A5\uBA74\uC73C\uB85C \uB3CC\uC544\uC654\uC5B4\uC694.</span><button class="felt-button" data-life-review>\uBCF5\uC2B5\uD558\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">\uD329\uC744 \uBAA8\uB450 \uB9C8\uCCE4\uC5B4\uC694</strong><span class="life-poster-sub">${future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB2E4\uC2DC \uD558\uACE0 \uC2F6\uC740 \uD329\uC744 \uACE8\uB77C\uC694."}</span><button class="felt-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
+    return { kind: "rest", html: `<section class="life-poster life-now" aria-label="\uC9C0\uAE08 \uD560 \uC77C">${print("complete")}<small class="life-poster-label">ALL PACKS \xB7 ${s.completed} / ${s.total}</small><strong class="life-poster-word">\uD329\uC744 \uBAA8\uB450 \uB9C8\uCCE4\uC5B4\uC694</strong><span class="life-poster-sub">${future ? `\uB2E4\uC74C \uBCF5\uC2B5\uC740 ${escape2(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB2E4\uC2DC \uD558\uACE0 \uC2F6\uC740 \uD329\uC744 \uACE8\uB77C\uC694."}</span><button class="felt-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815 \uBCF4\uAE30 <span aria-hidden="true">\u2192</span></button></section>` };
   }
   function reviewRow(s) {
     const future = Number.isFinite(s.nextReviewAt) ? dayLabel(s.nextReviewAt) : "";
-    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>\uBCF5\uC2B5</strong><small>${s.dueCount ? `\uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uB3CC\uC544\uC654\uC5B4\uC694.` : `\uB2E4\uC74C \uBCF5\uC2B5 ${escape(future)}`}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${s.dueCount}\uAC1C</span>` : ""}</button>`;
+    return `<button class="life-row" data-life-review>${print("review", "life-row-print")}<span class="life-row-copy"><strong>\uBCF5\uC2B5</strong><small>${s.dueCount ? `\uD45C\uD604 ${s.dueCount}\uAC1C\uAC00 \uB3CC\uC544\uC654\uC5B4\uC694.` : `\uB2E4\uC74C \uBCF5\uC2B5 ${escape2(future)}`}</small></span>${s.dueCount ? `<span class="life-row-state"><i class="w-led check"></i>${s.dueCount}\uAC1C</span>` : ""}</button>`;
   }
   function packs() {
     if (!ensureReadable()) return;
@@ -13698,13 +14210,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   }
   function lessonRow(l, number, { nowId = null, className = "", lead = null, kicker = phaseNames[l.type], labels = ["\uC644\uB8CC", "\uD558\uB294 \uC911", ""] } = {}) {
     const state = stateOf(l.id), now = l.id === nowId, text = state === "completed" ? labels[0] : state === "started" ? labels[1] : now ? "\uC9C0\uAE08" : labels[2];
-    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape(kicker)}</small><strong>${escape(l.title)}</strong><span>${escape(l.goal)}</span></span>${text ? `<em>${escape(text)}</em>` : ""}</button>`;
+    return `<button data-life-lesson="${l.id}" class="life-lesson-card ${className}" data-state="${state}"${now ? " data-now" : ""}>${lead ?? `<span class="life-step-number">${pad(number)}</span>`}<span><small>${escape2(kicker)}</small><strong>${escape2(l.title)}</strong><span>${escape2(l.goal)}</span></span>${text ? `<em>${escape2(text)}</em>` : ""}</button>`;
   }
   const nowIn = (lessons) => (lessons.find((l) => stateOf(l.id) === "started") || lessons.find((l) => stateOf(l.id) !== "completed"))?.id || null;
   function cafeVisitCards(nowId = null) {
     return CAFE_VISITS.map((visit) => {
       const state = stateOf(visit.id), now = visit.id === nowId, text = state === "completed" ? "\uC644\uB8CC" : state === "started" ? "\uD558\uB294 \uC911" : now ? "\uC9C0\uAE08" : "";
-      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${visit.number}\uBC88\uC9F8 \uBC29\uBB38</small><strong>${escape(visit.title)}</strong><span>${escape(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
+      return `<button data-life-lesson="${visit.id}" class="life-lesson-card cafe-visit-card" data-state="${state}"${now ? " data-now" : ""}><span class="life-step-number">${pad(visit.number)}</span><span><small>${visit.number}\uBC88\uC9F8 \uBC29\uBB38</small><strong>${escape2(visit.title)}</strong><span>${escape2(visit.description)}</span></span>${text ? `<em>${text}</em>` : ""}</button>`;
     }).join("");
   }
   function stories() {
@@ -13722,8 +14234,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     context2 = null;
     const p = getProgress(), s = summary(), hasReviews = s.dueCount > 0 || Number.isFinite(s.nextReviewAt), activeId = p.exportSnapshot().activeLessonId, nextVisit = CAFE_VISITS.find((v) => v.id === activeId) || CAFE_VISITS.find((v) => p.lessonState(v.id).status === "started") || CAFE_VISITS.find((v) => p.lessonState(v.id).status !== "completed") || CAFE_VISITS[0], visited = CAFE_VISITS.filter((v) => p.lessonState(v.id).status === "completed").length;
     const lessons = value.lessons.filter((l) => id !== "cafe" || !isCafeLesson(l.id)), index = PACKS.findIndex((p2) => p2.id === id), [word, label] = packWords[id] || [value.title, id.toUpperCase()], done = packDone(value);
-    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape(nextVisit.title)}</h3><p>${escape(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uBC29\uBB38 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? `${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694` : `\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88`}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
-    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">\uC8FC\uBB38 \uC804\uC5D0 \uBA3C\uC800 \uBD10\uB3C4 \uC88B\uC544\uC694</small></div><p class="life-pack-description">${escape(value.subtitle)}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" style="--len:${[...word].length}">${escape(word)}</strong><span class="life-poster-sub life-pack-description">${escape(value.title)} \xB7 ${escape(value.subtitle)}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
+    const cafe = id === "cafe" ? `<section class="cafe-pack-preview"><img src="${asset("home/cafe-room-v1.webp")}" alt="\uD587\uC0B4\uC774 \uB4DC\uB294 \uB3D9\uB124 \uCE74\uD398" width="1600" height="900"><div><small class="life-section-label">VISIT ${pad(nextVisit.number)} / ${pad(CAFE_VISITS.length)}</small><h3>${escape2(nextVisit.title)}</h3><p>${escape2(nextVisit.description)}</p><button class="felt-button" data-life-lesson="${nextVisit.id}">${p.lessonState(nextVisit.id).status === "started" ? "\uC774\uC5B4\uC11C \uD558\uAE30" : nextVisit.number === 1 ? "\uCE74\uD398\uC5D0 \uB4E4\uC5B4\uAC00\uAE30" : "\uB2E4\uC74C \uBC29\uBB38 \uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button></div></section><section class="life-list" aria-label="\uCE74\uD398 \uBC29\uBB38"><div class="life-section-head"><p class="life-section-label">VISITS</p><small class="life-library-note">${visited ? `${visited} / ${CAFE_VISITS.length}\uBC88 \uB2E4\uB140\uC654\uC5B4\uC694` : `\uBC29\uBB38 ${CAFE_VISITS.length}\uBC88`}</small></div><div class="life-lesson-list cafe-visit-list">${cafeVisitCards(nextVisit.id)}</div></section>` : "";
+    const heading = id === "cafe" ? `<div class="life-heading life-pack-head" tabindex="-1"><div class="life-section-head"><p class="life-section-label">LESSONS</p><small class="life-library-note">\uC8FC\uBB38 \uC804\uC5D0 \uBA3C\uC800 \uBD10\uB3C4 \uC88B\uC544\uC694</small></div><p class="life-pack-description">${escape2(value.subtitle)}</p></div>` : `<div class="life-heading life-pack-head" tabindex="-1"><section class="life-poster life-pack-poster">${print(id)}<small class="life-poster-label">PACK ${pad(index + 1)} \xB7 ${label}</small><strong class="life-poster-word" style="--len:${[...word].length}">${escape2(word)}</strong><span class="life-poster-sub life-pack-description">${escape2(value.title)} \xB7 ${escape2(value.subtitle)}</span>${done ? meter(done, value.lessons.length) : `<span class="life-poster-count">${pad(value.lessons.length)} LESSONS</span>`}</section></div>`;
     const nowId = id === "cafe" ? null : nowIn(lessons);
     paint(value.title, `${cafe}${heading}<div class="life-lesson-list">${lessons.map((l, i) => lessonRow(l, i + 1, { nowId })).join("")}</div><div class="life-library-footer"><button class="quiet-button" data-life-packs>\uD329 \uBAA9\uB85D\uC73C\uB85C</button>${hasReviews ? '<button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uBCF4\uAE30</button>' : ""}</div>`);
   }
@@ -13855,13 +14367,13 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     const pack2 = packById(l.packId), scenes = l.scenes.length, questions = l.questions.length, phase = context2.phase;
     const done = phase === "story" ? context2.sceneIndex + 1 : phase === "questions" ? scenes + Math.min(context2.questionIndex + (lastFeedback ? 1 : 0), questions) : 0;
     const count = phase === "questions" ? `${Math.min(context2.questionIndex + 1, questions)} / ${questions}` : phase === "story" ? `${Math.min(context2.sceneIndex + 1, scenes)} / ${scenes}` : "";
-    return `<div class="life-session-meta" data-life-session="${escape(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context2.questionIndex}">${progressLine(done, scenes + questions)}<span>${escape(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
+    return `<div class="life-session-meta" data-life-session="${escape2(getProgress().lessonState(l.id).attemptId)}" data-life-lesson-id="${l.id}" data-life-phase="${phase}" data-life-step="${context2.questionIndex}">${scenes ? storySteps({ scenes, questions, phase, sceneIndex: context2.sceneIndex, questionIndex: context2.questionIndex, answered: !!lastFeedback }) : progressLine(done, scenes + questions)}<span>${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span><span>${count ? `<b class="life-count">${count}</b>` : '<b class="life-count">START</b>'}</span></div>`;
   }
-  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC774\uBC88\uC5D0 \uBC30\uC6B8 \uD45C\uD604" : "\uBC30\uC6B4 \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape(e.korean)}</strong><p>${escape(e.meaning)}</p></div></article>`).join("")}</section>`;
-  const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong>${escape(e.korean)}</strong>${e.note ? `<small>${escape(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
+  const expressionList = (l, label = "EXPRESSIONS") => `<section class="life-expression-list" aria-label="${label === "EXPRESSIONS" ? "\uC774\uBC88\uC5D0 \uBC30\uC6B8 \uD45C\uD604" : "\uBC30\uC6B4 \uD45C\uD604"}"><p class="life-section-label">${label}</p>${l.expressions.map((e, i) => `<article><span class="life-expression-index" aria-hidden="true">${pad(i + 1)}</span><div><strong>${escape2(e.korean)}</strong><p>${escape2(e.meaning)}</p></div></article>`).join("")}</section>`;
+  const learnedList = (expressions, label = "LEARNED") => `<section class="life-result-learned" aria-label="\uBC30\uC6B4 \uD45C\uD604"><p class="life-section-label">${label}</p><ul>${expressions.map((e) => `<li><strong>${escape2(e.korean)}</strong>${e.note ? `<small>${escape2(e.note)}</small>` : ""}</li>`).join("")}</ul></section>`;
   const doneWord = (title) => {
     const words = String(title).split(" "), tail = words.pop();
-    return `${escape(words.join(" "))}${words.length ? " " : ""}<span class="life-nowrap">${escape(tail)}, \uB05D!</span>`;
+    return `${escape2(words.join(" "))}${words.length ? " " : ""}<span class="life-nowrap">${escape2(tail)}, \uB05D!</span>`;
   };
   function renderLesson() {
     if (!context2) return;
@@ -13869,7 +14381,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (!l) return;
     const header = lessonHeader(l);
     if (context2.phase === "intro") {
-      paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape(l.goal)}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-lesson" });
+      paint(l.title, `${header}<div class="life-intro"><div class="life-heading life-intro-head" tabindex="-1">${print(l.packId, "life-intro-print")}<div><p class="life-section-label">${phaseLabels[l.type]}</p><p class="life-goal">${escape2(l.goal)}</p></div></div>${expressionList(l)}</div><div class="life-actions"><button class="felt-button" data-life-begin>${l.type === "story" ? "\uC774\uC57C\uAE30 \uC77D\uAE30" : "\uC2DC\uC791\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-lesson" });
       return;
     }
     if (context2.phase === "story") {
@@ -13886,7 +14398,9 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
         img.src = asset(storyPhotoFile(l.packId, who));
       }
       const photo2 = hasStoryPhoto(l.packId), signs = photo2 ? storySigns(l.packId) : [];
-      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape(s.text)} \uC18C\uB9AC \uB4E3\uAE30" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${sayMarks(escape(scene2.text))}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next>${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
+      const previousSrc = content.querySelector(".life-session-meta")?.dataset.lifeLessonId === l.id ? content.querySelector(".life-story-photo>img")?.src || null : null;
+      paint(l.title, `${header}<div class="life-story-stage" data-speaker="${speaker}">${photo2 ? `<figure class="life-story-photo"><img src="${asset(storyPhotoFile(l.packId, speaker))}" alt="${friend ? `${friend.name} \uCC28\uB840 \xB7 ` : ""}\uBABD\uAE00\xB7\uAE4C\uBABD\xB7\uB9C8\uB9B0\uC774 \uD568\uAED8 \uC788\uB294 \uC774\uC57C\uAE30 \uC7A5\uBA74${signs.length ? ` \xB7 ${escape2(signs.map((s) => s.text).join(", "))}` : ""}" width="768" height="512" decoding="async">${signs.map((s) => `<button type="button" class="life-sign" data-sound="none" data-kind="${s.kind}" data-life-sign="${s.voice}" aria-label="${escape2(s.text)} \uC18C\uB9AC \uB4E3\uAE30" style="--x:${s.box[0]}%;--y:${s.box[1]}%;--w:${s.box[2] - s.box[0]}%;--h:${s.box[3] - s.box[1]}%">${escape2(s.text)}</button>`).join("")}</figure>` : `<div class="life-cast">${Object.keys(friends).map((f) => `<div class="${f === scene2.speaker ? "is-speaking" : ""}">${cut(f)}<small>${friends[f].name}</small></div>`).join("")}</div>`}<div class="life-dialogue life-heading" tabindex="-1" data-speaker="${speaker}"><small${friend ? ` class="w-name" data-who="${speaker}"` : ""}>${friend ? friend.name : "\uC774\uC57C\uAE30"}</small><p>${storyLineMarkup(scene2.text, l.expressions)}</p></div></div>${restLine(`story:${l.id}`)}<div class="life-actions"><button class="felt-button" data-life-scene-next data-sound="none">${last ? "\uBB38\uC81C \uD480\uAE30" : "\uB2E4\uC74C"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`, { type: "life-story", tutorSlot: photo2 ? ".life-story-photo" : null });
+      story.enter({ who: speaker, previousSrc, first: context2.sceneIndex === 0, signs });
       return;
     }
     renderQuestion();
@@ -13904,12 +14418,12 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     if (lastFeedback) revealFeedback();
   }
   function questionMarkup(q, feedback, { lesson: lesson2 = null, packId = null, origin = "", rest = "" } = {}) {
-    const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape(c.text)}</span></button>`).join("");
+    const choiceButtons = q.choices.map((c) => `<button class="life-choice ${feedback && c.id === feedback.choiceId ? "is-chosen" : ""} ${feedback && c.id === q.answerId ? "is-correct" : ""}" data-life-choice="${c.id}" ${feedback ? "disabled" : ""}><span>${escape2(c.text)}</span></button>`).join("");
     const result = feedback ? feedback.correct && !feedback.helped ? "ok" : feedback.correct ? "assisted" : "retry" : "";
     const answer = q.choices.find((c) => c.id === q.answerId)?.text || "";
-    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small>${retryButton(q)}</div>` : ""}</div>` : "";
-    const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape(q.context || lesson2?.title || "")}</p></div>` : "";
-    return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape(origin)}</small>` : ""}<h3>${escape(q.prompt)}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape(q.explanation)}</p>${rest}</section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div></section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
+    const band = feedback ? `<div class="life-feedback" role="status" data-result="${result}"><strong>${result === "ok" ? "\uB9DE\uC544\uC694" : result === "assisted" ? "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uB9DE\uD614\uC5B4\uC694" : "\uC774\uB807\uAC8C \uB9D0\uD574\uC694"}</strong>${result === "retry" ? `<p class="life-feedback-answer">${escape2(answer)}</p>` : ""}<details class="life-explanation" ${result === "ok" && preferences().explanation === "brief" ? "" : "open"}><summary>\uC774\uC720</summary><p>${escape2(q.explanation)}</p></details>${result !== "ok" ? `<div class="life-feedback-foot"><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small>${retryButton(q)}</div>` : ""}</div>` : "";
+    const scene2 = packId ? `<div class="life-scene">${print(packId, "life-scene-print")}<p class="life-context">${escape2(q.context || lesson2?.title || "")}</p></div>` : "";
+    return `<div class="life-question-layout"><section class="life-question-copy">${scene2}<div class="life-question-title" tabindex="-1">${origin ? `<small>${escape2(origin)}</small>` : ""}<h3>${escape2(q.prompt)}</h3></div><button class="quiet-button life-help" data-life-help aria-expanded="${helped}" ${feedback ? "disabled" : ""}>\uD45C\uD604 \uB3C4\uC6C0 \uBCF4\uAE30</button><p class="life-hint" ${helped ? "" : "hidden"}>${escape2(q.explanation)}</p>${rest}</section><section class="life-answer-area" aria-label="\uB2F5 \uACE0\uB974\uAE30"><div class="life-choices">${choiceButtons}</div></section></div><div class="life-actions">${band}<button class="felt-button" data-life-question-next ${feedback ? "" : "disabled"}>${feedback ? "\uB2E4\uC74C" : "\uB2F5\uC744 \uACE8\uB77C \uC8FC\uC138\uC694"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-pause>\uB098\uC911\uC5D0 \uD558\uAE30</button></div>`;
   }
   function choose(choiceId) {
     if (lastFeedback) return;
@@ -13931,7 +14445,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const a = done.answers[q.id];
       return a && (!a.correct || a.helped);
     }), again = missed ? expressionOf(l, missed) : null;
-    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${learnedList(l.expressions)}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${escape(again.korean)}</strong><div><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815</button></div></section>` : ""}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape(word)} \uD329 \uB3C4\uC7A5` : `${escape(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${nextLink(s.nextLesson)}</div>`, { type: "life-complete" });
+    paint("\uB808\uC2A8 \uACB0\uACFC", `<div class="life-complete life-result life-heading" tabindex="-1"><section class="life-poster life-complete-poster">${print(l.packId)}<small class="life-poster-label">RESULT \xB7 ${phaseLabels[l.type]}</small><strong class="life-poster-word">${doneWord(l.title)}</strong><span class="life-poster-sub">${escape2(pack2.title)} \xB7 ${phaseNames[l.type]}</span></section>${learnedList(l.expressions)}${again ? `<section class="life-result-again"><p class="life-section-label">AGAIN</p><strong>${escape2(again.korean)}</strong><div><small>\uC870\uAE08 \uB4A4 \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uB098\uC640\uC694.</small><button class="quiet-button" data-life-review>\uBCF5\uC2B5 \uC77C\uC815</button></div></section>` : ""}<section class="life-result-got"><p class="life-section-label">GOT</p><div><i class="w-led ${complete ? "ok" : "info"}"></i><strong>${complete ? `${escape2(word)} \uD329 \uB3C4\uC7A5` : `${escape2(word)} \uD329 ${packState.completed} / ${packState.total}`}</strong><small>${complete ? "\uD329 \uD558\uB098\uB97C \uB2E4 \uB9C8\uCCE4\uC5B4\uC694." : "\uB808\uC2A8\uC744 \uB9C8\uCE60 \uB54C\uB9C8\uB2E4 \uD55C \uCE78\uC529 \uCC28\uC694."}</small></div></section></div><div class="life-actions"><button class="felt-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C <span aria-hidden="true">\u2192</span></button>${nextLink(s.nextLesson)}</div>`, { type: "life-complete" });
     celebrate();
     const ticket = generation;
     p.flush().catch(() => {
@@ -13954,7 +14468,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       const l = lessonById(r.lessonId), q = l?.questions.find((x) => x.id === r.questionId);
       return { korean: expressionOf(l, q).korean, origin: reviewOrigin(r, snapshot) };
     }).filter((i) => i.korean);
-    paint("\uBCF5\uC2B5", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `\uB3CC\uC544\uC628 \uD45C\uD604 ${s.dueCount}\uAC1C` : future ? "\uB2E4\uC74C \uBCF5\uC2B5" : "\uC544\uC9C1 \uBCF5\uC2B5\uC774 \uC5C6\uC5B4\uC694"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C\uC694." : future ? `${escape(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB808\uC2A8\uC744 \uD558\uB098 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uD560 \uD45C\uD604\uC774 \uC0DD\uACA8\uC694."}</p></section>${items.length ? `<section class="life-review-list" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong>${escape(i.korean)}</strong><small>${escape(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uBCF5\uC2B5 \uC2DC\uC791\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C</button>'}</div>`, { type: "life-review" });
+    paint("\uBCF5\uC2B5", `<div class="life-review-summary life-heading" tabindex="-1"><section class="life-poster life-review-poster">${print("review")}<small class="life-poster-label">REVIEW${s.dueCount ? ` \xB7 ${pad(s.dueCount)}` : ""}</small><h3 class="life-poster-word">${s.dueCount ? `\uB3CC\uC544\uC628 \uD45C\uD604 ${s.dueCount}\uAC1C` : future ? "\uB2E4\uC74C \uBCF5\uC2B5" : "\uC544\uC9C1 \uBCF5\uC2B5\uC774 \uC5C6\uC5B4\uC694"}</h3><p class="life-poster-sub">${s.dueCount ? "\uAC19\uC740 \uBB38\uC81C\uAC00 \uC544\uB2C8\uB77C \uC0C8 \uC7A5\uBA74\uC5D0\uC11C \uB2E4\uC2DC \uACE8\uB77C\uC694." : future ? `${escape2(future)}\uC5D0 \uC5F4\uB824\uC694.` : "\uB808\uC2A8\uC744 \uD558\uB098 \uB9C8\uCE58\uBA74 \uBCF5\uC2B5\uD560 \uD45C\uD604\uC774 \uC0DD\uACA8\uC694."}</p></section>${items.length ? `<section class="life-review-list" aria-label="\uB3CC\uC544\uC628 \uD45C\uD604"><p class="life-section-label">BACK AGAIN</p><ul>${items.map((i) => `<li><strong>${escape2(i.korean)}</strong><small>${escape2(i.origin)}</small></li>`).join("")}</ul></section>` : ""}${restLine("review")}</div><div class="life-actions">${s.dueCount ? '<button class="felt-button" data-life-review-start>\uBCF5\uC2B5 \uC2DC\uC791\uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30</button>' : '<button class="felt-button" data-life-next>\uB2E4\uC74C \uB808\uC2A8 \uD558\uAE30 <span aria-hidden="true">\u2192</span></button><button class="quiet-button" data-life-home>\uC6B0\uB9AC \uB3D9\uB124\uB85C</button>'}</div>`, { type: "life-review" });
   }
   function reviewStart(lessonId = null, requestedIds = null) {
     const p = getProgress(), ids = Array.isArray(requestedIds) ? requestedIds : null;
@@ -13987,7 +14501,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       helped = true;
       getProgress().markReviewHelp(id);
     }
-    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${escape(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { packId: record2.packId, origin: `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604`, rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
+    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${escape2(id)}" data-life-phase="review" data-life-step="${index}">${progressLine(index + (lastFeedback ? 1 : 0), run.ids.length)}<span>${escape2(packById(record2.packId).title)} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${index + 1} / ${run.ids.length}</b></span></div>${questionMarkup(q, lastFeedback, { packId: record2.packId, origin: `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604`, rest: restLine(`review:${id}`) })}`, { type: "life-question", focus: ".life-question-title" });
     if (lastFeedback) revealFeedback();
   }
   function chooseReview(id) {
@@ -13997,9 +14511,24 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     helped = p.exportSnapshot().activeReview.answers[context2.reviewId].helped;
     lastFeedback = { question: q, choiceId: id, correct, helped };
     const record2 = p.exportSnapshot().reviews[context2.reviewId], html = questionMarkup(q, lastFeedback, { packId: record2?.packId, origin: record2 ? `${reviewOrigin(record2)} \uBC30\uC6B4 \uD45C\uD604` : "", rest: restLine(`review:${context2.reviewId}`) });
-    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context2.reviewId}" data-life-phase="review" data-life-step="${context2.questionIndex}">${progressLine(context2.questionIndex + 1, reviewRun.ids.length)}<span>${escape(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context2.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
+    paint("\uBCF5\uC2B5", `<div class="life-session-meta" data-life-review-id="${context2.reviewId}" data-life-phase="review" data-life-step="${context2.questionIndex}">${progressLine(context2.questionIndex + 1, reviewRun.ids.length)}<span>${escape2(packById(record2?.packId)?.title || "\uC0DD\uD65C \uD55C\uAD6D\uC5B4")} \xB7 \uC0C8 \uC7A5\uBA74 \uBCF5\uC2B5</span><span><b class="life-count">${context2.questionIndex + 1} / ${reviewRun.ids.length}</b></span></div>${html}`, { type: "life-question", focus: ".life-question-title" });
     revealFeedback();
     judge(correct);
+  }
+  function turnScene(delta) {
+    if (context2?.phase !== "story") return;
+    const l = lessonById(context2.lessonId), target = context2.sceneIndex + delta;
+    if (target < 0) {
+      play("tap");
+      home.toast("\uCCAB \uC7A5\uBA74\uC774\uC5D0\uC694.");
+      return;
+    }
+    play("page");
+    haptic("tap");
+    context2.sceneIndex = target;
+    if (target >= l.scenes.length) context2.phase = "questions";
+    persistStage();
+    renderLesson();
   }
   function pause() {
     if (context2?.phase === "cafe") persistCafe();
@@ -14026,12 +14555,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
       persistStage();
       renderLesson();
     },
-    "scene-next": () => {
-      context2.sceneIndex++;
-      if (context2.sceneIndex >= lessonById(context2.lessonId).scenes.length) context2.phase = "questions";
-      persistStage();
-      renderLesson();
-    },
+    "scene-next": () => turnScene(1),
     choice: (el) => context2.phase === "review" ? chooseReview(el.dataset.lifeChoice) : choose(el.dataset.lifeChoice),
     "question-next": () => {
       if (context2.phase === "review") {
@@ -14098,6 +14622,8 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
     sign: (el) => {
       const name = el.dataset.lifeSign;
       if (!/^[a-z-]+$/.test(name || "")) return;
+      play("sign");
+      haptic("tap");
       signClip?.pause();
       const clip = new Audio(asset("story-voice/" + name + ".mp3"));
       signClip = clip;
@@ -14125,6 +14651,7 @@ function createLifeExperience({ home, getProgress, show = (title, html, options)
   return { packs, stories, review, reviewStart, next, pack, start, cafe: () => pack("cafe"), summary, refresh: updateHome, metrics: () => ({ shown, lessonId: context2?.lessonId || null, phase: context2?.phase || null, step: context2?.questionIndex ?? null, cafe: isCafeLesson(context2?.lessonId) ? cafeRun : null, speech: speech.metrics(), tutor: companion?.metrics() || null, owner: getProgress().owner, progress: getProgress().exportSnapshot() }), dispose() {
     ended = true;
     speech.dispose();
+    story.dispose();
     clearInterval(timer);
     document.removeEventListener("click", click);
     document.removeEventListener("visibilitychange", sitting);
@@ -14538,9 +15065,9 @@ function resumeCandidates(progress2, settings, now) {
     const index = PACKS.findIndex((pack) => pack.id === lesson2.packId);
     result.push({ ...lessonCandidate(lesson2, index, settings), id: `world.resume.lesson.${lesson2.id}`, resume: true, label: `${lesson2.title} \xB7 \uC774\uC5B4 \uD558\uAE30` });
   }
-  const session = progress2?.activeReview;
-  if (!session || !Array.isArray(session.ids) || !time2(session.startedAt) || session.startedAt > now) return result;
-  const pending = session.ids.filter((id) => !own(session.answers, id)), reviews = verifiedReviews(progress2), first = reviews.find((review) => review.id === pending[0]);
+  const session2 = progress2?.activeReview;
+  if (!session2 || !Array.isArray(session2.ids) || !time2(session2.startedAt) || session2.startedAt > now) return result;
+  const pending = session2.ids.filter((id) => !own(session2.answers, id)), reviews = verifiedReviews(progress2), first = reviews.find((review) => review.id === pending[0]);
   if (!first) return result;
   result.push({
     id: "world.resume.review",
@@ -14557,7 +15084,7 @@ function resumeCandidates(progress2, settings, now) {
     supports: [...supports],
     audioRequired: false,
     modality: "reading",
-    reviewAt: iso2(session.startedAt),
+    reviewAt: iso2(session2.startedAt),
     presentation: presentationFor(settings)
   });
   return result;
@@ -14603,7 +15130,7 @@ function createWorldLearningPlan({ summary = null, progress: progress2 = {}, set
 }
 
 // experiences/synk-world-app/world-learning-ui.mjs
-var escape2 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+var escape3 = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 var reasons = { travel: "\uC5EC\uD589", life: "\uD55C\uAD6D \uC0DD\uD65C", people: "\uC0AC\uB78C\uB4E4\uACFC \uB300\uD654", exam: "TOPIK \uAE30\uCD08", study: "\uD559\uAD50 \uACF5\uBD80", work: "\uC9C1\uC7A5", career: "\uC9C4\uB85C \uC900\uBE44", culture: "\uD55C\uAD6D \uBB38\uD654", hobby: "\uCDE8\uBBF8", other: "\uC544\uC9C1 \uCC3E\uB294 \uC911" };
 var supportNames = { choose: ["\uACE8\uB77C \uBCF4\uBA70 \uC775\uD788\uAE30", "\uBA3C\uC800 \uACE8\uB77C \uBCF4\uACE0, \uD2C0\uB9AC\uBA74 \uC774\uC720\uB97C \uBD10\uC694."], step: ["\uD55C \uB2E8\uACC4\uC529 \uB3C4\uC6C0\uBC1B\uAE30", "\uBB38\uC81C\uB9C8\uB2E4 \uD45C\uD604 \uB3C4\uC6C0\uC744 \uBA3C\uC800 \uD3BC\uCCD0 \uB46C\uC694."], independent: ["\uBA3C\uC800 \uD63C\uC790 \uD480\uAE30", "\uB3C4\uC6C0\uC740 \uB0B4\uAC00 \uB204\uB97C \uB54C\uB9CC \uC5F4\uB824\uC694."] };
 var stateNames = { practice: "\uB2E4\uC2DC \uC5F0\uC2B5\uD560 \uBD80\uBD84", supported: "\uB3C4\uC6C0\uC744 \uBC1B\uC544 \uC5F0\uC2B5\uD55C \uBD80\uBD84", review: "\uB2E4\uC2DC \uD655\uC778\uD560 \uB54C", checking: "\uC0C8 \uBB38\uC81C\uB85C \uD655\uC778\uD558\uB294 \uC911", "recent-independent": "\uCD5C\uADFC \uC0C8 \uBB38\uC81C\uB97C \uD63C\uC790 \uD480\uC5C8\uC5B4\uC694" };
@@ -14726,10 +15253,10 @@ function createWorldEducation({ home, getProgress, engine, createPlan, launchGam
    </div>
    <label class="study-consent"><input type="checkbox" name="consent" ${profile.consent ? "checked" : ""}><span><strong>${progress2.status().scoped ? "\uB0B4 \uACC4\uC815" : "\uC774 \uAE30\uAE30"}\uC5D0 \uC800\uC7A5\uD558\uAE30</strong><small>\uBAA9\uD45C\uC640 \uB3C4\uC6C0 \uBC29\uC2DD\uC744 \uAE30\uC5B5\uD574 \uCD94\uCC9C\uC5D0 \uC368\uC694.</small></span></label>
    <p class="study-scope">\uAE09\uC218\uB098 \uC131\uACA9\uC744 \uD310\uC815\uD558\uC9C0 \uC54A\uC544\uC694. \uC124\uC815\uC744 \uC9C0\uC6CC\uB3C4 \uC9C4\uB3C4\uC640 \uBCF5\uC2B5 \uAE30\uB85D\uC740 \uB0A8\uC544\uC694.</p>
-   <p class="study-save-status" role="status">${escape2(progress2.status().message)}</p>
+   <p class="study-save-status" role="status">${escape3(progress2.status().message)}</p>
    <div class="life-actions"><button class="felt-button" type="submit">${continueAfter ? "\uC800\uC7A5\uD558\uACE0 \uC2DC\uC791\uD558\uAE30" : "\uC800\uC7A5\uD558\uAE30"} <span aria-hidden="true">\u2192</span></button><button class="quiet-button" type="button" data-study-skip>${profile.status === "new" ? "\uAC74\uB108\uB6F0\uAE30" : "\uB2EB\uAE30"}</button></div>
    ${profile.status === "active" ? '<div class="study-controls"><button type="button" class="quiet-button" data-study-clear="disable">\uCD94\uCC9C\uC5D0 \uC4F0\uC9C0 \uC54A\uAE30</button><button type="button" class="quiet-button" data-study-clear="delete">\uBAA9\uD45C \uC9C0\uC6B0\uAE30</button></div>' : ""}
-   <section class="study-understanding"><h3>\uC5F0\uC2B5\uC5D0\uC11C \uBCF8 \uAC83</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape2(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join("")}</ul>` : "<p>\uC0C8 \uBB38\uC81C\uB97C \uD480\uBA74\uC11C \uC870\uAE08\uC529 \uC54C\uC544\uAC00\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uACE0 \uC57D\uD558\uB2E4\uACE0 \uBCF4\uC9C0 \uC54A\uC544\uC694.</p>"}<p>\uD63C\uC790 \uD47C \uB2F5, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB2F5, \uC870\uC791\xB7\uC18C\uB9AC \uBB38\uC81C\uB97C \uB098\uB220\uC11C \uB2E4\uC74C \uC5F0\uC2B5\uC5D0 \uBC18\uC601\uD574\uC694.</p></section>
+   <section class="study-understanding"><h3>\uC5F0\uC2B5\uC5D0\uC11C \uBCF8 \uAC83</h3>${observed.length ? `<ul>${observed.map((s) => `<li><strong>${escape3(s.label)}</strong><span>${stateNames[s.status]}</span></li>`).join("")}</ul>` : "<p>\uC0C8 \uBB38\uC81C\uB97C \uD480\uBA74\uC11C \uC870\uAE08\uC529 \uC54C\uC544\uAC00\uC694. \uAE30\uB85D\uC774 \uC5C6\uB2E4\uACE0 \uC57D\uD558\uB2E4\uACE0 \uBCF4\uC9C0 \uC54A\uC544\uC694.</p>"}<p>\uD63C\uC790 \uD47C \uB2F5, \uB3C4\uC6C0\uC744 \uBC1B\uC740 \uB2F5, \uC870\uC791\xB7\uC18C\uB9AC \uBB38\uC81C\uB97C \uB098\uB220\uC11C \uB2E4\uC74C \uC5F0\uC2B5\uC5D0 \uBC18\uC601\uD574\uC694.</p></section>
   </form>`, { type: "world-study", eyebrow: "GOALS", nav: "me" });
     const form = target.document.querySelector("#world-study-form");
     if (!form) return;
