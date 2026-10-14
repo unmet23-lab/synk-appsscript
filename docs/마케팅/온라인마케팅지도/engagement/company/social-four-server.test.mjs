@@ -29,6 +29,14 @@ test('HTTP reservation capacity previews and explicitly moves selected fixed job
   assert.equal(f.app.store.get('socialPublishJobs',a.id).scheduledAt,a.scheduledAt);assert.notEqual(f.app.store.get('socialPublishJobs',b.id).scheduledAt,b.scheduledAt);assert.equal(f.sent,0);
 });
 
+test('HTTP queue reads bounded capacity summaries and GET continuation rechecks the current session and scope',async t=>{
+  const f=await fixture(t),job=await f.schedule(await f.post()),store=f.app.store;store.transaction(()=>{for(let i=0;i<102;i++){const id='capacity-page-'+String(i).padStart(3,'0');store.put('socialPublishJobs',id,{...store.get('socialPublishJobs',job.id),id});}});
+  const count=store.all('socialPublishJobs').length,first=await f.api(f.writer,'/api/social/workspace?pageSize=50&section=queue');assert.equal(first.status,200);assert.equal(first.data.capacity.summary.jobCount,103);assert.equal(first.data.capacity.jobs.length,50);
+  const cursor=first.data.capacity.pagination.jobs.nextCursor,path='/api/social/capacity?cursor='+encodeURIComponent(cursor),second=await f.api(f.writer,path);assert.equal(second.status,200);assert.equal(second.data.jobs.length,50);assert.equal(new Set([...first.data.capacity.jobs,...second.data.jobs].map(j=>j.jobId)).size,100);
+  assert.equal((await f.api(f.other,path)).status,409);assert.equal((await f.api(f.writer,'/api/social/capacity?pageSize=51')).status,400);assert.equal((await f.api(f.writer,path,undefined,{Cookie:''})).status,401);
+  store.put('channels','ig',{...store.get('channels','ig'),ownerIds:[],teamId:'b'});assert.equal((await f.api(f.writer,path)).status,409);assert.equal((await f.api(f.writer,'/api/social/capacity')).data.summary.jobCount,0);assert.equal(store.all('socialPublishJobs').length,count);assert.equal(f.sent,0);
+});
+
 test('HTTP copy comparison uses published snapshot and saves its reviewed template through the existing path',async t=>{
   const f=await fixture(t),post=await f.post(),job=await f.schedule(post,'2026-10-13T00:01:00Z');f.setTime('2026-10-13T00:01:00.000Z');await f.app.scanSocialPublishing();
   const r=await f.api(f.writer,'/api/social/copy-insights?hours=24');assert.equal(r.status,200);assert.equal(r.data.groups.length,1);assert.equal(r.data.groups[0].variants[0].text,'원래 승인 문구');assert.equal(r.data.groups[0].variants[0].sampleCount,0);

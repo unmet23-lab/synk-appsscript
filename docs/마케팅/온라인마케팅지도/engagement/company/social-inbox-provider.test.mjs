@@ -61,6 +61,27 @@ test('Facebook user credentials resolve a managed Page token and read all-level 
   const f=fixture(t,{platform:'facebook',authType:'facebook-user'});f.enable();const result=await f.sync();assert.equal(result.imported,2);const calls=f.calls;assert.equal(calls[0].init.headers.Authorization,'Bearer synthetic-meta-user-secret');assert.equal(calls[1].init.headers.Authorization,'Bearer synthetic-meta-page-secret');const comments=calls.find(call=>call.url.includes('/comments?'));assert.equal(new URL(comments.url).searchParams.get('filter'),'stream');assert.equal(f.store.all('socialInbox')[1].parentExternalId,'200_300');assert.ok(!JSON.stringify(f.provider.settings(f.admin)).includes('secret'));
 });
 
+test('Facebook bounded recent polling explains partial coverage after history finishes with no comments',async t=>{
+  const f=fixture(t,{platform:'facebook'});f.enable();
+  const posts=Array.from({length:12},(_,i)=>({id:'100_'+(200+i),permalink_url:'https://www.facebook.com/100/posts/'+(200+i)}));
+  f.setHandler((path,url)=>{
+    if(path==='100/posts'){const offset=Number(url.searchParams.get('after')||0),limit=Number(url.searchParams.get('limit')),data=posts.slice(offset,offset+limit),next=offset+data.length;return json({data,...(next<posts.length?{paging:{next:'https://graph.facebook.com/ignored',cursors:{after:String(next)}}}:{})});}
+    if(/^100_\d+\/comments$/.test(path))return json({data:[]});
+  });
+  const first=await f.sync();assert.equal(first.status,'partial');assert.equal(first.coverage.progress.historyPending,true);assert.ok(first.coverage.partialReasons.includes('recent-post-limit'));assert.ok(first.coverage.partialReasons.includes('history-pending'));
+  f.advance(1000);const second=await f.sync();
+  assert.equal(second.status,'partial');assert.equal(second.coverage.recentStatus,'limited');assert.deepEqual(second.coverage.partialReasons,['recent-post-limit']);
+  assert.equal(second.coverage.progress.recentPostsChecked,5);assert.equal(second.coverage.progress.historyPostsChecked,2);assert.equal(second.coverage.progress.historyPending,false);assert.ok(second.coverage.progress.historyCompletedAt);
+  assert.equal(second.coverage.commentsReceived,0);assert.equal(second.coverage.requestsUsed,10);assert.equal(second.coverage.requestsLimit,40);assert.equal(second.coverage.completeHistory,false);assert.equal(f.provider.capability(f.channel).lastError,null);assert.equal(f.store.all('socialInbox').length,0);
+});
+
+test('empty completed scan and an invalid cursor remain distinct from bounded collection',async t=>{
+  const empty=fixture(t,{platform:'facebook'});empty.enable();empty.setHandler(path=>path==='100/posts'?json({data:[]}):null);
+  const complete=await empty.sync();assert.equal(complete.status,'scanned');assert.equal(complete.coverage.recentStatus,'complete');assert.deepEqual(complete.coverage.partialReasons,[]);assert.equal(complete.coverage.requestsUsed,2);
+  const broken=fixture(t,{platform:'facebook'});broken.enable();broken.setHandler(path=>path==='100/posts'?json({data:[],paging:{next:'https://graph.facebook.com/ignored'}}):null);
+  const partial=await broken.sync();assert.equal(partial.status,'partial');assert.equal(partial.coverage.recentStatus,'limited');assert.deepEqual(partial.coverage.partialReasons,['cursor-unavailable','history-pending']);assert.equal(partial.coverage.progress.historyPending,true);assert.equal(partial.coverage.progress.historyCompletedAt,null);
+});
+
 test('Facebook permalink identity keeps post query IDs and discards tracking parameters',async t=>{
   const f=fixture(t,{platform:'facebook'});f.enable();f.setHandler(path=>path==='100/posts'?json({data:[{id:'100_200',permalink_url:'https://www.facebook.com/story.php?story_fbid=200&id=100&access_token=do-not-store'}]}):null);
   for(const nativeId of ['199','200'])f.store.put('socialPublishJobs','job-'+nativeId,{id:'job-'+nativeId,channelId:'channel',postId:'post-'+nativeId,status:'published',publicationUrl:'https://www.facebook.com/story.php?id=100&story_fbid='+nativeId});
@@ -168,12 +189,12 @@ test('a revoked authority after an await keeps older checkpoints but does not sa
 test('opaque cursors stay private, malformed progress resets, expired provider cursors restart boundedly',async t=>{
   assert.equal(validInboxCursor('abc\nsecret'),false);assert.equal(validInboxCursor('x'.repeat(2001)),false);assert.equal(loadInboxProgress({schema:1,binding:'x',revision:3,history:[{kind:'fetch',url:'https://evil.test'}]},'x').resetReason,'invalid-progress');
   const f=fixture(t);f.enable();let reject=false;f.setHandler((path,url)=>path==='200/comments'?(url.searchParams.has('after')?(reject?json({error:{code:100}},400):json({data:[{id:'302',text:'second',replies:{data:[]}}]})):json({data:[{id:'300',text:'first',replies:{data:[]}}],paging:{next:'https://evil.test',cursors:{after:'expired-cursor'}}})):null);
-  await f.sync(f.member,{maxComments:1});reject=true;const result=await f.sync(f.member,{maxComments:4});assert.equal(result.coverage.progress.resetReason,'expired-cursor');assert.ok(!JSON.stringify(result).includes('expired-cursor"],'));assert.ok(f.calls.every(call=>call.init.method==='GET'&&new URL(call.url).origin==='https://graph.instagram.com'));
+  await f.sync(f.member,{maxComments:1});reject=true;const result=await f.sync(f.member,{maxComments:4});assert.equal(result.coverage.progress.resetReason,'expired-cursor');assert.ok(result.coverage.partialReasons.includes('cursor-expired'));assert.ok(!JSON.stringify(result).includes('expired-cursor"],'));assert.ok(f.calls.every(call=>call.init.method==='GET'&&new URL(call.url).origin==='https://graph.instagram.com'));
 });
 
 test('Meta scan has a hard forty-request cap and the hourly budget remains shared',async t=>{
   const f=fixture(t);f.enable();let number=0;f.setHandler(path=>path==='200/comments'?json({data:[{id:String(1000+number++),text:'paged',replies:{data:[]}}],paging:{next:'unused',cursors:{after:'cursor-'+number}}}):null);
-  const first=await f.sync();assert.equal(f.calls.length,40);assert.equal(first.status,'partial');assert.ok(first.coverage.progress.historyPending);
+  const first=await f.sync();assert.equal(f.calls.length,40);assert.equal(first.status,'partial');assert.ok(first.coverage.partialReasons.includes('recent-request-limit'));assert.equal(first.coverage.requestsUsed,40);assert.ok(first.coverage.progress.historyPending);
   const state=f.store.get('socialInboxRequests','channel');f.store.put('socialInboxRequests','channel',{...state,times:Array(120).fill(Date.parse('2026-10-13T00:00:00Z'))});const before=f.calls.length;await assert.rejects(f.sync(),{code:'RATE_LIMIT'});assert.equal(f.calls.length,before);
 });
 
@@ -201,7 +222,7 @@ test('Facebook account-authored child comments are observed without asserting a 
 
 test('one-item limits alternate head checks and historical work instead of starving either lane',async t=>{
   const f=fixture(t);f.enable();f.setHandler(path=>path==='200/comments'?json({data:[{id:'300',text:'parent',replies:{data:[{id:'301',text:'one'},{id:'302',text:'two'}]}}]}):null);
-  await f.sync(f.member,{maxComments:1});const next=await f.sync(f.member,{maxComments:1});assert.equal(next.coverage.progress.historyCommentsReceived,1);const third=await f.sync(f.member,{maxComments:1});assert.equal(third.coverage.progress.recentCommentsReceived,1);await f.sync(f.member,{maxComments:1});assert.equal(f.store.all('socialInbox').length,3);
+  await f.sync(f.member,{maxComments:1});const next=await f.sync(f.member,{maxComments:1});assert.equal(next.coverage.progress.historyCommentsReceived,1);assert.equal(next.coverage.recentStatus,'not-polled');assert.ok(next.coverage.partialReasons.includes('history-comment-limit'));const third=await f.sync(f.member,{maxComments:1});assert.equal(third.coverage.progress.recentCommentsReceived,1);await f.sync(f.member,{maxComments:1});assert.equal(f.store.all('socialInbox').length,3);
 });
 
 test('older buffered content and reply proof cannot supersede a newer complete observation',async t=>{

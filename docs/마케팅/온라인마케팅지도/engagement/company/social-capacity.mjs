@@ -28,8 +28,8 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     const signature=hash({jobs:jobs.map(j=>[j.id,j.updatedAt,j.scheduledAt,j.scheduleRevision,j.attempts,j.status,j.approvalHash]),channels:view.channels.map(c=>[c.id,c.active,c.canPublish,c.capability]),policies:store.all('socialQueuePolicies'),requests,limit,reserve});
     return {user,records,jobs,events,recent,limit,reserve,planningLimit,signature,retryAfter:requests.retryAfter||0};
   }
-  function workspace(user){
-    const data=state(user),windows=[],timeline=[...data.events,...data.recent].sort((a,b)=>a.at-b.at);let left=0,right=0,sum=0,count=0,lastEnd=null;
+  function report(data){
+    const windows=[],timeline=[...data.events,...data.recent].sort((a,b)=>a.at-b.at);let left=0,right=0,sum=0,count=0,lastEnd=null;
     for(const event of data.events){if(event.at===lastEnd)continue;lastEnd=event.at;while(right<timeline.length&&timeline[right].at<=event.at){sum+=timeline[right].cost;if(timeline[right].jobId)count++;right++;}while(left<right&&timeline[left].at<=event.at-HOUR){sum-=timeline[left].cost;if(timeline[left].jobId)count--;left++;}windows.push({from:new Date(event.at-HOUR).toISOString(),to:new Date(event.at).toISOString(),estimatedRequests:sum,jobCount:count,overLimit:sum>data.planningLimit});}
     const hot=[];for(const window of windows.filter(w=>w.overLimit)){const previous=hot.at(-1);if(previous&&window.from<=previous.to)previous.to=window.to;else hot.push({...window});}let hotIndex=0;
     const records=data.records.map(row=>{while(hotIndex<hot.length&&hot[hotIndex].to<row.scheduledAt)hotIndex++;return {...row,congested:!!(row.estimatedRequests&&hot[hotIndex]&&row.scheduledAt>hot[hotIndex].from&&row.scheduledAt<=hot[hotIndex].to)};});
@@ -37,6 +37,25 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     if(data.retryAfter>Date.parse(now()))warnings.push('발행 서비스의 재시도 대기 시간이 아직 남아 있어요. 그 뒤로 예약을 분산해 주세요.');
     if(data.user.role!=='admin')warnings.push('볼 수 있는 예약만 기준으로 계산했어요. 다른 팀 예약까지 함께 보려면 관리자가 전체 화면에서 확인해야 해요.');
     return {generatedAt:now(),scope:data.user.role==='admin'?'workspace':'visible',limit:data.limit,reserve:data.reserve,planningLimit:data.planningLimit,periodMinutes:60,assumptions:['SYNK의 보수적인 계획 기준이며 SNS가 보장하는 공식 할당량은 아니에요.','게시 1회 + 계정 확인 1회 + 결과 조회 2회 + 첨부·표지 업로드를 더한 계획용 추정이에요.','파일 캐시·공동 조회로 줄거나 재시도로 늘 수 있어요. 실제로 보낼 때 서버 호출 한도를 다시 적용해요.','지금 만들어진 예약만 계산에 넣었어요. 아직 만들어지지 않은 반복 예약은 빠져 있어요.'],jobs:records,windows,warnings};
+  }
+  function workspace(user,input={}){
+    const data=state(user),full=report(data);if(input.pageSize===undefined)return full;
+    const pageSize=Number(input.pageSize),windowSize=Number(input.windowSize??12);
+    if(!Number.isInteger(pageSize)||pageSize<1||pageSize>50||!Number.isInteger(windowSize)||windowSize<1||windowSize>12)throw fail('예약 목록은 1~50건, 시간창은 1~12개씩 조회해 주세요.');
+    // The complete, permission-filtered estimate stays on the server. A continuation
+    // is usable only while the displayed rows, rolling windows and current authority match.
+    const revision=hash({user:data.user.id,role:data.user.role,signature:data.signature,records:full.jobs,windows:full.windows,limit:data.limit,reserve:data.reserve,retryAfter:data.retryAfter});
+    function page(kind,rows,size,cursor,key){
+      let start=0;if(cursor!==undefined){let decoded;try{if(typeof cursor!=='string'||cursor.length>1024||!cursor||!/^[A-Za-z0-9_-]+$/.test(cursor))throw Error();decoded=JSON.parse(Buffer.from(cursor,'base64url').toString('utf8'));}catch{throw fail('예약 조회 위치를 확인해 주세요.');}
+        if(!decoded||decoded.v!==1||decoded.kind!==kind||typeof decoded.revision!=='string'||!Array.isArray(decoded.key)||decoded.key.some(v=>typeof v!=='string'))throw fail('예약 조회 위치를 확인해 주세요.');
+        if(decoded.revision!==revision)throw fail('예약·권한·호출량이 바뀌었어요. 새로고침 후 이어서 확인해 주세요.',409);
+        const found=rows.findIndex(row=>JSON.stringify(key(row))===JSON.stringify(decoded.key));if(found<0)throw fail('예약 조회 위치를 확인해 주세요.');start=found+1;
+      }
+      const items=rows.slice(start,start+size),hasMore=start+items.length<rows.length,nextCursor=hasMore?Buffer.from(JSON.stringify({v:1,kind,revision,key:key(items.at(-1))})).toString('base64url'):null;
+      return {items,pagination:{total:rows.length,hasMore,nextCursor}};
+    }
+    const jobs=page('jobs',full.jobs,pageSize,input.cursor,row=>[row.scheduledAt,row.jobId]),windows=page('windows',full.windows,windowSize,input.windowCursor,row=>[row.to]);
+    return {...full,jobs:jobs.items,windows:windows.items,summary:{jobCount:full.jobs.length,estimatedRequests:full.jobs.reduce((sum,row)=>sum+row.estimatedRequests,0),automaticJobCount:full.jobs.filter(row=>row.estimatedRequests>0).length,congestedJobCount:full.jobs.filter(row=>row.congested).length,windowCount:full.windows.length,congestedWindowCount:full.windows.filter(row=>row.overLimit).length},pagination:{revision,jobs:jobs.pagination,windows:windows.pagination}};
   }
   // apply checks every change before writing any, so all of them can share the state it already built.
   function validateMove(user,change,data=state(user)){
@@ -55,7 +74,7 @@ export function createSocialCapacity({store,publishing,provider,clock=()=>new Da
     const maxShiftHours=input.maxShiftHours??24;if(!Number.isInteger(maxShiftHours)||maxShiftHours<1||maxShiftHours>168)throw fail('분산 범위는 1~168시간으로 선택해 주세요.');
     const data=state(user),selected=[...new Set(input.jobIds)].map(id=>{const row=data.records.find(r=>r.jobId===id);if(!row)throw fail('열람 가능한 예약 대기 항목을 선택해 주세요.',404);return row;}).sort((a,b)=>a.scheduledAt.localeCompare(b.scheduledAt)||a.jobId.localeCompare(b.jobId));
     const movable=new Set(selected.filter(row=>row.canMove&&row.estimatedRequests>0&&(row.mode!=='fixed'||fixed.includes(row.jobId))).map(row=>row.jobId));
-    const events=[...data.events.filter(row=>!movable.has(row.jobId)),...data.recent],changes=[],warnings=[...workspace(user).warnings];
+    const events=[...data.events.filter(row=>!movable.has(row.jobId)),...data.recent],changes=[],warnings=[...report(data).warnings];
     function fits(at,cost,channelId){
       if(events.some(row=>row.channelId===channelId&&Math.abs(row.at-at)<MINUTE))return false;
       // Check every rolling window that the inserted event can affect, including

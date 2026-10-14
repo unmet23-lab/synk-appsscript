@@ -16,8 +16,8 @@ class MemoryStore{
   transaction(fn){return fn();}
 }
 const asset=(id='image',bytes=JPEG)=>({id,assetId:id,sha256:digest(bytes),mimeType:bytes===MP4?'video/mp4':'image/jpeg',byteSize:bytes.length,width:1080,height:1350,...(bytes===MP4?{type:'video',duration:30}:{type:'image'}),url:'/api/social/media/'+id});
-function fixture({platform='instagram',format=platform==='instagram'?'image':'text',media=platform==='instagram'?[asset()]:[],options={},handler,authorize,resolve,issueUrl,authType=platform==='instagram'?'instagram-login':'facebook-page'}={}){
-  const store=new MemoryStore(),calls=[],authorizations=[];let at=Date.parse(NOW),nextContainer=600;
+function fixture({platform='instagram',format=platform==='instagram'?'image':'text',media=platform==='instagram'?[asset()]:[],options={},handler,authorize,resolve,issueUrl,authType=platform==='instagram'?'instagram-login':'facebook-page',store=new MemoryStore()}={}){
+  const calls=[],authorizations=[];let at=Date.parse(NOW),nextContainer=600;
   const channel={id:'channel',platform,externalId:'100',handle:'synk',active:true,ownerIds:['admin'],connectionVersion:2};
   const credentials={accessToken:'secret-token-not-for-output',accountId:'100',appScopedId:platform==='instagram'?'101':undefined,authType,apiVersion:'v26.0',metaIdentityVersion:1,permissionsVerifiedAt:NOW,scope:platform==='instagram'?(authType==='instagram-login'?'instagram_business_basic instagram_business_content_publish':'instagram_basic instagram_content_publish pages_read_engagement'):'pages_manage_posts pages_read_engagement pages_show_list'};
   store.put('channels',channel.id,channel);store.setSecret('channel:'+channel.id,credentials);store.put('socialDirectConnections',channel.id,{id:channel.id,channelId:channel.id,provider:'meta-direct',enabled:true,connectionVersion:2,accountId:'100',authType,version:'connection-v1',verifiedAt:NOW});
@@ -280,4 +280,132 @@ test('an uncertain Facebook publish is matched only to one unclaimed Page post w
   feed=[item('100_701',-30)];assert.equal((await check()).status,'uncertain','an older Page post with the same text is not this one');
   f.store.put('socialDirectPublishJobs','other-row',{id:'other-row',provider:'meta-direct',status:'published',providerId:'100_702',accountId:'100'});feed=[item('100_702',0)];assert.equal((await check()).status,'uncertain','a Page post another job already holds is not this one');
   feed=[item('100_702',0),item('100_700',1)];const found=await check();assert.equal(found.status,'published');assert.equal(found.providerId,'100_700');assert.equal(f.posts().filter(c=>c.path==='100/feed').length,1);
+});
+
+const reconciliationItem=(platform,id='700',minutes=0,text='확정 원문')=>platform==='instagram'
+  ?{id,caption:text,timestamp:new Date(Date.parse(NOW)+minutes*60000).toISOString(),permalink:'https://www.instagram.com/p/P'+id+'/'}
+  :{id:'100_'+id,message:text,created_time:new Date(Date.parse(NOW)+minutes*60000).toISOString(),permalink_url:'https://www.facebook.com/100/posts/'+id,is_published:true};
+const reconciliationPage=(platform,data,after)=>({data,...(after?{paging:{cursors:{after},next:`https://graph.${platform==='instagram'?'instagram':'facebook'}.com/v26.0/100/${platform==='instagram'?'media':'feed'}?after=${encodeURIComponent(after)}&access_token=must-not-forward`}}:{})});
+async function uncertainFixture(platform,onPage,onDetail){
+  let lost=true;
+  const f=fixture({platform,handler:async(c,context)=>{
+    if(c.init.method==='POST'&&c.path===(platform==='instagram'?'100/media_publish':'100/feed')&&lost)throw Error('lost final response');
+    if(platform==='instagram'&&c.path==='601'&&!lost)return json({id:'601',status_code:'PUBLISHED'});
+    if(c.init.method==='GET'&&c.path===(platform==='instagram'?'100/media':'100/feed'))return onPage(c,context);
+    return onDetail?.(c,context);
+  }});
+  assert.equal((await f.provider.publish(f.input)).status,'uncertain');lost=false;f.advance(180000);
+  f.check=()=>f.create().status({channel:f.input.channel,job:f.input.job});
+  f.pages=()=>f.calls.filter(c=>c.init.method==='GET'&&c.path===(platform==='instagram'?'100/media':'100/feed'));
+  return f;
+}
+
+test('uncertain Meta results beyond 25 recent posts are found across the complete fixed time window',async()=>{
+  for(const platform of ['instagram','facebook']){
+    const f=await uncertainFixture(platform,c=>json(c.params.get('after')?reconciliationPage(platform,[reconciliationItem(platform)]):reconciliationPage(platform,Array.from({length:50},(_,i)=>reconciliationItem(platform,String(1000+i),1,'다른 글 '+i)),'page-2')));
+    const checked=await f.check();assert.equal(checked.status,'published',platform);assert.equal(checked.providerId,platform==='instagram'?'700':'100_700');assert.equal(f.pages().length,2);
+    for(const c of f.pages()){
+      assert.equal(c.params.get('limit'),'50');assert.equal(c.params.get('since'),String(Math.floor((Date.parse(NOW)-120000)/1000)-1));assert.equal(c.params.get('until'),String(Math.ceil((Date.parse(NOW)+900000)/1000)+1));
+      assert.equal(c.params.has('access_token'),false);assert.equal(c.url.origin,platform==='instagram'?'https://graph.instagram.com':'https://graph.facebook.com');assert.equal(c.init.redirect,'error');
+    }
+    assert.equal(f.pages()[1].params.get('after'),'page-2');assert.equal(f.ledger().autoChecks,1);assert.equal(f.posts().filter(c=>c.path===(platform==='instagram'?'100/media_publish':'100/feed')).length,1);
+  }
+});
+
+test('a candidate on the first page is not claimed when another matching post appears later',async()=>{
+  for(const platform of ['instagram','facebook']){
+    const f=await uncertainFixture(platform,c=>json(reconciliationPage(platform,[reconciliationItem(platform,c.params.get('after')?'701':'700')],c.params.get('after')?null:'later')));
+    assert.equal((await f.check()).status,'uncertain',platform);assert.equal(f.ledger().providerId||null,null);assert.equal(f.pages().length,2);
+  }
+});
+
+test('an overlapping post is deduplicated by ID across pages before claiming it',async()=>{
+  const f=await uncertainFixture('instagram',c=>json(reconciliationPage('instagram',[reconciliationItem('instagram')],c.params.get('after')?null:'overlap')));
+  assert.equal((await f.check()).status,'published');assert.equal(f.ledger().providerId,'700');assert.equal(f.pages().length,2);
+});
+
+test('partial or malformed pagination cannot turn one visible candidate into publication proof',async t=>{
+  const variants={
+    'missing cursor':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://graph.instagram.com/v26.0/100/media'}}),
+    'repeated cursor':()=>reconciliationPage('instagram',[reconciliationItem('instagram')],'loop'),
+    'too many pages':c=>reconciliationPage('instagram',[reconciliationItem('instagram')],String(Number(c.params.get('after')||0)+1)),
+    'network error after first match':c=>{if(c.params.get('after'))throw Error('no response');return reconciliationPage('instagram',[reconciliationItem('instagram')],'later');},
+    'invalid page data':c=>c.params.get('after')?{data:{id:'701'}}:reconciliationPage('instagram',[reconciliationItem('instagram')],'later'),
+    'conflicting duplicate':c=>reconciliationPage('instagram',[reconciliationItem('instagram','700',0,c.params.get('after')?'다른 내용':'확정 원문')],c.params.get('after')?null:'later'),
+    'unreadable timestamp':()=>({data:[reconciliationItem('instagram'),{id:'701',caption:'확정 원문',timestamp:'invalid'}]}),
+    'foreign next URL':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://example.com/collect?after=x',cursors:{after:'x'}}}),
+    'different account next URL':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://graph.instagram.com/v26.0/999/media?after=x',cursors:{after:'x'}}}),
+    'cursor mismatch':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://graph.instagram.com/v26.0/100/media?after=x',cursors:{after:'y'}}}),
+    'oversized page':()=>({data:Array.from({length:51},(_,i)=>reconciliationItem('instagram',i?'8'+i:'700',0,i?'다른 글':'확정 원문'))}),
+    'invalid paging shape':()=>({data:[reconciliationItem('instagram')],paging:[]}),
+    'false next cursor':()=>({data:[reconciliationItem('instagram')],paging:{next:false}}),
+    'empty next cursor':()=>({data:[reconciliationItem('instagram')],paging:{next:''}}),
+    'credential-bearing next URL':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://fake:password@graph.instagram.com/v26.0/100/media?after=x',cursors:{after:'x'}}}),
+    'duplicate cursor parameters':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://graph.instagram.com/v26.0/100/media?after=x&after=y',cursors:{after:'x'}}}),
+    'oversized cursor':()=>reconciliationPage('instagram',[reconciliationItem('instagram')],'x'.repeat(2001)),
+    'time cursor expands upper bound':()=>({data:[reconciliationItem('instagram')],paging:{next:'https://graph.instagram.com/v26.0/100/media?until=9999999999&__paging_token=x'}}),
+    'time cursor has not advanced':()=>({data:[reconciliationItem('instagram')],paging:{next:`https://graph.instagram.com/v26.0/100/media?until=${Math.ceil((Date.parse(NOW)+900000)/1000)+1}`}}),
+    'rate limit after match':c=>c.params.get('after')?{error:{code:4}}:reconciliationPage('instagram',[reconciliationItem('instagram')],'later')
+  };
+  for(const [name,page]of Object.entries(variants))await t.test(name,async()=>{
+    const f=await uncertainFixture('instagram',async c=>json(await page(c)));
+    assert.equal((await f.check()).status,'uncertain');assert.equal(f.ledger().providerId||null,null);assert.ok(f.pages().length<=10);assert.equal(f.calls.filter(c=>c.path==='700').length,0);
+    const again=await f.create().publish({...f.input,job:{...f.input.job,attempts:2,scheduleRevision:2}});assert.equal(again.status,'uncertain');assert.equal(f.posts().filter(c=>c.path==='100/media_publish').length,1);
+  });
+});
+
+test('empty intermediate pages still follow the cursor and only claim after the final page',async()=>{
+  const f=await uncertainFixture('facebook',c=>json(c.params.get('after')==='end'?reconciliationPage('facebook',[reconciliationItem('facebook')]):reconciliationPage('facebook',[],c.params.get('after')?'end':'middle')));
+  assert.equal((await f.check()).status,'published');assert.equal(f.pages().length,3);
+});
+
+test('Facebook time paging reuses only bounded paging parameters at the trusted API endpoint',async()=>{
+  const until=Math.floor(Date.parse(NOW)/1000)+5;
+  const f=await uncertainFixture('facebook',c=>json(c.params.get('__paging_token')?{data:[reconciliationItem('facebook')]}:{data:[],paging:{next:`https://graph.facebook.com/v26.0/100/feed?until=${until}&__paging_token=enc_opaque%2Bvalue&since=&fields=secret&access_token=must-not-forward&limit=999`}}));
+  assert.equal((await f.check()).status,'published');assert.equal(f.pages().length,2);const second=f.pages()[1];
+  assert.equal(second.params.get('until'),String(until));assert.equal(second.params.get('__paging_token'),'enc_opaque+value');assert.equal(second.params.get('since'),String(Math.floor((Date.parse(NOW)-120000)/1000)-1));assert.equal(second.params.get('limit'),'50');assert.equal(second.params.get('fields'),'id,message,created_time,permalink_url,is_published');assert.equal(second.params.has('access_token'),false);
+});
+
+test('a post claimed by another job during pagination is never taken by this job',async()=>{
+  const f=await uncertainFixture('facebook',(c,{store})=>{if(c.params.get('after'))store.put('socialDirectPublishJobs','other-job',{id:'other-job',provider:'meta-direct',status:'published',providerId:'100_700',accountId:'100'});return json(reconciliationPage('facebook',[reconciliationItem('facebook')],c.params.get('after')?null:'later'));});
+  assert.equal((await f.check()).status,'uncertain');assert.equal(f.ledger().providerId||null,null);assert.equal(f.pages().length,2);
+});
+
+test('a changed connection during pagination stops without claiming or sending',async()=>{
+  const f=await uncertainFixture('instagram',(c,{store})=>{if(c.params.get('after'))store.setSecret('channel:channel',{...store.secret('channel:channel'),accessToken:'replacement-secret'});return json(reconciliationPage('instagram',[reconciliationItem('instagram')],c.params.get('after')?null:'later'));});
+  assert.equal((await f.check()).status,'uncertain');assert.equal(f.ledger().providerId||null,null);assert.equal(f.posts().filter(c=>c.path==='100/media_publish').length,1);
+});
+
+test('time-window boundaries tolerate the existing clock skew but never expand the match window',async()=>{
+  for(const minutes of [-2,15,-2.001,15.001]){
+    const f=await uncertainFixture('facebook',()=>json({data:[reconciliationItem('facebook','700',minutes)]}));
+    const checked=await f.check();assert.equal(checked.status,minutes>=-2&&minutes<=15?'published':'uncertain',String(minutes));
+  }
+});
+
+test('pagination claims and verifies the result using the real SQLite transaction boundary',async t=>{
+  const {Store}=await import('./store.mjs'),{mkdtempSync,rmSync}=await import('node:fs'),{tmpdir}=await import('node:os'),{join}=await import('node:path');
+  const prefix=join(tmpdir(),'synk-meta-reconcile-'),directory=mkdtempSync(prefix),store=new Store(directory);t.after(()=>{store.close();assert.ok(directory.startsWith(prefix));rmSync(directory,{recursive:true,force:true});});
+  let lost=true;const f=fixture({platform:'facebook',store,handler:c=>{
+    if(c.path==='100/feed'&&c.init.method==='POST'&&lost)throw Error('lost');
+    if(c.path==='100/feed'&&c.init.method==='GET')return json(reconciliationPage('facebook',[reconciliationItem('facebook')],c.params.get('after')?null:'later'));
+  }});
+  assert.equal((await f.provider.publish(f.input)).status,'uncertain');lost=false;f.advance(180000);
+  assert.equal((await f.create().status({channel:f.input.channel,job:f.input.job})).status,'published');assert.equal(f.ledger().providerId,'100_700');assert.equal(store.db.isTransaction,false);assert.equal(f.posts().filter(c=>c.path==='100/feed').length,1);
+});
+
+test('invalid Instagram container proof cannot claim a matching recent post',async()=>{
+  let lost=true;const f=fixture({handler:c=>{if(c.path==='100/media_publish'&&lost)throw Error('lost');if(c.path==='601'&&!lost)return json({id:'999',status_code:'PUBLISHED'});if(c.path==='100/media'&&c.init.method==='GET')return json({data:[reconciliationItem('instagram')]});}});
+  assert.equal((await f.provider.publish(f.input)).status,'uncertain');lost=false;f.advance(180000);
+  assert.equal((await f.create().status({channel:f.input.channel,job:f.input.job})).status,'uncertain');assert.equal(f.ledger().providerId||null,null);assert.equal(f.calls.filter(c=>c.path==='100/media'&&c.init.method==='GET').length,0);
+});
+
+test('a reconciled ID is not a final-write receipt and must never bypass contradictory publication proof',async t=>{
+  for(const changed of ['body','timestamp','missing timestamp','owner'])await t.test(changed,async()=>{
+    const f=await uncertainFixture('facebook',()=>json({data:[reconciliationItem('facebook')]}),c=>c.path==='100_700'?json({id:'100_700',from:{id:changed==='owner'?'999':'100'},message:changed==='body'?'different text':'확정 원문',is_published:true,permalink_url:'https://www.facebook.com/100/posts/700',created_time:changed==='missing timestamp'?undefined:changed==='timestamp'?new Date(Date.parse(NOW)+16*60000).toISOString():NOW}):undefined);
+    for(let attempt=0;attempt<4;attempt++){
+      const checked=await f.check();assert.equal(checked.status,'submitted',changed);assert.equal(checked.retryable,false);assert.equal(checked.definitive,false);
+    }
+    assert.equal((await f.create().publish({...f.input,job:{...f.input.job,attempts:2}})).status,'submitted');assert.equal(f.posts().filter(c=>c.path==='100/feed').length,1);
+  });
 });

@@ -70,7 +70,9 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
     const maxPosts=input.maxPosts??10,maxComments=input.maxComments??200;
     if(!Number.isInteger(maxPosts)||maxPosts<1||maxPosts>25||!Number.isInteger(maxComments)||maxComments<1||maxComments>1000)throw fail('INVALID_LIMIT','한 번에 게시물 1~25개, 댓글 1~1000개까지 확인할 수 있어요.',400);
     const controller=new AbortController();controllers.add(controller);context={...context,signal:context.signal?AbortSignal.any([context.signal,controller.signal]):controller.signal};
-    inFlight.add(channel.id);let tokenFingerprint,requests=0,partial=false,progress=null,expectedRevision=state.progress?.revision||0;
+    inFlight.add(channel.id);let tokenFingerprint,requests=0,partial=false,progress=null,recentStatus='not-polled',expectedRevision=state.progress?.revision||0;
+    const partialReasons=new Set();
+    function limited(reason){partial=true;partialReasons.add(reason);}
     const warnings=[],counts={recentPosts:0,historyPosts:0,recentComments:0,historyComments:0};let imported=0,updated=0,unchanged=0;
     const initialAuthority=hash(JSON.stringify([channel.ownerIds,channel.teamId,initial.user.role,initial.user.teamId]));
     function check(){
@@ -100,7 +102,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         let after=firstAfter,count=0;const cursors=new Set();
         do{const result=await api(path,{...params,limit:Math.min(50,limit-count),after});if(!Array.isArray(result.data))throw fail('INVALID_RESPONSE','Meta 목록 응답이 올바르지 않아요.',502);
           for(const row of result.data){if(count>=limit){partial=true;break;}count++;await onRow(row);}
-          if(!result.paging?.next)break;const next=result.paging?.cursors?.after;if(typeof next!=='string'||!next||next.length>2000||/[\s\x00-\x1f\x7f]/.test(next)||cursors.has(next)){partial=true;warnings.push('다음 목록을 이어서 불러오지 못했어요.');break;}if(count>=limit||requests>=39){partial=true;break;}after=next;cursors.add(next);
+          if(!result.paging?.next)break;const next=result.paging?.cursors?.after;if(typeof next!=='string'||!next||next.length>2000||/[\s\x00-\x1f\x7f]/.test(next)||cursors.has(next)){limited('cursor-unavailable');warnings.push('다음 목록을 이어서 불러오지 못했어요.');break;}if(count>=limit||requests>=39){limited('account-page-limit');break;}after=next;cursors.add(next);
         }while(true);
       }
       let account;
@@ -128,7 +130,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
         for(const p of store.all('posts'))if(p.channelId===channel.id&&p.source==='api:'+channel.platform&&!collectors.has(p.externalId))collectors.set(p.externalId,p);
         for(const j of store.all('socialPublishJobs'))if(j.channelId===channel.id&&j.status==='published'){const key=comparableUrl(j.publicationUrl);if(!published.has(key))published.set(key,[]);published.get(key).push(j);}
         return {collectors,published};}
-      const coverage=()=>({scope:'recent-and-history',postLimit:maxPosts,commentLimit:maxComments,postsChecked:counts.recentPosts+counts.historyPosts,commentsReceived:counts.recentComments+counts.historyComments,status:partial||progress.history?.length?'partial':'scanned',includesReplies:true,includesMessages:false,completeHistory:false,progress:inboxProgressView(progress,counts)});
+      const coverage=()=>({scope:'recent-and-history',postLimit:maxPosts,commentLimit:maxComments,postsChecked:counts.recentPosts+counts.historyPosts,commentsReceived:counts.recentComments+counts.historyComments,status:partial||progress.history?.length?'partial':'scanned',partialReasons:[...new Set([...partialReasons,...(progress.history?.length?['history-pending']:[])])],recentStatus,requestsUsed:requests,requestsLimit:SCAN_REQUESTS,includesReplies:true,includesMessages:false,completeHistory:false,progress:inboxProgressView(progress,counts)});
       function normalize(comment,post,parentId=null){
         if(!id(comment?.id))throw fail('INVALID_RESPONSE','댓글 응답의 ID가 올바르지 않아요.',502);
         const body=typeof comment.text==='string'?comment.text:typeof comment.message==='string'?comment.message:'';
@@ -200,17 +202,19 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
           checkpoint(tasks,lane,{items,ends,done:!tasks.length});
         }
         while(tasks.length){
-          check();drain();if(!tasks.length||comments>=commentLimit||requests>=requestLimit)break;
+          check();drain();if(!tasks.length)break;
+          if(comments>=commentLimit){limited(lane+'-comment-limit');break;}
+          if(requests>=requestLimit){limited(lane+'-request-limit');break;}
           const task=tasks[0];
-          if(task.kind==='item')break;
-          if(task.kind!=='posts'&&!posts.has(task.post.id)){if(posts.size>=postLimit)break;posts.add(task.post.id);counts[lane+'Posts']++;}
-          if(task.kind==='posts'&&posts.size>=postLimit)break;
+          if(task.kind==='item'){limited(lane+'-post-limit');break;}
+          if(task.kind!=='posts'&&!posts.has(task.post.id)){if(posts.size>=postLimit){limited(lane+'-post-limit');break;}posts.add(task.post.id);counts[lane+'Posts']++;}
+          if(task.kind==='posts'&&posts.size>=postLimit){limited(lane+'-post-limit');break;}
           const path=task.kind==='posts'?accountId+(channel.platform==='instagram'?'/media':'/posts'):task.kind==='comments'?task.post.id+'/comments':task.parentId+'/replies';
           const params=task.kind==='posts'?{fields:channel.platform==='instagram'?'id,permalink,timestamp':'id,permalink_url,created_time',limit:Math.min(25,postLimit-posts.size)}:{fields:task.kind==='replies'?replyFields:fields,limit:Math.min(50,commentLimit-comments),...(channel.platform==='facebook'&&task.kind==='comments'?{filter:'stream',order:'reverse_chronological'}:{})};
-          let result;try{result=await api(path,{...params,after:task.after??undefined});}catch(error){if(error.code==='CURSOR_REJECTED'){tasks[0]={...task,after:null,cursors:[]};progress.resetReason='expired-cursor';partial=true;checkpoint(tasks,lane);break;}throw error;}
+          let result;try{result=await api(path,{...params,after:task.after??undefined});}catch(error){if(error.code==='CURSOR_REJECTED'){tasks[0]={...task,after:null,cursors:[]};progress.resetReason='expired-cursor';limited('cursor-expired');checkpoint(tasks,lane);break;}throw error;}
           if(!Array.isArray(result.data)||result.data.length>50)throw fail('INVALID_RESPONSE','Meta 목록 응답이 올바르지 않아요.',502);
           const next=nextInboxPage(result,task),expanded=[],observedAt=now();let identityComplete=task.identityComplete!==false;
-          if(result.paging?.next&&!next.after){partial=true;warnings.push('다음 목록 커서를 확인하지 못해 마지막 위치부터 다시 확인해요.');}
+          if(result.paging?.next&&!next.after){limited('cursor-unavailable');warnings.push('다음 목록 커서를 확인하지 못해 마지막 위치부터 다시 확인해요.');}
           if(task.kind==='posts'){
             for(const post of result.data){if(!id(post.id)||channel.platform==='facebook'&&!post.id.startsWith(accountId+'_'))throw fail('ACCOUNT_MISMATCH','연결한 계정의 게시물인지 확인할 수 없어요.');expanded.push({kind:'comments',post:{id:post.id,url:sourceUrl(post.permalink||post.permalink_url,channel.platform)},after:null,cursors:[]});}
           }else{
@@ -252,6 +256,7 @@ export function createSocialInboxProvider({store,getCredentials,fetchImpl=global
       }else{
         progress.smallTurn='history';
         const recent=await traverse('recent',newInboxTraversal(),{postLimit:hadHistory?recentPosts:maxPosts,commentLimit:hadHistory?recentComments:maxComments,requestLimit:hadHistory?Math.min(20,requests+18):40});
+        recentStatus=recent.length?'limited':'complete';
         if(recent.length)partial=true;
         if(!hadHistory){progress.history=recent;checkpoint(recent,'history',{done:!recent.length});}
         else if(counts.recentPosts<maxPosts&&counts.recentComments<maxComments&&requests<40){

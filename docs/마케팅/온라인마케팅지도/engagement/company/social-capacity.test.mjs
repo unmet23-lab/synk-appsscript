@@ -82,3 +82,34 @@ test('applying a spread builds the workspace a fixed number of times however man
   const applied=f.capacity.apply(f.admin,{previewId:preview.previewId,confirmed:true});f.publishing.workspace=original;
   assert.equal(applied.jobs.length,moving);assert.ok(builds<=2,'workspace builds '+builds);
 });
+
+test('capacity pages preserve every tied reservation, every rolling window and exact full-schedule totals',async t=>{
+  const f=await fixture(t),first=f.add(),start=Date.parse(first.scheduledAt);f.store.transaction(()=>{for(let i=1;i<143;i++){const id='page-'+String(i).padStart(4,'0');f.store.put('socialPublishJobs',id,{...first,id,scheduledAt:new Date(start+Math.floor(i/2)*60000).toISOString()});}});
+  const full=f.capacity.workspace(f.admin),firstPage=f.capacity.workspace(f.admin,{pageSize:50}),jobs=[],windows=[];let cursor,windowCursor;
+  do{const result=f.capacity.workspace(f.admin,{pageSize:50,cursor});jobs.push(...result.jobs);cursor=result.pagination.jobs.nextCursor||undefined;assert.equal(result.summary.jobCount,143);assert.equal(result.summary.estimatedRequests,572);assert.equal(result.summary.congestedWindowCount,full.windows.filter(w=>w.overLimit).length);}while(cursor);
+  do{const result=f.capacity.workspace(f.admin,{pageSize:50,windowCursor});windows.push(...result.windows);windowCursor=result.pagination.windows.nextCursor||undefined;}while(windowCursor);
+  assert.deepEqual(jobs,full.jobs);assert.deepEqual(windows,full.windows);assert.equal(firstPage.jobs.length,50);assert.equal(firstPage.windows.length,12);assert.equal(f.sent,0);
+});
+
+test('capacity continuation rejects malformed, cross-user, revoked, rescheduled and changed-budget snapshots',async t=>{
+  for(const change of ['identity','role','job','job-revision','approval','channel','budget']){
+    const f=await fixture(t),a=f.add(),b=f.add(),page=f.capacity.workspace(f.manager,{pageSize:1}),cursor=page.pagination.jobs.nextCursor;
+    if(change==='identity'){assert.throws(()=>f.capacity.workspace(f.admin,{pageSize:1,cursor}),{status:409});continue;}
+    if(change==='role')f.store.put('users',f.manager.id,{...f.manager,role:'viewer'});
+    if(change==='job')f.store.put('socialPublishJobs',b.id,{...b,scheduledAt:'2026-10-13T01:01:00.000Z'});
+    if(change==='job-revision')f.store.put('socialPublishJobs',b.id,{...b,scheduleRevision:(b.scheduleRevision||0)+1});
+    if(change==='approval'){const p=f.store.get('socialPosts',b.postId);f.store.put('socialPosts',p.id,{...p,contentVersion:p.contentVersion+1});}
+    if(change==='channel')f.store.put('channels','a',{...f.store.get('channels','a'),hidden:true});
+    if(change==='budget')f.store.put('socialProviderRequests','postiz',{times:[Date.parse('2026-10-13T00:30:00.000Z')]});
+    assert.throws(()=>f.capacity.workspace(f.manager,{pageSize:1,cursor}),{status:409});assert.equal(f.sent,0);
+  }
+  const f=await fixture(t);f.add();f.add();for(const input of [{pageSize:0},{pageSize:51},{pageSize:1,windowSize:13},{pageSize:1,cursor:'!'},{pageSize:1,cursor:Buffer.from('null').toString('base64url')}])assert.throws(()=>f.capacity.workspace(f.admin,input),{status:400});
+  const cursor=f.capacity.workspace(f.admin,{pageSize:1}).pagination.jobs.nextCursor;assert.throws(()=>f.capacity.workspace(f.admin,{pageSize:1,windowCursor:cursor}),{status:400});
+});
+
+test('5000 reservations produce a bounded capacity response without losing total cost or hidden-team protection',async t=>{
+  const f=await fixture(t),first=f.add(),start=Date.parse(first.scheduledAt);f.store.transaction(()=>{for(let i=1;i<5000;i++){const id='large-'+String(i).padStart(5,'0');f.store.put('socialPublishJobs',id,{...first,id,scheduledAt:new Date(start+i*60000).toISOString()});}});
+  const full=f.capacity.workspace(f.admin),page=f.capacity.workspace(f.admin,{pageSize:50}),beforeBytes=Buffer.byteLength(JSON.stringify(full)),afterBytes=Buffer.byteLength(JSON.stringify(page));
+  assert.equal(page.summary.jobCount,5000);assert.equal(page.summary.estimatedRequests,20000);assert.equal(page.summary.windowCount,5000);assert.equal(page.jobs.length,50);assert.equal(page.windows.length,12);assert.ok(afterBytes<beforeBytes*0.03);assert.equal(f.capacity.workspace(f.other,{pageSize:50}).summary.jobCount,0);assert.equal(f.sent,0);
+  t.diagnostic(JSON.stringify({fixture:'5000 scheduled automatic reservations',beforeBytes,afterBytes,reductionPercent:Math.round((1-afterBytes/beforeBytes)*10000)/100,jobs:page.jobs.length,windows:page.windows.length,total:page.summary.jobCount}));
+});

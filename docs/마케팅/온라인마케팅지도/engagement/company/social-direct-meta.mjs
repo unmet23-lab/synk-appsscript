@@ -12,7 +12,7 @@ import {instagramIdentity,metaPublishScopes} from './meta-connection.mjs';
 // published feed/photo write can make content public; those requests never retry
 // after an ambiguous response, including after process restart.
 const JOBS='socialDirectPublishJobs',CONNECTIONS='socialDirectConnections',BUDGET='socialDirectPublishRequests';
-const MINUTE=60000,HOUR=3600000,LEASE=5*MINUTE,MAX_RESPONSE=2*1024*1024,PROOF_CHECKS=3,BUSY_CHECKS=10,AUTO_CHECKS=3,SETTLE_MS=180000,MATCH_BEFORE=2*MINUTE,MATCH_AFTER=15*MINUTE,MEDIA_TIMEOUT=75000,RECHECK=[15000,30000,60000,120000,120000,120000],CREDENTIAL_CODES=new Set(['CHANNEL_INACTIVE','COLLECTION_DISABLED','CONNECTION_CHANGED','CONNECTION_OWNER_INACTIVE']);
+const MINUTE=60000,HOUR=3600000,LEASE=5*MINUTE,MAX_RESPONSE=2*1024*1024,PROOF_CHECKS=3,BUSY_CHECKS=10,AUTO_CHECKS=3,SETTLE_MS=180000,MATCH_BEFORE=2*MINUTE,MATCH_AFTER=15*MINUTE,RECONCILE_PAGE_SIZE=50,RECONCILE_MAX_PAGES=10,MEDIA_TIMEOUT=75000,RECHECK=[15000,30000,60000,120000,120000,120000],CREDENTIAL_CODES=new Set(['CHANNEL_INACTIVE','COLLECTION_DISABLED','CONNECTION_CHANGED','CONNECTION_OWNER_INACTIVE']);
 const sleep=(ms,signal)=>new Promise(resolve=>{if(signal?.aborted)return resolve();let timer=null;const done=()=>{clearTimeout(timer);signal?.removeEventListener('abort',done);resolve();};timer=setTimeout(done,ms);signal?.addEventListener('abort',done,{once:true});});
 const normalizeText=value=>String(value??'').normalize('NFC').replace(/\r\n?/g,'\n').split('\n').map(line=>line.replace(/[ \t]+$/,'')).join('\n').trim();
 const graphId=value=>typeof value==='string'&&/^\d{1,50}$/.test(value)?value:null;
@@ -27,6 +27,28 @@ const credentialBinding=c=>[c?.authType,c?.accountId,c?.appScopedId,c?.apiVersio
 const credentialFingerprint=c=>hash([credentialBinding(c),c?.accessToken,c?.scope,c?.expiresAt,c?.dataAccessExpiresAt,c?.permissionsVerifiedAt]);
 const result=(status,message,extra={})=>({provider:'meta-direct',status,message,retryable:false,definitive:status==='failed',publicVerified:false,...extra});
 const safeError=error=>error?.providerSafe||error?.code==='SOCIAL_REVIEW_REQUIRED'?{code:error.code,message:error.message,retryable:error.retryable===true,nextRetryAt:error.nextRetryAt||null}:{code:'META_PUBLISH_FAILED',message:'발행 준비를 완료하지 못했어요. 승인 원문과 계정 연결을 확인해 주세요.',retryable:false};
+
+// Rebuild a read at our own endpoint; never fetch paging.next or forward its token/fields.
+// Meta SDK Cursor uses after + next (api.py), and IGUser.get_media supports since/until.
+// Checked 2026-10-15: https://github.com/facebook/facebook-python-business-sdk/blob/main/facebook_business/api.py
+function nextRecentPage(paging,{origin,version,path,since,until}){
+  const opaque=value=>typeof value==='string'&&value.length>0&&value.length<=2000&&!/[\u0000-\u0020\u007f]/u.test(value);
+  if(typeof paging?.next!=='string'||paging.next.length>8192||/[\u0000-\u0020\\]/u.test(paging.next))return null;
+  let url;try{url=new URL(paging.next);}catch{return null;}
+  if(url.origin!==origin||url.username||url.password||url.hash||![`/${version}/${path}`,`/${path}`].includes(url.pathname))return null;
+  if(paging.cursors!=null&&(typeof paging.cursors!=='object'||Array.isArray(paging.cursors))||url.searchParams.get('__previous'))return null;
+  for(const key of ['after','until','__paging_token'])if(url.searchParams.getAll(key).length>1)return null;
+  const cursor=paging.cursors?.after,queryCursor=url.searchParams.get('after');
+  if(cursor!=null||queryCursor!=null){
+    const after=cursor??queryCursor;if(!opaque(after)||cursor!=null&&queryCursor!=null&&cursor!==queryCursor)return null;
+    return {since,until,after};
+  }
+  // Page feeds can return a time cursor instead of cursors.after. Preserve the lower
+  // bound and allow only a non-increasing upper bound plus the returned opaque token.
+  const value=url.searchParams.get('until'),token=url.searchParams.get('__paging_token');
+  if(!/^\d{1,12}$/.test(value||'')||Number(value)<since||Number(value)>until||token!=null&&!opaque(token)||Number(value)===until&&!token)return null;
+  return {since,until:Number(value),...(token?{__paging_token:token}:{})};
+}
 
 function publicUrl(value){
   if(typeof value!=='string'||value.length>4096||/[\u0000-\u0020\\]/u.test(value))throw fail('INVALID_MEDIA_URL','외부에서 열 수 있는 HTTPS 미디어 주소가 필요해요.');
@@ -143,7 +165,7 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     let account=await api(channel.platform==='instagram'&&!direct?channel.externalId:'me',{fields:channel.platform==='instagram'?(direct?'id,user_id,username':'id,username'):'id,name'});
     if(direct)account=instagramIdentity(account,{requireUserId:true});
     if(account.id!==channel.externalId||channel.platform==='instagram'&&channel.handle&&String(account.username||'').toLowerCase()!==channel.handle.replace(/^@/,'').toLowerCase())throw fail('ACCOUNT_MISMATCH','SNS에서 확인한 발신 계정이 선택한 계정과 달라요.');
-    return {api,check:assert,account};
+    return {api,check:assert,account,nextPage:(path,paging,range)=>nextRecentPage(paging,{origin,version,path,...range})};
   }
   async function checkConnection(channel,context={}){const account=(await session(liveChannel(channel),{...context,enabled:false})).account;return {provider:'meta-direct',accountId:account.id,authType:secret(channel).authType,checkedAt:now(),requiredScopes:metaPublishScopes(channel.platform,secret(channel).authType),canPublish:true};}
   const recheck=row=>row.status==='preparing'&&row.errorCode==='MEDIA_DELIVERY_BUSY'?RECHECK[0]:['processing','creating'].includes(row.status)&&row.processingChecks>0?RECHECK[row.processingChecks-1]:undefined;
@@ -164,9 +186,10 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     const owner=ig?remote.owner?.id:remote.from?.id,credentials=secret(channel),body=ig?remote.caption:photo?remote.name:remote.message;
     if(remote.id!==row.providerId||![channel.externalId,ig?credentials?.appScopedId:null].filter(Boolean).includes(owner)||!ig&&!photo&&remote.is_published!==true)throw fail('PUBLICATION_PROOF_MISMATCH','발신 계정·게시 상태가 접수 기록과 맞는지 확인하지 못했어요. SNS 원문을 확인해 주세요.');
     const at=ig?remote.timestamp:remote.created_time,publishedAt=typeof at==='string'&&Number.isFinite(Date.parse(at))?new Date(at).toISOString():null;
-    const url=safePublicUrl(ig?remote.permalink:photo?remote.link:remote.permalink_url),mismatch=normalizeText(body)!==normalizeText(row.content)?'게시문이 접수 기록과 달라요.':publishedAt&&Date.parse(publishedAt)<Date.parse(row.createdAt)-5*MINUTE?'이번 발행보다 이전에 작성된 게시물이에요.':null;
+    const anchor=Number.isFinite(Date.parse(row.submittedAt))?Date.parse(row.submittedAt):Date.parse(row.createdAt);
+    const url=safePublicUrl(ig?remote.permalink:photo?remote.link:remote.permalink_url),mismatch=normalizeText(body)!==normalizeText(row.content)?'게시문이 접수 기록과 달라요.':row.reconciledFromUnknown&&(!publishedAt||Date.parse(publishedAt)<anchor-MATCH_BEFORE||Date.parse(publishedAt)>anchor+MATCH_AFTER)?'게시 시각이 자동 대조한 범위와 맞지 않아요.':publishedAt&&Date.parse(publishedAt)<Date.parse(row.createdAt)-5*MINUTE?'이번 발행보다 이전에 작성된 게시물이에요.':null;
     // The ID came back from our own final write, so after PROOF_CHECKS disagreeing reads the row ends as published without proof.
-    if(mismatch){const checks=(row.proofChecks||0)+1;if(checks<PROOF_CHECKS)throw fail('PUBLICATION_PROOF_MISMATCH',mismatch+' SNS 원문을 확인해 주세요.',409,{proofCheck:true});return view(update(row.id,{status:'published',message:'Meta가 접수한 게시물 ID는 확인했지만 '+mismatch+' '+checks+'회 확인한 뒤 접수 ID 기준으로 게시 완료로 마감했어요. SNS 원문을 꼭 확인해 주세요.',providerId:row.providerId,url,publishedAt,observedAt:now(),errorCode:'PUBLICATION_PROOF_UNVERIFIED',proofChecks:checks,definitive:false,retryable:false}));}
+    if(mismatch){const checks=(row.proofChecks||0)+1;if(checks<PROOF_CHECKS||row.reconciledFromUnknown)throw fail('PUBLICATION_PROOF_MISMATCH',mismatch+' SNS 원문을 확인해 주세요.',409,{proofCheck:true});return view(update(row.id,{status:'published',message:'Meta가 접수한 게시물 ID는 확인했지만 '+mismatch+' '+checks+'회 확인한 뒤 접수 ID 기준으로 게시 완료로 마감했어요. SNS 원문을 꼭 확인해 주세요.',providerId:row.providerId,url,publishedAt,observedAt:now(),errorCode:'PUBLICATION_PROOF_UNVERIFIED',proofChecks:checks,definitive:false,retryable:false}));}
     return view(update(row.id,{status:'published',message:'Meta API에서 발신 계정과 게시 내용을 확인했어요. 공개 화면은 별도로 확인해 주세요.',providerId:row.providerId,url,publishedAt,observedAt:now(),errorCode:null,definitive:false,retryable:false}));
   }
   // After an ambiguous final write Meta itself can settle it. An Instagram container says whether this request published
@@ -178,18 +201,39 @@ export function createSocialDirectMeta({store,fetchImpl=globalThis.fetch,clock=(
     // Within SETTLE_MS of the final write Meta may still be completing it: a PUBLISHED container's post is still proof,
     // but a FINISHED container is not yet proof of non-publication, and such a check is not counted.
     const settling=Number.isFinite(Date.parse(row.submittedAt))&&stamp()-Date.parse(row.submittedAt)<SETTLE_MS;
-    let api;try{({api}=await session(channel,{signal:input.signal,enabled:false}));}catch{return null;}
-    if(!settling)update(id,{autoChecks:(row.autoChecks||0)+1});const anchor=Date.parse(row.submittedAt)||Date.parse(row.createdAt);let match=null,state=null;
+    let api,nextPage,check;try{({api,nextPage,check}=await session(channel,{signal:input.signal,enabled:false}));}catch{return null;}
+    if(!settling)update(id,{autoChecks:(row.autoChecks||0)+1});const submitted=Date.parse(row.submittedAt),anchor=Number.isFinite(submitted)?submitted:Date.parse(row.createdAt);let next=null,state=null;
     try{
       if(ig&&row.containerId){state=await api(row.containerId,{fields:'id,status_code'});if(state?.id!==row.containerId)state=null;}
-      if(!state||state.status_code==='PUBLISHED'){
-        const recent=await api(channel.externalId+(ig?'/media':'/feed'),{fields:ig?'id,caption,timestamp,permalink':'id,message,created_time,permalink_url,is_published',limit:25});
-        const claimed=new Set(store.all(JOBS).filter(other=>other.id!==id&&other.providerId).map(other=>String(other.providerId)));
-        const candidates=(Array.isArray(recent.data)?recent.data:[]).filter(item=>{const at=Date.parse(ig?item.timestamp:item.created_time);return (ig?graphId(item.id):postId(item.id))&&!claimed.has(String(item.id))&&normalizeText(ig?item.caption:item.message)===normalizeText(row.content)&&at>=anchor-MATCH_BEFORE&&at<=anchor+MATCH_AFTER;});
-        match=candidates.length===1?candidates[0]:null;
+      if((!ig||state?.status_code==='PUBLISHED')&&Number.isFinite(anchor)){
+        const path=channel.externalId+(ig?'/media':'/feed'),fields=ig?'id,caption,timestamp,permalink':'id,message,created_time,permalink_url,is_published',seenPages=new Set(),seenPosts=new Map(),candidates=new Map();let complete=false;
+        // Round outwards to retain the existing inclusive millisecond window even if
+        // Meta applies exclusive second-level bounds. Recheck each returned timestamp.
+        let range={since:Math.floor((anchor-MATCH_BEFORE)/1000)-1,until:Math.ceil((anchor+MATCH_AFTER)/1000)+1};
+        for(let page=0;page<RECONCILE_MAX_PAGES;page++){
+          const recent=await api(path,{fields,limit:RECONCILE_PAGE_SIZE,...range});
+          if(!Array.isArray(recent.data)||recent.data.length>RECONCILE_PAGE_SIZE||recent.paging!=null&&(typeof recent.paging!=='object'||Array.isArray(recent.paging)))return null;
+          for(const item of recent.data){
+            const post=ig?graphId(item?.id):postId(item?.id),at=Date.parse(ig?item?.timestamp:item?.created_time),content=normalizeText(ig?item?.caption:item?.message);
+            if(!post||!Number.isFinite(at))return null;
+            const signature=canonical([at,content,ig?null:item.is_published]);if(seenPosts.has(post)&&seenPosts.get(post)!==signature)return null;seenPosts.set(post,signature);
+            if(content===normalizeText(row.content)&&at>=anchor-MATCH_BEFORE&&at<=anchor+MATCH_AFTER&&(ig||item.is_published===true))candidates.set(post,item);
+          }
+          if(recent.paging?.next==null){complete=true;break;}
+          const following=nextPage(path,recent.paging,range);if(!following)return null;const key=canonical(following);if(seenPages.has(key))return null;seenPages.add(key);range=following;
+        }
+        // One match on an incomplete scan is not a unique match. A lost final write
+        // stays uncertain after any page/error/budget limit; no retry is opened here.
+        if(!complete)return null;
+        check();next=transaction(()=>{
+          const live=store.get(JOBS,id);if(!live||live.status!=='uncertain'||live.providerId||live.claimToken!==row.claimToken)return null;
+          const claimed=new Set(store.all(JOBS).filter(other=>other.id!==id&&other.providerId).map(other=>String(other.providerId))),matches=[...candidates.values()].filter(item=>!claimed.has(item.id));
+          if(matches.length!==1)return null;
+          const claimedRow={...live,status:'submitted',providerId:matches[0].id,reconciledFromUnknown:true,remoteKind:ig?'instagram':'post',message:'SNS 게시 시각 범위를 대조해 이번 글을 찾았어요. 원문을 확인해요.',errorCode:null,observedAt:now(),updatedAt:now()};store.put(JOBS,id,claimedRow);return claimedRow;
+        });
       }
     }catch{return null;}
-    if(match){const next=update(id,{status:'submitted',providerId:match.id,remoteKind:ig?'instagram':'post',message:'SNS 최근 게시물에서 이번 글을 찾았어요. 원문을 확인해요.',errorCode:null,observedAt:now()});try{return await verifyPublished(next,channel,api);}catch(error){return failure(id,error);}}
+    if(next){try{return await verifyPublished(next,channel,api);}catch(error){return failure(id,error);}}
     if(!settling&&state&&state.id===row.containerId&&state.status_code==='FINISHED')return view(update(id,{status:'failed',definitive:true,retryable:true,errorCode:'NOT_SUBMITTED',message:'Instagram이 준비 파일을 게시하지 않았고 최근 게시물에도 없어요. 공개 게시 요청은 처리되지 않았으니 다시 예약할 수 있어요.'}));
     return null;
   }
